@@ -25,9 +25,12 @@ Related policy and tooling:
 Convert every remaining `.js`/`.jsx` file under `app/` to `.ts`/`.tsx` incrementally, one
 small PR at a time, without changing runtime behaviour or breaking the build.
 
-In scope: all 331 files listed in §7 (291 source files + 40 `*.test.js` files).
+In scope: the 330 files listed in §7 (290 source files + 40 `*.test.js` files).
 Out of scope: files outside `app/` (`e2e/`, `scripts/`, `wdio/`, config files), logic
-refactors, converting `connect()` HOCs to hooks, or changing snapshots.
+refactors, converting `connect()` HOCs to hooks, changing snapshots, and generated output —
+`app/lib/ppom/blockaid-version.js` is emitted by `ppom/webpack.config.version.js` during
+`scripts/setup.mjs`, so renaming it would be undone on the next setup; it is excluded and
+should be handled (if ever) by changing the generator, not by a migration PR.
 
 ## 2. Inventory
 
@@ -35,7 +38,7 @@ Regenerate the inventory at any time with:
 
 ```bash
 find app -type f \( -name '*.js' -o -name '*.jsx' \) | sort
-find app -type f \( -name '*.js' -o -name '*.jsx' \) | wc -l   # 331 at time of writing
+find app -type f \( -name '*.js' -o -name '*.jsx' \) | wc -l   # 331 at time of writing (330 migratable + generated blockaid-version.js)
 ```
 
 Distribution at time of writing:
@@ -53,7 +56,7 @@ Distribution at time of writing:
 | `app/__mocks__/` | 6 |
 | `app/constants/` | 3 |
 | `app/components/Nav/` | 3 |
-| `app/lib/` | 4 |
+| `app/lib/` | 3 (+1 generated, excluded) |
 | `app/images/` | 1 |
 
 ### Prioritisation rules
@@ -72,8 +75,14 @@ Distribution at time of writing:
 
 ## 3. Child-session workflow (one file per session)
 
-The orchestrating (parent) session hands each unchecked file in §7 to a child session. Use a
-Devin workflow / batch of child sessions; each child gets a prompt of the form:
+The orchestrating (parent) session hands each unchecked **work unit** in §7 to a child
+session. A work unit is a source file **plus its co-located `*.test.js`** (same directory,
+same basename, e.g. `foo.js` + `foo.test.js`, or `index.js` + `index.test.js` /
+`<Dir>.test.js`); test files that pair with a source file in the checklist are never assigned
+separately. Only test files with no JS source sibling (e.g. `app/store/migrations/028.test.js`,
+whose source is already `028.ts`) are standalone units. Before launching a batch, the parent
+must dedupe assignments so no two concurrent children touch the same file. Use a Devin
+workflow / batch of child sessions; each child gets a prompt of the form:
 
 > Convert `<path>` from JavaScript to TypeScript in `COG-GTM/metamask-mobile` following
 > `docs/js-ts-migration-plan.md` §3. Open a PR titled
@@ -116,7 +125,9 @@ Every child session MUST:
    commands with their results. Follow the repo PR template.
 7. **Keep it small.** One file (plus its test and its `RootState` slice if a reducer). The
    37-file batch PR #11214 was reverted in #11418; do not batch unrelated files.
-8. **Update this doc** in the same PR: tick the file's checkbox in §7.
+8. **Add a `CHANGELOG.md` entry** linking the PR, as required by `.github/CONTRIBUTING.md`
+   (match the existing `chore(js-ts): Convert … to TypeScript` entries).
+9. **Update this doc** in the same PR: tick the checkbox for every file in the work unit in §7.
 
 If a file cannot be typed without a refactor (e.g. dynamic shapes, missing upstream types),
 the child should stop, leave the file unchecked, and report back with the blocker instead of
@@ -141,7 +152,6 @@ No shared type dependencies between these; each can be its own child session.
 | `app/util/middlewares.js` | 2 | |
 | `app/util/payment-link-generator.js` | 2 | |
 | `app/util/streams.js` | 2 | `Duplex` from `stream` |
-| `app/lib/ppom/blockaid-version.js` | 3 | constant |
 | `app/util/conversion/index.js` | 3 | BN.js types |
 | `app/util/blockies.js` | 4 | |
 | `app/util/confirm-tx.js` | 4 | |
@@ -253,7 +263,8 @@ Already-migrated neighbours to copy patterns from:
 
 ## 7. Tracking checklist
 
-Tick a file when its `chore(js-ts)` PR merges. Grouped by area; letters map to the
+Tick a file when its `chore(js-ts)` PR merges. A source file and its co-located `*.test.js`
+are one work unit (see §3) and are ticked together. Grouped by area; letters map to the
 playbook groups referenced in §4.
 
 ### A. Redux actions (`app/actions/`) — Playbook 1 (11 files)
@@ -270,7 +281,7 @@ playbook groups referenced in §4.
 - [ ] `app/actions/transaction/index.js`
 - [ ] `app/actions/wizard/index.js`
 
-### B. Constants, mocks, lib, images (`app/constants/`, `app/__mocks__/`, `app/lib/`, `app/images/`) — Playbook 10 (14 files)
+### B. Constants, mocks, lib, images (`app/constants/`, `app/__mocks__/`, `app/lib/`, `app/images/`) — Playbook 10 (13 files + 1 excluded)
 
 - [ ] `app/__mocks__/pngMock.js`
 - [ ] `app/__mocks__/react-native-device-info.js`
@@ -285,7 +296,7 @@ playbook groups referenced in §4.
 - [ ] `app/lib/ens-ipfs/contracts/registry.js`
 - [ ] `app/lib/ens-ipfs/contracts/resolver.js`
 - [ ] `app/lib/ens-ipfs/resolver.js`
-- [ ] `app/lib/ppom/blockaid-version.js`
+- ~~`app/lib/ppom/blockaid-version.js`~~ — generated by `ppom/webpack.config.version.js`; excluded
 
 ### C. Redux reducers (`app/reducers/`) — Playbook 2 (after A) (14 files)
 
