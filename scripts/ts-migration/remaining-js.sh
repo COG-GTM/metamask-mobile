@@ -12,17 +12,19 @@ ROOT="${1:-app}"
 # Files that intentionally stay JavaScript (see docs/ts-migration-tracker.md).
 EXCLUDE_REGEX='^(app/lib/ppom/blockaid-version\.js|app/util/test/assetFileTransformer\.js)$'
 
-{
-  find "$ROOT" -type f \( -name '*.js' -o -name '*.jsx' \) -not -path '*/node_modules/*'
-  if [ "$ROOT" = "app" ]; then
-    for f in index.js shim.js; do [ -f "$f" ] && echo "$f"; done
-  fi
-} | grep -Ev "$EXCLUDE_REGEX" | sort | xargs -r wc -l | sed '$d' | sort -k2
-
-count=$(
+candidates=$(
   {
     find "$ROOT" -type f \( -name '*.js' -o -name '*.jsx' \) -not -path '*/node_modules/*'
-  } | grep -Evc "$EXCLUDE_REGEX" || true
+    if [ "$ROOT" = "app" ]; then
+      for f in index.js shim.js; do [ -f "$f" ] && echo "$f"; done
+    fi
+  } | grep -Ev "$EXCLUDE_REGEX" || true
+)
+
+printf '%s\n' "$candidates" | xargs -r wc -l | awk '$2 != "total"' | sort -k2
+
+count=$(
+  printf '%s\n' "$candidates" | grep -Ec "^${ROOT%/}/" || true
 )
 echo
 echo "Remaining under $ROOT: $count file(s)"
