@@ -601,6 +601,40 @@ describe('captureSentryFeedback', () => {
       });
     });
 
+    it('masks SDK connection key material and dapp identities', () => {
+      const stateWithSdkConnections = {
+        ...rootState,
+        sdk: {
+          connections: {
+            channel1: {
+              id: 'channel1',
+              privateKey: 'deadbeef',
+              otherPublicKey: 'cafebabe',
+              origin: 'https://dapp.example',
+              originatorInfo: { url: 'https://dapp.example' },
+            },
+          },
+          dappConnections: {
+            channel2: { id: 'channel2', privateKey: 'deadbeef' },
+          },
+          approvedHosts: { channel1: 'dapp.example' },
+          wc2Metadata: { id: '1', url: 'https://dapp.example' },
+        },
+      };
+      const maskedState = maskObject(
+        stateWithSdkConnections,
+        sentryStateMask,
+      ) as { sdk: unknown };
+
+      expect(maskedState.sdk).toEqual({
+        connections: { channel1: 'object' },
+        dappConnections: { channel2: 'object' },
+        approvedHosts: { channel1: 'string' },
+        wc2Metadata: 'object',
+      });
+      expect(JSON.stringify(maskedState.sdk)).not.toContain('deadbeef');
+    });
+
     it('masks sensitive data in AccountsController while preserving other fields', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const maskedState = maskObject(rootState, sentryStateMask) as any;
