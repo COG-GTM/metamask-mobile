@@ -18,12 +18,11 @@ import { fontStyles } from '../../../styles/common';
 import Device from '../../../util/device';
 import { useTheme } from '../../../util/theme';
 import { Colors, Shadows } from '../../../util/theme/models';
-import { SwapsViewSelectors } from '../../../../e2e/selectors/swaps/SwapsView.selectors';
 
 /* eslint-disable import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 const SliderBgImg = require('./assets/slider_button_gradient.png');
 const SliderShineImg = require('./assets/slider_button_shine.png');
-/* eslint-enable import/no-commonjs */
+/* eslint-enable import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 
 const DIAMETER = 60;
 const MARGIN = DIAMETER * 0.16;
@@ -293,10 +292,6 @@ function SliderButton({
       onLayout={(e: LayoutChangeEvent) => {
         setComponentWidth(e.nativeEvent.layout.width);
       }}
-      testID={
-        (SwapsViewSelectors as unknown as Record<string, string>)
-          .SWIPE_TO_SWAP_BUTTON
-      }
     >
       <View style={styles.trackBack}>
         <Image
