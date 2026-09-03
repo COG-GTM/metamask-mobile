@@ -94,6 +94,7 @@ interface AssetTransaction extends TransactionMeta {
   isTransfer?: boolean;
   networkID?: string;
   insertImportTime?: boolean;
+  [key: string]: unknown;
 }
 
 interface OwnProps {
@@ -240,7 +241,7 @@ class Asset extends PureComponent<Props, State> {
     const isMainnet = isMainnetByChainId(chainId);
     const blockExplorer = isNonEvmChainId(chainId)
       ? findBlockExplorerForNonEvmChainId(chainId)
-      : findBlockExplorerForRpc(rpcUrl, networkConfigurations);
+      : findBlockExplorerForRpc(rpcUrl ?? '', networkConfigurations);
 
     const shouldShowMoreOptionsInNavBar =
       isMainnet || !isNativeToken || (isNativeToken && blockExplorer);
@@ -273,8 +274,8 @@ class Asset extends PureComponent<Props, State> {
     );
   };
 
-  onScrollThroughContent = (contentOffset = 0) => {
-    this.updateNavBar(contentOffset);
+  onScrollThroughContent = (contentOffset: unknown = 0) => {
+    this.updateNavBar(typeof contentOffset === 'number' ? contentOffset : 0);
   };
 
   checkLiveness = async (chainId: Hex) => {

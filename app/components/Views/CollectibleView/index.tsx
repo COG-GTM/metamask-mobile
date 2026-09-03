@@ -15,6 +15,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 
 interface CollectibleParams {
   address: string;
+  tokenId?: string;
   contractName?: string;
   name?: string;
   logo?: string;
