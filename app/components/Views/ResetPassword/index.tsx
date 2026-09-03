@@ -471,11 +471,17 @@ class ResetPassword extends PureComponent<Props, State> {
    */
   recreateVault = async () => {
     const { originalPassword, password: newPassword } = this.state;
+    const { selectedAddress } = this.props;
+    if (originalPassword === null || selectedAddress === undefined) {
+      throw new Error(
+        'Original password and selected address are required to recreate the vault',
+      );
+    }
     // Recreate keyring with password
     await recreateVaultWithNewPassword(
       originalPassword,
       newPassword,
-      this.props.selectedAddress,
+      selectedAddress,
     );
   };
 
