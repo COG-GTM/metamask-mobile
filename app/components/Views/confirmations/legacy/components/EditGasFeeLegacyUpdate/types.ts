@@ -1,34 +1,32 @@
+import React from 'react';
+
 export interface EditGasFeeLegacyUpdateProps {
   /**
    * Function called when user cancels
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onCancel: any;
+  onCancel: () => void;
   /**
    * Function called when user saves the new gas
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSave: (gasTxn: any, newGasObject: any) => void;
+  onSave: (
+    gasTxn: EditLegacyGasTransaction,
+    newGasObject: {
+      suggestedGasPrice?: string;
+      legacyGasLimit?: string;
+    },
+  ) => void;
   /**
    * Error message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any;
+  error?: string | React.ReactNode;
   /**
    * Warning message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warning?: any;
+  warning?: string | React.ReactNode;
   /**
    * Extend options object. Object has option keys and properties will be spread
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extendOptions?: any;
+  extendOptions?: Record<string, unknown>;
   /**
    * Function to call when update animation starts
    */
@@ -48,14 +46,10 @@ export interface EditGasFeeLegacyUpdateProps {
   /**
    * Extra analytics params to be send with the gas analytics
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  analyticsParams: any;
+  analyticsParams: { [key: string]: string | undefined };
   view: string;
   onlyGas?: boolean;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectedGasObject: any;
+  selectedGasObject: EditLegacyGasObject;
   hasDappSuggestedGas?: boolean;
   chainId: string;
 }
@@ -65,4 +59,10 @@ export interface EditLegacyGasTransaction {
   suggestedGasPrice: string;
   transactionFee: string;
   transactionFeeFiat: string;
+}
+
+export interface EditLegacyGasObject {
+  legacyGasLimit?: string;
+  suggestedGasPrice?: string;
+  suggestedMaxFeePerGas?: string;
 }

@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -15,8 +14,10 @@ import { strings } from '../../../../../../../../locales/i18n';
 import Device from '../../../../../../../util/device';
 import { getHost } from '../../../../../../../util/browser';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
+import { PageMeta } from '../types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     expandedRoot: {
       backgroundColor: colors.background.default,
@@ -72,29 +73,27 @@ const createStyles = (colors) =>
 /**
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
-export default class ExpandedMessage extends PureComponent {
-  static propTypes = {
-    /**
-     * Object containing current page title and url
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * Renders the message based on its type (parent)
-     */
-    renderMessage: PropTypes.func,
-    /**
-     * Expands the message box on press.
-     */
-    toggleExpandedMessage: PropTypes.func,
-  };
+interface Props {
+  /** Object containing current page title and url */
+  currentPageInformation: PageMeta;
+  /** Renders the message based on its type (parent) */
+  renderMessage: () => React.ReactNode;
+  /** Expands the message box on press. */
+  toggleExpandedMessage?: () => void;
+}
 
+export default class ExpandedMessage extends PureComponent<Props> {
   render() {
-    const { currentPageInformation, renderMessage, toggleExpandedMessage } =
-      this.props;
+    const {
+      currentPageInformation,
+      renderMessage,
+      toggleExpandedMessage,
+    } = this.props;
     const url = currentPageInformation.url;
     const icon = currentPageInformation.icon;
     const title = getHost(url);
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

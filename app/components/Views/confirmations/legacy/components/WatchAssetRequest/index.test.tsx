@@ -12,15 +12,20 @@ const initialState = {
   },
 };
 const store = mockStore(initialState);
+const WatchAssetRequestForTest = WatchAssetRequest as unknown as React.ComponentType<{
+  suggestedAssetMeta: {
+    asset: { address: string; symbol: string; decimals: number };
+  };
+}>;
 
 describe('WatchAssetRequest', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <WatchAssetRequest
+        <WatchAssetRequestForTest
           suggestedAssetMeta={{
             asset: { address: '0x2', symbol: 'TKN', decimals: 0 },
-          }}
+          } as unknown as React.ComponentProps<typeof WatchAssetRequest>['suggestedAssetMeta']}
         />
       </Provider>,
     );

@@ -1,12 +1,13 @@
 import BigNumber from 'bignumber.js';
+import { GasTransactionProps } from '../../../../../../core/GasPolling/types';
+import { selectAccounts } from '../../../../../../selectors/accountTrackerController';
+import type { selectGasFeeEstimates } from '../../../../../../selectors/confirmTransaction';
 
 export interface UpdateEIP1559Props {
   /**
    * Map of accounts to information objects including balances
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  accounts: any;
+  accounts: ReturnType<typeof selectAccounts>;
   /**
    * Chain Id
    */
@@ -18,9 +19,15 @@ export interface UpdateEIP1559Props {
   /**
    * Gas fee estimates returned by the gas fee controller
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  gasFeeEstimates: any;
+  gasFeeEstimates: Extract<
+    ReturnType<typeof selectGasFeeEstimates>,
+    {
+      medium: {
+        suggestedMaxFeePerGas: string;
+        suggestedMaxPriorityFeePerGas: string;
+      };
+    }
+  >;
   /**
    * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
    */
@@ -28,7 +35,7 @@ export interface UpdateEIP1559Props {
   /**
    * A string that represents the selected address
    */
-  selectedAddress: string;
+  selectedAddress: string | undefined;
   /**
    * A bool indicates whether tx is speed up/cancel
    */
@@ -36,19 +43,18 @@ export interface UpdateEIP1559Props {
   /**
    * Current provider ticker
    */
-  ticker: string;
+  ticker: string | undefined;
   /**
    * The max fee and max priorty fee selected tx
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  existingGas: any;
+  existingGas: {
+    maxFeePerGas: string;
+    maxPriorityFeePerGas: string;
+  };
   /**
    * Gas object used to get suggestedGasLimit
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  gas: any;
+  gas: string;
   /**
    * Function that cancels the tx update
    */
@@ -56,20 +62,18 @@ export interface UpdateEIP1559Props {
   /**
    * Function that performs the rest of the tx update
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSave: (tx: any) => void;
+  onSave: (tx: GasTransactionProps) => void;
 }
 
 export interface UpdateTx1559Options {
   /**
    * The legacy calculated max priorty fee used in subcomponent for threshold warning messages
    */
-  maxPriortyFeeThreshold: BigNumber;
+  maxPriortyFeeThreshold: BigNumber | string;
   /**
    * The legacy calculated max fee used in subcomponent for threshold warning messages
    */
-  maxFeeThreshold: BigNumber;
+  maxFeeThreshold: BigNumber | string;
   /**
    * Boolean to indicate to sumcomponent if the view should display only advanced settings
    */
