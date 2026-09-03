@@ -3,11 +3,15 @@ export interface TransactionParams {
   from?: string;
   to?: string;
   value?: string;
+  gas?: string;
+  gasPrice?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
 }
 
 export interface GasTransaction {
   error?: string;
-  gasFeeMaxHex?: string;
+  gasFeeMaxHex: string;
   totalHex?: string;
   totalMaxHex?: string;
   suggestedGasLimit?: string;
@@ -46,7 +50,7 @@ export interface CustomGasModalProps {
     legacyGasLimit?: string;
     suggestedGasPrice?: string;
   };
-  EIP1559GasData?: {
+  EIP1559GasData?: GasObject & {
     maxFeePerGas?: string;
     maxPriorityFeePerGas?: string;
     suggestedMaxFeePerGas?: string;
@@ -54,7 +58,7 @@ export interface CustomGasModalProps {
     suggestedGasLimit?: string;
     [key: string]: unknown;
   };
-  EIP1559GasTxn?: {
+  EIP1559GasTxn?: Partial<GasTransaction> & {
     suggestedGasLimit?: string;
     totalMaxHex?: string;
   };
