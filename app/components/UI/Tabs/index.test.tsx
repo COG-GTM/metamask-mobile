@@ -1,8 +1,13 @@
 import React from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import Tabs from './';
+import { TabThumbnailProps } from './TabThumbnail/TabThumbnail.types';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
+
+const TabsComponent = Tabs as unknown as React.ComponentType<{
+  tabs: TabThumbnailProps['tab'][];
+}>;
 
 const mockInitialState = {
   wizard: {
@@ -65,7 +70,7 @@ jest.mock('../../../components/hooks/useAccounts', () => {
 describe('Tabs', () => {
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(
-      <Tabs tabs={[{ id: 1, url: 'about:blank', image: '' }]} />,
+      <TabsComponent tabs={[{ id: 1, url: 'about:blank', image: '' }]} />,
       { state: mockInitialState },
     );
     expect(toJSON()).toMatchSnapshot();
