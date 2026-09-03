@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
@@ -16,14 +15,13 @@ import Device from '../../../../util/device';
 import Text from '../../../Base/Text';
 import StyledButton from '../../StyledButton';
 import { useTheme, useAssetFromTheme } from '../../../../util/theme';
+import type { Theme } from '../../../../util/theme/models';
 
-/* eslint-disable import/no-commonjs */
-const onboardingDeviceImage = require('../../../../images/swaps_onboard_device.png');
-const swapsAggregatorsLight = require('../../../../images/swaps_aggs-light.png');
-const swapsAggregatorsDark = require('../../../../images/swaps_aggs-dark.png');
-/* eslint-enable import/no-commonjs */
+import onboardingDeviceImage from '../../../../images/swaps_onboard_device.png';
+import swapsAggregatorsLight from '../../../../images/swaps_aggs-light.png';
+import swapsAggregatorsDark from '../../../../images/swaps_aggs-dark.png';
 
-const createStyles = (colors, bottomInset) =>
+const createStyles = (colors: Theme['colors'], bottomInset: number) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -72,7 +70,11 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function Onboarding({ setHasOnboarded }) {
+interface OnboardingProps {
+  setHasOnboarded: (hasOnboarded: boolean) => void;
+}
+
+function Onboarding({ setHasOnboarded }: OnboardingProps) {
   const navigation = useNavigation();
   const { colors } = useTheme();
   const { bottom: bottomInset } = useSafeAreaInsets();
@@ -144,9 +146,5 @@ function Onboarding({ setHasOnboarded }) {
     </View>
   );
 }
-
-Onboarding.propTypes = {
-  setHasOnboarded: PropTypes.func,
-};
 
 export default Onboarding;
