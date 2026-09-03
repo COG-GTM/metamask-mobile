@@ -64,7 +64,7 @@ const BIG_NUMBER_ETH_MULTIPLIER = new BigNumber('1');
 
 // Setter Maps
 const toBigNumber: Record<NumericBase, (n: ConversionInput) => BigNumber> = {
-  hex: (n) => new BigNumber(stripHexPrefix(String(n)), 16),
+  hex: (n) => new BigNumber(stripHexPrefix(n as string), 16),
   dec: (n) => new BigNumber(String(n), 10),
   BN: (n) => new BigNumber((n as BN).toString(16), 16),
 };
