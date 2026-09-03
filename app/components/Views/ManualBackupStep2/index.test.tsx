@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import { shallow } from 'enzyme';
 import ManualBackupStep2 from './';
 import configureMockStore from 'redux-mock-store';
@@ -18,25 +18,28 @@ describe('ManualBackupStep2', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <ManualBackupStep2
-          route={{
-            params: {
-              words: [
-                'abstract',
-                'accident',
-                'acoustic',
-                'announce',
-                'artefact',
-                'attitude',
-                'bachelor',
-                'broccoli',
-                'business',
-                'category',
-                'champion',
-                'cinnamon',
-              ],
-              steps: ['one', 'two', 'three'],
-            },
-          }}
+          {...({} as ComponentProps<typeof ManualBackupStep2>)}
+          route={
+            {
+              params: {
+                words: [
+                  'abstract',
+                  'accident',
+                  'acoustic',
+                  'announce',
+                  'artefact',
+                  'attitude',
+                  'bachelor',
+                  'broccoli',
+                  'business',
+                  'category',
+                  'champion',
+                  'cinnamon',
+                ],
+                steps: ['one', 'two', 'three'],
+              },
+            } as unknown as ComponentProps<typeof ManualBackupStep2>['route']
+          }
         />
       </Provider>,
     );

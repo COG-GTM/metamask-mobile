@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import OfflineMode from './';
 
 describe('OfflineMode', () => {
   it('should render correctly', () => {
-    const { toJSON } = renderWithProvider(<OfflineMode />);
+    const { toJSON } = renderWithProvider(
+      <OfflineMode {...({} as ComponentProps<typeof OfflineMode>)} />,
+    );
     expect(toJSON()).toMatchSnapshot();
   });
 });
