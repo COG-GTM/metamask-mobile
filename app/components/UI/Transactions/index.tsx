@@ -17,6 +17,8 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
 import { connect } from 'react-redux';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import type { Dispatch } from 'redux';
 import { strings } from '../../../../locales/i18n';
 import { showAlert } from '../../../actions/alert';
@@ -112,10 +114,7 @@ interface ExistingGas {
 interface OwnProps {
   assetSymbol?: string;
   close?: () => void;
-  navigation?: {
-    navigate: (...args: unknown[]) => void;
-    push: (...args: unknown[]) => void;
-  };
+  navigation?: Pick<StackNavigationProp<ParamListBase>, 'navigate' | 'push'>;
   transactions: Transaction[];
   submittedTransactions?: Transaction[];
   confirmedTransactions?: Transaction[];

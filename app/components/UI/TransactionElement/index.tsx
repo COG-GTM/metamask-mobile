@@ -16,6 +16,7 @@ import { toDateFormat } from '../../../util/date';
 import TransactionDetails from './TransactionDetails';
 import { safeToChecksumAddress } from '../../../util/address';
 import { connect } from 'react-redux';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import StyledButton from '../StyledButton';
 import Modal from 'react-native-modal';
 import decodeTransaction, {
@@ -113,9 +114,7 @@ interface OwnProps {
     existingGas?: Record<string, unknown>,
     tx?: TransactionMeta,
   ) => void;
-  navigation: {
-    navigate: (route: string, params?: Record<string, unknown>) => void;
-  };
+  navigation: Pick<NavigationProp<ParamListBase>, 'navigate'>;
 }
 
 interface StateProps {
