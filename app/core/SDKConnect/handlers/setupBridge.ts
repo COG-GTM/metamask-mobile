@@ -31,9 +31,7 @@ export const setupBridge = ({
     url:
       PROTOCOLS.METAMASK + '://' + originatorInfo.url || originatorInfo.title,
     isRemoteConn: true,
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendMessage: (msg: any) => {
+    sendMessage: (msg: unknown) => {
       DevLogger.log(`setupBride::sendMessage`, msg);
       handleSendMessage({
         msg,
@@ -46,7 +44,7 @@ export const setupBridge = ({
     remoteConnHost: connection.host,
     getRpcMethodMiddleware: ({
       getProviderState,
-    }: RPCMethodsMiddleParameters) => {
+    }: Pick<RPCMethodsMiddleParameters, 'hostname' | 'getProviderState'>) => {
       DevLogger.log(
         `getRpcMethodMiddleware hostname=${connection.host} url=${originatorInfo.url} `,
       );

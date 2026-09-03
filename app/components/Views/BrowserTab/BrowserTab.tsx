@@ -17,7 +17,9 @@ import { isEqual } from 'lodash';
 import { WebView, WebViewMessageEvent } from '@metamask/react-native-webview';
 import BrowserBottomBar from '../../UI/BrowserBottomBar';
 import { connect, useSelector } from 'react-redux';
-import BackgroundBridge from '../../../core/BackgroundBridge/BackgroundBridge';
+import BackgroundBridge, {
+  BackgroundBridgeParams,
+} from '../../../core/BackgroundBridge/BackgroundBridge';
 import Engine from '../../../core/Engine';
 import WebviewProgressBar from '../../UI/WebviewProgressBar';
 import Logger from '../../../util/Logger';
@@ -181,13 +183,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const iconRef = useRef<ImageSourcePropType | undefined>();
   const sessionENSNamesRef = useRef<SessionENSNames>({});
   const ensIgnoreListRef = useRef<string[]>([]);
-  const backgroundBridgeRef = useRef<{
-    url: string;
-    hostname: string;
-    sendNotification: (payload: unknown) => void;
-    onDisconnect: () => void;
-    onMessage: (message: Record<string, unknown>) => void;
-  }>();
+  const backgroundBridgeRef = useRef<BackgroundBridge>();
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
   const searchEngine = useSelector(selectSearchEngine);
@@ -230,9 +226,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     );
   }, []);
 
-  const notifyAllConnections = useCallback((payload: unknown) => {
-    backgroundBridgeRef.current?.sendNotification(payload);
-  }, []);
+  const notifyAllConnections = useCallback(
+    (payload: { method: string; params: unknown }) => {
+      backgroundBridgeRef.current?.sendNotification(payload);
+    },
+    [],
+  );
 
   /**
    * Dismiss the text selection on the current website
@@ -899,17 +898,13 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       backgroundBridgeRef.current?.onDisconnect();
       backgroundBridgeRef.current = undefined;
 
-      //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
         webview: webviewRef,
         url: urlBridge,
         getRpcMethodMiddleware: ({
           hostname,
           getProviderState,
-        }: {
-          hostname: string;
-          getProviderState: () => void;
-        }) =>
+        }: Parameters<BackgroundBridgeParams['getRpcMethodMiddleware']>[0]) =>
           getRpcMethodMiddleware({
             hostname,
             getProviderState,
