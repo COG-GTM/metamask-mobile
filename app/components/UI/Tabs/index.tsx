@@ -126,7 +126,7 @@ type Tab = TabThumbnailProps['tab'];
 
 interface TabsProps extends IWithMetricsAwarenessProps {
   tabs: Tab[];
-  activeTab?: number;
+  activeTab?: number | null;
   newTab: () => void;
   closeTab: (tab: Tab) => void;
   closeAllTabs?: () => void;
@@ -222,7 +222,7 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
       </View>
     );
   }
-  renderTabs(tabs: Tab[], activeTab?: number) {
+  renderTabs(tabs: Tab[], activeTab?: number | null) {
     const styles = this.getStyles();
 
     return (
