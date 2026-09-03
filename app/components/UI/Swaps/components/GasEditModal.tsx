@@ -112,28 +112,6 @@ interface CustomGasUpdate {
   [key: string]: unknown;
 }
 
-const TypedEditGasFeeLegacy = EditGasFeeLegacy as unknown as React.ComponentType<
-  Record<string, unknown>
->;
-
-const parseEIP1559GasTransaction = (
-  params: unknown,
-  options: unknown,
-): Partial<TransactionData> =>
-  parseTransactionEIP1559(
-    params as Parameters<typeof parseTransactionEIP1559>[0],
-    options as never,
-  ) as unknown as Partial<TransactionData>;
-
-const parseLegacyGasTransaction = (
-  params: unknown,
-  options: unknown,
-): Partial<TransactionData> =>
-  parseTransactionLegacy(
-    params as Parameters<typeof parseTransactionLegacy>[0],
-    options as never,
-  ) as unknown as Partial<TransactionData>;
-
 interface OwnProps {
   /**
    * Function to dismiss modal
@@ -177,11 +155,11 @@ interface OwnProps {
   /**
    * Currency code of the currently-active currency
    */
-  currentCurrency?: string;
+  currentCurrency?: ReturnType<typeof selectCurrentCurrency>;
   /**
    * ETH to current currency conversion rate
    */
-  conversionRate?: number;
+  conversionRate?: ReturnType<typeof selectConversionRate>;
   /**
    * Gas limit of trade estimation
    */
@@ -193,11 +171,11 @@ interface OwnProps {
   /**
    * Chain Id
    */
-  chainId?: string;
+  chainId?: ReturnType<typeof selectEvmChainId>;
   /**
    * Current network ticker
    */
-  ticker?: string;
+  ticker?: ReturnType<typeof selectEvmTicker>;
   /**
    * Function to check if user has enough balance
    */
@@ -221,10 +199,10 @@ interface OwnProps {
 }
 
 interface StateProps {
-  conversionRate: number;
-  currentCurrency: string;
-  ticker: string;
-  chainId: string;
+  conversionRate: ReturnType<typeof selectConversionRate>;
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  ticker: ReturnType<typeof selectEvmTicker>;
+  chainId: ReturnType<typeof selectEvmChainId>;
   primaryCurrency: string;
 }
 
@@ -321,7 +299,7 @@ function GasEditModal({
         return;
       }
       setEIP1559TransactionDataTemp(
-        parseEIP1559GasTransaction(
+        parseTransactionEIP1559(
           {
             currentCurrency,
             conversionRate,
@@ -342,14 +320,15 @@ function GasEditModal({
               tradeValue,
               sourceAmount,
             },
+            contractExchangeRates: undefined,
             gasFeeEstimates,
           },
           { onlyGas: true },
-        ),
+        ) as Partial<TransactionData>,
       );
     } else {
       setLegacyTransactionDataTemp(
-        parseLegacyGasTransaction(
+        parseTransactionLegacy(
           {
             currentCurrency,
             conversionRate,
@@ -361,9 +340,11 @@ function GasEditModal({
                   ? gasFeeEstimates.gasPrice
                   : gasFeeEstimates[gasSelected],
             },
+            contractExchangeRates: undefined,
+            multiLayerL1FeeTotal: undefined,
           },
           { onlyGas: true },
-        ),
+        ) as Partial<TransactionData>,
       );
     }
   }, [
@@ -397,7 +378,7 @@ function GasEditModal({
       }
       setGasSelected(selected);
       setEIP1559TransactionDataTemp(
-        parseEIP1559GasTransaction(
+        parseTransactionEIP1559(
           {
             currentCurrency,
             conversionRate,
@@ -416,10 +397,11 @@ function GasEditModal({
               tradeValue,
               sourceAmount,
             },
+            contractExchangeRates: undefined,
             gasFeeEstimates,
           },
           { onlyGas: true },
-        ),
+        ) as Partial<TransactionData>,
       );
       if (selected) {
         setStopUpdateGas(false);
@@ -445,7 +427,7 @@ function GasEditModal({
       setStopUpdateGas(!selected);
       setGasSelected(selected);
       setLegacyTransactionDataTemp(
-        parseLegacyGasTransaction(
+        parseTransactionLegacy(
           {
             currentCurrency,
             conversionRate,
@@ -454,9 +436,11 @@ function GasEditModal({
               suggestedGasLimit: selected ? initialGasLimit : suggestedGasLimit,
               suggestedGasPrice,
             },
+            contractExchangeRates: undefined,
+            multiLayerL1FeeTotal: undefined,
           },
           { onlyGas: true },
-        ),
+        ) as Partial<TransactionData>,
       );
     },
     [conversionRate, currentCurrency, initialGasLimit, ticker],
@@ -621,7 +605,7 @@ function GasEditModal({
             />
           </>
         ) : (
-            <TypedEditGasFeeLegacy
+            <EditGasFeeLegacy
             selected={gasSelected}
             ignoreOptions={[GAS_OPTIONS.LOW]}
             warningMinimumEstimateOption={GAS_OPTIONS.MEDIUM}
@@ -631,7 +615,9 @@ function GasEditModal({
             onChange={calculateTempGasFeeLegacy}
             gasFeeNative={LegacyTransactionDataTemp.transactionFee}
             gasFeeConversion={LegacyTransactionDataTemp.transactionFeeFiat}
-            gasPriceConversion={LegacyTransactionDataTemp.transactionFeeFiat}
+            {...{
+              gasPriceConversion: LegacyTransactionDataTemp.transactionFeeFiat,
+            }}
             error={
               !hasEnoughEthBalance
                 ? strings('transaction.insufficient')
@@ -654,10 +640,10 @@ function GasEditModal({
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  conversionRate: selectConversionRate(state) as unknown as number,
-  currentCurrency: selectCurrentCurrency(state) as unknown as string,
-  ticker: selectEvmTicker(state) as unknown as string,
-  chainId: selectEvmChainId(state) as unknown as string,
+  conversionRate: selectConversionRate(state),
+  currentCurrency: selectCurrentCurrency(state),
+  ticker: selectEvmTicker(state),
+  chainId: selectEvmChainId(state),
   primaryCurrency: state.settings.primaryCurrency,
 });
 

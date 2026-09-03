@@ -71,8 +71,8 @@ interface OwnProps {
 }
 
 interface StateProps {
-  conversionRate: number;
-  currentCurrency: string;
+  conversionRate: ReturnType<typeof selectConversionRate>;
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
   quoteValues: Record<string, QuoteValues>;
 }
 
@@ -523,8 +523,8 @@ function QuotesModal({
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  conversionRate: selectConversionRate(state) as unknown as number,
-  currentCurrency: selectCurrentCurrency(state) as unknown as string,
+  conversionRate: selectConversionRate(state),
+  currentCurrency: selectCurrentCurrency(state),
   quoteValues: selectSwapsQuoteValues(state),
 });
 

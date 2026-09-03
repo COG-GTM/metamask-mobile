@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   TextInput,
+  FlatList as RNFlatList,
   SafeAreaView,
   TouchableOpacity,
   View,
@@ -56,7 +57,6 @@ import { getDecimalChainId } from '../../../../util/networks';
 import {
   getSortedTokensByFiatValue,
   type Account,
-  type Balances,
   type Token,
   type TokenExchangeRates,
   type TokenWithFiatValue,
@@ -70,19 +70,25 @@ interface OwnProps {
   title?: string;
   tokens?: Token[];
   initialTokens?: Token[];
-  onItemPress: (token: Token | TokenWithFiatValue) => void;
+  onItemPress: (
+    token: Token | TokenWithFiatValue | TokenImportModalToken,
+  ) => void;
   excludeAddresses?: string[];
 }
 
 interface StateProps {
-  accounts: Record<string, Account>;
-  selectedAddress: string;
-  currentCurrency: string;
-  conversionRate: number;
+  accounts: ReturnType<typeof selectAccounts>;
+  selectedAddress: ReturnType<
+    typeof selectSelectedInternalAccountFormattedAddress
+  >;
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  conversionRate: ReturnType<typeof selectConversionRate>;
   tokenExchangeRates: TokenExchangeRates;
-  chainId: string;
-  networkConfigurations: Record<string, unknown>;
-  balances: Balances;
+  chainId: ReturnType<typeof selectEvmChainId>;
+  networkConfigurations: ReturnType<
+    typeof selectEvmNetworkConfigurationsByChainId
+  >;
+  balances: ReturnType<typeof selectContractBalances>;
 }
 
 type Props = OwnProps & StateProps;
@@ -197,10 +203,7 @@ function TokenSelectModal({
   const { trackEvent, createEventBuilder } = useMetrics();
 
   const searchInput = useRef<TextInput>(null);
-  const list = useRef<FlatList<Token | TokenWithFiatValue>>(null);
-  const mutableList = list as unknown as {
-    current: FlatList<Token | TokenWithFiatValue> | null;
-  };
+  const list = useRef<RNFlatList<Token | TokenWithFiatValue>>(null);
   const [searchString, setSearchString] = useState('');
   const explorer = useBlockExplorer(networkConfigurations);
   const [isTokenImportVisible, , showTokenImportModal, hideTokenImportModal] =
@@ -226,11 +229,11 @@ function TokenSelectModal({
     () =>
       getSortedTokensByFiatValue({
         tokens: initialTokens ?? [],
-        account: accounts[selectedAddress],
+        account: accounts[selectedAddress ?? ''] as unknown as Account,
         tokenExchangeRates,
         balances,
-        conversionRate,
-        currencyCode: currentCurrency,
+        conversionRate: conversionRate ?? 0,
+        currencyCode: currentCurrency ?? '',
       }),
     [
       initialTokens,
@@ -350,7 +353,7 @@ function TokenSelectModal({
           .build(),
       );
       hideTokenImportModal();
-      onItemPress(item as unknown as Token);
+      onItemPress(item);
     },
     [
       chainId,
@@ -424,11 +427,11 @@ function TokenSelectModal({
   const handleSearchTextChange = useCallback((text: string) => {
     setSearchString(text);
     if (list.current) {
-      (
-        list.current as unknown as {
-          scrollToOffset: (options: { animated: boolean; y: number }) => void;
-        }
-      ).scrollToOffset({ animated: false, y: 0 });
+      list.current.scrollToOffset(
+        { animated: false, y: 0 } as unknown as Parameters<
+          RNFlatList['scrollToOffset']
+        >[0],
+      );
     }
   }, []);
 
@@ -555,10 +558,7 @@ function TokenSelectModal({
           </View>
         ) : (
           <FlatList
-            ref={(instance) => {
-              mutableList.current =
-                instance as unknown as FlatList<Token | TokenWithFiatValue>;
-            }}
+            ref={list}
             style={styles.resultsView}
             keyboardDismissMode="none"
             keyboardShouldPersistTaps="always"
@@ -576,11 +576,10 @@ function TokenSelectModal({
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  accounts: selectAccounts(state) as unknown as Record<string, Account>,
-  conversionRate: selectConversionRate(state) as unknown as number,
-  currentCurrency: selectCurrentCurrency(state) as unknown as string,
-  selectedAddress:
-    selectSelectedInternalAccountFormattedAddress(state) as unknown as string,
+  accounts: selectAccounts(state),
+  conversionRate: selectConversionRate(state),
+  currentCurrency: selectCurrentCurrency(state),
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   tokenExchangeRates:
     selectContractExchangeRates(state) as unknown as TokenExchangeRates,
   balances: selectContractBalances(state),
