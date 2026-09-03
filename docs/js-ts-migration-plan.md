@@ -1,6 +1,6 @@
 # JavaScript → TypeScript Migration Plan
 
-Status: **in progress**. Inventory snapshot taken 2026-09-02 from `main`.
+Status: **in progress**. Inventory snapshot taken 2026-09-02 from `main` (331 files).
 
 This document is the single source of truth for finishing the migration of the remaining
 `.js` / `.jsx` files under `app/` to TypeScript. It is designed to be executed by many
