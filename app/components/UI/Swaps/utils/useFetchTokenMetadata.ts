@@ -1,14 +1,25 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios, { CancelTokenSource } from 'axios';
 import { swapsUtils } from '@metamask/swaps-controller';
+import { hasProperty, Hex, isObject } from '@metamask/utils';
+import { SwapsToken } from './index';
 
-const defaultTokenMetadata = {
+interface TokenMetadataState {
+  valid: boolean | null;
+  error: boolean;
+  metadata: SwapsToken | null;
+}
+
+const defaultTokenMetadata: TokenMetadataState = {
   valid: null,
   error: false,
   metadata: null,
 };
 
-function useFetchTokenMetadata(address, chainId) {
+function useFetchTokenMetadata(
+  address: string | null | undefined,
+  chainId: Hex,
+): [boolean, TokenMetadataState] {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenMetadata, setTokenMetadata] = useState(defaultTokenMetadata);
 
@@ -17,10 +28,12 @@ function useFetchTokenMetadata(address, chainId) {
       return;
     }
 
-    let cancelTokenSource;
+    let cancelTokenSource: CancelTokenSource | undefined;
     async function fetchTokenMetadata() {
       try {
-        cancelTokenSource = axios.CancelToken.source();
+        // eslint-disable-next-line import/no-named-as-default-member
+        const source = axios.CancelToken.source();
+        cancelTokenSource = source;
         setTokenMetadata(defaultTokenMetadata);
         setIsLoading(true);
         const { data } = await axios.request({
@@ -28,12 +41,17 @@ function useFetchTokenMetadata(address, chainId) {
           params: {
             address,
           },
-          cancelToken: cancelTokenSource.token,
+          cancelToken: source.token,
         });
         setTokenMetadata({ error: false, valid: true, metadata: data });
       } catch (error) {
         // Address is not an ERC20
-        if (error?.response?.status === 422) {
+        if (
+          isObject(error) &&
+          hasProperty(error, 'response') &&
+          isObject(error.response) &&
+          error.response.status === 422
+        ) {
           setTokenMetadata({ error: false, valid: false, metadata: null });
         } else {
           setTokenMetadata({ ...defaultTokenMetadata, error: true });
