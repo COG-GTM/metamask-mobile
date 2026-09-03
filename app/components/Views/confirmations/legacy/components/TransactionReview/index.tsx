@@ -1,4 +1,3 @@
-// @ts-expect-error @metamask/ethjs-query does not provide declarations.
 import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';
 import React, { PureComponent } from 'react';

@@ -302,7 +302,9 @@ describe('TransactionReview', () => {
     jest
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
       .mockReturnValue(
-        Promise.resolve(undefined as unknown as string) as unknown as string,
+        Promise.resolve(undefined) as unknown as ReturnType<
+          typeof TransactionUtils.getTransactionReviewActionKey
+        >,
       );
     const { queryByRole } = renderWithProvider(
       <TransactionReview
