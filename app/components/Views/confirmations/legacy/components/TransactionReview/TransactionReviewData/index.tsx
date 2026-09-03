@@ -10,6 +10,10 @@ import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
 import ClipboardManager from '../../../../../../../core/ClipboardManager';
 import { showAlert } from '../../../../../../../actions/alert';
 import GlobalAlert from '../../../../../../UI/GlobalAlert';
+import {
+  selectConversionRateByChainId,
+  selectCurrentCurrency,
+} from '../../../../../../../selectors/currencyRateController';
 import { RootState } from '../../../../../../../reducers';
 import { Dispatch } from 'redux';
 import { Colors } from '../../../../../../../util/theme/models';
@@ -28,6 +32,8 @@ interface OwnProps {
 }
 
 interface StateProps {
+  conversionRate?: number | null;
+  currentCurrency?: string;
   transaction: TransactionData;
 }
 
@@ -188,6 +194,8 @@ class TransactionReviewData extends PureComponent<Props> {
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
+  conversionRate: selectConversionRateByChainId(state, state.transaction.chainId),
+  currentCurrency: selectCurrentCurrency(state),
   transaction: state.transaction,
 });
 

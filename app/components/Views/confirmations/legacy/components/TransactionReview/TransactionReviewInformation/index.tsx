@@ -182,27 +182,16 @@ export interface EIP1559GasData {
   timeEstimateId?: string;
 }
 
-interface Props {
-  conversionRate: number;
-  currentCurrency: string;
-  transaction: ReviewTransaction;
-  contractExchangeRates: Record<string, { price?: number }>;
+interface OwnProps {
   assetAmount?: string;
   fiatValue?: string;
   edit?: () => void;
-  ticker: string;
-  primaryCurrency: string;
   toggleDataView?: () => void;
   ready?: boolean;
   error?: string | boolean;
   over?: boolean;
   navigation: Navigation;
   onCancelPress?: () => void;
-  chainId: string;
-  networkClientId: string;
-  showCustomNonce?: boolean;
-  setNonce: (nonce: number) => void;
-  setProposedNonce: (nonce: number) => void;
   gasEstimateType?: string;
   EIP1559GasData?: EIP1559GasData;
   origin?: string;
@@ -213,10 +202,29 @@ interface Props {
   originWarning?: boolean;
   gasSelected?: string;
   multiLayerL1FeeTotal?: string;
-  isNativeTokenBuySupported?: boolean;
   metrics: IUseMetricsHook;
+}
+
+interface StateProps {
+  conversionRate: number;
+  currentCurrency: string;
+  transaction: ReviewTransaction;
+  contractExchangeRates: Record<string, { price?: number }>;
+  ticker: string;
+  primaryCurrency: string;
+  chainId: string;
+  networkClientId: string;
+  showCustomNonce?: boolean;
+  isNativeTokenBuySupported?: boolean;
   shouldUseSmartTransaction?: boolean;
 }
+
+interface DispatchProps {
+  setNonce: (nonce: number) => void;
+  setProposedNonce: (nonce: number) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
 
 interface State {
   toFocused: boolean;
@@ -247,11 +255,11 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(
-      { from: transaction.from },
+      transaction as unknown as Parameters<typeof getNetworkNonce>[0],
       networkClientId,
     );
-    setNonce(Number(proposedNonce));
-    setProposedNonce(Number(proposedNonce));
+    setNonce(proposedNonce);
+    setProposedNonce(proposedNonce);
   };
 
   toggleNonceModal = () =>
@@ -262,8 +270,8 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     const { proposedNonce, nonce } = this.props.transaction;
     return (
       <CustomNonceModal
-        proposedNonce={proposedNonce ?? 0}
-        nonceValue={nonce ?? 0}
+        proposedNonce={proposedNonce as number}
+        nonceValue={nonce as number}
         close={this.toggleNonceModal}
         save={setNonce}
       />
@@ -274,19 +282,23 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     _asset: SelectedAsset,
     totalGas: string | BN,
     conversionRate: number,
-    exchangeRate: number | undefined,
+    exchangeRate: unknown,
     currentCurrency: string,
     amountToken: string,
   ) => {
     let total = 0;
-    const gasFeeFiat = `${weiToFiatNumber(totalGas, conversionRate)}`;
+    const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate);
     const balanceFiat = balanceToFiatNumber(
       parseFloat(amountToken),
       conversionRate,
-      exchangeRate || 0,
+      exchangeRate as number,
     );
     const base = Math.pow(10, 5);
-    total = ((Number(gasFeeFiat) + Number(balanceFiat)) * base) / base;
+    total =
+      ((parseFloat(gasFeeFiat as unknown as string) +
+        parseFloat(balanceFiat as unknown as string)) *
+        base) /
+      base;
     return `${total} ${currentCurrency}`;
   };
 
@@ -298,7 +310,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
       Logger.error(
-        error instanceof Error ? error : new Error(String(error)),
+        error as Error,
         'Navigation: Error when navigating to buy ETH.',
       );
     }
@@ -327,9 +339,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     const totals = {
       ETH: () => {
         const totalEth = isBN(value)
-          ? (value as BN).add(
-              isBN(totalGas) ? (totalGas as BN) : hexToBN(totalGas),
-            )
+          ? (value as BN).add(totalGas as unknown as BN)
           : totalGas;
         const totalFiat = `${weiToFiat(
           totalEth as unknown as BN,
@@ -346,8 +356,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
           value,
           selectedAsset.decimals,
         );
-        const conversionRateAsset =
-          contractExchangeRates[selectedAsset.address]?.price;
+        const conversionRateAsset = contractExchangeRates[selectedAsset.address];
         const totalFiat = this.getTotalFiat(
           selectedAsset,
           totalGas,
@@ -418,9 +427,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-          gasFeeMaxHex: '0x0',
-          gasFeeMinHex: '0x0',
-        });
+        } as Parameters<typeof calculateAmountsEIP1559>[0]);
 
         [
           renderableTotalMinNative,
@@ -458,9 +465,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-          gasFeeMaxHex: '0x0',
-          gasFeeMinHex: '0x0',
-        });
+        } as Parameters<typeof calculateAmountsEIP1559>[0]);
 
         const tokenAmount = renderFromTokenMinimalUnit(
           value,
@@ -508,9 +513,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-          gasFeeMaxHex: '0x0',
-          gasFeeMinHex: '0x0',
-        });
+        } as Parameters<typeof calculateAmountsEIP1559>[0]);
 
         [
           renderableTotalMinNative,
@@ -566,7 +569,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
 
   renderTransactionReviewEIP1559 = () => {
     const {
-      EIP1559GasData = {},
+      EIP1559GasData,
       primaryCurrency,
       origin,
       originWarning,
@@ -585,20 +588,32 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
       renderableTotalMinNative,
       renderableTotalMinConversion,
       renderableTotalMaxNative,
-    ] = this.getRenderTotalsEIP1559(EIP1559GasData)();
+    ] = this.getRenderTotalsEIP1559(
+      EIP1559GasData as EIP1559GasData,
+    )();
     return (
       <TransactionReviewEIP1559
         totalNative={renderableTotalMinNative}
         totalConversion={renderableTotalMinConversion}
         totalMaxNative={renderableTotalMaxNative}
-        gasFeeNative={EIP1559GasData.renderableGasFeeMinNative}
-        gasFeeConversion={EIP1559GasData.renderableGasFeeMinConversion}
-        gasFeeMaxNative={EIP1559GasData.renderableGasFeeMaxNative}
-        gasFeeMaxConversion={EIP1559GasData.renderableGasFeeMaxConversion}
+        gasFeeNative={
+          (EIP1559GasData as EIP1559GasData).renderableGasFeeMinNative
+        }
+        gasFeeConversion={
+          (EIP1559GasData as EIP1559GasData).renderableGasFeeMinConversion
+        }
+        gasFeeMaxNative={
+          (EIP1559GasData as EIP1559GasData).renderableGasFeeMaxNative
+        }
+        gasFeeMaxConversion={
+          (EIP1559GasData as EIP1559GasData).renderableGasFeeMaxConversion
+        }
         primaryCurrency={primaryCurrency}
-        timeEstimate={EIP1559GasData.timeEstimate}
-        timeEstimateColor={EIP1559GasData.timeEstimateColor}
-        timeEstimateId={EIP1559GasData.timeEstimateId}
+        timeEstimate={(EIP1559GasData as EIP1559GasData).timeEstimate}
+        timeEstimateColor={
+          (EIP1559GasData as EIP1559GasData).timeEstimateColor
+        }
+        timeEstimateId={(EIP1559GasData as EIP1559GasData).timeEstimateId}
         onEdit={this.edit}
         origin={host}
         originWarning={originWarning}
@@ -630,8 +645,8 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     } = this.props;
 
     let totalGas =
-      gas && gasPrice
-        ? hexToBN(gas).mul(hexToBN(gasPrice))
+      isBN(gas as string | object) && isBN(gasPrice as string | object)
+        ? (gas as BN).mul(gasPrice as unknown as BN)
         : hexToBN('0x0');
     if (multiLayerL1FeeTotal) {
       totalGas = hexToBN(sumHexWEIs([BNToHex(totalGas), multiLayerL1FeeTotal]));
@@ -679,7 +694,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     } = this.props;
     const { nonce } = this.props.transaction;
     const colors =
-      (this.context as React.ContextType<typeof ThemeContext>)?.colors ||
+      (this.context as React.ContextType<typeof ThemeContext>).colors ||
       mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -759,7 +774,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
   }
 }
 
-const mapStateToProps = (state: RootState): Partial<Props> => {
+const mapStateToProps = (state: RootState): StateProps => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkClientId;
@@ -767,7 +782,7 @@ const mapStateToProps = (state: RootState): Partial<Props> => {
   return {
     chainId,
     networkClientId,
-    conversionRate: selectConversionRateByChainId(state, chainId) ?? 0,
+    conversionRate: selectConversionRateByChainId(state, chainId) as number,
     currentCurrency: selectCurrentCurrency(state),
     contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
     transaction,
@@ -782,9 +797,9 @@ const mapStateToProps = (state: RootState): Partial<Props> => {
   };
 };
 
-const mapDispatchToProps = (dispatch: Dispatch): Pick<Props, 'setNonce' | 'setProposedNonce'> => ({
-    setNonce: (nonce) => dispatch(setNonceAction(nonce)),
-    setProposedNonce: (nonce) => dispatch(setProposedNonceAction(nonce)),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  setNonce: (nonce) => dispatch(setNonceAction(nonce)),
+  setProposedNonce: (nonce) => dispatch(setProposedNonceAction(nonce)),
 });
 
 TransactionReviewInformation.contextType = ThemeContext;

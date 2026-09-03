@@ -3,6 +3,7 @@ import {
   TouchableOpacity,
   View,
   Linking,
+  StyleSheet,
   TextStyle,
   ViewStyle,
 } from 'react-native';
@@ -36,7 +37,7 @@ interface Styles {
 }
 
 const createStyles = (colors: Colors): Styles =>
-  ({
+  StyleSheet.create({
     overview: (noMargin?: boolean) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
@@ -82,7 +83,7 @@ const createStyles = (colors: Colors): Styles =>
     flex: {
       flex: 1,
     },
-  });
+  } as never) as unknown as Styles;
 
 interface SkeletonProps {
   width: number;
@@ -136,9 +137,9 @@ const TransactionReviewEIP1559 = ({
   timeEstimate,
   timeEstimateColor,
   timeEstimateId,
-  primaryCurrency = 'ETH',
-  chainId = '',
-  onEdit = () => undefined,
+  primaryCurrency,
+  chainId,
+  onEdit,
   noMargin,
   origin,
   originWarning,
@@ -173,7 +174,7 @@ const TransactionReviewEIP1559 = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) (onEdit as () => void)();
   }, [isAnimating, onEdit]);
 
   const isMainnet = isMainnetByChainId(chainId);
@@ -190,7 +191,7 @@ const TransactionReviewEIP1559 = ({
   }
 
   const valueToWatchAnimation = `${gasFeeNative}${gasFeeMaxNative}`;
-  const isTestNetwork = isTestNet(chainId);
+  const isTestNetwork = isTestNet(chainId as string);
 
   return (
     <Summary style={styles.overview(noMargin)}>

@@ -1,4 +1,4 @@
-import { TextStyle, ViewStyle } from 'react-native';
+import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
 import { Colors } from '../../../../../../../util/theme/models';
 
 interface Styles {
@@ -16,7 +16,7 @@ interface Styles {
 }
 
 const createStyles = (colors: Colors): Styles =>
-  ({
+  StyleSheet.create({
     overview: (noMargin?: boolean) => ({
       marginHorizontal: noMargin ? 0 : 24,
       paddingTop: 10,
@@ -62,6 +62,6 @@ const createStyles = (colors: Colors): Styles =>
     flex: {
       flex: 1,
     },
-  });
+  } as never) as unknown as Styles;
 
 export default createStyles;

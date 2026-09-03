@@ -156,7 +156,7 @@ export default class TransactionReviewDetailsCard extends Component<Props> {
                 </Text>
               ) : (
                 <Text style={styles.address}>
-                  {renderShortAddress(address || '')}
+                  {renderShortAddress(address as string)}
                 </Text>
               )}
               <Feather
@@ -164,7 +164,11 @@ export default class TransactionReviewDetailsCard extends Component<Props> {
                 size={16}
                 color={colors.primary.default}
                 style={styles.copyIcon}
-                onPress={() => copyContractAddress?.(address)}
+                onPress={() =>
+                  (copyContractAddress as (value: string) => void)(
+                    address as string,
+                  )
+                }
               />
             </View>
           </View>

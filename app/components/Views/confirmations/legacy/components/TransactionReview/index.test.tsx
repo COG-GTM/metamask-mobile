@@ -235,14 +235,25 @@ describe('TransactionReview', () => {
     const blockaidMetricsParamsSpy = jest
       .spyOn(BlockaidUtils, 'getBlockaidMetricsParams')
       .mockImplementation(
-        (response) => {
-          const { result_type, reason, providerRequestsCount } = response ?? {};
-          return {
-            security_alert_response: result_type,
-            security_alert_reason: reason,
-            security_alert_provider_requests_count: providerRequestsCount,
-          };
-        },
+        (({
+          result_type,
+          reason,
+          providerRequestsCount,
+        }: {
+          result_type?: string;
+          reason?: string;
+          providerRequestsCount?: unknown;
+        }) => ({
+          security_alert_response: result_type,
+          security_alert_reason: reason,
+          security_alert_provider_requests_count: providerRequestsCount,
+        })) as unknown as (
+          securityAlertResponse?: {
+            result_type?: string;
+            reason?: string;
+            providerRequestsCount?: unknown;
+          },
+        ) => Record<string, unknown>,
       );
     const { queryByText, queryByTestId, getByText } = renderWithProvider(
       <TransactionReview
@@ -290,7 +301,7 @@ describe('TransactionReview', () => {
   it('should have enabled confirm button if from account has balance', async () => {
     jest
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
-      .mockReturnValue(undefined as unknown as string);
+      .mockReturnValue(Promise.resolve(undefined) as unknown as string);
     const { queryByRole } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
@@ -298,8 +309,10 @@ describe('TransactionReview', () => {
       />,
       { state: mockState },
     );
-    const confirmButton = await queryByRole('button', { name: 'Confirm' });
-    expect(confirmButton?.props.disabled).not.toBe(true);
+    const confirmButton = (await queryByRole('button', {
+      name: 'Confirm',
+    })) as unknown as { props: { disabled?: boolean } };
+    expect(confirmButton.props.disabled).not.toBe(true);
   });
 
   it('should not have confirm button disabled if from account has no balance and also if there is no error', async () => {

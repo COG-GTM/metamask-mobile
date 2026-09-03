@@ -60,9 +60,9 @@ interface GasTransactionState extends Partial<GasTransactionProps> {
 }
 
 const TransactionReviewEIP1559Update = ({
-  primaryCurrency = 'ETH',
-  chainId = '',
-  onEdit = () => undefined,
+  primaryCurrency,
+  chainId,
+  onEdit,
   hideTotal,
   noMargin,
   originWarning,
@@ -141,7 +141,7 @@ const TransactionReviewEIP1559Update = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) (onEdit as () => void)();
   }, [isAnimating, onEdit]);
 
   const isMainnet = isMainnetByChainId(chainId);
@@ -179,7 +179,9 @@ const TransactionReviewEIP1559Update = ({
                 <MaterialCommunityIcons
                   name="information"
                   size={13}
-                  style={styles.gasInfoIcon(!!originWarning)}
+                  style={styles.gasInfoIcon(
+                    originWarning as boolean | undefined,
+                  )}
                 />
               </TouchableOpacity>
             </Text>

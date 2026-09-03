@@ -1,4 +1,5 @@
-import Eth from '@metamask/eth-query';
+// @ts-expect-error @metamask/ethjs-query does not provide declarations.
+import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';
 import React, { PureComponent } from 'react';
 import {
@@ -292,10 +293,7 @@ class TransactionReview extends PureComponent<Props, State> {
         multiLayerL1FeeTotal: result as string,
       });
     } catch (e) {
-      Logger.error(
-        e instanceof Error ? e : new Error(String(e)),
-        'fetchEstimatedMultiLayerL1Fee call failed',
-      );
+      Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
       });
@@ -323,20 +321,21 @@ class TransactionReview extends PureComponent<Props, State> {
       {
         ...transactionMetadata,
         transaction,
-        txParams: undefined,
       },
       chainId,
     );
 
     if (approveTransaction) {
-      const checksumTo = safeToChecksumAddress(to as string);
-      let contract = checksumTo ? tokenList?.[checksumTo] : undefined;
+      let contract: TokenAsset | undefined = tokenList[
+        safeToChecksumAddress(to as string) as string
+      ];
       if (!contract) {
         contract = tokens.find(
-          ({ address }) => address === checksumTo,
+          ({ address }) => address === safeToChecksumAddress(to as string),
         );
       }
-      const symbol = contract?.symbol || 'ERC20';
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      const symbol = (contract && contract.symbol) || 'ERC20';
       assetAmount = `${decodeTransferData('transfer', data as string)[1]} ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
@@ -434,7 +433,7 @@ class TransactionReview extends PureComponent<Props, State> {
       },
       default: () => [undefined, undefined, undefined],
     };
-    return (assetType && values[assetType as keyof typeof values]) || values.default;
+      return values[assetType as keyof typeof values] || values.default;
   };
 
   edit = () => {
@@ -449,7 +448,7 @@ class TransactionReview extends PureComponent<Props, State> {
 
   getStyles = () => {
     const colors =
-      (this.context as React.ContextType<typeof ThemeContext>)?.colors ||
+      (this.context as React.ContextType<typeof ThemeContext>).colors ||
       mockTheme.colors;
     return createStyles(colors);
   };
@@ -613,7 +612,13 @@ class TransactionReview extends PureComponent<Props, State> {
                       </View>
                     )}
                     {to && (
-                      <View>
+                      <View
+                        style={
+                          (styles as unknown as {
+                            accountWrapper?: ViewStyle;
+                          }).accountWrapper
+                        }
+                      >
                         <LegacyAccountFromToInfoCard
                           transactionState={transaction}
                           layout="vertical"
@@ -656,7 +661,11 @@ class TransactionReview extends PureComponent<Props, State> {
                         onCancelPress={this.props.onCancel}
                         gasEstimateType={gasEstimateType}
                         EIP1559GasData={EIP1559GasData}
-                        origin={dappSuggestedGas ? url : undefined}
+                        origin={
+                          dappSuggestedGas
+                            ? url
+                            : (null as unknown as string | undefined)
+                        }
                         gasSelected={gasSelected}
                         originWarning={dappSuggestedGasWarning}
                         onUpdatingValuesStart={onUpdatingValuesStart}
@@ -709,7 +718,7 @@ class TransactionReview extends PureComponent<Props, State> {
           showCancelButton
           showHint={false}
           bypassAndroidCameraAccessCheck={false}
-          fromAddress={from || ''}
+          fromAddress={from as string}
           cancelCallback={onCancel}
           successCallback={onConfirm}
         />
