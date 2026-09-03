@@ -23,8 +23,9 @@
     foxCode = @"debug";
   }
 
- // Uncomment this line to use the test key instead of the live one.
-  // [RNBranch useTestInstance];
+#ifdef DEBUG
+  [RNBranch useTestInstance];
+#endif
   [RNBranch initSessionWithLaunchOptions:launchOptions isReferrable:YES];
   // You can add your custom initial props in the dictionary below.
   // They will be passed down to the ViewController used by React Native.
