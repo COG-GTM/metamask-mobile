@@ -52,7 +52,7 @@ import Avatar, {
 import ButtonIcon from '../../../component-library/components/Buttons/ButtonIcon';
 import { endTrace, trace, TraceName } from '../../../util/trace';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 import type { IUseMetricsHook } from '../../../components/hooks/useMetrics/useMetrics.types';
 import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 
@@ -213,9 +213,6 @@ const createStyles = (colors: Colors) =>
  * Copmonent that provides ability to add custom tokens.
  */
 class AddCustomToken extends PureComponent<Props, State> {
-  // @ts-expect-error React's context property is typed too broadly.
-  context!: React.ContextType<typeof ThemeContext>;
-
   state: State = {
     address: '',
     symbol: '',
@@ -475,7 +472,7 @@ class AddCustomToken extends PureComponent<Props, State> {
 
   renderInfoBanner = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -517,7 +514,7 @@ class AddCustomToken extends PureComponent<Props, State> {
 
   renderWarningBanner = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const goToWebView = () => {
@@ -592,8 +589,8 @@ class AddCustomToken extends PureComponent<Props, State> {
       warningDecimals,
       warningAddress,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = (this.context as Theme).colors || mockTheme.colors;
+    const themeAppearance = (this.context as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
     const isDisabled = !symbol || !decimals || !this.props.selectedNetwork;
 

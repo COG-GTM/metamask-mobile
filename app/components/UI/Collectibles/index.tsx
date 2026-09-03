@@ -17,7 +17,7 @@ import AssetElement from '../AssetElement';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { Nft } from '@metamask/assets-controllers';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 import type { TokenI } from '../Tokens/types';
 
 interface Collectible {
@@ -100,9 +100,6 @@ const createStyles = (colors: Colors) =>
  * also known as ERC-721 Tokens
  */
 export default class Collectibles extends PureComponent<Props> {
-  // @ts-expect-error React's context property is typed too broadly.
-  context!: React.ContextType<typeof ThemeContext>;
-
   state = {
     refreshing: false,
   };
@@ -112,7 +109,7 @@ export default class Collectibles extends PureComponent<Props> {
   longPressedCollectible: Collectible | null = null;
 
   renderEmpty = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -187,7 +184,7 @@ export default class Collectibles extends PureComponent<Props> {
   keyExtractor = (item: Collectible) => `${item.address}_${item.tokenId}`;
 
   renderItem = ({ item }: { item: Collectible }) => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -229,8 +226,8 @@ export default class Collectibles extends PureComponent<Props> {
 
   render() {
     const { collectibles } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
+    const themeAppearance = (this.context as Theme).themeAppearance;
     const styles = createStyles(colors);
 
     return (

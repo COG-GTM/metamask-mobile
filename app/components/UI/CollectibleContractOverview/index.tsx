@@ -18,7 +18,7 @@ import type { Dispatch } from 'redux';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { ParamListBase } from '@react-navigation/native';
 import type { RootState } from '../../../reducers';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 import type { Nft } from '@metamask/assets-controllers';
 
 interface CollectibleContract {
@@ -111,9 +111,6 @@ const createStyles = (colors: Colors) =>
  * including the overview (name, address, symbol, logo, description, total supply)
  */
 class CollectibleContractOverview extends PureComponent<Props> {
-  // @ts-expect-error React's context property is typed too broadly.
-  context!: React.ContextType<typeof ThemeContext>;
-
   onAdd = () => {
     const { navigation, collectibleContract } = this.props;
     navigation?.push('AddAsset', {
@@ -150,7 +147,7 @@ class CollectibleContractOverview extends PureComponent<Props> {
       collectibleContract: { name, address },
       ownerOf,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const lowerAddress = address.toLowerCase();
     const transferInformation = collectiblesTransferInformation as Record<

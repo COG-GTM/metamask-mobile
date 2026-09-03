@@ -17,7 +17,7 @@ import { isMainNet } from '../../../util/networks';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectChainId } from '../../../selectors/networkController';
 import type { RootState } from '../../../reducers';
-import type { Colors } from '../../../util/theme/models';
+import type { Colors, Theme } from '../../../util/theme/models';
 import type { ParamListBase } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 
@@ -149,9 +149,6 @@ const openSeaLogo = require('../../../images/opensea-logo-flat-colored-blue.png'
  * View that contains a collectible contract information as description, total supply and address
  */
 class CollectibleContractInformation extends PureComponent<Props> {
-  // @ts-expect-error React's context property is typed too broadly.
-  context!: React.ContextType<typeof ThemeContext>;
-
   closeModal = () => {
     this.props.onClose?.(true);
   };
@@ -175,7 +172,7 @@ class CollectibleContractInformation extends PureComponent<Props> {
       collectibleContract: { name, description, totalSupply, address },
       chainId,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const is_main_net = isMainNet(chainId);
 

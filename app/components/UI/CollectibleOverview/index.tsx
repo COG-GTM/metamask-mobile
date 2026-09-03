@@ -152,7 +152,7 @@ interface InfoRow {
   key: string;
   value?: string;
   onPress?: () => void;
-  type: string;
+  type: (typeof FieldType)[keyof typeof FieldType];
 }
 
 const createStyles = (colors: Colors) =>
@@ -238,10 +238,10 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-const FieldType: Record<string, string> = {
+const FieldType = {
   Link: 'Link',
   Text: 'Text',
-};
+} as const;
 /**
  * View that displays the information of a specific ERC-721 Token
  */
