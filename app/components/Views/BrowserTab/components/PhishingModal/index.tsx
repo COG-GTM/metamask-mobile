@@ -57,9 +57,6 @@ const PhishingModal = ({
   }, [showPhishingModal, blockedUrl, trackEvent, createEventBuilder]);
 
   /**
-   * Go to eth-phishing-detect page
-   */
-  /**
    * Continue to phishing website
    */
   const continueToPhishingSite = () => {
@@ -84,9 +81,6 @@ const PhishingModal = ({
       }, 1000);
   };
 
-  /**
-   * Go to etherscam websiter
-   */
   /**
    * Go to eth-phishing-detect issue
    */

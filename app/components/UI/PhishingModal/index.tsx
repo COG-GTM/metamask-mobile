@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Platform,
   Linking,
   TouchableOpacity,
   FlexAlignType,
@@ -11,17 +10,13 @@ import {
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import URLParse from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { Theme } from '../../../util/theme/models';
-import generateTestId from '../../../../wdio/utils/generateTestId';
 import Button from '../../../component-library/components/Buttons/Button/Button';
 import {
   ButtonVariants,
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
-
-const ETHEREUM_DETECTION_TITLE: string | undefined = undefined;
 
 interface Props {
   fullUrl?: string;
@@ -124,7 +119,6 @@ export default class PhishingModal extends PureComponent<Props> {
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    new URLParse(this.props.fullUrl ?? '');
 
     return (
       <View style={styles.phishingModalWrapper}>
@@ -133,7 +127,6 @@ export default class PhishingModal extends PureComponent<Props> {
         </View>
         <Text
           style={styles.phishingModalTitle}
-          {...generateTestId(Platform, ETHEREUM_DETECTION_TITLE)}
         >
           {strings('phishing.site_might_be_harmful')}
         </Text>
@@ -168,7 +161,11 @@ export default class PhishingModal extends PureComponent<Props> {
         <Button
           variant={ButtonVariants.Primary}
           label={strings('phishing.back_to_safety')}
-          onPress={this.props.goBackToSafety as (() => void)}
+          onPress={
+            (this.props.goBackToSafety
+              ? () => this.props.goBackToSafety?.()
+              : undefined) as (() => void)
+          }
           style={styles.buttonWrapper}
           width={ButtonWidthTypes.Full}
         />

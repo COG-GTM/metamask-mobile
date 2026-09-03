@@ -8,8 +8,6 @@ import renderWithProvider, {
 } from '../../../../util/test/renderWithProvider';
 import { RootState } from '../../../../reducers';
 
-export type { RootState };
-
 const mockInitialState: DeepPartial<RootState> = {
   engine: {
     backgroundState: {

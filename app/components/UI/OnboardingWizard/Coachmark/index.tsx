@@ -4,7 +4,6 @@ import {
   StyleProp,
   StyleSheet,
   Text,
-  TextStyle,
   View,
   ViewStyle,
 } from 'react-native';
@@ -22,7 +21,6 @@ import {
   IconName,
   IconColor,
 } from '../../../../component-library/components/Icons/Icon';
-import { typography } from '@metamask/design-tokens';
 import {
   ButtonSize,
   ButtonVariants,
@@ -202,7 +200,6 @@ const createStyles = (colors: Theme['colors']) =>
       alignSelf: 'center',
     },
     stepCounter: {
-      ...(typography as unknown as { BodyMD: TextStyle }).BodyMD,
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.info.inverse,
     },
