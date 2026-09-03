@@ -37,7 +37,7 @@ describe('ErrorBoundary', () => {
   });
 
   it('render matches snapshot', () => {
-    const { toJSON } = renderWithProvider(<ErrorBoundary />, {});
+    const { toJSON } = renderWithProvider(<ErrorBoundary view="Root" />, {});
     expect(toJSON()).toMatchSnapshot();
   });
 

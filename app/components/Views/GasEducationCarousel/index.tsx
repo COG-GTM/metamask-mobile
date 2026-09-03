@@ -222,9 +222,10 @@ const GasEducationCarousel = ({
           const gasHexes = calculateEIP1559GasFeeHexes({
             gasLimitHex,
             estimatedGasLimitHex: undefined,
-            estimatedBaseFeeHex,
-            suggestedMaxFeePerGasHex,
-            suggestedMaxPriorityFeePerGasHex,
+            estimatedBaseFeeHex: estimatedBaseFeeHex as string,
+            suggestedMaxFeePerGasHex: suggestedMaxFeePerGasHex as string,
+            suggestedMaxPriorityFeePerGasHex:
+              suggestedMaxPriorityFeePerGasHex as string,
           });
           estimatedTotalGas = hexToBN(gasHexes.gasFeeMaxHex);
         } else if (gasEstimates.gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
@@ -242,11 +243,11 @@ const GasEducationCarousel = ({
         }
 
         const maxFeePerGasConversion = getTransactionFee({
-          value: estimatedTotalGas,
+          value: estimatedTotalGas as unknown as string,
           fromCurrency: ticker,
           toCurrency: currentCurrency,
           numberOfDecimals: 2,
-          conversionRate,
+          conversionRate: conversionRate ?? undefined,
         });
 
         setGasFiat(formatCurrency(maxFeePerGasConversion, currentCurrency));

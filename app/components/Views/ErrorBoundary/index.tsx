@@ -274,7 +274,7 @@ export const Fallback = (props: FallbackProps) => {
 
   const handleSubmit = () => {
     toggleModal();
-    captureSentryFeedback({ sentryId: props.sentryId, comments: feedback });
+    captureSentryFeedback({ sentryId: props.sentryId ?? '', comments: feedback });
     Alert.alert(strings('error_screen.bug_report_thanks'));
   };
   return (
@@ -539,4 +539,4 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
 export default withMetricsAwareness(
   ErrorBoundary as unknown as ComponentType<IWithMetricsAwarenessProps>,
-);
+) as ComponentType<Omit<ErrorBoundaryProps, 'metrics'>>;
