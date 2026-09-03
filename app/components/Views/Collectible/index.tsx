@@ -61,7 +61,6 @@ const createStyles = (colors: Theme['colors']) =>
  */
 class Collectible extends PureComponent<Props, State> {
   static contextType = ThemeContext;
-  context: { colors?: Theme['colors'] } = {};
 
   state: State = {
     refreshing: false,
@@ -70,7 +69,7 @@ class Collectible extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.name ?? '',
       false,
@@ -111,7 +110,7 @@ class Collectible extends PureComponent<Props, State> {
     const collectibleContract = params;
     const address = params.address;
     const { collectibles } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const filteredCollectibles = collectibles.filter((collectible) =>
       toLowerCaseEquals(collectible.address, address),
@@ -119,7 +118,7 @@ class Collectible extends PureComponent<Props, State> {
     const contractName = collectibleContract.name;
     filteredCollectibles.map((collectible) => {
       if (!collectible.name || collectible.name === '') {
-        collectible.name = contractName ?? '';
+        collectible.name = contractName ?? null;
       }
       if (!collectible.image && collectibleContract.logo) {
         collectible.image = collectibleContract.logo ?? null;

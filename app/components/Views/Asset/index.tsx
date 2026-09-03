@@ -202,7 +202,6 @@ const createStyles = (colors: Theme['colors']) =>
  */
 class Asset extends PureComponent<Props, State> {
   static contextType = ThemeContext;
-  context: { colors?: Theme['colors'] } = {};
 
   state: State = {
     refreshing: false,
@@ -236,7 +235,7 @@ class Asset extends PureComponent<Props, State> {
       rpcUrl,
       networkConfigurations,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const isNativeToken = route.params.isNative ?? route.params.isETH;
     const isMainnet = isMainnetByChainId(chainId);
     const blockExplorer = isNonEvmChainId(chainId)
@@ -398,7 +397,6 @@ class Asset extends PureComponent<Props, State> {
         );
       if (
         swapsTransactions[tx.id] &&
-        !isNonEvmChainId(chainId) &&
         (to?.toLowerCase() ===
           swapsUtils.getSwapsContractAddress(chainId as Hex) ||
           to?.toLowerCase() === this.navAddress)
@@ -435,7 +433,8 @@ class Asset extends PureComponent<Props, State> {
         const filterResult = this.filter ? this.filter(tx) : false;
         if (filterResult) {
           tx.insertImportTime =
-            tx.time <= (addedAccountTime ?? 0) &&
+            addedAccountTime !== undefined &&
+            tx.time <= addedAccountTime &&
             !accountAddedTimeInsertPointFound;
           if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
           switch (tx.status) {
@@ -509,7 +508,7 @@ class Asset extends PureComponent<Props, State> {
   }
 
   renderLoader = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -542,7 +541,7 @@ class Asset extends PureComponent<Props, State> {
       currentCurrency,
       chainId,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const asset = navigation && params;
     const isSwapsFeatureLive = this.props.swapsIsLive;

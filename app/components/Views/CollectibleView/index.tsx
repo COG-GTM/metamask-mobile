@@ -71,11 +71,10 @@ const createStyles = (colors: Theme['colors']) =>
  */
 class CollectibleView extends PureComponent<Props> {
   static contextType = ThemeContext;
-  context: { colors?: Theme['colors'] } = {};
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.contractName ?? '',
       false,
@@ -106,7 +105,7 @@ class CollectibleView extends PureComponent<Props> {
       navigation,
     } = this.props;
     const collectible = params;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const lowerAddress = collectible.address.toLowerCase();
