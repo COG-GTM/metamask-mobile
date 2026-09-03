@@ -1013,8 +1013,6 @@ const BuildQuote = () => {
             <StyledButton
               type="confirm"
               onPress={handleGetQuotePress}
-              accessibilityRole="button"
-              accessible
               disabled={amountNumber <= 0}
             >
               {strings('fiat_on_ramp_aggregator.get_quotes')}
@@ -1048,8 +1046,6 @@ const BuildQuote = () => {
           <StyledButton
             type="confirm"
             onPress={handleKeypadDone}
-            accessibilityRole="button"
-            accessible
           >
             {strings('fiat_on_ramp_aggregator.done')}
           </StyledButton>

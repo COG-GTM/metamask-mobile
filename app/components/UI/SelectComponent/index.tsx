@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ScrollView,
   StyleSheet,
@@ -14,9 +13,10 @@ import dismissKeyboard from 'react-native/Libraries/Utilities/dismissKeyboard';
 import IconCheck from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
 const ROW_HEIGHT = 35;
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     dropdown: {
       flexDirection: 'row',
@@ -90,38 +90,36 @@ const createStyles = (colors) =>
     },
   });
 
-export default class SelectComponent extends PureComponent {
-  static propTypes = {
-    /**
-     * Default value to show
-     */
-    defaultValue: PropTypes.string,
-    /**
-     * Label for the field
-     */
-    label: PropTypes.string,
-    /**
-     * Selected value
-     */
-    selectedValue: PropTypes.string,
-    /**
-     *  Available options
-     */
-    options: PropTypes.array,
-    /**
-     * Callback for value change
-     */
-    onValueChange: PropTypes.func,
-    testID: PropTypes.string,
-  };
+export interface SelectOption<T> {
+  key?: string | number;
+  value: T;
+  label?: string;
+}
 
-  state = {
+interface SelectComponentProps<T> {
+  defaultValue?: string;
+  label?: string;
+  selectedValue?: string;
+  options: SelectOption<T>[];
+  onValueChange: (value: T) => void;
+  testID?: string;
+}
+
+interface SelectComponentState {
+  pickerVisible: boolean;
+}
+
+export default class SelectComponent<T = string> extends PureComponent<
+  SelectComponentProps<T>,
+  SelectComponentState
+> {
+  state: SelectComponentState = {
     pickerVisible: false,
   };
 
-  scrollView = Device.isIos() ? React.createRef() : null;
+  scrollView = Device.isIos() ? React.createRef<ScrollView>() : null;
 
-  onValueChange = (val) => {
+  onValueChange = (val: T) => {
     this.props.onValueChange(val);
     setTimeout(() => {
       this.hidePicker();
@@ -143,8 +141,7 @@ export default class SelectComponent extends PureComponent {
       this.props.options.forEach((item, i) => {
         if (item.value === this.props.selectedValue) {
           setTimeout(() => {
-            this.scrollView &&
-              this.scrollView.current &&
+            this.scrollView?.current &&
               this.scrollView.current.scrollTo({
                 x: 0,
                 y: i * ROW_HEIGHT,
@@ -157,7 +154,7 @@ export default class SelectComponent extends PureComponent {
 
   getSelectedValue = () => {
     const { options, selectedValue, defaultValue } = this.props;
-    const el = options && options.filter((o) => o.value === selectedValue);
+    const el = options?.filter((o) => o.value === selectedValue);
     if (el.length && el[0].label) {
       return el[0].label;
     }
@@ -168,7 +165,8 @@ export default class SelectComponent extends PureComponent {
   };
 
   renderDropdownSelector = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

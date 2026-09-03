@@ -1,6 +1,6 @@
 import React from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import SelectComponent from './';
+import SelectComponent, { SelectOption } from './';
 
 jest.mock('../../../core/Engine', () => ({
   context: {
@@ -15,9 +15,10 @@ describe('SelectComponent', () => {
         options={[
           { key: 'key 1', val: 'val 1', label: 'option 1' },
           { key: 'key 2', val: 'val 2', label: 'option 2' },
-        ]}
+        ] as unknown as SelectOption<string>[]}
         selectedValue={'val 2'}
         label={'Choose an option'}
+        onValueChange={() => undefined}
       />,
     );
     expect(toJSON()).toMatchSnapshot();

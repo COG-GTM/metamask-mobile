@@ -404,9 +404,46 @@ declare module '@sentry/react-native' {
 
   // Enforce exception to be of type Error for more reliable stack traces - https://docs.sentry.io/platforms/javascript/usage/#capturing-errors
   import { ExclusiveEventHintOrCaptureContext } from '@sentry/core/build/types/utils/prepareEvent';
-  const captureException: (
+  export const captureException: (
     exception: Error,
     hint?: ExclusiveEventHintOrCaptureContext,
   ) => string;
-  export { captureException };
+}
+
+declare module '@metamask/react-native-button' {
+  // eslint-disable-next-line no-duplicate-imports
+  import { ComponentType, ReactNode } from 'react';
+  // eslint-disable-next-line no-duplicate-imports
+  import {
+    StyleProp,
+    TextStyle,
+    ViewStyle,
+    TouchableOpacityProps,
+  } from 'react-native';
+  export interface ButtonProps extends TouchableOpacityProps {
+    accessibilityLabel?: string;
+    allowFontScaling?: boolean;
+    containerStyle?: StyleProp<ViewStyle>;
+    disabledContainerStyle?: StyleProp<ViewStyle>;
+    disabled?: boolean;
+    style?: StyleProp<TextStyle>;
+    styleDisabled?: StyleProp<TextStyle>;
+    childGroupStyle?: StyleProp<ViewStyle>;
+    children?: ReactNode;
+  }
+  const Button: ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  // eslint-disable-next-line no-duplicate-imports
+  import { ReactNode } from 'react';
+  export default function coalesceNonElementChildren(
+    children: ReactNode,
+    coalesceNodes: (children: ReactNode[], index: number) => ReactNode,
+  ): ReactNode[];
+}
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  export default function dismissKeyboard(): void;
 }
