@@ -8,14 +8,27 @@ import {
 import { strings } from '../../../../../locales/i18n';
 import { getEtherscanBaseUrl } from '../../../../util/etherscan';
 import { useSelector } from 'react-redux';
+import type { NetworkConfiguration } from '@metamask/network-controller';
 import {
   selectEvmChainId,
+  ProviderConfig,
   selectProviderConfig,
 } from '../../../../selectors/networkController';
 import { selectNetworkName } from '../../../../selectors/networkInfos';
 
-function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
-  const [explorer, setExplorer] = useState({
+interface ExplorerState {
+  name: string;
+  value: string | null;
+  isValid: boolean;
+  isRPC: boolean;
+  baseUrl: string;
+}
+
+function useBlockExplorer(
+  networkConfigurations: Record<string, NetworkConfiguration>,
+  providerConfigTokenExplorer?: ProviderConfig,
+) {
+  const [explorer, setExplorer] = useState<ExplorerState>({
     name: '',
     value: null,
     isValid: false,
@@ -80,8 +93,8 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
   ]);
 
   const tx = useCallback(
-    (hash) => {
-      if (!explorer.isValid) {
+    (hash: string) => {
+      if (!explorer.isValid || explorer.value === null) {
         return '';
       }
 
@@ -93,8 +106,8 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const account = useCallback(
-    (address) => {
-      if (!explorer.isValid) {
+    (address: string) => {
+      if (!explorer.isValid || explorer.value === null) {
         return '';
       }
 
@@ -106,8 +119,8 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const token = useCallback(
-    (address) => {
-      if (!explorer.isValid) {
+    (address: string) => {
+      if (!explorer.isValid || explorer.value === null) {
         return '';
       }
 
