@@ -167,7 +167,9 @@ interface State {
 }
 
 class ReceiveRequest extends PureComponent<Props, State> {
-  declare context: Theme;
+  private get themeContext(): Theme {
+    return this.context as Theme;
+  }
 
   state: State = {
     qrModalVisible: false,
@@ -252,7 +254,7 @@ class ReceiveRequest extends PureComponent<Props, State> {
   };
 
   render() {
-    const theme = this.context || mockTheme;
+    const theme = this.themeContext || mockTheme;
     const styles = createStyles(theme);
 
     return (

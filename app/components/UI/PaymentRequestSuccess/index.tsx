@@ -212,7 +212,9 @@ interface State {
 }
 
 class PaymentRequestSuccess extends PureComponent<Props, State> {
-  declare context: Theme;
+  private get themeContext(): Theme {
+    return this.context as Theme;
+  }
 
   state: State = {
     link: '',
@@ -224,7 +226,7 @@ class PaymentRequestSuccess extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.themeContext.colors || mockTheme.colors;
     navigation.setOptions(
       getPaymentRequestSuccessOptionsTitle(navigation, colors),
     );
@@ -295,7 +297,7 @@ class PaymentRequestSuccess extends PureComponent<Props, State> {
 
   render() {
     const { link, amount, symbol, qrModalVisible } = this.state;
-    const theme = this.context || mockTheme;
+    const theme = this.themeContext || mockTheme;
     const colors = theme.colors;
     const styles = createStyles(theme);
 

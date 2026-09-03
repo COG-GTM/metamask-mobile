@@ -355,7 +355,9 @@ interface State {
  * View to generate a payment request link
  */
 class PaymentRequest extends PureComponent<Props, State> {
-  declare context: Theme;
+  private get themeContext(): Theme {
+    return this.context as Theme;
+  }
 
   amountInput = React.createRef<TextInput>();
   searchInput = React.createRef<TextInput>();
@@ -376,7 +378,7 @@ class PaymentRequest extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.themeContext.colors || mockTheme.colors;
     navigation.setOptions(
       getPaymentRequestOptionsTitle(
         strings('payment_request.title'),
@@ -485,8 +487,8 @@ class PaymentRequest extends PureComponent<Props, State> {
     const { tokens, chainId, ticker, tokenList } = this.props;
     const { inputWidth } = this.state;
     let results;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = this.themeContext.colors || mockTheme.colors;
+    const themeAppearance = this.themeContext.themeAppearance || 'light';
     const styles = createStyles(colors);
     const isTDSupportedForNetwork = isTokenDetectionSupportedForNetwork(
       chainId as `0x${string}`,
@@ -823,8 +825,8 @@ class PaymentRequest extends PureComponent<Props, State> {
       selectedAsset?.address &&
       contractExchangeRates?.[selectedAsset.address]?.price;
     let switchable = true;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = this.themeContext.colors || mockTheme.colors;
+    const themeAppearance = this.themeContext.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     if (!conversionRate) {
@@ -947,7 +949,7 @@ class PaymentRequest extends PureComponent<Props, State> {
 
   render() {
     const { mode } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = this.themeContext.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
