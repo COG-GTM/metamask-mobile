@@ -228,9 +228,7 @@ export class BackgroundBridge extends EventEmitter {
           );
           // Inform dapp about updated permissions
           const selectedAddress = this.getState().selectedAddress;
-          if (selectedAddress) {
-            this.notifySelectedAddressChanged(selectedAddress);
-          }
+          this.notifySelectedAddressChanged(selectedAddress);
         },
         (state) =>
           this.channelId ? state.subjects[this.channelId] : undefined,
@@ -245,9 +243,7 @@ export class BackgroundBridge extends EventEmitter {
       const memState = this.getState();
       const selectedAddress = memState.selectedAddress;
       this.notifyChainChanged();
-      if (selectedAddress) {
-        this.notifySelectedAddressChanged(selectedAddress);
-      }
+      this.notifySelectedAddressChanged(selectedAddress);
     }
   }
 
@@ -346,9 +342,6 @@ export class BackgroundBridge extends EventEmitter {
 
   async notifySelectedAddressChanged(selectedAddress?: string) {
     try {
-      if (!selectedAddress) {
-        throw new Error('selectedAddress is undefined');
-      }
       let approvedAccounts = [];
       DevLogger.log(
         `notifySelectedAddressChanged: ${selectedAddress} channelId=${this.channelId} wc=${this.isWalletConnect} url=${this.url}`,
@@ -359,6 +352,9 @@ export class BackgroundBridge extends EventEmitter {
         approvedAccounts = getPermittedAccounts(
           this.channelId ?? this.hostname,
         );
+      }
+      if (!selectedAddress) {
+        throw new Error('selectedAddress is undefined');
       }
       // Check if selectedAddress is approved
       const found = approvedAccounts
