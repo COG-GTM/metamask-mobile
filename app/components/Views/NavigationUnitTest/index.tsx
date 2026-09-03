@@ -3,25 +3,35 @@
  * For reference see: https://reactnavigation.org/docs/navigation-prop/#dangerouslygetstate
  */
 
-/* eslint-disable react/prop-types */
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import {
+  createStackNavigator,
+  type StackScreenProps,
+} from '@react-navigation/stack';
 import {
   NavigationContainer,
+  ParamListBase,
   useNavigationState,
 } from '@react-navigation/native';
+import { hasProperty, isObject } from '@metamask/utils';
 import { findRouteNameFromNavigatorState } from '../../../util/general';
 import { Text } from 'react-native';
 
 const Stack = createStackNavigator();
 
-const TestScreen = ({ route }) => {
+const TestScreen = ({ route }: StackScreenProps<ParamListBase>) => {
   const routes = useNavigationState((state) => state.routes);
 
   const name = findRouteNameFromNavigatorState(routes);
+  const screenName =
+    isObject(route.params) &&
+    hasProperty(route.params, 'screenName') &&
+    typeof route.params.screenName === 'string'
+      ? route.params.screenName
+      : undefined;
 
-  if (name !== route.params.screenName)
+  if (name !== screenName)
     throw new Error(
       'Error, react navigation api changed: https://reactnavigation.org/docs/navigation-prop/#dangerouslygetstate',
     );
@@ -39,7 +49,7 @@ const TestSubStack = () => (
   </Stack.Navigator>
 );
 
-const TestStack = ({ secondRoute }) => (
+const TestStack = ({ secondRoute }: { secondRoute?: string }) => (
   <Stack.Navigator initialRouteName={secondRoute || 'TestSubStack'}>
     <Stack.Screen name="TestSubStack" component={TestSubStack} />
     <Stack.Screen
@@ -50,7 +60,15 @@ const TestStack = ({ secondRoute }) => (
   </Stack.Navigator>
 );
 
-const NavigationUnitTest = ({ firstRoute, secondRoute }) => (
+interface NavigationUnitTestProps {
+  firstRoute?: string;
+  secondRoute?: string;
+}
+
+const NavigationUnitTest = ({
+  firstRoute,
+  secondRoute: _secondRoute,
+}: NavigationUnitTestProps) => (
   <NavigationContainer>
     <Stack.Navigator initialRouteName={firstRoute || 'TestStack'}>
       <Stack.Screen name="TestStack" component={TestStack} />
@@ -63,7 +81,10 @@ const NavigationUnitTest = ({ firstRoute, secondRoute }) => (
   </NavigationContainer>
 );
 
-const NavigationUnitTestFactory = ({ firstRoute, secondRoute }) => (
+const NavigationUnitTestFactory = ({
+  firstRoute,
+  secondRoute,
+}: NavigationUnitTestProps) => (
   <NavigationUnitTest firstRoute={firstRoute} secondRoute={secondRoute} />
 );
 
