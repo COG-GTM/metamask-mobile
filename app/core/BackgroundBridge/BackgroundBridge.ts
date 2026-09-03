@@ -182,7 +182,12 @@ export class BackgroundBridge extends EventEmitter {
     this.addressSent =
       Engine.context.AccountsController.getSelectedAccount().address.toLowerCase();
 
-    const portStream = new MobilePortStream(this.port, url);
+    // Port classes extend an untyped EventEmitter, so their listener API is
+    // invisible to the compiler; they satisfy the stream's Port contract at runtime.
+    const portStream = new MobilePortStream(
+      this.port as unknown as ConstructorParameters<typeof MobilePortStream>[0],
+      url,
+    );
     // setup multiplexing
     const mux = setupMultiplex(portStream);
     // connect features
