@@ -14,7 +14,6 @@ declare module 'react-native-tcp-socket';
 
 declare module 'xhr2';
 declare module 'react-native-progress/Bar' {
-  import { ComponentType } from 'react';
   interface ProgressBarProps {
     progress?: number;
     color?: string;
@@ -25,7 +24,7 @@ declare module 'react-native-progress/Bar' {
     useNativeDriver?: boolean;
     style?: import('react-native').StyleProp<import('react-native').ViewStyle>;
   }
-  const ProgressBar: ComponentType<ProgressBarProps>;
+  const ProgressBar: import('react').ComponentType<ProgressBarProps>;
   export default ProgressBar;
 }
 
