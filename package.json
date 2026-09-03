@@ -17,6 +17,7 @@
     "lint": "eslint '**/*.{js,ts,tsx}'",
     "lint:fix": "eslint '**/*.{js,ts,tsx}' --fix",
     "lint:tsc": "tsc --project ./tsconfig.json",
+    "typecheck": "yarn lint:tsc",
     "format": "prettier '**/*.{js,ts,tsx,json,feature}' --write",
     "setup": "yarn clean && node scripts/setup.mjs",
     "setup:flask": "export METAMASK_BUILD_TYPE='flask' && yarn setup",
