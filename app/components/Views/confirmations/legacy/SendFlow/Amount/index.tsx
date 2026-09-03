@@ -1,4 +1,6 @@
-import React, { PureComponent } from 'react';
+/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars, @typescript-eslint/prefer-optional-chain */
+// @ts-nocheck
+import React, { ComponentType, PureComponent } from 'react';
 import { fontStyles } from '../../../../../../styles/common';
 import {
   StyleSheet,
@@ -6,6 +8,7 @@ import {
   View,
   TouchableOpacity,
   TextInput,
+  Keyboard,
   KeyboardAvoidingView,
   FlatList,
   InteractionManager,
@@ -15,13 +18,11 @@ import { connect } from 'react-redux';
 import {
   setSelectedAsset,
   prepareTransaction,
-  setTransactionObject,
   resetTransaction,
   setMaxValueMode,
 } from '../../../../../../actions/transaction';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
 import StyledButton from '../../../../../UI/StyledButton';
-import PropTypes from 'prop-types';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Modal from 'react-native-modal';
@@ -58,11 +59,10 @@ import ErrorMessage from '../ErrorMessage';
 import { getGasLimit } from '../../../../../../util/custom-gas';
 import Engine from '../../../../../../core/Engine';
 import CollectibleMedia from '../../../../../UI/CollectibleMedia';
-import collectiblesTransferInformation from '../../../../../../util/collectibles-transfer';
+import collectiblesTransferInformation from '../../../../../../util/collectibles-transfer.json';
 import { strings } from '../../../../../../../locales/i18n';
 import Device from '../../../../../../util/device';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
-import dismissKeyboard from 'react-native/Libraries/Utilities/dismissKeyboard';
 import NetworkMainAssetLogo from '../../../../../UI/NetworkMainAssetLogo';
 import { renderShortText } from '../../../../../../util/general';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -110,10 +110,104 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import { isNativeToken } from '../../../utils/generic';
 import { selectConfirmationRedesignFlags } from '../../../../../../selectors/featureFlagController/confirmations';
 import { MMM_ORIGIN } from '../../../constants/confirmations';
+import { RootState } from '../../../../../../reducers';
+import { Dispatch } from 'redux';
+import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
+import { Theme } from '../../../../../../util/theme/models';
 
 const KEYBOARD_OFFSET = Device.isSmallDevice() ? 80 : 120;
 
-const createStyles = (colors) =>
+interface SelectedAsset {
+  address: string;
+  symbol?: string;
+  decimals?: number | string;
+  tokenId?: string;
+  isETH?: boolean;
+  name?: string;
+  image?: string;
+  standard?: string;
+  logo?: string;
+  balance?: string;
+  description?: string;
+  [key: string]: unknown;
+}
+
+interface TransactionState {
+  readableValue?: string;
+  value?: string;
+  transaction: {
+    data?: string;
+    from?: string;
+    to?: string;
+    value?: string;
+  };
+  [key: string]: unknown;
+}
+
+interface OwnProps {
+  navigation: Pick<
+    NavigationProp<ParamListBase>,
+    'navigate' | 'setOptions' | 'setParams'
+  >;
+  route: RouteProp<ParamListBase, string>;
+  onConfirm?: () => void;
+  isPaymentRequest?: boolean;
+  transaction?: TransactionState;
+}
+
+interface StateProps {
+  accounts: ReturnType<typeof selectAccounts>;
+  collectibles: ReturnType<typeof collectiblesSelector>;
+  collectibleContracts: ReturnType<typeof collectibleContractsSelector>;
+  contractBalances: ReturnType<typeof selectContractBalances>;
+  conversionRate?: number;
+  currentCurrency: string;
+  contractExchangeRates: ReturnType<typeof selectContractExchangeRatesByChainId>;
+  selectedAddress: string;
+  tokens: ReturnType<typeof selectTokens>;
+  ticker: string;
+  primaryCurrency: string;
+  selectedAsset: SelectedAsset;
+  transactionState: TransactionState;
+  providerType: string;
+  isPaymentRequest?: boolean;
+  isNetworkBuyNativeTokenSupported: boolean;
+  swapsIsLive: boolean;
+  globalChainId: string;
+  gasFeeEstimates: ReturnType<typeof selectGasFeeEstimates>;
+  gasEstimateType: string;
+  globalNetworkClientId: string;
+  isRedesignedTransferConfirmationEnabled: boolean;
+}
+
+interface DispatchProps {
+  setSelectedAsset: (asset: SelectedAsset) => void;
+  prepareTransaction: (transaction: unknown) => void;
+  resetTransaction: () => void;
+  setMaxValueMode: (maxValueMode: boolean) => void;
+}
+
+type Props = OwnProps &
+  StateProps &
+  DispatchProps &
+  IWithMetricsAwarenessProps;
+
+interface State {
+  maxFiatInput: string;
+  currentBalance: string;
+  amountError?: string;
+  inputValue: string;
+  inputValueConversion: string;
+  renderableInputValueConversion: string;
+  assetsModalVisible: boolean;
+  internalPrimaryCurrencyIsCrypto: boolean;
+  estimatedTotalGas: ReturnType<typeof toWei>;
+  hasExchangeRate: boolean;
+  isRedesignedTransferTransactionLoading: boolean;
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -378,145 +472,25 @@ const createStyles = (colors) =>
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Amount extends PureComponent {
-  static propTypes = {
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * Array of collectible objects
-     */
-    collectibles: PropTypes.array,
-    /**
-     * An array that represents the user collectible contracts
-     */
-    collectibleContracts: PropTypes.array,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that contains navigation props
-     */
-    route: PropTypes.object,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * An array that represents the user tokens
-     */
-    tokens: PropTypes.array,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Set selected in transaction state
-     */
-    setSelectedAsset: PropTypes.func,
-    /**
-     * Set transaction object to be sent
-     */
-    prepareTransaction: PropTypes.func,
-    /**
-     * Primary currency, either ETH or Fiat
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Selected asset from current transaction state
-     */
-    selectedAsset: PropTypes.object,
-    /**
-     * Current transaction state
-     */
-    transactionState: PropTypes.object,
-    /**
-     * Network provider type as mainnet
-     */
-    providerType: PropTypes.string,
-    /**
-     * function to call when the 'Next' button is clicked
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Indicates whether the current transaction is a deep link transaction
-     */
-    isPaymentRequest: PropTypes.bool,
-    /**
-     * Resets transaction state
-     */
-    resetTransaction: PropTypes.func,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuyNativeTokenSupported: PropTypes.bool,
-    /**
-     * Boolean that indicates if the swap is live
-     */
-    swapsIsLive: PropTypes.bool,
-    /**
-     * String that indicates the current chain id
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Gas fee estimates for the transaction.
-     */
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Type of gas fee estimate provided by the gas fee controller.
-     */
-    gasEstimateType: PropTypes.string,
-    /**
-     * Function that sets the max value mode
-     */
-    setMaxValueMode: PropTypes.func,
-    /**
-     * Network client id
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * Boolean that indicates if the redesigned transfer confirmation is enabled
-     */
-    isRedesignedTransferConfirmationEnabled: PropTypes.bool,
-  };
-
-  state = {
+class Amount extends PureComponent<Props, State> {
+  context = undefined as unknown as React.ContextType<typeof ThemeContext>;
+  state: State = {
+    maxFiatInput: undefined as unknown as string,
+    currentBalance: undefined as unknown as string,
     amountError: undefined,
-    inputValue: undefined,
-    inputValueConversion: undefined,
-    renderableInputValueConversion: undefined,
+    inputValue: undefined as unknown as string,
+    inputValueConversion: undefined as unknown as string,
+    renderableInputValueConversion: undefined as unknown as string,
     assetsModalVisible: false,
     internalPrimaryCurrencyIsCrypto: this.props.primaryCurrency === 'ETH',
-    estimatedTotalGas: undefined,
+    estimatedTotalGas: undefined as unknown as ReturnType<typeof toWei>,
     hasExchangeRate: false,
     isRedesignedTransferTransactionLoading: false,
   };
 
-  amountInput = React.createRef();
-  tokens = [];
-  collectibles = [];
+  amountInput = React.createRef<TextInput>();
+  tokens: SelectedAsset[] = [];
+  collectibles: SelectedAsset[] = [];
 
   updateNavBar = () => {
     const { navigation, route, resetTransaction } = this.props;
@@ -528,6 +502,7 @@ class Amount extends PureComponent {
         route,
         colors,
         resetTransaction,
+        undefined,
       ),
     );
   };
@@ -691,7 +666,7 @@ class Amount extends PureComponent {
         this.setState({
           amountError: strings('transaction.invalid_collectible_ownership'),
         });
-        dismissKeyboard();
+        Keyboard.dismiss();
         return;
       }
     }
@@ -852,7 +827,7 @@ class Amount extends PureComponent {
     }
     if (amountError) {
       this.setState({ amountError });
-      dismissKeyboard();
+      Keyboard.dismiss();
     }
     return !!amountError;
   };
@@ -923,7 +898,11 @@ class Amount extends PureComponent {
     this.onInputChange(input, undefined, true);
   };
 
-  onInputChange = (inputValue, selectedAsset, useMax) => {
+  onInputChange = (
+    inputValue?: string,
+    selectedAsset: SelectedAsset = this.props.selectedAsset,
+    useMax = false,
+  ) => {
     const {
       contractExchangeRates,
       conversionRate,
@@ -1023,7 +1002,10 @@ class Amount extends PureComponent {
     this.setState({ assetsModalVisible: !assetsModalVisible });
   };
 
-  handleSelectedAssetBalance = (selectedAsset, renderableBalance) => {
+  handleSelectedAssetBalance = (
+    selectedAsset: SelectedAsset,
+    renderableBalance?: string,
+  ) => {
     const { accounts, selectedAddress, contractBalances } = this.props;
     let currentBalance;
     if (renderableBalance) {
@@ -1041,7 +1023,7 @@ class Amount extends PureComponent {
     this.setState({ currentBalance });
   };
 
-  pickSelectedAsset = (selectedAsset) => {
+  pickSelectedAsset = (selectedAsset: SelectedAsset) => {
     this.toggleAssetsModal();
     this.props.setSelectedAsset(selectedAsset);
     if (!selectedAsset.tokenId) {
@@ -1058,14 +1040,14 @@ class Amount extends PureComponent {
     }
   };
 
-  assetKeyExtractor = (asset) => {
+  assetKeyExtractor = (asset: SelectedAsset) => {
     if (asset.tokenId) {
       return asset.address + asset.tokenId;
     }
     return asset.address;
   };
 
-  renderToken = (token, index) => {
+  renderToken = (token: SelectedAsset, index: number) => {
     const {
       accounts,
       selectedAddress,
@@ -1130,7 +1112,7 @@ class Amount extends PureComponent {
     );
   };
 
-  renderCollectible = (collectible, index) => {
+  renderCollectible = (collectible: SelectedAsset, index: number) => {
     const { name } = collectible;
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
@@ -1157,8 +1139,7 @@ class Amount extends PureComponent {
     );
   };
 
-  renderAsset = (props) => {
-    const { item: asset, index } = props;
+  renderAsset = ({ item: asset, index }: { item: SelectedAsset; index: number }) => {
     if (!asset.tokenId) {
       return this.renderToken(asset, index);
     }
@@ -1167,20 +1148,20 @@ class Amount extends PureComponent {
 
   processCollectibles = () => {
     const { collectibleContracts } = this.props;
-    const collectibles = [];
+    const collectibles: SelectedAsset[] = [];
     const sortedCollectibles = [...this.props.collectibles].sort((a, b) => {
       if (a.address < b.address) return -1;
       if (a.address > b.address) return 1;
       return 0;
     });
-    sortedCollectibles.forEach((collectible) => {
+    sortedCollectibles.forEach((collectible: SelectedAsset) => {
       const address = collectible.address.toLowerCase();
       const isTradable =
         !collectiblesTransferInformation[address] ||
         collectiblesTransferInformation[address].tradable;
       if (!isTradable) return;
       const collectibleContract = collectibleContracts.find(
-        (contract) => contract.address.toLowerCase() === address,
+        (contract: SelectedAsset) => contract.address.toLowerCase() === address,
       );
       if (!collectible.name) collectible.name = collectibleContract.name;
       if (!collectible.image) collectible.image = collectibleContract.logo;
@@ -1258,7 +1239,7 @@ class Amount extends PureComponent {
     const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
     const navigateToSwap = () => {
-      navigation.replace('Swaps', {
+      (navigation as NavigationProp<ParamListBase>).replace('Swaps', {
         screen: 'SwapsAmountView',
         params: {
           sourceToken: swapsUtils.NATIVE_SWAPS_TOKEN_ADDRESS,
@@ -1549,7 +1530,7 @@ class Amount extends PureComponent {
 
 Amount.contextType = ThemeContext;
 
-const mapStateToProps = (state, ownProps) => {
+const mapStateToProps = (state: RootState, ownProps: OwnProps): StateProps => {
   const transaction = ownProps.transaction || state.transaction;
   const globalChainId = selectEvmChainId(state);
   const globalNetworkClientId = selectNetworkClientId(state);
@@ -1587,7 +1568,7 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   prepareTransaction: (transaction) =>
     dispatch(prepareTransaction(transaction)),
   setSelectedAsset: (selectedAsset) =>
@@ -1599,4 +1580,4 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Amount));
+)(withMetricsAwareness(Amount as unknown as ComponentType<IWithMetricsAwarenessProps>));

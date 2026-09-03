@@ -1,4 +1,5 @@
 export interface AddressListProps {
+  chainId: string;
   inputSearch?: string;
   onAccountPress: (address: string) => void;
   onAccountLongPress: (address: string) => void;

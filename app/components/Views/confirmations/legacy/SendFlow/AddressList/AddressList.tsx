@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -16,8 +15,14 @@ import { selectInternalAccounts } from '../../../../../../selectors/accountsCont
 import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { RootState } from '../../../../../../reducers';
+import { AddressBookEntry } from '@metamask/address-book-controller';
+import { AddressListProps, Contact } from './AddressList.types';
 
-const LabelElement = (styles, label) => (
+const LabelElement = (
+  styles: ReturnType<typeof styleSheet>,
+  label: string,
+) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -33,23 +38,28 @@ const AddressList = ({
   onIconPress,
   onlyRenderAddressBook = false,
   reloadAddressList,
-}) => {
+}: AddressListProps) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
-  const [contactElements, setContactElements] = useState([]);
-  const [fuse, setFuse] = useState(undefined);
+  const [contactElements, setContactElements] = useState<(Contact | string)[]>(
+    [],
+  );
+  const [fuse, setFuse] = useState<Fuse<Contact>>();
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
-    (state) => state.user.ambiguousAddressEntries,
-  );
+    (state: RootState) => state.user.ambiguousAddressEntries,
+  ) as Record<string, string[]>;
 
   const networkAddressBook = useMemo(
-    () => addressBook[chainId] || {},
+    () =>
+      (addressBook as Record<string, Record<string, AddressBookEntry>>)[
+        chainId
+      ] || {},
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
+    (networkAddressBookList: Contact[]) => {
       const contacts = networkAddressBookList.map((contact) => {
         const isAmbiguousAddress =
           chainId &&
@@ -73,8 +83,8 @@ const AddressList = ({
             .catch(() => contact),
         ),
       ).then((updatedContacts) => {
-        const newContactElements = [];
-        const addressBookTree = {};
+        const newContactElements: (Contact | string)[] = [];
+        const addressBookTree: Record<string, Contact[]> = {};
 
         updatedContacts.forEach((contact) => {
           const contactNameInitial = contact?.name?.[0];
@@ -107,9 +117,9 @@ const AddressList = ({
   );
 
   useEffect(() => {
-    const networkAddressBookList = Object.keys(networkAddressBook).map(
-      (address) => networkAddressBook[address],
-    );
+    const networkAddressBookList: Contact[] = Object.keys(
+      networkAddressBook,
+    ).map((address) => networkAddressBook[address]);
     const newFuse = new Fuse(networkAddressBookList, {
       shouldSort: true,
       threshold: 0.45,
@@ -168,14 +178,14 @@ const AddressList = ({
             onIconPress={onIconPress}
             onAccountLongPress={onAccountLongPress}
             testID={SendViewSelectorsIDs.MY_ACCOUNT_ELEMENT}
-            chainId={chainId}
+            chainId={chainId as `0x${string}`}
           />
         ))}
       </View>
     );
   };
 
-  const renderElement = (addressElement) => {
+  const renderElement = (addressElement: Contact | string) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
     }
@@ -192,20 +202,20 @@ const AddressList = ({
         onAccountLongPress={onAccountLongPress}
         testID={SendViewSelectorsIDs.ADDRESS_BOOK_ACCOUNT}
         isAmbiguousAddress={addressElement.isAmbiguousAddress}
-        chainId={chainId}
+        chainId={chainId as `0x${string}`}
       />
     );
   };
 
   const renderContent = () => {
-    const sendFlowContacts = [];
+    const sendFlowContacts: (Contact | string)[] = [];
 
     contactElements.forEach((contractElement) => {
       if (
         typeof contractElement === 'object' &&
         contractElement.isSmartContract === false
       ) {
-        const nameInitial = contractElement?.name?.[0].toLowerCase();
+        const nameInitial = contractElement.name[0].toLowerCase();
         if (sendFlowContacts.includes(nameInitial)) {
           sendFlowContacts.push(contractElement);
         } else {

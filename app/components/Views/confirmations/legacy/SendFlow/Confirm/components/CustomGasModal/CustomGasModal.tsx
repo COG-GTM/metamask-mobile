@@ -9,6 +9,13 @@ import { useAppThemeFromContext } from '../../../../../../../../util/theme';
 import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
 import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
+import { RootState } from '../../../../../../../../reducers';
+import {
+  CustomGasModalProps,
+  GasObject,
+  GasOption,
+  GasTransaction,
+} from './CustomGasModal.types';
 
 const CustomGasModal = ({
   gasSelected,
@@ -23,16 +30,16 @@ const CustomGasModal = ({
   onGasChanged,
   onGasCanceled,
   updateGasState,
-}) => {
+}: CustomGasModalProps) => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  const transaction = useSelector((state) => state.transaction);
+  const transaction = useSelector((state: RootState) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
   const chainId = transaction?.chainId;
   const selectedAsset = useSelector(
-    (state) => state.transaction.selectedAsset,
+    (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
@@ -55,7 +62,7 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
+  const onChangeGas = (gasValue: string) => {
     setSelectedGas(gasValue);
     onGasChanged(selectedGas);
   };
@@ -74,10 +81,10 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: GasTransaction, gasObj: GasObject) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
-        total: gasTxn.totalHex,
+        total: gasTxn.totalHex || '',
       });
       setLegacyGasObj(gasObj);
       setError(gasTxn?.error);
@@ -87,10 +94,10 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: GasTransaction, gasObj: GasObject) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
-        total: gasTxn.totalMaxHex,
+        total: gasTxn.totalMaxHex || '',
       });
 
       setEIP1559Txn(gasTxn);
@@ -113,19 +120,21 @@ const CustomGasModal = ({
   );
 
   const legacyGasObject = {
-    legacyGasLimit: legacyGasObj?.legacyGasLimit,
-    suggestedGasPrice: legacyGasObj?.suggestedGasPrice,
+    legacyGasLimit: legacyGasObj?.legacyGasLimit || '',
+    suggestedGasPrice: legacyGasObj?.suggestedGasPrice || '',
   };
 
   const eip1559GasObject = {
     suggestedMaxFeePerGas:
       eip1559GasObj?.suggestedMaxFeePerGas ||
-      eip1559GasObj?.[selectedGas]?.suggestedMaxFeePerGas,
+      (eip1559GasObj?.[selectedGas] as GasOption | undefined)
+        ?.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
-      gasFeeEstimate[selectedGas]?.suggestedMaxPriorityFeePerGas,
+      (gasFeeEstimate as Record<string, GasOption>)[selectedGas]
+        ?.suggestedMaxPriorityFeePerGas || '',
     suggestedGasLimit:
-      eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit,
+      eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit || '',
   };
 
   return (
@@ -158,6 +167,8 @@ const CustomGasModal = ({
             onlyGas={false}
             selectedGasObject={legacyGasObject}
             error={error}
+            warning={undefined}
+            hasDappSuggestedGas={false}
             onUpdatingValuesStart={onGasAnimationStart}
             onUpdatingValuesEnd={onGasAnimationEnd}
             chainId={chainId}
@@ -174,10 +185,17 @@ const CustomGasModal = ({
             animateOnChange={animateOnChange}
             isAnimating={isAnimating}
             analyticsParams={getGasAnalyticsParams()}
-            view={'SendTo (Confirm)'}
             selectedGasObject={eip1559GasObject}
             onlyGas={onlyGas}
             error={error}
+            warning={undefined}
+            ignoreOptions={undefined}
+            updateOption={undefined}
+            extendOptions={undefined}
+            recommended={undefined}
+            warningMinimumEstimateOption=""
+            suggestedEstimateOption=""
+            dappSuggestedGas={undefined}
           />
         )}
       </KeyboardAwareScrollView>
