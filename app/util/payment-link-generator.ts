@@ -4,6 +4,11 @@ import { getDecimalChainId } from './networks';
 
 type PaymentBuildInput = BuildInput & { scheme: string };
 
+type DecimalChainId = NonNullable<BuildInput['chain_id']>;
+
+const toDecimalChainId = (chainId: string): DecimalChainId =>
+  getDecimalChainId(chainId) as DecimalChainId;
+
 /**
  * Generate a universal link / app link based on EIP-681 / EIP-831 URLs
  *
@@ -42,7 +47,7 @@ export function generateETHLink(
   chainId: string,
 ): string {
   const data: PaymentBuildInput = {
-    chain_id: getDecimalChainId(chainId),
+    chain_id: toDecimalChainId(chainId),
     function_name: undefined,
     parameters: {
       value,
@@ -70,7 +75,7 @@ export function generateERC20Link(
   chainId: string,
 ): string {
   const data: PaymentBuildInput = {
-    chain_id: getDecimalChainId(chainId),
+    chain_id: toDecimalChainId(chainId),
     function_name: 'transfer',
     parameters: {
       address: receiverAddress,
