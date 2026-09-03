@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import ManualBackupStep3 from './';
 import configureMockStore from 'redux-mock-store';
 import { shallow } from 'enzyme';
@@ -12,7 +12,9 @@ describe('ManualBackupStep3', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ManualBackupStep3 />
+        <ManualBackupStep3
+          {...({} as ComponentProps<typeof ManualBackupStep3>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
