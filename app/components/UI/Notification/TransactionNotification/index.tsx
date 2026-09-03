@@ -207,7 +207,7 @@ function TransactionNotification(props: Props) {
   const onSpeedUpPress = useCallback(() => {
     const isActionDisabled = validateTransactionActionBalance(
       tx,
-      String(SPEED_UP_RATE),
+      SPEED_UP_RATE,
       accounts,
     );
     setTransactionAction(ACTION_SPEEDUP);
@@ -224,7 +224,7 @@ function TransactionNotification(props: Props) {
   const onCancelPress = useCallback(() => {
     const isActionDisabled = validateTransactionActionBalance(
       tx,
-      String(CANCEL_RATE),
+      CANCEL_RATE,
       accounts,
     );
     setTransactionAction(ACTION_CANCEL);

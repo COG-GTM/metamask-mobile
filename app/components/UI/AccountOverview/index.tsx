@@ -88,7 +88,9 @@ interface AlertConfig {
 interface DispatchProps {
   showAlert: (config: AlertConfig) => void;
   protectWalletModalVisible: () => void;
-  newAssetTransaction: (selectedAsset: unknown) => void;
+  newAssetTransaction: (
+    selectedAsset: Parameters<typeof newAssetTransaction>[0],
+  ) => void;
 }
 
 type Props = OwnProps & StateProps & DispatchProps & IWithMetricsAwarenessProps;
@@ -483,10 +485,9 @@ const mapStateToProps = (state: RootState): StateProps => ({
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
-  newAssetTransaction: (selectedAsset: unknown) =>
-    typeof selectedAsset === 'object' && selectedAsset !== null
-      ? dispatch(newAssetTransaction(selectedAsset))
-      : undefined,
+  newAssetTransaction: (
+    selectedAsset: Parameters<typeof newAssetTransaction>[0],
+  ) => dispatch(newAssetTransaction(selectedAsset)),
 });
 
 AccountOverview.contextType = ThemeContext;
