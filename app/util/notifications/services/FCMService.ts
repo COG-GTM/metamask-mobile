@@ -75,10 +75,7 @@ async function processAndHandleNotification(
     await handler(notification);
   } catch (error) {
     // Do Nothing, cannot parse a bad notification
-    Logger.log('Unable to send push notification:', {
-      notification: payload?.data?.data,
-      error,
-    });
+    Logger.log('Unable to send push notification:', { error });
   }
 }
 
