@@ -1,6 +1,5 @@
 import React, { PureComponent } from 'react';
 import { Platform, TouchableOpacity, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
 import ElevatedView from 'react-native-elevated-view';
 import TabCountIcon from '../Tabs/TabCountIcon';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -13,13 +12,52 @@ import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
+import { Colors, Theme } from '../../../util/theme/models';
+
+interface OwnProps {
+  /**
+   * Boolean that determines if you can navigate back
+   */
+  canGoBack?: boolean;
+  /**
+   * Boolean that determines if you can navigate forward
+   */
+  canGoForward?: boolean;
+  /**
+   * Function that allows you to navigate back
+   */
+  goBack?: () => void;
+  /**
+   * Function that allows you to navigate forward
+   */
+  goForward?: () => void;
+  /**
+   * Function that triggers the tabs view
+   */
+  showTabs?: () => void;
+  /**
+   * Function that triggers the change url modal view
+   */
+  showUrlModal?: () => void;
+  /**
+   * Function that redirects to the home screen
+   */
+  goHome?: () => void;
+  /**
+   * Function that toggles the options menu
+   */
+  toggleOptions?: () => void;
+}
+
+type Props = OwnProps & IWithMetricsAwarenessProps;
 
 // NOTE: not needed anymore. The use of BottomTabBar already accomodates the home indicator height
 // TODO: test on an android device
 // const HOME_INDICATOR_HEIGHT = 0;
 // const defaultBottomBarPadding = 0;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     bottomBar: {
       backgroundColor: colors.background.default,
@@ -57,45 +95,8 @@ const createStyles = (colors) =>
  * Browser bottom bar that contains icons for navigation
  * tab management, url change and other options
  */
-class BrowserBottomBar extends PureComponent {
-  static propTypes = {
-    /**
-     * Boolean that determines if you can navigate back
-     */
-    canGoBack: PropTypes.bool,
-    /**
-     * Boolean that determines if you can navigate forward
-     */
-    canGoForward: PropTypes.bool,
-    /**
-     * Function that allows you to navigate back
-     */
-    goBack: PropTypes.func,
-    /**
-     * Function that allows you to navigate forward
-     */
-    goForward: PropTypes.func,
-    /**
-     * Function that triggers the tabs view
-     */
-    showTabs: PropTypes.func,
-    /**
-     * Function that triggers the change url modal view
-     */
-    showUrlModal: PropTypes.func,
-    /**
-     * Function that redirects to the home screen
-     */
-    goHome: PropTypes.func,
-    /**
-     * Function that toggles the options menu
-     */
-    toggleOptions: PropTypes.func,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class BrowserBottomBar extends PureComponent<Props> {
+  static contextType = ThemeContext;
 
   trackSearchEvent = () => {
     this.props.metrics.trackEvent(
@@ -109,7 +110,7 @@ class BrowserBottomBar extends PureComponent {
     );
   };
 
-  trackNavigationEvent = (navigationOption) => {
+  trackNavigationEvent = (navigationOption: string) => {
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BROWSER_NAVIGATION)
@@ -132,26 +133,27 @@ class BrowserBottomBar extends PureComponent {
       showUrlModal,
       toggleOptions,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const onSearchPress = () => {
-      showUrlModal();
+      showUrlModal?.();
       this.trackSearchEvent();
     };
 
     const onBackPress = () => {
-      goBack();
+      goBack?.();
       this.trackNavigationEvent('Go Back');
     };
 
     const onForwardPress = () => {
-      goForward();
+      goForward?.();
       this.trackNavigationEvent('Go Forward');
     };
 
     const onHomePress = () => {
-      goHome();
+      goHome?.();
       this.trackNavigationEvent('Go Home');
     };
 
@@ -216,5 +218,4 @@ class BrowserBottomBar extends PureComponent {
   }
 }
 
-BrowserBottomBar.contextType = ThemeContext;
 export default withMetricsAwareness(BrowserBottomBar);
