@@ -49,7 +49,7 @@ interface Quote {
 
 interface QuoteValues {
   ethFee: string;
-  overallValueOfQuote: number;
+  overallValueOfQuote: string | number;
   [key: string]: unknown;
 }
 
@@ -73,7 +73,7 @@ interface OwnProps {
 interface StateProps {
   conversionRate: ReturnType<typeof selectConversionRate>;
   currentCurrency: ReturnType<typeof selectCurrentCurrency>;
-  quoteValues: Record<string, QuoteValues>;
+  quoteValues: Record<string, QuoteValues> | null;
 }
 
 type Props = OwnProps & StateProps;
@@ -190,11 +190,13 @@ function QuotesModal({
   ticker,
   multiLayerL1ApprovalFeeTotal,
 }: Props) {
-  const bestOverallValue =
-    quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0;
+  const bestOverallValue = Number(
+    quoteValues?.[quotes[0].aggregator]?.overallValueOfQuote ?? 0,
+  );
   const [displayDetails, setDisplayDetails] = useState(false);
-  const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] =
-    useState<number | null>(null);
+  const [selectedDetailsQuoteIndex, setSelectedDetailsQuoteIndex] = useState<
+    number | null
+  >(null);
   const { colors, shadows } = useTheme();
   const styles = createStyles(colors, shadows);
 
@@ -295,11 +297,7 @@ function QuotesModal({
               style={styles.titleButton}
               hitSlop={{ top: 10, left: 20, right: 10, bottom: 10 }}
             >
-              <IonicIcon
-                name="arrow-back"
-                style={styles.backIcon}
-                size={20}
-              />
+              <IonicIcon name="arrow-back" style={styles.backIcon} size={20} />
               <Title>{strings('swaps.quote_details')}</Title>
             </TouchableOpacity>
           ) : (
@@ -439,7 +437,7 @@ function QuotesModal({
                     quotes.map((quote, index) => {
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
-                      const quoteValue = quoteValues[aggregator];
+                      const quoteValue = quoteValues?.[aggregator];
                       let quoteEthFee = quoteValue?.ethFee;
                       if (multiLayerL1ApprovalFeeTotal) {
                         quoteEthFee = calculateMultiLayerEthFee({
@@ -483,7 +481,9 @@ function QuotesModal({
                                   toWei(
                                     (
                                       bestOverallValue -
-                                      (quoteValue?.overallValueOfQuote ?? 0)
+                                      Number(
+                                        quoteValue?.overallValueOfQuote ?? 0,
+                                      )
                                     ).toFixed(18),
                                   ),
                                   conversionRate,

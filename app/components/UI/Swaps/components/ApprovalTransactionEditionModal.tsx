@@ -28,8 +28,8 @@ const styles = StyleSheet.create({
 });
 
 interface ApprovalTransaction {
-  data: string;
-  to?: string;
+  data?: string;
+  to?: string | null;
   from?: string;
   value?: string;
   gas?: string;
@@ -128,7 +128,7 @@ function ApprovalTransactionEditionModal({
     setApprovalTransaction(newApprovalTx);
     if (newApprovalTx) {
       const decodedApprovalAmount = decodeApproveData(
-        newApprovalTx.data,
+        newApprovalTx.data as string,
       ).encodedAmount;
       const amountDec = hexToBN(decodedApprovalAmount).toString(10);
       setApprovalTransactionAmount(
@@ -185,7 +185,8 @@ function ApprovalTransactionEditionModal({
 }
 
 const mapStateToProps = (state: RootState): StateProps => ({
-  originalApprovalTransaction: selectSwapsApprovalTransaction(state),
+  originalApprovalTransaction:
+    selectSwapsApprovalTransaction(state) ?? undefined,
 });
 
 export default connect(mapStateToProps)(ApprovalTransactionEditionModal);
