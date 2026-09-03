@@ -78,7 +78,7 @@ interface Collectible {
   imageOriginal?: string;
   lastSale?: unknown;
   logo?: string;
-  name: string | null;
+  name?: string | null;
   standard?: string | null;
   tokenId: string | number;
   tradable?: boolean;
