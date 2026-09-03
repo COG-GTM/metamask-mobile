@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { Animated, StyleProp, ViewStyle } from 'react-native';
+import { Animated, StyleProp, ViewProps, ViewStyle } from 'react-native';
 
 const TIME = 3900; // 3900/6 = 650 for each
 
@@ -119,7 +119,9 @@ const FadeAnimationView = ({
   return (
     <Animated.View // Special animatable View
       style={[style, { opacity: fadeAnim }]}
-      pointerEvents={isAnimating ? 'none' : undefined}
+      pointerEvents={
+        (isAnimating ? 'none' : null) as ViewProps['pointerEvents']
+      }
     >
       {isAnimating ? lastChildren : children}
     </Animated.View>
