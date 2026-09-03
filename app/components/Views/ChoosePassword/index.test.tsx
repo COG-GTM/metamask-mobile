@@ -22,11 +22,15 @@ const initialState = {
 };
 const store = mockStore(initialState);
 
+const ChoosePasswordScreen = ChoosePassword as unknown as React.ComponentType<{
+  route: { params: string[] };
+}>;
+
 describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ChoosePassword route={{ params: [ONBOARDING, PROTECT] }} />
+        <ChoosePasswordScreen route={{ params: [ONBOARDING, PROTECT] }} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
