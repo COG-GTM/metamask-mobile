@@ -485,7 +485,6 @@ const CollectibleContracts = ({
   const getNftDetectionAnalyticsParams = useCallback(
     (nft: Nft): NftAnalyticsParams | undefined => {
       try {
-        if (nft.chainId === undefined) return undefined;
         return {
           chain_id: getDecimalChainId(nft.chainId),
           source: 'detected',
