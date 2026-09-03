@@ -196,7 +196,7 @@ const WatchAssetRequest = ({
       <View style={styles.approveTransactionHeaderWrapper}>
         <ApproveTransactionHeader
           origin={currentPageInformation?.url}
-          url={activeTabUrl}
+          url={activeTabUrl ?? ''}
           from={suggestedAssetMeta.interactingAddress}
           asset={{
             address,

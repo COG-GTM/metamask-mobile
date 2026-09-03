@@ -200,7 +200,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedGasLimit = useCallback(
-    (value: string) => {
+    (value = '') => {
       const newGas = { ...gasTransaction, suggestedGasLimit: value };
       changeGas(newGas, null);
     },
@@ -208,7 +208,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxPriorityFee = useCallback(
-    (value: string) => {
+    (value = '') => {
       const lowerValue = new BigNumber(
         gasOptions?.[
           warningMinimumEstimateOption as 'low' | 'medium' | 'high'
@@ -263,7 +263,7 @@ const EditGasFee1559Update = ({
   );
 
   const changedMaxFeePerGas = useCallback(
-    (value: string) => {
+    (value = '') => {
       const lowerValue = new BigNumber(
         gasOptions?.[
           warningMinimumEstimateOption as 'low' | 'medium' | 'high'
@@ -504,7 +504,7 @@ const EditGasFee1559Update = ({
                       renderableMaxPriorityFeeConversion,
                     )}`
                   }
-                  error={maxPriorityFeeError}
+                  error={maxPriorityFeeError ?? undefined}
                   onChangeValue={changedMaxPriorityFee}
                 />
               </View>

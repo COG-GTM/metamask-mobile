@@ -75,6 +75,10 @@ interface TypedSignMessageParams extends Omit<MessageParams, 'data'> {
     | { type: string; name: string; value: string };
 }
 
+type SignatureAnalyticsParams = Parameters<typeof getAnalyticsParams>[0];
+const toSignatureParams = (params: TypedSignMessageParams) =>
+  params as unknown as SignatureAnalyticsParams;
+
 interface OwnProps {
   /** react-navigation object used for switching between screens */
   navigation: NavigationProp<ParamListBase>;
@@ -119,7 +123,9 @@ class TypedSign extends PureComponent<Props, State> {
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.SIGNATURE_REQUESTED,
       )
-        .addProperties(getAnalyticsParams(messageParams, 'typed_sign'))
+        .addProperties(
+          getAnalyticsParams(toSignatureParams(messageParams), 'typed_sign'),
+        )
         .build(),
     );
     addSignatureErrorListener(metamaskId, this.onSignatureError);
@@ -132,26 +138,38 @@ class TypedSign extends PureComponent<Props, State> {
     removeSignatureErrorListener(metamaskId, this.onSignatureError);
   };
 
-  onSignatureError = ({ error }: { error?: Error }) => {
+  onSignatureError = (payload: unknown) => {
+    const error = (payload as { error?: Error } | undefined)?.error;
     if (error?.message.startsWith(KEYSTONE_TX_CANCELED)) {
       this.props.metrics.trackEvent(
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.QR_HARDWARE_TRANSACTION_CANCELED,
         )
-          .addProperties(getAnalyticsParams())
+          .addProperties(
+            getAnalyticsParams(
+              toSignatureParams(this.props.messageParams),
+              'typed_sign',
+            ),
+          )
           .build(),
       );
     }
-    showWalletConnectNotification(this.props.messageParams, false, true);
+    showWalletConnectNotification(
+      toSignatureParams(this.props.messageParams),
+      false,
+      true,
+    );
   };
 
   rejectSignature = async () => {
     const { messageParams, onReject, securityAlertResponse } = this.props;
     await handleSignatureAction(
       onReject,
-      messageParams,
+      toSignatureParams(messageParams),
       typedSign[messageParams.version as keyof typeof typedSign],
-      securityAlertResponse,
+      securityAlertResponse as unknown as Parameters<
+        typeof handleSignatureAction
+      >[3],
       false,
     );
   };
@@ -167,9 +185,11 @@ class TypedSign extends PureComponent<Props, State> {
     if (!isExternalHardwareAccount(messageParams.from)) {
       await handleSignatureAction(
         onConfirm,
-        messageParams,
+        toSignatureParams(messageParams),
         typedSign[messageParams.version as keyof typeof typedSign],
-        securityAlertResponse,
+        securityAlertResponse as unknown as Parameters<
+          typeof handleSignatureAction
+        >[3],
         true,
       );
     } else {

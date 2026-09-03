@@ -142,7 +142,7 @@ interface OwnProps {
   /** Object containing current page title and url */
   currentPageInformation: PageMeta;
   /** String representing signature type */
-  type?: string;
+  type: string;
   /** String representing the associated network */
   networkType?: string;
   /** Whether it should render the expand arrow icon */
@@ -222,7 +222,7 @@ class SignatureRequest extends PureComponent<Props> {
         .addProperties(
           getAnalyticsParams(
             {
-              currentPageInformation,
+              currentPageInformation: { ...currentPageInformation },
               from: fromAddress,
             },
             type,
@@ -332,7 +332,8 @@ class SignatureRequest extends PureComponent<Props> {
       expandedHeight = styles.expandedHeight2;
     }
 
-    let confirmButtonState = ConfirmButtonState.Normal;
+    let confirmButtonState: (typeof ConfirmButtonState)[keyof typeof ConfirmButtonState] =
+      ConfirmButtonState.Normal;
     if (securityAlertResponse?.result_type === ResultType.Malicious) {
       confirmButtonState = ConfirmButtonState.Error;
     } else if (securityAlertResponse?.result_type === ResultType.Warning) {

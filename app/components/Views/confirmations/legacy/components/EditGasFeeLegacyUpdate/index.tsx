@@ -131,7 +131,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasPrice = useCallback(
-    (value: string) => {
+    (value = '') => {
       let newGas;
 
       const estimate = gasFeeEstimate as {
@@ -172,7 +172,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasLimit = useCallback(
-    (value: string) => {
+    (value = '') => {
       const newGas =
         typeof gasTransaction === 'object'
           ? { ...gasTransaction, suggestedGasLimit: value }
