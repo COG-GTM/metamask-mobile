@@ -1,10 +1,4 @@
 import RNWalletConnect from '@walletconnect/client';
-import type {
-  IClientMeta,
-  IJsonRpcRequest,
-  IWalletConnectOptions,
-  IWalletConnectSession,
-} from '@walletconnect/client/node_modules/@walletconnect/types';
 import { v1 as random } from 'uuid';
 import Engine from '../Engine';
 import Logger from '../../util/Logger';
@@ -38,7 +32,13 @@ import { store } from '../../store';
 import { selectEvmChainId } from '../../selectors/networkController';
 import ppomUtil from '../../../app/lib/ppom/ppom-util';
 import type { MutableRefObject } from 'react';
-import type { Json } from '@metamask/utils';
+import type { Hex, Json } from '@metamask/utils';
+
+type WCSession = RNWalletConnect['session'];
+type IClientMeta = NonNullable<WCSession['peerMeta']>;
+type IWalletConnectSession = WCSession;
+type IWalletConnectOptions = ConstructorParameters<typeof RNWalletConnect>[0];
+type IJsonRpcRequest = Parameters<Parameters<RNWalletConnect['on']>[1]>[1];
 
 const hub = new EventEmitter();
 let connectors: WalletConnect[] = [];
@@ -62,8 +62,7 @@ interface WalletConnectPeerMeta extends IClientMeta {
   dappScheme?: string;
 }
 
-interface StoredSession
-  extends Omit<IWalletConnectSession, 'peerMeta'> {
+interface StoredSession extends Omit<IWalletConnectSession, 'peerMeta'> {
   peerMeta: WalletConnectPeerMeta | null;
   autosign?: boolean;
   redirectUrl?: string;
@@ -82,19 +81,20 @@ type SessionData = Partial<StoredSession> & {
 
 const persistSessions = async () => {
   const sessions = connectors
-    .filter((connector) => connector?.walletConnector?.connected)
-    .map((connector): StoredSession | undefined => {
-      const walletConnector = connector.walletConnector;
-      if (!walletConnector) return undefined;
-      return {
-        ...walletConnector.session,
-        autosign: connector.autosign,
-        redirectUrl: connector.redirectUrl ?? undefined,
-        requestOriginatedFrom: connector.requestOriginatedFrom ?? undefined,
-        lastTimeConnected: new Date(),
-      } as StoredSession;
-    })
-  .filter((session): session is StoredSession => session !== undefined);
+    .filter(
+      (
+        connector,
+      ): connector is WalletConnect & {
+        walletConnector: RNWalletConnect;
+      } => !!connector?.walletConnector?.connected,
+    )
+    .map((connector) => ({
+      ...connector.walletConnector.session,
+      autosign: connector.autosign,
+      redirectUrl: connector.redirectUrl ?? undefined,
+      requestOriginatedFrom: connector.requestOriginatedFrom ?? undefined,
+      lastTimeConnected: new Date(),
+    }));
 
   await StorageWrapper.setItem(
     WALLETCONNECT_SESSIONS,
@@ -152,7 +152,7 @@ class WalletConnect {
       ...CLIENT_OPTIONS,
     } as IWalletConnectOptions);
     /**
-   * Subscribe to session requests
+     * Subscribe to session requests
      */
     this.walletConnector.on(
       'session_request',
@@ -162,137 +162,133 @@ class WalletConnect {
           throw error;
         }
 
-      await waitForKeychainUnlocked();
+        await waitForKeychainUnlocked();
 
-      try {
-        const sessionData: SessionData = {
-          ...(payload.params[0] as Partial<StoredSession>),
-          autosign: this.autosign,
-          redirectUrl: this.redirectUrl ?? undefined,
-          requestOriginatedFrom: this.requestOriginatedFrom ?? undefined,
-        };
+        try {
+          const sessionData: SessionData = {
+            ...(payload.params[0] as Partial<StoredSession>),
+            autosign: this.autosign,
+            redirectUrl: this.redirectUrl ?? undefined,
+            requestOriginatedFrom: this.requestOriginatedFrom ?? undefined,
+          };
 
-        Logger.log('WC:', sessionData);
+          Logger.log('WC:', sessionData);
 
-        await waitForInitialization();
-        await this.sessionRequest(sessionData);
+          await waitForInitialization();
+          await this.sessionRequest(sessionData);
 
-        await this.startSession(sessionData, existing);
+          await this.startSession(sessionData, existing);
 
-        this.redirect();
-      } catch (e) {
-        this.walletConnector?.rejectSession();
-        this.redirect();
-      }
+          this.redirect();
+        } catch (e) {
+          this.walletConnector?.rejectSession();
+          this.redirect();
+        }
       },
     );
 
     /**
-   * Subscribe to call requests
+     * Subscribe to call requests
      */
     this.walletConnector.on(
       'call_request',
       async (error: Error | null, payload: IJsonRpcRequest) => {
-      if (!this.walletConnector) return;
-      if (tempCallIds.includes(payload.id)) return;
-      tempCallIds.push(payload.id);
+        if (!this.walletConnector) return;
+        if (tempCallIds.includes(payload.id)) return;
+        tempCallIds.push(payload.id);
 
-      await waitForKeychainUnlocked();
+        await waitForKeychainUnlocked();
 
-      Logger.log('CALL_REQUEST', error, payload);
-      if (error) {
-        throw error;
-      }
-
-      if (payload.method) {
-        const payloadUrl = this.walletConnector.session.peerMeta?.url;
-        if (!payloadUrl) return;
-        const payloadHostname = new URLParse(payloadUrl).hostname;
-        if (payloadHostname === this.backgroundBridge?.hostname) {
-          if (METHODS_TO_REDIRECT[payload.method]) {
-            this.requestsToRedirect[payload.id] = true;
-          }
-
-          if (payload.method === 'eth_signTypedData') {
-            payload.method = 'eth_signTypedData_v3';
-          }
-
-          // We have to implement this method here since the eth_sendTransaction in Engine is not working because we can't send correct origin
-          if (payload.method === 'eth_sendTransaction') {
-            try {
-              const selectedAddress =
-                Engine.context.AccountsController.getSelectedAccount().address?.toLowerCase();
-
-              const txParams = payload.params[0] as TransactionParams;
-              const chainId = txParams.chainId;
-              const numericChainId = chainId
-                ? parseInt(chainId, 16)
-                : undefined;
-
-              checkActiveAccountAndChainId({
-                address: txParams.from,
-                chainId: numericChainId,
-                isWalletConnect: true,
-                activeAccounts: selectedAddress ? [selectedAddress] : [],
-                hostname: payloadHostname,
-              } as unknown as Parameters<typeof checkActiveAccountAndChainId>[0]);
-
-              const { NetworkController } = Engine.context;
-              const networkClientId = chainId
-                ? NetworkController.findNetworkClientIdByChainId(chainId)
-                : undefined;
-
-              const trx = await addTransaction(txParams, {
-                deviceConfirmedOn: WalletDevice.MM_MOBILE,
-                networkClientId: networkClientId as string,
-                origin: WALLET_CONNECT_ORIGIN + this.url.current,
-              });
-
-              const id = trx.transactionMeta.id;
-              const reqObject = {
-                id: payload.id,
-                jsonrpc: '2.0',
-                method: payload.method,
-                origin: this.url.current,
-                params: [
-                  {
-                    from: txParams.from,
-                    to: txParams.to,
-                    value: txParams.value,
-                    data: txParams.data,
-                  },
-                ],
-              };
-
-              ppomUtil.validateRequest(reqObject, id);
-
-              const hash = await trx.result;
-              this.approveRequest({
-                id: payload.id,
-                result: hash,
-              });
-            } catch (requestError) {
-              this.rejectRequest({
-                id: payload.id,
-                error:
-                  requestError instanceof Error
-                    ? { message: requestError.message }
-                    : { message: String(requestError) },
-              });
-            }
-            return;
-          }
-
-          this.backgroundBridge?.onMessage({
-            name: 'walletconnect-provider',
-            data: payload,
-            origin: this.hostname ?? undefined,
-          });
+        Logger.log('CALL_REQUEST', error, payload);
+        if (error) {
+          throw error;
         }
-      }
 
-      // Clean call ids
-      tempCallIds.length = 0;
+        if (payload.method) {
+          const payloadUrl = this.walletConnector.session.peerMeta?.url;
+          if (!payloadUrl) return;
+          const payloadHostname = new URLParse(payloadUrl).hostname;
+          if (payloadHostname === this.backgroundBridge?.hostname) {
+            if (METHODS_TO_REDIRECT[payload.method]) {
+              this.requestsToRedirect[payload.id] = true;
+            }
+
+            if (payload.method === 'eth_signTypedData') {
+              payload.method = 'eth_signTypedData_v3';
+            }
+
+            // We have to implement this method here since the eth_sendTransaction in Engine is not working because we can't send correct origin
+            if (payload.method === 'eth_sendTransaction') {
+              try {
+                const txParams = payload.params[0] as TransactionParams;
+                const chainId = txParams.chainId;
+                const numericChainId = chainId
+                  ? parseInt(chainId, 16)
+                  : undefined;
+
+                checkActiveAccountAndChainId({
+                  address: txParams.from,
+                  chainId: numericChainId,
+                  isWalletConnect: true,
+                  hostname: payloadHostname,
+                });
+
+                const { NetworkController } = Engine.context;
+                const networkClientId =
+                  NetworkController.findNetworkClientIdByChainId(
+                    chainId as Hex,
+                  );
+
+                const trx = await addTransaction(txParams, {
+                  deviceConfirmedOn: WalletDevice.MM_MOBILE,
+                  networkClientId,
+                  origin: this.url.current
+                    ? WALLET_CONNECT_ORIGIN + this.url.current
+                    : undefined,
+                });
+
+                const id = trx.transactionMeta.id;
+                const reqObject = {
+                  id: payload.id,
+                  jsonrpc: '2.0',
+                  method: payload.method,
+                  origin: this.url.current,
+                  params: [
+                    {
+                      from: txParams.from,
+                      to: txParams.to,
+                      value: txParams.value,
+                      data: txParams.data,
+                    },
+                  ],
+                };
+
+                ppomUtil.validateRequest(reqObject, id);
+
+                const hash = await trx.result;
+                this.approveRequest({
+                  id: payload.id,
+                  result: hash,
+                });
+              } catch (requestError) {
+                this.rejectRequest({
+                  id: payload.id,
+                  error: requestError,
+                });
+              }
+              return;
+            }
+
+            this.backgroundBridge?.onMessage({
+              name: 'walletconnect-provider',
+              data: payload,
+              origin: this.hostname ?? undefined,
+            });
+          }
+        }
+
+        // Clean call ids
+        tempCallIds.length = 0;
       },
     );
 
@@ -310,10 +306,10 @@ class WalletConnect {
     this.walletConnector.on(
       'session_update',
       (error: Error | null, payload: IJsonRpcRequest) => {
-      Logger.log('WC: Session update', payload);
-      if (error) {
-        throw error;
-      }
+        Logger.log('WC: Session update', payload);
+        if (error) {
+          throw error;
+        }
       },
     );
 
@@ -356,9 +352,7 @@ class WalletConnect {
     this.walletConnector?.approveRequest({
       id,
       result,
-    } as unknown as Parameters<
-      NonNullable<typeof this.walletConnector>['approveRequest']
-    >[0]);
+    } as unknown as Parameters<NonNullable<typeof this.walletConnector>['approveRequest']>[0]);
     this.needsRedirect(id);
   };
 
@@ -372,9 +366,7 @@ class WalletConnect {
     this.walletConnector?.rejectRequest({
       id,
       error,
-    } as unknown as Parameters<
-      NonNullable<typeof this.walletConnector>['rejectRequest']
-    >[0]);
+    } as unknown as Parameters<NonNullable<typeof this.walletConnector>['rejectRequest']>[0]);
     this.needsRedirect(id);
   };
 
@@ -391,15 +383,15 @@ class WalletConnect {
     });
   };
 
-  startSession = async (sessionData: SessionData, existing = false): Promise<void> => {
+  startSession = async (
+    sessionData: SessionData,
+    existing = false,
+  ): Promise<void> => {
     const chainId = selectEvmChainId(store.getState());
     const selectedAddress =
-      Engine.context.AccountsController.getSelectedAccount().address?.toLowerCase();
-    if (!selectedAddress) {
-      return;
-    }
+      Engine.context.AccountsController.getSelectedAccount().address.toLowerCase();
     if (!sessionData.peerMeta) {
-      return;
+      throw new Error('WalletConnect session peerMeta missing');
     }
     const approveData = {
       chainId: parseInt(chainId, 10),
@@ -414,7 +406,8 @@ class WalletConnect {
 
     this.url.current = sessionData.peerMeta.url;
     this.title.current = sessionData.peerMeta?.name;
-    this.icon.current = sessionData.peerMeta.icons?.[0] as unknown as ImageSourcePropType;
+    this.icon.current = sessionData.peerMeta
+      .icons?.[0] as unknown as ImageSourcePropType;
     this.dappScheme.current = sessionData.peerMeta.dappScheme ?? null;
 
     this.hostname = new URLParse(this.url.current).hostname;
@@ -550,15 +543,14 @@ const instance = {
     let sessions: StoredSession[] = [];
     const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
     if (sessionData) {
-        sessions = JSON.parse(sessionData) as StoredSession[];
+      sessions = JSON.parse(sessionData) as StoredSession[];
     }
     return sessions;
   },
   killSession: async (id: string) => {
     // 1) First kill the session
     const connectorToKill = connectors.find(
-      (connector) =>
-        connector?.walletConnector?.session.peerId === id,
+      (connector) => connector?.walletConnector?.session.peerId === id,
     );
     if (connectorToKill) {
       await connectorToKill.killSession();

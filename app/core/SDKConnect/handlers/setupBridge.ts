@@ -31,8 +31,6 @@ export const setupBridge = ({
     url:
       PROTOCOLS.METAMASK + '://' + originatorInfo.url || originatorInfo.title,
     isRemoteConn: true,
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sendMessage: (msg: unknown) => {
       DevLogger.log(`setupBride::sendMessage`, msg);
       handleSendMessage({
@@ -42,11 +40,7 @@ export const setupBridge = ({
         Logger.error(err, 'Connection::sendMessage failed to send');
       });
     },
-    getApprovedHosts: (_host: string) =>
-      connection.getApprovedHosts('backgroundBridge') as unknown as Record<
-        string,
-        boolean
-      >,
+    getApprovedHosts: () => connection.getApprovedHosts('backgroundBridge'),
     remoteConnHost: connection.host,
     getRpcMethodMiddleware: ({
       getProviderState,

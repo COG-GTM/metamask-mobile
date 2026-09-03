@@ -6,10 +6,7 @@ import {
   METAMASK_DOMAIN,
 } from '@metamask/selected-network-controller';
 import EthQuery from '@metamask/eth-query';
-import {
-  JsonRpcEngine,
-  JsonRpcMiddleware,
-} from '@metamask/json-rpc-engine';
+import { JsonRpcEngine, JsonRpcMiddleware } from '@metamask/json-rpc-engine';
 import type { WebView } from '@metamask/react-native-webview';
 import {
   hasProperty,
@@ -99,7 +96,7 @@ export interface BackgroundBridgeParams {
   sendMessage?: (msg: unknown) => void;
   isWalletConnect?: boolean;
   wcRequestActions?: WalletConnectRequestActions;
-  getApprovedHosts?: (host: string) => Record<string, boolean>;
+  getApprovedHosts?: (host: string) => unknown;
   remoteConnHost?: string;
   isMMSDK?: boolean;
   channelId?: string;
@@ -115,7 +112,7 @@ export class BackgroundBridge extends EventEmitter {
   isRemoteConn?: boolean;
   _webviewRef: WebView | null;
   disconnected: boolean;
-  getApprovedHosts?: (host: string) => Record<string, boolean>;
+  getApprovedHosts?: (host: string) => unknown;
   channelId?: string;
   deprecatedNetworkVersions: Record<string, string | null>;
   createMiddleware: BackgroundBridgeParams['getRpcMethodMiddleware'];
@@ -347,8 +344,11 @@ export class BackgroundBridge extends EventEmitter {
     });
   }
 
-  async notifySelectedAddressChanged(selectedAddress: string) {
+  async notifySelectedAddressChanged(selectedAddress?: string) {
     try {
+      if (!selectedAddress) {
+        throw new Error('selectedAddress is undefined');
+      }
       let approvedAccounts = [];
       DevLogger.log(
         `notifySelectedAddressChanged: ${selectedAddress} channelId=${this.channelId} wc=${this.isWalletConnect} url=${this.url}`,
@@ -440,11 +440,7 @@ export class BackgroundBridge extends EventEmitter {
     this.emit('update');
   };
 
-  onMessage = (msg: {
-    name: string;
-    data: unknown;
-    origin?: string;
-  }): void => {
+  onMessage = (msg: { name: string; data: unknown; origin?: string }): void => {
     this.port.emit('message', { name: msg.name, data: msg.data });
   };
 
@@ -484,7 +480,8 @@ export class BackgroundBridge extends EventEmitter {
    * A method for creating a provider that is safely restricted for the requesting domain.
    **/
   setupProviderEngine(): JsonRpcEngine {
-    const origin = (this.isMMSDK ? this.channelId : this.hostname) ?? this.hostname;
+    const origin =
+      (this.isMMSDK ? this.channelId : this.hostname) ?? this.hostname;
     // setup json rpc engine stack
     const engine = new JsonRpcEngine();
 
@@ -521,7 +518,7 @@ export class BackgroundBridge extends EventEmitter {
         Engine.controllerMessenger as unknown as Parameters<
           typeof createSelectedNetworkMiddleware
         >[0],
-      ) as unknown as JsonRpcMiddleware<JsonRpcParams, Json>,
+      ),
     );
     engine.push(
       createLoggerMiddleware({ origin }) as unknown as JsonRpcMiddleware<
@@ -530,27 +527,20 @@ export class BackgroundBridge extends EventEmitter {
       >,
     );
     // filter and subscription polyfills
-    engine.push(
-      filterMiddleware as unknown as JsonRpcMiddleware<JsonRpcParams, Json>,
-    );
-    engine.push(
-      subscriptionManager.middleware as unknown as JsonRpcMiddleware<
-        JsonRpcParams,
-        Json
-      >,
-    );
+    engine.push(filterMiddleware);
+    engine.push(subscriptionManager.middleware);
 
     // Handle unsupported RPC Methods
     engine.push(createUnsupportedMethodMiddleware());
 
     // Unrestricted/permissionless RPC method implementations.
     engine.push(
-      (createEip1193MethodMiddleware({
+      createEip1193MethodMiddleware({
         // Permission-related
         getAccounts: (options?: { ignoreLock?: boolean }) =>
           options === undefined
-            ? getPermittedAccounts(this.channelId ?? origin)
-            : getPermittedAccounts(this.channelId ?? origin, options),
+            ? getPermittedAccounts(origin)
+            : getPermittedAccounts(origin, options),
         getCaip25PermissionFromLegacyPermissionsForOrigin: (
           requestedPermissions: Record<string, boolean>,
         ) =>
@@ -573,13 +563,9 @@ export class BackgroundBridge extends EventEmitter {
           ),
         revokePermissionsForOrigin: (permissionKeys: string[]) => {
           try {
-            PermissionController.revokePermissions(
-              {
-                [origin]: permissionKeys,
-              } as unknown as Parameters<
-                typeof PermissionController.revokePermissions
-              >[0],
-            );
+            PermissionController.revokePermissions({
+              [origin]: permissionKeys,
+            } as unknown as Parameters<typeof PermissionController.revokePermissions>[0]);
           } catch (e) {
             // we dont want to handle errors here because
             // the revokePermissions api method should just
@@ -605,26 +591,21 @@ export class BackgroundBridge extends EventEmitter {
             );
           });
         },
-      }) as unknown as JsonRpcMiddleware<JsonRpcParams, Json>),
+      }),
     );
 
     // Legacy RPC methods that need to be implemented ahead of the permission middleware
     engine.push(
-      (createEthAccountsMethodMiddleware({
+      createEthAccountsMethodMiddleware({
         getAccounts: (options?: { ignoreLock?: boolean }) =>
           options === undefined
-            ? getPermittedAccounts(this.channelId ?? origin)
-            : getPermittedAccounts(this.channelId ?? origin, options),
-      }) as unknown as JsonRpcMiddleware<JsonRpcParams, Json>),
+            ? getPermittedAccounts(origin)
+            : getPermittedAccounts(origin, options),
+      }),
     );
 
     // Sentry tracing middleware
-    engine.push(
-      createTracingMiddleware() as unknown as JsonRpcMiddleware<
-        JsonRpcParams,
-        Json
-      >,
-    );
+    engine.push(createTracingMiddleware());
 
     ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
     // These Snaps RPC methods are disabled in WalletConnect and SDK for now
@@ -651,8 +632,8 @@ export class BackgroundBridge extends EventEmitter {
       Engine.context.PermissionController.createPermissionMiddleware({
         // FIXME: This condition exists so that both WC and SDK are compatible with the permission middleware.
         // This is not a long term solution. BackgroundBridge should be not contain hardcoded logic pertaining to WC, SDK, or browser.
-        origin: this.isMMSDK ? this.channelId ?? origin : origin,
-      }) as unknown as JsonRpcMiddleware<JsonRpcParams, Json>,
+        origin,
+      }),
     );
 
     ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)

@@ -179,8 +179,9 @@ export default {
             if (!instance) {
               return;
             }
-            const fallbackEncryptedPassword =
-              await instance.encryptPassword(password);
+            const fallbackEncryptedPassword = await instance.encryptPassword(
+              password,
+            );
             await Keychain.setGenericPassword(
               'metamask-user',
               fallbackEncryptedPassword,

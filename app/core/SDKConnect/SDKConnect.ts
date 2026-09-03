@@ -248,10 +248,7 @@ export class SDKConnect {
     }
     DevLogger.log(`SDKConnect::refreshChannel channelId=${channelId}`);
     // Force enitting updated accounts
-    const selectedAddress = session.backgroundBridge?.getState().selectedAddress;
-    if (selectedAddress) {
-      session.backgroundBridge?.notifySelectedAddressChanged(selectedAddress);
-    }
+    session.backgroundBridge?.notifySelectedAddressChanged();
   }
 
   /**

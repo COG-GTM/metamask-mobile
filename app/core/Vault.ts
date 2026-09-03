@@ -5,12 +5,8 @@ import {
   KeyringControllerState,
   KeyringTypes,
 } from '@metamask/keyring-controller';
-import {
-  LedgerKeyringSerializedState,
-  type LedgerKeyring,
-} from '@metamask/eth-ledger-bridge-keyring';
+import { LedgerKeyringSerializedState } from '@metamask/eth-ledger-bridge-keyring';
 import { withLedgerKeyring } from './Ledger/Ledger';
-import { hasProperty, isObject } from '@metamask/utils';
 
 /**
  * Restore the given serialized QR keyring.
@@ -41,11 +37,7 @@ export const restoreLedgerKeyring = async (
   serializedLedgerKeyring: unknown,
 ): Promise<void> => {
   try {
-    await withLedgerKeyring(async (ledgerContext) => {
-      const keyring =
-        isObject(ledgerContext) && hasProperty(ledgerContext, 'keyring')
-          ? (ledgerContext.keyring as LedgerKeyring)
-          : (ledgerContext as unknown as LedgerKeyring);
+    await withLedgerKeyring(async ({ keyring }) => {
       await keyring.deserialize(
         serializedLedgerKeyring as LedgerKeyringSerializedState,
       );
@@ -169,7 +161,8 @@ export const recreateVaultWithNewPassword = async (
 export const recreateVaultWithSamePassword = async (
   password = '',
   selectedAddress: string,
-): Promise<void> => recreateVaultWithNewPassword(password, password, selectedAddress);
+): Promise<void> =>
+  recreateVaultWithNewPassword(password, password, selectedAddress);
 /* eslint-enable @typescript-eslint/default-param-last */
 
 /**

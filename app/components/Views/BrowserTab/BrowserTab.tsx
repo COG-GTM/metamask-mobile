@@ -17,7 +17,9 @@ import { isEqual } from 'lodash';
 import { WebView, WebViewMessageEvent } from '@metamask/react-native-webview';
 import BrowserBottomBar from '../../UI/BrowserBottomBar';
 import { connect, useSelector } from 'react-redux';
-import BackgroundBridge from '../../../core/BackgroundBridge/BackgroundBridge';
+import BackgroundBridge, {
+  BackgroundBridgeParams,
+} from '../../../core/BackgroundBridge/BackgroundBridge';
 import Engine from '../../../core/Engine';
 import WebviewProgressBar from '../../UI/WebviewProgressBar';
 import Logger from '../../../util/Logger';
@@ -902,14 +904,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         getRpcMethodMiddleware: ({
           hostname,
           getProviderState,
-          }: {
-            hostname: string;
-            getProviderState: (origin?: string) => Promise<{
-              chainId: `0x${string}`;
-              networkVersion: string;
-              isUnlocked: boolean;
-            }>;
-          }) =>
+        }: Parameters<BackgroundBridgeParams['getRpcMethodMiddleware']>[0]) =>
           getRpcMethodMiddleware({
             hostname,
             getProviderState,

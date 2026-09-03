@@ -65,7 +65,7 @@ describe('Vault', () => {
       };
       mockWithLedgerKeyring.mockImplementation(
         // @ts-expect-error The Ledger keyring is not compatible with our keyring type yet
-        (operation) => operation(mockLedgerKeyring),
+        (operation) => operation({ keyring: mockLedgerKeyring }),
       );
       const mockSerializedLedgerKeyring = 'serialized-keyring';
 
@@ -83,7 +83,7 @@ describe('Vault', () => {
       };
       mockWithLedgerKeyring.mockImplementation(
         // @ts-expect-error The Ledger keyring is not compatible with our keyring type yet
-        (operation) => operation(mockLedgerKeyring),
+        (operation) => operation({ keyring: mockLedgerKeyring }),
       );
       const mockSerializedLedgerKeyring = 'serialized-keyring';
 

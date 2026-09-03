@@ -216,13 +216,7 @@ class NotificationManager {
 
     Engine.controllerMessenger.tryUnsubscribe(
       'TransactionController:transactionFailed',
-      this._transactionFailedListener as unknown as (
-        payload: {
-          transactionMeta: TransactionMeta;
-          actionId?: string;
-          error: string;
-        },
-      ) => void,
+      this._transactionFailedListener,
     );
 
     Engine.controllerMessenger.tryUnsubscribe(
@@ -291,7 +285,9 @@ class NotificationManager {
         });
         // Clean up
         this._removeListeners();
-        delete this._transactionsWatchTable[String(transactionMeta.txParams.nonce)];
+        delete this._transactionsWatchTable[
+          String(transactionMeta.txParams.nonce)
+        ];
       }, 2000);
   };
 
@@ -301,7 +297,8 @@ class NotificationManager {
   ) => {
     // Once it's confirmed we hide the pending tx notification
     this._removeNotificationById(transactionMeta.id);
-    this._transactionsWatchTable[String(transactionMeta.txParams.nonce)].length &&
+    this._transactionsWatchTable[String(transactionMeta.txParams.nonce)]
+      .length &&
       setTimeout(() => {
         // Then we show the success notification
         this._showNotification({
@@ -309,7 +306,9 @@ class NotificationManager {
           autoHide: true,
           transaction: {
             id: transactionMeta.id,
-            nonce: `${hexToBN(String(transactionMeta.txParams.nonce)).toString()}`,
+            nonce: `${hexToBN(
+              String(transactionMeta.txParams.nonce),
+            ).toString()}`,
           },
           duration: 5000,
         });
@@ -349,7 +348,9 @@ class NotificationManager {
         ReviewManager.promptReview();
 
         this._removeListeners();
-        delete this._transactionsWatchTable[String(transactionMeta.txParams.nonce)];
+        delete this._transactionsWatchTable[
+          String(transactionMeta.txParams.nonce)
+        ];
       }, 2000);
   };
 
@@ -361,7 +362,9 @@ class NotificationManager {
         type: 'speedup',
         transaction: {
           id: transactionMeta.id,
-          nonce: `${hexToBN(String(transactionMeta.txParams.nonce)).toString()}`,
+          nonce: `${hexToBN(
+            String(transactionMeta.txParams.nonce),
+          ).toString()}`,
         },
       });
     }, 2000);
@@ -407,7 +410,8 @@ class NotificationManager {
    * Returns the id of the transaction that should
    * be displayed and removes it from memory
    */
-  getTransactionToView = (): string | undefined => this._transactionToView.pop();
+  getTransactionToView = (): string | undefined =>
+    this._transactionToView.pop();
 
   /**
    * Sets the id of the transaction that should
