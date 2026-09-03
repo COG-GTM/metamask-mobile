@@ -247,9 +247,10 @@ const EditGasFee1559 = ({
     'gas_limit' | 'max_priority_fee' | 'max_fee' | 'new_gas_fee' | false | null
   >(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(!selected);
-  const [maxPriorityFeeError, setMaxPriorityFeeError] =
-    useState<string | undefined>();
-  const [maxFeeError, setMaxFeeError] = useState<string | undefined>();
+  const [maxPriorityFeeError, setMaxPriorityFeeError] = useState<string | null>(
+    null,
+  );
+  const [maxFeeError, setMaxFeeError] = useState<string | null>(null);
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [selectedOption, setSelectedOption] = useState<string | undefined>(
     selected,
@@ -560,7 +561,7 @@ const EditGasFee1559 = ({
                     maxPriorityFeePerGasPrimary &&
                     `≈ ${maxPriorityFeePerGasPrimary}`
                   }
-                  error={maxPriorityFeeError}
+                  error={maxPriorityFeeError as string | undefined}
                   onChangeValue={changedMaxPriorityFee}
                 />
               </View>
@@ -606,7 +607,7 @@ const EditGasFee1559 = ({
                   unit={'GWEI'}
                   min={GAS_MIN}
                   increment={GAS_INCREMENT}
-                  error={maxFeeError}
+                  error={maxFeeError as string | undefined}
                   onChangeValue={changedMaxFeePerGas}
                   inputInsideLabel={
                     maxFeePerGasPrimary && `≈ ${maxFeePerGasPrimary}`
