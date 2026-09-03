@@ -2,9 +2,7 @@ import React, { useEffect } from 'react';
 import PhishingModalUI from '../../../../UI/PhishingModal';
 import URLParse from 'url-parse';
 import {
-  MM_PHISH_DETECT_URL,
   PHISHFORT_BLOCKLIST_ISSUE_URL,
-  MM_ETHERSCAN_URL,
   MM_BLOCKLIST_ISSUE_URL,
 } from '../../../../../constants/urls';
 import { HOMEPAGE_URL } from '../../constants';
@@ -61,11 +59,6 @@ const PhishingModal = ({
   /**
    * Go to eth-phishing-detect page
    */
-  const goToETHPhishingDetector = () => {
-    setShowPhishingModal(false);
-    goToUrl(MM_PHISH_DETECT_URL);
-  };
-
   /**
    * Continue to phishing website
    */
@@ -94,11 +87,6 @@ const PhishingModal = ({
   /**
    * Go to etherscam websiter
    */
-  const goToEtherscam = () => {
-    setShowPhishingModal(false);
-    goToUrl(MM_ETHERSCAN_URL);
-  };
-
   /**
    * Go to eth-phishing-detect issue
    */
@@ -137,9 +125,7 @@ const PhishingModal = ({
     >
       <PhishingModalUI
         fullUrl={blockedUrl}
-        goToETHPhishingDetector={goToETHPhishingDetector}
         continueToPhishingSite={continueToPhishingSite}
-        goToEtherscam={goToEtherscam}
         goToFilePhishingIssue={goToFilePhishingIssue}
         goBackToSafety={goBackToSafety}
       />

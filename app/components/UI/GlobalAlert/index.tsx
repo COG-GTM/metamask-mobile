@@ -1,30 +1,40 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, ViewStyle } from 'react-native';
 import { dismissAlert } from '../../../actions/alert';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
+import { RootState } from '../../../reducers';
 import { fontStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ElevatedView from 'react-native-elevated-view';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
-  StyleSheet.create({
+interface AlertData {
+  width?: number;
+  msg?: string;
+}
+
+interface StateProps {
+  isVisible: boolean;
+  autodismiss?: number | null;
+  content?: string | null;
+  data?: AlertData | null;
+}
+
+interface DispatchProps {
+  dismissAlert: () => void;
+}
+
+type Props = StateProps & DispatchProps;
+
+const createStyles = (colors: Theme['colors']) => ({
+  ...StyleSheet.create({
     modal: {
       margin: 0,
       width: '100%',
     },
-    copyAlert: (width) => ({
-      width: width || 180,
-      backgroundColor: colors.overlay.alternative,
-      padding: 20,
-      paddingTop: 30,
-      alignSelf: 'center',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: 8,
-    }),
     copyAlertIcon: {
       marginBottom: 20,
     },
@@ -34,41 +44,29 @@ const createStyles = (colors) =>
       fontSize: 16,
       ...fontStyles.normal,
     },
-  });
+  }),
+  copyAlert: (width?: number): ViewStyle => ({
+    width: width || 180,
+    backgroundColor: colors.overlay.alternative,
+    padding: 20,
+    paddingTop: 30,
+    alignSelf: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  }),
+});
 
 /**
  * Wrapper component for a global alert
  * connected to redux
  */
-class GlobalAlert extends PureComponent {
-  static propTypes = {
-    /**
-     * Boolean that determines if the modal should be shown
-     */
-    isVisible: PropTypes.bool.isRequired,
-    /**
-     * Number that determines when it should be autodismissed (in miliseconds)
-     */
-    autodismiss: PropTypes.number,
-    /**
-     * Children component(s)
-     */
-    content: PropTypes.any,
-    /**
-     * Object with data required to render the content
-     */
-    data: PropTypes.object,
-    /**
-     * function that dismisses de modal
-     */
-    dismissAlert: PropTypes.func,
-  };
-
+class GlobalAlert extends PureComponent<Props> {
   onClose = () => {
     this.props.dismissAlert();
   };
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: Props) {
     if (
       this.props.autodismiss &&
       !isNaN(this.props.autodismiss) &&
@@ -81,7 +79,7 @@ class GlobalAlert extends PureComponent {
     }
   }
 
-  getComponent(content) {
+  getComponent(content: Props['content']) {
     switch (content) {
       case 'clipboard-alert':
         return this.renderClipboardAlert();
@@ -91,17 +89,19 @@ class GlobalAlert extends PureComponent {
   }
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   renderClipboardAlert = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = this.getStyles(colors);
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
+    const styles = this.getStyles();
 
     return (
       <ElevatedView
-        style={styles.copyAlert(this.props.data && this.props.data.width)}
+        style={styles.copyAlert(this.props.data?.width)}
         elevation={5}
       >
         <View style={styles.copyAlertIcon}>
@@ -112,7 +112,7 @@ class GlobalAlert extends PureComponent {
           />
         </View>
         <Text style={styles.copyAlertText}>
-          {this.props.data && this.props.data.msg}
+          {this.props.data?.msg}
         </Text>
       </ElevatedView>
     );
@@ -120,8 +120,7 @@ class GlobalAlert extends PureComponent {
 
   render = () => {
     const { content, isVisible } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = this.getStyles(colors);
+    const styles = this.getStyles();
 
     return (
       <Modal
@@ -140,14 +139,14 @@ class GlobalAlert extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   isVisible: state.alert.isVisible,
   autodismiss: state.alert.autodismiss,
   content: state.alert.content,
   data: state.alert.data,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   dismissAlert: () => dispatch(dismissAlert()),
 });
 

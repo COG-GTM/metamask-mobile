@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
+import { NavigationProp } from '@react-navigation/native';
 import ActionModal from '../ActionModal';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
@@ -13,10 +13,30 @@ import { MetaMetricsEvents } from '../../../core/Analytics';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { ProtectWalletModalSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ProtectWalletModal.selectors';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { RootState } from '../../../reducers';
+import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
+import { Dispatch } from 'redux';
+import { Theme } from '../../../util/theme/models';
 
-const protectWalletImage = require('../../../images/explain-backup-seedphrase.png'); // eslint-disable-line
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-commonjs
+const protectWalletImage = require('../../../images/explain-backup-seedphrase.png');
 
-const createStyles = (colors) =>
+interface OwnProps {
+  navigation: NavigationProp<Record<string, object | undefined>>;
+}
+
+interface StateProps {
+  protectWalletModalVisible: boolean;
+  passwordSet: boolean;
+}
+
+interface DispatchProps {
+  protectWalletModalNotVisible: () => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps & IWithMetricsAwarenessProps;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       marginTop: 24,
@@ -74,27 +94,7 @@ const createStyles = (colors) =>
 /**
  * View that renders an action modal
  */
-class ProtectYourWalletModal extends PureComponent {
-  static propTypes = {
-    navigation: PropTypes.object,
-    /**
-     * Hide this modal
-     */
-    protectWalletModalNotVisible: PropTypes.func,
-    /**
-     * Whether this modal is visible
-     */
-    protectWalletModalVisible: PropTypes.bool,
-    /**
-     * Boolean that determines if the user has set a password before
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
-
+class ProtectYourWalletModal extends PureComponent<Props> {
   goToBackupFlow = () => {
     this.props.protectWalletModalNotVisible();
     this.props.navigation.navigate(
@@ -137,7 +137,8 @@ class ProtectYourWalletModal extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -191,14 +192,13 @@ class ProtectYourWalletModal extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   protectWalletModalVisible: state.user.protectWalletModalVisible,
   passwordSet: state.user.passwordSet,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  protectWalletModalNotVisible: (enable) =>
-    dispatch(protectWalletModalNotVisible()),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  protectWalletModalNotVisible: () => dispatch(protectWalletModalNotVisible()),
 });
 
 ProtectYourWalletModal.contextType = ThemeContext;
@@ -206,4 +206,6 @@ ProtectYourWalletModal.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(ProtectYourWalletModal));
+)(withMetricsAwareness(
+  ProtectYourWalletModal as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+));
