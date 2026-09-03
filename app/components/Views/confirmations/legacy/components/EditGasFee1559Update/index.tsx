@@ -42,12 +42,6 @@ import {
   RenderInputProps,
 } from './types';
 
-const HorizontalSelectorWithoutRequiredDisabled = HorizontalSelector as React.ComponentType<
-  Omit<React.ComponentProps<typeof HorizontalSelector>, 'disabled'> & {
-    disabled?: boolean;
-  }
->;
-
 const EditGasFee1559Update = ({
   selectedGasValue,
   gasOptions,
@@ -448,7 +442,7 @@ const EditGasFee1559Update = ({
         animateOnChange={animateOnChange}
       >
         <View>
-          <HorizontalSelectorWithoutRequiredDisabled
+          <HorizontalSelector
             selected={selectedOption as string | undefined}
             onPress={selectOption}
             options={renderOptions}

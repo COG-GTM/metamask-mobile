@@ -150,9 +150,7 @@ class TypedSign extends PureComponent<Props, State> {
     await handleSignatureAction(
       onReject,
       messageParams,
-      messageParams.version
-        ? typedSign[messageParams.version as keyof typeof typedSign]
-        : undefined,
+      typedSign[messageParams.version as keyof typeof typedSign],
       securityAlertResponse,
       false,
     );
@@ -170,9 +168,7 @@ class TypedSign extends PureComponent<Props, State> {
       await handleSignatureAction(
         onConfirm,
         messageParams,
-        messageParams.version
-          ? typedSign[messageParams.version as keyof typeof typedSign]
-          : undefined,
+        typedSign[messageParams.version as keyof typeof typedSign],
         securityAlertResponse,
         true,
       );
@@ -301,11 +297,7 @@ class TypedSign extends PureComponent<Props, State> {
         domain={domain}
         currentPageInformation={currentPageInformation}
         truncateMessage={truncateMessage}
-        type={
-          messageParams.version
-            ? typedSign[messageParams.version as keyof typeof typedSign]
-            : undefined
-        }
+        type={typedSign[messageParams.version as keyof typeof typedSign]}
         fromAddress={from}
         testID={SigningBottomSheetSelectorsIDs.TYPED_REQUEST}
         networkType={networkType}
