@@ -26,7 +26,9 @@ describe('AddBookmark', () => {
       <ThemeContext.Provider value={mockTheme as unknown as Theme}>
         <AddBookmark
           navigation={
-            { setOptions: () => null } as unknown as StackNavigationProp<ParamListBase>
+            {
+              setOptions: () => null,
+            } as unknown as StackNavigationProp<ParamListBase>
           }
           route={
             { params: {} } as unknown as RouteProp<

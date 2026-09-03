@@ -170,9 +170,7 @@ export default class WalletConnectSessions extends PureComponent<
     return null;
   };
 
-  onLongPress = (
-    session: WalletConnectV1Session | SessionTypes.Struct,
-  ) => {
+  onLongPress = (session: WalletConnectV1Session | SessionTypes.Struct) => {
     this.sessionToRemove = session;
     this.actionSheet?.show();
   };
@@ -194,9 +192,7 @@ export default class WalletConnectSessions extends PureComponent<
 
     try {
       if (!this.isV1Session(session) && isWC2Enabled) {
-        await (
-          await WC2Manager.getInstance()
-        )?.removeSession(session);
+        await (await WC2Manager.getInstance())?.removeSession(session);
       } else if (this.isV1Session(session)) {
         await WalletConnect.killSession(session.peerId);
       }
@@ -255,9 +251,7 @@ export default class WalletConnectSessions extends PureComponent<
       <TouchableOpacity
         // eslint-disable-next-line react/jsx-no-bind
         onLongPress={() => this.onLongPress(session)}
-        key={`session_${
-          (session as unknown as { id: string }).id
-        }_${index}`}
+        key={`session_${(session as unknown as { id: string }).id}_${index}`}
         style={styles.row}
       >
         <WebsiteIcon

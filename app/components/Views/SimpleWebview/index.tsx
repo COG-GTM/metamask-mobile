@@ -1,6 +1,10 @@
 import React, { PureComponent } from 'react';
 import { View } from 'react-native';
-import type { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import type {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import { WebView } from '@metamask/react-native-webview';
 import { getWebviewNavbar } from '../../UI/Navbar';
 import Share from 'react-native-share'; // eslint-disable-line  import/default

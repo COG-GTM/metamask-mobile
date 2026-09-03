@@ -13,30 +13,9 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import type { Theme } from '../../../util/theme/models';
 import { isTestNet } from '../../../util/networks';
 
-type SummaryWithChildren = React.ComponentType<
-  React.PropsWithChildren<object>
-> & {
-  Row: React.ComponentType<
-    React.PropsWithChildren<{ end?: boolean; last?: boolean }>
-  >;
-  Col: React.ComponentType<React.PropsWithChildren<{ end?: boolean }>>;
-  Separator: React.ComponentType<React.PropsWithChildren<object>>;
-};
-
-type TextWithChildren = React.ComponentType<
-  React.PropsWithChildren<{
-    small?: boolean;
-    bold?: boolean;
-    primary?: boolean;
-    right?: boolean;
-    upper?: boolean;
-    italic?: boolean;
-    link?: boolean;
-  }>
+const TypedText = Text as React.ComponentType<
+  React.ComponentProps<typeof Text> & { italic?: boolean }
 >;
-
-const TypedSummary = Summary as SummaryWithChildren;
-const TypedText = Text as TextWithChildren;
 
 interface TransactionSummaryProps {
   amount?: string;
@@ -97,44 +76,44 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
       chainId,
     } = this.props;
 
-    const isTestNetResult = isTestNet(chainId ?? '');
+    const isTestNetResult = isTestNet(chainId as string);
 
     if (
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED
     ) {
       return (
-        <TypedSummary>
-          <TypedSummary.Row>
+        <Summary>
+          <Summary.Row>
             <TypedText small bold primary>
               {strings('transaction.amount')}
             </TypedText>
             <TypedText small bold primary upper={!isTestNetResult}>
               {amount}
             </TypedText>
-          </TypedSummary.Row>
+          </Summary.Row>
           {secondaryTotalAmount && (
-            <TypedSummary.Row end last>
+            <Summary.Row end last>
               <TypedText small right upper={!isTestNetResult}>
                 {secondaryTotalAmount}
               </TypedText>
-            </TypedSummary.Row>
+            </Summary.Row>
           )}
-        </TypedSummary>
+        </Summary>
       );
     }
     return (
-      <TypedSummary>
-        <TypedSummary.Row>
+      <Summary>
+        <Summary.Row>
           <TypedText small primary>
             {this.renderAmountTitle()}
           </TypedText>
           <TypedText small primary upper={!isTestNetResult}>
             {amount}
           </TypedText>
-        </TypedSummary.Row>
-        <TypedSummary.Row>
-          <TypedSummary.Col>
+        </Summary.Row>
+        <Summary.Row>
+          <Summary.Col>
             <TypedText small primary italic>
               {!fee
                 ? strings('transaction.transaction_fee_less')
@@ -153,16 +132,16 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
                 </TypedText>
               </TouchableOpacity>
             )}
-          </TypedSummary.Col>
+          </Summary.Col>
           {!!fee &&
             this.renderIfGastEstimationReady(
               <TypedText small primary upper={!isTestNetResult}>
                 {fee}
               </TypedText>,
             )}
-        </TypedSummary.Row>
-        <TypedSummary.Separator />
-        <TypedSummary.Row>
+        </Summary.Row>
+        <Summary.Separator />
+        <Summary.Row>
           <TypedText small bold primary>
             {strings('transaction.total_amount')}
           </TypedText>
@@ -171,15 +150,15 @@ export default class TransactionSummary extends PureComponent<TransactionSummary
               {totalAmount}
             </TypedText>,
           )}
-        </TypedSummary.Row>
-        <TypedSummary.Row end last>
+        </Summary.Row>
+        <Summary.Row end last>
           {this.renderIfGastEstimationReady(
             <TypedText small right upper={!isTestNetResult}>
               {secondaryTotalAmount}
             </TypedText>,
           )}
-        </TypedSummary.Row>
-      </TypedSummary>
+        </Summary.Row>
+      </Summary>
     );
   };
 }

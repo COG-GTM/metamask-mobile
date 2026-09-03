@@ -1,5 +1,11 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  type TextProps,
+  type TextStyle,
+} from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
 import {

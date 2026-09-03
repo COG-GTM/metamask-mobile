@@ -24,9 +24,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-const TypedTapGestureHandler = TapGestureHandler as unknown as React.ComponentType<
-  React.PropsWithChildren<{ onEnded: () => void }>
->;
+const TypedTapGestureHandler =
+  TapGestureHandler as unknown as React.ComponentType<
+    React.PropsWithChildren<{ onEnded: () => void }>
+  >;
 import { useStyles } from '../../../component-library/hooks';
 import type { Theme } from '../../../util/theme/models';
 
@@ -109,10 +110,9 @@ function MediaPlayer({
 
   // Video source can be either a number returned by import for bundled files
   // or an object of the form { uri: 'http://...' } for remote files
-  const source: ReactVideoSource =
-    Number.isInteger(uri)
-      ? (uri as unknown as ReactVideoSource)
-      : ({ uri } as unknown as ReactVideoSource);
+  const source = Number.isInteger(uri)
+    ? (uri as number)
+    : { uri: uri as string | undefined };
 
   const videoControlsStyle = useAnimatedStyle(() => ({
     ...styles.videoControlsStyle,
@@ -153,7 +153,7 @@ function MediaPlayer({
             style={style}
             muted={isMuted}
             paused={!isPlaying}
-            source={source}
+            source={source as unknown as ReactVideoSource}
             controls={false}
             fullscreen={false}
             textTracks={textTracks}

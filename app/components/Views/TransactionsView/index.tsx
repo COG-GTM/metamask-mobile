@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { connect, useSelector } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { withNavigation } from '@react-navigation/compat';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { InternalAccount } from '@metamask/keyring-internal-api';
@@ -73,6 +74,12 @@ const styles = StyleSheet.create({
   },
 });
 
+const addAccountTimeFlagFilterTyped = addAccountTimeFlagFilter as unknown as (
+  transaction: TransactionMetaWithImportTime,
+  addedAccountTime: number | undefined,
+  accountAddedTimeInsertPointFound: boolean,
+) => boolean;
+
 const TransactionsView = ({
   navigation,
   conversionRate,
@@ -128,14 +135,10 @@ const TransactionsView = ({
 
         if (!filter) return false;
 
-        tx.insertImportTime = addAccountTimeFlagFilter(
+        tx.insertImportTime = addAccountTimeFlagFilterTyped(
           tx,
-          addedAccountTime as unknown as Parameters<
-            typeof addAccountTimeFlagFilter
-          >[1],
-          accountAddedTimeInsertPointFound as unknown as Parameters<
-            typeof addAccountTimeFlagFilter
-          >[2],
+          addedAccountTime,
+          accountAddedTimeInsertPointFound,
         );
         if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
 
@@ -163,25 +166,27 @@ const TransactionsView = ({
           )
         : filteredTransactions.filter((tx) => tx.chainId === chainId);
 
-      const submittedTxsFiltered = pendingTransactions.filter(({ txParams }) => {
-        const { from, nonce } = txParams;
-        if (!toLowerCaseEquals(from, selectedAddress ?? '')) {
-          return false;
-        }
-        const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTransactions.find(
-          (tx) =>
-            toLowerCaseEquals(
-              safeToChecksumAddress(tx.txParams.from),
-              selectedAddress ?? '',
-            ) && tx.txParams.nonce === nonce,
-        );
-        if (alreadyConfirmed) {
-          return false;
-        }
-        submittedNonces.push(nonce);
-        return !alreadySubmitted;
-      });
+      const submittedTxsFiltered = pendingTransactions.filter(
+        ({ txParams }) => {
+          const { from, nonce } = txParams;
+          if (!toLowerCaseEquals(from, selectedAddress)) {
+            return false;
+          }
+          const alreadySubmitted = submittedNonces.includes(nonce);
+          const alreadyConfirmed = confirmedTransactions.find(
+            (tx) =>
+              toLowerCaseEquals(
+                safeToChecksumAddress(tx.txParams.from),
+                selectedAddress,
+              ) && tx.txParams.nonce === nonce,
+          );
+          if (alreadyConfirmed) {
+            return false;
+          }
+          submittedNonces.push(nonce);
+          return !alreadySubmitted;
+        },
+      );
 
       // If the account added insert point is not found, add it to the last transaction
       if (
@@ -234,7 +239,7 @@ const TransactionsView = ({
   );
 };
 
-  const mapStateToProps = (state: RootState): StateProps => {
+const mapStateToProps = (state: RootState): StateProps => {
   const chainId = selectChainId(state);
 
   return {
@@ -251,11 +256,8 @@ const TransactionsView = ({
   };
 };
 
-const mapDispatchToProps = (
-  dispatch: (action: { type: string; [key: string]: unknown }) => unknown,
-): DispatchProps => ({
-  showAlert: (config) =>
-    dispatch(showAlert(config) as { type: string; [key: string]: unknown }),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  showAlert: (config) => dispatch(showAlert(config)),
 });
 
 const withNavigationTyped = withNavigation as unknown as (

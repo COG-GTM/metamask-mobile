@@ -131,10 +131,12 @@ class AddressQRCode extends PureComponent<AddressQRCodeProps> {
   processAddress = () => {
     const { selectedAddress } = this.props;
     if (!selectedAddress) return '';
-    const processedAddress = `${selectedAddress.slice(0, 2)} ${selectedAddress
-      .slice(2)
-      .match(/.{1,4}/g)
-      ?.join(' ') ?? ''}`;
+    const processedAddress = `${selectedAddress.slice(0, 2)} ${
+      selectedAddress
+        .slice(2)
+        .match(/.{1,4}/g)
+        ?.join(' ') ?? ''
+    }`;
     return processedAddress;
   };
 
@@ -184,9 +186,7 @@ const mapStateToProps = (state: RootState): StateProps => ({
   seedphraseBackedUp: state.user.seedphraseBackedUp,
 });
 
-const mapDispatchToProps = (
-  dispatch: Dispatch,
-): DispatchProps => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });

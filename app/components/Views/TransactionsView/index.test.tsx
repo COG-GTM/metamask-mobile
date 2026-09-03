@@ -137,7 +137,7 @@ describe('TransactionsView', () => {
           <Stack.Navigator>
             <Stack.Screen
               name="TransactionsView"
-        component={TransactionsView}
+              component={TransactionsView}
             />
           </Stack.Navigator>
         </NavigationContainer>
