@@ -1,4 +1,5 @@
 import React from 'react';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 import CollectibleView from '.';
@@ -35,7 +36,12 @@ describe('CollectibleView Snapshot', () => {
     const { toJSON } = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView
+            {...props}
+            navigation={
+              props.navigation as unknown as NavigationProp<ParamListBase>
+            }
+          />
         </ThemeContext.Provider>
       </Provider>,
     );
@@ -60,7 +66,12 @@ describe('CollectibleView Snapshot', () => {
     const wrapper = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <CollectibleView
+            {...props}
+            navigation={
+              props.navigation as unknown as NavigationProp<ParamListBase>
+            }
+          />
         </ThemeContext.Provider>
       </Provider>,
     );
