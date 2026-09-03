@@ -82,10 +82,7 @@ const addAccountTimeFlagFilterTyped = addAccountTimeFlagFilter as unknown as (
 
 const TransactionsView = ({
   navigation,
-  conversionRate,
   selectedInternalAccount,
-  networkType,
-  currentCurrency,
   transactions,
   chainId,
   tokens,
@@ -225,14 +222,15 @@ const TransactionsView = ({
   return (
     <View style={styles.wrapper}>
       <Transactions
-        navigation={navigation}
+        navigation={
+          navigation as unknown as {
+            navigate: (...args: unknown[]) => void;
+            push: (...args: unknown[]) => void;
+          }
+        }
         transactions={allTransactions}
         submittedTransactions={submittedTxs}
         confirmedTransactions={confirmedTxs}
-        conversionRate={conversionRate}
-        currentCurrency={currentCurrency}
-        selectedAddress={selectedAddress}
-        networkType={networkType}
         loading={loading}
       />
     </View>

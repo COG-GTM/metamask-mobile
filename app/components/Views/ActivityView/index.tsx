@@ -176,7 +176,7 @@ const ActivityView = () => {
           title,
           colors,
           navigation,
-          selectedAddress,
+          selectedAddress ?? '',
           openAccountSelector,
         ),
       );
@@ -204,9 +204,14 @@ const ActivityView = () => {
   const TypedRampOrdersList = RampOrdersList as React.ComponentType<{
     tabLabel?: string;
   }>;
+  const TypedErrorBoundary = ErrorBoundary as unknown as React.ComponentType<{
+    children?: React.ReactNode;
+    view: string;
+    navigation?: NavigationProp<ParamListBase>;
+  }>;
 
   return (
-    <ErrorBoundary navigation={navigation} view="ActivityView">
+    <TypedErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
         <HeaderText
           style={styles.title as unknown as TextStyle}
@@ -258,7 +263,7 @@ const ActivityView = () => {
           )}
         </ScrollableTabView>
       </View>
-    </ErrorBoundary>
+    </TypedErrorBoundary>
   );
 };
 
