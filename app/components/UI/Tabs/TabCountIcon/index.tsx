@@ -26,10 +26,6 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-/**
- * PureComponent that renders an icon showing
- * the current number of open tabs
- */
 interface OwnProps {
   style?: StyleProp<ViewStyle>;
 }
@@ -40,6 +36,10 @@ interface StateProps {
 
 type Props = OwnProps & StateProps;
 
+/**
+ * PureComponent that renders an icon showing
+ * the current number of open tabs
+ */
 class TabCountIcon extends PureComponent<Props> {
   static contextType = ThemeContext;
 

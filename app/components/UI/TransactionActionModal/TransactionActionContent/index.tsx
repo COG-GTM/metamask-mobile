@@ -55,9 +55,6 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-/**
- * View that renders a modal to be used for speed up or cancel transaction modal
- */
 interface TransactionActionContentProps {
   confirmDisabled?: boolean;
   feeText?: string;
@@ -66,6 +63,9 @@ interface TransactionActionContentProps {
   descriptionText?: string;
 }
 
+/**
+ * View that renders a modal to be used for speed up or cancel transaction modal
+ */
 export default function TransactionActionContent({
   confirmDisabled = false,
   feeText,

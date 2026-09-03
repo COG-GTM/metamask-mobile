@@ -41,11 +41,6 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-/**
- * View that renders the content of an action modal
- * The objective of this component is to reuse it in other places and not
- * only on ActionModal component
- */
 export interface ActionContentProps {
   cancelButtonDisabled?: boolean;
   cancelTestID?: string;
@@ -67,6 +62,11 @@ export interface ActionContentProps {
   childrenContainerStyle?: StyleProp<ViewStyle>;
 }
 
+/**
+ * View that renders the content of an action modal
+ * The objective of this component is to reuse it in other places and not
+ * only on ActionModal component
+ */
 export default function ActionContent({
   cancelTestID = '',
   confirmTestID = '',

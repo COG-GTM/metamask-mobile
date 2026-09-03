@@ -12,9 +12,6 @@ const styles = StyleSheet.create({
   },
 });
 
-/**
- * View that renders an action modal
- */
 interface ActionModalProps extends ActionContentProps {
   onRequestClose?: () => void;
   modalVisible?: boolean;
@@ -22,6 +19,9 @@ interface ActionModalProps extends ActionContentProps {
   propagateSwipe?: boolean;
 }
 
+/**
+ * View that renders an action modal
+ */
 export default function ActionModal({
   cancelTestID = '',
   confirmTestID = '',

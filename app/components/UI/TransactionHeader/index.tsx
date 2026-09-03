@@ -84,9 +84,6 @@ const createStyles = (colors: Colors) =>
     },
   });
 
-/**
- * PureComponent that renders the transaction header used for signing, granting permissions and sending
- */
 interface CurrentPageInformation {
   origin?: string;
   url?: string;
@@ -106,6 +103,9 @@ interface StateProps {
 
 type Props = OwnProps & StateProps;
 
+/**
+ * PureComponent that renders the transaction header used for signing, granting permissions and sending
+ */
 const TransactionHeader = (props: Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

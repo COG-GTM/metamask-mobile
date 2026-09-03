@@ -3,9 +3,6 @@ import { strings } from '../../../../locales/i18n';
 import ActionModal from '../ActionModal';
 import TransactionActionContent from './TransactionActionContent';
 
-/**
- * View that renders a modal to be used for speed up or cancel transaction modal
- */
 interface TransactionActionModalProps {
   isVisible?: boolean;
   cancelText?: string;
@@ -21,6 +18,9 @@ interface TransactionActionModalProps {
   descriptionText?: string;
 }
 
+/**
+ * View that renders a modal to be used for speed up or cancel transaction modal
+ */
 export default function TransactionActionModal({
   isVisible,
   confirmDisabled = false,

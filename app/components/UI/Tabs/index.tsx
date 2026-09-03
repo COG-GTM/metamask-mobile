@@ -122,10 +122,6 @@ const createStyles = (colors: Colors, shadows: Shadows) =>
     }
   });
 
-/**
- * PureComponent that wraps all the thumbnails
- * representing all the open tabs
- */
 type Tab = TabThumbnailProps['tab'];
 
 interface TabsProps extends IWithMetricsAwarenessProps {
@@ -143,6 +139,10 @@ interface TabsState {
   currentTab: number | null;
 }
 
+/**
+ * PureComponent that wraps all the thumbnails
+ * representing all the open tabs
+ */
 class Tabs extends PureComponent<TabsProps, TabsState> {
   thumbnails: Record<number, React.RefObject<View>> = {};
 

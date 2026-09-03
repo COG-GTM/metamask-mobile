@@ -48,9 +48,6 @@ const getStyles = (colors: Colors) =>
     },
   });
 
-/**
- * PureComponent that renders scrollable content above configurable buttons
- */
 interface ActionViewProps {
   cancelTestID?: string;
   confirmTestID?: string;
@@ -73,6 +70,9 @@ interface ActionViewProps {
   contentContainerStyle?: StyleProp<ViewStyle>;
 }
 
+/**
+ * PureComponent that renders scrollable content above configurable buttons
+ */
 export default function ActionView({
   cancelTestID = '',
   confirmTestID = '',
