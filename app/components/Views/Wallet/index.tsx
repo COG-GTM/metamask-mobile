@@ -721,7 +721,14 @@ const Wallet = ({
       <ScrollableTabView renderTabBar={renderTabBar} onChangeTab={onChangeTab}>
         <Tokens {...tokensTabProps} />
         {isEvmSelected && (
-          <CollectibleContracts {...collectibleContractsTabProps} />
+          <CollectibleContracts
+            {...collectibleContractsTabProps}
+            navigation={
+              collectibleContractsTabProps.navigation as unknown as React.ComponentProps<
+                typeof CollectibleContracts
+              >['navigation']
+            }
+          />
         )}
       </ScrollableTabView>
     );

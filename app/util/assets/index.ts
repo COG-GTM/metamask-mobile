@@ -54,7 +54,7 @@ export const compareNftStates = (
 };
 
 export interface NftAnalyticsParams {
-  chain_id: number;
+  chain_id: number | undefined;
   source: 'detected';
 }
 
