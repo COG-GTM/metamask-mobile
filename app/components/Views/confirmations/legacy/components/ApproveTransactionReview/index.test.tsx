@@ -5,6 +5,21 @@ import { getTokenDetails } from '../../../../../../util/address';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import { renderScreen } from '../../../../../../util/test/renderWithProvider';
 import { SET_APPROVAL_FOR_ALL_SIGNATURE } from '../../../../../../util/transactions';
+import type { RootState } from '../../../../../../reducers';
+
+interface TestState {
+  engine: {
+    backgroundState: {
+      [key: string]: unknown;
+      AccountTrackerController: {
+        accounts: unknown[];
+      };
+      TokenListController?: unknown;
+    };
+  };
+  transaction: Record<string, unknown>;
+  [key: string]: unknown;
+}
 
 jest.mock('../../../../../../util/address', () => ({
   ...jest.requireActual('../../../../../../util/address'),
@@ -101,23 +116,23 @@ const initialState = {
       },
     ],
   },
-};
+} as unknown as TestState;
 
 describe('ApproveTransactionModal', () => {
   it('render matches snapshot', () => {
     const { toJSON } = renderScreen(
       ApproveTransactionModal,
       { name: 'Approve' },
-      { state: initialState },
+      { state: initialState as unknown as RootState },
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('Approve button is enabled when standard is defined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
-    mockGetTokenDetails.mockReturnValue({
+    const mockGetTokenDetails = jest.mocked(getTokenDetails);
+    mockGetTokenDetails.mockResolvedValue({
       standard: 'ERC20',
-    });
+    } as unknown as Awaited<ReturnType<typeof getTokenDetails>>);
     const state = cloneDeep(initialState);
     state.engine.backgroundState.AccountTrackerController.accounts = [];
     state.engine.backgroundState.TokenListController = {
@@ -164,7 +179,7 @@ describe('ApproveTransactionModal', () => {
         <ApproveTransactionModal onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
-      { state },
+      { state: state as unknown as RootState },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();
@@ -178,8 +193,10 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is disabled when standard is undefined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
-    mockGetTokenDetails.mockReturnValue({});
+    const mockGetTokenDetails = jest.mocked(getTokenDetails);
+    mockGetTokenDetails.mockResolvedValue(
+      {} as unknown as Awaited<ReturnType<typeof getTokenDetails>>,
+    );
     const state = cloneDeep(initialState);
     state.engine.backgroundState.AccountTrackerController.accounts = [];
     state.engine.backgroundState.TokenListController = {
@@ -225,7 +242,7 @@ describe('ApproveTransactionModal', () => {
         <ApproveTransactionModal onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
-      { state },
+      { state: state as unknown as RootState },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();
