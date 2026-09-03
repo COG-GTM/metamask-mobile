@@ -13,6 +13,22 @@ declare module 'react-native-minimizer';
 declare module 'react-native-tcp-socket';
 
 declare module 'xhr2';
+declare module 'react-native-progress/Bar' {
+  import { ComponentType } from 'react';
+  interface ProgressBarProps {
+    progress?: number;
+    color?: string;
+    width?: number | null;
+    height?: number;
+    borderRadius?: number;
+    borderWidth?: number;
+    useNativeDriver?: boolean;
+    style?: import('react-native').StyleProp<import('react-native').ViewStyle>;
+  }
+  const ProgressBar: ComponentType<ProgressBarProps>;
+  export default ProgressBar;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
