@@ -8,6 +8,7 @@ import {
   ImageSourcePropType,
   ImageStyle,
   ImageErrorEventData,
+  ImageLoadEventData,
   NativeSyntheticEvent,
   StyleProp,
   ViewStyle,
@@ -50,7 +51,7 @@ import {
 } from '../../../util/networks/customNetworks';
 
 interface RemoteImageProps
-  extends Omit<ImageProps, 'source' | 'style' | 'onError'> {
+  extends Omit<ImageProps, 'source' | 'style' | 'onError' | 'onLoad'> {
   /**
    * Flag that determines the fade in behavior
    */
@@ -71,6 +72,10 @@ interface RemoteImageProps
    * Called when there is an error
    */
   onError?: () => void;
+  /**
+   * Called when the image has loaded (no event is provided for SVG sources)
+   */
+  onLoad?: (event?: NativeSyntheticEvent<ImageLoadEventData>) => void;
   /**
    * This is set if we know that an image is remote
    */
@@ -234,7 +239,6 @@ const RemoteImage = (props: RemoteImageProps) => {
   }
 
   if (isSVG) {
-    const { onLoad, ...svgProps } = props;
     const style: ImageStyle = StyleSheet.flatten(props.style) || {};
     if (source.__packager_asset) {
       if (!style.width) {
@@ -252,7 +256,7 @@ const RemoteImage = (props: RemoteImageProps) => {
       >
         <View style={{ ...style, ...styles.svgContainer }}>
           <SvgUri
-            {...svgProps}
+            {...props}
             uri={uri}
             width={'100%'}
             height={'100%'}
