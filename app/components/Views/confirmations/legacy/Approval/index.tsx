@@ -80,6 +80,8 @@ import {
 import type { Theme } from '../../../../../util/theme/models';
 import type { IWithMetricsAwarenessProps } from '../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import type { JsonMap } from '../../../../../core/Analytics/MetaMetrics.types';
+import type { Hex } from '@metamask/utils';
+import type BN from 'bnjs4';
 
 const REVIEW = 'review';
 const EDIT = 'edit';
@@ -101,8 +103,8 @@ interface LegacyTransaction {
   from?: string;
   to?: string;
   value?: string | number;
-  gas?: string | number;
-  gasPrice?: string | number;
+  gas?: string | BN;
+  gasPrice?: string | BN;
   data?: string;
   nonce?: string | number;
   origin?: string;
@@ -359,7 +361,12 @@ class Approval extends PureComponent<Props, State> {
   trackEditScreen = async () => {
     const { transaction, metrics } = this.props;
       const actionKey = await getTransactionReviewActionKey(
-        { transaction },
+        {
+          transaction:
+            transaction as unknown as Parameters<
+              typeof getTransactionReviewActionKey
+            >[0]['transaction'],
+        },
         undefined as unknown as string,
       );
     metrics.trackEvent(
@@ -821,8 +828,10 @@ class Approval extends PureComponent<Props, State> {
 }
 
 const mapStateToProps = (state: RootState): StateProps => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const transaction = getNormalizedTxState(
+    state,
+  ) as unknown as LegacyTransaction;
+  const chainId = transaction?.chainId as Hex;
 
   return {
     transaction,
@@ -849,4 +858,6 @@ const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Approval as unknown as ComponentType<IWithMetricsAwarenessProps>));
+)(withMetricsAwareness(
+  Approval as unknown as ComponentType<IWithMetricsAwarenessProps>,
+)) as ComponentType<Partial<Props>>;

@@ -99,6 +99,8 @@ import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { Theme } from '../../../../../../util/theme/models';
 import type { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import type { JsonMap } from '../../../../../../core/Analytics/MetaMetrics.types';
+import type { Hex } from '@metamask/utils';
+import type BN from 'bnjs4';
 
 const EDIT = 'edit';
 const REVIEW = 'review';
@@ -108,10 +110,12 @@ const REVIEW = 'review';
  */
 interface LegacyTransaction {
   id?: string;
+  chainId?: string;
+  networkId?: string;
   from?: string;
   to?: string;
   value?: string | number;
-  gas?: string | number | { eq: (value: unknown) => boolean };
+  gas?: string | number | BN;
   gasPrice?: string | number;
   data?: string;
   assetType?: string;
@@ -423,7 +427,10 @@ class Approve extends PureComponent<Props, State> {
       if (
         this.props.gasFeeEstimates &&
         transaction.gas &&
-        (!shallowEqual(prevProps.gasFeeEstimates, this.props.gasFeeEstimates) ||
+        (!shallowEqual(
+          prevProps.gasFeeEstimates as Record<string, unknown>,
+          this.props.gasFeeEstimates,
+        ) ||
           !(transaction.gas as { eq: (value: unknown) => boolean }).eq(
             prevProps?.transaction?.gas,
           ) ||
@@ -1077,8 +1084,10 @@ class Approve extends PureComponent<Props, State> {
 }
 
 const mapStateToProps = (state: RootState): StateProps => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const transaction = getNormalizedTxState(
+    state,
+  ) as unknown as LegacyTransaction;
+  const chainId = transaction?.chainId as Hex;
   const networkClientId = transaction?.networkId;
 
   return {
@@ -1121,4 +1130,4 @@ export default connect(
   mapDispatchToProps,
 )(withMetricsAwareness(
   Approve as unknown as ComponentType<IWithMetricsAwarenessProps>,
-));
+)) as ComponentType<Partial<Props>>;

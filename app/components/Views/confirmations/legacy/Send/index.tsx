@@ -586,9 +586,11 @@ class Send extends PureComponent<Props, State> {
    */
   prepareTransaction = (transaction: LegacyTransaction) => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
-    value: BNToHex(transaction.value),
+    gas: BNToHex(transaction.gas as string | ReturnType<typeof toBN>),
+    gasPrice: BNToHex(
+      transaction.gasPrice as string | ReturnType<typeof toBN>,
+    ),
+    value: BNToHex(transaction.value as string | ReturnType<typeof toBN>),
   });
 
   /**
@@ -603,8 +605,10 @@ class Send extends PureComponent<Props, State> {
     selectedAsset: TokenEntry,
   ) => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
+    gas: BNToHex(transaction.gas as string | ReturnType<typeof toBN>),
+    gasPrice: BNToHex(
+      transaction.gasPrice as string | ReturnType<typeof toBN>,
+    ),
     value: '0x0',
     to: selectedAsset.address,
   });
@@ -616,8 +620,10 @@ class Send extends PureComponent<Props, State> {
    */
   sanitizeTransaction = (transaction: LegacyTransaction) => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
+    gas: BNToHex(transaction.gas as string | ReturnType<typeof toBN>),
+    gasPrice: BNToHex(
+      transaction.gasPrice as string | ReturnType<typeof toBN>,
+    ),
   });
 
   /**

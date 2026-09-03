@@ -4,7 +4,11 @@ import { act, render, screen, fireEvent } from '@testing-library/react-native';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { Store } from 'redux';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  type NavigationProp,
+  type ParamListBase,
+} from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import Approve from './index';
@@ -81,10 +85,7 @@ const navigationPropMock = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
   navigate: jest.fn(),
-};
-const routeMock = {
-  params: {},
-};
+} as unknown as NavigationProp<ParamListBase>;
 const hideModalMock = jest.fn();
 
 const renderComponent = ({ store }: { store: Store }) =>
@@ -98,7 +99,6 @@ const renderComponent = ({ store }: { store: Store }) =>
                 <Approve
                   modalVisible
                   navigation={navigationPropMock}
-                  route={routeMock}
                   hideModal={hideModalMock}
                 />
               )}

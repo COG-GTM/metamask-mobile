@@ -51,6 +51,7 @@ import { selectGasFeeControllerEstimateType } from '../../../../../../../selecto
 import { selectNativeCurrencyByChainId, selectProviderTypeByChainId } from '../../../../../../../selectors/networkController';
 import type { RootState } from '../../../../../../../reducers';
 import type { Dispatch } from 'redux';
+import type { Hex } from '@metamask/utils';
 
 const REVIEW = 'review';
 
@@ -1096,8 +1097,10 @@ class TransactionEditor extends PureComponent<Props, State> {
 }
 
 const mapStateToProps = (state: RootState): StateProps => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const transaction = getNormalizedTxState(
+    state,
+  ) as unknown as LegacyTransaction;
+  const chainId = transaction?.chainId as Hex;
 
   return {
     accounts: selectAccounts(state),

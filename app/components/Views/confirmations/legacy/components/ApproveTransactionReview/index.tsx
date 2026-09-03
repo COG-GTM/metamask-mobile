@@ -115,6 +115,7 @@ import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { Theme } from '../../../../../../util/theme/models';
 import type { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import type { IQRState } from '../../../../../UI/QRHardware/types';
+import type { Hex } from '@metamask/utils';
 
 import SmartTransactionsMigrationBanner from '../SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
 const { ORIGIN_DEEPLINK, ORIGIN_QR_CODE } = AppConstants.DEEPLINKS;
@@ -590,7 +591,7 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
         );
       },
     );
-    if (isMultiLayerFeeNetwork(chainId)) {
+    if (chainId !== undefined && isMultiLayerFeeNetwork(chainId)) {
       this.fetchEstimatedL1Fee();
       intervalIdForEstimatedL1Fee = setInterval(
         this.fetchEstimatedL1Fee,
@@ -807,7 +808,8 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
     this.setState((state) => ({ showGasTooltip: !state.showGasTooltip }));
 
   renderGasTooltip = () => {
-    const isMainnet = isMainnetByChainId(this.props.chainId);
+    const isMainnet =
+      !!this.props.chainId && isMainnetByChainId(this.props.chainId);
     return (
       <InfoModal
         isVisible={this.state.showGasTooltip}
@@ -881,7 +883,8 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
 
   getConfirmButtonState() {
     const { securityAlertResponse } = this.props;
-    let confirmButtonState = ConfirmButtonState.Normal;
+    let confirmButtonState: (typeof ConfirmButtonState)[keyof typeof ConfirmButtonState] =
+      ConfirmButtonState.Normal;
 
     if (securityAlertResponse) {
       if (securityAlertResponse.result_type === ResultType.Malicious) {
@@ -1166,7 +1169,7 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
                         )}
                         {gasError && (
                           <View style={styles.errorWrapper}>
-                            {isTestNetworkWithFaucet(chainId) ||
+                            {(!!chainId && isTestNetworkWithFaucet(chainId)) ||
                             isNativeTokenBuySupported ? (
                               <TouchableOpacity onPress={errorPress}>
                                 <TextWithReset reset style={styles.error}>
@@ -1415,7 +1418,7 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
   };
 
   renderQRDetails() {
-    const { host, spenderAddress } = this.state;
+    const { spenderAddress } = this.state;
     const {
       activeTabUrl,
       transaction: { origin, from },
@@ -1428,7 +1431,6 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
           currentPageInformation={{
             origin,
             spenderAddress,
-            title: host,
             url: activeTabUrl,
           }}
         />
@@ -1469,13 +1471,15 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
 }
 
 const mapStateToProps = (state: RootState): StateProps => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const transaction = getNormalizedTxState(
+    state,
+  ) as unknown as LegacyTransaction;
+  const chainId = transaction?.chainId as Hex;
 
   return {
     ticker: selectNativeCurrencyByChainId(state, chainId),
     networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
-    transaction: getNormalizedTxState(state),
+    transaction,
     tokensLength: selectTokensLength(state),
     accountsLength: selectAccountsLength(state),
     providerType: selectProviderTypeByChainId(state, chainId),

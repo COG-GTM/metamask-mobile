@@ -3,7 +3,11 @@ import { render } from '@testing-library/react-native';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { Store } from 'redux';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  type NavigationProp,
+  type ParamListBase,
+} from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import Approval from './index';
@@ -64,11 +68,7 @@ const navigationPropMock = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
   navigate: jest.fn(),
-};
-const routeMock = {
-  params: {},
-};
-
+} as unknown as NavigationProp<ParamListBase>;
 const renderComponent = ({ store }: { store: Store }) =>
   render(
     <Provider store={store}>
@@ -80,7 +80,7 @@ const renderComponent = ({ store }: { store: Store }) =>
                 <Approval
                   dappTransactionModalVisible
                   navigation={navigationPropMock}
-                  route={routeMock}
+                  hideModal={jest.fn()}
                 />
               )}
             </Stack.Screen>
