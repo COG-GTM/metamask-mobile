@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck - legacy confirmation migration
 import { fireEvent } from '@testing-library/react-native';
 import { shallow } from 'enzyme';
 import React from 'react';
@@ -5,6 +7,7 @@ import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import TransactionReview from '.';
 import { TESTID_ACCORDION_CONTENT } from '../../../../../../component-library/components/Accordions/Accordion/Accordion.constants';
+// eslint-disable-next-line import/no-namespace
 import * as BlockaidUtils from '../../../../../../util/blockaid';
 import { createMockAccountsControllerState } from '../../../../../../util/test/accountsControllerTestUtils';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';

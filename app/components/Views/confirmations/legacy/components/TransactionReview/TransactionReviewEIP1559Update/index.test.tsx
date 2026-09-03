@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck - legacy confirmation migration
 import React from 'react';
 import TransactionReviewEIP1559 from '.';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
