@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
@@ -15,8 +14,41 @@ import {
   selectConversionRateByChainId,
   selectCurrentCurrency,
 } from '../../../../../../../selectors/currencyRateController';
+import { RootState } from '../../../../../../../reducers';
+import { Dispatch } from 'redux';
+import { Colors } from '../../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface TransactionData {
+  transaction: {
+    data?: string;
+  };
+}
+
+interface OwnProps {
+  actionKey?: string;
+  toggleDataView?: () => void;
+  customGasHeight?: number;
+  saveTransactionReviewDataHeight?: (height: number) => void;
+}
+
+interface StateProps {
+  conversionRate?: number | null;
+  currentCurrency?: string;
+  transaction: TransactionData;
+}
+
+interface DispatchProps {
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     root: {
       paddingHorizontal: 24,
@@ -78,30 +110,7 @@ const createStyles = (colors) =>
 /**
  * PureComponent that supports reviewing transaction data
  */
-class TransactionReviewData extends PureComponent {
-  static propTypes = {
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Transaction corresponding action key
-     */
-    actionKey: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Height of custom gas and data modal
-     */
-    customGasHeight: PropTypes.number,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-  };
-
+class TransactionReviewData extends PureComponent<Props> {
   applyRootHeight = () => ({ height: this.props.customGasHeight });
 
   handleCopyHex = () => {
@@ -110,7 +119,7 @@ class TransactionReviewData extends PureComponent {
         transaction: { data },
       },
     } = this.props;
-    ClipboardManager.setString(data);
+    ClipboardManager.setString(data as string);
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -127,7 +136,9 @@ class TransactionReviewData extends PureComponent {
       actionKey,
       toggleDataView,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as React.ContextType<typeof ThemeContext>).colors ||
+      mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -182,13 +193,13 @@ class TransactionReviewData extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   conversionRate: selectConversionRateByChainId(state, state.transaction.chainId),
   currentCurrency: selectCurrentCurrency(state),
   transaction: state.transaction,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
 });
 

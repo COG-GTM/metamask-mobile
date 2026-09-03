@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Linking, TouchableOpacity, View } from 'react-native';
+import { GasTransactionProps } from '../../../../../../../core/GasPolling/types';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { EditGasViewSelectorsIDs } from '../../../../../../../../e2e/selectors/SendFlow/EditGasView.selectors';
 import { strings } from '../../../../../../../../locales/i18n';
@@ -20,6 +21,44 @@ import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
 
+export interface Props {
+  primaryCurrency?: string;
+  chainId?: string;
+  onEdit?: () => void;
+  hideTotal?: boolean;
+  noMargin?: boolean;
+  originWarning?: boolean | string;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  gasEstimationReady?: boolean;
+  legacy?: boolean;
+  gasSelected?: string | null;
+  gasObject?: {
+    suggestedGasLimit: string;
+    suggestedMaxFeePerGas: string;
+    suggestedMaxPriorityFeePerGas: string;
+  };
+  gasObjectLegacy?: {
+    legacyGasLimit?: string;
+    suggestedGasPrice?: string;
+  };
+  onlyGas?: boolean;
+  updateTransactionState: (state: GasTransactionState) => void;
+  multiLayerL1FeeTotal?: string;
+}
+
+interface GasTransactionState extends Partial<GasTransactionProps> {
+  renderableTotalMinNative?: string;
+  renderableTotalMinConversion?: string;
+  renderableTotalMaxNative?: string;
+  transactionFee?: string;
+  transactionFeeFiat?: string;
+  transactionTotalAmount?: string;
+  transactionTotalAmountFiat?: string;
+}
+
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
   chainId,
@@ -39,7 +78,7 @@ const TransactionReviewEIP1559Update = ({
   onlyGas,
   updateTransactionState,
   multiLayerL1FeeTotal,
-}) => {
+}: Props) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -82,11 +121,11 @@ const TransactionReviewEIP1559Update = ({
     transactionTotalAmount,
     transactionTotalAmountFiat,
     suggestedGasLimit,
-  } = gasTransaction;
+  } = gasTransaction as unknown as GasTransactionState;
 
   useEffect(() => {
     if (gasEstimationReady) {
-      updateTransactionState(gasTransaction);
+      updateTransactionState(gasTransaction as unknown as GasTransactionState);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -102,13 +141,16 @@ const TransactionReviewEIP1559Update = ({
   );
 
   const edit = useCallback(() => {
-    if (!isAnimating) onEdit();
+    if (!isAnimating) (onEdit as () => void)();
   }, [isAnimating, onEdit]);
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = isMainnetByChainId(chainId as string);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (
+    nativeValue: string | undefined,
+    fiatValue: string | undefined,
+  ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };
@@ -120,8 +162,8 @@ const TransactionReviewEIP1559Update = ({
       <Summary.Row>
         <View style={styles.gasRowContainer}>
           <View style={styles.gasRowContainer}>
-            <Text
-              primary={!originWarning}
+              <Text
+                primary={!originWarning}
               bold
               orange={Boolean(originWarning)}
               noMargin
@@ -137,7 +179,9 @@ const TransactionReviewEIP1559Update = ({
                 <MaterialCommunityIcons
                   name="information"
                   size={13}
-                  style={styles.gasInfoIcon(originWarning)}
+                  style={styles.gasInfoIcon(
+                    originWarning as boolean | undefined,
+                  )}
                 />
               </TouchableOpacity>
             </Text>

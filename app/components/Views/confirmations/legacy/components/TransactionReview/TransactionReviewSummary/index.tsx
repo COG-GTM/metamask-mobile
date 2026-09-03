@@ -1,13 +1,13 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, Text, View } from 'react-native';
 import { fontStyles } from '../../../../../../../styles/common';
 import { strings } from '../../../../../../../../locales/i18n';
 import WarningMessage from '../../../SendFlow/WarningMessage';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
 import { isTestNet } from '../../../../../../../util/networks';
+import { Colors } from '../../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     confirmBadge: {
       ...fontStyles.normal,
@@ -62,38 +62,17 @@ const createStyles = (colors) =>
 /**
  * PureComponent that supports reviewing transaction summary
  */
-class TransactionReviewSummary extends PureComponent {
-  static propTypes = {
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Transaction corresponding action key
-     */
-    actionKey: PropTypes.string,
-    /**
-     * Transaction amount in ETH before gas
-     */
-    assetAmount: PropTypes.string,
-    /**
-     * Transaction amount in fiat before gas
-     */
-    fiatValue: PropTypes.string,
-    /**
-     * Approve type transaction or not
-     */
-    approveTransaction: PropTypes.bool,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-  };
+interface Props {
+  conversionRate?: number | boolean;
+  actionKey?: string;
+  assetAmount?: string;
+  fiatValue?: string;
+  approveTransaction?: boolean;
+  primaryCurrency?: string;
+  chainId?: string;
+}
 
+class TransactionReviewSummary extends PureComponent<Props> {
   renderWarning = () => (
     <Text>{`${strings('transaction.approve_warning')} ${
       this.props.assetAmount
@@ -110,9 +89,11 @@ class TransactionReviewSummary extends PureComponent {
       primaryCurrency,
       chainId,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as React.ContextType<typeof ThemeContext>).colors ||
+      mockTheme.colors;
     const styles = createStyles(colors);
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = isTestNet(chainId as string);
 
     return (
       <View>
