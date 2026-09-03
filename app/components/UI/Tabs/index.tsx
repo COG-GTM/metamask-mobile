@@ -337,4 +337,4 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
 
 export default withMetricsAwareness(
   Tabs as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
-);
+) as React.ComponentType<Omit<TabsProps, 'metrics'>>;
