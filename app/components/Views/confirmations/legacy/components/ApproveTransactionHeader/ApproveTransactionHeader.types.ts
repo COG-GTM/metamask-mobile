@@ -14,7 +14,7 @@ export interface ApproveTransactionHeaderI {
   url: string;
   currentEnsName?: string;
   from: string;
-  asset: Asset;
+  asset?: Asset;
   dontWatchAsset?: boolean;
   sdkDappMetadata?: {
     url: string;

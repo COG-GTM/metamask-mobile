@@ -1,4 +1,5 @@
 import React from 'react';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import AccountOverview from './';
 import { backgroundState } from '../../../util/test/initial-root-state';
@@ -66,7 +67,10 @@ describe('AccountOverview', () => {
       label: 'Account 1',
     };
     const { toJSON } = renderWithProvider(
-      <AccountOverview account={account} />,
+      <AccountOverview
+        account={account}
+        navigation={{ navigate: jest.fn() } as unknown as NavigationProp<ParamListBase>}
+      />,
       { state: mockInitialState },
     );
     expect(toJSON()).toMatchSnapshot();
