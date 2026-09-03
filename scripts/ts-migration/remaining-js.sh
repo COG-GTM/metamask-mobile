@@ -18,7 +18,7 @@ candidates=$(
     if [ "$ROOT" = "app" ]; then
       for f in index.js shim.js; do [ -f "$f" ] && echo "$f"; done
     fi
-  } | grep -Ev "$EXCLUDE_REGEX" || true
+  } | awk -v exclude="$EXCLUDE_REGEX" '$0 !~ exclude'
 )
 
 printf '%s\n' "$candidates" | xargs -r wc -l | awk '$2 != "total"' | sort -k2
