@@ -1,4 +1,4 @@
-import StyledButton from './index.ios';
+import StyledButton from './StyledButton';
 export type { StyledButtonProps } from './StyledButton.types';
 
 /**
