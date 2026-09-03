@@ -1,9 +1,12 @@
+import React from 'react';
 import OptinMetrics from './';
 import { renderScreen } from '../../../util/test/renderWithProvider';
 import { MetaMetrics, MetaMetricsEvents } from '../../../core/Analytics';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { strings } from '../../../../locales/i18n';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+
+const OptinMetricsScreen = OptinMetrics as unknown as React.ComponentType;
 
 const { InteractionManager } = jest.requireActual('react-native');
 
@@ -43,7 +46,7 @@ describe('OptinMetrics', () => {
 
   it('render matches snapshot', () => {
     const { toJSON } = renderScreen(
-      OptinMetrics,
+      OptinMetricsScreen,
       { name: 'OptinMetrics' },
       { state: {} },
     );
@@ -52,7 +55,7 @@ describe('OptinMetrics', () => {
 
   describe('sets traits and sends metric event on confirm', () => {
     it('without marketing consent', async () => {
-      renderScreen(OptinMetrics, { name: 'OptinMetrics' }, { state: {} });
+      renderScreen(OptinMetricsScreen, { name: 'OptinMetrics' }, { state: {} });
       fireEvent.press(
         screen.getByRole('button', {
           name: strings('privacy_policy.cta_i_agree'),
@@ -80,7 +83,7 @@ describe('OptinMetrics', () => {
     });
 
     it('with marketing consent', async () => {
-      renderScreen(OptinMetrics, { name: 'OptinMetrics' }, { state: {} });
+      renderScreen(OptinMetricsScreen, { name: 'OptinMetrics' }, { state: {} });
       fireEvent.press(screen.getByText(strings('privacy_policy.checkbox')));
       fireEvent.press(
         screen.getByRole('button', {
@@ -110,7 +113,7 @@ describe('OptinMetrics', () => {
   });
 
   it('does not call metrics on cancel', async () => {
-    renderScreen(OptinMetrics, { name: 'OptinMetrics' }, { state: {} });
+    renderScreen(OptinMetricsScreen, { name: 'OptinMetrics' }, { state: {} });
     fireEvent.press(
       screen.getByRole('button', {
         name: strings('privacy_policy.cta_no_thanks'),

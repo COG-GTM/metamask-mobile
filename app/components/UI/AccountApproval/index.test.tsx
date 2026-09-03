@@ -79,6 +79,8 @@ describe('AccountApproval', () => {
     const container = renderWithProvider(
       <AccountApproval
         currentPageInformation={{ icon: '', url: '', title: '' }}
+        onCancel={jest.fn()}
+        onConfirm={jest.fn()}
       />,
       { state: mockInitialState },
     );
@@ -90,6 +92,8 @@ describe('AccountApproval', () => {
     const { findByText } = renderWithProvider(
       <AccountApproval
         currentPageInformation={{ icon: '', url: 'phishing.com', title: '' }}
+        onCancel={jest.fn()}
+        onConfirm={jest.fn()}
       />,
       { state: mockInitialState },
     );

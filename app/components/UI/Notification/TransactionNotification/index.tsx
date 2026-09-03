@@ -87,6 +87,14 @@ interface TransactionElement {
   [key: string]: unknown;
 }
 
+type DecodeTransactionArgs = Parameters<typeof decodeTransaction>[0];
+type DecodedTransactionDetails = NonNullable<
+  Awaited<ReturnType<typeof decodeTransaction>>[1]
+>;
+type ValidateBalanceTransaction = Parameters<
+  typeof validateTransactionActionBalance
+>[0];
+
 const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     absoluteFill: {
@@ -159,8 +167,9 @@ function TransactionNotification(props: Props) {
     smartTransactions,
   } = props;
 
-  const [transactionDetails, setTransactionDetails] =
-    useState<unknown>(undefined);
+  const [transactionDetails, setTransactionDetails] = useState<
+    DecodedTransactionDetails | undefined
+  >(undefined);
   const [transactionElement, setTransactionElement] = useState<
     TransactionElement | undefined
   >(undefined);
@@ -206,7 +215,7 @@ function TransactionNotification(props: Props) {
 
   const onSpeedUpPress = useCallback(() => {
     const isActionDisabled = validateTransactionActionBalance(
-      tx,
+      tx as unknown as ValidateBalanceTransaction,
       SPEED_UP_RATE,
       accounts,
     );
@@ -223,7 +232,7 @@ function TransactionNotification(props: Props) {
 
   const onCancelPress = useCallback(() => {
     const isActionDisabled = validateTransactionActionBalance(
-      tx,
+      tx as unknown as ValidateBalanceTransaction,
       CANCEL_RATE,
       accounts,
     );
@@ -307,7 +316,7 @@ function TransactionNotification(props: Props) {
           primaryCurrency,
           swapsTransactions,
           swapsTokens,
-        });
+        } as unknown as DecodeTransactionArgs);
       const existingGasPrice = new BigNumber(
         foundTransaction?.txParams?.gasPrice || '0x0',
       );
@@ -318,7 +327,7 @@ function TransactionNotification(props: Props) {
           )
           .toString(),
       ); // strips decimals if any, coming from the 'times' operation
-      setGasFee(gasFeeValue);
+      setGasFee(gasFeeValue as string);
       setTx(foundTransaction);
       setTransactionElement(
         decodedTransactionElement as unknown as TransactionElement,
@@ -385,8 +394,10 @@ function TransactionNotification(props: Props) {
                 />
               </View>
               <TransactionDetails
-                transactionObject={tx}
-                transactionDetails={transactionDetails}
+                transactionObject={tx as TransactionMeta}
+                transactionDetails={
+                  transactionDetails as DecodedTransactionDetails
+                }
                 close={onCloseDetails}
                 showSpeedUpModal={onSpeedUpPress}
                 showCancelModal={onCancelPress}

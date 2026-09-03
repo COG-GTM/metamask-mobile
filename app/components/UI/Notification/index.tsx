@@ -120,7 +120,7 @@ function Notification({
 
 const mapStateToProps = (state: RootState): StateProps => {
   const currentNotification = currentNotificationSelector(
-    state as Parameters<typeof currentNotificationSelector>[0],
+    state.notification as Parameters<typeof currentNotificationSelector>[0],
   ) as CurrentNotification;
   return {
     currentNotification,

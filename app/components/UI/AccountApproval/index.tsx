@@ -406,7 +406,7 @@ class AccountApproval extends PureComponent<Props, State> {
               : strings('accountApproval.cancel')}
           </StyledButton>
           <StyledButton
-            disabled={this.state.otp && this.state.confirmDisabled}
+            disabled={!!this.state.otp && this.state.confirmDisabled}
             type={'confirm'}
             onPress={this.onConfirm}
             containerStyle={[

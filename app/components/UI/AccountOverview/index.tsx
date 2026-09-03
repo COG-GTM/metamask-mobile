@@ -52,7 +52,7 @@ import type { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetr
 
 interface AccountData {
   address: string;
-  name: string;
+  name?: string;
   [key: string]: unknown;
 }
 
@@ -299,7 +299,7 @@ class AccountOverview extends PureComponent<Props, State> {
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
-    await ClipboardManager.setString(selectedAddress);
+    await ClipboardManager.setString(selectedAddress ?? '');
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
