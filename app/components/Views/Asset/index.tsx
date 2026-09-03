@@ -13,7 +13,8 @@ import type {
   TransactionMeta,
 } from '@metamask/transaction-controller';
 import type { FeatureFlags } from '@metamask/swaps-controller/dist/types';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import Routes from '../../../constants/navigation/Routes';
 import {
   TX_CONFIRMED,
@@ -98,7 +99,7 @@ interface AssetTransaction extends TransactionMeta {
 }
 
 interface OwnProps {
-  navigation: NavigationProp<ParamListBase>;
+  navigation: StackNavigationProp<ParamListBase>;
   route: { params: AssetRouteParams };
 }
 

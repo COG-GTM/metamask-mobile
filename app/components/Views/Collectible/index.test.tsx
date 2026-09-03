@@ -1,5 +1,6 @@
 import React from 'react';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { shallow } from 'enzyme';
 import Collectible from '.';
 import configureMockStore from 'redux-mock-store';
@@ -66,7 +67,7 @@ describe('Collectible', () => {
       <Provider store={store}>
         <Collectible
           navigation={
-            undefined as unknown as NavigationProp<ParamListBase>
+            undefined as unknown as StackNavigationProp<ParamListBase>
           }
           route={{ params: { address: '0x1' } }}
         />
@@ -88,7 +89,7 @@ describe('Collectible', () => {
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
             navigation={
-              navigationMock as unknown as NavigationProp<ParamListBase>
+              navigationMock as unknown as StackNavigationProp<ParamListBase>
             }
             route={{ params: defaultCollectibleContract }}
           />
@@ -107,7 +108,7 @@ describe('Collectible', () => {
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
             navigation={
-              navigationMock as unknown as NavigationProp<ParamListBase>
+              navigationMock as unknown as StackNavigationProp<ParamListBase>
             }
             route={{ params: defaultCollectibleContract }}
           />

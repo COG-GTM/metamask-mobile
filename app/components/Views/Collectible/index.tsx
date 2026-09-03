@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
 import type { Nft } from '@metamask/assets-controllers';
-import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
 import type { Dispatch } from 'redux';
@@ -26,7 +27,7 @@ interface CollectibleContractParams {
 }
 
 interface OwnProps {
-  navigation: NavigationProp<ParamListBase>;
+  navigation: StackNavigationProp<ParamListBase>;
   route: { params: CollectibleContractParams };
 }
 
