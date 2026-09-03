@@ -462,10 +462,8 @@ async function resetAndStartPolling({
   } as Parameters<typeof getFetchParams>[0]);
   await SwapsController.stopPollingAndResetState();
   await SwapsController.startFetchAndSetQuotes(
-    fetchParams as unknown as Parameters<
-      typeof SwapsController.startFetchAndSetQuotes
-    >[0],
-    fetchParams.metaData as unknown as Parameters<
+    fetchParams as Parameters<typeof SwapsController.startFetchAndSetQuotes>[0],
+    fetchParams.metaData as Parameters<
       typeof SwapsController.startFetchAndSetQuotes
     >[1],
   );
@@ -713,7 +711,7 @@ function SwapsQuotesView({
 
   const { submitSwapsSmartTransaction } = useSwapsSmartTransaction({
     quote: selectedQuote,
-    gasEstimates: gasEstimates as unknown as {
+    gasEstimates: gasEstimates as {
       gasPrice: string;
       medium: string;
     },
@@ -921,10 +919,7 @@ function SwapsQuotesView({
           ? weiToFiat(
               toWei(
                 swapsUtils.calcTokenAmount(
-                  new BigNumber(
-                    (changedGasLimit || '0') as unknown as number,
-                    10,
-                  ).times(
+                  new BigNumber(changedGasLimit || '0', 10).times(
                     new BigNumber(
                       String(
                         decGWEIToHexWEI(
@@ -1053,12 +1048,12 @@ function SwapsQuotesView({
           best_quote_source: selectedQuote.aggregator,
           available_quotes: allQuotes.length,
           network_fees_USD: weiToFiat(
-            toWei(selectedQuoteValue?.ethFee as unknown as string),
+            toWei(selectedQuoteValue?.ethFee as string),
             conversionRate,
             currentCurrency,
           ),
           network_fees_ETH: renderFromWei(
-            toWei(selectedQuoteValue?.ethFee as unknown as string),
+            toWei(selectedQuoteValue?.ethFee as string),
           ),
           other_quote_selected:
             allQuotes.find((quote) => quote.aggregator === selectedQuoteId) ===
@@ -1110,12 +1105,12 @@ function SwapsQuotesView({
           allQuotes.find((quote) => quote.aggregator === selectedQuoteId) ===
           quoteForAnalytics,
         network_fees_USD: weiToFiat(
-          toWei(selectedQuoteValue?.ethFee as unknown as string),
+          toWei(selectedQuoteValue?.ethFee as string),
           conversionRate,
           'usd',
         ),
         network_fees_ETH: renderFromWei(
-          toWei(selectedQuoteValue?.ethFee as unknown as string),
+          toWei(selectedQuoteValue?.ethFee as string),
         ),
         chain_id: getDecimalChainId(chainId),
         is_smart_transaction: shouldUseSmartTransaction,
@@ -1164,10 +1159,10 @@ function SwapsQuotesView({
         const tradeTransaction = selectedQuote.trade;
 
         const tradeGasFeeEstimates = await getGasFeeEstimatesForTransaction(
-          tradeTransaction as unknown as Parameters<
+          tradeTransaction as Parameters<
             typeof getGasFeeEstimatesForTransaction
           >[0],
-          gasEstimates as unknown as { gasPrice?: string; medium: string },
+          gasEstimates as { gasPrice?: string; medium: string },
           { chainId, isEIP1559Network },
         );
 
@@ -1231,10 +1226,10 @@ function SwapsQuotesView({
         resetTransactionProp();
 
         const approvalGasFeeEstimates = await getGasFeeEstimatesForTransaction(
-          approvalTransaction as unknown as Parameters<
+          approvalTransaction as Parameters<
             typeof getGasFeeEstimatesForTransaction
           >[0],
-          gasEstimates as unknown as { gasPrice?: string; medium: string },
+          gasEstimates as { gasPrice?: string; medium: string },
           { chainId, isEIP1559Network },
         );
 
@@ -1476,7 +1471,7 @@ function SwapsQuotesView({
         allQuotes.find((quote) => quote.aggregator === selectedQuoteId) ===
         selectedQuote,
       gas_fees: weiToFiat(
-        toWei(selectedQuoteValue?.ethFee as unknown as string),
+        toWei(selectedQuoteValue?.ethFee as string),
         conversionRate,
         currentCurrency,
       ),
@@ -2405,18 +2400,14 @@ function SwapsQuotesView({
                     <View style={styles.quotesFiatColumn}>
                       <Text primary bold>
                         {renderFromWei(
-                          toWei(
-                            selectedQuoteValue?.ethFee as unknown as string,
-                          ),
+                          toWei(selectedQuoteValue?.ethFee as string),
                         )}{' '}
                         {getTicker(ticker)}
                       </Text>
                       <Text primary bold upper>
                         {`  ${
                           weiToFiat(
-                            toWei(
-                              selectedQuoteValue?.ethFee as unknown as string,
-                            ),
+                            toWei(selectedQuoteValue?.ethFee as string),
                             conversionRate,
                             currentCurrency,
                           ) || ''
@@ -2471,18 +2462,14 @@ function SwapsQuotesView({
                       <View style={styles.quotesFiatColumn}>
                         <Text primary bold>
                           {renderFromWei(
-                            toWei(
-                              selectedQuoteValue?.ethFee as unknown as string,
-                            ),
+                            toWei(selectedQuoteValue?.ethFee as string),
                           )}{' '}
                           {getTicker(ticker)}
                         </Text>
                         <Text primary bold upper>
                           {`  ${
                             weiToFiat(
-                              toWei(
-                                selectedQuoteValue?.ethFee as unknown as string,
-                              ),
+                              toWei(selectedQuoteValue?.ethFee as string),
                               conversionRate,
                               currentCurrency,
                             ) || ''
@@ -2502,9 +2489,7 @@ function SwapsQuotesView({
                             <Text>
                               {`${
                                 weiToFiat(
-                                  toWei(
-                                    selectedQuoteValue?.ethFee as unknown as string,
-                                  ),
+                                  toWei(selectedQuoteValue?.ethFee as string),
                                   conversionRate,
                                   currentCurrency,
                                 ) || ''
@@ -2525,9 +2510,7 @@ function SwapsQuotesView({
                                 underline={!unableToSwap}
                               >
                                 {renderFromWei(
-                                  toWei(
-                                    selectedQuoteValue?.ethFee as unknown as string,
-                                  ),
+                                  toWei(selectedQuoteValue?.ethFee as string),
                                 )}{' '}
                                 {getTicker(ticker)}
                               </Text>
@@ -2549,9 +2532,7 @@ function SwapsQuotesView({
                                 underline={!unableToSwap}
                               >
                                 {renderFromWei(
-                                  toWei(
-                                    selectedQuoteValue?.ethFee as unknown as string,
-                                  ),
+                                  toWei(selectedQuoteValue?.ethFee as string),
                                 )}{' '}
                                 {getTicker(ticker)}
                               </Text>
@@ -2559,9 +2540,7 @@ function SwapsQuotesView({
                             <Text primary bold>
                               {` ${
                                 weiToFiat(
-                                  toWei(
-                                    selectedQuoteValue?.ethFee as unknown as string,
-                                  ),
+                                  toWei(selectedQuoteValue?.ethFee as string),
                                   conversionRate,
                                   currentCurrency,
                                 ) || ''
@@ -2591,9 +2570,7 @@ function SwapsQuotesView({
                           <Text upper>
                             {`  ${
                               weiToFiat(
-                                toWei(
-                                  selectedQuoteValue?.maxEthFee as unknown as string,
-                                ),
+                                toWei(selectedQuoteValue?.maxEthFee as string),
                                 conversionRate,
                                 currentCurrency,
                               ) || ''
@@ -2620,7 +2597,7 @@ function SwapsQuotesView({
                               : ` ${
                                   weiToFiat(
                                     toWei(
-                                      selectedQuoteValue?.maxEthFee as unknown as string,
+                                      selectedQuoteValue?.maxEthFee as string,
                                     ),
                                     conversionRate,
                                     currentCurrency,
