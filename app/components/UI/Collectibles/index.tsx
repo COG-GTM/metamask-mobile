@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   Alert,
   ScrollView,
@@ -16,8 +15,47 @@ import Engine from '../../../core/Engine';
 import CollectibleMedia from '../CollectibleMedia';
 import AssetElement from '../AssetElement';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { Nft } from '@metamask/assets-controllers';
+import type { Colors } from '../../../util/theme/models';
+import type { TokenI } from '../Tokens/types';
 
-const createStyles = (colors) =>
+interface Collectible {
+  address: string;
+  name?: string;
+  tokenId: string;
+  [key: string]: unknown;
+}
+
+interface CollectibleContract {
+  name?: string;
+}
+
+interface ActionSheetRef {
+  show: () => void;
+}
+
+interface Props {
+  /**
+   * Navigation object required to push
+   * the Asset detail view
+   */
+  navigation?: StackNavigationProp<Record<string, object | undefined>>;
+  /**
+   * Array of assets (in this case Collectibles)
+   */
+  collectibles?: Collectible[];
+  /**
+   * Collectible contract object
+   */
+  collectibleContract?: CollectibleContract;
+  /**
+   * Callback triggered when collectible pressed from collectibles list
+   */
+  onPress?: (collectible: Collectible) => void;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -61,34 +99,17 @@ const createStyles = (colors) =>
  * View that renders a list of Collectibles
  * also known as ERC-721 Tokens
  */
-export default class Collectibles extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * Array of assets (in this case Collectibles)
-     */
-    collectibles: PropTypes.array,
-    /**
-     * Collectible contract object
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * Callback triggered when collectible pressed from collectibles list
-     */
-    onPress: PropTypes.func,
-  };
+export default class Collectibles extends PureComponent<Props> {
+  // @ts-expect-error React's context property is typed too broadly.
+  context!: React.ContextType<typeof ThemeContext>;
 
   state = {
     refreshing: false,
   };
 
-  actionSheet = null;
+  actionSheet: ActionSheetRef | null = null;
 
-  longPressedCollectible = null;
+  longPressedCollectible: Collectible | null = null;
 
   renderEmpty = () => {
     const colors = this.context.colors || mockTheme.colors;
@@ -111,36 +132,36 @@ export default class Collectibles extends PureComponent {
     );
   };
 
-  onItemPress = (collectible) => {
-    this.props.navigation.navigate('CollectibleView', {
+  onItemPress = (collectible: Collectible) => {
+    this.props.navigation?.navigate('CollectibleView', {
       ...collectible,
-      contractName: this.props.collectibleContract.name,
+      contractName: this.props.collectibleContract?.name,
     });
   };
 
-  handleOnPress = (collectible) => {
-    this.props.onPress(collectible);
+  handleOnPress = (collectible: Collectible) => {
+    this.props.onPress?.(collectible);
   };
 
   goToAddCollectible = () => {
-    this.props.navigation.push('AddAsset', { assetType: 'collectible' });
+    this.props.navigation?.push('AddAsset', { assetType: 'collectible' });
   };
 
-  showRemoveMenu = (collectible) => {
+  showRemoveMenu = (collectible: Collectible) => {
     this.longPressedCollectible = collectible;
-    this.actionSheet.show();
+    this.actionSheet?.show();
   };
 
   refreshMetadata = () => {
+    if (!this.longPressedCollectible) return;
     const { NftController } = Engine.context;
 
-    NftController.addNft(
-      this.longPressedCollectible.current.address,
-      this.longPressedCollectible.current.tokenId,
-    );
+    const collectible = this.longPressedCollectible;
+    if (!collectible) return;
+    NftController.addNft(collectible.address, collectible.tokenId);
   };
 
-  handleMenuAction = (index) => {
+  handleMenuAction = (index: number) => {
     if (index === 1) {
       this.removeNft();
     } else if (index === 0) {
@@ -150,34 +171,37 @@ export default class Collectibles extends PureComponent {
 
   removeNft = () => {
     const { NftController } = Engine.context;
-    NftController.removeAndIgnoreNft(
-      this.longPressedCollectible.address,
-      this.longPressedCollectible.tokenId,
-    );
+    const collectible = this.longPressedCollectible;
+    if (!collectible) return;
+    NftController.removeAndIgnoreNft(collectible.address, collectible.tokenId);
     Alert.alert(
       strings('wallet.collectible_removed_title'),
       strings('wallet.collectible_removed_desc'),
     );
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: ActionSheetRef | null) => {
     this.actionSheet = ref;
   };
 
-  keyExtractor = (item) => `${item.address}_${item.tokenId}`;
+  keyExtractor = (item: Collectible) => `${item.address}_${item.tokenId}`;
 
-  renderItem = ({ item }) => {
+  renderItem = ({ item }: { item: Collectible }) => {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
       <AssetElement
-        onPress={this.onItemPress}
-        onLongPress={this.showRemoveMenu}
-        asset={item}
+        onPress={(asset: TokenI) =>
+          this.onItemPress(asset as unknown as Collectible)
+        }
+        onLongPress={(asset: TokenI) =>
+          this.showRemoveMenu(asset as unknown as Collectible)
+        }
+        asset={item as unknown as TokenI}
       >
         <View style={styles.itemWrapper}>
-          <CollectibleMedia small collectible={item} />
+          <CollectibleMedia small collectible={item as unknown as Nft} />
           <View style={styles.rows}>
             <Text style={styles.name}>{item.name}</Text>
             <Text style={styles.tokenId} numberOfLines={1}>
@@ -211,7 +235,7 @@ export default class Collectibles extends PureComponent {
 
     return (
       <View style={styles.wrapper} testID={'collectibles'}>
-        {collectibles && collectibles.length
+        {collectibles?.length
           ? this.renderCollectiblesList()
           : this.renderEmpty()}
         <ActionSheet

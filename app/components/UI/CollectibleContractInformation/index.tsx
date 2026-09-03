@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ScrollView,
   TouchableOpacity,
@@ -17,8 +16,45 @@ import { connect } from 'react-redux';
 import { isMainNet } from '../../../util/networks';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { selectChainId } from '../../../selectors/networkController';
+import type { RootState } from '../../../reducers';
+import type { Colors } from '../../../util/theme/models';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 
-const createStyles = (colors) =>
+interface CollectibleContract {
+  address: string;
+  description?: string;
+  name?: string;
+  symbol?: string;
+  totalSupply?: string | number;
+}
+
+interface OwnProps {
+  /**
+   * Navigation object required to push
+   * the Asset detail view
+   */
+  navigation?: Pick<StackNavigationProp<ParamListBase>, 'navigate' | 'push'>;
+  /**
+   * An function to handle the close event
+   */
+  onClose?: (confirmed: boolean) => void;
+  /**
+   * Collectible contract object
+   */
+  collectibleContract: CollectibleContract;
+}
+
+interface StateProps {
+  /**
+   * The chain ID for the current selected network
+   */
+  chainId: string;
+}
+
+type Props = OwnProps & StateProps;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -112,36 +148,19 @@ const openSeaLogo = require('../../../images/opensea-logo-flat-colored-blue.png'
 /**
  * View that contains a collectible contract information as description, total supply and address
  */
-class CollectibleContractInformation extends PureComponent {
-  static propTypes = {
-    /**
-     * Navigation object required to push
-     * the Asset detail view
-     */
-    navigation: PropTypes.object,
-    /**
-     * An function to handle the close event
-     */
-    onClose: PropTypes.func,
-    /**
-     * Collectible contract object
-     */
-    collectibleContract: PropTypes.object,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string.isRequired,
-  };
+class CollectibleContractInformation extends PureComponent<Props> {
+  // @ts-expect-error React's context property is typed too broadly.
+  context!: React.ContextType<typeof ThemeContext>;
 
   closeModal = () => {
-    this.props.onClose(true);
+    this.props.onClose?.(true);
   };
 
   goToOpenSea = () => {
     const openSeaUrl = 'https://opensea.io/';
     InteractionManager.runAfterInteractions(() => {
       this.closeModal();
-      this.props.navigation.push('Webview', {
+      this.props.navigation?.push('Webview', {
         screen: 'SimpleWebview',
         params: {
           url: openSeaUrl,
@@ -227,8 +246,8 @@ class CollectibleContractInformation extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
-  chainId: selectChainId(state),
+const mapStateToProps = (state: RootState): StateProps => ({
+  chainId: selectChainId(state) ?? '',
 });
 
 CollectibleContractInformation.contextType = ThemeContext;
