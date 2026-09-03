@@ -539,8 +539,6 @@ class Asset extends PureComponent<Props, State> {
     const {
       route: { params },
       navigation,
-      conversionRate,
-      currentCurrency,
       chainId,
     } = this.props;
     const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
@@ -593,10 +591,6 @@ class Asset extends PureComponent<Props, State> {
             transactions={transactions}
             submittedTransactions={submittedTxs}
             confirmedTransactions={confirmedTxs}
-            selectedAddress={this.selectedAddress}
-            conversionRate={conversionRate}
-            currentCurrency={currentCurrency}
-            networkType={chainId}
             loading={!transactionsUpdated}
             headerHeight={280}
             onScrollThroughContent={this.onScrollThroughContent}
