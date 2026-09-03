@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { ImageStyle, View } from 'react-native';
 import RemoteImage from '../../Base/RemoteImage';
 import MediaPlayer from '../../Views/MediaPlayer';
 import Text from '../../Base/Text';
@@ -92,7 +92,7 @@ const CollectibleMedia: React.FC<CollectibleMediaProps> = ({
             source={NftFallbackImage}
             style={[
               styles.textContainer,
-              style,
+              style as ImageStyle,
               tiny && styles.tinyImage,
               small && styles.smallImage,
               big && styles.bigImage,
@@ -190,7 +190,7 @@ const CollectibleMedia: React.FC<CollectibleMediaProps> = ({
               small && styles.smallImage,
               big && styles.bigImage,
               cover && styles.cover,
-              style,
+              style as ImageStyle,
             ]}
             chainId={collectible.chainId}
             onError={fallback}
