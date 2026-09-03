@@ -137,10 +137,6 @@ interface OwnProps {
    */
   navigation: NavigationProp<ParamListBase>;
   /**
-   * Asset to receive, could be not defined
-   */
-  receiveAsset?: Asset;
-  /**
    * Hides the modal that contains the component
    */
   hideModal: () => void;
@@ -171,6 +167,8 @@ interface State {
 }
 
 class ReceiveRequest extends PureComponent<Props, State> {
+  declare context: Theme;
+
   state: State = {
     qrModalVisible: false,
     buyModalVisible: false,
@@ -182,7 +180,7 @@ class ReceiveRequest extends PureComponent<Props, State> {
   onShare = () => {
     const { selectedAddress } = this.props;
     Share.open({
-    message: generateUniversalLinkAddress(selectedAddress as string),
+      message: generateUniversalLinkAddress(selectedAddress as string),
     })
       .then(() => {
         this.props.hideModal();
@@ -254,7 +252,7 @@ class ReceiveRequest extends PureComponent<Props, State> {
   };
 
   render() {
-    const theme = (this.context as unknown as Theme) || mockTheme;
+    const theme = this.context || mockTheme;
     const styles = createStyles(theme);
 
     return (
@@ -313,8 +311,10 @@ const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(
-  ReceiveRequest as unknown as React.ComponentType<{
-    metrics: IUseMetricsHook;
-  }>,
-));
+)(
+  withMetricsAwareness(
+    ReceiveRequest as unknown as React.ComponentType<{
+      metrics: IUseMetricsHook;
+    }>,
+  ),
+);

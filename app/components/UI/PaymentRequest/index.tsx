@@ -355,6 +355,8 @@ interface State {
  * View to generate a payment request link
  */
 class PaymentRequest extends PureComponent<Props, State> {
+  declare context: Theme;
+
   amountInput = React.createRef<TextInput>();
   searchInput = React.createRef<TextInput>();
 
@@ -374,8 +376,7 @@ class PaymentRequest extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors =
-      (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getPaymentRequestOptionsTitle(
         strings('payment_request.title'),
@@ -484,13 +485,12 @@ class PaymentRequest extends PureComponent<Props, State> {
     const { tokens, chainId, ticker, tokenList } = this.props;
     const { inputWidth } = this.state;
     let results;
-    const colors =
-      (this.context as unknown as Theme).colors || mockTheme.colors;
-    const themeAppearance =
-      (this.context as unknown as Theme).themeAppearance || 'light';
+    const colors = this.context.colors || mockTheme.colors;
+    const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
-    const isTDSupportedForNetwork =
-      isTokenDetectionSupportedForNetwork(chainId as `0x${string}`);
+    const isTDSupportedForNetwork = isTokenDetectionSupportedForNetwork(
+      chainId as `0x${string}`,
+    );
 
     if (isTDSupportedForNetwork) {
       const defaults =
@@ -602,14 +602,16 @@ class PaymentRequest extends PureComponent<Props, State> {
    * @param {string} amount - String containing amount number from input, as token value
    * @returns {object} - Object containing respective symbol, secondaryAmount and cryptoAmount according to amount and selectedAsset
    */
-  handleETHPrimaryCurrency = (amount = '') => {
+  handleETHPrimaryCurrency = (amount?: string) => {
     const { conversionRate, currentCurrency, contractExchangeRates } =
       this.props;
     const selectedAsset = this.state.selectedAsset as Asset;
     let secondaryAmount;
     const symbol = selectedAsset.symbol;
     const undefAmount = (
-      isDecimal(amount) && !ethersUtils.isHexString(amount) ? amount : 0
+      isDecimal(amount as string) && !ethersUtils.isHexString(amount as string)
+        ? amount
+        : 0
     ) as string | number;
     const cryptoAmount = amount;
     const exchangeRate =
@@ -640,7 +642,7 @@ class PaymentRequest extends PureComponent<Props, State> {
    * @param {string} amount - String containing amount number from input, as fiat value
    * @returns {object} - Object containing respective symbol, secondaryAmount and cryptoAmount according to amount and selectedAsset
    */
-  handleFiatPrimaryCurrency = (amount = '') => {
+  handleFiatPrimaryCurrency = (amount?: string) => {
     const { conversionRate, currentCurrency, contractExchangeRates } =
       this.props;
     const selectedAsset = this.state.selectedAsset as Asset;
@@ -648,7 +650,9 @@ class PaymentRequest extends PureComponent<Props, State> {
     const exchangeRate =
       selectedAsset?.address &&
       contractExchangeRates?.[selectedAsset.address]?.price;
-    const undefAmount = ((isDecimal(amount) && amount) || 0) as string | number;
+    const undefAmount = ((isDecimal(amount as string) && amount) || 0) as
+      | string
+      | number;
     let secondaryAmount, cryptoAmount;
     if (selectedAsset.symbol !== 'ETH' && exchangeRate && exchangeRate !== 0) {
       const secondaryMinimalUnit = fiatNumberToTokenMinimalUnit(
@@ -669,16 +673,19 @@ class PaymentRequest extends PureComponent<Props, State> {
         selectedAsset.decimals as number,
       );
     } else {
-      const fiatAmount = String(undefAmount);
-      const fiatMinimalUnit = fiatNumberToWei(
-        fiatAmount,
-        conversionRate as number,
-      ) as string | number;
       secondaryAmount =
-        renderFromWei(fiatMinimalUnit) +
+        renderFromWei(
+          fiatNumberToWei(undefAmount, conversionRate as number) as
+            | string
+            | number,
+        ) +
         ' ' +
         strings('unit.eth');
-      cryptoAmount = fromWei(fiatMinimalUnit);
+      cryptoAmount = fromWei(
+        fiatNumberToWei(undefAmount, conversionRate as number) as
+          | string
+          | number,
+      );
     }
     return { symbol, secondaryAmount, cryptoAmount };
   };
@@ -816,15 +823,13 @@ class PaymentRequest extends PureComponent<Props, State> {
       selectedAsset?.address &&
       contractExchangeRates?.[selectedAsset.address]?.price;
     let switchable = true;
-    const colors =
-      (this.context as unknown as Theme).colors || mockTheme.colors;
-    const themeAppearance =
-      (this.context as unknown as Theme).themeAppearance || 'light';
+    const colors = this.context.colors || mockTheme.colors;
+    const themeAppearance = this.context.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     if (!conversionRate) {
       switchable = false;
-    } else if (selectedAsset?.symbol !== 'ETH' && !exchangeRate) {
+    } else if ((selectedAsset as Asset).symbol !== 'ETH' && !exchangeRate) {
       switchable = false;
     }
     return (
@@ -942,8 +947,7 @@ class PaymentRequest extends PureComponent<Props, State> {
 
   render() {
     const { mode } = this.state;
-    const colors =
-      (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

@@ -12,7 +12,11 @@ import {
 } from 'react-native';
 import { connect } from 'react-redux';
 import type { Dispatch } from 'redux';
-import type { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import type {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import { fontStyles } from '../../../styles/common';
 import { getPaymentRequestSuccessOptionsTitle } from '../../UI/Navbar';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
@@ -182,13 +186,13 @@ interface AlertConfig {
 }
 
 interface OwnProps {
-    /**
-     * Navigation object
-     */
+  /**
+   * Navigation object
+   */
   navigation: NavigationProp<ParamListBase>;
-    /**
-     * Object that represents the current route info like params passed to it
-     */
+  /**
+   * Object that represents the current route info like params passed to it
+   */
   route: RouteProp<PaymentRequestSuccessRoute, 'params'>;
 }
 
@@ -208,6 +212,8 @@ interface State {
 }
 
 class PaymentRequestSuccess extends PureComponent<Props, State> {
+  declare context: Theme;
+
   state: State = {
     link: '',
     qrLink: '',
@@ -218,8 +224,7 @@ class PaymentRequestSuccess extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors =
-      (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors = this.context.colors || mockTheme.colors;
     navigation.setOptions(
       getPaymentRequestSuccessOptionsTitle(navigation, colors),
     );
@@ -290,7 +295,7 @@ class PaymentRequestSuccess extends PureComponent<Props, State> {
 
   render() {
     const { link, amount, symbol, qrModalVisible } = this.state;
-    const theme = (this.context as unknown as Theme) || mockTheme;
+    const theme = this.context || mockTheme;
     const colors = theme.colors;
     const styles = createStyles(theme);
 

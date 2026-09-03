@@ -75,7 +75,10 @@ interface Props {
    * Message string to display when searchResults is empty
    */
   emptyMessage?: string;
-  selectedAsset?: unknown;
+  selectedAsset?: {
+    symbol?: string;
+    address?: string;
+  };
   searchQuery?: string;
 }
 

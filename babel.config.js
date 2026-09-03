@@ -1,8 +1,21 @@
 // eslint-disable-next-line import/no-commonjs
 module.exports = {
   ignore: [/\/ses\.cjs$/, /\/ses-hermes\.cjs$/],
-  presets: ['babel-preset-expo'],
+  presets: [
+    [
+      'babel-preset-expo',
+      {
+        disableFlowStripTypesTransform: true,
+      },
+    ],
+  ],
   plugins: [
+    [
+      '@babel/plugin-transform-flow-strip-types',
+      {
+        allowDeclareFields: true,
+      },
+    ],
     'transform-inline-environment-variables',
     'react-native-reanimated/plugin',
   ],
