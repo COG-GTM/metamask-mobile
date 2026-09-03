@@ -803,9 +803,7 @@ function SwapsAmountView({
             isVisible={isSourceModalVisible}
             dismiss={toggleSourceModal}
             title={strings('swaps.convert_from')}
-            tokens={
-              swapsTokens as unknown as TokenSelectModalProps['tokens']
-            }
+            tokens={swapsTokens as unknown as TokenSelectModalProps['tokens']}
             initialTokens={
               tokensWithBalance as unknown as TokenSelectModalProps['initialTokens']
             }
@@ -893,9 +891,7 @@ function SwapsAmountView({
             isVisible={isDestinationModalVisible}
             dismiss={toggleDestinationModal}
             title={strings('swaps.convert_to')}
-            tokens={
-              swapsTokens as unknown as TokenSelectModalProps['tokens']
-            }
+            tokens={swapsTokens as unknown as TokenSelectModalProps['tokens']}
             initialTokens={
               [
                 swapsUtils.getNativeSwapsToken(chainId),

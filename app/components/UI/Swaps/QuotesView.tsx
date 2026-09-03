@@ -2791,9 +2791,7 @@ function SwapsQuotesView({
         selectedQuote={selectedQuoteId ?? undefined}
         showOverallValue={hasConversionRate}
         ticker={getTicker(ticker) ?? undefined}
-        multiLayerL1ApprovalFeeTotal={
-          multiLayerL1ApprovalFeeTotal ?? undefined
-        }
+        multiLayerL1ApprovalFeeTotal={multiLayerL1ApprovalFeeTotal ?? undefined}
       />
 
       <ApprovalTransactionEditionModal
