@@ -171,7 +171,7 @@ function HorizontalSelector({
                 ) : typeof option.topLabel === 'function' ? (
                   option.topLabel(
                     option.name === selected,
-                    option.disabled ?? disabled,
+                    (option.disabled ?? disabled) as boolean,
                   )
                 ) : (
                   option.topLabel
@@ -244,7 +244,7 @@ function HorizontalSelector({
             ) : typeof option.label === 'function' ? (
               option.label(
                 option.name === selected,
-                option.disabled ?? disabled,
+                (option.disabled ?? disabled) as boolean,
               )
             ) : (
               option.label
@@ -275,7 +275,7 @@ interface OptionProps {
   [key: string]: unknown;
 }
 
-interface OptionType {
+export interface OptionType {
   /**
    * Label of the option. It can be a string, component or a render
    * function, which will be called with arguments (selected, disabled).
@@ -319,7 +319,7 @@ interface HorizontalSelectorProps {
   /**
    * Boolean value to determine whether the options are disabled or not.
    */
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 export default HorizontalSelector;

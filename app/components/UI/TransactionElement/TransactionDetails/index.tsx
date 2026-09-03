@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { query } from '@metamask/controller-utils';
 import { connect } from 'react-redux';
@@ -19,13 +18,20 @@ import EthereumAddress from '../../EthereumAddress';
 import TransactionSummary from '../../../Views/TransactionSummary';
 import { toDateFormat } from '../../../../util/date';
 import StyledButton from '../../StyledButton';
-import StatusText from '../../../Base/StatusText';
-import Text from '../../../../component-library/components/Texts/Text';
-import DetailsModal from '../../../Base/DetailsModal';
+import BaseStatusText from '../../../Base/StatusText';
+import BaseText from '../../../../component-library/components/Texts/Text';
+import BaseDetailsModal from '../../../Base/DetailsModal';
 import { RPC, NO_RPC_BLOCK_EXPLORER } from '../../../../constants/network';
-import { withNavigation } from '@react-navigation/compat';
-import { ThemeContext, mockTheme } from '../../../../util/theme';
-import decodeTransaction from '../../TransactionElement/utils';
+import {
+  withNavigation,
+  type CompatNavigationProp,
+} from '@react-navigation/compat';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { ThemeContext } from '../../../../util/theme';
+import decodeTransaction, {
+  type DecodeTransactionArgs,
+  type TransactionDetailsData,
+} from '../../TransactionElement/utils';
 import {
   selectChainId,
   selectNetworkConfigurations,
@@ -60,9 +66,66 @@ import {
   MAINNET_BLOCK_EXPLORER,
   SEPOLIA_BLOCK_EXPLORER,
 } from '../../../../constants/urls';
-import { CHAIN_IDS } from '@metamask/transaction-controller';
+import {
+  CHAIN_IDS,
+  type TransactionMeta,
+} from '@metamask/transaction-controller';
+import type { Colors, Theme } from '../../../../util/theme/models';
+import type { MultichainNetworkConfiguration } from '@metamask/multichain-network-controller';
 
-const createStyles = (colors) =>
+interface LegacyComponentProps {
+  children?: React.ReactNode;
+  [key: string]: unknown;
+}
+
+type LegacyDetailsModal = React.ComponentType<LegacyComponentProps> & {
+  Body: React.ComponentType<LegacyComponentProps>;
+  Section: React.ComponentType<LegacyComponentProps>;
+  Column: React.ComponentType<LegacyComponentProps>;
+  SectionTitle: React.ComponentType<LegacyComponentProps>;
+};
+
+const StatusText =
+  BaseStatusText as unknown as React.ComponentType<LegacyComponentProps>;
+const Text = BaseText as unknown as React.ComponentType<LegacyComponentProps>;
+const DetailsModal = BaseDetailsModal as unknown as LegacyDetailsModal;
+
+interface OwnProps {
+  navigation: CompatNavigationProp<NavigationProp<ParamListBase>> & {
+    push: (route: string, params?: Record<string, unknown>) => void;
+  };
+  transactionObject: TransactionMeta;
+  transactionDetails: TransactionDetailsData;
+  close?: () => void;
+  showSpeedUpModal?: () => void;
+  showCancelModal?: () => void;
+}
+
+interface StateProps {
+  chainId: string;
+  networkConfigurations: Record<string, MultichainNetworkConfiguration>;
+  selectedAddress?: string;
+  transactions: TransactionMeta[];
+  ticker: string;
+  tokens: Record<string, unknown>;
+  contractExchangeRates: Record<string, { price: number }>;
+  conversionRate: number | null;
+  currentCurrency: string;
+  swapsTransactions: Record<string, unknown>;
+  swapsTokens: Record<string, unknown>[];
+  primaryCurrency: unknown;
+  shouldUseSmartTransaction?: boolean;
+}
+
+interface Props extends OwnProps, StateProps {}
+
+interface State {
+  rpcBlockExplorer?: string;
+  renderTxActions: boolean;
+  updatedTransactionDetails?: TransactionDetailsData;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     viewOnEtherscan: {
       fontSize: 16,
@@ -115,61 +178,14 @@ const createStyles = (colors) =>
 /**
  * View that renders a transaction details as part of transactions list
  */
-class TransactionDetails extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Chain Id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Object corresponding to a transaction, containing transaction object, networkId and transaction hash string
-     */
-    transactionObject: PropTypes.object,
-    /**
-     * Object with information to render
-     */
-    transactionDetails: PropTypes.object,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Callback to close the view
-     */
-    close: PropTypes.func,
-    /**
-     * A string representing the network name
-     */
-    showSpeedUpModal: PropTypes.func,
-    showCancelModal: PropTypes.func,
-    selectedAddress: PropTypes.string,
-    transactions: PropTypes.array,
-    ticker: PropTypes.string,
-    tokens: PropTypes.object,
-    contractExchangeRates: PropTypes.object,
-    conversionRate: PropTypes.number,
-    currentCurrency: PropTypes.string,
-    swapsTransactions: PropTypes.object,
-    swapsTokens: PropTypes.array,
-    primaryCurrency: PropTypes.string,
-
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
-
-  state = {
+class TransactionDetails extends PureComponent<Props, State> {
+  state: State = {
     rpcBlockExplorer: undefined,
     renderTxActions: true,
     updatedTransactionDetails: undefined,
   };
 
-  fetchTxReceipt = async (transactionHash) => {
+  fetchTxReceipt = async (transactionHash: string) => {
     const ethQuery = getGlobalEthQuery();
     return await query(ethQuery, 'getTransactionReceipt', [transactionHash]);
   };
@@ -181,11 +197,19 @@ class TransactionDetails extends PureComponent {
    * @param {Object} networkConfigurations - The network configurations object
    * @returns {string} The block explorer URL
    */
-  getBlockExplorerForChain = (chainId, txChainId, networkConfigurations) => {
+  getBlockExplorerForChain = (
+    chainId: string,
+    txChainId: string,
+    networkConfigurations: Props['networkConfigurations'],
+  ) => {
     // First check for network configuration block explorer
+    const networkConfiguration = networkConfigurations?.[txChainId] as {
+      blockExplorerUrls?: string[];
+      defaultBlockExplorerUrlIndex?: number;
+    };
     let blockExplorer =
-      networkConfigurations?.[txChainId]?.blockExplorerUrls[
-        networkConfigurations[txChainId]?.defaultBlockExplorerUrlIndex
+      networkConfiguration?.blockExplorerUrls?.[
+        networkConfiguration.defaultBlockExplorerUrlIndex as number
       ] || NO_RPC_BLOCK_EXPLORER;
 
     // Check for default block explorers based on chain ID
@@ -243,10 +267,14 @@ class TransactionDetails extends PureComponent {
       if (!multiLayerL1FeeTotal) {
         multiLayerL1FeeTotal = '0x0'; // Sets it to 0 if it's not available in a txReceipt yet.
       }
-      transactionObject.txParams.multiLayerL1FeeTotal = multiLayerL1FeeTotal;
+      (
+        transactionObject.txParams as typeof transactionObject.txParams & {
+          multiLayerL1FeeTotal?: string;
+        }
+      ).multiLayerL1FeeTotal = multiLayerL1FeeTotal;
       const decodedTx = await decodeTransaction({
         tx: transactionObject,
-        selectedAddress,
+        selectedAddress: selectedAddress as string,
         ticker,
         chainId,
         conversionRate,
@@ -254,13 +282,13 @@ class TransactionDetails extends PureComponent {
         transactions,
         contractExchangeRates,
         tokens,
-        primaryCurrency,
+        primaryCurrency: primaryCurrency as string,
         swapsTransactions,
         swapsTokens,
-      });
+      } as unknown as DecodeTransactionArgs);
       this.setState({ updatedTransactionDetails: decodedTx[1] });
     } catch (e) {
-      Logger.error(e);
+      Logger.error(e as Error);
       this.setState({ updatedTransactionDetails: transactionDetails });
     }
   };
@@ -290,7 +318,11 @@ class TransactionDetails extends PureComponent {
     } = this.props;
     const { rpcBlockExplorer } = this.state;
     try {
-      const { url, title } = getBlockExplorerTxUrl(RPC, hash, rpcBlockExplorer);
+      const { url, title } = getBlockExplorerTxUrl(
+        RPC,
+        hash as string,
+        rpcBlockExplorer,
+      );
       navigation.push('Webview', {
         screen: 'SimpleWebview',
         params: { url, title },
@@ -298,7 +330,7 @@ class TransactionDetails extends PureComponent {
       close && close();
     } catch (e) {
       // eslint-disable-next-line no-console
-      Logger.error(e, {
+      Logger.error(e as Error, {
         message: `can't get a block explorer link for network `,
         networkID,
       });
@@ -306,7 +338,7 @@ class TransactionDetails extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors;
     return createStyles(colors);
   };
 
@@ -314,7 +346,7 @@ class TransactionDetails extends PureComponent {
     const { showSpeedUpModal, close } = this.props;
     if (close) {
       close();
-      showSpeedUpModal();
+      showSpeedUpModal?.();
     }
   };
 
@@ -322,7 +354,7 @@ class TransactionDetails extends PureComponent {
     const { showCancelModal, close } = this.props;
     if (close) {
       close();
-      showCancelModal();
+      showCancelModal?.();
     }
   };
 
@@ -394,7 +426,7 @@ class TransactionDetails extends PureComponent {
               {strings('transactions.date')}
             </DetailsModal.SectionTitle>
             <Text small primary>
-              {toDateFormat(time)}
+              {toDateFormat(time as number)}
             </Text>
           </DetailsModal.Column>
         </DetailsModal.Section>
@@ -408,8 +440,10 @@ class TransactionDetails extends PureComponent {
                 <View style={styles.accountNameAvatar}>
                   <Avatar
                     variant={AvatarVariant.Account}
-                    type={AvatarAccountType.Jazzicon}
-                    accountAddress={updatedTransactionDetails.renderFrom}
+                    type={AvatarAccountType.JazzIcon}
+                    accountAddress={
+                      updatedTransactionDetails.renderFrom as string
+                    }
                     size={AvatarSize.Md}
                     style={styles.accountAvatar}
                   />
@@ -420,7 +454,7 @@ class TransactionDetails extends PureComponent {
                   >
                     <EthereumAddress
                       type="short"
-                      address={updatedTransactionDetails.renderFrom}
+                      address={updatedTransactionDetails.renderFrom as string}
                     />
                   </Text>
                 </View>
@@ -436,8 +470,10 @@ class TransactionDetails extends PureComponent {
                 <View style={styles.accountNameAvatar}>
                   <Avatar
                     variant={AvatarVariant.Account}
-                    type={AvatarAccountType.Jazzicon}
-                    accountAddress={updatedTransactionDetails.renderFrom}
+                    type={AvatarAccountType.JazzIcon}
+                    accountAddress={
+                      updatedTransactionDetails.renderFrom as string
+                    }
                     size={AvatarSize.Md}
                     style={styles.accountAvatar}
                   />
@@ -448,7 +484,7 @@ class TransactionDetails extends PureComponent {
                   >
                     <EthereumAddress
                       type="short"
-                      address={updatedTransactionDetails.renderTo}
+                      address={updatedTransactionDetails.renderTo as string}
                     />
                   </Text>
                 </View>
@@ -509,7 +545,10 @@ class TransactionDetails extends PureComponent {
   };
 }
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (
+  state: import('../../../../reducers').RootState,
+  ownProps: Pick<Props, 'transactionObject'>,
+) => ({
   chainId: selectChainId(state),
   networkConfigurations: selectNetworkConfigurations(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
@@ -524,10 +563,27 @@ const mapStateToProps = (state, ownProps) => ({
   swapsTokens: swapsControllerTokens(state),
   shouldUseSmartTransaction: selectShouldUseSmartTransaction(
     state,
-    ownProps.transactionObject.chainId,
+    ownProps.transactionObject.chainId as `0x${string}`,
   ),
 });
 
 TransactionDetails.contextType = ThemeContext;
 
-export default connect(mapStateToProps)(withNavigation(TransactionDetails));
+const TransactionDetailsWithNavigation = withNavigation<
+  NavigationProp<ParamListBase>,
+  Props,
+  typeof TransactionDetails
+>(TransactionDetails) as unknown as React.ComponentType<
+  Omit<Props, keyof StateProps> & Partial<StateProps>
+>;
+
+const ConnectedTransactionDetails = connect(
+  mapStateToProps,
+  undefined,
+)(TransactionDetailsWithNavigation);
+
+export default ConnectedTransactionDetails as unknown as React.ComponentType<
+  Omit<OwnProps, 'navigation'> & {
+    navigation?: OwnProps['navigation'];
+  }
+>;

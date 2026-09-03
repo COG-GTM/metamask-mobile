@@ -7,7 +7,6 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import BigNumber from 'bignumber.js';
 import Text from '../../Base/Text';
@@ -18,7 +17,9 @@ import InfoModal from '../Swaps/components/InfoModal';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { strings } from '../../../../locales/i18n';
 import Alert, { AlertType } from '../../Base/Alert';
-import HorizontalSelector from '../../Base/HorizontalSelector';
+import HorizontalSelector, {
+  type OptionType,
+} from '../../Base/HorizontalSelector';
 import Device from '../../../util/device';
 import { getDecimalChainId, isMainnetByChainId } from '../../../util/networks';
 import FadeAnimationView from '../FadeAnimationView';
@@ -33,8 +34,46 @@ import {
   GAS_PRICE_MIN,
 } from '../../../util/gasUtils';
 import { useMetrics } from '../../../components/hooks/useMetrics';
+import type { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface GasFee {
+  suggestedGasLimit?: string;
+  suggestedGasPrice?: string;
+  [key: string]: string | number | undefined;
+}
+
+interface RecommendedOption {
+  name?: string;
+  render?: React.ReactNode;
+}
+
+interface OwnProps {
+  selected?: string;
+  gasFee: GasFee;
+  gasOptions: Record<string, string> & { gasPrice?: string };
+  onChange: (gas: GasFee, selectedOption: string | null) => void;
+  onCancel: () => void;
+  onSave: (selectedOption: string | undefined) => void;
+  gasFeeNative: string;
+  gasFeeConversion: string;
+  primaryCurrency: string;
+  chainId: string;
+  gasEstimateType: string;
+  error?: string | boolean | React.ReactNode;
+  warning?: string | boolean | React.ReactNode;
+  ignoreOptions?: string[];
+  extendOptions?: Record<string, Partial<OptionType>>;
+  recommended?: RecommendedOption;
+  warningMinimumEstimateOption: string;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  analyticsParams?: Record<string, string | number | boolean | undefined>;
+  view: string;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -105,6 +144,7 @@ const createStyles = (colors) =>
       lineHeight: 20,
       textAlign: 'center',
     },
+    warningContainer: {},
     warningText: {
       lineHeight: 20,
       color: colors.text.default,
@@ -129,7 +169,7 @@ const EditGasFeeLegacy = ({
   gasEstimateType,
   error,
   warning,
-  ignoreOptions,
+  ignoreOptions = [],
   extendOptions = {},
   recommended,
   warningMinimumEstimateOption,
@@ -139,14 +179,18 @@ const EditGasFeeLegacy = ({
   isAnimating,
   analyticsParams,
   view,
-}) => {
+}: OwnProps) => {
   const onlyAdvanced = gasEstimateType !== GAS_ESTIMATE_TYPES.LEGACY;
-  const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
+  const [showRangeInfoModal, setShowRangeInfoModal] = useState<
+    'gas_limit' | 'gas_price' | null
+  >(null);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(
     !selected || onlyAdvanced,
   );
-  const [selectedOption, setSelectedOption] = useState(selected);
-  const [gasPriceError, setGasPriceError] = useState();
+  const [selectedOption, setSelectedOption] = useState<string | undefined>(
+    selected,
+  );
+  const [gasPriceError, setGasPriceError] = useState<string | undefined>();
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
   const styles = createStyles(colors);
@@ -160,7 +204,7 @@ const EditGasFeeLegacy = ({
         gas_mode: selectedOption ? 'Basic' : 'Advanced',
         speed_set: selectedOption || undefined,
       };
-    } catch (error) {
+    } catch (_error) {
       return {};
     }
   };
@@ -173,7 +217,9 @@ const EditGasFeeLegacy = ({
           .build(),
       );
     }
-    setShowAdvancedOptions((showAdvancedOptions) => !showAdvancedOptions);
+    setShowAdvancedOptions(
+      (currentShowAdvancedOptions) => !currentShowAdvancedOptions,
+    );
   };
 
   const save = () => {
@@ -186,21 +232,21 @@ const EditGasFeeLegacy = ({
     onSave(selectedOption);
   };
 
-  const changeGas = (gas, selectedOption) => {
-    setSelectedOption(selectedOption);
-    onChange(gas, selectedOption);
+  const changeGas = (gas: GasFee, selectedOptionValue: string | null) => {
+    setSelectedOption(selectedOptionValue as string | undefined);
+    onChange(gas, selectedOptionValue);
   };
 
-  const changedGasPrice = (value) => {
+  const changedGasPrice = (value: string) => {
     const lowerValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
         ? gasOptions?.[warningMinimumEstimateOption]
-        : gasOptions?.gasPrice,
+        : (gasOptions?.gasPrice as string),
     );
     const higherValue = new BigNumber(
       gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-        ? gasOptions?.high
-        : gasOptions?.gasPrice,
+        ? (gasOptions?.high as string)
+        : (gasOptions?.gasPrice as string),
     ).multipliedBy(new BigNumber(1.5));
 
     const valueBN = new BigNumber(value);
@@ -218,28 +264,32 @@ const EditGasFeeLegacy = ({
     changeGas(newGas, null);
   };
 
-  const changedGasLimit = (value) => {
+  const changedGasLimit = (value: string) => {
     const newGas = { ...gasFee, suggestedGasLimit: value };
 
     changeGas(newGas, null);
   };
 
-  const selectOption = (option) => {
+  const selectOption = (option: string) => {
     setGasPriceError('');
     setSelectedOption(option);
     changeGas({ ...gasFee, suggestedGasPrice: gasOptions[option] }, option);
   };
 
-  const shouldIgnore = (option) =>
+  const shouldIgnore = (option: string) =>
     ignoreOptions.find((item) => item === option);
 
-  const renderLabel = (selected, disabled, label) => (
-    <Text bold primary={selected && !disabled}>
+  const renderLabel = (
+    selectedValue: boolean,
+    disabled: boolean,
+    label: string,
+  ) => (
+    <Text bold primary={selectedValue && !disabled}>
       {label}
     </Text>
   );
 
-  const renderOptions = () =>
+  const renderOptions = (): OptionType[] =>
     [
       {
         name: AppConstants.GAS_OPTIONS.LOW,
@@ -358,8 +408,8 @@ const EditGasFeeLegacy = ({
                 />
               </View>
             </View>
-            {renderWarning}
-            {renderError}
+            {renderWarning as unknown as React.ReactNode}
+            {renderError as unknown as React.ReactNode}
             <FadeAnimationView
               valueToWatch={valueToWatch}
               animateOnChange={animateOnChange}
@@ -389,7 +439,7 @@ const EditGasFeeLegacy = ({
                   <HorizontalSelector
                     selected={selectedOption}
                     onPress={selectOption}
-                    options={renderOptions}
+                    options={renderOptions as unknown as OptionType[]}
                   />
                 </View>
               )}
@@ -404,9 +454,7 @@ const EditGasFeeLegacy = ({
                     </Text>
                     <Text noMargin link bold style={styles.advancedOptionsIcon}>
                       <Icon
-                        name={`arrow-${
-                          showAdvancedOptions ? 'up' : 'down'
-                        }`}
+                        name={`arrow-${showAdvancedOptions ? 'up' : 'down'}`}
                       />
                     </Text>
                   </TouchableOpacity>
@@ -516,111 +564,7 @@ const EditGasFeeLegacy = ({
 };
 
 EditGasFeeLegacy.defaultProps = {
-  ignoreOptions: [],
   warningMinimumEstimateOption: AppConstants.GAS_OPTIONS.LOW,
 };
 
-EditGasFeeLegacy.propTypes = {
-  /**
-   * Gas option selected (low, medium, high)
-   */
-  selected: PropTypes.string,
-  /**
-   * Gas fee currently active
-   */
-  gasFee: PropTypes.object,
-  /**
-   * Gas fee options to select from
-   */
-  gasOptions: PropTypes.object,
-  /**
-   * Function called when user selected or changed the gas
-   */
-  onChange: PropTypes.func,
-  /**
-   * Function called when user cancels
-   */
-  onCancel: PropTypes.func,
-  /**
-   * Function called when user saves the new gas
-   */
-  onSave: PropTypes.func,
-  /**
-   * Gas fee in native currency
-   */
-  gasFeeNative: PropTypes.string,
-  /**
-   * Gas fee converted to chosen currency
-   */
-  gasFeeConversion: PropTypes.string,
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-  /**
-   * A string representing the network chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
-   */
-  gasEstimateType: PropTypes.string,
-  /**
-   * Error message to show
-   */
-  error: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool,
-    PropTypes.node,
-  ]),
-  /**
-   * Warning message to show
-   */
-  warning: PropTypes.oneOfType([
-    PropTypes.string,
-    PropTypes.bool,
-    PropTypes.node,
-  ]),
-  /**
-   * Ignore option array
-   */
-  ignoreOptions: PropTypes.array,
-  /**
-   * Extend options object. Object has option keys and properties will be spread
-   */
-  extendOptions: PropTypes.object,
-  /**
-   * Recommended object with type and render function
-   */
-  recommended: PropTypes.object,
-  /**
-   * Estimate option to compare with for too low warning
-   */
-  warningMinimumEstimateOption: PropTypes.string,
-  /**
-   * Function to call when update animation starts
-   */
-  onUpdatingValuesStart: PropTypes.func,
-  /**
-   * Function to call when update animation ends
-   */
-  onUpdatingValuesEnd: PropTypes.func,
-  /**
-   * If the values should animate upon update or not
-   */
-  animateOnChange: PropTypes.bool,
-  /**
-   * Boolean to determine if the animation is happening
-   */
-  isAnimating: PropTypes.bool,
-  /**
-   * Extra analytics params to be send with the gas analytics
-   */
-  analyticsParams: PropTypes.object,
-  /**
-   * (For analytics purposes) View (Approve, Transfer, Confirm) where this component is being used
-   */
-  view: PropTypes.string.isRequired,
-};
-
-export default EditGasFeeLegacy;
+export default EditGasFeeLegacy as React.ComponentType<OwnProps>;

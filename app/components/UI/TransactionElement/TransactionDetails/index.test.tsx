@@ -4,10 +4,14 @@ import { fireEvent, waitFor } from '@testing-library/react-native';
 import TransactionDetails from './';
 import { backgroundState } from '../../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../util/test/accountsControllerTestUtils';
-import renderWithProvider from '../../../../util/test/renderWithProvider';
+import renderWithProvider, {
+  type DeepPartial,
+} from '../../../../util/test/renderWithProvider';
+import type { RootState } from '../../../../reducers';
 import { createStackNavigator } from '@react-navigation/stack';
 import { mockNetworkState } from '../../../../util/test/network';
 import type { NetworkState } from '@metamask/network-controller';
+import type { TransactionMeta } from '@metamask/transaction-controller';
 
 const Stack = createStackNavigator();
 const mockEthQuery = {
@@ -88,11 +92,9 @@ const renderComponent = ({
   status = 'confirmed',
   networkId = '0x1',
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  state?: any;
+  state?: DeepPartial<RootState>;
   hash?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  txParams?: any;
+  txParams?: Record<string, unknown>;
   status?: string;
   shouldUseSmartTransaction?: boolean;
   networkId?: string;
@@ -102,15 +104,17 @@ const renderComponent = ({
       <Stack.Screen name="Amount" options={{}}>
         {() => (
           <TransactionDetails
-            transactionObject={{
-              networkID: '1',
-              status,
-              transaction: {
-                nonce: '',
-              },
-              chainId: networkId,
-              ...(txParams ? { txParams } : {}),
-            }}
+            transactionObject={
+              {
+                networkID: '1',
+                status,
+                transaction: {
+                  nonce: '',
+                },
+                chainId: networkId,
+                ...(txParams ? { txParams } : {}),
+              } as unknown as TransactionMeta
+            }
             transactionDetails={{
               renderFrom: '0x0',
               renderTo: networkId,
@@ -124,8 +128,11 @@ const renderComponent = ({
               hash: '0x3',
               ...(hash ? { hash } : {}),
             }}
-            navigation={navigationMock}
-            chainId={networkId}
+            navigation={
+              navigationMock as unknown as React.ComponentProps<
+                typeof TransactionDetails
+              >['navigation']
+            }
           />
         )}
       </Stack.Screen>
