@@ -1,6 +1,9 @@
+import type { ComponentType } from 'react';
 import { cloneDeep } from 'lodash';
 import { RpcEndpointType } from '@metamask/network-controller';
-import ReceiveRequest from './';
+import ReceiveRequestComponent from './';
+
+const ReceiveRequest = ReceiveRequestComponent as unknown as ComponentType;
 import { renderScreen } from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';

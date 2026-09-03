@@ -140,6 +140,7 @@ interface OwnProps {
    * Hides the modal that contains the component
    */
   hideModal: () => void;
+  showReceiveModal?: boolean;
   /**
    * Metrics injected by withMetricsAwareness HOC
    */
@@ -318,5 +319,5 @@ export default connect(
     ReceiveRequest as unknown as React.ComponentType<{
       metrics: IUseMetricsHook;
     }>,
-  ),
+  ) as React.ComponentType<Omit<Props, 'metrics'>>,
 );
