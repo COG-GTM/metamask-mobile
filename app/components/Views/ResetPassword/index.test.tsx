@@ -17,11 +17,15 @@ const initialState = {
 };
 const store = mockStore(initialState);
 
+const ResetPasswordScreen = ChoosePassword as unknown as React.ComponentType<
+  Record<string, never>
+>;
+
 describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ChoosePassword />
+        <ResetPasswordScreen />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
