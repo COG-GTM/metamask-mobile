@@ -237,7 +237,18 @@ export const sentryStateMask = {
   onboarding: true,
   privacy: true,
   rpcEvents: true,
-  sdk: true,
+  sdk: {
+    connections: {
+      [AllProperties]: false,
+    },
+    dappConnections: {
+      [AllProperties]: false,
+    },
+    approvedHosts: {
+      [AllProperties]: false,
+    },
+    wc2Metadata: false,
+  },
   security: true,
   settings: true,
   smartTransactions: true,
