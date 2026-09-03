@@ -43,6 +43,7 @@ import {
   MetaMetricsEvents,
   type IMetaMetricsEvent,
 } from '../../../core/Analytics';
+import type { JsonMap } from '../../../core/Analytics/MetaMetrics.types';
 import {
   getAddressAccountType,
   isHardwareAccount,
@@ -269,15 +270,15 @@ const RootRPCMethodsUI = (props: Props) => {
           .toFixed(2)}%`;
         const quoteVsExecutionRatio = `${swapsUtils
           .calcTokenAmount(
-            new BigNumber(tokensReceived || '0x0', 16),
+            new BigNumber(tokensReceived || '0x0'),
             swapTransaction.destinationTokenDecimals,
           )
-          .div(new BigNumber(swapTransaction.destinationAmount))
+          .div(swapTransaction.destinationAmount)
           .times(100)
           .toFixed(2)}%`;
         const tokenToAmountReceived = swapsUtils.calcTokenAmount(
-          new BigNumber(tokensReceived ?? '0x0', 16),
-          swapTransaction.destinationToken.decimals ?? 0,
+          new BigNumber(String(tokensReceived)),
+          swapTransaction.destinationToken.decimals,
         );
 
         const analyticsParams = {
@@ -300,11 +301,11 @@ const RootRPCMethodsUI = (props: Props) => {
         });
 
         const smartTransactionMetricsProperties =
-          await getSmartTransactionMetricsProperties(
+          getSmartTransactionMetricsProperties(
             SmartTransactionsController,
             transactionMeta,
             false,
-          );
+          ) as unknown as JsonMap;
 
         const parameters = {
           time_to_mine: timeToMine,
@@ -521,8 +522,8 @@ const RootRPCMethodsUI = (props: Props) => {
           const tokenAmount =
             tokenData &&
             calcTokenAmount(
-              tokenValue ?? '0x0',
-              Number(asset?.decimals ?? 0),
+              tokenValue as string,
+              asset?.decimals as number | undefined,
             ).toFixed();
 
           transactionMeta.txParams.value = hexToBN(
@@ -541,7 +542,7 @@ const RootRPCMethodsUI = (props: Props) => {
             ...transactionMeta.txParams,
           });
         } else {
-          transactionMeta.txParams.value = hexToBN(value ?? '0x0');
+          transactionMeta.txParams.value = hexToBN(value);
           transactionMeta.txParams.readableValue = fromWei(
             transactionMeta.txParams.value,
           );
@@ -557,7 +558,7 @@ const RootRPCMethodsUI = (props: Props) => {
         }
 
         if (
-          isApprovalTransaction(transactionData ?? '') &&
+          isApprovalTransaction(transactionData as string) &&
           (!value || isZeroValue(value))
         ) {
           setTransactionModalType(TransactionModalType.Transaction);
