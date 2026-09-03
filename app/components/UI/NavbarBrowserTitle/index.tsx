@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { fontStyles } from '../../../styles/common';
@@ -7,10 +6,60 @@ import Networks from '../../../util/networks';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Device from '../../../util/device';
 import { mockTheme, ThemeContext } from '../../../util/theme';
-import { selectProviderConfig } from '../../../selectors/networkController';
+import { Colors, Theme } from '../../../util/theme/models';
+import {
+  ProviderConfig,
+  selectProviderConfig,
+} from '../../../selectors/networkController';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+interface NavbarBrowserTitleRoute {
+  params?: {
+    showUrlModal?: () => void;
+  };
+}
+
+interface OwnProps {
+  /**
+   * hostname of the current webview
+   */
+  hostname: string;
+  /**
+   * Boolean that specifies if it is a secure website
+   */
+  https?: boolean;
+  /**
+   * Boolean that specifies if there is an error
+   */
+  error?: boolean;
+  /**
+   * Website icon
+   */
+  icon?: string;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: NavbarBrowserTitleRoute;
+}
+
+interface StateProps {
+  /**
+   * Object representing the configuration for the selected network
+   */
+  providerConfig: ProviderConfig;
+}
+
+type Props = OwnProps & StateProps;
+
+interface NetworkEntry {
+  name?: string;
+  color?: string;
+}
+
+const NetworkEntries = Networks as Record<string, NetworkEntry | undefined>;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       alignItems: 'center',
@@ -65,47 +114,22 @@ const createStyles = (colors) =>
  * UI PureComponent that renders inside the navbar
  * showing the view title and the selected network
  */
-class NavbarBrowserTitle extends PureComponent {
-  static propTypes = {
-    /**
-     * Object representing the configuration for the selected network
-     */
-    providerConfig: PropTypes.object.isRequired,
-    /**
-     * hostname of the current webview
-     */
-    hostname: PropTypes.string.isRequired,
-    /**
-     * Boolean that specifies if it is a secure website
-     */
-    https: PropTypes.bool,
-    /**
-     * Boolean that specifies if there is an error
-     */
-    error: PropTypes.bool,
-    /**
-     * Website icon
-     */
-    icon: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class NavbarBrowserTitle extends PureComponent<Props> {
+  static contextType = ThemeContext;
 
   onTitlePress = () => {
-    this.props.route.params?.showUrlModal?.();
+    this.props.route?.params?.showUrlModal?.();
   };
 
-  getNetworkName(providerConfig) {
-    let name = { ...Networks.rpc, color: null }.name;
+  getNetworkName(providerConfig: ProviderConfig) {
+    let name: string = { ...Networks.rpc, color: null }.name;
 
     if (providerConfig) {
       if (providerConfig.nickname) {
         name = providerConfig.nickname;
       } else if (providerConfig.type) {
-        const currentNetwork = Networks[providerConfig.type];
-        if (currentNetwork && currentNetwork.name) {
+        const currentNetwork = NetworkEntries[providerConfig.type];
+        if (currentNetwork?.name) {
           name = currentNetwork.name;
         }
       }
@@ -116,11 +140,10 @@ class NavbarBrowserTitle extends PureComponent {
 
   render = () => {
     const { https, providerConfig, hostname, error, icon } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const color =
-      (Networks[providerConfig.type] && Networks[providerConfig.type].color) ||
-      null;
+    const color = NetworkEntries[providerConfig.type]?.color || null;
     const name = this.getNetworkName(providerConfig);
 
     return (
@@ -163,10 +186,8 @@ class NavbarBrowserTitle extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   providerConfig: selectProviderConfig(state),
 });
-
-NavbarBrowserTitle.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(NavbarBrowserTitle);

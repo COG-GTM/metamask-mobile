@@ -113,11 +113,7 @@ const QRTabSwitcher = () => {
       ) : null}
 
       {selectedIndex === QRTabSwitcherScreens.Receive ? (
-        <ReceiveRequest
-          navigation={navigation}
-          hideModal={() => false}
-          showReceiveModal
-        />
+        <ReceiveRequest navigation={navigation} hideModal={() => false} />
       ) : null}
 
       <View style={styles.overlay}>
@@ -132,15 +128,10 @@ const QRTabSwitcher = () => {
           }
         >
           {selectedIndex === QRTabSwitcherScreens.Receive ? (
-            // @ts-expect-error proptypes components requires ts-expect-error
             <NavbarTitle
-              // @ts-expect-error proptypes components requires ts-expect-error
               title={strings(`receive.title`)}
-              // @ts-expect-error proptypes components requires ts-expect-error
               translate={false}
-              // @ts-expect-error proptypes components requires ts-expect-error
               disableNetwork
-              // @ts-expect-error proptypes components requires ts-expect-error
               networkName={networkName}
             />
           ) : null}
