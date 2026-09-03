@@ -293,6 +293,9 @@ function CollectibleContractElement({
         <View style={styles.collectibleContractIconContainer}>
           {!asset.favorites ? (
             <CollectibleMedia
+              {...({
+                iconStyle: styles.collectibleContractIcon,
+              } as Record<string, unknown>)}
               collectible={
                 {
                   name: strings('collectible.untitled_collection'),
