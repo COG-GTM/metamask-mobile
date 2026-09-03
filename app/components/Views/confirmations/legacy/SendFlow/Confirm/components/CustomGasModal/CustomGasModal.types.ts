@@ -1,46 +1,72 @@
+export interface TransactionParams {
+  data?: string;
+  from?: string;
+  to?: string;
+  value?: string;
+  gas?: string;
+  gasPrice?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+}
+
+export interface GasTransaction {
+  error?: string;
+  gasFeeMaxHex: string;
+  totalHex?: string;
+  totalMaxHex?: string;
+  suggestedGasLimit?: string;
+  [key: string]: unknown;
+}
+
+export interface GasOption {
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+}
+
+export interface GasObject {
+  legacyGasLimit?: string;
+  suggestedGasPrice?: string;
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+  [key: string]: unknown;
+}
+
 export interface CustomGasModalProps {
   gasSelected: string;
-  onChange: (gas: string) => void;
-  onCancel: () => void;
   animateOnChange?: boolean;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  isAnimating: any;
+  isAnimating: boolean;
   onlyGas: boolean;
   validateAmount: ({
     transaction,
     total,
   }: {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    transaction: any;
-    total: string;
-  }) => void;
+    transaction: TransactionParams;
+    total?: string;
+  }) => string;
   legacy: boolean;
   legacyGasData?: {
-    legacyGasLimit: string;
-    suggestedGasPrice: string;
+    legacyGasLimit?: string;
+    suggestedGasPrice?: string;
   };
-  EIP1559GasData?: {
-    maxFeePerGas: string;
-    maxPriorityFeePerGas: string;
-    suggestedMaxFeePerGas: string;
-    suggestedMaxPriorityFeePerGas: string;
-    suggestedGasLimit: string;
+  EIP1559GasData?: GasObject & {
+    maxFeePerGas?: string;
+    maxPriorityFeePerGas?: string;
+    suggestedMaxFeePerGas?: string;
+    suggestedMaxPriorityFeePerGas?: string;
+    suggestedGasLimit?: string;
+    [key: string]: unknown;
   };
-  EIP1559GasTxn?: {
-    suggestedGasLimit: string;
-    totalMaxHex: string;
+  EIP1559GasTxn?: Partial<GasTransaction> & {
+    suggestedGasLimit?: string;
+    totalMaxHex?: string;
   };
   onGasChanged: (gas: string) => void;
   onGasCanceled: (gas: string) => void;
   updateGasState: (state: {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    gasTxn: any;
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    gasObj: any;
+    gasTxn: GasTransaction;
+    gasObj: GasObject;
     gasSelect?: string;
     txnType: boolean;
   }) => void;
