@@ -80,9 +80,13 @@ session. A work unit is a source file **plus its co-located `*.test.js`** (same 
 same basename, e.g. `foo.js` + `foo.test.js`, or `index.js` + `index.test.js` /
 `<Dir>.test.js`); test files that pair with a source file in the checklist are never assigned
 separately. Only test files with no JS source sibling (e.g. `app/store/migrations/028.test.js`,
-whose source is already `028.ts`) are standalone units. Before launching a batch, the parent
-must dedupe assignments so no two concurrent children touch the same file. Use a Devin
-workflow / batch of child sessions; each child gets a prompt of the form:
+whose source is already `028.ts`) are standalone units. The pairing rule is really "every
+`*.test.js` in the same directory as the source": a directory with a single JS source and one or
+more differently-named tests is **one** unit — `app/reducers/notification/index.js` +
+`notification.test.js`, and `app/components/Views/NavigationUnitTest/index.js` +
+`TestScreen1/2/3.test.js`. Before launching a batch, the parent must dedupe assignments so no
+two concurrent children touch the same file. Use a Devin workflow / batch of child sessions;
+each child gets a prompt of the form:
 
 > Convert `<path>` from JavaScript to TypeScript in `COG-GTM/metamask-mobile` following
 > `docs/js-ts-migration-plan.md` §3. Open a PR titled
@@ -223,8 +227,11 @@ everything under `app/components/Views/confirmations/legacy/`.
 
 ### 4.5 Suggested concurrency
 
-- Waves 1 and 2 can run ~20–30 child sessions concurrently; conflicts are limited to this
-  doc's checklist (trivial to rebase).
+- Waves 1 and 2 can run ~20–30 child sessions concurrently; conflicts are limited to the two
+  shared files every child touches — this doc's checklist and `CHANGELOG.md` — and are
+  trivial to rebase (each child adds one checkbox tick and one changelog line). The parent
+  should merge finished PRs one at a time and have each remaining child rebase on `main`
+  before merge, rather than merging in bulk.
 - Sequenced chains in §4.3: one session per chain link, started when the predecessor merges.
 - Cap in-flight PRs touching `app/reducers/index.ts` to a few at a time to avoid churn on
   the shared `RootState` type.
