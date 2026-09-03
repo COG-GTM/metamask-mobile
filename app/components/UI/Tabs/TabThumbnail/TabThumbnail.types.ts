@@ -3,8 +3,8 @@ export interface TabThumbnailProps {
   tab: {
     url: string;
     id: number;
-    image: string;
+    image?: string;
   };
-  onClose: (tab: { url: string; id: number; image: string }) => void;
-  onSwitch: (tab: { url: string; id: number; image: string }) => void;
+  onClose: (tab: { url: string; id: number; image?: string }) => void;
+  onSwitch: (tab: { url: string; id: number; image?: string }) => void;
 }
