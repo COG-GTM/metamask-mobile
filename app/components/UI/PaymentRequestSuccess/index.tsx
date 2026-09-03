@@ -11,9 +11,10 @@ import {
   Platform,
 } from 'react-native';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
+import type { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
 import { fontStyles } from '../../../styles/common';
 import { getPaymentRequestSuccessOptionsTitle } from '../../UI/Navbar';
-import PropTypes from 'prop-types';
 import EvilIcons from 'react-native-vector-icons/EvilIcons';
 import StyledButton from '../StyledButton';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -29,12 +30,13 @@ import { strings } from '../../../../locales/i18n';
 import { protectWalletModalVisible } from '../../../actions/user';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { Theme } from '../../../util/theme/models';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { SendLinkViewSelectorsIDs } from '../../../../e2e/selectors/Receive/SendLinkView.selectors';
 
 const isIos = Device.isIos();
 
-const createStyles = (theme) =>
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -161,27 +163,52 @@ const createStyles = (theme) =>
 /**
  * View to interact with a previously generated payment request link
  */
-class PaymentRequestSuccess extends PureComponent {
-  static propTypes = {
+interface PaymentRequestSuccessParams {
+  link?: string;
+  qrLink?: string;
+  amount?: string;
+  symbol?: string;
+}
+
+type PaymentRequestSuccessRoute = ParamListBase & {
+  params: PaymentRequestSuccessParams;
+};
+
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface OwnProps {
     /**
      * Navigation object
      */
-    navigation: PropTypes.object,
+  navigation: NavigationProp<ParamListBase>;
     /**
      * Object that represents the current route info like params passed to it
      */
-    route: PropTypes.object,
-    /**
-    /* Triggers global alert
-    */
-    showAlert: PropTypes.func,
-    /**
-    /* Prompts protect wallet modal
-    */
-    protectWalletModalVisible: PropTypes.func,
-  };
+  route: RouteProp<PaymentRequestSuccessRoute, 'params'>;
+}
 
-  state = {
+interface DispatchProps {
+  showAlert: (config: AlertConfig) => void;
+  protectWalletModalVisible: () => void;
+}
+
+type Props = OwnProps & DispatchProps;
+
+interface State {
+  link: string;
+  qrLink: string;
+  amount: string;
+  symbol: string;
+  qrModalVisible: boolean;
+}
+
+class PaymentRequestSuccess extends PureComponent<Props, State> {
+  state: State = {
     link: '',
     qrLink: '',
     amount: '',
@@ -191,7 +218,8 @@ class PaymentRequestSuccess extends PureComponent {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getPaymentRequestSuccessOptionsTitle(navigation, colors),
     );
@@ -262,7 +290,7 @@ class PaymentRequestSuccess extends PureComponent {
 
   render() {
     const { link, amount, symbol, qrModalVisible } = this.state;
-    const theme = this.context || mockTheme;
+    const theme = (this.context as unknown as Theme) || mockTheme;
     const colors = theme.colors;
     const styles = createStyles(theme);
 
@@ -413,7 +441,7 @@ class PaymentRequestSuccess extends PureComponent {
 
 PaymentRequestSuccess.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
