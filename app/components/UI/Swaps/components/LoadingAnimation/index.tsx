@@ -109,7 +109,9 @@ const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   });
 
 function round(value: number, decimals: number): number {
-  return Math.round(Number(value + 'e' + decimals));
+  return Number(
+    Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals,
+  );
 }
 
 interface AggregatorMetadata {

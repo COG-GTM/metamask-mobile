@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios, { CancelTokenSource } from 'axios';
 import { swapsUtils } from '@metamask/swaps-controller';
-import { hasProperty, isObject } from '@metamask/utils';
+import { hasProperty, Hex, isObject } from '@metamask/utils';
 import { SwapsToken } from './index';
 
 interface TokenMetadataState {
@@ -18,7 +18,7 @@ const defaultTokenMetadata: TokenMetadataState = {
 
 function useFetchTokenMetadata(
   address: string | null | undefined,
-  chainId: string,
+  chainId: Hex,
 ): [boolean, TokenMetadataState] {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenMetadata, setTokenMetadata] = useState(defaultTokenMetadata);
@@ -37,7 +37,7 @@ function useFetchTokenMetadata(
         setTokenMetadata(defaultTokenMetadata);
         setIsLoading(true);
         const { data } = await axios.request({
-          url: swapsUtils.getTokenMetadataURL(chainId as `0x${string}`),
+          url: swapsUtils.getTokenMetadataURL(chainId),
           params: {
             address,
           },

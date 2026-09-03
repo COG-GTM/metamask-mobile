@@ -20,22 +20,22 @@ function useBalance(
       return null;
     }
     if (isSwapsNativeAsset(sourceToken)) {
-      const nativeBalance = accounts[selectedAddress]?.balance;
+      const nativeBalance = accounts[selectedAddress]?.balance as string;
       if (asUnits) {
         // Controller stores balances in hex for ETH
         return safeNumberToBN(nativeBalance || 0);
       }
-      return renderFromWei(nativeBalance ?? '0');
+      return renderFromWei(nativeBalance);
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);
 
-    if (tokenAddress && tokenAddress in balances) {
+    if (tokenAddress !== undefined && tokenAddress in balances) {
       if (asUnits) {
         return balances[tokenAddress];
       }
       return renderFromTokenMinimalUnit(
         balances[tokenAddress],
-        sourceToken.decimals ?? 0,
+        sourceToken.decimals as number,
       );
     }
     return safeNumberToBN(0);
