@@ -560,6 +560,7 @@ class DrawerView extends PureComponent<Props, State> {
     );
     if (!this.props.passwordSet || !this.props.seedphraseBackedUp) {
       if (
+        route !== undefined &&
         [
           'SetPasswordFlow',
           'ChoosePassword',
@@ -773,11 +774,11 @@ class DrawerView extends PureComponent<Props, State> {
     const { providerConfig, networkConfigurations } = this.props;
     if (providerConfig.type === RPC) {
       const blockExplorer = findBlockExplorerForRpc(
-        providerConfig.rpcUrl,
+        providerConfig.rpcUrl ?? '',
         networkConfigurations,
       );
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
-      const title = new UrlParser(blockExplorer).hostname;
+      const title = new UrlParser(blockExplorer ?? '').hostname;
       this.goToBrowserUrl(url, title);
     } else {
       const url = getEtherscanAddressUrl(
@@ -847,7 +848,7 @@ class DrawerView extends PureComponent<Props, State> {
         providerConfig: { rpcUrl },
       } = this.props;
       const blockExplorer = findBlockExplorerForRpc(
-        rpcUrl,
+        rpcUrl ?? '',
         networkConfigurations,
       );
       if (blockExplorer) {
@@ -938,7 +939,10 @@ class DrawerView extends PureComponent<Props, State> {
     let blockExplorer: string | undefined,
       blockExplorerName: string | undefined;
     if (type === RPC) {
-      blockExplorer = findBlockExplorerForRpc(rpcUrl, networkConfigurations);
+      blockExplorer = findBlockExplorerForRpc(
+        rpcUrl ?? '',
+        networkConfigurations,
+      );
       blockExplorerName = blockExplorer
         ? getBlockExplorerName(blockExplorer)
         : undefined;

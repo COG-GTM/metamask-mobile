@@ -113,11 +113,7 @@ const QRTabSwitcher = () => {
       ) : null}
 
       {selectedIndex === QRTabSwitcherScreens.Receive ? (
-        <ReceiveRequest
-          navigation={navigation}
-          hideModal={() => false}
-          showReceiveModal
-        />
+        <ReceiveRequest navigation={navigation} hideModal={() => false} />
       ) : null}
 
       <View style={styles.overlay}>
