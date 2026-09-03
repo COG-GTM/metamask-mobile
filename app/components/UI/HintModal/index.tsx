@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
@@ -17,8 +16,36 @@ import ButtonIcon, {
   ButtonIconSizes,
 } from '../../../component-library/components/Buttons/ButtonIcon';
 import { IconName } from '../../../component-library/components/Icons/Icon';
+import { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface Props {
+  /**
+   * Callback invoked when cancelling the modal
+   */
+  onCancel: () => void;
+  /**
+   * Callback invoked when confirming the modal
+   */
+  onConfirm: () => void;
+  /**
+   * Whether the modal is visible
+   */
+  modalVisible: boolean;
+  /**
+   * Callback invoked when the modal requests closing
+   */
+  onRequestClose: () => void;
+  /**
+   * Current hint value
+   */
+  value?: string;
+  /**
+   * Callback invoked when the hint text changes
+   */
+  onChangeText: (text: string) => void;
+}
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     hintWrapper: {
       flex: 1,
@@ -55,14 +82,14 @@ const createStyles = (colors) =>
     },
   });
 
-const HintModal = ({
+function HintModal({
   onCancel,
   onConfirm,
   modalVisible,
   onRequestClose,
   value,
   onChangeText,
-}) => {
+}: Props) {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
@@ -112,21 +139,12 @@ const HintModal = ({
       </TouchableWithoutFeedback>
     </ActionModal>
   );
-};
+}
 
-const propTypes = {
-  onCancel: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  onRequestClose: PropTypes.func.isRequired,
-  value: PropTypes.string,
-  onChangeText: PropTypes.func.isRequired,
-};
-const defaultProps = {
+const defaultProps: Partial<Props> = {
   modalVisible: false,
 };
 
-HintModal.propTypes = propTypes;
 HintModal.defaultProps = defaultProps;
 
 export default HintModal;

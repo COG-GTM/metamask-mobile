@@ -73,7 +73,10 @@ const Account = ({
       <Identicon diameter={15} address={address || selectedAddress} />
       <Text style={styles.accountText} primary centered numberOfLines={1}>
         {accountName} (
-        <EthereumAddress address={address || selectedAddress} type={'short'} />)
+        <EthereumAddress
+          address={address || selectedAddress || ''}
+          type={'short'}
+        />)
       </Text>
     </View>
   );
