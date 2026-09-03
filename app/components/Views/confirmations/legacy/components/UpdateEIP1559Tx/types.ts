@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
-import { GasFeeOptions, GasTransactionProps } from '../../../../../../core/GasPolling/types';
+import { GasTransactionProps } from '../../../../../../core/GasPolling/types';
 import { selectAccounts } from '../../../../../../selectors/accountTrackerController';
+import type { selectGasFeeEstimates } from '../../../../../../selectors/confirmTransaction';
 
 export interface UpdateEIP1559Props {
   /**
@@ -18,7 +19,15 @@ export interface UpdateEIP1559Props {
   /**
    * Gas fee estimates returned by the gas fee controller
    */
-  gasFeeEstimates: GasFeeOptions['gasFeeEstimates'];
+  gasFeeEstimates: Extract<
+    ReturnType<typeof selectGasFeeEstimates>,
+    {
+      medium: {
+        suggestedMaxFeePerGas: string;
+        suggestedMaxPriorityFeePerGas: string;
+      };
+    }
+  >;
   /**
    * Estimate type returned by the gas fee controller, can be market-fee, legacy or eth_gasPrice
    */
@@ -26,7 +35,7 @@ export interface UpdateEIP1559Props {
   /**
    * A string that represents the selected address
    */
-  selectedAddress: string;
+  selectedAddress: string | undefined;
   /**
    * A bool indicates whether tx is speed up/cancel
    */
@@ -34,7 +43,7 @@ export interface UpdateEIP1559Props {
   /**
    * Current provider ticker
    */
-  ticker: string;
+  ticker: string | undefined;
   /**
    * The max fee and max priorty fee selected tx
    */

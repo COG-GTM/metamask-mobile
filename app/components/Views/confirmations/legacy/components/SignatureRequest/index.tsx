@@ -134,13 +134,13 @@ const createStyles = (colors: Theme['colors']) =>
  */
 interface OwnProps {
   /** Callback triggered when this message signature is rejected */
-  onReject?: () => void;
+  onReject: () => void;
   /** Callback triggered when this message signature is approved */
-  onConfirm?: () => void;
+  onConfirm: () => void;
   /** Content to display above the action buttons */
   children?: React.ReactNode;
   /** Object containing current page title and url */
-  currentPageInformation?: PageMeta;
+  currentPageInformation: PageMeta;
   /** String representing signature type */
   type?: string;
   /** String representing the associated network */
@@ -150,12 +150,14 @@ interface OwnProps {
   /** Expands the message box on press. */
   toggleExpandedMessage?: () => void;
   /** Active address of account that triggered signing. */
-  fromAddress?: string;
-  isSigningQRObject?: boolean;
-  QRState?: IQRState;
+  fromAddress: string;
+  isSigningQRObject: boolean;
+  QRState: IQRState;
   testID?: string;
-  navigation?: unknown;
-  domain?: string;
+  navigation?: import('@react-navigation/native').NavigationProp<
+    import('@react-navigation/native').ParamListBase
+  >;
+  domain?: Record<string, unknown>;
 }
 
 interface StateProps {
@@ -163,21 +165,16 @@ interface StateProps {
   securityAlertResponse?: SecurityAlertResponse;
 }
 
-type Props = OwnProps & Partial<StateProps> & Partial<IWithMetricsAwarenessProps>;
+type Props = OwnProps & StateProps & IWithMetricsAwarenessProps;
 
 class SignatureRequest extends PureComponent<Props> {
-  context: React.ContextType<typeof ThemeContext> =
-    undefined as React.ContextType<typeof ThemeContext>;
-
   /**
    * Calls trackCancelSignature and onReject callback
    */
   onReject = () => {
-    this.props.onReject?.();
-    const { metrics } = this.props;
-    if (!metrics) return;
-    metrics.trackEvent(
-      metrics
+    this.props.onReject();
+    this.props.metrics.trackEvent(
+      this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CANCEL_SIGNATURE)
         .addProperties(this.getTrackingParams())
         .build(),
@@ -188,11 +185,9 @@ class SignatureRequest extends PureComponent<Props> {
    * Calls trackConfirmSignature and onConfirm callback
    */
   onConfirm = () => {
-    this.props.onConfirm?.();
-    const { metrics } = this.props;
-    if (!metrics) return;
-    metrics.trackEvent(
-      metrics
+    this.props.onConfirm();
+    this.props.metrics.trackEvent(
+      this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_CONFIRM_SIGNATURE)
         .addProperties(this.getTrackingParams())
         .build(),
@@ -213,17 +208,16 @@ class SignatureRequest extends PureComponent<Props> {
   };
 
   getStyles = () => {
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   componentDidMount = () => {
     const { currentPageInformation, type, fromAddress } = this.props;
 
-    const { metrics } = this.props;
-    if (!metrics) return;
-    metrics.trackEvent(
-      metrics
+    this.props.metrics.trackEvent(
+      this.props.metrics
         .createEventBuilder(MetaMetricsEvents.SIGNATURE_REQUESTED)
         .addProperties(
           getAnalyticsParams(
@@ -247,8 +241,8 @@ class SignatureRequest extends PureComponent<Props> {
       fromAddress,
     } = this.props;
     const styles = this.getStyles();
-    const url = currentPageInformation?.url || '';
-    const icon = currentPageInformation?.icon;
+    const url = currentPageInformation.url;
+    const icon = currentPageInformation.icon;
 
     const title = getCleanUrl(url);
     const arrowIcon = truncateMessage ? this.renderArrowIcon() : null;
@@ -258,13 +252,17 @@ class SignatureRequest extends PureComponent<Props> {
         <View style={styles.accountInfoCardWrapper}>
           <AccountInfoCard
             operation="signing"
-            fromAddress={fromAddress || ''}
+            fromAddress={fromAddress}
             origin={title}
           />
         </View>
         <TouchableOpacity
           style={styles.children}
-          onPress={truncateMessage ? toggleExpandedMessage : (null as never)}
+          onPress={
+            truncateMessage
+              ? toggleExpandedMessage
+              : (null as unknown as () => void)
+          }
         >
           <WebsiteIcon
             style={styles.domainLogo}
@@ -314,10 +312,8 @@ class SignatureRequest extends PureComponent<Props> {
       ),
       external_link_clicked: 'security_alert_support_link',
     };
-    const { metrics } = this.props;
-    if (!metrics) return;
-    metrics.trackEvent(
-      metrics
+    this.props.metrics.trackEvent(
+      this.props.metrics
         .createEventBuilder(MetaMetricsEvents.SIGNATURE_REQUESTED)
         .addProperties(analyticsParams)
         .build(),
@@ -328,7 +324,7 @@ class SignatureRequest extends PureComponent<Props> {
     const { securityAlertResponse, fromAddress } = this.props;
     let expandedHeight;
     const styles = this.getStyles();
-    const isLedgerAccount = isHardwareAccount(fromAddress || '', [
+    const isLedgerAccount = isHardwareAccount(fromAddress, [
       ExtendedKeyringTypes.ledger,
     ]);
 
@@ -385,11 +381,11 @@ class SignatureRequest extends PureComponent<Props> {
     return (
       <View style={[styles.root]}>
         <QRSigningDetails
-          QRState={QRState || { sync: { reading: false }, sign: {} }}
+          QRState={QRState}
           showCancelButton
           showHint={false}
           bypassAndroidCameraAccessCheck={false}
-          fromAddress={fromAddress || ''}
+          fromAddress={fromAddress}
         />
       </View>
     );
@@ -411,5 +407,13 @@ const mapStateToProps = (state: RootState): StateProps => ({
 SignatureRequest.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(
-  withMetricsAwareness(withQRHardwareAwareness(SignatureRequest)),
+  withQRHardwareAwareness(
+    withMetricsAwareness(
+      SignatureRequest as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+    ) as unknown as React.ComponentClass<{
+      QRState?: IQRState;
+      isSigningQRObject?: boolean;
+      isSyncingQRHardware?: boolean;
+    }>,
+  ),
 );

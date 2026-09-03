@@ -16,6 +16,13 @@ import { MetaMetrics } from '../../../../../../core/Analytics';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../../../util/test/accountsControllerTestUtils';
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
 
+const TypedSignForTest = TypedSign as unknown as React.ComponentType<{
+  currentPageInformation: { title: string; url: string };
+  messageParams: typeof messageParamsMock;
+  onConfirm: () => void;
+  onReject: () => void;
+}>;
+
 jest.mock('../../../../../../core/Analytics/MetaMetrics');
 
 const mockMetrics = {
@@ -103,7 +110,7 @@ function createWrapper({
 } = {}) {
   return shallow(
     <Provider store={store}>
-      <TypedSign
+      <TypedSignForTest
         currentPageInformation={{
           title: 'title',
           url: 'http://localhost:8545',
@@ -129,7 +136,7 @@ describe('TypedSign', () => {
     it('signs message', async () => {
       const origin = messageParamsMock.origin;
       const container = renderWithProvider(
-        <TypedSign
+        <TypedSignForTest
           currentPageInformation={{
             title: 'title',
             url: 'http://localhost:8545',
@@ -167,7 +174,7 @@ describe('TypedSign', () => {
         (NotificationManager.showSimpleNotification as any).mockReset();
 
         const container = renderWithProvider(
-          <TypedSign
+          <TypedSignForTest
             currentPageInformation={{
               title: _title,
               url: 'http://localhost:8545',
@@ -226,7 +233,7 @@ describe('TypedSign', () => {
         );
 
         const container = renderWithProvider(
-          <TypedSign
+          <TypedSignForTest
             currentPageInformation={{
               title: _title,
               url: 'http://localhost:8545',
@@ -265,7 +272,7 @@ describe('TypedSign', () => {
       mockReject.mockReset();
 
       const container = renderWithProvider(
-        <TypedSign
+        <TypedSignForTest
           currentPageInformation={{
             title: 'title',
             url: 'http://localhost:8545',
@@ -310,7 +317,7 @@ describe('TypedSign', () => {
       );
 
       const container = renderWithProvider(
-        <TypedSign
+        <TypedSignForTest
           currentPageInformation={{
             title: _title,
             url: 'http://localhost:8545',
@@ -352,7 +359,7 @@ describe('TypedSign', () => {
       mockReject.mockClear();
 
       const container = renderWithProvider(
-        <TypedSign
+        <TypedSignForTest
           currentPageInformation={{
             title: 'title',
             url: 'http://localhost:8545',
@@ -395,7 +402,7 @@ describe('TypedSign', () => {
 
     it('tracks event for approved requests', async () => {
       const container = renderWithProvider(
-        <TypedSign
+        <TypedSignForTest
           currentPageInformation={{
             title: 'title',
             url: 'http://localhost:8545',

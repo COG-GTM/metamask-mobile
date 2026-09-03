@@ -5,6 +5,8 @@ import {
   GasTransactionProps,
 } from '../../../../../../core/GasPolling/types';
 
+type GasOptionName = 'low' | 'medium' | 'high';
+
 export interface RenderInputProps {
   updateOption?: {
     isCancel: boolean;
@@ -85,11 +87,11 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Estimate option to compare with for too low warning
    */
-  warningMinimumEstimateOption?: string;
+  warningMinimumEstimateOption?: GasOptionName;
   /**
    * Suggested estimate option to show recommended values
    */
-  suggestedEstimateOption?: string;
+  suggestedEstimateOption?: GasOptionName;
   /**
    * Boolean to determine if the animation is happening
    */
@@ -97,7 +99,7 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Extra analytics params to be send with the gas analytics
    */
-  analyticsParams?: { view: string; [key: string]: string | undefined };
+  analyticsParams: { view: string; [key: string]: string | undefined };
   /**
    * This is used in calculating the new gas price from the advanced view.
    * The maxFeePerGas is the max fee per gas that the user can set.

@@ -34,11 +34,11 @@ interface SuggestedAsset {
 }
 
 interface Props {
-  onCancel?: () => void;
-  onConfirm?: () => void | Promise<void>;
+  onCancel: () => void;
+  onConfirm: () => void | Promise<void>;
   suggestedAssetMeta: {
     asset: SuggestedAsset;
-    interactingAddress?: string;
+    interactingAddress: string;
   };
   currentPageInformation?: PageMeta;
 }
@@ -129,12 +129,15 @@ const WatchAssetRequest = ({
   const styles = createStyles(colors);
   const [balance, , error] = useTokenBalance(
     asset.address,
-    interactingAddress || '',
+    interactingAddress,
   );
   const chainId = useSelector(selectEvmChainId);
   const balanceWithSymbol = error
     ? strings('transaction.failed')
-    : `${renderFromTokenMinimalUnit(balance || '0', asset.decimals)} ${
+    : `${renderFromTokenMinimalUnit(
+        balance as unknown as string,
+        asset.decimals,
+      )} ${
         asset.symbol
       }`;
 
@@ -142,13 +145,13 @@ const WatchAssetRequest = ({
 
   const getTokenAddedAnalyticsParams = () => {
     try {
-      const url = new URLParse(currentPageInformation?.url || '');
+      const url = new URLParse(currentPageInformation?.url as string);
 
       return {
         token_address: asset?.address,
         token_symbol: asset?.symbol,
         dapp_host_name: url?.host,
-        chain_id: getDecimalChainId(chainId || ''),
+        chain_id: getDecimalChainId(chainId as string),
         source: 'Dapp suggested (watchAsset)',
       };
     } catch (caughtError) {
@@ -163,7 +166,7 @@ const WatchAssetRequest = ({
   };
 
   const onConfirmPress = async () => {
-    await onConfirm?.();
+    await onConfirm();
     InteractionManager.runAfterInteractions(() => {
       const analyticsParams = getTokenAddedAnalyticsParams();
 
@@ -180,7 +183,7 @@ const WatchAssetRequest = ({
         duration: 5000,
         title: strings('wallet.token_toast.token_imported_title'),
         description: strings('wallet.token_toast.token_imported_desc', {
-          tokenSymbol: asset?.symbol || '---',
+          tokenSymbol: asset.symbol,
         }),
       });
     });
@@ -194,7 +197,7 @@ const WatchAssetRequest = ({
         <ApproveTransactionHeader
           origin={currentPageInformation?.url}
           url={activeTabUrl}
-          from={suggestedAssetMeta.interactingAddress || ''}
+          from={suggestedAssetMeta.interactingAddress}
           asset={{
             address,
             symbol,

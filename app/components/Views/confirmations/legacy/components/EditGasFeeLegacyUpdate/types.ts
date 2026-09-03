@@ -46,7 +46,7 @@ export interface EditGasFeeLegacyUpdateProps {
   /**
    * Extra analytics params to be send with the gas analytics
    */
-  analyticsParams?: { [key: string]: string | undefined };
+  analyticsParams: { [key: string]: string | undefined };
   view: string;
   onlyGas?: boolean;
   selectedGasObject: EditLegacyGasObject;
@@ -55,10 +55,10 @@ export interface EditGasFeeLegacyUpdateProps {
 }
 
 export interface EditLegacyGasTransaction {
-  suggestedGasLimit?: string;
-  suggestedGasPrice?: string;
-  transactionFee?: string;
-  transactionFeeFiat?: string;
+  suggestedGasLimit: string;
+  suggestedGasPrice: string;
+  transactionFee: string;
+  transactionFeeFiat: string;
 }
 
 export interface EditLegacyGasObject {

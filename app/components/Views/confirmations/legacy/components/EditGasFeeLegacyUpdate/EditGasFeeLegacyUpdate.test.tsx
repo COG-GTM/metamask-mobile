@@ -32,7 +32,7 @@ const selectedGasObjectForLegacy = {
 
 const sharedProps = {
   view: 'Transaction',
-  analyticsParams: undefined,
+  analyticsParams: undefined as unknown as { [key: string]: string | undefined },
   onSave: () => undefined,
   error: undefined,
   onCancel: () => undefined,

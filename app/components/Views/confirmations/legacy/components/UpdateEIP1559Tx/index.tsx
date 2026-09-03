@@ -24,6 +24,7 @@ import {
 } from '../../../../../../util/number';
 import { getTicker } from '../../../../../../util/transactions';
 import EditGasFee1559Update from '../EditGasFee1559Update';
+import type { EditGasFee1559UpdateProps } from '../EditGasFee1559Update/types';
 import { RootState } from '../../../../../../reducers';
 import {
   UpdateEIP1559Props,
@@ -115,7 +116,7 @@ const UpdateEIP1559Tx = ({
         return strings('transaction.invalid_amount');
       }
       const updateTxCost = hexToBN(totalMaxHexPrefixed);
-      const accountBalance = hexToBN(accounts[selectedAddress].balance);
+      const accountBalance = hexToBN(accounts[selectedAddress as string].balance);
       const isMaxFeePerGasMoreThanLegacyResult = isMaxFeePerGasMoreThanLegacy(
         new BigNumber(updateTx.suggestedMaxFeePerGas),
       );
@@ -245,7 +246,9 @@ const UpdateEIP1559Tx = ({
   return (
     <EditGasFee1559Update
       selectedGasValue={gasSelected}
-      gasOptions={gasFeeEstimates}
+      gasOptions={
+        gasFeeEstimates as EditGasFee1559UpdateProps['gasOptions']
+      }
       primaryCurrency={primaryCurrency}
       chainId={chainId}
       onChange={update1559TempGasValue}
@@ -277,8 +280,8 @@ const mapStateToProps = (
 ): StateProps => ({
   accounts: selectAccounts(state),
   selectedAddress:
-    selectSelectedInternalAccountFormattedAddress(state) || '',
-  ticker: selectNativeCurrencyByChainId(state, ownProps.chainId) || '',
+    selectSelectedInternalAccountFormattedAddress(state),
+  ticker: selectNativeCurrencyByChainId(state, ownProps.chainId),
   gasFeeEstimates: selectGasFeeEstimates(
     state,
   ) as UpdateEIP1559Props['gasFeeEstimates'],

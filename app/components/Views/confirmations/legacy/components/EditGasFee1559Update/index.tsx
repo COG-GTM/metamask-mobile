@@ -1,6 +1,5 @@
 /* eslint-disable react/no-unstable-nested-components */
 import BigNumber from 'bignumber.js';
-import { Hex } from '@metamask/utils';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ScrollView,
@@ -15,13 +14,13 @@ import { strings } from '../../../../../../../locales/i18n';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 import AppConstants from '../../../../../../core/AppConstants';
 import { useGasTransaction } from '../../../../../../core/GasPolling/GasPolling';
+import { GasTransactionProps } from '../../../../../../core/GasPolling/types';
 import {
   GAS_PRICE_INCREMENT as GAS_INCREMENT,
   GAS_LIMIT_INCREMENT,
   GAS_LIMIT_MIN,
   GAS_PRICE_MIN as GAS_MIN,
 } from '../../../../../../util/gasUtils';
-import { GasTransactionProps } from '../../../../../../core/GasPolling/types';
 import {
   getDecimalChainId,
   isMainnetByChainId,
@@ -43,8 +42,11 @@ import {
   RenderInputProps,
 } from './types';
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null;
+const HorizontalSelectorWithoutRequiredDisabled = HorizontalSelector as React.ComponentType<
+  Omit<React.ComponentProps<typeof HorizontalSelector>, 'disabled'> & {
+    disabled?: boolean;
+  }
+>;
 
 const EditGasFee1559Update = ({
   selectedGasValue,
@@ -98,76 +100,12 @@ const EditGasFee1559Update = ({
   const { colors } = useAppThemeFromContext() || mockTheme;
   const { trackEvent, createEventBuilder } = useMetrics();
   const styles = createStyles(colors);
-  const getGasOption = useCallback((option?: string) => {
-    if (option === 'low' || option === 'medium' || option === 'high') {
-      return gasOptions[option];
-    }
-    return undefined;
-  }, [gasOptions]);
-
-  const gasTransactionResult = useGasTransaction({
+  const gasTransaction = useGasTransaction({
     onlyGas,
     gasSelected: selectedOption,
     legacy: false,
     gasObject,
-  });
-  const gasTransactionForSave = useMemo<GasTransactionProps>(() => {
-    const source: Record<string, unknown> = {};
-    if (isRecord(gasTransactionResult)) {
-      Object.assign(source, gasTransactionResult);
-    }
-    const getGasValue = (key: string): string => String(source[key] ?? '');
-
-    return {
-      ...source,
-      error: undefined,
-      estimatedBaseFee: getGasValue('estimatedBaseFee'),
-      estimatedBaseFeeHex: getGasValue('estimatedBaseFeeHex'),
-      gasFeeMaxConversion: getGasValue('gasFeeMaxConversion'),
-      gasFeeMinConversion: getGasValue('gasFeeMinConversion'),
-      gasFeeMaxNative: getGasValue('gasFeeMaxNative'),
-      gasFeeMinNative: getGasValue('gasFeeMinNative'),
-      suggestedGasLimit: getGasValue('suggestedGasLimit'),
-      gasLimitHex: getGasValue('gasLimitHex') as Hex,
-      timeEstimate: getGasValue('timeEstimate'),
-      timeEstimateColor: getGasValue('timeEstimateColor'),
-      timeEstimateId: getGasValue('timeEstimateId'),
-      renderableGasFeeMaxNative: getGasValue('renderableGasFeeMaxNative'),
-      renderableGasFeeMinNative: getGasValue('renderableGasFeeMinNative'),
-      suggestedMaxFeePerGas: getGasValue('suggestedMaxFeePerGas'),
-      suggestedMaxFeePerGasHex: getGasValue('suggestedMaxFeePerGasHex'),
-      suggestedMaxPriorityFeePerGas: getGasValue(
-        'suggestedMaxPriorityFeePerGas',
-      ),
-      suggestedMaxPriorityFeePerGasHex: getGasValue(
-        'suggestedMaxPriorityFeePerGasHex',
-      ),
-      maxPriorityFeeNative: getGasValue('maxPriorityFeeNative'),
-      maxPriorityFeeConversion: getGasValue('maxPriorityFeeConversion'),
-      renderableGasFeeMaxConversion: getGasValue(
-        'renderableGasFeeMaxConversion',
-      ),
-      renderableGasFeeMinConversion: getGasValue(
-        'renderableGasFeeMinConversion',
-      ),
-      renderableMaxFeePerGasConversion: getGasValue(
-        'renderableMaxFeePerGasConversion',
-      ),
-      renderableMaxFeePerGasNative: getGasValue(
-        'renderableMaxFeePerGasNative',
-      ),
-      renderableMaxPriorityFeeConversion: getGasValue(
-        'renderableMaxPriorityFeeConversion',
-      ),
-      renderableMaxPriorityFeeNative: getGasValue(
-        'renderableMaxPriorityFeeNative',
-      ),
-      suggestedEstimatedGasLimit: getGasValue('suggestedEstimatedGasLimit'),
-      totalMaxHex: getGasValue('totalMaxHex'),
-    };
-  }, [gasTransactionResult]);
-  const gasTransaction = gasTransactionForSave;
-
+  }) as unknown as GasTransactionProps;
   const {
     renderableGasFeeMinNative,
     renderableGasFeeMaxNative,
@@ -190,7 +128,7 @@ const EditGasFee1559Update = ({
       return {
         ...analyticsParams,
         chain_id: getDecimalChainId(chainId),
-        function_type: analyticsParams?.view,
+        function_type: analyticsParams.view,
         gas_mode: selectedOption ? 'Basic' : 'Advanced',
         speed_set: selectedOption || undefined,
       };
@@ -229,17 +167,17 @@ const EditGasFee1559Update = ({
     );
 
     const newGasPriceObject = {
-      suggestedMaxFeePerGas: gasObject?.suggestedMaxFeePerGas || '',
+      suggestedMaxFeePerGas: gasObject?.suggestedMaxFeePerGas,
       suggestedMaxPriorityFeePerGas:
-        gasObject?.suggestedMaxPriorityFeePerGas || '',
-      suggestedGasLimit: gasObject?.suggestedGasLimit || '',
+        gasObject?.suggestedMaxPriorityFeePerGas,
+      suggestedGasLimit: gasObject?.suggestedGasLimit,
     };
 
-    onSave(gasTransactionForSave, newGasPriceObject);
+    onSave(gasTransaction, newGasPriceObject);
   }, [
     getAnalyticsParams,
     onSave,
-    gasTransactionForSave,
+    gasTransaction,
     gasObject,
     trackEvent,
     createEventBuilder,
@@ -257,11 +195,9 @@ const EditGasFee1559Update = ({
       setSelectedOption(option);
       updateGasObject({
         ...gasObject,
-        suggestedMaxFeePerGas:
-          gas.suggestedMaxFeePerGas || gasObject.suggestedMaxFeePerGas,
+        suggestedMaxFeePerGas: gas.suggestedMaxFeePerGas as string,
         suggestedMaxPriorityFeePerGas:
-          gas.suggestedMaxPriorityFeePerGas ||
-          gasObject.suggestedMaxPriorityFeePerGas,
+          gas.suggestedMaxPriorityFeePerGas as string,
         suggestedGasLimit: gas.suggestedGasLimit || gasObject.suggestedGasLimit,
       });
       onChange(option);
@@ -280,16 +216,16 @@ const EditGasFee1559Update = ({
   const changedMaxPriorityFee = useCallback(
     (value: string) => {
       const lowerValue = new BigNumber(
-        getGasOption(
-          warningMinimumEstimateOption || AppConstants.GAS_OPTIONS.LOW,
-        )?.suggestedMaxPriorityFeePerGas || '',
+        gasOptions?.[
+          warningMinimumEstimateOption as 'low' | 'medium' | 'high'
+        ]?.suggestedMaxPriorityFeePerGas,
       );
 
       const higherValue = new BigNumber(
-        gasOptions?.high?.suggestedMaxPriorityFeePerGas || '',
+        gasOptions?.high?.suggestedMaxPriorityFeePerGas,
       ).multipliedBy(new BigNumber(1.5));
       const updateFloor = new BigNumber(
-        updateOption?.maxPriortyFeeThreshold || '',
+        updateOption?.maxPriortyFeeThreshold as string,
       );
 
       const valueBN = new BigNumber(value);
@@ -327,7 +263,6 @@ const EditGasFee1559Update = ({
       changeGas,
       gasTransaction,
       gasOptions,
-      getGasOption,
       updateOption,
       warningMinimumEstimateOption,
     ],
@@ -336,14 +271,16 @@ const EditGasFee1559Update = ({
   const changedMaxFeePerGas = useCallback(
     (value: string) => {
       const lowerValue = new BigNumber(
-        getGasOption(
-          warningMinimumEstimateOption || AppConstants.GAS_OPTIONS.LOW,
-        )?.suggestedMaxFeePerGas || '',
+        gasOptions?.[
+          warningMinimumEstimateOption as 'low' | 'medium' | 'high'
+        ]?.suggestedMaxFeePerGas,
       );
       const higherValue = new BigNumber(
         gasOptions?.high?.suggestedMaxFeePerGas,
       ).multipliedBy(new BigNumber(1.5));
-      const updateFloor = new BigNumber(updateOption?.maxFeeThreshold || '');
+      const updateFloor = new BigNumber(
+        updateOption?.maxFeeThreshold as string,
+      );
 
       const valueBN = new BigNumber(value);
 
@@ -376,7 +313,6 @@ const EditGasFee1559Update = ({
       changeGas,
       gasTransaction,
       gasOptions,
-      getGasOption,
       updateOption,
       warningMinimumEstimateOption,
     ],
@@ -389,12 +325,12 @@ const EditGasFee1559Update = ({
       setMaxPriorityFeeError('');
       changeGas(
         {
-          ...getGasOption(option),
+        ...gasOptions?.[option as 'low' | 'medium' | 'high'],
         },
         option,
       );
     },
-    [changeGas, getGasOption],
+    [changeGas, gasOptions],
   );
 
   const shouldIgnore = useCallback(
@@ -421,11 +357,16 @@ const EditGasFee1559Update = ({
         .filter(({ name }) => !shouldIgnore(name))
         .map(({ name, label, ...option }) => ({
           name,
-          label: (selected: boolean, disabled: boolean) => (
-            <Text bold primary={selected && !disabled}>
-              {label}
-            </Text>
-          ),
+          label: function LabelComponent(
+            selected: boolean,
+            disabled: boolean,
+          ) {
+            return (
+              <Text bold primary={selected && !disabled}>
+                {label}
+              </Text>
+            );
+          },
           topLabel: recommended?.name === name && recommended.render,
           ...option,
           ...extendOptions[name],
@@ -477,9 +418,9 @@ const EditGasFee1559Update = ({
         {strings(value)}:
       </Text>{' '}
       {
-        getGasOption(
-          suggestedEstimateOption || AppConstants.GAS_OPTIONS.MEDIUM,
-        )?.suggestedMaxFeePerGas
+        gasOptions?.[
+          suggestedEstimateOption as 'low' | 'medium' | 'high'
+        ]?.suggestedMaxFeePerGas
       }{' '}
       GWEI
     </Text>
@@ -507,9 +448,8 @@ const EditGasFee1559Update = ({
         animateOnChange={animateOnChange}
       >
         <View>
-          <HorizontalSelector
-            selected={selectedOption || undefined}
-            disabled={false}
+          <HorizontalSelectorWithoutRequiredDisabled
+            selected={selectedOption as string | undefined}
             onPress={selectOption}
             options={renderOptions}
           />
@@ -682,7 +622,7 @@ const EditGasFee1559Update = ({
         </Alert>
       );
 
-    return error || undefined;
+    return error;
   }, [error, styles, colors]);
 
   const renderDisplayTitle = useMemo(() => {

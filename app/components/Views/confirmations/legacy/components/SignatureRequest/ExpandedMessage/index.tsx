@@ -80,13 +80,9 @@ interface Props {
   renderMessage: () => React.ReactNode;
   /** Expands the message box on press. */
   toggleExpandedMessage?: () => void;
-  toggleExpandedMessageMock?: () => void;
 }
 
 export default class ExpandedMessage extends PureComponent<Props> {
-  context: React.ContextType<typeof ThemeContext> =
-    undefined as React.ContextType<typeof ThemeContext>;
-
   render() {
     const {
       currentPageInformation,
@@ -96,7 +92,8 @@ export default class ExpandedMessage extends PureComponent<Props> {
     const url = currentPageInformation.url;
     const icon = currentPageInformation.icon;
     const title = getHost(url);
-    const colors = this.context?.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

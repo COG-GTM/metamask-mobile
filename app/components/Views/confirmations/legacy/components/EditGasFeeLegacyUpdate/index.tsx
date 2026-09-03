@@ -101,8 +101,8 @@ const EditGasFeeLegacy = ({
     );
 
     const newGasPriceObject = {
-      suggestedGasPrice: gasObjectLegacy?.suggestedGasPrice || '',
-      legacyGasLimit: gasObjectLegacy?.legacyGasLimit || '',
+      suggestedGasPrice: gasObjectLegacy?.suggestedGasPrice as string,
+      legacyGasLimit: gasObjectLegacy?.legacyGasLimit as string,
     };
     onSave(gasTransaction, newGasPriceObject);
   }, [
@@ -117,10 +117,14 @@ const EditGasFeeLegacy = ({
   ]);
 
   const changeGas = useCallback(
-    (gas: Partial<Pick<EditLegacyGasTransaction, 'suggestedGasLimit' | 'suggestedGasPrice'>>) => {
+    (
+      gas: Partial<
+        Pick<EditLegacyGasTransaction, 'suggestedGasLimit' | 'suggestedGasPrice'>
+      >,
+    ) => {
     updateGasObjectLegacy({
-      legacyGasLimit: gas.suggestedGasLimit,
-      suggestedGasPrice: gas.suggestedGasPrice,
+      legacyGasLimit: gas.suggestedGasLimit as string,
+      suggestedGasPrice: gas.suggestedGasPrice as string,
     });
     },
     [],
@@ -137,13 +141,13 @@ const EditGasFeeLegacy = ({
       };
       const lowerValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? estimate.low || ''
-          : estimate.gasPrice || '',
+          ? (estimate.low as string)
+          : (estimate.gasPrice as string),
       );
       const higherValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? estimate.high || ''
-          : estimate.gasPrice || '',
+          ? (estimate.high as string)
+          : (estimate.gasPrice as string),
       ).multipliedBy(new BigNumber(1.5));
 
       const valueBN = new BigNumber(value);
