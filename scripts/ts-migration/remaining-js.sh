@@ -8,6 +8,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 ROOT="${1:-app}"
+[ -d "$ROOT" ] || { echo "remaining-js: no such directory: $ROOT" >&2; exit 1; }
 
 # Files that intentionally stay JavaScript (see docs/ts-migration-tracker.md).
 EXCLUDE_REGEX='^(app/lib/ppom/blockaid-version\.js|app/util/test/assetFileTransformer\.js)$'
