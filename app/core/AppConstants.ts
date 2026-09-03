@@ -72,6 +72,8 @@ export default {
     LIMIT_SESSIONS: 20,
     DEEPLINK_SESSIONS: 'wc2sessions_deeplink',
     PROJECT_ID: process.env.WALLET_CONNECT_PROJECT_ID,
+    RELAY_URL: process.env.WALLET_CONNECT_RELAY_URL,
+    TELEMETRY_ENABLED: false,
     METADATA: {
       name: 'MetaMask Wallet',
       description: 'MetaMask Wallet Integration',

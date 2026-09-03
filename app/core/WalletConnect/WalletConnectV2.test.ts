@@ -16,6 +16,8 @@ import { Core } from '@walletconnect/core';
 jest.mock('../AppConstants', () => ({
   WALLET_CONNECT: {
     PROJECT_ID: 'test-project-id',
+    RELAY_URL: undefined,
+    TELEMETRY_ENABLED: false,
     METADATA: {
       name: 'Test Wallet',
       description: 'Test Wallet Description',
@@ -1060,7 +1062,11 @@ describe('WC2Manager', () => {
       expect(Core).toHaveBeenCalledWith({
         projectId: 'valid-project-id',
         logger: 'fatal',
+        telemetryEnabled: false,
       });
+      expect(Core).not.toHaveBeenCalledWith(
+        expect.objectContaining({ relayUrl: expect.anything() }),
+      );
       expect(result).toBeDefined();
     });
   });
