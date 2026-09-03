@@ -180,6 +180,10 @@ interface TransactionReviewDetailsCardProps {
 const ActionViewComponent = ActionView as unknown as ComponentType<ActionViewProps>;
 interface LegacyTextProps extends React.ComponentProps<typeof Text> {
   reset?: boolean;
+  grey?: boolean;
+  infoModal?: boolean;
+  bold?: boolean;
+  link?: boolean;
 }
 
 const TextWithReset = Text as unknown as ComponentType<LegacyTextProps>;
@@ -819,18 +823,20 @@ class ApproveTransactionReview extends PureComponent<Props, State> {
         toggleModal={this.toggleGasTooltip}
         body={
           <View>
-            <TextWithReset>
+            <TextWithReset grey infoModal>
               {strings('transaction.gas_education_1')}
               {strings(
                 `transaction.gas_education_2${isMainnet ? '_ethereum' : ''}`,
               )}{' '}
-              <TextWithReset>{strings('transaction.gas_education_3')}</TextWithReset>
+              <TextWithReset bold>
+                {strings('transaction.gas_education_3')}
+              </TextWithReset>
             </TextWithReset>
-            <TextWithReset>
+            <TextWithReset grey infoModal>
               {strings('transaction.gas_education_4')}
             </TextWithReset>
             <TouchableOpacity onPress={this.openLinkAboutGas}>
-              <TextWithReset>
+              <TextWithReset grey link infoModal>
                 {strings('transaction.gas_education_learn_more')}
               </TextWithReset>
             </TouchableOpacity>
