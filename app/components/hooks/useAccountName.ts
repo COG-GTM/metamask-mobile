@@ -11,8 +11,9 @@ export const useAccountName = () => {
 
   return useMemo(
     () =>
-      (isDefaultAccountName(defaultName) && ensName ? ensName : defaultName) ||
-      '',
+      (isDefaultAccountName(defaultName ?? '') && ensName
+        ? ensName
+        : defaultName) || '',
     [defaultName, ensName],
   );
 };

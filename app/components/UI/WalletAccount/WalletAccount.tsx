@@ -41,8 +41,9 @@ const WalletAccount = ({ style }: WalletAccountProps, ref: React.Ref<any>) => {
   const defaultName = selectedAccount?.metadata?.name;
   const accountName = useMemo(
     () =>
-      (isDefaultAccountName(defaultName) && ensName ? ensName : defaultName) ||
-      '',
+      (isDefaultAccountName(defaultName ?? '') && ensName
+        ? ensName
+        : defaultName) || '',
     [defaultName, ensName],
   );
 

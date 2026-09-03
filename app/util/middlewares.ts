@@ -1,5 +1,12 @@
 import Logger from './Logger';
 import trackErrorAsAnalytics from './metrics/TrackError/trackErrorAsAnalytics';
+import type {
+  Json,
+  JsonRpcError,
+  JsonRpcParams,
+  JsonRpcRequest,
+} from '@metamask/utils';
+import type { JsonRpcMiddleware } from '@metamask/json-rpc-engine';
 
 /**
  * List of rpc errors caused by the user rejecting a certain action.
@@ -15,23 +22,35 @@ const USER_REJECTED_ERRORS = ['user rejected', 'user denied', 'user cancelled'];
 
 const USER_REJECTED_ERROR_CODE = 4001;
 
+interface ExtendedJsonRpcRequest extends JsonRpcRequest<JsonRpcParams> {
+  origin?: string;
+  isMetamaskInternal?: boolean;
+}
+
+interface ErrorParams {
+  message: string;
+  orginalError: JsonRpcError;
+  res: Record<string, unknown>;
+  req: ExtendedJsonRpcRequest;
+  data?: unknown;
+}
+
 /**
  * Returns a middleware that appends the DApp origin to request
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createOriginMiddleware(opts) {
-  return function originMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ _,
-    /** @type {Function} */ next,
-  ) {
-    req.origin = opts.origin;
+export function createOriginMiddleware(opts: {
+  origin: string;
+}): JsonRpcMiddleware<JsonRpcParams, Json> {
+  return function originMiddleware(req, _, next) {
+    const extendedReq = req as ExtendedJsonRpcRequest;
+    extendedReq.origin = opts.origin;
 
     // web3-provider-engine compatibility
     // TODO:provider delete this after web3-provider-engine deprecation
-    if (!req.params) {
-      req.params = [];
+    if (!extendedReq.params) {
+      extendedReq.params = [];
     }
 
     next();
@@ -43,7 +62,10 @@ export function createOriginMiddleware(opts) {
  * @param {String} errorMessage
  * @returns {boolean}
  */
-export function containsUserRejectedError(errorMessage, errorCode) {
+export function containsUserRejectedError(
+  errorMessage: unknown,
+  errorCode?: number,
+): boolean {
   try {
     if (!errorMessage || !(typeof errorMessage === 'string')) return false;
 
@@ -57,7 +79,7 @@ export function containsUserRejectedError(errorMessage, errorCode) {
     if (errorCode === USER_REJECTED_ERROR_CODE) return true;
 
     return false;
-  } catch (e) {
+  } catch (_) {
     return false;
   }
 }
@@ -67,13 +89,12 @@ export function containsUserRejectedError(errorMessage, errorCode) {
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createLoggerMiddleware(opts) {
-  return function loggerMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ res,
-    /** @type {Function} */ next,
-  ) {
-    next((/** @type {Function} */ cb) => {
+export function createLoggerMiddleware(opts: {
+  origin: string;
+}): JsonRpcMiddleware<JsonRpcParams, Json> {
+  return function loggerMiddleware(req, res, next) {
+    const extendedReq = req as ExtendedJsonRpcRequest;
+    next((cb) => {
       if (res.error) {
         const { error, ...resWithoutError } = res;
         if (error) {
@@ -86,31 +107,31 @@ export function createLoggerMiddleware(opts) {
             /**
              * Example of a rpc error:
              * { "code":-32603,
-             *   "message":"Internal JSON-RPC error.",
-             *   "data":{"code":-32000,"message":"gas required exceeds allowance (59956966) or always failing transaction"}
+             * "message":"Internal JSON-RPC error.",
+             * "data":{"code":-32000,"message":"gas required exceeds allowance (59956966) or always failing transaction"}
              * }
              * This will make the error log to sentry with the title "gas required exceeds allowance (59956966) or always failing transaction"
              * making it easier to differentiate each error.
              */
-            const errorParams = {
+            const errorParams: ErrorParams = {
               message: 'Error in RPC response',
               orginalError: error,
-              res: resWithoutError,
-              req,
+              res: resWithoutError as Record<string, unknown>,
+              req: extendedReq,
             };
 
             if (error.data) {
               errorParams.data = error.data;
             }
 
-            Logger.error(error, errorParams);
+            Logger.error(error as unknown as Error, errorParams);
           }
         }
       }
-      if (req.isMetamaskInternal) {
+      if (extendedReq.isMetamaskInternal) {
         return;
       }
-      Logger.log(`RPC (${opts.origin}):`, req, '->', res);
+      Logger.log(`RPC (${opts.origin}):`, extendedReq, '->', res);
       cb();
     });
   };
