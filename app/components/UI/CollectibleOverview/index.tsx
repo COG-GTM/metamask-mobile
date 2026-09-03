@@ -80,7 +80,7 @@ interface Collectible {
   logo?: string;
   name?: string | null;
   standard?: string | null;
-  tokenId: string | number;
+  tokenId?: string | number;
   tradable?: boolean;
   [key: string]: unknown;
 }

@@ -22,7 +22,7 @@ import type { TokenI } from '../Tokens/types';
 
 interface Collectible {
   address: string;
-  name?: string;
+  name?: string | null;
   tokenId: string;
   [key: string]: unknown;
 }
