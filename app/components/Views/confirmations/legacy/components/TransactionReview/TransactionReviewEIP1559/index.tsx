@@ -177,7 +177,7 @@ const TransactionReviewEIP1559 = ({
     if (!isAnimating) (onEdit as () => void)();
   }, [isAnimating, onEdit]);
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = isMainnetByChainId(chainId as string);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
   let gasFeePrimary, gasFeeSecondary, gasFeeMaxPrimary;
   if (nativeCurrencySelected) {

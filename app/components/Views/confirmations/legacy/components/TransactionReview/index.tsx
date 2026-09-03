@@ -320,7 +320,9 @@ class TransactionReview extends PureComponent<Props, State> {
     const actionKey = await getTransactionReviewActionKey(
       {
         ...transactionMetadata,
-        transaction,
+        transaction: transaction as unknown as Parameters<
+          typeof getTransactionReviewActionKey
+        >[0]['transaction'],
         txParams: undefined,
       },
       chainId,
@@ -337,7 +339,9 @@ class TransactionReview extends PureComponent<Props, State> {
       }
       // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
       const symbol = (contract && contract.symbol) || 'ERC20';
-      assetAmount = `${decodeTransferData('transfer', data as string)[1]} ${symbol}`;
+      assetAmount = `${
+        (decodeTransferData('transfer', data as string) as string[])[1]
+      } ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
     }
@@ -486,7 +490,8 @@ class TransactionReview extends PureComponent<Props, State> {
 
   getConfirmButtonState() {
     const { securityAlertResponse } = this.props;
-    let confirmButtonState = ConfirmButtonState.Normal;
+    let confirmButtonState: (typeof ConfirmButtonState)[keyof typeof ConfirmButtonState] =
+      ConfirmButtonState.Normal;
 
     if (securityAlertResponse) {
       if (securityAlertResponse?.result_type === ResultType.Malicious) {
@@ -736,8 +741,8 @@ class TransactionReview extends PureComponent<Props, State> {
 }
 
 const mapStateToProps = (state: RootState): StateProps => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
+  const transaction = getNormalizedTxState(state) as unknown as ReviewTransaction;
+  const chainId = transaction?.chainId as Hex;
   const transactionMetadata = selectCurrentTransactionMetadata(state);
   const networkClientId = transactionMetadata?.networkClientId;
 

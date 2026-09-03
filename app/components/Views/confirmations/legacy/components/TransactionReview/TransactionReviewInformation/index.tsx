@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import type { Hex } from '@metamask/utils';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import {
   StyleSheet,
@@ -149,6 +150,8 @@ interface ReviewTransaction {
   selectedAsset: SelectedAsset;
   assetType: string;
   from: string;
+  chainId?: string;
+  networkClientId?: string;
   to?: string;
   gas?: string | BN;
   gasPrice?: string | BN;
@@ -327,7 +330,10 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
     edit && edit();
   };
 
-  getRenderTotals = (totalGas: string | BN, totalGasFiat: string) => {
+  getRenderTotals = (
+    totalGas: string | BN,
+    totalGasFiat: string | undefined,
+  ) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -483,7 +489,7 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
           currentCurrency,
           nativeCurrency: ticker,
           conversionRate,
-          exchangeRate,
+          exchangeRate: exchangeRate as unknown as number,
           tokenAmount,
           totalMinConversion,
           totalMaxConversion,
@@ -775,9 +781,9 @@ class TransactionReviewInformation extends PureComponent<Props, State> {
 }
 
 const mapStateToProps = (state: RootState): StateProps => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
-  const networkClientId = transaction?.networkClientId;
+  const transaction = getNormalizedTxState(state) as unknown as ReviewTransaction;
+  const chainId = transaction?.chainId as Hex;
+  const networkClientId = transaction?.networkClientId as string;
 
   return {
     chainId,
