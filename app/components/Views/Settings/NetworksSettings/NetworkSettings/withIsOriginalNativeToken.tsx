@@ -1,19 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import type { SafeChain } from '../../../../../components/hooks/useSafeChains';
 
 const CHAIN_ID_NETWORK_URL = 'https://chainid.network/chains.json';
-
-export interface SafeChain {
-  chainId: string | number;
-  name: string;
-  nativeCurrency: {
-    symbol: string;
-    name?: string;
-    decimals?: number;
-  };
-  rpc?: string[];
-  [key: string]: unknown;
-}
 
 export interface MatchedChainNetwork {
   safeChainsList: SafeChain[];
@@ -31,11 +20,13 @@ const withIsOriginalNativeToken = <P extends object>(
       useState<MatchedChainNetwork | null>(null);
 
     useEffect(() => {
-      axios.get<SafeChain[]>(CHAIN_ID_NETWORK_URL).then(({ data: safeChainsList }) => {
-        setMatchedChainNetwork({
-          safeChainsList: [...safeChainsList],
+      axios
+        .get<SafeChain[]>(CHAIN_ID_NETWORK_URL)
+        .then(({ data: safeChainsList }) => {
+          setMatchedChainNetwork({
+            safeChainsList: [...safeChainsList],
+          });
         });
-      });
     }, []);
 
     // Pass the value from useSelector as a prop to the WrappedComponent

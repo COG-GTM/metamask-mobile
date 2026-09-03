@@ -1,6 +1,4 @@
 /* eslint-disable dot-notation */
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   SafeAreaView,
@@ -11,8 +9,6 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
-  type ViewStyle,
-  type TextStyle,
 } from 'react-native';
 import {
   getApplicationName,
@@ -30,9 +26,7 @@ import type { Theme } from '../../../../util/theme/models';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
-const createStyles = (
-  colors: Theme['colors'],
-): Record<string, ViewStyle | TextStyle> =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -99,10 +93,10 @@ const foxImage = require('../../../../images/branding/fox.png'); // eslint-disab
  * View that contains app information
  */
 interface Props {
-    /**
+  /**
     /* navigation object required to push new views
     */
-    navigation?: NavigationProp<ParamListBase>;
+  navigation: NavigationProp<ParamListBase>;
 }
 
 interface State {
@@ -110,7 +104,7 @@ interface State {
   appVersion: string;
 }
 
-export default class AppInformation extends PureComponent<Props, State> {
+export class AppInformation extends PureComponent<Props, State> {
   static contextType = ThemeContext;
 
   state = {
@@ -120,7 +114,8 @@ export default class AppInformation extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.info_title'),
@@ -189,7 +184,8 @@ export default class AppInformation extends PureComponent<Props, State> {
   };
 
   render = () => {
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -212,7 +208,7 @@ export default class AppInformation extends PureComponent<Props, State> {
             ) : null}
           </View>
           <Text style={styles.title}>{strings('app_information.links')}</Text>
-          <View style={styles.links}>
+          <View>
             <TouchableOpacity onPress={this.onPrivacyPolicy}>
               <Text style={styles.link}>
                 {strings('app_information.privacy_policy')}
@@ -230,7 +226,7 @@ export default class AppInformation extends PureComponent<Props, State> {
             </TouchableOpacity>
           </View>
           <View style={styles.division} />
-          <View style={styles.links}>
+          <View>
             <TouchableOpacity onPress={this.onSupportCenter}>
               <Text style={styles.link}>
                 {strings('app_information.support_center')}
@@ -252,3 +248,9 @@ export default class AppInformation extends PureComponent<Props, State> {
     );
   };
 }
+
+interface TestCompatibleProps {
+  navigation?: object;
+}
+
+export default AppInformation as unknown as React.ComponentType<TestCompatibleProps>;

@@ -1,12 +1,5 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import React, { PureComponent } from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  type ViewStyle,
-  type TextStyle,
-} from 'react-native';
+import { SafeAreaView, StyleSheet } from 'react-native';
 import { strings } from '../../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import { connect } from 'react-redux';
@@ -15,7 +8,7 @@ import StyledButton from '../../../UI/StyledButton';
 import Engine from '../../../../core/Engine';
 import ActionSheet from '@metamask/react-native-actionsheet';
 import { mockTheme, ThemeContext } from '../../../../util/theme';
-import { selectChainId } from '../../../../selectors/networkController';
+import { selectEvmChainId } from '../../../../selectors/networkController';
 import Routes from '../../../../../app/constants/navigation/Routes';
 
 import { ContactsViewSelectorIDs } from '../../../../../e2e/selectors/Settings/Contacts/ContacsView.selectors';
@@ -25,9 +18,19 @@ import type { Theme } from '../../../../util/theme/models';
 import type { RootState } from '../../../../reducers';
 import type { AddressBookControllerState } from '@metamask/address-book-controller';
 
-const createStyles = (
-  colors: Theme['colors'],
-): Record<string, ViewStyle | TextStyle> =>
+interface AddressListProps {
+  chainId: ReturnType<typeof selectEvmChainId>;
+  onlyRenderAddressBook: boolean;
+  reloadAddressList: boolean;
+  onAccountPress: (address: string) => void;
+  onIconPress: () => void;
+  onAccountLongPress: (address: string) => void;
+}
+
+const TypedAddressList =
+  AddressList as unknown as React.ComponentType<AddressListProps>;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -51,23 +54,15 @@ interface State {
 }
 
 interface OwnProps {
-    /**
-     * Map representing the address book
-     */
-    addressBook: AddressBookControllerState['addressBook'];
-    /**
+  /**
      /* navigation object required to push new views
      */
-    navigation?: NavigationProp<ParamListBase>;
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: ReturnType<typeof selectChainId>;
+  navigation: NavigationProp<ParamListBase>;
 }
 
 interface StateProps {
   addressBook: AddressBookControllerState['addressBook'];
-  chainId: ReturnType<typeof selectChainId>;
+  chainId: ReturnType<typeof selectEvmChainId>;
 }
 
 type Props = OwnProps & StateProps;
@@ -84,7 +79,8 @@ class Contacts extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.contacts_title'),
@@ -126,6 +122,9 @@ class Contacts extends PureComponent<Props, State> {
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
     const { chainId } = this.props;
+    if (!this.contactAddressToRemove) {
+      return;
+    }
     AddressBookController.delete(chainId, this.contactAddressToRemove);
     this.updateAddressList();
   };
@@ -156,7 +155,8 @@ class Contacts extends PureComponent<Props, State> {
 
   render = () => {
     const { reloadAddressList } = this.state;
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const themeAppearance = (this.context as unknown as Theme).themeAppearance;
     const styles = createStyles(colors);
     const { chainId } = this.props;
@@ -166,7 +166,7 @@ class Contacts extends PureComponent<Props, State> {
         style={styles.wrapper}
         testID={ContactsViewSelectorIDs.CONTAINER}
       >
-        <AddressList
+        <TypedAddressList
           chainId={chainId}
           onlyRenderAddressBook
           reloadAddressList={reloadAddressList}
@@ -192,7 +192,9 @@ class Contacts extends PureComponent<Props, State> {
           cancelButtonIndex={1}
           destructiveButtonIndex={0}
           // eslint-disable-next-line react/jsx-no-bind
-          onPress={(index) => (index === 0 ? this.deleteContact() : null)}
+          onPress={(index: number) =>
+            index === 0 ? this.deleteContact() : null
+          }
           theme={themeAppearance}
         />
       </SafeAreaView>
@@ -202,7 +204,14 @@ class Contacts extends PureComponent<Props, State> {
 
 const mapStateToProps = (state: RootState): StateProps => ({
   addressBook: selectAddressBook(state),
-  chainId: selectChainId(state),
+  chainId: selectEvmChainId(state),
 });
 
-export default connect(mapStateToProps)(Contacts);
+const ConnectedContacts = connect(mapStateToProps)(Contacts);
+
+interface TestCompatibleProps {
+  navigation?: object;
+  [key: string]: unknown;
+}
+
+export default ConnectedContacts as unknown as React.ComponentType<TestCompatibleProps>;

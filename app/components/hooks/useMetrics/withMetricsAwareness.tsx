@@ -3,9 +3,13 @@ import useMetrics from './useMetrics';
 import { IWithMetricsAwarenessProps } from './withMetricsAwareness.types';
 
 const withMetricsAwareness =
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (Children: ComponentType<IWithMetricsAwarenessProps>) => (props: any) =>
-    <Children {...props} metrics={useMetrics()} />;
+  <P extends IWithMetricsAwarenessProps>(
+    Children: ComponentType<P>,
+  ): ComponentType<Omit<P, 'metrics'>> =>
+  (props: Omit<P, 'metrics'>) =>
+    React.createElement(
+      Children,
+      { ...props, metrics: useMetrics() } as unknown as P,
+    );
 
 export default withMetricsAwareness;

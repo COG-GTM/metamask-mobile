@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-shadow */
-// @ts-nocheck
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -8,8 +6,6 @@ import {
   View,
   Image,
   TouchableOpacity,
-  type ViewStyle,
-  type TextStyle,
 } from 'react-native';
 import { connect } from 'react-redux';
 
@@ -103,9 +99,7 @@ export const updateUserTraitsWithCurrencyType = (
   );
 };
 
-const createStyles = (
-  colors: Theme['colors'],
-): Record<string, ViewStyle | TextStyle> =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -185,59 +179,21 @@ interface State {
   languages: Record<string, string>;
 }
 
+interface SelectOption {
+  value: string;
+  label: string;
+  key: string;
+}
+
 interface OwnProps {
-    /**
-    /* State current currency
-    */
-    currentCurrency: string;
-    /**
+  /**
     /* navigation object required to push new views
     */
-    navigation: NavigationProp<ParamListBase>;
-    /**
-     * Called to set the active search engine
-     */
-    setSearchEngine: (value: string) => void;
-    /**
-     * Called to set primary currency
-     */
-    setPrimaryCurrency: (value: string) => void;
-    /**
-     * Active search engine
-     */
-    searchEngine: string;
-    /**
-     * Active primary currency
-     */
-    primaryCurrency: string;
-    /**
-     * Show a BlockieIcon instead of JazzIcon
-     */
-    useBlockieIcon: boolean;
-    /**
-     * called to toggle BlockieIcon
-     */
-    setUseBlockieIcon: (value: boolean) => void;
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: string;
-    /**
-     * A bool that represents if the user wants to hide zero balance token
-     */
-    hideZeroBalanceTokens: boolean;
-    /**
-     * Called to toggle zero balance token display
-     */
-    setHideZeroBalanceTokens: (value: boolean) => void;
-    /**
-     * App theme
-     */
-    // appTheme: string;
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: IUseMetricsHook;
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * App theme
+   */
+  // appTheme: string;
 }
 
 interface StateProps {
@@ -256,10 +212,18 @@ interface DispatchProps {
   setHideZeroBalanceTokens: (value: boolean) => void;
 }
 
-type Props = OwnProps & StateProps & DispatchProps;
+type Props = OwnProps &
+  StateProps &
+  DispatchProps & {
+    metrics: IUseMetricsHook;
+  };
 
 class Settings extends PureComponent<Props, State> {
   static contextType = ThemeContext;
+
+  languageOptions: SelectOption[] = [];
+  searchEngineOptions: SelectOption[] = [];
+  primaryCurrencyOptions: SelectOption[] = [];
 
   state: State = {
     currentLanguage: I18n.locale.substr(0, 2),
@@ -295,7 +259,8 @@ class Settings extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = (this.context as unknown as Theme).colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.general_title'),
@@ -312,7 +277,7 @@ class Settings extends PureComponent<Props, State> {
     this.setState({ languages });
     this.languageOptions = Object.keys(languages).map((key) => ({
       value: key,
-      label: languages[key],
+      label: languages[key as keyof typeof languages],
       key,
     }));
     this.searchEngineOptions = [
@@ -370,11 +335,11 @@ class Settings extends PureComponent<Props, State> {
       currentCurrency,
       primaryCurrency,
       useBlockieIcon,
-      setUseBlockieIcon,
+      setUseBlockieIcon: setUseBlockieIconAction,
       selectedAddress,
       hideZeroBalanceTokens,
     } = this.props;
-    const themeTokens = this.context || mockTheme;
+    const themeTokens = (this.context as unknown as Theme) || mockTheme;
     const { colors } = themeTokens;
     const styles = createStyles(colors);
 
@@ -520,7 +485,7 @@ class Settings extends PureComponent<Props, State> {
             <View style={styles.accessory}>
               <View style={styles.identicon_container}>
                 <TouchableOpacity
-                  onPress={() => setUseBlockieIcon(false)}
+                  onPress={() => setUseBlockieIconAction(false)}
                   style={styles.identicon_row}
                 >
                   <View
@@ -533,7 +498,7 @@ class Settings extends PureComponent<Props, State> {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => setUseBlockieIcon(true)}
+                  onPress={() => setUseBlockieIconAction(true)}
                   style={styles.identicon_row}
                 >
                   <View
@@ -563,22 +528,29 @@ const mapStateToProps = (state: RootState): StateProps => ({
   searchEngine: state.settings.searchEngine,
   primaryCurrency: state.settings.primaryCurrency,
   useBlockieIcon: state.settings.useBlockieIcon,
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) ?? '',
   hideZeroBalanceTokens: state.settings.hideZeroBalanceTokens,
   // appTheme: state.user.appTheme,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
-  setSearchEngine: (searchEngine: string) => dispatch(setSearchEngine(searchEngine)),
+  setSearchEngine: (searchEngine: string) =>
+    dispatch(setSearchEngine(searchEngine)),
   setPrimaryCurrency: (primaryCurrency: string) =>
     dispatch(setPrimaryCurrency(primaryCurrency)),
-  setUseBlockieIcon: (useBlockieIcon: boolean) =>
-    dispatch(setUseBlockieIcon(useBlockieIcon)),
+  setUseBlockieIcon: (value: boolean) => dispatch(setUseBlockieIcon(value)),
   setHideZeroBalanceTokens: (hideZeroBalanceTokens: boolean) =>
     dispatch(setHideZeroBalanceTokens(hideZeroBalanceTokens)),
 });
 
-export default connect(
+const ConnectedGeneralSettings = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(withMetricsAwareness(Settings));
+
+interface TestCompatibleProps {
+  navigation?: object;
+  [key: string]: unknown;
+}
+
+export default ConnectedGeneralSettings as unknown as React.ComponentType<TestCompatibleProps>;
