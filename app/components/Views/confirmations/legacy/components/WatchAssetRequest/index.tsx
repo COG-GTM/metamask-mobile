@@ -183,7 +183,7 @@ const WatchAssetRequest = ({
         duration: 5000,
         title: strings('wallet.token_toast.token_imported_title'),
         description: strings('wallet.token_toast.token_imported_desc', {
-          tokenSymbol: asset.symbol,
+          tokenSymbol: asset?.symbol || '---',
         }),
       });
     });

@@ -141,13 +141,13 @@ const EditGasFeeLegacy = ({
       };
       const lowerValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? (estimate.low as string)
-          : (estimate.gasPrice as string),
+          ? (estimate?.low as string)
+          : (estimate?.gasPrice as string),
       );
       const higherValue = new BigNumber(
         gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? (estimate.high as string)
-          : (estimate.gasPrice as string),
+          ? (estimate?.high as string)
+          : (estimate?.gasPrice as string),
       ).multipliedBy(new BigNumber(1.5));
 
       const valueBN = new BigNumber(value);
