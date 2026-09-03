@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -11,9 +10,25 @@ import { TRANSACTION_TYPES } from '../../../util/transactions';
 import Summary from '../../Base/Summary';
 import Text from '../../Base/Text';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import type { Theme } from '../../../util/theme/models';
 import { isTestNet } from '../../../util/networks';
 
-const createStyles = (colors) =>
+const TypedText = Text as React.ComponentType<
+  React.ComponentProps<typeof Text> & { italic?: boolean }
+>;
+
+interface TransactionSummaryProps {
+  amount?: string;
+  fee?: string;
+  totalAmount?: string;
+  secondaryTotalAmount?: string;
+  gasEstimationReady?: boolean;
+  onEditPress?: () => void;
+  transactionType?: string;
+  chainId?: string;
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     loader: {
       backgroundColor: colors.background.default,
@@ -21,21 +36,13 @@ const createStyles = (colors) =>
     },
   });
 
-export default class TransactionSummary extends PureComponent {
-  static propTypes = {
-    amount: PropTypes.string,
-    fee: PropTypes.string,
-    totalAmount: PropTypes.string,
-    secondaryTotalAmount: PropTypes.string,
-    gasEstimationReady: PropTypes.bool,
-    onEditPress: PropTypes.func,
-    transactionType: PropTypes.string,
-    chainId: PropTypes.string,
-  };
+export default class TransactionSummary extends PureComponent<TransactionSummaryProps> {
+  static contextType = ThemeContext;
 
-  renderIfGastEstimationReady = (children) => {
+  renderIfGastEstimationReady = (children: React.ReactNode) => {
     const { gasEstimationReady } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return !gasEstimationReady ? (
@@ -69,7 +76,7 @@ export default class TransactionSummary extends PureComponent {
       chainId,
     } = this.props;
 
-    const isTestNetResult = isTestNet(chainId);
+    const isTestNetResult = isTestNet(chainId as string);
 
     if (
       this.props.transactionType === TRANSACTION_TYPES.RECEIVED_TOKEN ||
@@ -78,18 +85,18 @@ export default class TransactionSummary extends PureComponent {
       return (
         <Summary>
           <Summary.Row>
-            <Text small bold primary>
+            <TypedText small bold primary>
               {strings('transaction.amount')}
-            </Text>
-            <Text small bold primary upper={!isTestNetResult}>
+            </TypedText>
+            <TypedText small bold primary upper={!isTestNetResult}>
               {amount}
-            </Text>
+            </TypedText>
           </Summary.Row>
           {secondaryTotalAmount && (
             <Summary.Row end last>
-              <Text small right upper={!isTestNetResult}>
+              <TypedText small right upper={!isTestNetResult}>
                 {secondaryTotalAmount}
-              </Text>
+              </TypedText>
             </Summary.Row>
           )}
         </Summary>
@@ -98,20 +105,20 @@ export default class TransactionSummary extends PureComponent {
     return (
       <Summary>
         <Summary.Row>
-          <Text small primary>
+          <TypedText small primary>
             {this.renderAmountTitle()}
-          </Text>
-          <Text small primary upper={!isTestNetResult}>
+          </TypedText>
+          <TypedText small primary upper={!isTestNetResult}>
             {amount}
-          </Text>
+          </TypedText>
         </Summary.Row>
         <Summary.Row>
           <Summary.Col>
-            <Text small primary italic>
+            <TypedText small primary italic>
               {!fee
                 ? strings('transaction.transaction_fee_less')
                 : strings('transaction.transaction_fee_estimated')}
-            </Text>
+            </TypedText>
             {!fee || !onEditPress ? null : (
               <TouchableOpacity
                 disabled={!gasEstimationReady}
@@ -119,41 +126,39 @@ export default class TransactionSummary extends PureComponent {
                 key="transactionFeeEdit"
                 testID=""
               >
-                <Text small link>
+                <TypedText small link>
                   {'  '}
                   {strings('transaction.edit')}
-                </Text>
+                </TypedText>
               </TouchableOpacity>
             )}
           </Summary.Col>
           {!!fee &&
             this.renderIfGastEstimationReady(
-              <Text small primary upper={!isTestNetResult}>
+              <TypedText small primary upper={!isTestNetResult}>
                 {fee}
-              </Text>,
+              </TypedText>,
             )}
         </Summary.Row>
         <Summary.Separator />
         <Summary.Row>
-          <Text small bold primary>
+          <TypedText small bold primary>
             {strings('transaction.total_amount')}
-          </Text>
+          </TypedText>
           {this.renderIfGastEstimationReady(
-            <Text small bold primary upper={!isTestNetResult}>
+            <TypedText small bold primary upper={!isTestNetResult}>
               {totalAmount}
-            </Text>,
+            </TypedText>,
           )}
         </Summary.Row>
         <Summary.Row end last>
           {this.renderIfGastEstimationReady(
-            <Text small right upper={!isTestNetResult}>
+            <TypedText small right upper={!isTestNetResult}>
               {secondaryTotalAmount}
-            </Text>,
+            </TypedText>,
           )}
         </Summary.Row>
       </Summary>
     );
   };
 }
-
-TransactionSummary.contextType = ThemeContext;

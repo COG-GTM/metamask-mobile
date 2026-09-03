@@ -1,8 +1,19 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Text,
+  type TextProps,
+  type TextStyle,
+} from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
 import { getHasOrders } from '../../../reducers/fiatOrders';
 import { getTransactionsNavbarOptions } from '../../UI/Navbar';
@@ -39,8 +50,14 @@ import {
   getFontFamily,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
+import type { Theme } from '../../../util/theme/models';
+import type { RootState } from '../../../reducers';
 
-const createStyles = (params) => {
+interface ScrollableTabViewRef {
+  goToPage: (page: number) => void;
+}
+
+const createStyles = (params: { theme: Theme }) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -82,7 +99,6 @@ const createStyles = (params) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
@@ -93,6 +109,10 @@ const createStyles = (params) => {
   });
 };
 
+const HeaderText = Text as React.ComponentType<
+  TextProps & { variant?: TextVariant }
+>;
+
 const ActivityView = () => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -102,7 +122,7 @@ const ActivityView = () => {
   });
 
   const { trackEvent, createEventBuilder } = useMetrics();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const selectedAddress = useSelector(
     selectSelectedInternalAccountFormattedAddress,
   );
@@ -111,10 +131,12 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<ScrollableTabView & ScrollableTabViewRef>(null);
+  const params = useParams<{ redirectToOrders?: boolean }>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +150,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            accountsByChainId[selectedAddress ?? ''] ?? {},
           ).length,
         })
         .build(),
@@ -154,7 +176,7 @@ const ActivityView = () => {
           title,
           colors,
           navigation,
-          selectedAddress,
+          selectedAddress ?? '',
           openAccountSelector,
         ),
       );
@@ -174,15 +196,29 @@ const ActivityView = () => {
     }, [hasOrders, navigation, params.redirectToOrders]),
   );
 
+  const TypedTransactionsView = TransactionsView as React.ComponentType<{
+    tabLabel?: string;
+  }>;
+  const TypedMultichainTransactionsView =
+    MultichainTransactionsView as React.ComponentType<{ tabLabel?: string }>;
+  const TypedRampOrdersList = RampOrdersList as React.ComponentType<{
+    tabLabel?: string;
+  }>;
+  const TypedErrorBoundary = ErrorBoundary as unknown as React.ComponentType<{
+    children?: React.ReactNode;
+    view: string;
+    navigation?: NavigationProp<ParamListBase>;
+  }>;
+
   return (
-    <ErrorBoundary navigation={navigation} view="ActivityView">
+    <TypedErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
-        <Text
-          style={styles.title}
+        <HeaderText
+          style={styles.title as unknown as TextStyle}
           variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
         >
           {strings('transactions_view.title')}
-        </Text>
+        </HeaderText>
       </View>
       <View style={styles.wrapper}>
         <View style={styles.controlButtonOuterWrapper}>
@@ -212,20 +248,22 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <TypedMultichainTransactionsView
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TypedTransactionsView
+              tabLabel={strings('transactions_view.title')}
+            />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <TypedRampOrdersList
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}
         </ScrollableTabView>
       </View>
-    </ErrorBoundary>
+    </TypedErrorBoundary>
   );
 };
 

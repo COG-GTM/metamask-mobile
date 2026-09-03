@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect, useSelector } from 'react-redux';
+import type { Dispatch } from 'redux';
 import { withNavigation } from '@react-navigation/compat';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { InternalAccount } from '@metamask/keyring-internal-api';
+import {
+  CHAIN_IDS,
+  type TransactionMeta,
+} from '@metamask/transaction-controller';
+import type { RootState } from '../../../reducers';
 import { showAlert } from '../../../actions/alert';
 import Transactions from '../../UI/Transactions';
 import {
@@ -34,8 +41,32 @@ import { selectSelectedInternalAccount } from '../../../selectors/accountsContro
 import { selectSortedTransactions } from '../../../selectors/transactionController';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectTokenNetworkFilter } from '../../../selectors/preferencesController';
-import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { PopularList } from '../../../util/networks/customNetworks';
+
+type TransactionMetaWithImportTime = TransactionMeta & {
+  insertImportTime?: boolean;
+};
+
+interface OwnProps {
+  navigation: NavigationProp<ParamListBase>;
+}
+
+interface StateProps {
+  conversionRate: ReturnType<typeof selectConversionRate>;
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  selectedInternalAccount: InternalAccount | undefined;
+  networkType: ReturnType<typeof selectProviderType>;
+  transactions: TransactionMetaWithImportTime[];
+  chainId: ReturnType<typeof selectChainId>;
+  tokens: ReturnType<typeof selectTokens>;
+  tokenNetworkFilter: ReturnType<typeof selectTokenNetworkFilter>;
+}
+
+interface DispatchProps {
+  showAlert: (config: Parameters<typeof showAlert>[0]) => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps;
 
 const styles = StyleSheet.create({
   wrapper: {
@@ -43,56 +74,65 @@ const styles = StyleSheet.create({
   },
 });
 
+const addAccountTimeFlagFilterTyped = addAccountTimeFlagFilter as unknown as (
+  transaction: TransactionMetaWithImportTime,
+  addedAccountTime: number | undefined,
+  accountAddedTimeInsertPointFound: boolean,
+) => boolean;
+
 const TransactionsView = ({
   navigation,
-  conversionRate,
   selectedInternalAccount,
-  networkType,
-  currentCurrency,
   transactions,
   chainId,
   tokens,
   tokenNetworkFilter,
-}) => {
-  const [allTransactions, setAllTransactions] = useState([]);
-  const [submittedTxs, setSubmittedTxs] = useState([]);
-  const [confirmedTxs, setConfirmedTxs] = useState([]);
-  const [loading, setLoading] = useState();
+}: Props) => {
+  const [allTransactions, setAllTransactions] = useState<
+    TransactionMetaWithImportTime[]
+  >([]);
+  const [submittedTxs, setSubmittedTxs] = useState<
+    TransactionMetaWithImportTime[]
+  >([]);
+  const [confirmedTxs, setConfirmedTxs] = useState<
+    TransactionMetaWithImportTime[]
+  >([]);
+  const [loading, setLoading] = useState<boolean | undefined>();
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
-  const selectedAddress = toChecksumHexAddress(
-    selectedInternalAccount?.address,
-  );
+  const selectedAddress = selectedInternalAccount?.address
+    ? toChecksumHexAddress(selectedInternalAccount.address)
+    : undefined;
 
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
 
   const filterTransactions = useCallback(
-    (networkId) => {
+    (networkId: string) => {
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
-      const submittedTxs = [];
-      const confirmedTxs = [];
-      const submittedNonces = [];
+      const pendingTransactions: TransactionMetaWithImportTime[] = [];
+      const confirmedTransactions: TransactionMetaWithImportTime[] = [];
+      const submittedNonces: (string | number | undefined)[] = [];
 
       const allTransactionsSorted = sortTransactions(transactions).filter(
         (tx, index, self) =>
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
 
-      const allTransactions = allTransactionsSorted.filter((tx) => {
+      const filteredTransactions = allTransactionsSorted.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
           tokens,
-          selectedAddress,
+          selectedAddress ?? '',
           networkId,
           chainId,
-          tokenNetworkFilter,
+          tokenNetworkFilter as unknown as { [key: string]: boolean }[],
         );
 
         if (!filter) return false;
 
-        tx.insertImportTime = addAccountTimeFlagFilter(
+        tx.insertImportTime = addAccountTimeFlagFilterTyped(
           tx,
           addedAccountTime,
           accountAddedTimeInsertPointFound,
@@ -104,10 +144,10 @@ const TransactionsView = ({
           case TX_SIGNED:
           case TX_UNAPPROVED:
           case TX_PENDING:
-            submittedTxs.push(tx);
+            pendingTransactions.push(tx);
             return false;
           case TX_CONFIRMED:
-            confirmedTxs.push(tx);
+            confirmedTransactions.push(tx);
             break;
         }
 
@@ -115,39 +155,40 @@ const TransactionsView = ({
       });
 
       const allTransactionsFiltered = isPopularNetwork
-        ? allTransactions.filter(
+        ? filteredTransactions.filter(
             (tx) =>
               tx.chainId === CHAIN_IDS.MAINNET ||
               tx.chainId === CHAIN_IDS.LINEA_MAINNET ||
               PopularList.some((network) => network.chainId === tx.chainId),
           )
-        : allTransactions.filter((tx) => tx.chainId === chainId);
+        : filteredTransactions.filter((tx) => tx.chainId === chainId);
 
-      const submittedTxsFiltered = submittedTxs.filter(({ txParams }) => {
-        const { from, nonce } = txParams;
-        if (!toLowerCaseEquals(from, selectedAddress)) {
-          return false;
-        }
-        const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTxs.find(
-          (tx) =>
-            toLowerCaseEquals(
-              safeToChecksumAddress(tx.txParams.from),
-              selectedAddress,
-            ) && tx.txParams.nonce === nonce,
-        );
-        if (alreadyConfirmed) {
-          return false;
-        }
-        submittedNonces.push(nonce);
-        return !alreadySubmitted;
-      });
+      const submittedTxsFiltered = pendingTransactions.filter(
+        ({ txParams }) => {
+          const { from, nonce } = txParams;
+          if (!toLowerCaseEquals(from, selectedAddress)) {
+            return false;
+          }
+          const alreadySubmitted = submittedNonces.includes(nonce);
+          const alreadyConfirmed = confirmedTransactions.find(
+            (tx) =>
+              toLowerCaseEquals(
+                safeToChecksumAddress(tx.txParams.from),
+                selectedAddress,
+              ) && tx.txParams.nonce === nonce,
+          );
+          if (alreadyConfirmed) {
+            return false;
+          }
+          submittedNonces.push(nonce);
+          return !alreadySubmitted;
+        },
+      );
 
       // If the account added insert point is not found, add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
-        allTransactionsFiltered &&
-        allTransactionsFiltered.length
+        allTransactionsFiltered?.length
       ) {
         allTransactionsFiltered[
           allTransactionsFiltered.length - 1
@@ -156,7 +197,7 @@ const TransactionsView = ({
 
       setAllTransactions(allTransactionsFiltered);
       setSubmittedTxs(submittedTxsFiltered);
-      setConfirmedTxs(confirmedTxs);
+      setConfirmedTxs(confirmedTransactions);
       setLoading(false);
     },
     [
@@ -181,60 +222,22 @@ const TransactionsView = ({
   return (
     <View style={styles.wrapper}>
       <Transactions
-        navigation={navigation}
+        navigation={
+          navigation as unknown as {
+            navigate: (...args: unknown[]) => void;
+            push: (...args: unknown[]) => void;
+          }
+        }
         transactions={allTransactions}
         submittedTransactions={submittedTxs}
         confirmedTransactions={confirmedTxs}
-        conversionRate={conversionRate}
-        currentCurrency={currentCurrency}
-        selectedAddress={selectedAddress}
-        networkType={networkType}
         loading={loading}
       />
     </View>
   );
 };
 
-TransactionsView.propTypes = {
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * InternalAccount object required to get account name, address and import time
-   */
-  selectedInternalAccount: PropTypes.object,
-  /**
-   * navigation object required to push new views
-   */
-  navigation: PropTypes.object,
-  /**
-   * An array that represents the user transactions
-   */
-  transactions: PropTypes.array,
-  /**
-   * A string represeting the network name
-   */
-  networkType: PropTypes.string,
-  /**
-   * Array of ERC20 assets
-   */
-  tokens: PropTypes.array,
-  /**
-   * Current chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * Array of network tokens filter
-   */
-  tokenNetworkFilter: PropTypes.object,
-};
-
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState): StateProps => {
   const chainId = selectChainId(state);
 
   return {
@@ -242,18 +245,26 @@ const mapStateToProps = (state) => {
     currentCurrency: selectCurrentCurrency(state),
     tokens: selectTokens(state),
     selectedInternalAccount: selectSelectedInternalAccount(state),
-    transactions: selectSortedTransactions(state),
+    transactions: selectSortedTransactions(
+      state,
+    ) as unknown as TransactionMetaWithImportTime[],
     networkType: selectProviderType(state),
     chainId,
     tokenNetworkFilter: selectTokenNetworkFilter(state),
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
 });
+
+const withNavigationTyped = withNavigation as unknown as (
+  component: React.ComponentType<Props>,
+) => React.ComponentType<Omit<Props, 'navigation'>>;
+
+const TransactionsViewWithNavigation = withNavigationTyped(TransactionsView);
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withNavigation(TransactionsView));
+)(TransactionsViewWithNavigation);

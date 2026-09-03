@@ -1,7 +1,10 @@
 import React from 'react';
 import ActivityView from '.';
 import { backgroundState } from '../../../util/test/initial-root-state';
-import renderWithProvider from '../../../util/test/renderWithProvider';
+import renderWithProvider, {
+  type DeepPartial,
+} from '../../../util/test/renderWithProvider';
+import type { RootState } from '../../../reducers';
 import { createStackNavigator } from '@react-navigation/stack';
 
 const Stack = createStackNavigator();
@@ -18,9 +21,7 @@ jest.mock('../../../core/Engine', () => ({
   },
 }));
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const renderComponent = (state: any = {}) =>
+const renderComponent = (state: DeepPartial<RootState> = {}) =>
   renderWithProvider(
     <Stack.Navigator>
       <Stack.Screen name="Amount" options={{}}>
