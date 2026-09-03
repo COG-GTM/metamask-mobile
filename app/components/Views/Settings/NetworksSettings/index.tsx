@@ -153,9 +153,11 @@ interface StateProps {
     typeof selectEvmNetworkConfigurationsByChainId
   >;
   providerConfig: ProviderConfig;
+  ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   nonEvmNetworkConfigurations: ReturnType<
     typeof selectNonEvmNetworkConfigurationsByChainId
   >;
+  ///: END:ONLY_INCLUDE_IF
 }
 
 type Props = OwnProps & StateProps;
