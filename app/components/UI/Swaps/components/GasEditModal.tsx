@@ -179,7 +179,7 @@ interface OwnProps {
   /**
    * Function to check if user has enough balance
    */
-  checkEnoughEthBalance?: (totalHex: string) => boolean;
+  checkEnoughEthBalance?: (totalHex?: string) => boolean;
   /**
    * Wether the swap is from native asset
    */
@@ -262,22 +262,22 @@ function GasEditModal({
       Object.keys(EIP1559TransactionDataTemp).length > 0
     ) {
       setHasEnoughEthBalance(
-        EIP1559TransactionDataTemp?.totalMaxHex
-          ? checkEnoughEthBalance?.(
-              EIP1559TransactionDataTemp.totalMaxHex.toString(16),
-            ) ?? false
-          : false,
+        Boolean(
+          checkEnoughEthBalance?.(
+            EIP1559TransactionDataTemp?.totalMaxHex?.toString(16),
+          ),
+        ),
       );
     } else if (
       LegacyTransactionDataTemp &&
       Object.keys(LegacyTransactionDataTemp).length > 0
     ) {
       setHasEnoughEthBalance(
-        LegacyTransactionDataTemp?.totalHex
-          ? checkEnoughEthBalance?.(
-              LegacyTransactionDataTemp.totalHex.toString(16),
-            ) ?? false
-          : false,
+        Boolean(
+          checkEnoughEthBalance?.(
+            LegacyTransactionDataTemp?.totalHex?.toString(16),
+          ),
+        ),
       );
     }
   }, [
