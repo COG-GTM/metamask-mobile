@@ -528,7 +528,9 @@ const CollectibleOverview = ({
             </Text>
             <Text primary noMargin big>
               {strings('unit.token_id')}
-              {renderShortText(String(collectible.tokenId), 8)}
+              {typeof collectible.tokenId === 'string'
+                ? renderShortText(collectible.tokenId, 8)
+                : collectible.tokenId}
             </Text>
           </View>
 
