@@ -59,7 +59,7 @@ export const INITIAL_RENDER_ANIMATION_DURATION = 350;
  */
 export const TAP_TRIGGERED_ANIMATION_DURATION = 300;
 
-interface DrawerRef {
+export interface DrawerRef {
   dismissDrawer: () => void;
   showDrawer: () => void;
 }
