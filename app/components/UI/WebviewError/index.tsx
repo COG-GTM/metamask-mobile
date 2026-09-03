@@ -12,10 +12,6 @@ import {
   ERROR_PAGE_TITLE,
 } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 
-/* eslint-disable import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
-const foxImage = require('../../../images/branding/fox.png');
-/* eslint-enable import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
-
 interface WebviewErrorInfo {
   description?: string;
 }
@@ -102,7 +98,8 @@ export default class WebviewError extends PureComponent<Props> {
       <View style={styles.wrapper}>
         <View style={styles.foxWrapper}>
           <Image
-            source={foxImage}
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            source={require('../../../images/branding/fox.png')}
             style={styles.image}
             resizeMethod={'auto'}
           />

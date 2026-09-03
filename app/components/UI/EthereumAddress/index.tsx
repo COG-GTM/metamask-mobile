@@ -1,9 +1,6 @@
 import React, { PureComponent } from 'react';
-import { Platform, StyleProp, Text, TextStyle } from 'react-native';
+import { StyleProp, Text, TextStyle } from 'react-native';
 import { formatAddress } from '../../../util/address';
-import generateTestId from '../../../../wdio/utils/generateTestId';
-
-const WALLET_ACCOUNT_ADDRESS_LABEL = 'account-address';
 
 interface Props {
   /**
@@ -63,11 +60,7 @@ class EthereumAddress extends PureComponent<Props, State> {
 
   render() {
     return (
-      <Text
-        style={this.props.style}
-        numberOfLines={1}
-        {...generateTestId(Platform, WALLET_ACCOUNT_ADDRESS_LABEL)}
-      >
+      <Text style={this.props.style} numberOfLines={1}>
         {this.state.address}
       </Text>
     );
