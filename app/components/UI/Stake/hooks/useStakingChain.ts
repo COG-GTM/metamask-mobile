@@ -7,7 +7,9 @@ import { isSupportedChain } from '@metamask/stake-sdk';
 const useStakingChain = () => {
   const chainId = useSelector(selectEvmChainId);
 
-  const isStakingSupportedChain = isSupportedChain(getDecimalChainId(chainId));
+  const isStakingSupportedChain = isSupportedChain(
+    getDecimalChainId(chainId) as unknown as number,
+  );
 
   return {
     isStakingSupportedChain,
@@ -15,7 +17,9 @@ const useStakingChain = () => {
 };
 
 export const useStakingChainByChainId = (chainId: Hex | CaipChainId) => {
-  const isStakingSupportedChain = isSupportedChain(getDecimalChainId(chainId));
+  const isStakingSupportedChain = isSupportedChain(
+    getDecimalChainId(chainId) as unknown as number,
+  );
 
   return {
     isStakingSupportedChain,

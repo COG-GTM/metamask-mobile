@@ -27,9 +27,9 @@ const SignatureBlockaidBanner = () => {
     const analyticsParams = {
       ...getAnalyticsParams(
         {
-          from: fromAddress,
+          from: fromAddress as string,
         },
-        type,
+        type as string,
       ),
       external_link_clicked: 'security_alert_support_link',
     };

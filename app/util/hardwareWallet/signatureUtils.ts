@@ -1,4 +1,5 @@
 import { handleSignatureAction } from '../confirmation/signatureUtils';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
 import { getKeyringByAddress } from '../address';
 import { signModalNavDetail } from './hardwareWallets/ledger';
 import ExtendedKeyringTypes from '../../constants/keyringTypes';
@@ -20,9 +21,19 @@ export default async (
 
   const onConfirmationComplete = async (confirmed: boolean) => {
     if (!confirmed) {
-      await handleSignatureAction(onReject, messageParams, signType, false);
+      await handleSignatureAction(
+        onReject,
+        messageParams,
+        signType,
+        false as unknown as SecurityAlertResponse,
+      );
     } else {
-      await handleSignatureAction(onConfirm, messageParams, signType, true);
+      await handleSignatureAction(
+        onConfirm,
+        messageParams,
+        signType,
+        true as unknown as SecurityAlertResponse,
+      );
     }
   };
 

@@ -31,6 +31,36 @@ declare module 'images/image-icons' {
   export default content;
 }
 
+declare module '@metamask/ethjs-unit' {
+  const convert: {
+    fromWei(value: unknown, unit: string): string;
+    toWei(value: unknown, unit: string): import('bn.js');
+    numberToString(value: unknown): string;
+  };
+  export default convert;
+}
+
+declare module 'number-to-bn' {
+  const numberToBN: (value: string) => import('bn.js');
+  export default numberToBN;
+}
+
+declare module 'ethereumjs-abi' {
+  const abi: {
+    rawEncode(types: string[], values: unknown[]): number[];
+    rawDecode(types: string[], data: string): unknown[];
+  };
+  export = abi;
+}
+
+declare module 'humanize-duration' {
+  const humanizeDuration: (
+    milliseconds: number,
+    options?: Record<string, unknown>,
+  ) => string;
+  export default humanizeDuration;
+}
+
 declare module '*.png' {
   import { ImageSourcePropType } from 'react-native';
   const content: ImageSourcePropType;
