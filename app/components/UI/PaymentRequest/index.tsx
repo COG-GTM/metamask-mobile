@@ -662,7 +662,7 @@ class PaymentRequest extends PureComponent<Props, State> {
         conversionRate as number,
         exchangeRate,
         selectedAsset.decimals as number,
-      ) as string | number;
+      ) as unknown as string | number;
       secondaryAmount =
         renderFromTokenMinimalUnit(
           secondaryMinimalUnit,
