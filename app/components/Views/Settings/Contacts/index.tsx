@@ -8,7 +8,7 @@ import StyledButton from '../../../UI/StyledButton';
 import Engine from '../../../../core/Engine';
 import ActionSheet from '@metamask/react-native-actionsheet';
 import { mockTheme, ThemeContext } from '../../../../util/theme';
-import { selectEvmChainId } from '../../../../selectors/networkController';
+import { selectChainId } from '../../../../selectors/networkController';
 import Routes from '../../../../../app/constants/navigation/Routes';
 
 import { ContactsViewSelectorIDs } from '../../../../../e2e/selectors/Settings/Contacts/ContacsView.selectors';
@@ -17,9 +17,10 @@ import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { Theme } from '../../../../util/theme/models';
 import type { RootState } from '../../../../reducers';
 import type { AddressBookControllerState } from '@metamask/address-book-controller';
+import type { Hex } from '@metamask/utils';
 
 interface AddressListProps {
-  chainId: ReturnType<typeof selectEvmChainId>;
+  chainId: ReturnType<typeof selectChainId>;
   onlyRenderAddressBook: boolean;
   reloadAddressList: boolean;
   onAccountPress: (address: string) => void;
@@ -62,7 +63,7 @@ interface OwnProps {
 
 interface StateProps {
   addressBook: AddressBookControllerState['addressBook'];
-  chainId: ReturnType<typeof selectEvmChainId>;
+  chainId: ReturnType<typeof selectChainId>;
 }
 
 type Props = OwnProps & StateProps;
@@ -98,11 +99,12 @@ class Contacts extends PureComponent<Props, State> {
   componentDidUpdate = (prevProps: Props) => {
     this.updateNavBar();
     const { chainId } = this.props;
+    const evmChainId = chainId as unknown as Hex;
     if (
       prevProps.addressBook &&
       this.props.addressBook &&
-      JSON.stringify(prevProps.addressBook[chainId]) !==
-        JSON.stringify(this.props.addressBook[chainId])
+      JSON.stringify(prevProps.addressBook[evmChainId]) !==
+        JSON.stringify(this.props.addressBook[evmChainId])
     )
       this.updateAddressList();
   };
@@ -125,7 +127,10 @@ class Contacts extends PureComponent<Props, State> {
     if (!this.contactAddressToRemove) {
       return;
     }
-    AddressBookController.delete(chainId, this.contactAddressToRemove);
+    AddressBookController.delete(
+      chainId as unknown as Hex,
+      this.contactAddressToRemove,
+    );
     this.updateAddressList();
   };
 
@@ -204,14 +209,9 @@ class Contacts extends PureComponent<Props, State> {
 
 const mapStateToProps = (state: RootState): StateProps => ({
   addressBook: selectAddressBook(state),
-  chainId: selectEvmChainId(state),
+  chainId: selectChainId(state),
 });
 
 const ConnectedContacts = connect(mapStateToProps)(Contacts);
 
-interface TestCompatibleProps {
-  navigation?: object;
-  [key: string]: unknown;
-}
-
-export default ConnectedContacts as unknown as React.ComponentType<TestCompatibleProps>;
+export default ConnectedContacts;

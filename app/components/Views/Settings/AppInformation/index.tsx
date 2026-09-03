@@ -249,8 +249,4 @@ export class AppInformation extends PureComponent<Props, State> {
   };
 }
 
-interface TestCompatibleProps {
-  navigation?: object;
-}
-
-export default AppInformation as unknown as React.ComponentType<TestCompatibleProps>;
+export default AppInformation;

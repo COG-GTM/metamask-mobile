@@ -548,9 +548,4 @@ const ConnectedGeneralSettings = connect(
   mapDispatchToProps,
 )(withMetricsAwareness(Settings));
 
-interface TestCompatibleProps {
-  navigation?: object;
-  [key: string]: unknown;
-}
-
-export default ConnectedGeneralSettings as unknown as React.ComponentType<TestCompatibleProps>;
+export default ConnectedGeneralSettings;

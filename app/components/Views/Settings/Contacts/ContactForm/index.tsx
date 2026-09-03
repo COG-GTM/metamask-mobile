@@ -555,10 +555,4 @@ const mapStateToProps = (state: RootState): StateProps => ({
 
 const ConnectedContactForm = connect(mapStateToProps)(ContactForm);
 
-interface TestCompatibleProps {
-  navigation?: object;
-  route?: object;
-  [key: string]: unknown;
-}
-
-export default ConnectedContactForm as unknown as React.ComponentType<TestCompatibleProps>;
+export default ConnectedContactForm;

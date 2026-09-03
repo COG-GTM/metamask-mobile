@@ -460,15 +460,14 @@ interface NetworkUpdateParams {
   showNetworkOnboarding?: boolean;
 }
 
-interface CellWithSecondaryTextProps
+interface CellWithOptionalAvatarProps
   extends Omit<CellSelectWithMenuProps, 'avatarProps'> {
-  secondaryText?: string;
   variant: CellVariant.SelectWithMenu;
   avatarProps?: CellSelectWithMenuProps['avatarProps'];
 }
 
 const TypedCell =
-  Cell as unknown as React.ComponentType<CellWithSecondaryTextProps>;
+  Cell as unknown as React.ComponentType<CellWithOptionalAvatarProps>;
 
 interface TabbedViewProps extends React.ComponentProps<typeof View> {
   tabLabel: string;
@@ -551,7 +550,7 @@ interface DispatchProps {
 
 type Props = OwnProps & StateProps & DispatchProps & IWithMetricsAwarenessProps;
 
-class NetworkSettingsView extends PureComponent<Props, State> {
+export class NetworkSettings extends PureComponent<Props, State> {
   static displayName = 'NetworkSettings';
   tabView: TabBarProps | null = null;
   static contextType = ThemeContext;
@@ -2768,18 +2767,6 @@ class NetworkSettingsView extends PureComponent<Props, State> {
   }
 }
 
-interface TestCompatibleProps {
-  navigation?: object;
-  route?: object;
-  [key: string]: unknown;
-}
-
-export const TestNetworkSettings =
-  NetworkSettingsView as unknown as React.ComponentType<TestCompatibleProps>;
-
-export const NetworkSettings = TestNetworkSettings;
-export type NetworkSettings = NetworkSettingsView;
-
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   showNetworkOnboardingAction: ({
     networkUrl,
@@ -2818,8 +2805,6 @@ const mapStateToProps = (state: RootState): StateProps => ({
 const ConnectedNetworkSettings = compose(
   connect(mapStateToProps, mapDispatchToProps),
   withIsOriginalNativeToken,
-)(withMetricsAwareness(NetworkSettingsView)) as React.ComponentType<
-  Partial<OwnProps>
->;
+)(withMetricsAwareness(NetworkSettings)) as React.ComponentType<OwnProps>;
 
 export default ConnectedNetworkSettings;

@@ -7,9 +7,6 @@ const withMetricsAwareness =
     Children: ComponentType<P>,
   ): ComponentType<Omit<P, 'metrics'>> =>
   (props: Omit<P, 'metrics'>) =>
-    React.createElement(
-      Children,
-      { ...props, metrics: useMetrics() } as unknown as P,
-    );
+    <Children {...(props as unknown as P)} metrics={useMetrics()} />;
 
 export default withMetricsAwareness;

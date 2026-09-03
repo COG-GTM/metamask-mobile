@@ -688,9 +688,4 @@ const mapStateToProps = (state: RootState): StateProps => ({
 
 const ConnectedNetworksSettings = connect(mapStateToProps)(NetworksSettings);
 
-interface TestCompatibleProps {
-  navigation?: object;
-  [key: string]: unknown;
-}
-
-export default ConnectedNetworksSettings as unknown as React.ComponentType<TestCompatibleProps>;
+export default ConnectedNetworksSettings;

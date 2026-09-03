@@ -34,7 +34,9 @@ describe('GeneralSettings', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <GeneralSettings />
+        <GeneralSettings
+          {...({} as unknown as React.ComponentProps<typeof GeneralSettings>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

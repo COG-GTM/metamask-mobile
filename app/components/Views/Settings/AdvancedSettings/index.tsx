@@ -552,10 +552,4 @@ const ConnectedAdvancedSettings = connect(
   mapDispatchToProps,
 )(withMetricsAwareness(AdvancedSettings));
 
-interface TestCompatibleProps {
-  navigation?: object;
-  route?: object;
-  [key: string]: unknown;
-}
-
-export default ConnectedAdvancedSettings as unknown as React.ComponentType<TestCompatibleProps>;
+export default ConnectedAdvancedSettings;

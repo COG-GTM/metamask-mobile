@@ -17,7 +17,9 @@ describe('ContactForm', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ContactForm />
+        <ContactForm
+          {...({} as unknown as React.ComponentProps<typeof ContactForm>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
