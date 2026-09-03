@@ -32,10 +32,18 @@ const COLLECTIBLE_WIDTH = (DEVICE_WIDTH - 30 - 16) / 3;
 
 interface CollectibleAsset {
   address: string;
-  name?: string;
+  name?: string | null;
   tokenId: string | number;
   [key: string]: unknown;
 }
+
+const toFavoriteCollectible = ({
+  address,
+  tokenId,
+}: CollectibleAsset) => ({
+  address,
+  tokenId: String(tokenId),
+});
 
 interface ActionSheetRef {
   show: () => void;
@@ -200,7 +208,7 @@ function CollectibleContractElement({
     removeFavoriteCollectible(
       selectedAddress,
       chainId,
-      longPressedCollectible.current,
+      toFavoriteCollectible(longPressedCollectible.current),
     );
     NftController.removeAndIgnoreNft(
       longPressedCollectible.current.address,
@@ -358,7 +366,11 @@ const mapStateToProps = (state: RootState): StateProps => ({
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(
-      removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      removeFavoriteCollectibleAction(
+        selectedAddress,
+        chainId,
+        toFavoriteCollectible(collectible),
+      ),
     ),
 });
 

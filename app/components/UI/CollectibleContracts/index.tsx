@@ -68,10 +68,15 @@ interface Collectible {
   address: string;
   chainId?: number;
   isCurrentlyOwned?: boolean;
-  name?: string;
+  name?: string | null;
   tokenId: string | number;
   [key: string]: unknown;
 }
+
+const toFavoriteCollectible = ({ address, tokenId }: Collectible) => ({
+  address,
+  tokenId: String(tokenId),
+});
 
 interface CollectibleContract {
   address: string;
@@ -108,7 +113,7 @@ interface StateProps {
   /**
    * Array of collectibles objects
    */
-  collectibles: Record<string, Collectible[]>;
+  collectibles: Partial<Record<`0x${string}`, Collectible[]>>;
   /**
    * boolean indicating if fetching status is still in progress
    */
@@ -277,8 +282,10 @@ const CollectibleContracts = ({
   const filteredCollectibles = useMemo(
     () =>
       isAllNetworks
-        ? Object.values(allCollectibles).flat()
-        : allCollectibles[chainId] || [],
+        ? Object.values(allCollectibles).flatMap(
+            (chainCollectibles) => chainCollectibles ?? [],
+          )
+        : allCollectibles[chainId as `0x${string}`] || [],
     [allCollectibles, chainId, isAllNetworks],
   );
 
@@ -478,6 +485,7 @@ const CollectibleContracts = ({
   const getNftDetectionAnalyticsParams = useCallback(
     (nft: Nft): NftAnalyticsParams | undefined => {
       try {
+        if (nft.chainId === undefined) return undefined;
         return {
           chain_id: getDecimalChainId(nft.chainId),
           source: 'detected',
@@ -667,7 +675,11 @@ const mapStateToProps = (state: RootState): StateProps => ({
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(
-      removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      removeFavoriteCollectibleAction(
+        selectedAddress,
+        chainId,
+        toFavoriteCollectible(collectible),
+      ),
     ),
 });
 

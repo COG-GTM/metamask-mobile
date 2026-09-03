@@ -51,10 +51,9 @@ import Avatar, {
 } from '../../../component-library/components/Avatars/Avatar';
 import ButtonIcon from '../../../component-library/components/Buttons/ButtonIcon';
 import { endTrace, trace, TraceName } from '../../../util/trace';
-import type { StackNavigationProp } from '@react-navigation/stack';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { Colors, Theme } from '../../../util/theme/models';
 import type { IUseMetricsHook } from '../../../components/hooks/useMetrics/useMetrics.types';
-import type { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 
 interface State {
   address: string;
@@ -74,7 +73,7 @@ interface Props {
   /**
    * The chain ID for the current selected network
    */
-  chainId?: string;
+  chainId?: string | null;
   /**
    * The network name
    */
@@ -86,7 +85,9 @@ interface Props {
   /**
   /* navigation object required to push new views
   */
-  navigation?: StackNavigationProp<Record<string, object | undefined>>;
+  navigation?: NavigationProp<ParamListBase> & {
+    push?: (screen: string, params?: object) => void;
+  };
   /**
    * Checks if token detection is supported
    */
@@ -102,15 +103,19 @@ interface Props {
   /**
    * The selected network
    */
-  selectedNetwork?: string;
+  selectedNetwork?: string | null;
   /**
    * The network client ID
    */
-  networkClientId?: string;
+  networkClientId?: string | null;
   /**
    * The network type
    */
   type?: string;
+  /**
+   * Label for the custom token tab
+   */
+  tabLabel?: string;
 }
 
 const createStyles = (colors: Colors) =>
@@ -328,15 +333,15 @@ class AddCustomToken extends PureComponent<Props, State> {
           const [decimals, symbol, name] = await Promise.all([
             AssetsContractController.getERC20TokenDecimals(
               address,
-              this.props.networkClientId,
+              this.props.networkClientId ?? undefined,
             ),
             AssetsContractController.getERC721AssetSymbol(
               address,
-              this.props.networkClientId,
+              this.props.networkClientId ?? undefined,
             ),
             AssetsContractController.getERC20TokenName(
               address,
-              this.props.networkClientId,
+              this.props.networkClientId ?? undefined,
             ),
           ]);
 
@@ -564,7 +569,7 @@ class AddCustomToken extends PureComponent<Props, State> {
       },
     ];
 
-    this.props.navigation?.push('ConfirmAddAsset', {
+    this.props.navigation?.push?.('ConfirmAddAsset', {
       selectedAsset,
       networkName,
       chainId,
@@ -773,6 +778,4 @@ class AddCustomToken extends PureComponent<Props, State> {
 
 AddCustomToken.contextType = ThemeContext;
 
-export default withMetricsAwareness(
-  AddCustomToken as React.ComponentType<IWithMetricsAwarenessProps>,
-);
+export default withMetricsAwareness(AddCustomToken);

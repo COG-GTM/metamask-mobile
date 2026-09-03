@@ -85,6 +85,11 @@ interface Collectible {
   [key: string]: unknown;
 }
 
+const toFavoriteCollectible = ({ address, tokenId }: Collectible) => ({
+  address,
+  tokenId: String(tokenId),
+});
+
 interface OwnProps {
   /**
    * Navigation object used by the containing modal
@@ -523,7 +528,7 @@ const CollectibleOverview = ({
             </Text>
             <Text primary noMargin big>
               {strings('unit.token_id')}
-              {renderShortText(collectible.tokenId, 8)}
+              {renderShortText(String(collectible.tokenId), 8)}
             </Text>
           </View>
 
@@ -614,17 +619,28 @@ const CollectibleOverview = ({
 const mapStateToProps = (state: RootState, props: OwnProps): StateProps => ({
   chainId: selectChainId(state) ?? '',
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state) ?? '',
-  isInFavorites: isCollectibleInFavoritesSelector(state, props.collectible),
+  isInFavorites: isCollectibleInFavoritesSelector(
+    state,
+    toFavoriteCollectible(props.collectible),
+  ),
 });
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   addFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(
-      addFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      addFavoriteCollectibleAction(
+        selectedAddress,
+        chainId,
+        toFavoriteCollectible(collectible),
+      ),
     ),
   removeFavoriteCollectible: (selectedAddress, chainId, collectible) =>
     dispatch(
-      removeFavoriteCollectibleAction(selectedAddress, chainId, collectible),
+      removeFavoriteCollectibleAction(
+        selectedAddress,
+        chainId,
+        toFavoriteCollectible(collectible),
+      ),
     ),
 });
 
