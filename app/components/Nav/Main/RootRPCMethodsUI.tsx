@@ -43,7 +43,6 @@ import {
   MetaMetricsEvents,
   type IMetaMetricsEvent,
 } from '../../../core/Analytics';
-import type { JsonMap } from '../../../core/Analytics/MetaMetrics.types';
 import {
   getAddressAccountType,
   isHardwareAccount,
@@ -301,11 +300,11 @@ const RootRPCMethodsUI = (props: Props) => {
         });
 
         const smartTransactionMetricsProperties =
-          getSmartTransactionMetricsProperties(
+          await getSmartTransactionMetricsProperties(
             SmartTransactionsController,
             transactionMeta,
             false,
-          ) as unknown as JsonMap;
+          );
 
         const parameters = {
           time_to_mine: timeToMine,
