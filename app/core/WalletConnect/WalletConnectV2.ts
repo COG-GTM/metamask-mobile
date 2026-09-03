@@ -32,7 +32,8 @@ import {
 import { Caip25CaveatType, Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
 import WalletConnect2Session from './WalletConnect2Session';
 import { CaipChainId } from '@metamask/utils';
-const { PROJECT_ID } = AppConstants.WALLET_CONNECT;
+const { PROJECT_ID, RELAY_URL, TELEMETRY_ENABLED } =
+  AppConstants.WALLET_CONNECT;
 export const isWC2Enabled =
   typeof PROJECT_ID === 'string' && PROJECT_ID?.length > 0;
 
@@ -186,6 +187,10 @@ export class WC2Manager {
         return new Core({
           projectId,
           logger: 'fatal',
+          telemetryEnabled: TELEMETRY_ENABLED,
+          ...(typeof RELAY_URL === 'string' && RELAY_URL.length > 0
+            ? { relayUrl: RELAY_URL }
+            : {}),
         });
       }
       throw new Error('WC2::init Init Missing projectId');
