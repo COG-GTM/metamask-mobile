@@ -80,13 +80,16 @@ session. A work unit is a source file **plus its co-located `*.test.js`** (same 
 same basename, e.g. `foo.js` + `foo.test.js`, or `index.js` + `index.test.js` /
 `<Dir>.test.js`); test files that pair with a source file in the checklist are never assigned
 separately. Only test files with no JS source sibling (e.g. `app/store/migrations/028.test.js`,
-whose source is already `028.ts`) are standalone units. The pairing rule is really "every
-`*.test.js` in the same directory as the source": a directory with a single JS source and one or
-more differently-named tests is **one** unit — `app/reducers/notification/index.js` +
-`notification.test.js`, and `app/components/Views/NavigationUnitTest/index.js` +
-`TestScreen1/2/3.test.js`. Before launching a batch, the parent must dedupe assignments so no
-two concurrent children touch the same file. Use a Devin workflow / batch of child sessions;
-each child gets a prompt of the form:
+whose source is already `028.ts`) are standalone units. Pairing is deterministic:
+(a) matching basename in the same directory; otherwise (b) the JS source the test imports
+(`rg "from '\./" <test>`); and (c) if a directory contains exactly **one** JS source, every
+`*.test.js` in it pairs with that source regardless of name — e.g.
+`app/reducers/notification/index.js` + `notification.test.js`, and
+`app/components/Views/NavigationUnitTest/index.js` + `TestScreen1/2/3.test.js`. In
+multi-source directories (e.g. `app/components/UI/Swaps/components/`) only rules (a)/(b)
+apply, so unrelated sources are never bundled. Before launching a batch, the parent must
+dedupe assignments so no two concurrent children touch the same file. Use a Devin workflow /
+batch of child sessions; each child gets a prompt of the form:
 
 > Convert `<path>` from JavaScript to TypeScript in `COG-GTM/metamask-mobile` following
 > `docs/js-ts-migration-plan.md` §3. Open a PR titled
