@@ -1,8 +1,5 @@
-/* eslint-disable no-duplicate-imports, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-shadow, @typescript-eslint/no-unused-vars, @typescript-eslint/prefer-optional-chain */
-import React, { PureComponent } from 'react';
-import type { ComponentType } from 'react';
+import React, { PureComponent, type ComponentType } from 'react';
 import { StyleSheet, View } from 'react-native';
-import type { TransactionMeta } from '@metamask/transaction-controller';
 import AnimatedTransactionModal from '../../../../../../UI/AnimatedTransactionModal';
 import TransactionReview from '../../../components/TransactionReview';
 import {
@@ -24,7 +21,9 @@ import {
   parseTransactionEIP1559,
   parseTransactionLegacy,
 } from '../../../../../../../util/transactions';
-import { setTransactionObject } from '../../../../../../../actions/transaction';
+import {
+  setTransactionObject as setTransactionObjectAction,
+} from '../../../../../../../actions/transaction';
 import Engine from '../../../../../../../core/Engine';
 import collectiblesTransferInformation from '../../../../../../../util/collectibles-transfer.json';
 import { safeToChecksumAddress } from '../../../../../../../util/address';
@@ -53,7 +52,6 @@ import { selectNativeCurrencyByChainId, selectProviderTypeByChainId } from '../.
 import type { RootState } from '../../../../../../../reducers';
 import type { Dispatch } from 'redux';
 
-const EDIT = 'edit';
 const REVIEW = 'review';
 
 const styles = StyleSheet.create({
@@ -316,7 +314,6 @@ class TransactionEditor extends PureComponent<Props, State> {
       }
 
       await this.validate(EIP1559GasData);
-      // eslint-disable-next-line react/no-did-update-set-state
       this.setState(
         {
           ready: true,
@@ -354,12 +351,11 @@ class TransactionEditor extends PureComponent<Props, State> {
           suggestedGasPrice: getGas(gasSelected ?? ''),
           suggestedGasLimit,
         },
-        { onlyGas: true },
       );
 
       handleGasFeeSelectionTyped(
-        hexToBN(LegacyGasData.suggestedGasLimitHex!),
-        hexToBN(LegacyGasData.suggestedGasPriceHex!),
+        hexToBN(LegacyGasData.suggestedGasLimitHex as string),
+        hexToBN(LegacyGasData.suggestedGasPriceHex as string),
         setTransactionObject,
       );
 
@@ -373,7 +369,6 @@ class TransactionEditor extends PureComponent<Props, State> {
         });
       }
 
-      // eslint-disable-next-line react/no-did-update-set-state
       this.setState(
         {
           ready: true,
@@ -422,8 +417,8 @@ class TransactionEditor extends PureComponent<Props, State> {
       this.setState(
         {
           dappSuggestedEIP1559Gas: {
-            maxFeePerGas: transaction.maxFeePerGas!,
-            maxPriorityFeePerGas: transaction.maxPriorityFeePerGas!,
+            maxFeePerGas: transaction.maxFeePerGas as string,
+            maxPriorityFeePerGas: transaction.maxPriorityFeePerGas as string,
           },
         },
         this.startPolling,
@@ -435,21 +430,18 @@ class TransactionEditor extends PureComponent<Props, State> {
       );
     }
 
-    if (transaction && transaction.value) {
+    if (transaction?.value) {
       this.handleUpdateAmount(transaction.value, true);
     }
     if (transaction && transaction.assetType === 'ETH') {
       this.handleUpdateReadableValue(fromWei(transaction.value));
     }
-    if (transaction && transaction.data) {
+    if (transaction?.data) {
       this.setState({ data: transaction.data });
     }
   };
 
-  parseTransactionDataEIP1559 = (
-    gasFee: GasData,
-    options: { onlyGas?: boolean } = {},
-  ) => {
+  parseTransactionDataEIP1559 = (gasFee: GasData) => {
     const { ticker } = this.props;
 
     const parsedTransactionEIP1559 = parseTransactionEIP1559Typed(
@@ -471,10 +463,7 @@ class TransactionEditor extends PureComponent<Props, State> {
     return parsedTransactionEIP1559;
   };
 
-  parseTransactionDataLegacy = (
-    gasFee: GasData,
-    options: { onlyGas?: boolean } = {},
-  ) => {
+  parseTransactionDataLegacy = (gasFee: GasData) => {
     const { ticker } = this.props;
 
     const parsedTransactionLegacy = parseTransactionLegacyTyped(
@@ -496,7 +485,7 @@ class TransactionEditor extends PureComponent<Props, State> {
   componentDidUpdate = (prevProps: Props) => {
     const { transaction } = this.props;
     if (transaction.data !== prevProps.transaction.data) {
-      this.handleUpdateData(transaction.data!);
+      this.handleUpdateData(transaction.data as string);
     }
 
     const gasEstimateTypeChanged =
@@ -532,7 +521,7 @@ class TransactionEditor extends PureComponent<Props, State> {
     const { GasFeeController } = Engine.context;
     (
       GasFeeController.stopPolling as unknown as (pollToken: string) => void
-    )(this.state.pollToken!);
+    )(this.state.pollToken as string);
   };
 
   /**
@@ -640,7 +629,7 @@ class TransactionEditor extends PureComponent<Props, State> {
           return transaction.data;
         }
 
-        const tokenAmountToSend = selectedAsset && value && value.toString(16);
+        const tokenAmountToSend = selectedAsset && value?.toString(16);
         return to && tokenAmountToSend
           ? generateTransferDataTyped('transfer', {
             toAddress: to,
@@ -814,8 +803,8 @@ class TransactionEditor extends PureComponent<Props, State> {
 
     if (gasEstimateType !== GAS_ESTIMATE_TYPES.FEE_MARKET) {
       handleGasFeeSelectionTyped(
-        hexToBN(LegacyGasDataTemp.suggestedGasLimitHex!),
-        hexToBN(LegacyGasDataTemp.suggestedGasPriceHex!),
+        hexToBN(LegacyGasDataTemp.suggestedGasLimitHex as string),
+        hexToBN(LegacyGasDataTemp.suggestedGasPriceHex as string),
         setTransactionObject,
       );
     }
@@ -874,8 +863,8 @@ class TransactionEditor extends PureComponent<Props, State> {
     legacyGasTransaction.error = this.validateTotal(totalHex ?? '0x0');
 
     handleGasFeeSelectionTyped(
-      hexToBN(legacyGasTransaction.suggestedGasLimitHex!),
-      hexToBN(legacyGasTransaction.suggestedGasPriceHex!),
+      hexToBN(legacyGasTransaction.suggestedGasLimitHex as string),
+      hexToBN(legacyGasTransaction.suggestedGasPriceHex as string),
       setTransactionObject,
     );
 
@@ -1129,7 +1118,7 @@ const mapStateToProps = (state: RootState): StateProps => {
 
 const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
   setTransactionObject: (transaction) =>
-    dispatch(setTransactionObject(transaction)),
+    dispatch(setTransactionObjectAction(transaction)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TransactionEditor);

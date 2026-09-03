@@ -1,7 +1,9 @@
-/* eslint-disable no-duplicate-imports, @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain, @typescript-eslint/no-unused-vars */
-import React, { PureComponent } from 'react';
-import { TransactionEnvelopeType } from '@metamask/transaction-controller';
-import type { TransactionMeta, SimulationData } from '@metamask/transaction-controller';
+import React, { PureComponent, type ComponentType } from 'react';
+import {
+  TransactionEnvelopeType,
+  type TransactionMeta,
+  type SimulationData,
+} from '@metamask/transaction-controller';
 import {
   StyleSheet,
   AppState,
@@ -75,7 +77,6 @@ import {
   NavigationProp,
   ParamListBase,
 } from '@react-navigation/native';
-import type { ComponentType } from 'react';
 import type { Theme } from '../../../../../util/theme/models';
 import type { IWithMetricsAwarenessProps } from '../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import type { JsonMap } from '../../../../../core/Analytics/MetaMetrics.types';
@@ -217,7 +218,7 @@ class Approval extends PureComponent<Props, State> {
           KeyringController.cancelQRSignRequest();
         } else {
           Engine.rejectPendingApproval(
-            transaction?.id!,
+            transaction?.id as string,
             providerErrors.userRejectedRequest(),
             {
               ignoreMissing: true,
@@ -511,7 +512,7 @@ class Approval extends PureComponent<Props, State> {
 
   onLedgerConfirmation = (
     approve: boolean,
-    transactionId: string,
+    _transactionId: string,
     gaParams: Record<string, unknown>,
   ) => {
     try {
@@ -564,7 +565,7 @@ class Approval extends PureComponent<Props, State> {
     const { transactionConfirmed } = this.state;
     if (transactionConfirmed) return;
 
-    const isLedgerAccount = isHardwareAccount(transaction.from!, [
+    const isLedgerAccount = isHardwareAccount(transaction.from as string, [
       ExtendedKeyringTypes.ledger,
     ]);
 
@@ -625,7 +626,9 @@ class Approval extends PureComponent<Props, State> {
         );
       await KeyringController.resetQRKeyringState();
 
-      const fullTx = transactions.find(({ id }) => id === transaction.id)!;
+      const fullTx = transactions.find(
+        ({ id }) => id === transaction.id,
+      ) as TransactionMeta;
 
       if (fullTx.txParams.type !== TransactionEnvelopeType.legacy) {
         // For EIP-1559 transactions, we need to remove gasPrice as it's not compatible
@@ -652,10 +655,10 @@ class Approval extends PureComponent<Props, State> {
 
         this.props.navigation.navigate(
           ...createLedgerTransactionModalNavDetails({
-            transactionId: transaction.id!,
+            transactionId: transaction.id as string,
             deviceId,
             onConfirmationComplete: (approve: boolean) =>
-              this.onLedgerConfirmation(approve, transaction.id!, {
+              this.onLedgerConfirmation(approve, transaction.id as string, {
                 ...this.getAnalyticsParams({ gasEstimateType, gasSelected }),
                 ...this.getTransactionMetrics(),
               }),
@@ -668,7 +671,7 @@ class Approval extends PureComponent<Props, State> {
         return;
       }
 
-      await ApprovalController.accept(transaction.id!, undefined, {
+      await ApprovalController.accept(transaction.id as string, undefined, {
         waitForResult: true,
       });
 
