@@ -8,10 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  fontStyles,
-  colors as importedColors,
-} from '../../../../../styles/common';
+import { fontStyles } from '../../../../../styles/common';
 import { getEditableOptions } from '../../../../UI/Navbar';
 import StyledButton from '../../../../UI/StyledButton';
 import Engine from '../../../../../core/Engine';
@@ -38,17 +35,14 @@ import { AddContactViewSelectorsIDs } from '../../../../../../e2e/selectors/Sett
 import { selectInternalAccounts } from '../../../../../selectors/accountsController';
 import { toLowerCaseEquals } from '../../../../../util/general';
 import { selectAddressBook } from '../../../../../selectors/addressBookController';
-import type {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-} from '@react-navigation/native';
+import type { ParamListBase, RouteProp } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import type { Theme } from '../../../../../util/theme/models';
 import type { RootState } from '../../../../../reducers';
 import type { AddressBookControllerState } from '@metamask/address-book-controller';
 import type { InternalAccount } from '@metamask/keyring-internal-api';
 
-const createStyles = (colors: Theme['colors']) =>
+const createStyles = (colors: Theme['colors'] & { transparent?: string }) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -114,7 +108,7 @@ const createStyles = (colors: Theme['colors']) =>
       flexDirection: 'column',
     },
     textInputDisaled: {
-      borderColor: importedColors.transparent,
+      borderColor: colors.transparent,
     },
     actionButton: {
       marginVertical: 4,
@@ -137,9 +131,9 @@ interface RouteParams {
 interface State {
   name: string | null;
   address: string | null;
-  addressError: string | null;
-  toEnsName: string | null;
-  toEnsAddress: string | null;
+  addressError: string | null | undefined;
+  toEnsName: string | null | undefined;
+  toEnsAddress: string | null | undefined;
   addressReady: boolean;
   mode: string;
   memo: string | null;
@@ -152,7 +146,7 @@ interface OwnProps {
   /**
    * Object that represents the navigator
    */
-  navigation: NavigationProp<ParamListBase>;
+  navigation: StackNavigationProp<ParamListBase>;
   /**
    * An array containing each account with metadata
    */
@@ -180,7 +174,7 @@ class ContactForm extends PureComponent<Props, State> {
     toEnsName: null,
     toEnsAddress: null,
     addressReady: false,
-    mode: (this.props.route?.params as RouteParams | undefined)?.mode ?? ADD,
+    mode: (this.props.route.params as RouteParams | undefined)?.mode ?? ADD,
     memo: null,
     editable: true,
     inputWidth: Platform.OS === 'android' ? '99%' : undefined,
@@ -199,7 +193,7 @@ class ContactForm extends PureComponent<Props, State> {
       getEditableOptions(
         strings(
           `address_book.${
-            ((route.params ?? {}) as RouteParams).mode ?? ADD
+            (route.params as RouteParams | undefined)?.mode ?? ADD
           }_contact_title`,
         ),
         navigation,
@@ -222,7 +216,7 @@ class ContactForm extends PureComponent<Props, State> {
       const { addressBook, chainId, internalAccounts } = this.props;
       const networkAddressBook = addressBook[chainId] || {};
       const address =
-        (this.props.route?.params as RouteParams | undefined)?.address ?? '';
+        (this.props.route.params as RouteParams | undefined)?.address ?? '';
       const contact =
         networkAddressBook[address] ||
         (address &&
@@ -279,10 +273,10 @@ class ContactForm extends PureComponent<Props, State> {
     );
 
     this.setState({
-      addressError: addressError ?? null,
-      toEnsName: toEnsName ?? null,
+      addressError,
+      toEnsName,
       addressReady,
-      toEnsAddress: toEnsAddress ?? null,
+      toEnsAddress,
       errorContinue,
     });
   };
@@ -315,18 +309,20 @@ class ContactForm extends PureComponent<Props, State> {
       toChecksumAddress(toEnsAddress || address),
       name,
       chainId,
-      memo ?? undefined,
+      memo as string,
     );
-    navigation.goBack();
+    navigation.pop();
   };
 
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
     const { chainId, navigation, route } = this.props;
-    if (!this.contactAddressToRemove) return;
-    AddressBookController.delete(chainId, this.contactAddressToRemove);
-    ((route.params ?? {}) as RouteParams).onDelete();
-    navigation.goBack();
+    AddressBookController.delete(
+      chainId,
+      this.contactAddressToRemove as string,
+    );
+    (route.params as RouteParams).onDelete();
+    navigation.pop();
   };
 
   onScan = () => {
@@ -409,7 +405,7 @@ class ContactForm extends PureComponent<Props, State> {
                 inputWidth ? { width: inputWidth } : {},
                 editable ? {} : styles.textInputDisaled,
               ]}
-              value={name ?? undefined}
+              value={name as string}
               onSubmitEditing={this.jumpToAddressInput}
               testID={AddContactViewSelectorsIDs.NAME_INPUT}
               keyboardAppearance={themeAppearance}
@@ -433,7 +429,7 @@ class ContactForm extends PureComponent<Props, State> {
                     styles.textInput,
                     inputWidth ? { width: inputWidth } : {},
                   ]}
-                  value={toEnsName || address || undefined}
+                  value={(toEnsName || address) as string}
                   ref={this.addressInput}
                   onSubmitEditing={this.jumpToMemoInput}
                   testID={AddContactViewSelectorsIDs.ADDRESS_INPUT}
@@ -480,7 +476,7 @@ class ContactForm extends PureComponent<Props, State> {
                     styles.textInput,
                     inputWidth ? { width: inputWidth } : {},
                   ]}
-                  value={memo ?? undefined}
+                  value={memo as string}
                   ref={this.memoInput}
                   testID={AddContactViewSelectorsIDs.MEMO_INPUT}
                   keyboardAppearance={themeAppearance}

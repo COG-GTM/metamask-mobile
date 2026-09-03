@@ -99,12 +99,11 @@ class Contacts extends PureComponent<Props, State> {
   componentDidUpdate = (prevProps: Props) => {
     this.updateNavBar();
     const { chainId } = this.props;
-    const evmChainId = chainId as unknown as Hex;
     if (
       prevProps.addressBook &&
       this.props.addressBook &&
-      JSON.stringify(prevProps.addressBook[evmChainId]) !==
-        JSON.stringify(this.props.addressBook[evmChainId])
+      JSON.stringify(prevProps.addressBook[chainId as unknown as Hex]) !==
+        JSON.stringify(this.props.addressBook[chainId as unknown as Hex])
     )
       this.updateAddressList();
   };
@@ -124,12 +123,9 @@ class Contacts extends PureComponent<Props, State> {
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
     const { chainId } = this.props;
-    if (!this.contactAddressToRemove) {
-      return;
-    }
     AddressBookController.delete(
       chainId as unknown as Hex,
-      this.contactAddressToRemove,
+      this.contactAddressToRemove as string,
     );
     this.updateAddressList();
   };

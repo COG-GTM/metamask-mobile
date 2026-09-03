@@ -11,6 +11,7 @@ import type {
 import type { Dispatch } from 'redux';
 import type { Theme } from '../../../../util/theme/models';
 import type { RootState } from '../../../../reducers';
+import type { Hex } from '@metamask/utils';
 
 import { typography } from '@metamask/design-tokens';
 
@@ -27,10 +28,7 @@ import {
 import { strings } from '../../../../../locales/i18n';
 import Device from '../../../../util/device';
 import { mockTheme, ThemeContext } from '../../../../util/theme';
-import {
-  selectChainId,
-  selectEvmChainId,
-} from '../../../../selectors/networkController';
+import { selectChainId } from '../../../../selectors/networkController';
 import {
   selectSmartTransactionsOptInStatus,
   selectUseTokenDetection,
@@ -221,7 +219,8 @@ class AdvancedSettings extends PureComponent<Props, State> {
   updateNavBar = () => {
     const { navigation, route } = this.props;
     const { colors } = this.getStyles();
-    const { isFullScreenModal } = (route?.params ?? {}) as RouteParams;
+    const isFullScreenModal =
+      (route?.params as RouteParams | undefined)?.isFullScreenModal || false;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.advanced_title'),
@@ -241,8 +240,12 @@ class AdvancedSettings extends PureComponent<Props, State> {
         this.mounted && this.setState({ inputWidth: '100%' });
       }, 100);
 
-    ((this.props.route?.params ?? {}) as RouteParams).scrollToBottom &&
-      this.scrollView?.current?.scrollToEnd(true);
+    (this.props.route?.params as RouteParams | undefined)?.scrollToBottom &&
+      (
+        this.scrollView?.current as unknown as {
+          scrollToEnd: (options: { animated: boolean }) => void;
+        } | null
+      )?.scrollToEnd({ animated: true });
   };
 
   componentDidUpdate = () => {
@@ -338,7 +341,15 @@ class AdvancedSettings extends PureComponent<Props, State> {
                 <Text style={styles.modalTitle} variant={TextVariant.HeadingMD}>
                   {strings('app_settings.reset_account_modal_title')}
                 </Text>
-                <Text>
+                <Text
+                  style={
+                    (
+                      styles as unknown as {
+                        modalText?: import('react-native').TextStyle;
+                      }
+                    ).modalText
+                  }
+                >
                   {strings('app_settings.reset_account_modal_message')}
                 </Text>
               </View>
@@ -537,7 +548,7 @@ const mapStateToProps = (state: RootState): StateProps => ({
   smartTransactionsOptInStatus: selectSmartTransactionsOptInStatus(state),
   smartTransactionsEnabled: selectSmartTransactionsEnabled(
     state,
-    selectEvmChainId(state),
+    selectChainId(state) as Hex,
   ),
 });
 

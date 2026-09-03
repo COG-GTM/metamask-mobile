@@ -201,7 +201,7 @@ interface StateProps {
   searchEngine: string;
   primaryCurrency: string;
   useBlockieIcon: boolean;
-  selectedAddress: string;
+  selectedAddress: string | undefined;
   hideZeroBalanceTokens: boolean;
 }
 
@@ -491,7 +491,10 @@ class Settings extends PureComponent<Props, State> {
                   <View
                     style={[styles.border, !useBlockieIcon && styles.selected]}
                   >
-                    <Jazzicon size={diameter} address={selectedAddress} />
+                    <Jazzicon
+                      size={diameter}
+                      address={selectedAddress as string}
+                    />
                   </View>
                   <Text style={styles.identiconText}>
                     {strings('app_settings.jazzicons')}
@@ -505,7 +508,7 @@ class Settings extends PureComponent<Props, State> {
                     style={[styles.border, useBlockieIcon && styles.selected]}
                   >
                     <Image
-                      source={{ uri: toDataUrl(selectedAddress) }}
+                      source={{ uri: toDataUrl(selectedAddress as string) }}
                       style={styles.blockie}
                     />
                   </View>
@@ -528,7 +531,7 @@ const mapStateToProps = (state: RootState): StateProps => ({
   searchEngine: state.settings.searchEngine,
   primaryCurrency: state.settings.primaryCurrency,
   useBlockieIcon: state.settings.useBlockieIcon,
-  selectedAddress: selectSelectedInternalAccountFormattedAddress(state) ?? '',
+  selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   hideZeroBalanceTokens: state.settings.hideZeroBalanceTokens,
   // appTheme: state.user.appTheme,
 });

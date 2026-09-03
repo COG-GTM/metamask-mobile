@@ -35,7 +35,10 @@ import {
   type ProviderConfig,
 } from '../../../../selectors/networkController';
 import type { NetworkConfiguration } from '@metamask/network-controller';
-import { AvatarSize } from '../../../../component-library/components/Avatars/Avatar';
+import {
+  AvatarSize,
+  AvatarVariant,
+} from '../../../../component-library/components/Avatars/Avatar';
 import AvatarNetwork from '../../../../component-library/components/Avatars/Avatar/variants/AvatarNetwork';
 import Routes from '../../../../constants/navigation/Routes';
 import { NetworksViewSelectorsIDs } from '../../../../../e2e/selectors/Settings/NetworksView.selectors';
@@ -50,7 +53,11 @@ import { selectNonEvmNetworkConfigurationsByChainId } from '../../../../selector
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { Theme } from '../../../../util/theme/models';
 import type { RootState } from '../../../../reducers';
-import { isHexString, type Hex } from '@metamask/utils';
+import type { Hex } from '@metamask/utils';
+
+const TypedAvatarNetwork = AvatarNetwork as unknown as React.ComponentType<
+  React.ComponentProps<typeof AvatarNetwork> & { variant: AvatarVariant }
+>;
 
 const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
@@ -216,7 +223,7 @@ class NetworksSettings extends PureComponent<Props, State> {
 
   showRemoveMenu = (networkTypeOrRpcUrl: string) => {
     this.networkToRemove = networkTypeOrRpcUrl;
-    this.actionSheet?.show();
+    (this.actionSheet as { show: () => void }).show();
   };
 
   switchToMainnet = () => {
@@ -232,12 +239,11 @@ class NetworksSettings extends PureComponent<Props, State> {
   removeNetwork = async () => {
     // Check if it's the selected network and then switch to mainnet first
     const { providerConfig } = this.props;
-    if (!this.networkToRemove) {
-      return;
-    }
     if (
-      providerConfig.rpcUrl &&
-      compareSanitizedUrl(providerConfig.rpcUrl, this.networkToRemove) &&
+      compareSanitizedUrl(
+        providerConfig.rpcUrl as string,
+        this.networkToRemove as string,
+      ) &&
       providerConfig.type === RPC
     ) {
       this.switchToMainnet();
@@ -262,9 +268,6 @@ class NetworksSettings extends PureComponent<Props, State> {
     }
 
     const [chainId] = entry;
-    if (!isHexString(chainId)) {
-      return;
-    }
 
     if (this.networkToRemove === selectedNetworkClientId) {
       // if we delete selected network, switch to mainnet before removing the selected network
@@ -311,11 +314,10 @@ class NetworksSettings extends PureComponent<Props, State> {
             >
               <View style={styles.network}>
                 {isCustomRPC ? (
-                  <AvatarNetwork
+                  <TypedAvatarNetwork
+                    variant={AvatarVariant.Network}
                     name={name}
-                    imageSource={
-                      image && typeof image !== 'string' ? image : undefined
-                    }
+                    imageSource={image as ImageSourcePropType}
                     style={styles.networkIcon}
                     size={AvatarSize.Xs}
                   />
@@ -352,13 +354,16 @@ class NetworksSettings extends PureComponent<Props, State> {
 
   renderOtherNetworks() {
     return this.getOtherNetworks().map((networkType, i) => {
-      const network = Networks[networkType as keyof typeof Networks];
-      const { name, color } = network;
-      const imageSource =
-        'imageSource' in network ? network.imageSource : undefined;
+      const { name, imageSource, color } = Networks[
+        networkType as keyof typeof Networks
+      ] as {
+        name: string;
+        imageSource?: ImageSourcePropType | string | null;
+        color?: string;
+      };
       return this.networkElement(
         name,
-        imageSource as ImageSourcePropType | undefined,
+        imageSource,
         i,
         networkType,
         false,
@@ -440,7 +445,15 @@ class NetworksSettings extends PureComponent<Props, State> {
     const styles = createStyles(colors);
 
     return (
-      <View>
+      <View
+        style={
+          (
+            styles as unknown as {
+              mainnetHeader?: import('react-native').ViewStyle;
+            }
+          ).mainnetHeader
+        }
+      >
         <TouchableOpacity
           style={styles.network}
           key={`network-${MAINNET}`}
@@ -448,7 +461,15 @@ class NetworksSettings extends PureComponent<Props, State> {
         >
           <View style={styles.networkWrapper}>
             <ImageIcons image="ETHEREUM" style={styles.networkIcon} />
-            <View>
+            <View
+              style={
+                (
+                  styles as unknown as {
+                    networkInfo?: import('react-native').ViewStyle;
+                  }
+                ).networkInfo
+              }
+            >
               <Text style={styles.networkLabel}>{mainnetName}</Text>
             </View>
           </View>
@@ -470,7 +491,15 @@ class NetworksSettings extends PureComponent<Props, State> {
     const styles = createStyles(colors);
 
     return (
-      <View>
+      <View
+        style={
+          (
+            styles as unknown as {
+              mainnetHeader?: import('react-native').ViewStyle;
+            }
+          ).mainnetHeader
+        }
+      >
         <TouchableOpacity
           style={styles.network}
           key={`network-${LINEA_MAINNET}`}
@@ -478,7 +507,15 @@ class NetworksSettings extends PureComponent<Props, State> {
         >
           <View style={styles.networkWrapper}>
             <ImageIcons image="LINEA-MAINNET" style={styles.networkIcon} />
-            <View>
+            <View
+              style={
+                (
+                  styles as unknown as {
+                    networkInfo?: import('react-native').ViewStyle;
+                  }
+                ).networkInfo
+              }
+            >
               <Text style={styles.networkLabel}>{lineaMainnetName}</Text>
             </View>
           </View>
@@ -496,19 +533,25 @@ class NetworksSettings extends PureComponent<Props, State> {
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   renderSolanaMainnet() {
     // TODO: [SOLANA] - Please revisit this since it's supported on a constant array in mobile and should come from multichain network controller
-    const solanaMainnet = Object.values(
+    const { name: solanaMainnetName } = Object.values(
       this.props.nonEvmNetworkConfigurations,
-    ).find((network) => network.chainId === SolScope.Mainnet);
-    if (!solanaMainnet) {
-      return null;
-    }
-    const { name: solanaMainnetName } = solanaMainnet;
+    ).find((network) => network.chainId === SolScope.Mainnet) as {
+      name: string;
+    };
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
-      <View>
+      <View
+        style={
+          (
+            styles as unknown as {
+              mainnetHeader?: import('react-native').ViewStyle;
+            }
+          ).mainnetHeader
+        }
+      >
         <TouchableOpacity
           style={{ ...styles.network, ...styles.networkDisabled }}
           key={`network-${solanaMainnetName}`}
@@ -517,7 +560,15 @@ class NetworksSettings extends PureComponent<Props, State> {
         >
           <View style={styles.networkWrapper}>
             <ImageIcons image={'SOLANA'} style={styles.networkIcon} />
-            <View>
+            <View
+              style={
+                (
+                  styles as unknown as {
+                    networkInfo?: import('react-native').ViewStyle;
+                  }
+                ).networkInfo
+              }
+            >
               <Text style={styles.networkLabel}>{solanaMainnetName}</Text>
             </View>
           </View>
@@ -631,7 +682,15 @@ class NetworksSettings extends PureComponent<Props, State> {
             testIdCloseIcon={NetworksViewSelectorsIDs.CLOSE_ICON}
           />
         }
-        <ScrollView>
+        <ScrollView
+          style={
+            (
+              styles as unknown as {
+                networksWrapper?: import('react-native').ViewStyle;
+              }
+            ).networksWrapper
+          }
+        >
           {this.state.searchString.length > 0 ? (
             this.filteredResult()
           ) : (
@@ -657,7 +716,13 @@ class NetworksSettings extends PureComponent<Props, State> {
         <StyledButton
           type="confirm"
           onPress={this.onAddNetwork}
-          containerStyle={undefined}
+          containerStyle={
+            (
+              styles as unknown as {
+                syncConfirm?: import('react-native').ViewStyle;
+              }
+            ).syncConfirm
+          }
           testID={ADD_NETWORK_BUTTON}
         >
           {strings('app_settings.network_add_network')}

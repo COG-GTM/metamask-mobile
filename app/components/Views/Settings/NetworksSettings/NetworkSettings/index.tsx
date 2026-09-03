@@ -562,9 +562,6 @@ export class NetworkSettings extends PureComponent<Props, State> {
   tabView: TabBarProps | null = null;
   static contextType = ThemeContext;
 
-  getRouteParams = (): RouteParams =>
-    (this.props.route.params ?? {}) as RouteParams;
-
   state: State = {
     rpcUrl: undefined,
     rpcName: undefined,
@@ -627,7 +624,8 @@ export class NetworkSettings extends PureComponent<Props, State> {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const isCustomMainnet = this.getRouteParams().isCustomMainnet;
+    const isCustomMainnet = (this.props.route.params as RouteParams | undefined)
+      ?.isCustomMainnet;
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
@@ -647,7 +645,9 @@ export class NetworkSettings extends PureComponent<Props, State> {
     this.updateNavBar();
     const { networkConfigurations } = this.props;
 
-    const networkTypeOrRpcUrl = this.getRouteParams().network;
+    const networkTypeOrRpcUrl = (
+      this.props.route.params as RouteParams | undefined
+    )?.network;
 
     // if network is main, don't show popular network
     let blockExplorerUrl: string | undefined,
@@ -1074,9 +1074,11 @@ export class NetworkSettings extends PureComponent<Props, State> {
       isAllNetworks,
       tokenNetworkFilter,
     } = this.props;
-    const isCustomMainnet = this.getRouteParams().isCustomMainnet;
+    const isCustomMainnet = (this.props.route.params as RouteParams | undefined)
+      ?.isCustomMainnet;
     const shouldNetworkSwitchPopToWallet =
-      this.getRouteParams().shouldNetworkSwitchPopToWallet ?? true;
+      (this.props.route.params as RouteParams | undefined)
+        ?.shouldNetworkSwitchPopToWallet ?? true;
     // Check if CTA is disabled
     const isCtaDisabled =
       !enableAction || this.disabledByChainId() || this.disabledBySymbol();
@@ -1841,7 +1843,8 @@ export class NetworkSettings extends PureComponent<Props, State> {
       blockExplorerUrlForm,
     } = this.state;
     const { networkConfigurations } = this.props;
-    const isCustomMainnet = this.getRouteParams().isCustomMainnet;
+    const isCustomMainnet = (this.props.route.params as RouteParams | undefined)
+      ?.isCustomMainnet;
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
     const themeAppearance =
@@ -1931,7 +1934,8 @@ export class NetworkSettings extends PureComponent<Props, State> {
     };
 
     const shouldNetworkSwitchPopToWallet =
-      this.getRouteParams().shouldNetworkSwitchPopToWallet ?? true;
+      (this.props.route.params as RouteParams | undefined)
+        ?.shouldNetworkSwitchPopToWallet ?? true;
 
     const renderWarningChainId = () => {
       const CHAIN_LIST_URL = 'https://chainid.network/';
@@ -2732,11 +2736,15 @@ export class NetworkSettings extends PureComponent<Props, State> {
   };
 
   render() {
-    const networkTypeOrRpcUrl = this.getRouteParams().network;
+    const networkTypeOrRpcUrl = (
+      this.props.route.params as RouteParams | undefined
+    )?.network;
     const shouldNetworkSwitchPopToWallet =
-      this.getRouteParams().shouldNetworkSwitchPopToWallet ?? true;
+      (this.props.route.params as RouteParams | undefined)
+        ?.shouldNetworkSwitchPopToWallet ?? true;
     const shouldShowPopularNetworks =
-      this.getRouteParams().shouldShowPopularNetworks ?? true;
+      (this.props.route.params as RouteParams | undefined)
+        ?.shouldShowPopularNetworks ?? true;
     const colors =
       (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);

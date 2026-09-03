@@ -9,6 +9,7 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  type ViewStyle,
 } from 'react-native';
 import {
   getApplicationName,
@@ -208,7 +209,7 @@ export class AppInformation extends PureComponent<Props, State> {
             ) : null}
           </View>
           <Text style={styles.title}>{strings('app_information.links')}</Text>
-          <View>
+          <View style={(styles as unknown as { links?: ViewStyle }).links}>
             <TouchableOpacity onPress={this.onPrivacyPolicy}>
               <Text style={styles.link}>
                 {strings('app_information.privacy_policy')}
@@ -226,7 +227,7 @@ export class AppInformation extends PureComponent<Props, State> {
             </TouchableOpacity>
           </View>
           <View style={styles.division} />
-          <View>
+          <View style={(styles as unknown as { links?: ViewStyle }).links}>
             <TouchableOpacity onPress={this.onSupportCenter}>
               <Text style={styles.link}>
                 {strings('app_information.support_center')}
