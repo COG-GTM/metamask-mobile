@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
+  ImageStyle,
   StyleProp,
   StyleSheet,
   View,
@@ -156,7 +157,7 @@ function TokenIcon({
           medium && styles.iconMedium,
           big && styles.iconBig,
           biggest && styles.iconBiggest,
-          style,
+          style as StyleProp<ImageStyle>,
         ]}
       />
     );

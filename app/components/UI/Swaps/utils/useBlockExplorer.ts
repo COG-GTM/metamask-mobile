@@ -45,7 +45,7 @@ function useBlockExplorer(
     if (definitiveProviderConfig.type === RPC) {
       try {
         const blockExplorer = findBlockExplorerForRpc(
-          definitiveProviderConfig.rpcUrl,
+          definitiveProviderConfig.rpcUrl ?? '',
           networkConfigurations,
         );
         if (!blockExplorer) {
