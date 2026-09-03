@@ -1,4 +1,9 @@
 import React from 'react';
+import type {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import AdvancedSettings from './';
 import renderWithProvider from '../../../../util/test/renderWithProvider';
 import { fireEvent } from '@testing-library/react-native';
@@ -13,6 +18,9 @@ const originalFetch = global.fetch;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let initialState: any;
 const mockNavigate = jest.fn();
+const mockRoute = {
+  params: {},
+} as unknown as RouteProp<ParamListBase, string>;
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let mockSetSmartTransactionsOptInStatus: jest.Mock<any, any>;
@@ -56,7 +64,13 @@ describe('AdvancedSettings', () => {
   it('should render correctly', () => {
     const container = renderWithProvider(
       <AdvancedSettings
-        navigation={{ navigate: mockNavigate, setOptions: jest.fn() }}
+        route={mockRoute}
+        navigation={
+          {
+            navigate: mockNavigate,
+            setOptions: jest.fn(),
+          } as unknown as NavigationProp<ParamListBase>
+        }
       />,
       {
         state: initialState,
@@ -76,7 +90,13 @@ describe('AdvancedSettings', () => {
     it('should render smart transactions opt in switch on by default', async () => {
       const { findByLabelText } = renderWithProvider(
         <AdvancedSettings
-          navigation={{ navigate: mockNavigate, setOptions: jest.fn() }}
+          route={mockRoute}
+          navigation={
+            {
+              navigate: mockNavigate,
+              setOptions: jest.fn(),
+            } as unknown as NavigationProp<ParamListBase>
+          }
         />,
         {
           state: initialState,
@@ -91,7 +111,13 @@ describe('AdvancedSettings', () => {
     it('should update smartTransactionsOptInStatus when smart transactions opt in is pressed', async () => {
       const { findByLabelText } = renderWithProvider(
         <AdvancedSettings
-          navigation={{ navigate: mockNavigate, setOptions: jest.fn() }}
+          route={mockRoute}
+          navigation={
+            {
+              navigate: mockNavigate,
+              setOptions: jest.fn(),
+            } as unknown as NavigationProp<ParamListBase>
+          }
         />,
         {
           state: initialState,

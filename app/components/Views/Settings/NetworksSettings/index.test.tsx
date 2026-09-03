@@ -1,3 +1,4 @@
+import React from 'react';
 import { renderScreen } from '../../../../util/test/renderWithProvider';
 import NetworksSettings from './';
 import { backgroundState } from '../../../../util/test/initial-root-state';
@@ -11,7 +12,7 @@ const initialState = {
 describe('NetworksSettings', () => {
   it('should render correctly', () => {
     const { toJSON } = renderScreen(
-      NetworksSettings,
+      NetworksSettings as unknown as React.ComponentType,
       { name: 'Network Settings' },
       {
         state: initialState,

@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -30,7 +29,10 @@ import { toDataUrl } from '../../../../util/blockies.js';
 import Jazzicon from 'react-native-jazzicon';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { selectCurrentCurrency } from '../../../../selectors/currencyRateController';
-import { withMetricsAwareness } from '../../../../components/hooks/useMetrics';
+import {
+  withMetricsAwareness,
+  type IUseMetricsHook,
+} from '../../../../components/hooks/useMetrics';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../../selectors/accountsController';
 import Text, {
   TextVariant,
@@ -39,6 +41,10 @@ import Text, {
 import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { MetricsEventBuilder } from '../../../../core/Analytics/MetricsEventBuilder';
 import { UserProfileProperty } from '../../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { Dispatch } from 'redux';
+import type { Theme } from '../../../../util/theme/models';
+import type { RootState } from '../../../../reducers';
 
 const diameter = 40;
 const spacing = 8;
@@ -57,7 +63,10 @@ const infuraCurrencyOptions = sortedCurrencies.map(
   }),
 );
 
-export const updateUserTraitsWithCurrentCurrency = (currency, metrics) => {
+export const updateUserTraitsWithCurrentCurrency = (
+  currency: string,
+  metrics: Pick<IUseMetricsHook, 'addTraitsToUser' | 'trackEvent'>,
+) => {
   // track event and add selected currency to user profile for analytics
   const traits = { [UserProfileProperty.CURRENT_CURRENCY]: currency };
   metrics.addTraitsToUser(traits);
@@ -71,7 +80,10 @@ export const updateUserTraitsWithCurrentCurrency = (currency, metrics) => {
   );
 };
 
-export const updateUserTraitsWithCurrencyType = (primaryCurrency, metrics) => {
+export const updateUserTraitsWithCurrencyType = (
+  primaryCurrency: string,
+  metrics: Pick<IUseMetricsHook, 'addTraitsToUser' | 'trackEvent'>,
+) => {
   // track event and add primary currency preference (fiat/crypto) to user profile for analytics
   const traits = { [UserProfileProperty.PRIMARY_CURRENCY]: primaryCurrency };
   metrics.addTraitsToUser(traits);
@@ -87,7 +99,7 @@ export const updateUserTraitsWithCurrencyType = (primaryCurrency, metrics) => {
   );
 };
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -162,97 +174,93 @@ const createStyles = (colors) =>
 /**
  * Main view for general app configurations
  */
-class Settings extends PureComponent {
-  static propTypes = {
-    /**
-    /* State current currency
-    */
-    currentCurrency: PropTypes.string,
-    /**
+interface State {
+  currentLanguage: string;
+  languages: Record<string, string>;
+}
+
+interface SelectOption {
+  value: string;
+  label: string;
+  key: string;
+}
+
+interface OwnProps {
+  /**
     /* navigation object required to push new views
     */
-    navigation: PropTypes.object,
-    /**
-     * Called to set the active search engine
-     */
-    setSearchEngine: PropTypes.func,
-    /**
-     * Called to set primary currency
-     */
-    setPrimaryCurrency: PropTypes.func,
-    /**
-     * Active search engine
-     */
-    searchEngine: PropTypes.string,
-    /**
-     * Active primary currency
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Show a BlockieIcon instead of JazzIcon
-     */
-    useBlockieIcon: PropTypes.bool,
-    /**
-     * called to toggle BlockieIcon
-     */
-    setUseBlockieIcon: PropTypes.func,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * A bool that represents if the user wants to hide zero balance token
-     */
-    hideZeroBalanceTokens: PropTypes.bool,
-    /**
-     * Called to toggle zero balance token display
-     */
-    setHideZeroBalanceTokens: PropTypes.func,
-    /**
-     * App theme
-     */
-    // appTheme: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * App theme
+   */
+  // appTheme: string;
+}
+
+interface StateProps {
+  currentCurrency: string;
+  searchEngine: string;
+  primaryCurrency: string;
+  useBlockieIcon: boolean;
+  selectedAddress: string | undefined;
+  hideZeroBalanceTokens: boolean;
+}
+
+interface DispatchProps {
+  setSearchEngine: (value: string) => void;
+  setPrimaryCurrency: (value: string) => void;
+  setUseBlockieIcon: (value: boolean) => void;
+  setHideZeroBalanceTokens: (value: boolean) => void;
+}
+
+type Props = OwnProps &
+  StateProps &
+  DispatchProps & {
+    metrics: IUseMetricsHook;
   };
 
-  state = {
+class Settings extends PureComponent<Props, State> {
+  static contextType = ThemeContext;
+
+  languageOptions: SelectOption[] = [];
+  searchEngineOptions: SelectOption[] = [];
+  primaryCurrencyOptions: SelectOption[] = [];
+
+  state: State = {
     currentLanguage: I18n.locale.substr(0, 2),
     languages: {},
   };
 
-  selectCurrency = async (currency) => {
+  selectCurrency = async (currency: string) => {
     const { CurrencyRateController } = Engine.context;
     CurrencyRateController.setCurrentCurrency(currency);
     updateUserTraitsWithCurrentCurrency(currency, this.props.metrics);
   };
 
-  selectLanguage = (language) => {
+  selectLanguage = (language: string) => {
     if (language === this.state.currentLanguage) return;
     setLocale(language);
     this.setState({ currentLanguage: language });
     setTimeout(() => this.props.navigation.navigate('Home'), 100);
   };
 
-  selectSearchEngine = (searchEngine) => {
+  selectSearchEngine = (searchEngine: string) => {
     this.props.setSearchEngine(searchEngine);
   };
 
-  selectPrimaryCurrency = (primaryCurrency) => {
+  selectPrimaryCurrency = (primaryCurrency: string) => {
     this.props.setPrimaryCurrency(primaryCurrency);
 
     updateUserTraitsWithCurrencyType(primaryCurrency, this.props.metrics);
   };
 
-  toggleHideZeroBalanceTokens = (toggleHideZeroBalanceTokens) => {
+  toggleHideZeroBalanceTokens = (toggleHideZeroBalanceTokens: boolean) => {
     this.props.setHideZeroBalanceTokens(toggleHideZeroBalanceTokens);
   };
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('app_settings.general_title'),
@@ -269,7 +277,7 @@ class Settings extends PureComponent {
     this.setState({ languages });
     this.languageOptions = Object.keys(languages).map((key) => ({
       value: key,
-      label: languages[key],
+      label: languages[key as keyof typeof languages],
       key,
     }));
     this.searchEngineOptions = [
@@ -327,11 +335,11 @@ class Settings extends PureComponent {
       currentCurrency,
       primaryCurrency,
       useBlockieIcon,
-      setUseBlockieIcon,
+      setUseBlockieIcon: setUseBlockieIconAction,
       selectedAddress,
       hideZeroBalanceTokens,
     } = this.props;
-    const themeTokens = this.context || mockTheme;
+    const themeTokens = (this.context as unknown as Theme) || mockTheme;
     const { colors } = themeTokens;
     const styles = createStyles(colors);
 
@@ -477,27 +485,30 @@ class Settings extends PureComponent {
             <View style={styles.accessory}>
               <View style={styles.identicon_container}>
                 <TouchableOpacity
-                  onPress={() => setUseBlockieIcon(false)}
+                  onPress={() => setUseBlockieIconAction(false)}
                   style={styles.identicon_row}
                 >
                   <View
                     style={[styles.border, !useBlockieIcon && styles.selected]}
                   >
-                    <Jazzicon size={diameter} address={selectedAddress} />
+                    <Jazzicon
+                      size={diameter}
+                      address={selectedAddress as string}
+                    />
                   </View>
                   <Text style={styles.identiconText}>
                     {strings('app_settings.jazzicons')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => setUseBlockieIcon(true)}
+                  onPress={() => setUseBlockieIconAction(true)}
                   style={styles.identicon_row}
                 >
                   <View
                     style={[styles.border, useBlockieIcon && styles.selected]}
                   >
                     <Image
-                      source={{ uri: toDataUrl(selectedAddress) }}
+                      source={{ uri: toDataUrl(selectedAddress as string) }}
                       style={styles.blockie}
                     />
                   </View>
@@ -515,9 +526,7 @@ class Settings extends PureComponent {
   }
 }
 
-Settings.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   currentCurrency: selectCurrentCurrency(state),
   searchEngine: state.settings.searchEngine,
   primaryCurrency: state.settings.primaryCurrency,
@@ -527,17 +536,19 @@ const mapStateToProps = (state) => ({
   // appTheme: state.user.appTheme,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setSearchEngine: (searchEngine) => dispatch(setSearchEngine(searchEngine)),
-  setPrimaryCurrency: (primaryCurrency) =>
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  setSearchEngine: (searchEngine: string) =>
+    dispatch(setSearchEngine(searchEngine)),
+  setPrimaryCurrency: (primaryCurrency: string) =>
     dispatch(setPrimaryCurrency(primaryCurrency)),
-  setUseBlockieIcon: (useBlockieIcon) =>
-    dispatch(setUseBlockieIcon(useBlockieIcon)),
-  setHideZeroBalanceTokens: (hideZeroBalanceTokens) =>
+  setUseBlockieIcon: (value: boolean) => dispatch(setUseBlockieIcon(value)),
+  setHideZeroBalanceTokens: (hideZeroBalanceTokens: boolean) =>
     dispatch(setHideZeroBalanceTokens(hideZeroBalanceTokens)),
 });
 
-export default connect(
+const ConnectedGeneralSettings = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(withMetricsAwareness(Settings));
+
+export default ConnectedGeneralSettings;
