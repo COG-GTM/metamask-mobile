@@ -56,7 +56,7 @@ import {
   isMainnetByChainId,
 } from '../../../util/networks';
 import { addHexPrefix, hexToBN, renderFromWei } from '../../../util/number';
-import { ThemeContext } from '../../../util/theme';
+import { mockTheme, ThemeContext } from '../../../util/theme';
 import { validateTransactionActionBalance } from '../../../util/transactions';
 import withQRHardwareAwareness from '../QRHardware/withQRHardwareAwareness';
 import TransactionActionModal from '../TransactionActionModal';
@@ -173,8 +173,8 @@ interface State {
   speedUpConfirmDisabled: boolean;
   rpcBlockExplorer?: string;
   errorMsg?: string;
-  isQRHardwareAccount: boolean;
-  isLedgerAccount: boolean;
+  isQRHardwareAccount: boolean | undefined;
+  isLedgerAccount: boolean | undefined;
 }
 
 const createStyles = (colors: Colors, typography: Theme['typography']) =>
@@ -274,9 +274,7 @@ class Transactions extends PureComponent<Props, State> {
       this.props.onRefSet && this.props.onRefSet(this.flatList);
     }, 100);
     this.setState({
-      isQRHardwareAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress),
-      ),
+      isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress),
     });
   };
 
@@ -298,8 +296,7 @@ class Transactions extends PureComponent<Props, State> {
           networkConfigurations as unknown as Parameters<
             typeof findBlockExplorerForRpc
           >[1],
-        ) ||
-        NO_RPC_BLOCK_EXPLORER;
+        ) || NO_RPC_BLOCK_EXPLORER;
     } else if (isNonEvmChainId(chainId)) {
       // TODO: [SOLANA] - block explorer needs to be implemented
       blockExplorer = findBlockExplorerForNonEvmChainId(chainId);
@@ -307,16 +304,12 @@ class Transactions extends PureComponent<Props, State> {
 
     this.setState({ rpcBlockExplorer: blockExplorer });
     this.setState({
-      isQRHardwareAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress, [
-          ExtendedKeyringTypes.qr,
-        ]),
-      ),
-      isLedgerAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress, [
-          ExtendedKeyringTypes.ledger,
-        ]),
-      ),
+      isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress, [
+        ExtendedKeyringTypes.qr,
+      ]),
+      isLedgerAccount: isHardwareAccount(this.props.selectedAddress, [
+        ExtendedKeyringTypes.ledger,
+      ]),
     });
   };
 
@@ -395,7 +388,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   renderLoader = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     return (
@@ -406,7 +399,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   renderEmpty = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
     if (this.props.tokenChainId !== this.props.chainId) {
       return (
@@ -455,7 +448,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   renderViewMore = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     const {
@@ -512,9 +505,7 @@ class Transactions extends PureComponent<Props, State> {
       this.setState({ speedUp1559IsOpen: speedUpAction });
     } else {
       const speedUpConfirmDisabled = validateTransactionActionBalance(
-        tx as unknown as Parameters<
-          typeof validateTransactionActionBalance
-        >[0],
+        tx as unknown as Parameters<typeof validateTransactionActionBalance>[0],
         SPEED_UP_RATE as unknown as string,
         this.props.accounts as unknown as Parameters<
           typeof validateTransactionActionBalance
@@ -544,9 +535,7 @@ class Transactions extends PureComponent<Props, State> {
       this.setState({ cancel1559IsOpen: cancelAction });
     } else {
       const cancelConfirmDisabled = validateTransactionActionBalance(
-        tx as unknown as Parameters<
-          typeof validateTransactionActionBalance
-        >[0],
+        tx as unknown as Parameters<typeof validateTransactionActionBalance>[0],
         CANCEL_RATE as unknown as string,
         this.props.accounts as unknown as Parameters<
           typeof validateTransactionActionBalance
@@ -600,9 +589,7 @@ class Transactions extends PureComponent<Props, State> {
     });
   };
 
-  speedUpTransaction = async (
-    transactionObject?: GasTransactionProps,
-  ) => {
+  speedUpTransaction = async (transactionObject?: GasTransactionProps) => {
     try {
       if (transactionObject?.error) {
         throw new SpeedupTransactionError(transactionObject.error);
@@ -672,9 +659,7 @@ class Transactions extends PureComponent<Props, State> {
     );
   };
 
-  cancelTransaction = async (
-    transactionObject?: GasTransactionProps,
-  ) => {
+  cancelTransaction = async (transactionObject?: GasTransactionProps) => {
     try {
       if (transactionObject?.error) {
         throw new CancelTransactionError(transactionObject.error);
@@ -763,7 +748,7 @@ class Transactions extends PureComponent<Props, State> {
 
   renderUpdateTxEIP1559Gas = (isCancel: boolean) => {
     const { isSigningQRObject } = this.props;
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     if (!this.existingGas) return null;
@@ -817,7 +802,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   renderDisclaimer = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
     return (
       <View style={styles.disclaimerWrapper}>
@@ -843,7 +828,7 @@ class Transactions extends PureComponent<Props, State> {
       isSigningQRObject,
     } = this.props;
     const { cancelConfirmDisabled, speedUpConfirmDisabled } = this.state;
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     const transactions = submittedTransactions?.length
@@ -897,9 +882,7 @@ class Transactions extends PureComponent<Props, State> {
                 header as React.ReactElement | React.ComponentType | null
               }
               ListFooterComponent={
-                transactions.length > 0
-                  ? this.renderFooter
-                  : () => this.renderEmpty()
+                transactions.length > 0 ? this.renderFooter : this.renderEmpty()
               }
               style={baseStyles.flexGrow}
               scrollIndicatorInsets={{ right: 1 }}
@@ -944,7 +927,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   render = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     return (
