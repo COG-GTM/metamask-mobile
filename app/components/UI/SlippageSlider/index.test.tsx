@@ -8,6 +8,7 @@ describe('SlippageSlider', () => {
       <SlippageSlider
         range={[1, 5]}
         increment={1}
+        value={undefined as unknown as number}
         onChange={() => undefined}
         formatTooltipText={(text) => `${text}%`}
       />,

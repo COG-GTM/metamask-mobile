@@ -4,7 +4,6 @@ import { Linking } from 'react-native';
 // Internal dependencies.
 import ManageNetworks from './ManageNetworks';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { selectNetworkName } from '../../../selectors/networkInfos';
 import AppConstants from '../../../core/AppConstants';
@@ -35,11 +34,14 @@ const mockNetworkName = 'Ethereum Main Network';
 
 describe('ManageNetworks', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
-      if (selector === selectNetworkName) return mockNetworkName;
-    });
+    (useSelector as jest.MockedFunction<typeof useSelector>).mockImplementation(
+      (selector) => {
+        if (selector === selectNetworkName) return mockNetworkName;
+        return undefined;
+      },
+    );
     const { toJSON } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
+      <ManageNetworks />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
@@ -55,15 +57,21 @@ describe('ManageNetworks', () => {
         testId: 'solana-privacy-policy-link',
       },
     ],
-  ])('opens link %link', ({ link, testId }) => {
-    useSelector.mockImplementation((selector) => {
-      if (selector === selectNetworkName) return mockNetworkName;
-    });
-    const { getByTestId } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
-    );
-    const button = getByTestId(testId);
-    fireEvent.press(button);
-    expect(Linking.openURL).toHaveBeenCalledWith(link);
-  });
+  ])(
+    'opens link %link',
+    ({ link, testId }: { link: string; testId: string }) => {
+      (
+        useSelector as jest.MockedFunction<typeof useSelector>
+      ).mockImplementation((selector) => {
+        if (selector === selectNetworkName) return mockNetworkName;
+        return undefined;
+      });
+      const { getByTestId } = renderWithProvider(
+        <ManageNetworks />,
+      );
+      const button = getByTestId(testId);
+      fireEvent.press(button);
+      expect(Linking.openURL).toHaveBeenCalledWith(link);
+    },
+  );
 });

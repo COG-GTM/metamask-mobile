@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import StyledButtonIOS from './index.ios';
-import StyledButtonAndroid from './index.android';
+import StyledButtonIOS from './StyledButton.ios';
+import StyledButtonAndroid from './StyledButton.android';
 
 describe('StyledButton', () => {
   const buttonTypes = ['normal', 'confirm', 'orange', 'cancel'];
