@@ -68,6 +68,24 @@ export function containsUserRejectedError(errorMessage, errorCode) {
  * @returns {Function}
  */
 export function createLoggerMiddleware(opts) {
+  /**
+   * Strips params/results from an RPC request or response so only
+   * non-sensitive routing metadata is logged.
+   * @param {any} rpcObject
+   */
+  const toLoggableRpc = (rpcObject) => {
+    if (!rpcObject || typeof rpcObject !== 'object') {
+      return rpcObject;
+    }
+    const { id, jsonrpc, method, origin } = rpcObject;
+    return {
+      ...(id !== undefined && { id }),
+      ...(jsonrpc !== undefined && { jsonrpc }),
+      ...(method !== undefined && { method }),
+      ...(origin !== undefined && { origin }),
+    };
+  };
+
   return function loggerMiddleware(
     /** @type {any} */ req,
     /** @type {any} */ res,
@@ -95,8 +113,8 @@ export function createLoggerMiddleware(opts) {
             const errorParams = {
               message: 'Error in RPC response',
               orginalError: error,
-              res: resWithoutError,
-              req,
+              res: toLoggableRpc(resWithoutError),
+              req: toLoggableRpc(req),
             };
 
             if (error.data) {
@@ -110,7 +128,12 @@ export function createLoggerMiddleware(opts) {
       if (req.isMetamaskInternal) {
         return;
       }
-      Logger.log(`RPC (${opts.origin}):`, req, '->', res);
+      Logger.log(
+        `RPC (${opts.origin}):`,
+        toLoggableRpc(req),
+        '->',
+        toLoggableRpc(res),
+      );
       cb();
     });
   };
