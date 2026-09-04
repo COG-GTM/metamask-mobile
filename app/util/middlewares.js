@@ -88,7 +88,7 @@ export function createLoggerMiddleware(opts) {
 
   /**
    * Keeps only the code/message of a JSON-RPC error (and of its nested
-   * `data`), dropping any payload echoed back by the provider.
+   * `data` object), dropping any payload echoed back by the provider.
    * @param {any} error
    */
   const toLoggableRpcError = (error) => {
@@ -105,8 +105,6 @@ export function createLoggerMiddleware(opts) {
         ...(data.code !== undefined && { code: data.code }),
         ...(data.message !== undefined && { message: data.message }),
       };
-    } else if (data !== undefined) {
-      loggable.data = data;
     }
     return loggable;
   };

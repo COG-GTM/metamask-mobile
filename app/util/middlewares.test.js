@@ -96,6 +96,24 @@ describe('createLoggerMiddleware', () => {
     expect(serialized).not.toContain('secret message');
   });
 
+  it('drops primitive error data payloads', () => {
+    runMiddleware(
+      { id: 5, method: 'eth_call', params: [{ data: CALLDATA }] },
+      {
+        id: 5,
+        error: { code: -32000, message: 'execution reverted', data: CALLDATA },
+      },
+    );
+
+    const [loggedError, extras] = Logger.error.mock.calls[0];
+    expect(loggedError).toEqual({
+      code: -32000,
+      message: 'execution reverted',
+    });
+    expect(extras.data).toBeUndefined();
+    expect(JSON.stringify(Logger.error.mock.calls)).not.toContain(CALLDATA);
+  });
+
   it('tracks user rejections as analytics instead of errors', () => {
     runMiddleware(
       { id: 4, method: 'eth_sendTransaction', params: [{ from: ADDRESS }] },
