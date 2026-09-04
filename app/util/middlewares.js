@@ -86,6 +86,31 @@ export function createLoggerMiddleware(opts) {
     };
   };
 
+  /**
+   * Keeps only the code/message of a JSON-RPC error (and of its nested
+   * `data`), dropping any payload echoed back by the provider.
+   * @param {any} error
+   */
+  const toLoggableRpcError = (error) => {
+    if (!error || typeof error !== 'object') {
+      return error;
+    }
+    const { code, message, data } = error;
+    const loggable = {
+      ...(code !== undefined && { code }),
+      ...(message !== undefined && { message }),
+    };
+    if (data && typeof data === 'object') {
+      loggable.data = {
+        ...(data.code !== undefined && { code: data.code }),
+        ...(data.message !== undefined && { message: data.message }),
+      };
+    } else if (data !== undefined) {
+      loggable.data = data;
+    }
+    return loggable;
+  };
+
   return function loggerMiddleware(
     /** @type {any} */ req,
     /** @type {any} */ res,
@@ -110,18 +135,19 @@ export function createLoggerMiddleware(opts) {
              * This will make the error log to sentry with the title "gas required exceeds allowance (59956966) or always failing transaction"
              * making it easier to differentiate each error.
              */
+            const loggableError = toLoggableRpcError(error);
             const errorParams = {
               message: 'Error in RPC response',
-              orginalError: error,
+              orginalError: loggableError,
               res: toLoggableRpc(resWithoutError),
               req: toLoggableRpc(req),
             };
 
-            if (error.data) {
-              errorParams.data = error.data;
+            if (loggableError.data) {
+              errorParams.data = loggableError.data;
             }
 
-            Logger.error(error, errorParams);
+            Logger.error(loggableError, errorParams);
           }
         }
       }
