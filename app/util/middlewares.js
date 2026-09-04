@@ -68,6 +68,47 @@ export function containsUserRejectedError(errorMessage, errorCode) {
  * @returns {Function}
  */
 export function createLoggerMiddleware(opts) {
+  /**
+   * Strips params/results from an RPC request or response so only
+   * non-sensitive routing metadata is logged.
+   * @param {any} rpcObject
+   */
+  const toLoggableRpc = (rpcObject) => {
+    if (!rpcObject || typeof rpcObject !== 'object') {
+      return rpcObject;
+    }
+    const { id, jsonrpc, method, origin } = rpcObject;
+    return {
+      ...(id !== undefined && { id }),
+      ...(jsonrpc !== undefined && { jsonrpc }),
+      ...(method !== undefined && { method }),
+      ...(origin !== undefined && { origin }),
+    };
+  };
+
+  /**
+   * Keeps only the code/message of a JSON-RPC error (and of its nested
+   * `data` object), dropping any payload echoed back by the provider.
+   * @param {any} error
+   */
+  const toLoggableRpcError = (error) => {
+    if (!error || typeof error !== 'object') {
+      return error;
+    }
+    const { code, message, data } = error;
+    const loggable = {
+      ...(code !== undefined && { code }),
+      ...(message !== undefined && { message }),
+    };
+    if (data && typeof data === 'object') {
+      loggable.data = {
+        ...(data.code !== undefined && { code: data.code }),
+        ...(data.message !== undefined && { message: data.message }),
+      };
+    }
+    return loggable;
+  };
+
   return function loggerMiddleware(
     /** @type {any} */ req,
     /** @type {any} */ res,
@@ -92,25 +133,31 @@ export function createLoggerMiddleware(opts) {
              * This will make the error log to sentry with the title "gas required exceeds allowance (59956966) or always failing transaction"
              * making it easier to differentiate each error.
              */
+            const loggableError = toLoggableRpcError(error);
             const errorParams = {
               message: 'Error in RPC response',
-              orginalError: error,
-              res: resWithoutError,
-              req,
+              orginalError: loggableError,
+              res: toLoggableRpc(resWithoutError),
+              req: toLoggableRpc(req),
             };
 
-            if (error.data) {
-              errorParams.data = error.data;
+            if (loggableError.data) {
+              errorParams.data = loggableError.data;
             }
 
-            Logger.error(error, errorParams);
+            Logger.error(loggableError, errorParams);
           }
         }
       }
       if (req.isMetamaskInternal) {
         return;
       }
-      Logger.log(`RPC (${opts.origin}):`, req, '->', res);
+      Logger.log(
+        `RPC (${opts.origin}):`,
+        toLoggableRpc(req),
+        '->',
+        toLoggableRpc(res),
+      );
       cb();
     });
   };
