@@ -480,16 +480,48 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
+/**
+ * Returns the lowercased hostname of a URL, without any trailing DNS dot.
+ *
+ * @param {string} url - URL to parse.
+ * @returns {string} The hostname, or an empty string if the URL is invalid.
+ */
+function getHostnameFromUrl(url) {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/\.$/u, '');
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Checks whether a URL's hostname is an allowlisted domain or a subdomain of one.
+ *
+ * @param {string} url - URL to check.
+ * @returns {boolean} True if the hostname matches ERROR_URL_ALLOWLIST.
+ */
+function isAllowlistedUrl(url) {
+  const hostname = getHostnameFromUrl(url);
+  return (
+    hostname !== '' &&
+    ERROR_URL_ALLOWLIST.some(
+      (allowedDomain) =>
+        hostname === allowedDomain || hostname.endsWith(`.${allowedDomain}`),
+    )
+  );
+}
+
+export function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
 
+    let sanitizedMessage = errorMessage;
     urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
-        errorMessage.replace(url, '**');
+      if (!isAllowlistedUrl(url)) {
+        sanitizedMessage = sanitizedMessage.replaceAll(url, '**');
       }
     });
-    return errorMessage;
+    return sanitizedMessage;
   });
 }
 

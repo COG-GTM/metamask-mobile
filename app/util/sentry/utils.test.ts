@@ -7,6 +7,7 @@ import {
   maskObject,
   sentryStateMask,
   AllProperties,
+  sanitizeUrlsFromErrorMessages,
 } from './utils';
 import { DeepPartial } from '../test/renderWithProvider';
 import { RootState } from '../../reducers';
@@ -112,6 +113,50 @@ describe('deriveSentryEnvironment', () => {
   it('returns performance event null if empty', async () => {
     const eventExcluded = excludeEvents(null);
     expect(eventExcluded).toBe(null);
+  });
+});
+
+describe('sanitizeUrlsFromErrorMessages', () => {
+  it('redacts URLs that are not on the allowlist from message and exception values', () => {
+    const report = {
+      message: 'Failed to fetch https://my-private-rpc.example.com/v1/abc123',
+      exception: {
+        values: [
+          { value: 'Request to https://dapp.example.org/swap?x=1 failed' },
+          { value: 'no url here' },
+        ],
+      },
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed to fetch **');
+    expect(report.exception.values[0].value).toBe('Request to ** failed');
+    expect(report.exception.values[1].value).toBe('no url here');
+  });
+
+  it('keeps allowlisted URLs intact', () => {
+    const report = {
+      message:
+        'Failed https://api.coingecko.com/v3/ping and https://evil.example.com/x',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe(
+      'Failed https://api.coingecko.com/v3/ping and **',
+    );
+  });
+
+  it('redacts URLs that only contain an allowlisted domain outside the hostname', () => {
+    const report = {
+      message:
+        'a https://coingecko.com@evil.example.org/secret b https://evil.example.org/coingecko.com c https://notcoingecko.com/x',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('a ** b ** c **');
   });
 });
 
