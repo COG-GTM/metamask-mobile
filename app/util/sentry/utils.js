@@ -480,13 +480,32 @@ export function excludeEvents(event) {
   return event;
 }
 
+function getHostnameFromUrl(url) {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return '';
+  }
+}
+
+function isAllowlistedUrl(url) {
+  const hostname = getHostnameFromUrl(url);
+  return (
+    hostname !== '' &&
+    ERROR_URL_ALLOWLIST.some(
+      (allowedDomain) =>
+        hostname === allowedDomain || hostname.endsWith(`.${allowedDomain}`),
+    )
+  );
+}
+
 export function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
 
     let sanitizedMessage = errorMessage;
     urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
+      if (!isAllowlistedUrl(url)) {
         sanitizedMessage = sanitizedMessage.replaceAll(url, '**');
       }
     });

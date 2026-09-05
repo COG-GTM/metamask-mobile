@@ -147,6 +147,17 @@ describe('sanitizeUrlsFromErrorMessages', () => {
       'Failed https://api.coingecko.com/v3/ping and **',
     );
   });
+
+  it('redacts URLs that only contain an allowlisted domain outside the hostname', () => {
+    const report = {
+      message:
+        'a https://coingecko.com@evil.example.org/secret b https://evil.example.org/coingecko.com c https://notcoingecko.com/x',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('a ** b ** c **');
+  });
 });
 
 describe('captureSentryFeedback', () => {
