@@ -33,9 +33,11 @@ import Text, {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
+///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps,bitcoin)
 import { CaipChainId } from '@metamask/utils';
 import { WalletClientType } from '../../../core/SnapKeyring/MultichainWalletSnapClient';
+///: END:ONLY_INCLUDE_IF
+///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 // eslint-disable-next-line import/no-duplicates
 import { SolScope } from '@metamask/keyring-api';
 ///: END:ONLY_INCLUDE_IF
