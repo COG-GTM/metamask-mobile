@@ -480,14 +480,26 @@ export function excludeEvents(event) {
   return event;
 }
 
+/**
+ * Returns the lowercased hostname of a URL, without any trailing DNS dot.
+ *
+ * @param {string} url - URL to parse.
+ * @returns {string} The hostname, or an empty string if the URL is invalid.
+ */
 function getHostnameFromUrl(url) {
   try {
-    return new URL(url).hostname.toLowerCase();
+    return new URL(url).hostname.toLowerCase().replace(/\.$/u, '');
   } catch {
     return '';
   }
 }
 
+/**
+ * Checks whether a URL's hostname is an allowlisted domain or a subdomain of one.
+ *
+ * @param {string} url - URL to check.
+ * @returns {boolean} True if the hostname matches ERROR_URL_ALLOWLIST.
+ */
 function isAllowlistedUrl(url) {
   const hostname = getHostnameFromUrl(url);
   return (
