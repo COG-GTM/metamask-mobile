@@ -12,7 +12,9 @@ import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
-const PRIVATE_KEY_REGEX = /^(0x)?[0-9a-f]{64}$/iu;
+const isPrivateKeyCandidate = (value: string) =>
+  value.length === 64 ||
+  (value.length === 66 && value.substring(0, 2).toLowerCase() === '0x');
 
 function parseDeeplink({
   deeplinkManager: instance,
@@ -95,7 +97,7 @@ function parseDeeplink({
 
     return true;
   } catch (error) {
-    const isPrivateKey = PRIVATE_KEY_REGEX.test(url.trim());
+    const isPrivateKey = isPrivateKeyCandidate(url);
     if (error && !isPrivateKey) {
       Logger.error(
         new Error('Invalid deeplink URL'),

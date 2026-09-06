@@ -212,6 +212,8 @@ describe('parseDeeplink', () => {
     'a'.repeat(64),
     `0x${'a'.repeat(64)}`,
     `0X${'A'.repeat(64)}`,
+    `z${'a'.repeat(63)}`,
+    `0xz${'a'.repeat(63)}`,
   ];
 
   privateKeys.forEach((url) => {
