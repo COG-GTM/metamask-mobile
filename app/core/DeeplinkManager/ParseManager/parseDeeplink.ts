@@ -12,6 +12,8 @@ import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
+const PRIVATE_KEY_REGEX = /^(0x)?[0-9a-f]{64}$/iu;
+
 function parseDeeplink({
   deeplinkManager: instance,
   url,
@@ -93,10 +95,10 @@ function parseDeeplink({
 
     return true;
   } catch (error) {
-    const isPrivateKey = url.length === 64;
+    const isPrivateKey = PRIVATE_KEY_REGEX.test(url.trim());
     if (error && !isPrivateKey) {
       Logger.error(
-        error as Error,
+        new Error('Invalid deeplink URL'),
         'DeepLinkManager:parse error parsing deeplink',
       );
       if (origin === AppConstants.DEEPLINKS.ORIGIN_QR_CODE) {
