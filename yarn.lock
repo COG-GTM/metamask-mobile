@@ -26525,7 +26525,7 @@ siwe@^2.3.2:
     uri-js "^4.4.1"
     valid-url "^1.0.9"
 
-sjcl@^1.0.3:
+sjcl@^1.0.3, sjcl@^1.0.9:
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/sjcl/-/sjcl-1.0.9.tgz#650560f04c0d6d5adfa3aa8c63190a138913bb40"
   integrity sha512-dWM71tkSHxe7zEZj0/COjtJdmErIxp7UMp8a6D4xx8dTTtJLc4lFL+HAX8s6lvASyQQ2iYMHwa7rhhQq7MT5MA==
