@@ -16,7 +16,9 @@ import MetaMetrics from '../../core/Analytics/MetaMetrics';
 
 jest.mock('react-native-fs', () => ({
   DocumentDirectoryPath: '/mock/path',
+  CachesDirectoryPath: '/mock/cache',
   writeFile: jest.fn(),
+  unlink: jest.fn(),
 }));
 
 jest.mock('react-native-share', () => ({
@@ -179,15 +181,18 @@ describe('logs :: downloadStateLogs', () => {
     await downloadStateLogs(mockStateInput);
 
     expect(RNFS.writeFile).toHaveBeenCalledWith(
-      '/mock/path/state-logs-v1.0.0-(100).json',
+      '/mock/cache/state-logs-v1.0.0-(100).json',
       expect.any(String),
       'utf8',
     );
     expect(Share.open).toHaveBeenCalledWith({
       subject: 'TestApp State logs -  v1.0.0 (100)',
       title: 'TestApp State logs -  v1.0.0 (100)',
-      url: '/mock/path/state-logs-v1.0.0-(100).json',
+      url: '/mock/cache/state-logs-v1.0.0-(100).json',
     });
+    expect(RNFS.unlink).toHaveBeenCalledWith(
+      '/mock/cache/state-logs-v1.0.0-(100).json',
+    );
   });
 
   it('should generate and share logs successfully on Android', async () => {
