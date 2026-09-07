@@ -6,6 +6,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -21,6 +22,8 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.CountDownLatch;
@@ -82,6 +85,36 @@ public class RNTarTest {
       // Assert that the file content is as expected
       String expectedContent = "testing";
       assertEquals("Extracted file content does not match expected content", expectedContent, fileContent.trim());
+    } finally {
+      tgzResource.close();
+    }
+  }
+
+  @Test
+  public void testUnTar_rejectsEntriesOutsideOutputDirectory() throws IOException, InterruptedException {
+    InputStream tgzResource = Thread.currentThread().getContextClassLoader().getResourceAsStream("maliciousTestTGZFile.tgz");
+    CountDownLatch latch = new CountDownLatch(1);
+
+    try {
+      File tgzFile = new File(reactContext.getCacheDir(), "maliciousTestTGZFile.tgz");
+      Files.copy(tgzResource, tgzFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      String outputPath = reactContext.getCacheDir().getAbsolutePath() + "/malicious-output";
+
+      doAnswer(invocation -> {
+        latch.countDown();
+        return null;
+      }).when(promise).reject(anyString(), any(Throwable.class));
+
+      tar.unTar(tgzFile.getAbsolutePath(), outputPath, promise);
+
+      if (!latch.await(5, TimeUnit.SECONDS)) {
+        fail("Timed out waiting for unTar operation to complete");
+      }
+
+      // The traversing entry must not be written next to the output directory
+      File escapedFile = new File(reactContext.getCacheDir(), "evil.txt");
+      assertFalse("Entry escaped the output directory: " + escapedFile.getAbsolutePath(), escapedFile.exists());
+      verify(promise, never()).resolve(anyString());
     } finally {
       tgzResource.close();
     }
