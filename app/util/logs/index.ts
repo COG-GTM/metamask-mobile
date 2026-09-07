@@ -63,9 +63,10 @@ export const downloadStateLogs = async (
     ? await metrics.getMetaMetricsId()
     : undefined;
   const path =
-    RNFS.DocumentDirectoryPath +
+    RNFS.CachesDirectoryPath +
     `/state-logs-v${appVersion}-(${buildNumber}).json`;
   // A not so great way to copy objects by value
+  let fileWritten = false;
 
   try {
     const stateLogsWithReleaseDetails = generateStateLogs(
@@ -84,6 +85,7 @@ export const downloadStateLogs = async (
     // // Android accepts attachements as BASE64
     if (Device.isIos()) {
       await RNFS.writeFile(path, stateLogsWithReleaseDetails, 'utf8');
+      fileWritten = true;
       url = path;
     }
 
@@ -95,5 +97,13 @@ export const downloadStateLogs = async (
   } catch (err) {
     const e = err as Error;
     Logger.error(e, 'State log error');
+  } finally {
+    if (fileWritten) {
+      try {
+        await RNFS.unlink(path);
+      } catch (err) {
+        Logger.error(err as Error, 'State log cleanup error');
+      }
+    }
   }
 };
