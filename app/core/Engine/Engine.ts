@@ -294,8 +294,8 @@ export class Engine {
         ipfsGateway: AppConstants.IPFS_DEFAULT_GATEWAY_URL,
         useTokenDetection:
           initialState?.PreferencesController?.useTokenDetection ?? true,
-        useNftDetection: true, // set this to true to enable nft detection by default to new users
-        displayNftMedia: true,
+        useNftDetection: false,
+        displayNftMedia: false,
         securityAlertsEnabled: true,
         smartTransactionsOptInStatus: true,
         tokenSortConfig: {
