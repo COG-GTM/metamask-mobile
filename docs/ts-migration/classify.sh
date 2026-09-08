@@ -26,8 +26,15 @@ pick H '^e2e/' '^e2e/(pages|selectors)/'
 
 cat "$OUT"/{A,B,C,D,E,F,G,H}.txt | sort > "$OUT/covered.txt"
 for f in A B C D E F G H; do printf "%s %s\n" "$f" "$(wc -l < "$OUT/$f.txt")"; done
+
+duplicates="$(uniq -d < "$OUT/covered.txt" | wc -l)"
+unassigned="$(comm -23 "$OUT/all.txt" "$OUT/covered.txt" | wc -l)"
 printf "TOTAL %s COVERED %s (duplicates: %s, unassigned: %s)\n" \
   "$(wc -l < "$OUT/all.txt")" "$(wc -l < "$OUT/covered.txt")" \
-  "$(sort "$OUT/covered.txt" | uniq -d | wc -l)" \
-  "$(comm -23 "$OUT/all.txt" "$OUT/covered.txt" | wc -l)"
+  "$duplicates" "$unassigned"
 rm -f "$OUT/covered.txt"
+
+# Overlapping or incomplete ownership must fail, not just be reported.
+if [ "$duplicates" -ne 0 ] || [ "$unassigned" -ne 0 ]; then
+  exit 1
+fi
