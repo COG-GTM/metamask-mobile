@@ -10,6 +10,7 @@ import reducer, {
   selectSwapsChainFeatureFlags,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
+import type { RootState } from '../';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
@@ -212,6 +213,7 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
+      // @ts-expect-error - partial swaps state used by this test
       rootState.swaps = {
         // @ts-ignore
         featureFlags: {
@@ -238,7 +240,7 @@ describe('swaps reducer', () => {
         },
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(true);
     });
 
@@ -267,6 +269,7 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
+      // @ts-expect-error - partial swaps state used by this test
       rootState.swaps = {
         // @ts-ignore
         featureFlags: {
@@ -293,7 +296,7 @@ describe('swaps reducer', () => {
         },
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(false);
     });
 
@@ -322,7 +325,7 @@ describe('swaps reducer', () => {
         swaps: initialState,
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(false);
     });
   });
@@ -384,7 +387,7 @@ describe('swaps reducer', () => {
         chainFeatureFlags: chainFlags,
       });
       
-      const result = selectSwapsChainFeatureFlags(rootState);
+      const result = selectSwapsChainFeatureFlags(rootState as unknown as RootState);
       expect(result).toEqual({
         fallbackToV1: false,
         mobileActive: true,
@@ -417,7 +420,7 @@ describe('swaps reducer', () => {
         },
       });
 
-      const chainFlags = selectSwapsChainFeatureFlags(rootState, '0x5');
+      const chainFlags = selectSwapsChainFeatureFlags(rootState as unknown as RootState, '0x5');
       expect(chainFlags).toEqual({
         goerliFlag: true,
         smartTransactions: {
@@ -439,7 +442,7 @@ describe('swaps reducer', () => {
         },
       });
 
-      const chainFlags = selectSwapsChainFeatureFlags(rootState);
+      const chainFlags = selectSwapsChainFeatureFlags(rootState as unknown as RootState);
       expect(chainFlags).toEqual({
         smartTransactions: {
           globalSetting: true,
@@ -458,7 +461,7 @@ describe('swaps reducer', () => {
         // No chain feature flags for 0x89
       });
 
-      expect(() => selectSwapsChainFeatureFlags(rootState)).toThrow();
+      expect(() => selectSwapsChainFeatureFlags(rootState as unknown as RootState)).toThrow();
     });
   });
 
@@ -502,7 +505,7 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({
+      expect(swapsTokensObjectSelector(state as unknown as RootState)).toStrictEqual({
         '0x0000000000000000000000000000000000000000': undefined,
         '0x0000000000000000000000000000000000000001': undefined,
         '0x0000000000000000000000000000000000000010': undefined,
@@ -521,7 +524,7 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({});
+      expect(swapsTokensObjectSelector(state as unknown as RootState)).toStrictEqual({});
     });
   });
 
