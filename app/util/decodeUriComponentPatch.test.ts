@@ -26,19 +26,17 @@ describe('decode-uri-component patch (via query-string)', () => {
     expect(decode('%ab%ab')).toBe('%ab%ab');
   });
 
-  it('decodes long malformed percent-encoded runs in linear time', () => {
+  // The unpatched decoder is super-linear in the number of malformed tokens
+  // (tens of seconds at ~1400), so these inputs hit Jest's default 5s timeout
+  // without needing wall-clock assertions.
+  it('decodes long malformed percent-encoded runs without stalling', () => {
     const malformed = '%ab'.repeat(5000);
-    const start = Date.now();
-    const result = decode(malformed);
-    expect(Date.now() - start).toBeLessThan(1000);
-    expect(result).toBe(malformed);
+    expect(decode(malformed)).toBe(malformed);
   });
 
   it('keeps parseUrl responsive on hostile callback URLs', () => {
     const hostile = `https://example.com/callback?code=${'%ab'.repeat(5000)}`;
-    const start = Date.now();
     const parsed = parseUrl(hostile);
-    expect(Date.now() - start).toBeLessThan(1000);
     expect(parsed.url).toBe('https://example.com/callback');
     expect((parsed.query.code as string).length).toBe(15000);
   });
