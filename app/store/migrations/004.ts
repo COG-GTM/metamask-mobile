@@ -1,4 +1,4 @@
-import { NETWORKS_CHAIN_ID as NetworksChainId } from '../../../app/constants/network';
+import { LEGACY_NETWORKS_CHAIN_ID as NetworksChainId } from './util/legacyNetworksChainId';
 
 interface MigrationState {
   engine: {

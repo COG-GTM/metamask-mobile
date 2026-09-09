@@ -1,9 +1,10 @@
-import { isSafeChainId } from '@metamask/controller-utils';
-import {
-  GOERLI,
-  NETWORKS_CHAIN_ID as NetworksChainId,
-} from '../../../app/constants/network';
+import { MAX_SAFE_CHAIN_ID } from '@metamask/controller-utils';
+import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
+import { LEGACY_NETWORKS_CHAIN_ID as NetworksChainId } from './util/legacyNetworksChainId';
+
+const isSafeChainId = (chainId: number): boolean =>
+  Number.isSafeInteger(chainId) && chainId > 0 && chainId <= MAX_SAFE_CHAIN_ID;
 
 interface Provider {
   type: string;
@@ -24,9 +25,7 @@ interface MigrationState {
 export default function migrate(state: unknown): unknown {
   const typedState = state as MigrationState;
   const provider = typedState.engine.backgroundState.NetworkController.provider;
-  const chainId = NetworksChainId[
-    provider.type as keyof typeof NetworksChainId
-  ];
+  const chainId = (NetworksChainId as Record<string, string>)[provider.type];
   // if chainId === '' is a rpc
   if (chainId) {
     typedState.engine.backgroundState.NetworkController.provider = {
@@ -42,16 +41,14 @@ export default function migrate(state: unknown): unknown {
   const isDecimalString = regex.decimalStringMigrations.test(storedChainId);
   const hasInvalidChainId =
     !isDecimalString ||
-    !isSafeChainId(
-      parseInt(storedChainId, 10) as unknown as `0x${string}`,
-    );
+    !isSafeChainId(parseInt(storedChainId, 10));
 
   if (hasInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.
     typedState.engine.backgroundState.NetworkController.provider = {
       ticker: 'ETH',
       type: GOERLI,
-      chainId: NetworksChainId.GOERLI,
+      chainId: NetworksChainId.goerli,
     };
   }
   return typedState;
