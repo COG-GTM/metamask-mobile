@@ -1,7 +1,42 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { REHYDRATE } from 'redux-persist';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import type {
+  AssetType,
+  SelectedAsset,
+  TransactionAction,
+  TransactionPayload,
+} from '../../actions/transaction';
 
-const initialState = {
+interface RehydrateAction {
+  type: typeof REHYDRATE;
+}
+
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: AssetType;
+  selectedAsset: SelectedAsset;
+  transaction: TransactionPayload;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: unknown;
+  symbol?: string;
+  paymentRequest?: unknown;
+  readableValue?: unknown;
+  id?: string;
+  type?: string;
+  proposedNonce?: number | string;
+  nonce?: number | string;
+  securityAlertResponses: Record<string, unknown>;
+  securityAlertResponse?: SecurityAlertResponse;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,8 +67,10 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
-  let assetType;
+const getAssetType = (
+  selectedAsset: SelectedAsset | undefined,
+): AssetType | undefined => {
+  let assetType: AssetType | undefined;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
       assetType = 'ERC721';
@@ -46,7 +83,10 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction | RehydrateAction,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
@@ -138,7 +178,7 @@ const transactionReducer = (state = initialState, action) => {
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
-          [transactionId]: securityAlertResponse,
+          [String(transactionId)]: securityAlertResponse,
         },
       };
     }

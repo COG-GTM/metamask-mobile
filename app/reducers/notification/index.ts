@@ -1,8 +1,28 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
+import type {
+  NotificationAction,
+  NotificationTransaction,
+} from '../../actions/notification';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+export interface InAppNotification {
+  id?: string;
+  isVisible: boolean;
+  autodismiss?: number | boolean;
+  type: typeof TRANSACTION | typeof SIMPLE;
+  status?: string;
+  title?: string;
+  description?: string;
+  transaction?: NotificationTransaction;
+}
+
+export interface NotificationState {
+  notifications: InAppNotification[];
+}
+
+export const initialState: NotificationState = {
   notifications: [],
 };
 
@@ -19,23 +39,24 @@ export const ACTIONS = {
   SHOW_SIMPLE_NOTIFICATION: 'SHOW_SIMPLE_NOTIFICATION',
   SHOW_TRANSACTION_NOTIFICATION: 'SHOW_TRANSACTION_NOTIFICATION',
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
-};
+} as const;
 
-const enqueue = (notifications, notification) => [
-  ...notifications,
-  notification,
-];
-const dequeue = (notifications) => notifications.slice(1);
+const enqueue = (
+  notifications: InAppNotification[],
+  notification: InAppNotification,
+): InAppNotification[] => [...notifications, notification];
+const dequeue = (notifications: InAppNotification[]): InAppNotification[] =>
+  notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+  (state: NotificationState | undefined) => state?.notifications,
+  (notifications) => notifications?.[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+const notificationReducer = (
+  state: NotificationState = initialState,
+  action: NotificationAction,
+): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
