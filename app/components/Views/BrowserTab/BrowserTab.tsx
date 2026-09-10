@@ -1418,6 +1418,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
                       ...(isExternalLink ? { headers: { Cookie: '' } } : null),
                     }}
                     injectedJavaScriptBeforeContentLoaded={entryScriptWeb3}
+                    injectedJavaScriptBeforeContentLoadedForMainFrameOnly
                     style={styles.webview}
                     onLoadStart={handleWebviewNavigationChange(OnLoadStart)}
                     onLoadEnd={handleWebviewNavigationChange(OnLoadEnd)}
