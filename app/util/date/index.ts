@@ -1,34 +1,36 @@
 import { strings } from '../../../locales/i18n';
 import { MINUTE, HOUR, DAY } from '../../constants/time';
 
-export function toLocaleDateTime(timestamp) {
-  const dateObj = new Date(timestamp);
+type DateInput = number | string | Date | undefined;
+
+export function toLocaleDateTime(timestamp: DateInput): string {
+  const dateObj = new Date(timestamp as number | string | Date);
   const date = dateObj.toLocaleDateString();
   const time = dateObj.toLocaleTimeString();
   return `${date} ${time}`;
 }
 
-export function toDateFormat(timestamp) {
-  const date = new Date(timestamp);
+export function toDateFormat(timestamp: DateInput): string {
+  const date = new Date(timestamp as number | string | Date);
   const month = strings(`date.months.${date.getMonth()}`);
   const day = date.getDate();
   let hours = date.getHours();
-  let minutes = date.getMinutes();
+  const minutes = date.getMinutes();
   const ampm = hours >= 12 ? 'pm' : 'am';
   hours %= 12;
   hours = hours || 12; // the hour '0' should be '12'
-  minutes = minutes < 10 ? '0' + minutes : minutes;
+  const minutesStr = minutes < 10 ? '0' + minutes : String(minutes);
   return `${month} ${day} ${strings(
     'date.connector',
-  )} ${hours}:${minutes} ${ampm}`;
+  )} ${hours}:${minutesStr} ${ampm}`;
 }
 
-export function toLocaleDate(timestamp) {
-  return new Date(timestamp).toLocaleDateString();
+export function toLocaleDate(timestamp: DateInput): string {
+  return new Date(timestamp as number | string | Date).toLocaleDateString();
 }
 
-export function toLocaleTime(timestamp) {
-  return new Date(timestamp).toLocaleTimeString();
+export function toLocaleTime(timestamp: DateInput): string {
+  return new Date(timestamp as number | string | Date).toLocaleTimeString();
 }
 
 /**
@@ -36,7 +38,7 @@ export function toLocaleTime(timestamp) {
  * @param {Date} sessionTime - Date object
  * @returns the difference between two dates in milliseconds
  */
-export function msBetweenDates(date) {
+export function msBetweenDates(date: Date): number {
   const today = new Date();
   return Math.abs(date.getTime() - today.getTime());
 }
@@ -46,7 +48,7 @@ export function msBetweenDates(date) {
  * @param {number} milliseconds - Milliseconds number
  * @returns how many hours in on a determinated amount of milliseconds
  */
-export function msToHours(milliseconds) {
+export function msToHours(milliseconds: number): number {
   return milliseconds / (60 * 60 * 1000);
 }
 
@@ -55,8 +57,8 @@ export function msToHours(milliseconds) {
  * @param {*} timestamp timestamp you wish to convert in milliseconds
  * @returns formatted date yyyy-MM-dd
  */
-export const formatTimestampToYYYYMMDD = (timestamp) => {
-  const date = new Date(timestamp);
+export const formatTimestampToYYYYMMDD = (timestamp: DateInput): string => {
+  const date = new Date(timestamp as number | string | Date);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
   const day = String(date.getDate()).padStart(2, '0');
@@ -70,7 +72,9 @@ export const formatTimestampToYYYYMMDD = (timestamp) => {
  *
  * @returns object with difference in amount of days, hours, and minutes. If timestamp is in the past, a default value of { days: 0, hours: 0, minutes: 0 } is returned.
  */
-export const getTimeDifferenceFromNow = (timestamp) => {
+export const getTimeDifferenceFromNow = (
+  timestamp: number,
+): { days: number; hours: number; minutes: number } => {
   const currentTime = Date.now();
 
   // Default when timestamp is in the past.
