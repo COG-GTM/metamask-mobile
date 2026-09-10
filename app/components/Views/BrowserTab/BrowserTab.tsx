@@ -14,6 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { isEqual } from 'lodash';
+import { v4 as uuidv4 } from 'uuid';
 import { WebView, WebViewMessageEvent } from '@metamask/react-native-webview';
 import BrowserBottomBar from '../../UI/BrowserBottomBar';
 import { connect, useSelector } from 'react-redux';
@@ -165,6 +166,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   >({});
   // Track if webview is loaded for the first time
   const isWebViewReadyToLoad = useRef(false);
+  // Per-tab secret handed only to the main-frame inpage bridge; provider
+  // messages arriving on the WebView bridge without it (e.g. from iframes)
+  // are dropped.
+  const bridgeTokenRef = useRef<string>(uuidv4());
   const urlBarRef = useRef<BrowserUrlBarRef>(null);
   const autocompleteRef = useRef<UrlAutocompleteRef>(null);
   const onSubmitEditingRef = useRef<(text: string) => Promise<void>>(
@@ -502,7 +507,11 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
 
     const getEntryScriptWeb3 = async () => {
       const entryScriptWeb3Fetched = await EntryScriptWeb3.get();
-      setEntryScriptWeb3(entryScriptWeb3Fetched + SPA_urlChangeListener);
+      setEntryScriptWeb3(
+        `window.__mmBridgeToken = ${JSON.stringify(bridgeTokenRef.current)};` +
+          entryScriptWeb3Fetched +
+          SPA_urlChangeListener,
+      );
     };
 
     getEntryScriptWeb3();
@@ -877,6 +886,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       if (dataParsed.name) {
+        if (dataParsed.bridgeToken !== bridgeTokenRef.current) {
+          Logger.log(
+            `Browser::onMessage dropped provider message without a valid bridge token on ${resolvedUrlRef.current}`,
+          );
+          return;
+        }
         backgroundBridgeRef.current?.onMessage(dataParsed);
         return;
       }
@@ -1403,6 +1418,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
                       ...(isExternalLink ? { headers: { Cookie: '' } } : null),
                     }}
                     injectedJavaScriptBeforeContentLoaded={entryScriptWeb3}
+                    injectedJavaScriptBeforeContentLoadedForMainFrameOnly
                     style={styles.webview}
                     onLoadStart={handleWebviewNavigationChange(OnLoadStart)}
                     onLoadEnd={handleWebviewNavigationChange(OnLoadEnd)}

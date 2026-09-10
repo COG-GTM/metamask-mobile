@@ -8,6 +8,16 @@ const ReactNativePostMessageStream = require('./ReactNativePostMessageStream');
 const INPAGE = 'metamask-inpage';
 const CONTENT_SCRIPT = 'metamask-contentscript';
 const PROVIDER = 'metamask-provider';
+const BRIDGE_TOKEN_KEY = '__mmBridgeToken';
+
+// Captured at document start (before any page script runs) and removed from
+// the global scope so that only this script can authenticate to the native side.
+const bridgeToken = window[BRIDGE_TOKEN_KEY];
+try {
+  delete window[BRIDGE_TOKEN_KEY];
+} catch (_) {
+  // ignore
+}
 
 // Setup stream for content script communication
 const metamaskStream = new ReactNativePostMessageStream({
@@ -55,6 +65,7 @@ function setupProviderStreams() {
 
   const appStream = new MobilePortStream({
     name: CONTENT_SCRIPT,
+    bridgeToken,
   });
 
   // create and connect channel muxes

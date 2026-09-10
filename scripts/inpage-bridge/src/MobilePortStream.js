@@ -22,6 +22,7 @@ function MobilePortStream(port) {
   this._targetWindow = window;
   this._port = port;
   this._origin = location.origin;
+  this._bridgeToken = port.bridgeToken;
   window.addEventListener('message', this._onMessage.bind(this), false);
 }
 
@@ -92,14 +93,22 @@ MobilePortStream.prototype._write = function (msg, _encoding, cb) {
       const data = msg.toJSON();
       data._isBuffer = true;
       window.ReactNativeWebView.postMessage(
-        JSON.stringify({ ...data, origin: window.location.href }),
+        JSON.stringify({
+          ...data,
+          origin: window.location.href,
+          bridgeToken: this._bridgeToken,
+        }),
       );
     } else {
       if (msg.data) {
         msg.data.toNative = true;
       }
       window.ReactNativeWebView.postMessage(
-        JSON.stringify({ ...msg, origin: window.location.href }),
+        JSON.stringify({
+          ...msg,
+          origin: window.location.href,
+          bridgeToken: this._bridgeToken,
+        }),
       );
     }
   } catch (err) {
