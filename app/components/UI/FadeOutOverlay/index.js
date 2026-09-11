@@ -1,10 +1,10 @@
-import React, { PureComponent } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Animated, StyleSheet } from 'react-native';
 import Device from '../../../util/device';
-import { ThemeContext, mockTheme } from '../../../util/theme';
+import { useTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+const create_styles = (colors) =>
   StyleSheet.create({
     view: {
       backgroundColor: colors.background.default,
@@ -19,45 +19,32 @@ const createStyles = (colors) =>
 /**
  * View that is displayed to first time (new) users
  */
-export default class FadeOutOverlay extends PureComponent {
-  static propTypes = {
-    style: PropTypes.any,
-    duration: PropTypes.number,
-  };
+export default function FadeOutOverlay({
+  style = null,
+  duration = Device.isAndroid() ? 300 : 300,
+}) {
+  const [done, set_done] = useState(false);
+  const opacity = useRef(new Animated.Value(1)).current;
+  const { colors } = useTheme();
+  const styles = create_styles(colors);
 
-  state = {
-    done: false,
-  };
-
-  opacity = new Animated.Value(1);
-
-  componentDidMount() {
-    Animated.timing(this.opacity, {
+  useEffect(() => {
+    Animated.timing(opacity, {
       toValue: 0,
-      duration: this.props.duration,
+      duration,
       useNativeDriver: true,
       isInteraction: false,
     }).start(() => {
-      this.setState({ done: true });
+      set_done(true);
     });
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  render() {
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
-
-    if (this.state.done) return null;
-    return (
-      <Animated.View
-        style={[{ opacity: this.opacity }, styles.view, this.props.style]}
-      />
-    );
-  }
+  if (done) return null;
+  return <Animated.View style={[{ opacity }, styles.view, style]} />;
 }
 
-FadeOutOverlay.contextType = ThemeContext;
-
-FadeOutOverlay.defaultProps = {
-  style: null,
-  duration: Device.isAndroid() ? 300 : 300,
+FadeOutOverlay.propTypes = {
+  style: PropTypes.any,
+  duration: PropTypes.number,
 };
