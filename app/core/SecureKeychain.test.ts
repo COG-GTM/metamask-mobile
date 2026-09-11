@@ -156,6 +156,18 @@ describe('SecureKeychain - setGenericPassword', () => {
         SecureKeychain.TYPES.BIOMETRICS,
       );
 
+      expect(Keychain.setGenericPassword).toHaveBeenCalledTimes(1);
+      expect(Keychain.setGenericPassword).toHaveBeenCalledWith(
+        'metamask-user',
+        expect.any(String),
+        expect.objectContaining({
+          accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+          accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+        }),
+      );
+      expect(Keychain.resetGenericPassword).toHaveBeenCalledWith({
+        service: 'com.metamask',
+      });
       expect(StorageWrapper.removeItem).toHaveBeenCalledWith(BIOMETRY_CHOICE);
       expect(StorageWrapper.setItem).toHaveBeenCalledWith(
         BIOMETRY_CHOICE_DISABLED,
