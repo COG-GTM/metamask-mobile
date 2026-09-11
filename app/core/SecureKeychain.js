@@ -164,15 +164,11 @@ export default {
         } catch (error) {
           // Specifically check for user cancellation
           if (error.message === 'User canceled the operation.') {
-            // Store password without biometrics
-            const encryptedPassword = await instance.encryptPassword(password);
-            await Keychain.setGenericPassword(
-              'metamask-user',
-              encryptedPassword,
-              {
-                ...defaultOptions,
-              },
-            );
+            // Drop the biometric-protected entry; the user falls back to
+            // password login instead of an unprotected stored credential
+            await Keychain.resetGenericPassword({
+              service: defaultOptions.service,
+            });
 
             // Update storage to reflect disabled biometrics
             await StorageWrapper.removeItem(BIOMETRY_CHOICE);
