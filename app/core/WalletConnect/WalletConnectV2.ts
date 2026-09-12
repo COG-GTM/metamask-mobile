@@ -613,11 +613,11 @@ export class WC2Manager {
     origin: string; // deeplink or qrcode
   }) {
     try {
+      const params = parseWalletConnectUri(wcUri);
       Logger.log(
-        `WC2Manager::connect ${wcUri} origin=${origin} redirectUrl=${redirectUrl} navigation=${this.navigation !== undefined
+        `WC2Manager::connect topic=${params.topic} version=${params.version} origin=${origin} navigation=${this.navigation !== undefined
         }`,
       );
-      const params = parseWalletConnectUri(wcUri);
       const isDeepLink = origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
 
       const rawParams = getAllUrlParams(wcUri);
@@ -679,10 +679,12 @@ export class WC2Manager {
           );
         }
       } else {
-        console.warn(`Invalid wallet connect uri`, wcUri);
+        console.warn(
+          `Invalid wallet connect uri topic=${params.topic} version=${params.version}`,
+        );
       }
     } catch (err) {
-      console.error(`Failed to connect uri=${wcUri}`, err);
+      console.error(`Failed to connect origin=${origin}`, err);
     }
   }
 }
