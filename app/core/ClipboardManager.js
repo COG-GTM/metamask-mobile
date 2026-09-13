@@ -1,4 +1,5 @@
 import Clipboard from '@react-native-clipboard/clipboard';
+import { NativeModules } from 'react-native';
 import Device from '../util/device';
 
 const EXPIRE_TIME_MS = 60000;
@@ -15,7 +16,12 @@ const ClipboardManager = {
     if (Device.isIos()) {
       await Clipboard.setStringExpire(string);
     } else {
-      await this.setString(string);
+      const sensitiveClipboard = NativeModules.SensitiveClipboard;
+      if (sensitiveClipboard?.setSensitiveString) {
+        await sensitiveClipboard.setSensitiveString(string);
+      } else {
+        await this.setString(string);
+      }
       if (this.expireTime) {
         clearTimeout(this.expireTime);
       }
