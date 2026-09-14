@@ -11,6 +11,8 @@ const blockedURLs = [
   'https://static.cxy.example.com',
   'https://example.com/search?domain=infura.io',
   'https://example.com/token-api?foo=bar',
+  'https://accounts.api.cx.metamask.io/v2/accounts/0x1234/balances',
+  'https://client-config.api.cx.metamask.io/v1/flags',
 ];
 const notBlockedURLs = [
   'https://proxy.metafi.codefi.network/opensea/api/v2',
@@ -24,6 +26,7 @@ const notBlockedURLs = [
   'https://example.com/search?term=gasapi',
   'https://example.com/search?domain=infura.test',
   'https://example.com/tokenapi?foo=bar',
+  'https://accounts.example.com/api/',
 ];
 
 describe('overrideXMLHttpRequest', () => {
