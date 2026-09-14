@@ -64,9 +64,10 @@ public class RNTar extends ReactContextBaseJavaModule {
 
   private File resolveEntryFile(File outputDir, String entryName) throws IOException {
     File outputFile = new File(outputDir, entryName);
-    String outputDirPath = outputDir.getCanonicalPath() + File.separator;
+    String outputDirPath = outputDir.getCanonicalPath();
     String outputFilePath = outputFile.getCanonicalPath();
-    if (!outputFilePath.startsWith(outputDirPath)) {
+    if (!outputFilePath.equals(outputDirPath)
+        && !outputFilePath.startsWith(outputDirPath + File.separator)) {
       throw new IOException("Archive entry is outside of the target directory: " + entryName);
     }
     return outputFile;
