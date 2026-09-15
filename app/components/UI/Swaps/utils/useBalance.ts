@@ -27,26 +27,24 @@ function useBalance(
   sourceToken: Pick<Token, 'address' | 'decimals'> | null | undefined,
   { asUnits = false }: UseBalanceOptions = {},
 ):
-  | ReturnType<typeof renderFromWei>
-  | ReturnType<typeof renderFromTokenMinimalUnit>
+  | string
   | BN4
-  | object
   | null {
   // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
-  const balance = useMemo(() => {
+  const balance = useMemo((): string | BN4 | null => {
     if (!sourceToken) {
       return null;
     }
     if (isSwapsNativeAsset(sourceToken)) {
       if (asUnits) {
         // Controller stores balances in hex for ETH
-        return safeNumberToBN(accounts[selectedAddress]?.balance ?? 0);
+        return safeNumberToBN(accounts[selectedAddress]?.balance ?? 0) as BN4;
       }
       return renderFromWei(accounts[selectedAddress]?.balance ?? 0);
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);
     if (!tokenAddress) {
-      return safeNumberToBN(0);
+      return safeNumberToBN(0) as BN4;
     }
 
     if (tokenAddress in balances) {
@@ -58,7 +56,7 @@ function useBalance(
         sourceToken.decimals,
       );
     }
-    return safeNumberToBN(0);
+    return safeNumberToBN(0) as BN4;
   }, [accounts, asUnits, balances, selectedAddress, sourceToken]);
 
   return balance;
