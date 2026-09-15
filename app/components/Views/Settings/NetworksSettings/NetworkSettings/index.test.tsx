@@ -1,7 +1,13 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { RpcEndpointType } from '@metamask/network-controller';
-import { NetworkSettings } from './'; // Import the undecorated component
+import { NetworkSettings as NetworkSettingsComponent } from './'; // Import the undecorated component
+
+// Tests render the undecorated class with partial props
+const NetworkSettings =
+  NetworkSettingsComponent as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { ThemeContext, mockTheme } from '../../../../../../app/util/theme';
@@ -332,7 +338,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapper2.instance() as NetworkSettings;
+    const instance = wrapper2.instance() as NetworkSettingsComponent;
     instance.componentDidMount();
 
     expect(wrapper2.state('blockExplorerUrl')).toBe('https://etherscan.io');
@@ -378,7 +384,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapperComponent.instance() as NetworkSettings;
+    const instance = wrapperComponent.instance() as NetworkSettingsComponent;
     instance.componentDidMount();
 
     expect(wrapperComponent.state('blockExplorerUrl')).toBe(
@@ -428,7 +434,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapper2.instance() as NetworkSettings;
+    const instance = wrapper2.instance() as NetworkSettingsComponent;
     instance.componentDidMount();
 
     expect(wrapper2.state('blockExplorerUrl')).toBe('https://etherscan.io');

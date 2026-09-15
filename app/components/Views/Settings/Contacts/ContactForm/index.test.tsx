@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import ContactForm from './';
+import ContactFormConnected from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../../../util/test/initial-root-state';
@@ -11,6 +11,7 @@ const initialState = {
     backgroundState,
   },
 };
+const ContactForm = ContactFormConnected as unknown as React.ComponentType;
 const store = mockStore(initialState);
 
 describe('ContactForm', () => {

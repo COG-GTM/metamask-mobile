@@ -525,3 +525,17 @@ declare module 'react-native-confetti' {
 
   export type ConfettiViewRef = ConfettiView;
 }
+
+declare module 'react-native/Libraries/Image/resolveAssetSource' {
+  export default function resolveAssetSource(
+    source?: import('react-native').ImageSourcePropType,
+  ): import('react-native').ImageResolvedAssetSource & {
+    __packager_asset?: boolean;
+  };
+}
+
+declare module 'human-standard-token-abi' {
+  import { JsonFragment } from '@ethersproject/abi';
+  const abi: readonly JsonFragment[];
+  export default abi;
+}
