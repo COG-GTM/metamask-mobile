@@ -410,3 +410,11 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'react-native/Libraries/Image/resolveAssetSource' {
+  import { ImageResolvedAssetSource, ImageSourcePropType } from 'react-native';
+
+  export default function resolveAssetSource(
+    source: ImageSourcePropType,
+  ): ImageResolvedAssetSource & { __packager_asset?: boolean };
+}
