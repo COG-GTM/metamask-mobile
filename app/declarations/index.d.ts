@@ -38,16 +38,6 @@ declare module 'eth-ens-namehash' {
   export default namehash;
 }
 
-declare module '@metamask/ethjs-query' {
-  import type { Provider } from '@metamask/network-controller';
-
-  class Eth {
-    constructor(provider: Provider);
-  }
-
-  export default Eth;
-}
-
 declare module '@metamask/ethjs-contract' {
   type ContractMethod = (...args: unknown[]) => Promise<[string]>;
 
@@ -462,32 +452,6 @@ declare module '@sentry/react-native' {
   export { captureException };
 }
 
-declare module '@metamask/react-native-button' {
-  import { ComponentType, ReactNode } from 'react';
-  // eslint-disable-next-line no-duplicate-imports
-  import { StyleProp, TextStyle, ViewStyle } from 'react-native';
-
-  interface ButtonProps {
-    style?: StyleProp<TextStyle>;
-    containerStyle?: StyleProp<ViewStyle>;
-    onPress?: () => void;
-    disabled?: boolean;
-    testID?: string;
-    children?: ReactNode;
-  }
-
-  const Button: ComponentType<ButtonProps>;
-  export default Button;
-}
-
-declare module 'zxcvbn' {
-  interface ZXCVBNResult {
-    score: 0 | 1 | 2 | 3 | 4;
-  }
-  function zxcvbn(password: string, userInputs?: string[]): ZXCVBNResult;
-  export default zxcvbn;
-}
-
 declare module 'readable-stream' {
   // eslint-disable-next-line import/no-nodejs-modules
   import stream from 'stream';
@@ -696,12 +660,6 @@ declare module 'enzyme-adapter-react-16' {
   export default Adapter;
 }
 
-declare module '@metamask/ethjs-query' {
-  export default class Eth {
-    constructor(provider: unknown);
-  }
-}
-
 declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
   const dismissKeyboard: () => void;
   export default dismissKeyboard;
@@ -716,6 +674,7 @@ declare module '@metamask/react-native-button/coalesceNonElementChildren' {
 }
 
 declare module '@metamask/react-native-button' {
+  // eslint-disable-next-line no-duplicate-imports
   import type {
     StyleProp,
     TextStyle,
@@ -750,16 +709,4 @@ declare module 'react-native-progress/Bar' {
     useNativeDriver?: boolean;
   }>;
   export default ProgressBar;
-}
-
-declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
-  const dismissKeyboard: () => void;
-  export default dismissKeyboard;
-}
-
-declare module '@metamask/ethjs-query' {
-  class Eth {
-    constructor(provider: unknown, options?: Record<string, unknown>);
-  }
-  export default Eth;
 }

@@ -218,9 +218,7 @@ const RemoteImage = (props: RemoteImageProps) => {
   }, [chainId]);
 
   const isSVG = Boolean(
-    source &&
-      source.uri &&
-      source.uri.match('.svg') &&
+    source?.uri?.match('.svg') &&
       (isImageUrl || resolvedIpfsUrl),
   );
 

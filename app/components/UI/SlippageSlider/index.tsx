@@ -157,7 +157,7 @@ const SlippageSlider = ({
   /* Value effect, this updates the UI if the value prop changes */
   useEffect(() => {
     if (!isResponderGranted) {
-      const relativePercent = (((value! - r0) / fullRange) * trackWidth);
+      const relativePercent = ((Number(value) - r0) / fullRange) * trackWidth;
       setAnimatedValue(slider, relativePercent);
       pan.setValue(relativePercent);
     }
