@@ -344,5 +344,6 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
 Tabs.contextType = ThemeContext;
 
 export default withMetricsAwareness(
+  // The legacy HOC declaration only accepts its injected prop shape.
   Tabs as unknown as React.ComponentType<{ metrics: IUseMetricsHook }>,
 );

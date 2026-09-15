@@ -1,5 +1,12 @@
 import React, { PureComponent } from 'react';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
+import {
+  TouchableOpacity,
+  StyleSheet,
+  View,
+  type TextProps,
+  type ViewProps,
+  type TouchableOpacityProps,
+} from 'react-native';
 import { query } from '@metamask/controller-utils';
 import { connect } from 'react-redux';
 
@@ -27,10 +34,13 @@ import {
   type CompatNavigationProp,
 } from '@react-navigation/compat';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { ThemeContext } from '../../../../util/theme';
 import decodeTransaction, {
   type DecodeTransactionArgs,
   type TransactionDetailsData,
+  type SwapsTransactions,
+  type Transaction as ElementTransaction,
 } from '../../TransactionElement/utils';
 import {
   selectChainId,
@@ -72,33 +82,39 @@ import {
 } from '@metamask/transaction-controller';
 import type { SwapsToken } from '@metamask/swaps-controller/dist/types';
 import type { Colors, Theme } from '../../../../util/theme/models';
-import type { MultichainNetworkConfiguration } from '@metamask/multichain-network-controller';
 
-interface LegacyComponentProps {
-  children?: React.ReactNode;
-  [key: string]: unknown;
-}
-
-type LegacyDetailsModal = React.ComponentType<LegacyComponentProps> & {
-  Body: React.ComponentType<LegacyComponentProps>;
-  Section: React.ComponentType<LegacyComponentProps>;
-  Column: React.ComponentType<LegacyComponentProps>;
-  SectionTitle: React.ComponentType<LegacyComponentProps>;
+type StatusTextProps = TextProps & {
+  status: string;
+  context?: string;
 };
 
-const StatusText =
-  BaseStatusText as unknown as React.ComponentType<LegacyComponentProps>;
-const Text = BaseText as unknown as React.ComponentType<LegacyComponentProps>;
-const DetailsModal = BaseDetailsModal as unknown as LegacyDetailsModal;
+type DetailsModalProps = ViewProps;
+type DetailsModalHeaderProps = ViewProps;
+type DetailsModalTitleProps = TextProps;
+type DetailsModalCloseIconProps = TouchableOpacityProps;
+type DetailsModalBodyProps = ViewProps;
+type DetailsModalSectionProps = ViewProps & { borderBottom?: boolean };
+type DetailsModalColumnProps = ViewProps & { end?: boolean };
+type DetailsModalSectionTitleProps = TextProps & { upper?: boolean };
+
+type LegacyDetailsModal = React.ComponentType<DetailsModalProps> & {
+  Body: React.ComponentType<DetailsModalBodyProps>;
+  Section: React.ComponentType<DetailsModalSectionProps>;
+  Column: React.ComponentType<DetailsModalColumnProps>;
+  SectionTitle: React.ComponentType<DetailsModalSectionTitleProps>;
+};
+
+// These legacy JavaScript components do not publish TypeScript prop types.
+const StatusText = BaseStatusText as React.ComponentType<StatusTextProps>;
+const Text = BaseText as React.ComponentType<
+  TextProps & { small?: boolean; primary?: boolean }
+>;
+const DetailsModal = BaseDetailsModal as LegacyDetailsModal;
 
 interface OwnProps {
-  navigation: CompatNavigationProp<NavigationProp<ParamListBase>> & {
-    push: (route: string, params?: Record<string, unknown>) => void;
-  };
-  transactionObject: TransactionMeta & {
-    transaction?: Record<string, unknown>;
-    [key: string]: unknown;
-  };
+  navigation: CompatNavigationProp<NavigationProp<ParamListBase>> &
+    Pick<StackNavigationProp<ParamListBase>, 'push'>;
+  transactionObject: ElementTransaction;
   transactionDetails: TransactionDetailsData;
   close?: () => void;
   showSpeedUpModal?: () => void;
@@ -107,17 +123,17 @@ interface OwnProps {
 
 interface StateProps {
   chainId: string;
-  networkConfigurations: Record<string, MultichainNetworkConfiguration>;
+  networkConfigurations: ReturnType<typeof selectNetworkConfigurations>;
   selectedAddress?: string;
   transactions: TransactionMeta[];
   ticker: string;
-  tokens: Record<string, unknown>;
+  tokens: ReturnType<typeof selectTokensByAddress>;
   contractExchangeRates: Record<string, { price: number }>;
   conversionRate: number | null;
   currentCurrency: string;
-  swapsTransactions: Record<string, unknown>;
+  swapsTransactions: SwapsTransactions;
   swapsTokens?: SwapsToken[] | null;
-  primaryCurrency: unknown;
+  primaryCurrency: string;
   shouldUseSmartTransaction?: boolean;
 }
 
@@ -278,7 +294,7 @@ class TransactionDetails extends PureComponent<Props, State> {
       ).multiLayerL1FeeTotal = multiLayerL1FeeTotal;
       const decodedTx = await decodeTransaction({
         tx: transactionObject,
-        selectedAddress: selectedAddress as string,
+        selectedAddress,
         ticker,
         chainId,
         conversionRate,
@@ -286,9 +302,10 @@ class TransactionDetails extends PureComponent<Props, State> {
         transactions,
         contractExchangeRates,
         tokens,
-        primaryCurrency: primaryCurrency as string,
+        primaryCurrency,
         swapsTransactions,
         swapsTokens,
+        // The legacy decoder accepts additional controller fields not exposed by this view.
       } as unknown as DecodeTransactionArgs);
       this.setState({ updatedTransactionDetails: decodedTx[1] });
     } catch (e) {
@@ -578,6 +595,7 @@ const TransactionDetailsWithNavigation = withNavigation<
   NavigationProp<ParamListBase>,
   Props,
   typeof TransactionDetails
+// The compatibility HOC's declaration does not preserve the injected props.
 >(TransactionDetails) as unknown as React.ComponentType<
   Omit<Props, keyof StateProps> & Partial<StateProps>
 >;
@@ -585,8 +603,29 @@ const TransactionDetailsWithNavigation = withNavigation<
 const ConnectedTransactionDetails = connect(
   mapStateToProps,
   undefined,
-)(TransactionDetailsWithNavigation);
+// The compatibility HOC's declaration does not preserve the connected props.
+)(TransactionDetailsWithNavigation as unknown as React.ComponentType<
+  Omit<Props, keyof StateProps> & ReturnType<typeof mapStateToProps>
+>);
+
+// Legacy tests provide partial transaction fixtures and navigation mocks.
+type LegacyTransactionDetailsProps = Omit<
+  Partial<Props>,
+  'navigation' | 'transactionObject'
+> & {
+  navigation?: unknown;
+  transactionObject: Omit<
+    Partial<ElementTransaction>,
+    'status' | 'chainId' | 'txParams'
+  > & {
+    networkID?: string;
+    status?: string;
+    chainId?: string;
+    transaction?: ElementTransaction['transaction'];
+    txParams?: Partial<ElementTransaction['txParams']>;
+  };
+};
 
 export default ConnectedTransactionDetails as unknown as React.ComponentType<
-  Record<string, unknown>
+  LegacyTransactionDetailsProps
 >;

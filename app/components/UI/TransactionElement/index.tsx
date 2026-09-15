@@ -8,6 +8,9 @@ import {
   View,
   type TextStyle,
   type ImageStyle,
+  type TextProps,
+  type ViewProps,
+  type TouchableOpacityProps,
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
@@ -23,7 +26,13 @@ import decodeTransaction, {
   type DecodeTransactionArgs,
   type TransactionDetailsData,
   type TransactionElementData,
+  type SwapsTransactions,
+  type Transaction,
 } from './utils';
+import type { ExistingGas } from '../Transactions';
+import type { Token } from '@metamask/assets-controllers';
+import type { BridgeHistoryItem } from '@metamask/bridge-status-controller';
+import type BN4 from 'bnjs4';
 import { TRANSACTION_TYPES } from '../../../util/transactions';
 import ListItem from '../../Base/ListItem';
 import BaseStatusText from '../../Base/StatusText';
@@ -34,6 +43,7 @@ import {
   WalletDevice,
   isEIP1559Transaction,
   type TransactionMeta,
+  type TransactionStatus,
 } from '@metamask/transaction-controller';
 import { ThemeContext } from '../../../util/theme';
 import { selectEvmNetworkConfigurationsByChainId } from '../../../selectors/networkController';
@@ -60,22 +70,21 @@ import {
 import { getBridgeTxActivityTitle } from '../Bridge/utils/transaction-history';
 import type { Colors, Theme } from '../../../util/theme/models';
 
-interface LegacyComponentProps {
-  children?: React.ReactNode;
-  [key: string]: unknown;
-}
-
-type LegacyDetailsModal = React.ComponentType<LegacyComponentProps> & {
-  Header: React.ComponentType<LegacyComponentProps>;
-  Title: React.ComponentType<LegacyComponentProps>;
-  CloseIcon: React.ComponentType<LegacyComponentProps>;
+type StatusTextProps = TextProps & {
+  status?: string;
+  context?: string;
 };
 
-const StatusText =
-  BaseStatusText as unknown as React.ComponentType<LegacyComponentProps>;
-const DetailsModal = BaseDetailsModal as unknown as LegacyDetailsModal;
-const BridgeActivityItemTxSegments =
-  BaseBridgeActivityItemTxSegments as unknown as React.ComponentType<LegacyComponentProps>;
+type LegacyDetailsModal = React.ComponentType<ViewProps> & {
+  Header: React.ComponentType<ViewProps>;
+  Title: React.ComponentType<TextProps>;
+  CloseIcon: React.ComponentType<TouchableOpacityProps>;
+};
+
+const StatusText = BaseStatusText as React.ComponentType<StatusTextProps>;
+// Static subcomponents are attached by the legacy JavaScript implementation.
+const DetailsModal = BaseDetailsModal as LegacyDetailsModal;
+const BridgeActivityItemTxSegments = BaseBridgeActivityItemTxSegments;
 
 interface InternalAccount {
   address: string;
@@ -85,54 +94,53 @@ interface InternalAccount {
 }
 
 interface OwnProps {
-  tx: TransactionMeta & {
-    isSmartTransaction?: boolean;
-    txParams: TransactionMeta['txParams'] & { status?: string };
-    transaction?: Record<string, unknown>;
-    [key: string]: unknown;
-  };
+  tx: Transaction;
   txChainId?: string;
   selectedAddress?: string;
-  tokens?: Record<string, unknown>;
-  collectibleContracts?: Record<string, unknown>[];
+  tokens?: Record<string, Token>;
+  collectibleContracts?: ReturnType<
+    typeof import('../../../reducers/collectibles').collectibleContractsSelector
+  >;
   contractExchangeRates?: Record<string, { price: number }>;
   conversionRate?: number;
   currentCurrency?: string;
   assetSymbol?: string;
   i?: number;
   selectedInternalAccount?: InternalAccount;
-  swapsTransactions?: Record<string, unknown>;
+  swapsTransactions?: SwapsTransactions;
   swapsTokens?: SwapsToken[] | null;
-  signQRTransaction?: (tx: TransactionMeta) => void;
-  cancelUnsignedQRTransaction?: (tx: TransactionMeta) => void;
+  signQRTransaction?: (tx: Transaction) => void;
+  cancelUnsignedQRTransaction?: (tx: Transaction) => void;
   isQRHardwareAccount?: boolean;
   isLedgerAccount?: boolean;
-  signLedgerTransaction?: (tx: TransactionMeta) => void;
+  signLedgerTransaction?: (tx: Transaction) => void;
   onPressItem?: (id: string, index?: number) => void;
   onSpeedUpAction?: (
     visible: boolean,
-    existingGas?: Record<string, unknown>,
-    tx?: TransactionMeta,
+    existingGas?: ExistingGas,
+    tx?: Transaction,
   ) => void;
   onCancelAction?: (
     visible: boolean,
-    existingGas?: Record<string, unknown>,
-    tx?: TransactionMeta,
+    existingGas?: ExistingGas,
+    tx?: Transaction,
   ) => void;
-  navigation: Pick<NavigationProp<ParamListBase>, 'navigate'>;
+  navigation: NavigationProp<ParamListBase>;
 }
 
 interface StateProps {
-  networkConfigurationsByChainId: Record<string, { nativeCurrency?: string }>;
+  networkConfigurationsByChainId: ReturnType<
+    typeof selectEvmNetworkConfigurationsByChainId
+  >;
   primaryCurrency: string;
   selectedInternalAccount?: InternalAccount;
-  swapsTransactions?: Record<string, unknown>;
+  swapsTransactions?: SwapsTransactions;
   swapsTokens?: SwapsToken[] | null;
 }
 
 interface Props extends OwnProps, StateProps {
   bridgeTxHistoryData: {
-    bridgeTxHistoryItem?: Record<string, unknown>;
+    bridgeTxHistoryItem?: BridgeHistoryItem;
     isBridgeComplete?: boolean | null;
   };
 }
@@ -144,9 +152,9 @@ interface State {
   detailsModalVisible: boolean;
   importModalVisible: boolean;
   transactionGas: {
-    gasBN?: unknown;
-    gasPriceBN?: unknown;
-    gasTotal?: unknown;
+    gasBN?: BN4;
+    gasPriceBN?: BN4;
+    gasTotal?: BN4;
   };
   transactionElement?: TransactionElementData;
   transactionDetails?: TransactionDetailsData;
@@ -267,6 +275,7 @@ class TransactionElement extends PureComponent<Props, State> {
       assetSymbol: this.props.assetSymbol,
       txChainId: this.props.txChainId as string,
       networkConfigurationsByChainId: this.props.networkConfigurationsByChainId,
+    // The legacy caller intentionally supplies only the fields needed for its view.
     } as unknown as DecodeTransactionArgs);
     this.mounted = true;
 
@@ -463,11 +472,7 @@ class TransactionElement extends PureComponent<Props, State> {
     let title = actionKey;
     if (isBridgeTransaction && bridgeTxHistoryItem) {
       title =
-        getBridgeTxActivityTitle(
-          bridgeTxHistoryItem as unknown as Parameters<
-            typeof getBridgeTxActivityTitle
-          >[0],
-        ) ?? title;
+        getBridgeTxActivityTitle(bridgeTxHistoryItem) ?? title;
     }
     return (
       <>
@@ -480,7 +485,11 @@ class TransactionElement extends PureComponent<Props, State> {
           </ListItem.Date>
           <ListItem.Content style={styles.listItemContent}>
             <ListItem.Icon>
-              {this.renderTxElementIcon(transactionElement, status, chainId)}
+              {this.renderTxElementIcon(
+                transactionElement,
+                status as string,
+                chainId as string,
+              )}
             </ListItem.Icon>
             <ListItem.Body>
               <ListItem.Title numberOfLines={1} style={styles.listItemTitle}>
@@ -491,7 +500,7 @@ class TransactionElement extends PureComponent<Props, State> {
               !isBridgeComplete ? (
                 <BridgeActivityItemTxSegments
                   bridgeTxHistoryItem={bridgeTxHistoryItem}
-                  transactionStatus={this.props.tx.status}
+                  transactionStatus={this.props.tx.status as TransactionStatus}
                 />
               ) : (
                 <StatusText
@@ -553,10 +562,10 @@ class TransactionElement extends PureComponent<Props, State> {
     );
   };
 
-  parseGas = () => {
+  parseGas = (): ExistingGas => {
     const { tx } = this.props;
 
-    let existingGas = {};
+    let existingGas: ExistingGas = {};
     const transaction = tx?.txParams;
     if (transaction) {
       if (isEIP1559Transaction(transaction)) {
@@ -785,6 +794,19 @@ const TransactionElementWithBridge = (props: TransactionElementOwnProps) => {
   );
 };
 
-export default connect(mapStateToProps)(
+const ConnectedTransactionElement = connect(mapStateToProps)(
   TransactionElementWithBridge,
-) as unknown as React.ComponentType<Record<string, unknown>>;
+);
+
+type LegacyTransactionProps = Omit<Partial<Props>, 'tx'> & {
+  tx: Omit<Partial<Transaction>, 'txParams'> & {
+    txParams?: Partial<Transaction['txParams']> & {
+      status?: string;
+    };
+  };
+};
+
+// Legacy tests provide partial transaction fixtures; runtime callers provide TransactionMeta.
+export default ConnectedTransactionElement as unknown as React.ComponentType<
+  LegacyTransactionProps
+>;

@@ -34,13 +34,25 @@ import Engine from '../../../core/Engine';
 import {
   isEIP1559Transaction,
   TransactionType,
+  type TransactionMeta,
 } from '@metamask/transaction-controller';
+import type {
+  NftContract,
+  Token,
+  TokenListState,
+} from '@metamask/assets-controllers';
+import type { SmartTransactionsControllerState } from '@metamask/smart-transactions-controller';
+import { selectNetworkConfigurations } from '../../../selectors/networkController';
+import type { Hex } from '@metamask/utils';
+import type BN4 from 'bnjs4';
 
-interface TransactionParams {
+const isBNValue = (value: string | BN4): value is BN4 => isBN(value);
+
+type TransactionParams = TransactionMeta['txParams'] & {
   from: string;
   to: string;
   data: string;
-  value: string;
+  value: string | BN4;
   gas: string;
   gasPrice: string;
   gasUsed: string;
@@ -50,21 +62,8 @@ interface TransactionParams {
   multiLayerL1FeeTotal: string;
   nonce?: string;
   estimatedGasLimit?: string;
-  [key: string]: unknown;
-}
-
-interface Token {
-  address: string;
-  symbol: string;
-  decimals: number;
-  swaps?: boolean;
-}
-
-interface Collectible {
-  address: string;
-  name: string;
-  symbol: string;
-}
+  status?: string;
+};
 
 interface TransferInformation {
   symbol: string;
@@ -72,20 +71,30 @@ interface TransferInformation {
   contractAddress: string;
 }
 
-interface Transaction {
-  id: string;
-  chainId?: string;
-  hash: string;
-  status?: string;
-  isTransfer?: boolean;
-  txParams: TransactionParams;
-  transferInformation: TransferInformation;
-  [key: string]: unknown;
+interface TransactionExecution {
+  from?: string;
+  to?: string;
+  nonce?: string | number;
+  gasPrice?: string;
+  maxFeePerGas?: string;
+  gas?: string;
+  value?: string;
 }
 
-interface NetworkConfiguration {
-  nativeCurrency?: string;
-}
+export type Transaction = TransactionMeta & {
+  isTransfer?: boolean;
+  isSmartTransaction?: boolean;
+  transaction?: TransactionExecution;
+  transferInformation?: TransferInformation;
+};
+
+type DecodeTransaction = TransactionMeta & {
+  status?: string;
+  isTransfer?: boolean;
+  isSmartTransaction?: boolean;
+  txParams: TransactionParams;
+  transferInformation: TransferInformation;
+};
 
 interface ContractExchangeRate {
   price: number;
@@ -95,7 +104,7 @@ interface SwapToken extends Token {
   swaps?: boolean;
 }
 
-interface SwapTransaction {
+export interface SwapTransaction {
   gasUsed?: string;
   status?: string;
   action?: string;
@@ -103,28 +112,29 @@ interface SwapTransaction {
   destinationAmount?: string;
   receivedDestinationAmount?: string;
   upTo?: string;
-  sourceToken: Token;
-  destinationToken: Token;
-  [key: string]: unknown;
+  sourceToken: SwapToken;
+  destinationToken: SwapToken;
 }
 
+export type SwapsTransactions = Record<string, SwapTransaction>;
+
 export interface DecodeTransactionArgs {
-  tx: Transaction;
+  tx: DecodeTransaction;
   selectedAddress: string;
   chainId: string;
   txChainId: string;
-  networkConfigurationsByChainId: Record<string, NetworkConfiguration>;
+  networkConfigurationsByChainId: ReturnType<typeof selectNetworkConfigurations>;
   conversionRate: number;
   currentCurrency: string;
   primaryCurrency: string;
   tokens: Record<string, Token>;
-  collectibleContracts: Collectible[];
+  collectibleContracts: NftContract[];
   contractExchangeRates: Record<string, ContractExchangeRate>;
-  swapsTransactions?: Record<string, SwapTransaction>;
+  swapsTransactions?: SwapsTransactions;
   swapsTokens?: SwapToken[];
   assetSymbol?: string;
   actionKey?: string;
-  totalGas: ReturnType<typeof hexToBN>;
+  totalGas: BN4;
 }
 
 export interface TransactionElementData {
@@ -428,7 +438,6 @@ export function decodeIncomingTransfer(
     primaryCurrency,
     selectedAddress,
   } = args;
-
   const amount = hexToBN(value);
   const token = { symbol, decimals, address: contractAddress };
 
@@ -677,8 +686,8 @@ function decodeDeploymentTx(args: DecodeTransactionArgs): DecodeResult {
     conversionRate,
     currentCurrency,
   );
-  const totalEth = isBN(value)
-    ? (value as unknown as ReturnType<typeof hexToBN>).add(totalGas)
+  const totalEth = isBNValue(value)
+    ? value.add(totalGas)
     : totalGas;
 
   const renderFrom = renderFullAddress(from);
@@ -761,14 +770,9 @@ function decodeConfirmTx(args: DecodeTransactionArgs): DecodeResult {
   const renderTo = renderFullAddress(to);
   const chainId = txChainId;
 
-  const tokenList =
-    (
-      Engine.context.TokenListController.state
-        .tokensChainsCache as unknown as Record<
-        string,
-        { data?: Record<string, Token> }
-      >
-    )?.[chainId]?.data || {};
+  const tokensChainsCache: TokenListState['tokensChainsCache'] =
+    Engine.context.TokenListController.state.tokensChainsCache;
+  const tokenList = tokensChainsCache?.[chainId as Hex]?.data || {};
   let symbol;
   if (renderTo in tokenList) {
     symbol = tokenList[renderTo].symbol;
@@ -864,30 +868,31 @@ function decodeSwapsTx(args: DecodeTransactionArgs): DecodeResult {
   } = args;
   // If the tx was a swaps smart transaction, the swapsTransactions id is the stx.uuid, rather than tx.id
   // We need use the tx.hash and look up the stx with the same hash
-  const smartTransactions = Engine.context.SmartTransactionsController.state
-    .smartTransactionsState.smartTransactions as unknown as Record<
-    string,
-    { txHash?: string; uuid: string }[]
-  >;
-  const smartTransaction = smartTransactions[chainId]?.find(
+  const smartTransactionsState: SmartTransactionsControllerState =
+    Engine.context.SmartTransactionsController.state;
+  const smartTransactions =
+    smartTransactionsState.smartTransactionsState.smartTransactions;
+  const smartTransaction = smartTransactions[chainId as Hex]?.find(
     (stx) => stx.txHash === hash,
   );
 
   const swapTransaction = (swapsTransactions?.[id] ||
     (smartTransaction?.uuid && swapsTransactions?.[smartTransaction.uuid]) ||
-    {}) as unknown as SwapTransaction;
+    {}) as SwapTransaction;
 
   const totalGas = calculateTotalGas({
     ...txParams,
     gas: swapTransaction.gasUsed || gas,
   });
+  const sourceSwapToken = swapTransaction.sourceToken;
+  const destinationSwapToken = swapTransaction.destinationToken;
   const sourceToken = swapsTokens?.find(
-    ({ address }) => address === swapTransaction?.sourceToken?.address,
+    ({ address }) => address === sourceSwapToken.address,
   );
-  const destinationToken = swapTransaction?.destinationToken?.swaps
-    ? swapTransaction.destinationToken
+  const destinationToken = destinationSwapToken.swaps
+    ? destinationSwapToken
     : swapsTokens?.find(
-        ({ address }) => address === swapTransaction?.destinationToken?.address,
+        ({ address }) => address === destinationSwapToken.address,
       );
   if (!sourceToken || !destinationToken) return [undefined, undefined];
 
@@ -899,17 +904,20 @@ function decodeSwapsTx(args: DecodeTransactionArgs): DecodeResult {
     swapTransaction.sourceAmount &&
     renderFromTokenMinimalUnit(
       swapTransaction.sourceAmount,
-      swapTransaction.sourceToken.decimals,
+      sourceSwapToken.decimals,
     );
+  const destinationAmount =
+    swapTransaction.receivedDestinationAmount &&
+    Number(swapTransaction.receivedDestinationAmount) > 0
+      ? swapTransaction.receivedDestinationAmount
+      : swapTransaction.destinationAmount;
   const decimalDestinationAmount =
-    swapTransaction.destinationToken.decimals &&
-    renderFromTokenMinimalUnit(
-      (!!swapTransaction?.receivedDestinationAmount &&
-      (swapTransaction?.receivedDestinationAmount as unknown as number) > 0
-        ? swapTransaction.receivedDestinationAmount
-        : swapTransaction.destinationAmount) as string,
-      swapTransaction.destinationToken.decimals,
-    );
+    destinationSwapToken.decimals && destinationAmount
+      ? renderFromTokenMinimalUnit(
+          destinationAmount,
+          destinationSwapToken.decimals,
+        )
+      : undefined;
   let totalAmountForEthSourceTokenFormatted;
   if (sourceToken.symbol === 'ETH') {
     const totalAmountForEthSourceToken =

@@ -17,7 +17,7 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
 import { connect } from 'react-redux';
-import type { ParamListBase } from '@react-navigation/native';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { Dispatch } from 'redux';
 import { strings } from '../../../../locales/i18n';
@@ -44,6 +44,7 @@ import { baseStyles, fontStyles } from '../../../styles/common';
 import { isHardwareAccount } from '../../../util/address';
 import {
   createLedgerTransactionModalNavDetails,
+  LedgerReplacementTxTypes,
   type ReplacementTxParams,
 } from '../../UI/LedgerModals/LedgerTransactionModal';
 import Device from '../../../util/device';
@@ -96,29 +97,47 @@ import {
 } from '../../../component-library/components/Texts/Text';
 import type { IQRState } from '../QRHardware/types';
 import type { Colors, Theme } from '../../../util/theme/models';
+import type {
+  Transaction as TransactionElementTransaction,
+} from '../TransactionElement/utils';
 
-interface Transaction
-  extends Omit<TransactionMeta, 'status' | 'chainId' | 'networkClientId'> {
-  status: string;
-  chainId?: string;
-  networkClientId?: string;
-  [key: string]: unknown;
-}
+type Transaction = TransactionElementTransaction;
 
 interface SelectedTransaction {
   id: string;
   index: number;
 }
 
-interface ExistingGas {
+export interface ExistingGas {
   isEIP1559Transaction?: boolean;
-  [key: string]: string | number | boolean | undefined;
+  gasPrice?: number;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
 }
+
+const validateTransactionBalance = (
+  transaction: Transaction,
+  rate: number,
+  accounts: ReturnType<typeof selectAccounts>,
+): boolean =>
+  Boolean(
+      // The JavaScript helper's JSDoc incorrectly declares accounts as a string.
+      validateTransactionActionBalance(
+        transaction,
+        rate as unknown as string,
+        accounts as unknown as string,
+      ),
+  );
+
+type LedgerTransaction = Pick<TransactionMeta, 'id'> & {
+  speedUpParams?: { type?: string };
+  replacementParams?: ReplacementTxParams;
+};
 
 interface OwnProps {
   assetSymbol?: string;
   close?: () => void;
-  navigation?: Pick<StackNavigationProp<ParamListBase>, 'navigate' | 'push'>;
+  navigation?: StackNavigationProp<ParamListBase>;
   transactions: Transaction[];
   submittedTransactions?: Transaction[];
   confirmedTransactions?: Transaction[];
@@ -135,12 +154,12 @@ interface OwnProps {
 }
 
 interface StateProps {
-  accounts: string;
-  contractExchangeRates: Record<string, { price: number }>;
-  networkConfigurations: Record<string, Record<string, unknown>>;
+  accounts: ReturnType<typeof selectAccounts>;
+  contractExchangeRates: ReturnType<typeof selectContractExchangeRates>;
+  networkConfigurations: ReturnType<typeof selectNetworkConfigurations>;
   providerConfig: { type?: string; rpcUrl?: string };
-  collectibleContracts: Record<string, unknown>[];
-  tokens: Record<string, unknown>;
+  collectibleContracts: ReturnType<typeof collectibleContractsSelector>;
+  tokens: ReturnType<typeof selectTokensByAddress>;
   selectedAddress: string;
   conversionRate: number;
   currentCurrency: string;
@@ -263,7 +282,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   existingGas: ExistingGas | null = null;
-  existingTx: Transaction | null = null;
+  existingTx: TransactionMeta | null = null;
   cancelTxId: string | null = null;
   speedUpTxId: string | null = null;
   selectedTx: SelectedTransaction | null = null;
@@ -299,9 +318,7 @@ class Transactions extends PureComponent<Props, State> {
       blockExplorer =
         findBlockExplorerForRpc(
           rpcUrl as string,
-          networkConfigurations as unknown as Parameters<
-            typeof findBlockExplorerForRpc
-          >[1],
+        networkConfigurations,
         ) ||
         NO_RPC_BLOCK_EXPLORER;
     } else if (isNonEvmChainId(chainId)) {
@@ -506,24 +523,20 @@ class Transactions extends PureComponent<Props, State> {
 
   onSpeedUpAction = (
     speedUpAction: boolean,
-    existingGas?: Record<string, unknown>,
+    existingGas?: ExistingGas,
     tx?: Transaction,
   ) => {
-    this.existingGas = existingGas as ExistingGas;
-    this.speedUpTxId = (tx as Transaction).id;
-    this.existingTx = tx as Transaction;
-    if ((existingGas as ExistingGas).isEIP1559Transaction) {
+    this.existingGas = existingGas ?? null;
+    this.speedUpTxId = tx?.id ?? null;
+    this.existingTx = tx ?? null;
+    if (existingGas?.isEIP1559Transaction) {
       this.setState({ speedUp1559IsOpen: speedUpAction });
     } else {
-      const speedUpConfirmDisabled = validateTransactionActionBalance(
-        tx as unknown as Parameters<
-          typeof validateTransactionActionBalance
-        >[0],
-        SPEED_UP_RATE as unknown as string,
-        this.props.accounts as unknown as Parameters<
-          typeof validateTransactionActionBalance
-        >[2],
-      ) as unknown as boolean;
+      const speedUpConfirmDisabled = tx
+        ? Boolean(
+            validateTransactionBalance(tx, SPEED_UP_RATE, this.props.accounts),
+          )
+        : false;
       this.setState({ speedUpIsOpen: speedUpAction, speedUpConfirmDisabled });
     }
   };
@@ -537,25 +550,21 @@ class Transactions extends PureComponent<Props, State> {
 
   onCancelAction = (
     cancelAction: boolean,
-    existingGas?: Record<string, unknown>,
+    existingGas?: ExistingGas,
     tx?: Transaction,
   ) => {
-    this.existingGas = existingGas as ExistingGas;
-    this.cancelTxId = (tx as Transaction).id;
-    this.existingTx = tx as Transaction;
+    this.existingGas = existingGas ?? null;
+    this.cancelTxId = tx?.id ?? null;
+    this.existingTx = tx ?? null;
 
-    if ((existingGas as ExistingGas).isEIP1559Transaction) {
+    if (existingGas?.isEIP1559Transaction) {
       this.setState({ cancel1559IsOpen: cancelAction });
     } else {
-      const cancelConfirmDisabled = validateTransactionActionBalance(
-        tx as unknown as Parameters<
-          typeof validateTransactionActionBalance
-        >[0],
-        CANCEL_RATE as unknown as string,
-        this.props.accounts as unknown as Parameters<
-          typeof validateTransactionActionBalance
-        >[2],
-      ) as unknown as boolean;
+      const cancelConfirmDisabled = tx
+        ? Boolean(
+            validateTransactionBalance(tx, CANCEL_RATE, this.props.accounts),
+          )
+        : false;
       this.setState({ cancelIsOpen: cancelAction, cancelConfirmDisabled });
     }
   };
@@ -620,13 +629,13 @@ class Transactions extends PureComponent<Props, State> {
         await this.signLedgerTransaction({
           id: this.speedUpTxId as string,
           replacementParams: {
-            type: 'speedUp',
+            type: LedgerReplacementTxTypes.SPEED_UP,
             eip1559GasFee: {
               maxFeePerGas: `0x${transactionObject?.suggestedMaxFeePerGasHex}`,
               maxPriorityFeePerGas: `0x${transactionObject?.suggestedMaxPriorityFeePerGasHex}`,
             },
           },
-        } as unknown as Transaction);
+        });
       } else {
         await speedUpTransaction(
           this.speedUpTxId as string,
@@ -645,7 +654,7 @@ class Transactions extends PureComponent<Props, State> {
     await ApprovalController.accept(tx.id, undefined, { waitForResult: true });
   };
 
-  signLedgerTransaction = async (transaction: Transaction) => {
+  signLedgerTransaction = async (transaction: LedgerTransaction) => {
     const deviceId = await getDeviceId();
 
     const onConfirmation = (isComplete: boolean) => {
@@ -662,9 +671,7 @@ class Transactions extends PureComponent<Props, State> {
         transactionId: transaction.id,
         deviceId,
         onConfirmationComplete: onConfirmation,
-        replacementParams: transaction?.replacementParams as
-          | ReplacementTxParams
-          | undefined,
+        replacementParams: transaction.replacementParams,
       }),
     );
   };
@@ -692,13 +699,13 @@ class Transactions extends PureComponent<Props, State> {
         await this.signLedgerTransaction({
           id: this.cancelTxId as string,
           replacementParams: {
-            type: 'cancel',
+            type: LedgerReplacementTxTypes.CANCEL,
             eip1559GasFee: {
               maxFeePerGas: `0x${transactionObject?.suggestedMaxFeePerGasHex}`,
               maxPriorityFeePerGas: `0x${transactionObject?.suggestedMaxPriorityFeePerGasHex}`,
             },
           },
-        } as unknown as Transaction);
+        });
       } else {
         await Engine.context.TransactionController.stopTransaction(
           this.cancelTxId as string,
@@ -749,8 +756,8 @@ class Transactions extends PureComponent<Props, State> {
       InteractionManager.runAfterInteractions(() => {
         this.onSpeedUpAction(
           true,
-          this.existingGas as unknown as Record<string, unknown>,
-          this.existingTx as unknown as Transaction,
+          this.existingGas ?? undefined,
+          this.existingTx ?? undefined,
         );
       });
     }
@@ -758,8 +765,8 @@ class Transactions extends PureComponent<Props, State> {
       InteractionManager.runAfterInteractions(() => {
         this.onCancelAction(
           true,
-          this.existingGas as unknown as Record<string, unknown>,
-          this.existingTx as unknown as Transaction,
+          this.existingGas ?? undefined,
+          this.existingTx ?? undefined,
         );
       });
     }
@@ -806,12 +813,7 @@ class Transactions extends PureComponent<Props, State> {
                 isCancel ? this.onCancelCompleted : this.onSpeedUpCompleted
               }
               chainId={this.props.chainId}
-              existingGas={
-                this.existingGas as {
-                  maxFeePerGas: string;
-                  maxPriorityFeePerGas: string;
-                }
-              }
+              existingGas={this.existingGas}
               isCancel={isCancel}
             />
           </KeyboardAwareScrollView>
@@ -861,7 +863,7 @@ class Transactions extends PureComponent<Props, State> {
 
       if (this.existingGas.isEIP1559Transaction) return undefined;
 
-      const gasPrice = Number(this.existingGas.gasPrice as string);
+      const gasPrice = this.existingGas.gasPrice ?? 0;
 
       const increasedGasPrice =
         gasPrice === 0
@@ -1037,6 +1039,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
 });
 
 const TransactionsWithQRHardware = withQRHardwareAwareness(
+  // The legacy HOC declaration only accepts its injected prop shape.
   Transactions as unknown as React.ComponentClass<{
     QRState?: IQRState;
     isSigningQRObject?: boolean;
@@ -1049,6 +1052,16 @@ const ConnectedTransactions = connect(
   mapDispatchToProps,
 )(TransactionsWithQRHardware as React.ComponentType<OwnProps>);
 
+type LegacyTransactionsProps = Omit<Partial<OwnProps>, 'transactions'> & {
+  transactions?: Array<
+    Omit<Partial<Transaction>, 'status' | 'txParams'> & {
+      status?: string;
+      txParams?: Partial<Transaction['txParams']>;
+    }
+  >;
+};
+
+// Legacy tests provide partial transaction fixtures; runtime callers provide controller transactions.
 export default ConnectedTransactions as unknown as React.ComponentType<
-  Record<string, unknown>
+  LegacyTransactionsProps
 >;

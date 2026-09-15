@@ -56,13 +56,21 @@ interface WebsiteIconProps {
   faviconSource?: string;
 }
 
+interface WebsiteIconState {
+  renderIconUrlError: boolean;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
 interface WebsiteIcon {
   context: React.ContextType<typeof ThemeContext>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
-class WebsiteIcon extends PureComponent<WebsiteIconProps, Record<string, never>, React.ContextType<typeof ThemeContext>> {
+class WebsiteIcon extends PureComponent<
+  WebsiteIconProps,
+  WebsiteIconState,
+  React.ContextType<typeof ThemeContext>
+> {
   static contextType = ThemeContext;
 
 

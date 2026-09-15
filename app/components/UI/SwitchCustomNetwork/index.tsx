@@ -68,6 +68,4 @@ const SwitchCustomNetwork = ({
   );
 };
 
-export default SwitchCustomNetwork as unknown as React.ComponentType<
-  Record<string, unknown>
->;
+export default SwitchCustomNetwork;

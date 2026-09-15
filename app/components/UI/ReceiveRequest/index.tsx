@@ -316,8 +316,11 @@ export default connect(
   mapDispatchToProps,
 )(
   withMetricsAwareness(
+    // The legacy HOC declaration only accepts its injected prop shape.
     ReceiveRequest as unknown as React.ComponentType<{
       metrics: IUseMetricsHook;
     }>,
-  ) as React.ComponentType<Partial<Omit<Props, 'metrics'>>>,
+  ) as React.ComponentType<
+    Partial<Omit<Props, 'metrics'>>
+  >,
 );

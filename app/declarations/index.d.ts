@@ -425,8 +425,25 @@ declare module '@metamask/react-native-button/coalesceNonElementChildren' {
 }
 
 declare module '@metamask/react-native-button' {
+  import type {
+    StyleProp,
+    TextStyle,
+    TouchableOpacityProps,
+    ViewStyle,
+  } from 'react-native';
+
+  interface ButtonProps extends TouchableOpacityProps {
+    accessibilityLabel?: string;
+    allowFontScaling?: boolean;
+    containerStyle?: StyleProp<ViewStyle>;
+    disabledContainerStyle?: StyleProp<ViewStyle>;
+    style?: StyleProp<TextStyle>;
+    styleDisabled?: StyleProp<TextStyle>;
+    childGroupStyle?: StyleProp<ViewStyle>;
+  }
+
   const Button: React.ComponentType<
-    React.PropsWithChildren<Record<string, unknown>>
+    React.PropsWithChildren<ButtonProps>
   >;
   export default Button;
 }
