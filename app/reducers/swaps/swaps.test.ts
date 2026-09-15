@@ -7,8 +7,11 @@ import reducer, {
   SWAPS_SET_HAS_ONBOARDED,
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
+  swapsTokensSelector,
   selectSwapsChainFeatureFlags,
 } from './index';
+// eslint-disable-next-line import/no-namespace
+import * as addressUtils from '../../util/address';
 import { NetworkClientType } from '@metamask/network-controller';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
@@ -522,6 +525,128 @@ describe('swaps reducer', () => {
         },
       };
       expect(swapsTokensObjectSelector(state)).toStrictEqual({});
+    });
+  });
+
+  describe('swapsTokensSelector', () => {
+    const buildState = (chainId: string, tokenListData: object) => ({
+      engine: {
+        backgroundState: {
+          NetworkController: {
+            getNetworkClientById: () => ({
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              configuration: {
+                rpcUrl: 'https://mainnet.infura.io/v3',
+                chainId,
+                ticker: 'ETH',
+                type: NetworkClientType.Custom,
+              },
+            }),
+            networkConfigurations: {
+              mainnet: {
+                id: 'mainnet',
+                rpcUrl: 'https://mainnet.infura.io/v3',
+                chainId,
+                ticker: 'ETH',
+                nickname: 'Ethereum mainnet',
+              },
+            },
+            selectedNetworkClientId: 'mainnet',
+            networksMetadata: {},
+          },
+          SwapsController: {
+            tokens: [
+              {
+                address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+                symbol: 'WETH',
+                decimals: 18,
+                occurrences: 10,
+              },
+              {
+                address: '0x6b175474e89094c44da98b954eedeac495271d0f',
+                symbol: 'DAI',
+                decimals: 18,
+                occurrences: 20,
+              },
+            ],
+          },
+          TokenListController: {
+            tokensChainsCache: {
+              [chainId]: { data: tokenListData },
+            },
+          },
+        },
+      },
+    });
+
+    const tokenListData = {
+      '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2': {
+        name: 'Wrapped Ether',
+      },
+      '0x6b175474e89094c44da98b954eedeac495271d0f': {
+        name: 'Dai Stablecoin',
+      },
+    };
+
+    beforeEach(() => {
+      jest.spyOn(tokensControllerSelectors, 'selectTokens').mockReturnValue([]);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('enriches mainnet tokens with names from the lowercase-keyed token list without checksumming', () => {
+      const checksumSpy = jest.spyOn(addressUtils, 'safeToChecksumAddress');
+
+      // @ts-ignore
+      const result = swapsTokensSelector(buildState('0x1', tokenListData));
+
+      expect(result).toStrictEqual([
+        {
+          address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+          symbol: 'WETH',
+          decimals: 18,
+          occurrences: 10,
+          name: 'Wrapped Ether',
+        },
+        {
+          address: '0x6b175474e89094c44da98b954eedeac495271d0f',
+          symbol: 'DAI',
+          decimals: 18,
+          occurrences: 20,
+          name: 'Dai Stablecoin',
+        },
+      ]);
+      expect(checksumSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns mainnet tokens unchanged when the token list has no entry', () => {
+      // @ts-ignore
+      const result = swapsTokensSelector(buildState('0x1', {}));
+
+      expect(result).toStrictEqual([
+        {
+          address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+          symbol: 'WETH',
+          decimals: 18,
+          occurrences: 10,
+        },
+        {
+          address: '0x6b175474e89094c44da98b954eedeac495271d0f',
+          symbol: 'DAI',
+          decimals: 18,
+          occurrences: 20,
+        },
+      ]);
+    });
+
+    it('does not add metadata on non-mainnet chains', () => {
+      // @ts-ignore
+      const result = swapsTokensSelector(buildState('0x38', tokenListData));
+
+      expect(result.every((token) => !('name' in token))).toBe(true);
     });
   });
 

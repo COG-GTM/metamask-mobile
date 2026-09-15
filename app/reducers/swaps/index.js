@@ -1,6 +1,5 @@
 import { createSelector } from 'reselect';
 import { isMainnetByChainId } from '../../util/networks';
-import { safeToChecksumAddress } from '../../util/address';
 import { toLowerCaseEquals } from '../../util/general';
 import { lte } from '../../util/lodash';
 import { selectEvmChainId } from '../../selectors/networkController';
@@ -44,7 +43,7 @@ function addMetadata(chainId, tokens, tokenList) {
     return tokens;
   }
   return tokens.map((token) => {
-    const tokenMetadata = tokenList[safeToChecksumAddress(token.address)];
+    const tokenMetadata = tokenList[token.address.toLowerCase()];
     if (tokenMetadata) {
       return { ...token, name: tokenMetadata.name };
     }
