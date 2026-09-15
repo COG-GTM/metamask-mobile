@@ -1,6 +1,15 @@
 import { useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import { swapsUtils } from '@metamask/swaps-controller';
+import type { Quote, SwapsToken } from '@metamask/swaps-controller/dist/types';
+import type { NetworkClientId } from '@metamask/network-controller';
+import type { Fees } from '@metamask/smart-transactions-controller/dist/types';
+import type {
+  Eip1559GasFee,
+  EthGasPriceEstimate,
+  GasFeeEstimates,
+  LegacyGasPriceEstimate,
+} from '@metamask/gas-fee-controller';
 import { strings } from '../../../../../locales/i18n';
 import AppConstants from '../../../../core/AppConstants';
 import { NETWORKS_CHAIN_ID } from '../../../../constants/network';
@@ -21,7 +30,7 @@ const {
   BASE_CHAIN_ID,
 } = swapsUtils;
 
-const allowedChainIds = [
+const allowedChainIds: string[] = [
   ETH_CHAIN_ID,
   BSC_CHAIN_ID,
   POLYGON_CHAIN_ID,
@@ -34,7 +43,7 @@ const allowedChainIds = [
   SWAPS_TESTNET_CHAIN_ID,
 ];
 
-export const allowedTestnetChainIds = [
+export const allowedTestnetChainIds: string[] = [
   NETWORKS_CHAIN_ID.GOERLI,
   NETWORKS_CHAIN_ID.SEPOLIA,
 ];
@@ -43,7 +52,120 @@ if (__DEV__) {
   allowedChainIds.push(...allowedTestnetChainIds);
 }
 
-export function isSwapsAllowed(chainId) {
+export interface SwapsTokenLike {
+  address?: string;
+  symbol?: string | null;
+  name?: string;
+  decimals?: number;
+  iconUrl?: string;
+  occurrences?: number;
+  aggregators?: string[];
+}
+
+export interface QuotePriceSlippage {
+  bucket?: string;
+  calculationError?: string;
+  ratio?: number;
+  sourceAmountInETH?: string | number;
+  destinationAmountInETH?: string | number;
+}
+
+/**
+ * Quote returned by the Swaps API, including fields not (yet) declared on
+ * the controller's `Quote` type.
+ */
+export type SwapsQuote = Quote &
+  Partial<Fees> & {
+    slippage?: number;
+    priceSlippage?: QuotePriceSlippage;
+    isGasIncludedTrade?: boolean;
+  };
+
+export type GasOption = keyof LegacyGasPriceEstimate;
+
+/**
+ * Union of the gas fee estimate shapes returned by the GasFeeController
+ * (fee-market, legacy, eth_gasPrice or none).
+ */
+export type SwapsGasFeeEstimates =
+  | GasFeeEstimates
+  | LegacyGasPriceEstimate
+  | EthGasPriceEstimate
+  | Record<string, never>;
+
+export function isGasOption(
+  option: string | null | undefined,
+): option is GasOption {
+  return option === 'low' || option === 'medium' || option === 'high';
+}
+
+export function isFeeMarketEstimates(
+  estimates: SwapsGasFeeEstimates | null | undefined,
+): estimates is GasFeeEstimates {
+  return (
+    !!estimates &&
+    'estimatedBaseFee' in estimates &&
+    typeof (estimates as GasFeeEstimates).high === 'object'
+  );
+}
+
+export function isLegacyEstimates(
+  estimates: SwapsGasFeeEstimates | null | undefined,
+): estimates is LegacyGasPriceEstimate {
+  return (
+    !!estimates &&
+    typeof (estimates as LegacyGasPriceEstimate).high === 'string'
+  );
+}
+
+export function isEthGasPriceEstimates(
+  estimates: SwapsGasFeeEstimates | null | undefined,
+): estimates is EthGasPriceEstimate {
+  return (
+    !!estimates &&
+    typeof (estimates as EthGasPriceEstimate).gasPrice === 'string'
+  );
+}
+
+export function getFeeMarketOption(
+  estimates: SwapsGasFeeEstimates | null | undefined,
+  option: string | null | undefined,
+): Eip1559GasFee | undefined {
+  if (isFeeMarketEstimates(estimates) && isGasOption(option)) {
+    return estimates[option];
+  }
+  return undefined;
+}
+
+export function getLegacyOption(
+  estimates: SwapsGasFeeEstimates | null | undefined,
+  option: string | null | undefined,
+): string | undefined {
+  if (isLegacyEstimates(estimates) && isGasOption(option)) {
+    return estimates[option];
+  }
+  return undefined;
+}
+
+export interface QuotesNavigationParams {
+  sourceTokenAddress: string;
+  destinationTokenAddress: string;
+  sourceAmount: string | undefined;
+  slippage: number;
+  tokens: SwapsToken[] | undefined;
+}
+
+export interface FetchParamsOptions {
+  slippage?: number;
+  sourceToken: SwapsToken;
+  destinationToken: SwapsToken;
+  sourceAmount: string;
+  walletAddress: string;
+  networkClientId: NetworkClientId;
+  enableGasIncludedQuotes: boolean;
+}
+
+export function isSwapsAllowed(chainId: string) {
   if (!AppConstants.SWAPS.ACTIVE) {
     return false;
   }
@@ -60,17 +182,21 @@ export function isSwapsAllowed(chainId) {
   return allowedChainIds.includes(chainId);
 }
 
-export function isSwapsNativeAsset(token) {
+export function isSwapsNativeAsset(
+  token: SwapsTokenLike | null | undefined,
+): boolean {
   return (
     Boolean(token) && token?.address === swapsUtils.NATIVE_SWAPS_TOKEN_ADDRESS
   );
 }
 
-export function isDynamicToken(token) {
+export function isDynamicToken(
+  token: SwapsTokenLike | null | undefined,
+): boolean {
   return (
     Boolean(token) &&
-    token.occurrences === 1 &&
-    token?.aggregators.length === 1 &&
+    token?.occurrences === 1 &&
+    token?.aggregators?.length === 1 &&
     token.aggregators[0] === 'dynamic'
   );
 }
@@ -85,12 +211,12 @@ export function isDynamicToken(token) {
  * @return {object} Object containing sourceTokenAddress, destinationTokenAddress, sourceAmount and slippage
  */
 export function setQuotesNavigationsParams(
-  sourceTokenAddress,
-  destinationTokenAddress,
-  sourceAmount,
-  slippage,
-  tokens = [],
-) {
+  sourceTokenAddress: string,
+  destinationTokenAddress: string,
+  sourceAmount: string,
+  slippage: number,
+  tokens: SwapsToken[] = [],
+): QuotesNavigationParams {
   return {
     sourceTokenAddress,
     destinationTokenAddress,
@@ -104,7 +230,9 @@ export function setQuotesNavigationsParams(
  * Gets required parameters for Swaps Quotes View
  * @return {object} Object containing sourceTokenAddress, destinationTokenAddress, sourceAmount and slippage
  */
-export function getQuotesNavigationsParams(route) {
+export function getQuotesNavigationsParams(route: {
+  params?: Partial<QuotesNavigationParams>;
+}): QuotesNavigationParams {
   const slippage = route.params?.slippage ?? 1;
   const sourceTokenAddress = route.params?.sourceTokenAddress ?? '';
   const destinationTokenAddress = route.params?.destinationTokenAddress ?? '';
@@ -139,7 +267,7 @@ export function getFetchParams({
   walletAddress,
   networkClientId,
   enableGasIncludedQuotes,
-}) {
+}: FetchParamsOptions) {
   return {
     slippage,
     sourceToken: sourceToken.address,
@@ -156,10 +284,10 @@ export function getFetchParams({
 }
 
 export function useRatio(
-  numeratorAmount,
-  numeratorDecimals,
-  denominatorAmount,
-  denominatorDecimals,
+  numeratorAmount: BigNumber.Value,
+  numeratorDecimals: number,
+  denominatorAmount: BigNumber.Value,
+  denominatorDecimals: number,
 ) {
   const ratio = useMemo(
     () =>
@@ -179,7 +307,9 @@ export function useRatio(
   return ratio;
 }
 
-export function getErrorMessage(errorKey) {
+export function getErrorMessage(
+  errorKey: string | null | undefined,
+): [string, string, string] {
   const { SwapsError } = swapsUtils;
   const errorAction =
     errorKey === SwapsError.QUOTES_EXPIRED_ERROR
@@ -212,7 +342,9 @@ export function getErrorMessage(errorKey) {
   }
 }
 
-export function getQuotesSourceMessage(type) {
+export function getQuotesSourceMessage(
+  type: string | undefined,
+): [string, string, string] {
   switch (type) {
     case 'DEX': {
       return [
@@ -259,7 +391,11 @@ export function shouldShowMaxBalanceLink({
   sourceToken,
   shouldUseSmartTransaction,
   hasBalance,
-}) {
+}: {
+  sourceToken: SwapsTokenLike | null | undefined;
+  shouldUseSmartTransaction: boolean;
+  hasBalance: boolean;
+}): boolean {
   if (!sourceToken?.symbol || !hasBalance) {
     return false;
   }

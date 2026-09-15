@@ -1,9 +1,22 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  type ComponentProps,
+  type ComponentType,
+} from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
-import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
+import {
+  GAS_ESTIMATE_TYPES,
+  type GasEstimateType,
+} from '@metamask/gas-fee-controller';
+import type {
+  CustomEthGasPriceEstimate,
+  CustomGasFee,
+} from '@metamask/swaps-controller/dist/types';
+import type { Hex } from '@metamask/utils';
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { connect } from 'react-redux';
 
@@ -27,6 +40,14 @@ import {
   selectConversionRate,
   selectCurrentCurrency,
 } from '../../../../selectors/currencyRateController';
+import type { RootState } from '../../../../reducers';
+import {
+  getFeeMarketOption,
+  getLegacyOption,
+  isEthGasPriceEstimates,
+  isFeeMarketEstimates,
+  type SwapsGasFeeEstimates,
+} from '../utils';
 
 const GAS_OPTIONS = AppConstants.GAS_OPTIONS;
 
@@ -45,6 +66,181 @@ const styles = StyleSheet.create({
 });
 
 const RECOMMENDED = GAS_OPTIONS.HIGH;
+
+/**
+ * EditGasFeeLegacy is a JS component whose `defaultProps` make TypeScript infer
+ * literal prop types and mark every prop as required; widen them.
+ */
+type EditGasFeeLegacyProps = Partial<
+  Omit<
+    ComponentProps<typeof EditGasFeeLegacy>,
+    'ignoreOptions' | 'warningMinimumEstimateOption'
+  >
+> & {
+  ignoreOptions?: string[];
+  warningMinimumEstimateOption?: string;
+  gasPriceConversion?: string;
+};
+const EditGasFeeLegacyView =
+  EditGasFeeLegacy as unknown as ComponentType<EditGasFeeLegacyProps>;
+
+type ParseEIP1559Args = Parameters<typeof parseTransactionEIP1559>[0];
+type ParseLegacyArgs = Parameters<typeof parseTransactionLegacy>[0];
+
+type GasSelected = string | null | undefined;
+
+interface EIP1559GasData {
+  error?: string;
+  renderableGasFeeMinNative?: string;
+  renderableGasFeeMinConversion?: string;
+  renderableGasFeeMaxNative?: string;
+  renderableGasFeeMaxConversion?: string;
+  renderableMaxPriorityFeeNative?: string;
+  renderableMaxPriorityFeeConversion?: string;
+  renderableMaxFeePerGasNative?: string;
+  renderableMaxFeePerGasConversion?: string;
+  timeEstimate?: string;
+  timeEstimateColor?: string;
+  timeEstimateId?: string;
+  estimatedBaseFee?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedMaxFeePerGas?: string;
+  suggestedGasLimit?: string;
+  suggestedEstimatedGasLimit?: string;
+  totalMaxHex?: { toString(base?: number): string };
+}
+
+interface LegacyGasData {
+  error?: string;
+  transactionFee?: string;
+  transactionFeeFiat?: string;
+  suggestedGasPrice?: string;
+  suggestedGasLimit?: string;
+  totalHex?: { toString(base?: number): string };
+}
+
+interface EIP1559ChangeValues {
+  suggestedMaxFeePerGas: string;
+  suggestedMaxPriorityFeePerGas: string;
+  suggestedGasLimit: string;
+  estimatedBaseFee?: string;
+  suggestedEstimatedGasLimit?: string;
+}
+
+interface LegacyChangeValues {
+  suggestedGasLimit: string;
+  suggestedGasPrice: string;
+}
+
+export interface SwapsCustomGas {
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+  estimatedBaseFee?: string;
+  gasPrice?: string;
+  selected: GasSelected;
+}
+
+interface OwnProps {
+  /**
+   * Function to dismiss modal
+   */
+  dismiss: () => void;
+  /**
+   * Estimate type returned by the gas fee controller, can be fee-market, legacy, eth_gasPrice or none
+   */
+  gasEstimateType: GasEstimateType;
+  /**
+   * Gas fee estimates returned by the gas fee controller
+   */
+  gasFeeEstimates: SwapsGasFeeEstimates;
+  /**
+   * Default gas option ('low', 'medium' or 'high') to for fee-market estimate type
+   * This is used to show a warning below this option
+   */
+  defaultGasFeeOptionFeeMarket?: string;
+  /**
+   * Default gas option ('low', 'medium' or 'high') to for legacy estimate types
+   * This is used to show a warning below this option
+   */
+  defaultGasFeeOptionLegacy?: string;
+  /**
+   * Wether this modal is visible
+   */
+  isVisible: boolean;
+  /**
+   * Function that handles user saving the gas editors
+   * It is called with arguments (customGas, )
+   */
+  onGasUpdate: (
+    customGas: SwapsCustomGas,
+    gasLimit: string | undefined,
+  ) => void;
+  /**
+   * usedCustomGas from Swaps Controller
+   */
+  customGasFee: CustomEthGasPriceEstimate | CustomGasFee | null | undefined;
+  /**
+   * Initial gas limit of the selected quote trade
+   */
+  initialGasLimit: string | undefined;
+  /**
+   * Gas limit currently applied to the selected quote trade
+   */
+  gasLimit?: string;
+  /**
+   * Gas limit set by the user, if any
+   */
+  customGasLimit?: string | null;
+  /**
+   * Gas limit of trade estimation
+   */
+  tradeGasLimit: string | undefined;
+  /**
+   * Function to check if user has enough balance
+   */
+  checkEnoughEthBalance: (totalHex: string | undefined) => boolean;
+  /**
+   * Wether the swap is from native asset
+   */
+  isNativeAsset: boolean;
+  /**
+   * Value of the trade
+   */
+  tradeValue: string | undefined;
+  /**
+   * Amount of the swap
+   */
+  sourceAmount: string | undefined;
+  /**
+   * If the values should animate upon update or not
+   */
+  animateOnChange: boolean;
+}
+
+interface StateProps {
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency: string;
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate: number | undefined | null;
+  /**
+   * Primary currency, either ETH or Fiat
+   */
+  primaryCurrency: string;
+  /**
+   * Chain Id
+   */
+  chainId: Hex;
+  /**
+   * Current network ticker
+   */
+  ticker: string | undefined;
+}
+
+type GasEditModalProps = OwnProps & StateProps;
 
 function GasEditModal({
   dismiss,
@@ -67,8 +263,8 @@ function GasEditModal({
   chainId,
   ticker,
   animateOnChange,
-}) {
-  const [gasSelected, setGasSelected] = useState(
+}: GasEditModalProps) {
+  const [gasSelected, setGasSelected] = useState<GasSelected>(
     customGasFee
       ? customGasFee.selected ?? null
       : gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET
@@ -77,12 +273,10 @@ function GasEditModal({
   );
   const [stopUpdateGas, setStopUpdateGas] = useState(false);
   const [hasEnoughEthBalance, setHasEnoughEthBalance] = useState(true);
-  const [EIP1559TransactionDataTemp, setEIP1559TransactionDataTemp] = useState(
-    {},
-  );
-  const [LegacyTransactionDataTemp, setLegacyTransactionDataTemp] = useState(
-    {},
-  );
+  const [EIP1559TransactionDataTemp, setEIP1559TransactionDataTemp] =
+    useState<EIP1559GasData>({});
+  const [LegacyTransactionDataTemp, setLegacyTransactionDataTemp] =
+    useState<LegacyGasData>({});
   const [
     isGasFeeRecommendationVisible,
     ,
@@ -127,6 +321,7 @@ function GasEditModal({
       return;
     }
     if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
+      const selectedEstimate = getFeeMarketOption(gasFeeEstimates, gasSelected);
       setEIP1559TransactionDataTemp(
         parseTransactionEIP1559(
           {
@@ -134,13 +329,14 @@ function GasEditModal({
             conversionRate,
             nativeCurrency: ticker,
             selectedGasFee: {
-              suggestedMaxFeePerGas:
-                gasFeeEstimates[gasSelected].suggestedMaxFeePerGas,
+              suggestedMaxFeePerGas: selectedEstimate?.suggestedMaxFeePerGas,
               suggestedMaxPriorityFeePerGas:
-                gasFeeEstimates[gasSelected].suggestedMaxPriorityFeePerGas,
+                selectedEstimate?.suggestedMaxPriorityFeePerGas,
               suggestedGasLimit: initialGasLimit,
               suggestedEstimatedGasLimit: tradeGasLimit,
-              estimatedBaseFee: gasFeeEstimates.estimatedBaseFee,
+              estimatedBaseFee: isFeeMarketEstimates(gasFeeEstimates)
+                ? gasFeeEstimates.estimatedBaseFee
+                : undefined,
               selectedOption: gasSelected,
               recommended: RECOMMENDED,
             },
@@ -150,7 +346,7 @@ function GasEditModal({
               sourceAmount,
             },
             gasFeeEstimates,
-          },
+          } as ParseEIP1559Args,
           { onlyGas: true },
         ),
       );
@@ -165,10 +361,12 @@ function GasEditModal({
               suggestedGasLimit: initialGasLimit,
               suggestedGasPrice:
                 gasEstimateType === GAS_ESTIMATE_TYPES.ETH_GASPRICE
-                  ? gasFeeEstimates.gasPrice
-                  : gasFeeEstimates[gasSelected],
+                  ? isEthGasPriceEstimates(gasFeeEstimates)
+                    ? gasFeeEstimates.gasPrice
+                    : undefined
+                  : getLegacyOption(gasFeeEstimates, gasSelected),
             },
-          },
+          } as ParseLegacyArgs,
           { onlyGas: true },
         ),
       );
@@ -196,8 +394,8 @@ function GasEditModal({
         suggestedGasLimit,
         estimatedBaseFee,
         suggestedEstimatedGasLimit,
-      },
-      selected,
+      }: EIP1559ChangeValues,
+      selected: GasSelected,
     ) => {
       if (!selected) {
         setStopUpdateGas(true);
@@ -224,7 +422,7 @@ function GasEditModal({
               sourceAmount,
             },
             gasFeeEstimates,
-          },
+          } as ParseEIP1559Args,
           { onlyGas: true },
         ),
       );
@@ -245,7 +443,10 @@ function GasEditModal({
   );
 
   const calculateTempGasFeeLegacy = useCallback(
-    ({ suggestedGasLimit, suggestedGasPrice }, selected) => {
+    (
+      { suggestedGasLimit, suggestedGasPrice }: LegacyChangeValues,
+      selected: GasSelected,
+    ) => {
       setStopUpdateGas(!selected);
       setGasSelected(selected);
       setLegacyTransactionDataTemp(
@@ -258,7 +459,7 @@ function GasEditModal({
               suggestedGasLimit: selected ? initialGasLimit : suggestedGasLimit,
               suggestedGasPrice,
             },
-          },
+          } as ParseLegacyArgs,
           { onlyGas: true },
         ),
       );
@@ -267,7 +468,7 @@ function GasEditModal({
   );
 
   const saveGasEdition = useCallback(
-    (selected) => {
+    (selected: GasSelected) => {
       if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
         const {
           suggestedMaxFeePerGas: maxFeePerGas,
@@ -398,11 +599,7 @@ function GasEditModal({
                   <TouchableOpacity onPress={showGasFeeRecommendation}>
                     <Text noMargin link bold small centered>
                       {`${strings('swaps.recommended')} `}
-                      <MaterialCommunityIcon
-                        name="information"
-                        size={14}
-                        style={styles.labelInfo}
-                      />
+                      <MaterialCommunityIcon name="information" size={14} />
                     </Text>
                   </TouchableOpacity>
                 ),
@@ -425,7 +622,7 @@ function GasEditModal({
             />
           </>
         ) : (
-          <EditGasFeeLegacy
+          <EditGasFeeLegacyView
             selected={gasSelected}
             ignoreOptions={[GAS_OPTIONS.LOW]}
             warningMinimumEstimateOption={GAS_OPTIONS.MEDIUM}
@@ -457,92 +654,7 @@ function GasEditModal({
   );
 }
 
-GasEditModal.propTypes = {
-  /**
-   * Function to dismiss modal
-   */
-  dismiss: PropTypes.func,
-  /**
-   * Estimate type returned by the gas fee controller, can be fee-market, legacy, eth_gasPrice or none
-   */
-  gasEstimateType: PropTypes.string,
-  /**
-   * Gas fee estimates returned by the gas fee controller
-   */
-  gasFeeEstimates: PropTypes.object,
-  /**
-   * Default gas option ('low', 'medium' or 'high') to for fee-market estimate type
-   * This is used to show a warning below this option
-   */
-  defaultGasFeeOptionFeeMarket: PropTypes.string,
-  /**
-   * Default gas option ('low', 'medium' or 'high') to for legacy estimate types
-   * This is used to show a warning below this option
-   */
-  defaultGasFeeOptionLegacy: PropTypes.string,
-  /**
-   * Wether this modal is visible
-   */
-  isVisible: PropTypes.bool,
-  /**
-   * Function that handles user saving the gas editors
-   * It is called with arguments (customGas, )
-   */
-  onGasUpdate: PropTypes.func,
-  /**
-   * usedCustomGas from Swaps Controller
-   */
-  customGasFee: PropTypes.object,
-  /**
-   * Initial gas limit of the selected quote trade
-   */
-  initialGasLimit: PropTypes.string,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Gas limit of trade estimation
-   */
-  tradeGasLimit: PropTypes.string,
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Current network ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Function to check if user has enough balance
-   */
-  checkEnoughEthBalance: PropTypes.func,
-  /**
-   * Wether the swap is from native asset
-   */
-  isNativeAsset: PropTypes.bool,
-  /**
-   * Value of the trade
-   */
-  tradeValue: PropTypes.string,
-  /**
-   * Amount of the swap
-   */
-  sourceAmount: PropTypes.string,
-  /**
-   * If the values should animate upon update or not
-   */
-  animateOnChange: PropTypes.bool,
-};
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),

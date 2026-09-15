@@ -6,13 +6,22 @@ import {
   safeNumberToBN,
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
+import type { SwapsToken } from '@metamask/swaps-controller/dist/types';
+
+export interface AccountBalances {
+  [address: string]: { balance: string } | undefined;
+}
+
+export interface TokenBalances {
+  [tokenAddress: string]: string;
+}
 
 function useBalance(
-  accounts,
-  balances,
-  selectedAddress,
-  sourceToken,
-  { asUnits = false } = {},
+  accounts: AccountBalances,
+  balances: TokenBalances,
+  selectedAddress: string,
+  sourceToken: SwapsToken | null | undefined,
+  { asUnits = false }: { asUnits?: boolean } = {},
 ) {
   // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
   const balance = useMemo(() => {
@@ -22,17 +31,13 @@ function useBalance(
     if (isSwapsNativeAsset(sourceToken)) {
       if (asUnits) {
         // Controller stores balances in hex for ETH
-        return safeNumberToBN(
-          (accounts[selectedAddress] && accounts[selectedAddress].balance) || 0,
-        );
+        return safeNumberToBN(accounts[selectedAddress]?.balance || 0);
       }
-      return renderFromWei(
-        accounts[selectedAddress] && accounts[selectedAddress].balance,
-      );
+      return renderFromWei(accounts[selectedAddress]?.balance || 0);
     }
     const tokenAddress = safeToChecksumAddress(sourceToken.address);
 
-    if (tokenAddress in balances) {
+    if (tokenAddress && tokenAddress in balances) {
       if (asUnits) {
         return balances[tokenAddress];
       }
