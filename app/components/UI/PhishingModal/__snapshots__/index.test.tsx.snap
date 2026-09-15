@@ -13,11 +13,7 @@ exports[`PhishingModal should render correctly 1`] = `
   }
 >
   <View
-    style={
-      {
-        "alignItems": "left",
-      }
-    }
+    style={{}}
   >
     <Text
       allowFontScaling={false}
@@ -221,6 +217,7 @@ exports[`PhishingModal should render correctly 1`] = `
     accessibilityRole="button"
     accessible={true}
     activeOpacity={1}
+    onPress={[Function]}
     onPressIn={[Function]}
     onPressOut={[Function]}
     style={

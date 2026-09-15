@@ -33,7 +33,7 @@ interface Step7Props {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   navigation: any;
-  onClose: (arg0: boolean) => void;
+  onClose: () => Promise<void>;
 }
 
 const Step7 = ({ navigation, onClose }: Step7Props) => {

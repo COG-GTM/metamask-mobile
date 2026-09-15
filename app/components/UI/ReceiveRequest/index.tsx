@@ -1,5 +1,4 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { ComponentType, PureComponent } from 'react';
 import {
   SafeAreaView,
   Dimensions,
@@ -9,20 +8,25 @@ import {
 } from 'react-native';
 import Share from 'react-native-share';
 import QRCode from 'react-native-qrcode-svg';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
+import { Dispatch } from 'redux';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import Logger from '../../../util/Logger';
 import { strings } from '../../../../locales/i18n';
 import { generateUniversalLinkAddress } from '../../../util/payment-link-generator';
-import { showAlert } from '../../../actions/alert';
+import { showAlert, ShowAlertAction } from '../../../actions/alert';
 import { protectWalletModalVisible } from '../../../actions/user';
+import { UserAction } from '../../../actions/user/types';
 
 import { fontStyles } from '../../../styles/common';
 import GlobalAlert from '../GlobalAlert';
 import StyledButton from '../StyledButton';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import { selectChainId } from '../../../selectors/networkController';
 import { isNetworkRampSupported } from '../Ramp/utils';
 import { createBuyNavigationDetails } from '../Ramp/routes/utils';
@@ -30,13 +34,14 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../selector
 import { getRampNetworks } from '../../../reducers/fiatOrders';
 import { RequestPaymentModalSelectorsIDs } from '../../../../e2e/selectors/Receive/RequestPaymentModal.selectors';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { getDecimalChainId } from '../../../util/networks';
 import QRAccountDisplay from '../../Views/QRAccountDisplay';
 import PNG_MM_LOGO_PATH from '../../../images/branding/fox.png';
 
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
-const createStyles = (theme) =>
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -109,52 +114,38 @@ const createStyles = (theme) =>
 /**
  * PureComponent that renders receive options
  */
-class ReceiveRequest extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * Asset to receive, could be not defined
-     */
-    receiveAsset: PropTypes.object,
-    /**
-     /* Triggers global alert
-     */
-    showAlert: PropTypes.func,
-    /**
-     * Network provider chain id
-     */
-    chainId: PropTypes.string,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * Hides the modal that contains the component
-     */
-    hideModal: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+interface ReceiveRequestOwnProps {
+  /**
+   * The navigator object
+   */
+  navigation?: NavigationProp<ParamListBase>;
+  /**
+   * Asset to receive, could be not defined
+   */
+  receiveAsset?: Record<string, unknown>;
+  /**
+   * Hides the modal that contains the component
+   */
+  hideModal?: () => void;
+  showReceiveModal?: boolean;
+}
 
-  state = {
+type ReceiveRequestProps = ReceiveRequestOwnProps &
+  IWithMetricsAwarenessProps &
+  ConnectedProps<typeof connector>;
+
+interface ReceiveRequestState {
+  qrModalVisible: boolean;
+  buyModalVisible: boolean;
+}
+
+class ReceiveRequest extends PureComponent<
+  ReceiveRequestProps,
+  ReceiveRequestState
+> {
+  static contextType = ThemeContext;
+
+  state: ReceiveRequestState = {
     qrModalVisible: false,
     buyModalVisible: false,
   };
@@ -164,11 +155,12 @@ class ReceiveRequest extends PureComponent {
    */
   onShare = () => {
     const { selectedAddress } = this.props;
+    if (!selectedAddress) return;
     Share.open({
       message: generateUniversalLinkAddress(selectedAddress),
     })
       .then(() => {
-        this.props.hideModal();
+        this.props.hideModal?.();
         setTimeout(() => this.props.protectWalletModalVisible(), 1000);
       })
       .catch((err) => {
@@ -193,7 +185,7 @@ class ReceiveRequest extends PureComponent {
         strings('fiat_on_ramp.switch_network'),
       );
     } else {
-      navigation.navigate(...createBuyNavigationDetails());
+      navigation?.navigate(...createBuyNavigationDetails());
 
       this.props.metrics.trackEvent(
         this.props.metrics
@@ -218,13 +210,13 @@ class ReceiveRequest extends PureComponent {
       data: { msg: strings('account_details.account_copied_to_clipboard') },
     });
     if (!this.props.seedphraseBackedUp) {
-      setTimeout(() => this.props.hideModal(), 1000);
+      setTimeout(() => this.props.hideModal?.(), 1000);
       setTimeout(() => this.props.protectWalletModalVisible(), 1500);
     }
   };
 
   onReceive = () => {
-    this.props.navigation.navigate('PaymentRequestView', {
+    this.props.navigation?.navigate('PaymentRequestView', {
       screen: 'PaymentRequest',
       params: { receiveAsset: this.props.receiveAsset },
     });
@@ -237,7 +229,7 @@ class ReceiveRequest extends PureComponent {
   };
 
   render() {
-    const theme = this.context || mockTheme;
+    const theme = (this.context as unknown as Theme) || mockTheme;
     const styles = createStyles(theme);
 
     return (
@@ -253,7 +245,7 @@ class ReceiveRequest extends PureComponent {
             />
           </View>
 
-          <QRAccountDisplay accountAddress={this.props.selectedAddress} />
+          <QRAccountDisplay accountAddress={this.props.selectedAddress ?? ''} />
 
           <View style={styles.actionRow}>
             <StyledButton
@@ -273,12 +265,9 @@ class ReceiveRequest extends PureComponent {
   }
 }
 
-ReceiveRequest.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-  receiveAsset: state.modals.receiveAsset,
   seedphraseBackedUp: state.user.seedphraseBackedUp,
   isNetworkBuySupported: isNetworkRampSupported(
     selectChainId(state),
@@ -286,12 +275,20 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (
+  dispatch: Dispatch<ShowAlertAction | UserAction>,
+) => ({
+  showAlert: (config: Omit<ShowAlertAction, 'type'>) =>
+    dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-)(withMetricsAwareness(ReceiveRequest));
+const connector = connect(mapStateToProps, mapDispatchToProps);
+
+const ReceiveRequestWithMetrics: ComponentType<
+  Omit<ReceiveRequestProps, keyof IWithMetricsAwarenessProps>
+> = withMetricsAwareness(
+  ReceiveRequest as unknown as ComponentType<IWithMetricsAwarenessProps>,
+);
+
+export default connector(ReceiveRequestWithMetrics);

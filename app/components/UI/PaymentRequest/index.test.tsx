@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import {
   render,
   fireEvent,
@@ -11,6 +11,8 @@ import configureMockStore from 'redux-mock-store';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 import { SolScope } from '@metamask/keyring-api';
+
+type PaymentRequestProps = ComponentProps<typeof PaymentRequest>;
 
 jest.mock('react', () => ({
   ...jest.requireActual('react'),
@@ -129,8 +131,10 @@ const renderComponent = (props = {}) =>
     <Provider store={store}>
       <ThemeContext.Provider value={mockTheme}>
         <PaymentRequest
-          navigation={mockNavigation}
-          route={mockRoute}
+          navigation={
+            mockNavigation as unknown as PaymentRequestProps['navigation']
+          }
+          route={mockRoute as unknown as PaymentRequestProps['route']}
           {...props}
         />
       </ThemeContext.Provider>
