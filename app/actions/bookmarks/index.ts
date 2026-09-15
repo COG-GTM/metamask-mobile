@@ -2,8 +2,8 @@ export const ADD_BOOKMARK = 'ADD_BOOKMARK';
 export const REMOVE_BOOKMARK = 'REMOVE_BOOKMARK';
 
 export interface Bookmark {
-  name?: string;
-  url?: string;
+  name: string;
+  url: string;
   [key: string]: unknown;
 }
 
@@ -14,7 +14,7 @@ interface AddBookmarkAction {
 
 interface RemoveBookmarkAction {
   type: typeof REMOVE_BOOKMARK;
-  bookmark: Bookmark;
+  bookmark: Partial<Bookmark>;
 }
 
 export type BookmarksAction = AddBookmarkAction | RemoveBookmarkAction;
@@ -26,7 +26,9 @@ export function addBookmark(bookmark: Bookmark): AddBookmarkAction {
   };
 }
 
-export function removeBookmark(bookmark: Bookmark): RemoveBookmarkAction {
+export function removeBookmark(
+  bookmark: Partial<Bookmark>,
+): RemoveBookmarkAction {
   return {
     type: REMOVE_BOOKMARK,
     bookmark,

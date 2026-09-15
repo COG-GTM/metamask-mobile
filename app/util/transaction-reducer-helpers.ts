@@ -1,16 +1,19 @@
 import { SecurityAlertResponse } from '@metamask/transaction-controller';
 import type BN from 'bnjs4';
+import type { SecurityAlertResponse as BlockaidSecurityAlertResponse } from '../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 
 interface TxMeta {
   data?: string;
   from?: string;
-  gas?: BN;
-  gasPrice?: BN;
+  gas?: BN | string;
+  gasPrice?: BN | string;
   to?: string;
-  value?: BN;
-  maxFeePerGas?: BN;
-  maxPriorityFeePerGas?: BN;
-  securityAlertResponse?: SecurityAlertResponse;
+  value?: BN | string;
+  maxFeePerGas?: BN | string;
+  maxPriorityFeePerGas?: BN | string;
+  securityAlertResponse?:
+    | SecurityAlertResponse
+    | BlockaidSecurityAlertResponse;
 }
 
 function getDefinedProperties<T extends object>(object: T): Partial<T> {

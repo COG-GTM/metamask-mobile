@@ -37,6 +37,8 @@ export interface TransactionObject {
   value?: BN | string;
   maxFeePerGas?: BN | string;
   maxPriorityFeePerGas?: BN | string;
+  selectedAsset?: SelectedAsset;
+  assetType?: string;
   securityAlertResponse?: SecurityAlertResponse;
   [key: string]: unknown;
 }

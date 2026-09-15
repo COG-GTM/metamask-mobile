@@ -6,8 +6,7 @@ import {
   NetworkConfiguration,
   NetworkState,
 } from '@metamask/network-controller';
-import { ensureValidState } from './util';
-import { RootState } from '../../reducers';
+import { ensureValidState, type ValidState } from './util';
 
 /**
  * This migration checks if `selectedNetworkClientId` exists in any entry within `networkConfigurationsByChainId`.
@@ -31,7 +30,7 @@ export default async function migrate(stateAsync: unknown) {
   if (
     !isValidNetworkControllerState(
       networkControllerState,
-      state as RootState,
+      state,
       migrationVersion,
     )
   ) {
@@ -64,7 +63,7 @@ export default async function migrate(stateAsync: unknown) {
 
 function isValidNetworkControllerState(
   networkControllerState: NetworkState,
-  state: RootState,
+  state: Pick<ValidState, 'engine'>,
   migrationVersion: number,
 ) {
   if (

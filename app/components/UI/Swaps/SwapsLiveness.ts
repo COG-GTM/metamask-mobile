@@ -19,7 +19,7 @@ function SwapLiveness() {
   const chainId = useSelector(selectEvmChainId);
   const dispatch = useDispatch();
   const setLiveness = useCallback(
-    (_chainId: string, featureFlags?: FeatureFlags | null) => {
+    (_chainId: `0x${string}`, featureFlags?: FeatureFlags | null) => {
       dispatch(setSwapsLiveness(_chainId, featureFlags));
     },
     [dispatch],

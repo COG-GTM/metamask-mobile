@@ -37,7 +37,7 @@ const initialState = {
       },
     },
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 jest.mock('../../hooks/useMetrics');
 
@@ -87,7 +87,7 @@ describe('NFT Auto detection modal', () => {
           },
         },
       },
-    });
+    } as unknown as DeepPartial<RootState>);
     const allowButton = getByTestId('allow');
 
     fireEvent.press(allowButton);

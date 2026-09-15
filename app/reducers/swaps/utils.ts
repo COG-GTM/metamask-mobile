@@ -1,6 +1,10 @@
-import { FeatureFlags } from '@metamask/swaps-controller/dist/types';
+import type { FeatureFlags } from '@metamask/swaps-controller';
 import Device from '../../util/device';
 import { CHAIN_ID_TO_NAME_MAP } from '@metamask/swaps-controller/dist/constants';
+export type {
+  NetworkFeatureFlagsAll,
+} from '@metamask/swaps-controller/dist/types';
+export type { FeatureFlags } from '@metamask/swaps-controller';
 
 export const getChainFeatureFlags = (
   featureFlags: FeatureFlags,

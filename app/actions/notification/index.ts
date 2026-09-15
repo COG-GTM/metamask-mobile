@@ -4,7 +4,7 @@
 import { ACTIONS } from '../../reducers/notification';
 
 export interface Notification {
-  id: string | number;
+  id?: string | number;
   isVisible?: boolean;
   autodismiss?: number | boolean;
   title?: string;
@@ -31,6 +31,7 @@ interface HideNotificationByIdAction {
 
 interface ModifyOrShowTransactionNotificationAction {
   type: typeof ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION;
+  id?: string | number;
   autodismiss?: number | boolean;
   transaction: TransactionNotification;
   status?: string;
@@ -38,6 +39,7 @@ interface ModifyOrShowTransactionNotificationAction {
 
 interface ModifyOrShowSimpleNotificationAction {
   type: typeof ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION;
+  id?: string | number;
   autodismiss?: number | boolean;
   title?: string;
   description?: string;
@@ -47,7 +49,7 @@ interface ModifyOrShowSimpleNotificationAction {
 interface ReplaceNotificationByIdAction {
   type: typeof ACTIONS.REPLACE_NOTIFICATION_BY_ID;
   notification: Notification;
-  id: string | number;
+  id?: string | number;
 }
 
 interface RemoveNotificationByIdAction {

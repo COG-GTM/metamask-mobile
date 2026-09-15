@@ -162,7 +162,7 @@ export const allowLinkOpen = (url: string) =>
  */
 export const appendURLParams = (
   baseUrl: string | URL,
-  params: Record<string, string | boolean | number>,
+  params: Record<string, string | boolean | number | null>,
 ): URL => {
   const url = baseUrl instanceof URL ? baseUrl : new URL(baseUrl);
 

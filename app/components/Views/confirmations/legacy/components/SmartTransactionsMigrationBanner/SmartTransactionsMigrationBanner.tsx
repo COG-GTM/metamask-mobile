@@ -19,6 +19,7 @@ import {
   selectSmartTransactionsMigrationApplied,
   selectSmartTransactionsBannerDismissed,
 } from '../../../../../../selectors/preferencesController';
+import type { RootState } from '../../../../../../reducers';
 
 const SmartTransactionsMigrationBanner = ({
   style,
@@ -28,8 +29,8 @@ const SmartTransactionsMigrationBanner = ({
   const isBannerDismissed = useSelector(selectSmartTransactionsBannerDismissed);
   const chainId = useSelector(selectEvmChainId);
 
-  const shouldUseSmartTransaction = useSelector((state) =>
-    selectShouldUseSmartTransaction(state, chainId)
+  const shouldUseSmartTransaction = useSelector((state: RootState) =>
+    selectShouldUseSmartTransaction(state, chainId),
   );
 
   const dismissBanner = useCallback(async () => {

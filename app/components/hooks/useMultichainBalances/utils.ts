@@ -76,7 +76,7 @@ const getMultiChainFiatBalance = (
 
 const getNonEvmDisplayBalance = (
   nonEvmAccountBalance: MultichainNetworkAggregatedBalance,
-  shouldShowFiat: boolean,
+  shouldShowFiat: boolean | undefined,
   currentCurrency: string,
 ) => {
   if (!shouldShowFiat || !nonEvmAccountBalance.totalBalanceFiat) {
@@ -117,7 +117,7 @@ export const getAccountBalanceData = (
   multichainAssets: MultichainAssetsControllerState['accountsAssets'],
   multichainAssetsRates: MultichainAssetsRatesControllerState['conversionRates'],
   nonEvmChainId: SupportedCaipChainId,
-  shouldShowFiat: boolean,
+  shouldShowFiat: boolean | undefined,
   ///: END:ONLY_INCLUDE_IF
 ): {
   displayBalance: string;
