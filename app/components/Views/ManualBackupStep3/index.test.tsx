@@ -1,8 +1,11 @@
-import React from 'react';
-import ManualBackupStep3 from './';
+import React, { ComponentType } from 'react';
+import ManualBackupStep3Component from './';
 import configureMockStore from 'redux-mock-store';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
+
+const ManualBackupStep3 =
+  ManualBackupStep3Component as unknown as ComponentType;
 
 const mockStore = configureMockStore();
 const initialState = {};
