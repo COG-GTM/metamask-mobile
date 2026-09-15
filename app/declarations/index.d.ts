@@ -551,3 +551,147 @@ declare module '@metamask/ethjs-query' {
   }
   export default Eth;
 }
+
+declare module 'through2' {
+  type TransformCallback = (error?: Error | null, data?: unknown) => void;
+
+  // Minimal shape of the `readable-stream` Transform returned by through2;
+  // `readable-stream` ships no typings in this repo.
+  interface Through2Transform {
+    push(chunk: unknown, encoding?: string): boolean;
+    pipe<T>(destination: T, options?: { end?: boolean }): T;
+    on(event: string, listener: (...args: unknown[]) => void): this;
+    once(event: string, listener: (...args: unknown[]) => void): this;
+    write(chunk: unknown, callback?: (error?: Error | null) => void): boolean;
+    end(callback?: () => void): void;
+    destroy(error?: Error): void;
+  }
+
+  type TransformFunction = (
+    this: Through2Transform,
+    chunk: unknown,
+    encoding: string,
+    callback: TransformCallback,
+  ) => void;
+
+  function through2(
+    options?: Record<string, unknown>,
+    transform?: TransformFunction,
+  ): Through2Transform;
+  namespace through2 {
+    function obj(transform?: TransformFunction): Through2Transform;
+  }
+  export = through2;
+}
+
+declare module 'pump' {
+  type PumpCallback = (err?: Error | null) => void;
+  // Streams from `readable-stream` are untyped in this repo, so accept any stream-like object.
+  type PumpStream = object;
+  function pump(...streams: (PumpStream | PumpCallback)[]): PumpStream;
+  export = pump;
+}
+
+// The package ships its typings as `index.ts.d` (misnamed), so TS cannot resolve them.
+declare module 'unicode-confusables' {
+  export interface ConfusablePoint {
+    point: string;
+    similarTo?: string;
+  }
+  export const isConfusing: (input: string) => boolean;
+  export const confusables: (input: string) => ConfusablePoint[];
+  export const rectifyConfusion: (input: string) => string;
+}
+
+declare module 'ethjs-ens' {
+  interface EnsOptions {
+    provider: unknown;
+    network: string | number;
+    registryAddress?: string;
+  }
+
+  class Ens {
+    constructor(opts?: EnsOptions);
+    lookup(name?: string): Promise<string>;
+    reverse(address: string): Promise<string>;
+    getOwner(name?: string): Promise<string>;
+    getResolver(name?: string): Promise<unknown>;
+    getResolverAddress(name?: string): Promise<string>;
+  }
+
+  export = Ens;
+}
+
+declare module '@metamask/ethjs-unit' {
+  import BN from 'bnjs4';
+
+  type EthjsUnitValue = string | number | BN;
+
+  interface FromWeiOptions {
+    pad?: boolean;
+    commify?: boolean;
+  }
+
+  const ethjsUnit: {
+    unitMap: Record<string, string>;
+    numberToString(arg: EthjsUnitValue): string;
+    getValueOfUnit(unitInput?: string): BN;
+    fromWei(
+      weiInput: EthjsUnitValue,
+      unit?: string,
+      optionsInput?: FromWeiOptions,
+    ): string;
+    toWei(etherInput: EthjsUnitValue, unit?: string): BN;
+  };
+  export = ethjsUnit;
+}
+
+declare module 'number-to-bn' {
+  type BN = import('bnjs4');
+
+  function numberToBN(arg: string | number | BN | { toString(): string }): BN;
+  export = numberToBN;
+}
+
+// `lib` is es2017 but Hermes/RN ship `String.prototype.replaceAll` at runtime.
+interface String {
+  replaceAll(searchValue: string | RegExp, replaceValue: string): string;
+}
+
+declare module 'ethereumjs-abi' {
+  function rawEncode(types: string[], values: unknown[]): Buffer;
+  function rawDecode(types: string[], data: Buffer): unknown[];
+}
+
+declare module 'humanize-duration' {
+  interface HumanizeDurationOptions {
+    language?: string;
+    fallbacks?: string[];
+    delimiter?: string;
+    spacer?: string;
+    largest?: number;
+    units?: string[];
+    round?: boolean;
+    decimal?: string;
+    conjunction?: string;
+    serialComma?: boolean;
+    maxDecimalPoints?: number;
+  }
+  function humanizeDuration(
+    ms: number | null | undefined,
+    options?: HumanizeDurationOptions,
+  ): string;
+  export = humanizeDuration;
+}
+
+declare module '@react-native-clipboard/clipboard/jest/clipboard-mock.js' {
+  const mockClipboard: Record<string, jest.Mock>;
+  export default mockClipboard;
+}
+
+declare module 'enzyme-adapter-react-16' {
+  import type { EnzymeAdapter } from 'enzyme';
+
+  class Adapter extends EnzymeAdapter {}
+  export default Adapter;
+}
