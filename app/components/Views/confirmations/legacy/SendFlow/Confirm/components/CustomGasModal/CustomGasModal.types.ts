@@ -1,7 +1,7 @@
 export interface CustomGasModalProps {
   gasSelected: string;
-  onChange: (gas: string) => void;
-  onCancel: () => void;
+  onChange?: (gas: string) => void;
+  onCancel?: () => void;
   animateOnChange?: boolean;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -15,7 +15,7 @@ export interface CustomGasModalProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transaction: any;
     total: string;
-  }) => void;
+  }) => string | undefined;
   legacy: boolean;
   legacyGasData?: {
     legacyGasLimit: string;

@@ -1,5 +1,5 @@
 import React from 'react';
-import Amount from '.';
+import Amount, { AmountProps } from '.';
 // eslint-disable-next-line @typescript-eslint/no-shadow
 import { act, fireEvent, waitFor } from '@testing-library/react-native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -210,11 +210,13 @@ const renderComponent = (state: any = {}) =>
         {(props) => (
           <Amount
             {...props}
-            navigation={{
-              navigate: mockNavigate,
-              setOptions: jest.fn(),
-              setParams: jest.fn(),
-            }}
+            navigation={
+              {
+                navigate: mockNavigate,
+                setOptions: jest.fn(),
+                setParams: jest.fn(),
+              } as unknown as AmountProps['navigation']
+            }
           />
         )}
       </Stack.Screen>

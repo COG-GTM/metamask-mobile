@@ -1,4 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  ComponentProps,
+  ComponentType,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { Eip1559GasFee } from '@metamask/gas-fee-controller';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
 import { useSelector } from 'react-redux';
@@ -6,9 +14,41 @@ import { selectGasFeeEstimates } from '../../../../../../../../selectors/confirm
 import { selectGasFeeControllerEstimateType } from '../../../../../../../../selectors/gasFeeController';
 import { selectPrimaryCurrency } from '../../../../../../../../selectors/settings';
 import { useAppThemeFromContext } from '../../../../../../../../util/theme';
-import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
-import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
+import EditGasFee1559Update from '../../../../components/EditGasFee1559Update';
+import EditGasFeeLegacyUpdate from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
+import { CustomGasModalProps } from './CustomGasModal.types';
+import { RootState } from '../../../../../../../../reducers';
+
+type LegacyGasData = NonNullable<CustomGasModalProps['legacyGasData']>;
+type EIP1559GasData = NonNullable<CustomGasModalProps['EIP1559GasData']>;
+type EIP1559GasTxn = NonNullable<CustomGasModalProps['EIP1559GasTxn']>;
+
+interface LegacyGasTxn {
+  totalHex: string;
+  error?: string;
+}
+
+interface EIP1559GasTxnUpdate extends EIP1559GasTxn {
+  error?: string;
+}
+
+// The gas editors are untyped JS components whose inferred props are all
+// required; they tolerate omitted props at runtime, so treat them as optional.
+const EditGasFee1559 = EditGasFee1559Update as ComponentType<
+  Partial<ComponentProps<typeof EditGasFee1559Update>>
+>;
+const EditGasFeeLegacy = EditGasFeeLegacyUpdate as ComponentType<
+  Partial<ComponentProps<typeof EditGasFeeLegacyUpdate>>
+>;
+
+type EIP1559GasObj = EIP1559GasData &
+  Partial<
+    Record<
+      string,
+      { suggestedMaxFeePerGas?: string; suggestedMaxPriorityFeePerGas?: string }
+    >
+  >;
 
 const CustomGasModal = ({
   gasSelected,
@@ -23,25 +63,31 @@ const CustomGasModal = ({
   onGasChanged,
   onGasCanceled,
   updateGasState,
-}) => {
+}: CustomGasModalProps) => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  const transaction = useSelector((state) => state.transaction);
+  const transaction = useSelector((state: RootState) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
   const chainId = transaction?.chainId;
   const selectedAsset = useSelector(
-    (state) => state.transaction.selectedAsset,
+    (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
   const [selectedGas, setSelectedGas] = useState(gasSelected);
-  const [eip1559Txn, setEIP1559Txn] = useState(EIP1559GasTxn);
-  const [legacyGasObj, setLegacyGasObj] = useState(legacyGasData);
-  const [eip1559GasObj, setEIP1559GasObj] = useState(EIP1559GasData);
-  const [isViewAnimating, setIsViewAnimating] = useState(false);
-  const [error, setError] = useState('');
+  const [eip1559Txn, setEIP1559Txn] = useState<EIP1559GasTxn | undefined>(
+    EIP1559GasTxn,
+  );
+  const [legacyGasObj, setLegacyGasObj] = useState<LegacyGasData | undefined>(
+    legacyGasData,
+  );
+  const [eip1559GasObj, setEIP1559GasObj] = useState<
+    EIP1559GasObj | undefined
+  >(EIP1559GasData);
+  const [isViewAnimating, setIsViewAnimating] = useState<boolean>(false);
+  const [error, setError] = useState<string | undefined>('');
 
   useEffect(() => {
     setIsViewAnimating(isAnimating);
@@ -55,7 +101,7 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
+  const onChangeGas = (gasValue: string) => {
     setSelectedGas(gasValue);
     onGasChanged(selectedGas);
   };
@@ -74,7 +120,7 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: LegacyGasTxn, gasObj: LegacyGasData) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -87,7 +133,7 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: EIP1559GasTxnUpdate, gasObj: EIP1559GasObj) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalMaxHex,
@@ -123,7 +169,9 @@ const CustomGasModal = ({
       eip1559GasObj?.[selectedGas]?.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
-      gasFeeEstimate[selectedGas]?.suggestedMaxPriorityFeePerGas,
+      (
+        gasFeeEstimate as Partial<Record<string, Partial<Eip1559GasFee>>>
+      )[selectedGas]?.suggestedMaxPriorityFeePerGas,
     suggestedGasLimit:
       eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit,
   };
@@ -174,7 +222,6 @@ const CustomGasModal = ({
             animateOnChange={animateOnChange}
             isAnimating={isAnimating}
             analyticsParams={getGasAnalyticsParams()}
-            view={'SendTo (Confirm)'}
             selectedGasObject={eip1559GasObject}
             onlyGas={onlyGas}
             error={error}
