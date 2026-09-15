@@ -1,4 +1,7 @@
-import { StackNavigationProp } from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import React, { useCallback, useEffect } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -95,7 +98,7 @@ const SDKSessionsManager = (props: SDKSessionsManagerProps) => {
         navigation,
         false,
         colors,
-      ),
+      ) as StackNavigationOptions,
     );
   }, [props, colors]);
 
