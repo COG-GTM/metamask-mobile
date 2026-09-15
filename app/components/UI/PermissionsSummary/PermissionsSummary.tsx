@@ -93,7 +93,7 @@ const PermissionsSummary = ({
     chainName = customNetworkInformation?.chainName;
     chainImage = getNetworkImageSource({
       chainId: customNetworkInformation?.chainId,
-    });
+    }) as ImageSourcePropType;
   }
 
   const confirm = () => {

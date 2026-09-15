@@ -100,7 +100,9 @@ const IncomingTransactionsSettings = () => {
         testId = INCOMING_LINEA_MAINNET_TOGGLE;
       }
 
-      const image = getNetworkImageSource({ chainId: chainId?.toString() });
+      const image = getNetworkImageSource({
+        chainId: chainId?.toString(),
+      }) as ImageSourcePropType;
 
       return (
         <NetworkCell

@@ -1,6 +1,6 @@
 // Third party dependencies.
 import React from 'react';
-import { View } from 'react-native';
+import { View, type ImageSourcePropType } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 
@@ -94,7 +94,7 @@ const NetworkPermissionsConnected = ({
       isSelected: false,
       imageSource: getNetworkImageSource({
         chainId: network?.chainId,
-      }),
+      }) as ImageSourcePropType,
     }));
 
   return (

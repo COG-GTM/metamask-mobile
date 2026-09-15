@@ -38,7 +38,7 @@ const AccountFromToInfoCard = (props: AccountFromToInfoCardProps) => {
   const [toAddress, setToAddress] = useState(transactionTo || to);
   const [fromAccountName, setFromAccountName] = useState<string>();
   const [toAccountName, setToAccountName] = useState<string>();
-  const [confusableCollection, setConfusableCollection] = useState([]);
+  const [confusableCollection, setConfusableCollection] = useState<string[]>([]);
   const [showWarningModal, setShowWarningModal] = useState<boolean>();
 
   const existingToAddress = useExistingAddress(toAddress);

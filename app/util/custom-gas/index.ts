@@ -1,5 +1,16 @@
 import BN from 'bnjs4';
-import { renderFromWei, weiToFiat, toWei, conversionUtil } from '../number';
+import type BNjs from 'bn.js';
+import type { TransactionParams } from '@metamask/transaction-controller';
+import type { NetworkClientId } from '@metamask/network-controller';
+import {
+  renderFromWei,
+  weiToFiat,
+  toWei,
+  conversionUtil,
+  type EthDenomination,
+  type NullableNumberLike,
+  type NumberLike,
+} from '../number';
 import { strings } from '../../../locales/i18n';
 import TransactionTypes from '../../core/TransactionTypes';
 import { estimateGas } from '../transaction-controller';
@@ -15,7 +26,7 @@ export const WEI = 'WEI';
  * @param {number} estimate - Number corresponding to api gas price estimation
  * @returns {Object} - BN instance containing gas price in wei
  */
-export function apiEstimateModifiedToWEI(estimate) {
+export function apiEstimateModifiedToWEI(estimate: NumberLike): BN {
   return toWei(estimate, 'gwei');
 }
 
@@ -25,8 +36,8 @@ export function apiEstimateModifiedToWEI(estimate) {
  * @param {number} val - Number corresponding to api gas price estimation
  * @returns {string} - The GWEI value as a string
  */
-export function convertApiValueToGWEI(val) {
-  return parseInt(val, 10).toString();
+export function convertApiValueToGWEI(val: string | number): string {
+  return parseInt(String(val), 10).toString();
 }
 
 /**
@@ -36,7 +47,10 @@ export function convertApiValueToGWEI(val) {
  * @param {number} gasLimit - Number corresponding to transaction gas limit
  * @returns {Object} - BN instance containing gas price in wei
  */
-export function getWeiGasFee(estimate, gasLimit = 21000) {
+export function getWeiGasFee(
+  estimate: NumberLike,
+  gasLimit: number | string = 21000,
+): BN {
   const apiEstimate = apiEstimateModifiedToWEI(estimate);
   const gasFee = apiEstimate.mul(new BN(gasLimit, 10));
   return gasFee;
@@ -49,7 +63,10 @@ export function getWeiGasFee(estimate, gasLimit = 21000) {
  * @param {number} gasLimit - Number corresponding to transaction gas limit
  * @returns {Object} - BN instance containing gas price in wei
  */
-export function getRenderableEthGasFee(estimate, gasLimit = 21000) {
+export function getRenderableEthGasFee(
+  estimate: NumberLike,
+  gasLimit: number | string = 21000,
+): string {
   const gasFee = getWeiGasFee(estimate, gasLimit);
   return renderFromWei(gasFee);
 }
@@ -64,11 +81,11 @@ export function getRenderableEthGasFee(estimate, gasLimit = 21000) {
  * @returns {Object} - BN instance containing gas price in wei
  */
 export function getRenderableFiatGasFee(
-  estimate,
-  conversionRate,
-  currencyCode,
-  gasLimit = 21000,
-) {
+  estimate: NumberLike,
+  conversionRate: number | null | undefined,
+  currencyCode: string,
+  gasLimit: number | string = 21000,
+): string | undefined {
   const wei = getWeiGasFee(estimate, gasLimit);
   return weiToFiat(wei, conversionRate, currencyCode);
 }
@@ -79,11 +96,11 @@ export function getRenderableFiatGasFee(
  * @param {number} min - Minutes
  * @returns {string} - Readable wait time
  */
-export function parseWaitTime(min) {
+export function parseWaitTime(min: number): string {
   let tempMin = min,
     parsed = '',
-    val;
-  const timeUnits = [
+    val: number;
+  const timeUnits: [string, number][] = [
     [strings('unit.week'), 10080],
     [strings('unit.day'), 1440],
     [strings('unit.hour'), 60],
@@ -108,17 +125,20 @@ export function parseWaitTime(min) {
 }
 
 export async function getGasLimit(
-  transaction,
+  transaction: Partial<TransactionParams>,
   resetGas = false,
-  networkClientId,
-) {
-  let estimation;
+  networkClientId?: NetworkClientId,
+): Promise<{ gas: BNjs }> {
+  let estimation: { gas: string };
   try {
     const newTransactionObj = resetGas
       ? { ...transaction, gas: undefined, gasPrice: undefined }
       : transaction;
 
-    estimation = await estimateGas(newTransactionObj, networkClientId);
+    estimation = await estimateGas(
+      newTransactionObj as TransactionParams,
+      networkClientId as NetworkClientId,
+    );
   } catch (error) {
     estimation = {
       gas: TransactionTypes.CUSTOM_GAS.DEFAULT_GAS_LIMIT,
@@ -129,6 +149,15 @@ export async function getGasLimit(
   return { gas };
 }
 
+export interface GetValueFromWeiHexArgs {
+  value: NullableNumberLike;
+  fromCurrency?: string | null;
+  toCurrency?: string | null;
+  conversionRate?: number | string | null;
+  numberOfDecimals?: number;
+  toDenomination?: EthDenomination;
+}
+
 export function getValueFromWeiHex({
   value,
   fromCurrency = ETH,
@@ -136,7 +165,7 @@ export function getValueFromWeiHex({
   conversionRate,
   numberOfDecimals,
   toDenomination,
-}) {
+}: GetValueFromWeiHexArgs) {
   return conversionUtil(value, {
     fromNumericBase: 'hex',
     toNumericBase: 'dec',

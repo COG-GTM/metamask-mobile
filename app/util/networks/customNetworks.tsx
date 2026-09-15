@@ -1,4 +1,5 @@
 import { CaipChainId, Hex } from '@metamask/utils';
+import type { ImageSourcePropType } from 'react-native';
 import { toHex } from '@metamask/controller-utils';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
@@ -255,7 +256,7 @@ export const NETWORK_CHAIN_ID: {
 };
 
 /* eslint-disable @typescript-eslint/no-require-imports, import/no-commonjs */
-export const CustomNetworkImgMapping: Record<Hex, string> = {
+export const CustomNetworkImgMapping: Record<Hex, ImageSourcePropType> = {
   [NETWORK_CHAIN_ID.FLARE_MAINNET]: require('../../images/flare-mainnet.png'),
   [NETWORK_CHAIN_ID.SONGBIRD_TESTNET]: require('../../images/songbird.png'),
   [NETWORK_CHAIN_ID.APE_CHAIN_TESTNET]: require('../../images/ape-network.png'),

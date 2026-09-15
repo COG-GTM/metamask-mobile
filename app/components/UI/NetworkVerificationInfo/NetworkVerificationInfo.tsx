@@ -1,6 +1,11 @@
 /* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Linking, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Linking,
+  TouchableOpacity,
+  type ImageSourcePropType,
+} from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
 import Text, {
@@ -115,7 +120,7 @@ const NetworkVerificationInfo = ({
     () =>
       getNetworkImageSource({
         chainId: customNetworkInformation.chainId,
-      }),
+      }) as ImageSourcePropType,
     [customNetworkInformation],
   );
 
