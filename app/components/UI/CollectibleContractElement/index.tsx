@@ -3,6 +3,8 @@ import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { connect, ConnectedProps } from 'react-redux';
 import { Dispatch } from 'redux';
 import { Nft } from '@metamask/assets-controllers';
+import type { Hex } from '@metamask/utils';
+import type { SupportedCaipChainId } from '@metamask/multichain-network-controller';
 import { fontStyles } from '../../../styles/common';
 import CollectibleMedia from '../CollectibleMedia';
 import { CollectibleMediaProps } from '../CollectibleMedia/CollectibleMedia.types';
@@ -106,7 +108,7 @@ const mapStateToProps = (state: RootState) => ({
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   removeFavoriteCollectible: (
     selectedAddress: string | undefined,
-    chainId: string,
+    chainId: Hex | SupportedCaipChainId,
     collectible: Nft,
   ) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),

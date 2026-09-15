@@ -81,11 +81,14 @@ interface TransactionExecution {
   value?: string;
 }
 
-export type Transaction = TransactionMeta & {
+export type Transaction = Omit<TransactionMeta, 'status'> & {
+  status: string;
   isTransfer?: boolean;
   isSmartTransaction?: boolean;
   transaction?: TransactionExecution;
   transferInformation?: TransferInformation;
+  insertImportTime?: boolean;
+  networkID?: string;
 };
 
 type DecodeTransaction = TransactionMeta & {
@@ -122,19 +125,22 @@ export interface DecodeTransactionArgs {
   tx: DecodeTransaction;
   selectedAddress: string;
   chainId: string;
-  txChainId: string;
-  networkConfigurationsByChainId: ReturnType<typeof selectNetworkConfigurations>;
-  conversionRate: number;
+  txChainId?: string;
+  ticker?: string;
+  networkConfigurationsByChainId?: ReturnType<
+    typeof selectNetworkConfigurations
+  >;
+  conversionRate: number | null | undefined;
   currentCurrency: string;
   primaryCurrency: string;
   tokens: Record<string, Token>;
   collectibleContracts: NftContract[];
   contractExchangeRates: Record<string, ContractExchangeRate>;
   swapsTransactions?: SwapsTransactions;
-  swapsTokens?: SwapToken[];
+  swapsTokens?: SwapToken[] | null;
   assetSymbol?: string;
   actionKey?: string;
-  totalGas: BN4;
+  totalGas?: BN4;
 }
 
 export interface TransactionElementData {
@@ -227,14 +233,17 @@ function renderGwei(transaction: TransactionParams) {
     } as Parameters<typeof calculateEIP1559GasFeeHexes>[0]);
 
     return renderToGwei(
-      eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex as
-        Parameters<typeof renderToGwei>[0],
+      eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex as Parameters<
+        typeof renderToGwei
+      >[0],
     );
   }
   return renderToGwei(gasPrice);
 }
 
-function getTokenTransfer(args: DecodeTransactionArgs): DecodeResult {
+function getTokenTransfer(
+  args: DecodeTransactionArgs & { totalGas: BN4 },
+): DecodeResult {
   const {
     tx: {
       txParams: { from, to, data, nonce },
@@ -253,7 +262,7 @@ function getTokenTransfer(args: DecodeTransactionArgs): DecodeResult {
 
   const [, , encodedAmount] = decodeTransferData('transfer', data);
   const amount = hexToBN(encodedAmount);
-  const userHasToken = safeToChecksumAddress(to) as string in tokens;
+  const userHasToken = (safeToChecksumAddress(to) as string) in tokens;
   const token = userHasToken
     ? tokens[safeToChecksumAddress(to) as string]
     : null;
@@ -289,7 +298,8 @@ function getTokenTransfer(args: DecodeTransactionArgs): DecodeResult {
     ? weiToFiatNumber(totalGas, conversionRate) + renderTokenFiatNumber
     : weiToFiatNumber(totalGas, conversionRate);
 
-  const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  const ticker =
+    networkConfigurationsByChainId?.[txChainId as string]?.nativeCurrency;
 
   let transactionDetails: TransactionDetailsData = {
     renderTotalGas: `${renderFromWei(totalGas)} ${ticker}`,
@@ -340,7 +350,9 @@ function getTokenTransfer(args: DecodeTransactionArgs): DecodeResult {
   return [transactionElement, transactionDetails];
 }
 
-function getCollectibleTransfer(args: DecodeTransactionArgs): DecodeResult {
+function getCollectibleTransfer(
+  args: DecodeTransactionArgs & { totalGas: BN4 },
+): DecodeResult {
   const {
     tx: {
       txParams: { from, to, data },
@@ -356,7 +368,8 @@ function getCollectibleTransfer(args: DecodeTransactionArgs): DecodeResult {
   } = args;
   let actionKey;
   const [, tokenId] = decodeTransferData('transfer', data);
-  const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  const ticker =
+    networkConfigurationsByChainId?.[txChainId as string]?.nativeCurrency;
   const collectible = collectibleContracts.find((item) =>
     toLowerCaseEquals(item.address, to),
   );
@@ -467,10 +480,11 @@ export function decodeIncomingTransfer(
     ? `${renderFromTokenMinimalUnit(amount, token.decimals)} ${token.symbol}`
     : strings('transaction.value_not_available');
   const totalFiatNumber = renderTokenFiatNumber
-    ? weiToFiatNumber(totalGas, conversionRate) + renderTokenFiatNumber
-    : weiToFiatNumber(totalGas, conversionRate);
+    ? weiToFiatNumber(totalGas as BN4, conversionRate) + renderTokenFiatNumber
+    : weiToFiatNumber(totalGas as BN4, conversionRate);
 
-  const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  const ticker =
+    networkConfigurationsByChainId?.[txChainId as string]?.nativeCurrency;
 
   const { SENT_TOKEN, RECEIVED_TOKEN } = TRANSACTION_TYPES;
   const transactionType =
@@ -606,7 +620,8 @@ function decodeTransferFromTx(args: DecodeTransactionArgs): DecodeResult {
 
   const renderFrom = renderFullAddress(addressFrom);
   const renderTo = renderFullAddress(addressTo);
-  const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  const ticker =
+    networkConfigurationsByChainId?.[txChainId as string]?.nativeCurrency;
 
   const { SENT_COLLECTIBLE, RECEIVED_COLLECTIBLE } = TRANSACTION_TYPES;
   const transactionType =
@@ -677,7 +692,8 @@ function decodeDeploymentTx(args: DecodeTransactionArgs): DecodeResult {
     actionKey,
     primaryCurrency,
   } = args;
-  const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  const ticker =
+    networkConfigurationsByChainId?.[txChainId as string]?.nativeCurrency;
 
   const totalGas = calculateTotalGas(txParams);
   const renderTotalEth = `${renderFromWei(totalGas)} ${ticker}`;
@@ -686,9 +702,7 @@ function decodeDeploymentTx(args: DecodeTransactionArgs): DecodeResult {
     conversionRate,
     currentCurrency,
   );
-  const totalEth = isBNValue(value)
-    ? value.add(totalGas)
-    : totalGas;
+  const totalEth = isBNValue(value) ? value.add(totalGas) : totalGas;
 
   const renderFrom = renderFullAddress(from);
   const renderTo = strings('transactions.to_contract');
@@ -754,7 +768,8 @@ function decodeConfirmTx(args: DecodeTransactionArgs): DecodeResult {
     selectedAddress,
   } = args;
 
-  const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  const ticker =
+    networkConfigurationsByChainId?.[txChainId as string]?.nativeCurrency;
   const totalEth = hexToBN(value);
   const renderTotalEth = `${renderFromWei(totalEth)} ${ticker}`;
   const renderTotalEthFiat = weiToFiat(
@@ -898,7 +913,8 @@ function decodeSwapsTx(args: DecodeTransactionArgs): DecodeResult {
 
   const renderFrom = renderFullAddress(from);
   const renderTo = renderFullAddress(to);
-  const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  const ticker =
+    networkConfigurationsByChainId?.[txChainId as string]?.nativeCurrency;
   const totalEthGas = renderFromWei(totalGas);
   const decimalSourceAmount =
     swapTransaction.sourceAmount &&
@@ -1076,7 +1092,8 @@ export default async function decodeTransaction(
     txChainId,
     swapsTransactions = {},
   } = args;
-  const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
+  const ticker =
+    networkConfigurationsByChainId?.[txChainId as string]?.nativeCurrency;
   const chainIdToUse = tx.chainId || chainId;
   const { isTransfer } = tx || {};
 

@@ -130,14 +130,14 @@ type BrowserTab = TabThumbnailProps['tab'];
 
 interface TabsProps {
   tabs: BrowserTab[];
-  activeTab?: number;
+  activeTab?: number | null;
   newTab?: () => void;
   closeTab?: (tab: BrowserTab) => void;
   closeAllTabs?: () => void;
   closeTabsView?: () => void;
   switchToTab?: (tab: BrowserTab) => void;
   animateCurrentTab?: () => void;
-  metrics?: IUseMetricsHook;
+  metrics: IUseMetricsHook;
 }
 
 interface TabsState {
@@ -224,7 +224,7 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
       </View>
     );
   }
-  renderTabs(tabs: BrowserTab[], activeTab?: number) {
+  renderTabs(tabs: BrowserTab[], activeTab?: number | null) {
     const styles = this.getStyles();
 
     return (
@@ -343,7 +343,4 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
 
 Tabs.contextType = ThemeContext;
 
-export default withMetricsAwareness(
-  // The legacy HOC declaration only accepts its injected prop shape.
-  Tabs as unknown as React.ComponentType<{ metrics: IUseMetricsHook }>,
-);
+export default withMetricsAwareness(Tabs);

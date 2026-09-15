@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { connect, useSelector } from 'react-redux';
 import { withNavigation, CompatNavigationProp } from '@react-navigation/compat';
-import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { ParamListBase } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { Dispatch } from 'redux';
 import { RootState } from '../../../reducers';
 import { showAlert } from '../../../actions/alert';
@@ -36,7 +37,8 @@ import { selectSelectedInternalAccount } from '../../../selectors/accountsContro
 import { selectSortedTransactions } from '../../../selectors/transactionController';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectTokenNetworkFilter } from '../../../selectors/preferencesController';
-import { CHAIN_IDS, TransactionMeta } from '@metamask/transaction-controller';
+import { CHAIN_IDS } from '@metamask/transaction-controller';
+import type { Transaction as TransactionElementTransaction } from '../../UI/TransactionElement/utils';
 import { PopularList } from '../../../util/networks/customNetworks';
 
 const styles = StyleSheet.create({
@@ -45,13 +47,10 @@ const styles = StyleSheet.create({
   },
 });
 
-type TransactionsViewTransaction = Omit<TransactionMeta, 'status'> & {
-  status: string;
-  insertImportTime?: boolean;
-};
+type TransactionsViewTransaction = TransactionElementTransaction;
 
 interface TransactionsViewProps {
-  navigation: CompatNavigationProp<NavigationProp<ParamListBase>>;
+  navigation: CompatNavigationProp<StackNavigationProp<ParamListBase>>;
   conversionRate: ReturnType<typeof selectConversionRate>;
   selectedInternalAccount: ReturnType<typeof selectSelectedInternalAccount>;
   networkType: ReturnType<typeof selectProviderType>;
@@ -123,7 +122,7 @@ const TransactionsView = ({
 
         tx.insertImportTime = addAccountTimeFlagFilter(
           tx,
-          addedAccountTime,
+          addedAccountTime as number,
           accountAddedTimeInsertPointFound,
         );
         if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
@@ -211,7 +210,7 @@ const TransactionsView = ({
   return (
     <View style={styles.wrapper}>
       <Transactions
-        navigation={navigation}
+        navigation={navigation as StackNavigationProp<ParamListBase>}
         transactions={allTransactions}
         submittedTransactions={submittedTxs}
         confirmedTransactions={confirmedTxs}
@@ -250,7 +249,7 @@ export default connect(
   mapDispatchToProps,
 )(
   withNavigation<
-    NavigationProp<ParamListBase>,
+    StackNavigationProp<ParamListBase>,
     TransactionsViewProps,
     typeof TransactionsView
   >(TransactionsView),

@@ -550,8 +550,5 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps,
 )(
-  // withMetricsAwareness is not generic over the wrapped component's own props
-  withMetricsAwareness(
-    AdvancedSettings as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
-  ),
+  withMetricsAwareness(AdvancedSettings),
 );

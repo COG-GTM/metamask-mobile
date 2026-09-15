@@ -16,6 +16,8 @@ import {
   LayoutChangeEvent,
 } from 'react-native';
 import { Nft } from '@metamask/assets-controllers';
+import type { Hex } from '@metamask/utils';
+import type { SupportedCaipChainId } from '@metamask/multichain-network-controller';
 import { Dispatch } from 'redux';
 import RemoteImage from '../../Base/RemoteImage';
 import { connect, ConnectedProps, useSelector } from 'react-redux';
@@ -37,7 +39,10 @@ import {
   addFavoriteCollectible,
   removeFavoriteCollectible,
 } from '../../../actions/collectibles';
-import { isCollectibleInFavoritesSelector } from '../../../reducers/collectibles';
+import {
+  type FavoriteCollectible,
+  isCollectibleInFavoritesSelector,
+} from '../../../reducers/collectibles';
 import Share from 'react-native-share';
 import {
   PanGestureHandler,
@@ -170,8 +175,9 @@ interface CollectibleCreator {
  * an NFT since callers spread extra metadata (e.g. contractName) into it.
  */
 export interface CollectibleOverviewCollectible
-  extends Omit<Partial<Nft>, 'tokenId' | 'creator' | 'lastSale'> {
-  tokenId?: string | number;
+  extends Omit<Partial<Nft>, 'tokenId' | 'address' | 'creator' | 'lastSale'> {
+  tokenId: string | number;
+  address: string;
   creator?: Nft['creator'] | CollectibleCreator;
   lastSale?: Nft['lastSale'] & {
     event_timestamp?: string;
@@ -190,22 +196,35 @@ const mapStateToProps = (
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   isInFavorites: isCollectibleInFavoritesSelector(
     state,
-    props.collectible,
+    props.collectible as FavoriteCollectible,
   ) as boolean,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   addFavoriteCollectible: (
     selectedAddress: string | undefined,
-    chainId: string,
-    collectible: CollectibleOverviewCollectible,
-  ) => dispatch(addFavoriteCollectible(selectedAddress, chainId, collectible)),
-  removeFavoriteCollectible: (
-    selectedAddress: string | undefined,
-    chainId: string,
+    chainId: Hex | SupportedCaipChainId,
     collectible: CollectibleOverviewCollectible,
   ) =>
-    dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
+    dispatch(
+      addFavoriteCollectible(
+        selectedAddress,
+        chainId,
+        collectible as FavoriteCollectible,
+      ),
+    ),
+  removeFavoriteCollectible: (
+    selectedAddress: string | undefined,
+    chainId: Hex | SupportedCaipChainId,
+    collectible: CollectibleOverviewCollectible,
+  ) =>
+    dispatch(
+      removeFavoriteCollectible(
+        selectedAddress,
+        chainId,
+        collectible as FavoriteCollectible,
+      ),
+    ),
 });
 
 const connector = connect(mapStateToProps, mapDispatchToProps);

@@ -19,6 +19,7 @@ import { hexToBN, fromWei, isZeroValue } from '../../../util/number';
 import {
   setEtherTransaction,
   setTransactionObject,
+  type TransactionAssetType,
 } from '../../../actions/transaction';
 import WalletConnect from '../../../core/WalletConnect/WalletConnect';
 import {
@@ -118,7 +119,7 @@ type UnapprovedTransactionParams = Omit<
   gasPrice?: string | BN;
   value?: string | BN;
   readableValue?: string;
-  assetType?: string;
+  assetType?: TransactionAssetType;
 };
 
 type UnapprovedTransactionMeta = Omit<TransactionMeta, 'txParams'> & {
@@ -560,7 +561,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
             networkClientId,
             chainId,
             ...transactionMeta.txParams,
-          });
+          } as TransactionPayload);
         } else {
           transactionMeta.txParams.value = hexToBN(value as string);
           transactionMeta.txParams.readableValue = fromWei(
@@ -574,7 +575,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
             chainId,
             networkClientId,
             ...transactionMeta.txParams,
-          });
+          } as TransactionPayload);
         }
 
         if (

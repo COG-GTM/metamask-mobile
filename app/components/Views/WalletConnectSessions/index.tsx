@@ -203,7 +203,7 @@ export default class WalletConnectSessions extends PureComponent<
         await (await WC2Manager.getInstance())?.removeSession(sessionToRemove);
       } else {
         await WalletConnect.killSession(
-          isV1Session(sessionToRemove) ? sessionToRemove.peerId : undefined,
+          (sessionToRemove as WalletConnectV1Session).peerId,
         );
       }
 

@@ -38,7 +38,7 @@ export interface TransactionSelectedAsset {
   address?: string;
   symbol?: string;
   name?: string | null;
-  decimals?: number;
+  decimals?: number | string | BN;
   contractName?: string | null;
 }
 

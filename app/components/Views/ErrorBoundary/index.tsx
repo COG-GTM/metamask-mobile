@@ -1,4 +1,4 @@
-import React, { Component, ComponentType, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from 'react';
 import {
   Text,
   TouchableOpacity,
@@ -255,7 +255,10 @@ export const Fallback = (props: FallbackProps) => {
 
   const handleSubmit = () => {
     toggleModal();
-    captureSentryFeedback({ sentryId: props.sentryId, comments: feedback });
+    captureSentryFeedback({
+      sentryId: props.sentryId as string,
+      comments: feedback,
+    });
     Alert.alert(strings('error_screen.bug_report_thanks'));
   };
   return (
@@ -528,8 +531,4 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-// withMetricsAwareness is typed for components that only take `metrics`;
-// ErrorBoundary's extra props are forwarded untouched at runtime.
-export default withMetricsAwareness(
-  ErrorBoundary as unknown as ComponentType<IWithMetricsAwarenessProps>,
-);
+export default withMetricsAwareness(ErrorBoundary);

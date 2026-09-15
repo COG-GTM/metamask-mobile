@@ -1,18 +1,12 @@
 import { swapsUtils } from '@metamask/swaps-controller/';
-import React, { ComponentType, PureComponent } from 'react';
-import {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-} from '@react-navigation/native';
+import type { FeatureFlags } from '@metamask/swaps-controller/dist/types';
+import React, { PureComponent } from 'react';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { Dispatch } from 'redux';
-import { Hex } from '@metamask/utils';
+import { CaipChainId, Hex } from '@metamask/utils';
 import { InternalAccount } from '@metamask/keyring-internal-api';
-import {
-  TransactionMeta,
-  TransactionType,
-} from '@metamask/transaction-controller';
-import { NetworkState } from '@metamask/network-controller';
+import { TransactionType } from '@metamask/transaction-controller';
 import { Token } from '@metamask/assets-controllers';
 import {
   ActivityIndicator,
@@ -83,7 +77,10 @@ import {
   selectTransactions,
 } from '../../../selectors/transactionController';
 import Logger from '../../../util/Logger';
-import { TOKEN_CATEGORY_HASH } from '../../UI/TransactionElement/utils';
+import {
+  TOKEN_CATEGORY_HASH,
+  type Transaction as TransactionElementTransaction,
+} from '../../UI/TransactionElement/utils';
 import { selectSupportedSwapTokenAddressesForChainId } from '../../../selectors/tokenSearchDiscoveryDataController';
 import { isNonEvmChainId } from '../../../core/Multichain/utils';
 import { isBridgeAllowed } from '../../UI/Bridge/utils';
@@ -146,13 +143,7 @@ const createStyles = (colors: Theme['colors']) =>
  * Transaction as consumed by this view: controller metadata plus the
  * app-level fields populated during transaction normalisation.
  */
-export type AssetTransaction = Omit<TransactionMeta, 'status'> & {
-  status: string;
-  isTransfer?: boolean;
-  transferInformation?: { contractAddress: string };
-  insertImportTime?: boolean;
-  networkID?: string;
-};
+export type AssetTransaction = TransactionElementTransaction;
 
 type AssetParams = TokenI & {
   chainId: Hex;
@@ -182,7 +173,7 @@ interface AssetProps extends IWithMetricsAwarenessProps {
    * navigation object required to access the props
    * passed by the parent component
    */
-  navigation: NavigationProp<ParamListBase>;
+  navigation: StackNavigationProp<ParamListBase>;
   /**
    * conversion rate of ETH - FIAT
    */
@@ -198,7 +189,7 @@ interface AssetProps extends IWithMetricsAwarenessProps {
   /**
    * The chain ID for the current selected network
    */
-  chainId: Hex;
+  chainId: ReturnType<typeof selectChainId>;
   /**
    * An array that represents the user transactions
    */
@@ -216,7 +207,7 @@ interface AssetProps extends IWithMetricsAwarenessProps {
    */
   route: RouteProp<{ params: AssetParams }, 'params'>;
   rpcUrl: string | undefined;
-  networkConfigurations: NetworkState['networkConfigurationsByChainId'];
+  networkConfigurations: ReturnType<typeof selectNetworkConfigurations>;
   /**
    * Boolean that indicates if network is supported to buy
    */
@@ -228,7 +219,10 @@ interface AssetProps extends IWithMetricsAwarenessProps {
   /**
    * Function to set the swaps liveness
    */
-  setLiveness: (chainId: string, featureFlags: unknown) => void;
+  setLiveness: (
+    chainId: string,
+    featureFlags: FeatureFlags | null | undefined,
+  ) => void;
 }
 
 interface AssetState {
@@ -283,7 +277,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
     const isNativeToken = route.params.isNative ?? route.params.isETH;
     const isMainnet = isMainnetByChainId(chainId);
     const blockExplorer = isNonEvmChainId(chainId)
-      ? findBlockExplorerForNonEvmChainId(chainId)
+      ? findBlockExplorerForNonEvmChainId(chainId as CaipChainId)
       : findBlockExplorerForRpc(rpcUrl, networkConfigurations);
 
     const shouldShowMoreOptionsInNavBar =
@@ -436,7 +430,8 @@ class Asset extends PureComponent<AssetProps, AssetState> {
         );
       if (
         swapsTransactions[tx.id] &&
-        (to?.toLowerCase() === swapsUtils.getSwapsContractAddress(chainId) ||
+        (to?.toLowerCase() ===
+          swapsUtils.getSwapsContractAddress(chainId as Hex) ||
           to?.toLowerCase() === this.navAddress)
       ) {
         const { destinationToken, sourceToken } = swapsTransactions[tx.id];
@@ -676,17 +671,13 @@ const mapStateToProps = (
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setLiveness: (chainId: string, featureFlags: unknown) =>
-    dispatch(setSwapsLiveness(chainId, featureFlags)),
+  setLiveness: (
+    chainId: string,
+    featureFlags: FeatureFlags | null | undefined,
+  ) => dispatch(setSwapsLiveness(chainId, featureFlags)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(
-  // withMetricsAwareness is typed for components that only take `metrics`;
-  // Asset's extra props are forwarded untouched at runtime.
-  withMetricsAwareness(
-    Asset as unknown as ComponentType<IWithMetricsAwarenessProps>,
-  ),
-);
+)(withMetricsAwareness(Asset));

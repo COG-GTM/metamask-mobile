@@ -1,10 +1,7 @@
 import React, { PureComponent } from 'react';
 import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
-import {
-  NavigationProp,
-  ParamListBase,
-  RouteProp,
-} from '@react-navigation/native';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { Nft } from '@metamask/assets-controllers';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
@@ -36,18 +33,16 @@ interface CollectibleContractParams {
   logo?: string;
 }
 
-type CollectibleItem = Omit<Nft, 'name'> & { name?: string | null };
-
 interface CollectibleProps {
   /**
    * Array of assets (in this case Collectibles)
    */
-  collectibles: CollectibleItem[];
+  collectibles: Nft[];
   /**
    * navigation object required to access the props
    * passed by the parent component
    */
-  navigation: NavigationProp<ParamListBase>;
+  navigation: StackNavigationProp<ParamListBase>;
   /**
    * Called to toggle collectible contract information modal
    */
@@ -64,7 +59,7 @@ interface CollectibleProps {
 
 interface CollectibleState {
   refreshing: boolean;
-  collectibles: CollectibleItem[];
+  collectibles: Nft[];
 }
 
 /**
@@ -130,7 +125,7 @@ class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
     );
     filteredCollectibles.map((collectible) => {
       if (!collectible.name || collectible.name === '') {
-        collectible.name = collectibleContract.name;
+        collectible.name = collectibleContract.name as string;
       }
       if (!collectible.image && collectibleContract.logo) {
         collectible.image = collectibleContract.logo;

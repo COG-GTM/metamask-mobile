@@ -31,7 +31,9 @@ import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import GlobalAlert from '../../UI/GlobalAlert';
 import BackgroundTimer from 'react-native-background-timer';
-import NotificationManager from '../../../core/NotificationManager';
+import NotificationManager, {
+  type ShowTransactionNotification,
+} from '../../../core/NotificationManager';
 import Engine from '../../../core/Engine';
 import AppConstants from '../../../core/AppConstants';
 import I18n, { strings } from '../../../../locales/i18n';
@@ -121,6 +123,10 @@ const ProtectYourWalletModal =
 type ShowTransactionNotificationArgs = Parameters<
   typeof showTransactionNotification
 >[0];
+// NotificationManager passes a looser transaction shape than the redux action declares.
+type ShowTransactionNotificationInput =
+  | ShowTransactionNotificationArgs
+  | Parameters<ShowTransactionNotification>[0];
 type ShowSimpleNotificationArgs = Parameters<typeof showSimpleNotification>[0];
 type NetworkConfigurationsByChainId = Record<
   string,
@@ -141,7 +147,7 @@ export interface MainProps {
   /**
    * Dispatch showing a transaction notification
    */
-  showTransactionNotification: (args: ShowTransactionNotificationArgs) => void;
+  showTransactionNotification: (args: ShowTransactionNotificationInput) => void;
   /**
    * Dispatch showing a simple notification
    */
@@ -597,8 +603,10 @@ const mapStateToProps = (state: RootState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  showTransactionNotification: (args: ShowTransactionNotificationArgs) =>
-    dispatch(showTransactionNotification(args)),
+  showTransactionNotification: (args: ShowTransactionNotificationInput) =>
+    dispatch(
+      showTransactionNotification(args as ShowTransactionNotificationArgs),
+    ),
   showSimpleNotification: (args: ShowSimpleNotificationArgs) =>
     dispatch(showSimpleNotification(args)),
   hideCurrentNotification: () => dispatch(hideCurrentNotification()),

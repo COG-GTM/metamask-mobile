@@ -12,6 +12,8 @@ import {
 import { connect, ConnectedProps, useSelector } from 'react-redux';
 import { Dispatch } from 'redux';
 import { Nft, NftContract } from '@metamask/assets-controllers';
+import type { Hex } from '@metamask/utils';
+import type { SupportedCaipChainId } from '@metamask/multichain-network-controller';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { fontStyles } from '../../../styles/common';
@@ -186,7 +188,7 @@ const mapStateToProps = (state: RootState) => ({
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   removeFavoriteCollectible: (
     selectedAddress: string | undefined,
-    chainId: string,
+    chainId: Hex | SupportedCaipChainId,
     collectible: Nft,
   ) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),

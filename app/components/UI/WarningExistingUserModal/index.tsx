@@ -64,7 +64,7 @@ interface WarningExistingUserModalProps {
   cancelButtonDisabled?: boolean;
   onRequestClose: () => void;
   onConfirmPress: () => void;
-  children?: React.ReactNode | (() => React.ReactNode);
+  children?: React.ReactNode;
   cancelText?: string;
   confirmText?: string;
   confirmTestID?: string;
