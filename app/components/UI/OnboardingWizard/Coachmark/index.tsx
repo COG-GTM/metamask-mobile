@@ -1,6 +1,12 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
 import {
   colors as importedColors,
   fontStyles,
@@ -8,14 +14,15 @@ import {
 import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
 import { mockTheme, ThemeContext } from '../../../../util/theme';
+import { Theme } from '../../../../util/theme/models';
 import ButtonIcon, {
   ButtonIconSizes,
 } from '../../../../component-library/components/Buttons/ButtonIcon';
+import { ButtonIconProps } from '../../../../component-library/components/Buttons/ButtonIcon/ButtonIcon.types';
 import {
   IconName,
   IconColor,
 } from '../../../../component-library/components/Icons/Icon';
-import { typography } from '@metamask/design-tokens';
 import {
   ButtonSize,
   ButtonVariants,
@@ -28,7 +35,7 @@ import {
   TextVariant,
 } from '../../../../component-library/components/Texts/Text';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     coachmark: {
       backgroundColor: colors.primary.default,
@@ -164,7 +171,6 @@ const createStyles = (colors) =>
       alignSelf: 'center',
     },
     stepCounter: {
-      ...typography.BodyMD,
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.info.inverse,
     },
@@ -175,66 +181,77 @@ const createStyles = (colors) =>
     },
   });
 
-export default class Coachmark extends PureComponent {
-  static propTypes = {
-    /**
-     * Custom coachmark style to apply
-     */
-    coachmarkStyle: PropTypes.object,
-    /**
-     * Custom animated view style to apply
-     */
-    style: PropTypes.object,
-    /**
-     * Content object
-     */
-    content: PropTypes.object,
-    /**
-     * Title text
-     */
-    title: PropTypes.string,
-    /**
-     * Current onboarding wizard step
-     */
-    currentStep: PropTypes.number,
-    /**
-     * Callback to be called when next is pressed
-     */
-    onNext: PropTypes.func,
-    /**
-     * Callback to be called when back is pressed
-     */
-    onBack: PropTypes.func,
-    /**
-     * Whether action buttons have to be rendered
-     */
-    action: PropTypes.bool,
-    /**
-     * Top indicator position
-     */
-    topIndicatorPosition: PropTypes.oneOf([
-      false,
-      'topCenter',
-      'topLeft',
-      'topLeftCorner',
-      'topRight',
-      'topRightCorner',
-    ]),
-    /**
-     * Bottom indicator position
-     */
-    bottomIndicatorPosition: PropTypes.oneOf([
-      false,
-      'bottomCenter',
-      'bottomLeft',
-      'bottomLeftCorner',
-      'bottomRight',
-    ]),
-    /**
-     * Callback called when closing on boarding wizard
-     */
-    onClose: PropTypes.func,
-  };
+export type CoachmarkTopIndicatorPosition =
+  | false
+  | 'topCenter'
+  | 'topLeft'
+  | 'topLeftCorner'
+  | 'topRight'
+  | 'topRightCorner';
+
+export type CoachmarkBottomIndicatorPosition =
+  | false
+  | 'bottomCenter'
+  | 'bottomLeft'
+  | 'bottomLeftCorner'
+  | 'bottomRight';
+
+export interface CoachmarkProps {
+  /**
+   * Custom coachmark style to apply
+   */
+  coachmarkStyle?: StyleProp<ViewStyle>;
+  /**
+   * Custom animated view style to apply
+   */
+  style?: StyleProp<ViewStyle>;
+  /**
+   * Content object
+   */
+  content?: React.ReactNode;
+  /**
+   * Title text
+   */
+  title?: string;
+  /**
+   * Current onboarding wizard step
+   */
+  currentStep?: number;
+  /**
+   * Callback to be called when next is pressed
+   */
+  onNext?: (...args: never[]) => void;
+  /**
+   * Callback to be called when back is pressed
+   */
+  onBack?: () => void;
+  /**
+   * Whether action buttons have to be rendered
+   */
+  action?: boolean;
+  /**
+   * Top indicator position
+   */
+  topIndicatorPosition?: CoachmarkTopIndicatorPosition;
+  /**
+   * Bottom indicator position
+   */
+  bottomIndicatorPosition?: CoachmarkBottomIndicatorPosition;
+  /**
+   * Callback called when closing on boarding wizard
+   */
+  onClose?: (...args: never[]) => void;
+}
+
+interface CoachmarkState {
+  ready: boolean;
+}
+
+export default class Coachmark extends PureComponent<
+  CoachmarkProps,
+  CoachmarkState
+> {
+  static contextType = ThemeContext;
 
   state = {
     ready: false,
@@ -277,7 +294,8 @@ export default class Coachmark extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors: Theme['colors'] =
+      (this.context as Theme | undefined)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -287,7 +305,9 @@ export default class Coachmark extends PureComponent {
    * @param {string} topIndicatorPosition - Indicator position
    * @returns {Object} - Corresponding style object
    */
-  getIndicatorStyle = (topIndicatorPosition) => {
+  getIndicatorStyle = (
+    topIndicatorPosition: Exclude<CoachmarkTopIndicatorPosition, false>,
+  ) => {
     const styles = this.getStyles();
 
     const positions = {
@@ -296,7 +316,7 @@ export default class Coachmark extends PureComponent {
       topRight: styles.topRight,
       topLeftCorner: styles.topLeftCorner,
       topRightCorner: styles.topRightCorner,
-      [undefined]: styles.topCenter,
+      undefined: styles.topCenter,
     };
     return positions[topIndicatorPosition];
   };
@@ -307,7 +327,9 @@ export default class Coachmark extends PureComponent {
    * @param {string} bottomIndicatorPosition - Indicator position
    * @returns {Object} - Corresponding style object
    */
-  getBotttomIndicatorStyle = (bottomIndicatorPosition) => {
+  getBotttomIndicatorStyle = (
+    bottomIndicatorPosition: Exclude<CoachmarkBottomIndicatorPosition, false>,
+  ) => {
     const styles = this.getStyles();
 
     const positions = {
@@ -315,7 +337,7 @@ export default class Coachmark extends PureComponent {
       bottomLeft: styles.bottomLeft,
       bottomLeftCorner: styles.bottomLeftCorner,
       bottomRight: styles.bottomRight,
-      [undefined]: styles.bottomCenter,
+      undefined: styles.bottomCenter,
     };
     return positions[bottomIndicatorPosition];
   };
@@ -419,7 +441,7 @@ export default class Coachmark extends PureComponent {
             <ButtonIcon
               iconName={IconName.Close}
               size={ButtonIconSizes.Sm}
-              onPress={onClose}
+              onPress={onClose as ButtonIconProps['onPress']}
               iconColor={IconColor.Inverse}
             />
           </View>
@@ -435,5 +457,3 @@ export default class Coachmark extends PureComponent {
     );
   }
 }
-
-Coachmark.contextType = ThemeContext;
