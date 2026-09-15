@@ -1,5 +1,15 @@
 import bookmarksReducer from './bookmarks';
 import browserReducer from './browser';
+import type { AlertAction } from '../actions/alert';
+import type { BookmarksAction } from '../actions/bookmarks';
+import type { BrowserAction } from '../actions/browser';
+import type { InfuraAvailabilityAction } from '../actions/infuraAvailability';
+import type { ModalsAction } from '../actions/modals';
+import type { NotificationAction } from '../actions/notification';
+import type { PrivacyAction } from '../actions/privacy';
+import type { SettingsAction } from '../actions/settings';
+import type { TransactionAction } from '../actions/transaction';
+import type { WizardAction } from '../actions/wizard';
 import engineReducer from '../core/redux/slices/engine';
 import privacyReducer from './privacy';
 import modalsReducer from './modals';
@@ -11,11 +21,11 @@ import userReducer, { UserState } from './user';
 import wizardReducer from './wizard';
 import onboardingReducer, { OnboardingState } from './onboarding';
 import fiatOrders from './fiatOrders';
-import swapsReducer from './swaps';
+import swapsReducer, { type SwapsAction } from './swaps';
 import signatureRequestReducer from './signatureRequest';
 import notificationReducer from './notification';
 import infuraAvailabilityReducer from './infuraAvailability';
-import collectiblesReducer from './collectibles';
+import collectiblesReducer, { type CollectiblesAction } from './collectibles';
 import navigationReducer, { NavigationState } from './navigation';
 import networkOnboardReducer from './networkSelector';
 import securityReducer, { SecurityState } from './security';
@@ -166,6 +176,23 @@ if (isTest) {
   // @ts-expect-error - it's expected to not exist, it should only exist in not production environments
   baseReducers.performance = performanceReducer;
 }
+
+/**
+ * Union of the typed actions handled by the converted reducers.
+ */
+export type RootAction =
+  | AlertAction
+  | BookmarksAction
+  | BrowserAction
+  | CollectiblesAction
+  | InfuraAvailabilityAction
+  | ModalsAction
+  | NotificationAction
+  | PrivacyAction
+  | SettingsAction
+  | SwapsAction
+  | TransactionAction
+  | WizardAction;
 
 // TODO: Fix the Action type. It's set to `any` now because some of the
 // TypeScript reducers have invalid actions

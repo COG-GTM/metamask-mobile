@@ -1,7 +1,39 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import { REHYDRATE } from 'redux-persist';
+import type { Action } from 'redux';
+import type { SecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import type {
+  TransactionAction,
+  TransactionAssetType,
+  TransactionStateParams,
+  TransactionSelectedAsset,
+} from '../../actions/transaction';
 
-const initialState = {
+export interface TransactionState {
+  ensRecipient?: string;
+  assetType?: TransactionAssetType;
+  selectedAsset: TransactionSelectedAsset;
+  transaction: TransactionStateParams;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: boolean;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: number;
+  nonce?: number;
+  securityAlertResponses: Record<string, SecurityAlertResponse>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+  [key: string]: unknown;
+}
+
+const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,8 +64,10 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
-  let assetType;
+const getAssetType = (
+  selectedAsset?: TransactionSelectedAsset,
+): TransactionAssetType | undefined => {
+  let assetType: TransactionAssetType | undefined;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
       assetType = 'ERC721';
@@ -46,7 +80,10 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction | Action<typeof REHYDRATE>,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
@@ -138,7 +175,7 @@ const transactionReducer = (state = initialState, action) => {
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
-          [transactionId]: securityAlertResponse,
+          [transactionId as string]: securityAlertResponse,
         },
       };
     }
