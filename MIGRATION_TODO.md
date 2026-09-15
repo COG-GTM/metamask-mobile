@@ -462,7 +462,7 @@ Excluded on purpose (build/tooling config, not app source): root `index.js`, `sh
 ### `app/components/UI/StyledButton/`
 - [ ] `app/components/UI/StyledButton/index.android.js` → `.tsx`
 - [ ] `app/components/UI/StyledButton/index.ios.js` → `.tsx`
-- [ ] `app/components/UI/StyledButton/index.js` → `.tsx`
+- [ ] `app/components/UI/StyledButton/index.js` → `.ts`
 
 ### `app/components/UI/SwitchCustomNetwork/`
 - [ ] `app/components/UI/SwitchCustomNetwork/index.js` → `.tsx`
@@ -662,7 +662,7 @@ Excluded on purpose (build/tooling config, not app source): root `index.js`, `sh
 - [ ] `app/util/test/utils.js` → `.ts`
 
 ### `app/util/transactions/`
-- [ ] `app/util/transactions/index.js` → `.tsx`
+- [ ] `app/util/transactions/index.js` → `.ts`
 
 ## Batch H — app/core + app/reducers + app/actions (49 files)
 
@@ -1107,7 +1107,7 @@ Excluded on purpose (build/tooling config, not app source): root `index.js`, `sh
 - [ ] `e2e/specs/accounts/reveal-secret-recovery-phrase.spec.js` → `.ts`
 
 ### `e2e/specs/analytics/`
-- [ ] `e2e/specs/analytics/helpers.js` → `.tsx`
+- [ ] `e2e/specs/analytics/helpers.js` → `.ts`
 - [ ] `e2e/specs/analytics/onboarding.spec.js` → `.ts`
 
 ### `e2e/specs/assets/`
@@ -1162,7 +1162,7 @@ Excluded on purpose (build/tooling config, not app source): root `index.js`, `sh
 ### `e2e/specs/identity/utils/`
 - [ ] `e2e/specs/identity/utils/constants.js` → `.ts`
 - [ ] `e2e/specs/identity/utils/helpers.js` → `.ts`
-- [ ] `e2e/specs/identity/utils/mocks.js` → `.tsx`
+- [ ] `e2e/specs/identity/utils/mocks.js` → `.ts`
 
 ### `e2e/specs/identity/utils/user-storage/`
 - [ ] `e2e/specs/identity/utils/user-storage/generateEncryptedData.js` → `.ts`
@@ -1262,14 +1262,14 @@ Excluded on purpose (build/tooling config, not app source): root `index.js`, `sh
 ## Batch K — e2e (root, utils, fixtures, api-mocking, api-specs, resources) (26 files)
 
 ### `e2e/api-mocking/`
-- [ ] `e2e/api-mocking/api-monitor.js` → `.tsx`
+- [ ] `e2e/api-mocking/api-monitor.js` → `.ts`
 - [ ] `e2e/api-mocking/mock-server.js` → `.ts`
 
 ### `e2e/api-mocking/mock-config/`
 - [ ] `e2e/api-mocking/mock-config/mock-events.js` → `.ts`
 
 ### `e2e/api-mocking/mock-responses/`
-- [ ] `e2e/api-mocking/mock-responses/auth-mocks.js` → `.tsx`
+- [ ] `e2e/api-mocking/mock-responses/auth-mocks.js` → `.ts`
 - [ ] `e2e/api-mocking/mock-responses/balance-mocks.js` → `.ts`
 
 ### `e2e/api-specs/`
@@ -1283,14 +1283,14 @@ Excluded on purpose (build/tooling config, not app source): root `index.js`, `sh
 - [ ] `e2e/environment.js` → `.ts`
 - [ ] `e2e/helpers.js` → `.ts`
 - [ ] `e2e/init.js` → `.ts`
-- [ ] `e2e/jest.e2e.config.js` → `.tsx`
+- [ ] `e2e/jest.e2e.config.js` → `.ts`
 - [ ] `e2e/tags.js` → `.ts`
 - [ ] `e2e/tenderly.js` → `.ts`
-- [ ] `e2e/viewHelper.js` → `.tsx`
+- [ ] `e2e/viewHelper.js` → `.ts`
 
 ### `e2e/fixtures/`
 - [ ] `e2e/fixtures/fixture-builder.js` → `.ts`
-- [ ] `e2e/fixtures/fixture-helper.js` → `.tsx`
+- [ ] `e2e/fixtures/fixture-helper.js` → `.ts`
 - [ ] `e2e/fixtures/fixture-server.js` → `.ts`
 - [ ] `e2e/fixtures/utils.js` → `.ts`
 
@@ -1298,9 +1298,9 @@ Excluded on purpose (build/tooling config, not app source): root `index.js`, `sh
 - [ ] `e2e/resources/networks.e2e.js` → `.ts`
 
 ### `e2e/utils/`
-- [ ] `e2e/utils/Assertions.js` → `.tsx`
-- [ ] `e2e/utils/Gestures.js` → `.tsx`
-- [ ] `e2e/utils/Matchers.js` → `.tsx`
+- [ ] `e2e/utils/Assertions.js` → `.ts`
+- [ ] `e2e/utils/Gestures.js` → `.ts`
+- [ ] `e2e/utils/Matchers.js` → `.ts`
 - [ ] `e2e/utils/Utilities.js` → `.ts`
 
 ## Batch L — wdio/screen-objects (86 files)

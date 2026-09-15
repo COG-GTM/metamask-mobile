@@ -2,7 +2,6 @@
 """Generate MIGRATION_TODO.md: inventory of remaining .js/.jsx source files grouped into batches."""
 import os
 import re
-import subprocess
 from collections import OrderedDict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,7 +45,8 @@ for f in files:
     else:
         raise SystemExit(f"unbatched file: {f}")
 
-jsx_re = re.compile(r"<[A-Za-z][A-Za-z0-9.]*[\s/>]")
+# Closing or self-closing tags; avoids matching JSDoc/TS generics such as `Array<string>`.
+jsx_re = re.compile(r"</[A-Za-z][A-Za-z0-9.]*>|/>")
 
 def has_jsx(path):
     try:
