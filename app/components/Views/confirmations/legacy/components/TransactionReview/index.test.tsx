@@ -135,7 +135,10 @@ const mockState = {
         securityAlertsEnabled: true,
       },
       AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
-      KeyringController: MOCK_KEYRING_CONTROLLER_STATE,
+      KeyringController: {
+        ...MOCK_KEYRING_CONTROLLER_STATE,
+        isUnlocked: true,
+      },
     },
   },
   settings: {
@@ -204,7 +207,7 @@ describe('TransactionReview', () => {
       <Provider store={store}>
         <TransactionReview
           EIP1559GasData={{}}
-            generateTransform={generateTransform}
+          generateTransform={generateTransform}
         />
       </Provider>,
     );
@@ -286,7 +289,7 @@ describe('TransactionReview', () => {
   it('should have enabled confirm button if from account has balance', async () => {
     jest
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
-      .mockResolvedValue(undefined);
+      .mockResolvedValue(undefined as unknown as string);
     const { queryByRole } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
