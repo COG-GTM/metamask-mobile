@@ -337,7 +337,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     const { globalNetworkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(
-      { from: transaction.from as string },
+      transaction as { from: string },
       globalNetworkClientId,
     );
     setNonce(proposedNonce);

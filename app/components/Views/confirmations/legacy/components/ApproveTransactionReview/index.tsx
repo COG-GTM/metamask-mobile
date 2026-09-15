@@ -970,7 +970,7 @@ class ApproveTransactionReview extends PureComponent<
                       {isNonFungibleToken ? (
                         hasBlockExplorer ? (
                           <ButtonLink
-                            onPress={showBlockExplorer ?? (() => undefined)}
+                            onPress={showBlockExplorer as () => void}
                             label={
                               <Text
                                 variant={TextVariant.HeadingMD}
@@ -996,7 +996,7 @@ class ApproveTransactionReview extends PureComponent<
                       </Text>
                     )}
                     <ButtonLink
-                      onPress={showVerifyContractDetails ?? (() => undefined)}
+                      onPress={showVerifyContractDetails as () => void}
                       style={styles.verifyContractLink}
                       label={strings(
                         'contract_allowance.token_allowance.verify_third_party_details',

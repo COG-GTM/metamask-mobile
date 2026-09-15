@@ -286,7 +286,11 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
         </View>
         <TouchableOpacity
           style={styles.children}
-          onPress={truncateMessage ? toggleExpandedMessage : undefined}
+          onPress={
+            (truncateMessage ? toggleExpandedMessage : null) as
+              | (() => void)
+              | undefined
+          }
         >
           <WebsiteIcon
             style={styles.domainLogo}
@@ -429,5 +433,5 @@ const mapStateToProps = (state: RootState): SignatureRequestStateProps => ({
 });
 
 export default connect(mapStateToProps)(
-  withMetricsAwareness(withQRHardwareAwareness(SignatureRequest)),
+  withQRHardwareAwareness(withMetricsAwareness(SignatureRequest)),
 );

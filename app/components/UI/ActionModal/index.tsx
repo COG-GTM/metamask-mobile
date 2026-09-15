@@ -97,3 +97,16 @@ export default function ActionModal({
     </Modal>
   );
 }
+
+ActionModal.defaultProps = {
+  cancelButtonMode: 'neutral',
+  cancelButtonDisabled: false,
+  confirmButtonMode: 'warning',
+  confirmTestID: '',
+  cancelTestID: '',
+  cancelText: strings('action_view.cancel'),
+  confirmText: strings('action_view.confirm'),
+  confirmDisabled: false,
+  displayCancelButton: true,
+  displayConfirmButton: true,
+};

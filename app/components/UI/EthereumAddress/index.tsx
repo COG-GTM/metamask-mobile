@@ -69,7 +69,7 @@ class EthereumAddress extends PureComponent<
   render() {
     return (
       <Text
-        style={this.props.style}
+        style={this.props.style ?? null}
         numberOfLines={1}
         {...generateTestId(Platform, WALLET_ACCOUNT_ADDRESS_LABEL)}
       >

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Linking,
   TouchableOpacity,
+  ViewStyle,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
@@ -84,7 +85,9 @@ const createStyles = (colors: Colors) =>
       fontSize: 16,
       color: colors.primary.default,
     },
-    warningContainer: {},
+    warningContainer: {
+      alignItems: 'left' as unknown as ViewStyle['alignItems'],
+    },
     buttonWrapper: {
       marginTop: 32,
       height: 48,
@@ -175,7 +178,7 @@ export default class PhishingModal extends PureComponent<PhishingModalProps> {
         <Button
           variant={ButtonVariants.Primary}
           label={strings('phishing.back_to_safety')}
-          onPress={() => this.props.goBackToSafety?.()}
+          onPress={this.props.goBackToSafety as () => void}
           style={styles.buttonWrapper}
           width={ButtonWidthTypes.Full}
         />

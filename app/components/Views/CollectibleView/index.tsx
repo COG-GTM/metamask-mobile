@@ -37,8 +37,6 @@ const createStyles = (colors: Theme['colors']) =>
       color: colors.primary.inverse,
       ...fontStyles.bold,
     },
-    assetOverviewWrapper: {},
-    flexRow: {},
   });
 
 /**
@@ -109,7 +107,7 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
     return (
       <SafeAreaView style={styles.root}>
         <ScrollView style={styles.wrapper} ref={this.scrollViewRef}>
-          <View style={styles.assetOverviewWrapper}>
+          <View>
             <CollectibleOverview
               navigation={navigation}
               collectible={collectible}
@@ -122,7 +120,6 @@ class CollectibleView extends PureComponent<CollectibleViewProps> {
               type={'confirm'}
               onPress={this.onSend}
               containerStyle={styles.button}
-              childGroupStyle={styles.flexRow}
               testID="send-button"
             >
               <Text style={styles.buttonText}>

@@ -558,7 +558,6 @@ exports[`ApproveTransactionModal render matches snapshot 1`] = `
                                               >
                                                 <Text
                                                   accessibilityRole="text"
-                                                  reset={true}
                                                   style={
                                                     {
                                                       "color": "#4459ff",

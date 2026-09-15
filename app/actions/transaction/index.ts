@@ -53,7 +53,7 @@ export interface PrepareTransactionAction {
 }
 export interface SetTransactionSecurityAlertResponseAction {
   type: 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE';
-  transactionId: string;
+  transactionId?: string;
   securityAlertResponse: SecurityAlertResponse;
 }
 export interface SetTransactionObjectAction {
@@ -198,7 +198,7 @@ export function prepareTransaction(
 }
 
 export function setTransactionSecurityAlertResponse(
-  transactionId: string,
+  transactionId: string | undefined,
   securityAlertResponse: SecurityAlertResponse,
 ): SetTransactionSecurityAlertResponseAction {
   return {

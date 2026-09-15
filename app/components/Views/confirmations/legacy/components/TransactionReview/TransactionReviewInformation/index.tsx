@@ -284,10 +284,9 @@ class TransactionReviewInformation extends PureComponent<
   setNetworkNonce = async () => {
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
-    if (!transaction.from || !networkClientId) return;
     const proposedNonce = await getNetworkNonce(
-      { from: transaction.from },
-      networkClientId,
+      transaction as { from: string },
+      networkClientId as string,
     );
     setNonce(proposedNonce);
     setProposedNonce(proposedNonce);

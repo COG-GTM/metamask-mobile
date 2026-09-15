@@ -157,10 +157,6 @@ export default {
   },
 
   async setGenericPassword(password: string, type?: SecureKeychainType) {
-    if (!instance) {
-      throw new Error('SecureKeychain has not been initialized');
-    }
-    const keychainInstance = instance;
     const authOptions: Keychain.Options = {
       accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     };
@@ -189,6 +185,10 @@ export default {
       return await this.resetGenericPassword();
     }
 
+    if (!instance) {
+      throw new Error('SecureKeychain has not been initialized');
+    }
+    const keychainInstance = instance;
     const encryptedPassword = await keychainInstance.encryptPassword(password);
     await Keychain.setGenericPassword('metamask-user', encryptedPassword, {
       ...defaultOptions,

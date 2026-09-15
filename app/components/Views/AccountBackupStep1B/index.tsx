@@ -129,8 +129,6 @@ const createStyles = (colors: Theme['colors']) =>
       justifyContent: 'center',
       alignItems: 'center',
     },
-    button: {},
-    remindLaterButton: {},
     infoIcon: {
       fontSize: 15,
       marginRight: 6,
@@ -335,7 +333,6 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
             </Text>
 
             <StyledButton
-              containerStyle={styles.button}
               type={'confirm'}
               onPress={goNext}
             >
@@ -380,7 +377,6 @@ const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
               </Text>
             </Text>
             <TouchableOpacity
-              style={styles.remindLaterButton}
               onPress={learnMore}
               hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
             >

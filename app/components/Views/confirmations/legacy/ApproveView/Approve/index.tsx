@@ -378,8 +378,8 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
     const proposedNonce = await getNetworkNonce(
-      { from: transaction.from ?? '' },
-      networkClientId ?? '',
+      transaction as { from: string },
+      networkClientId as string,
     );
     setNonce(proposedNonce);
     setProposedNonce(proposedNonce);

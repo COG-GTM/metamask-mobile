@@ -186,9 +186,6 @@ function setSecurityAlertResponse(
   }: { updateControllerState?: boolean; securityAlertId?: string } = {},
 ) {
   if (isTransactionRequest(request)) {
-    if (!transactionId) {
-      return;
-    }
     store.dispatch(
       setTransactionSecurityAlertResponse(
         transactionId,

@@ -178,7 +178,7 @@ const transactionReducer = (
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
-          [transactionId]: securityAlertResponse,
+          [String(transactionId)]: securityAlertResponse,
         },
       };
     }

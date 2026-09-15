@@ -2144,7 +2144,7 @@ export function getStakingNavbar(
     headerStyle: {
       backgroundColor:
         navBarOptions?.backgroundColor ?? themeColors.background.default,
-      shadowOffset: undefined,
+      shadowOffset: null as unknown as ViewStyle['shadowOffset'],
     },
     headerLeft: {
       marginHorizontal: 16,
