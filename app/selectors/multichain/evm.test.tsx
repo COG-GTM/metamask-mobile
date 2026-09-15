@@ -9,6 +9,7 @@ import {
   selectEvmTokens,
   selectEvmTokensWithZeroBalanceFilter,
   makeSelectAssetByAddressAndChainId,
+  selectEvmAssetLookup,
 } from './evm';
 import { SolScope } from '@metamask/keyring-api';
 import { GetByQuery } from '@testing-library/react-native/build/queries/make-queries';
@@ -32,6 +33,7 @@ import {
 } from '@metamask/swaps-controller/dist/constants';
 import { AccountsControllerState } from '@metamask/accounts-controller';
 import { zeroAddress } from 'ethereumjs-util';
+import { toFormattedAddress } from '../../util/address';
 
 describe('Multichain Selectors', () => {
   const mockState: RootState = {
@@ -921,6 +923,54 @@ describe('Multichain Selectors', () => {
       expect(result).toHaveProperty('chainId', ETH_CHAIN_ID);
       expect(result).toHaveProperty('symbol', 'USDC');
       expect(result).toHaveProperty('name', 'USDC');
+    });
+
+    it('should share a single memoized lookup index across selector instances', () => {
+      const selectorA = makeSelectAssetByAddressAndChainId();
+      const selectorB = makeSelectAssetByAddressAndChainId();
+      const before = selectEvmAssetLookup.recomputations();
+
+      const resultA = selectorA(testState, {
+        address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+        chainId: ETH_CHAIN_ID,
+      });
+      const resultB = selectorB(testState, {
+        address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+        chainId: ETH_CHAIN_ID,
+      });
+      const resultC = selectorA(testState, {
+        address: '0x0D1E753a25eBda689453309112904807625bEFBe',
+        chainId: POLYGON_CHAIN_ID,
+      });
+
+      expect(resultA).toHaveProperty('symbol', 'USDC');
+      expect(resultB).toHaveProperty('symbol', 'DAI');
+      expect(resultC).toHaveProperty('symbol', 'CAKE');
+      // at most one build for an unchanged token list, regardless of row count
+      expect(
+        selectEvmAssetLookup.recomputations() - before,
+      ).toBeLessThanOrEqual(1);
+      expect(selectEvmAssetLookup(testState)).toBe(
+        selectEvmAssetLookup(testState),
+      );
+    });
+
+    it('should index tokens by chainId, formatted address and isStaked', () => {
+      const lookup = selectEvmAssetLookup(testState);
+
+      expect(lookup.has(ETH_CHAIN_ID)).toBe(true);
+      expect(lookup.has(POLYGON_CHAIN_ID)).toBe(true);
+      expect(
+        lookup
+          .get(ETH_CHAIN_ID)
+          ?.get(
+            toFormattedAddress(
+              '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+            ) as string,
+          )
+          ?.get(false),
+      ).toHaveProperty('symbol', 'USDC');
+      expect(lookup.get('0x999')).toBeUndefined();
     });
   });
 });
