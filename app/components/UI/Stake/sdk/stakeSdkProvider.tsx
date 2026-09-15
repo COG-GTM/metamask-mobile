@@ -2,6 +2,7 @@ import {
   StakingType,
   StakeSdk,
   PooledStakingContract,
+  ChainId,
   isSupportedChain,
   StakingApiService,
 } from '@metamask/stake-sdk';
@@ -43,7 +44,7 @@ export const StakeSDKProvider: React.FC<
   const networkClientId = useSelector(selectNetworkClientId);
 
   const sdkService = useMemo(() => {
-    if (!chainId || !isSupportedChain(getDecimalChainId(chainId))) {
+    if (!chainId || !isSupportedChain(Number(getDecimalChainId(chainId)) as ChainId)) {
       console.error(
         'Failed to initialize Staking SDK Service: chainId unsupported',
       );
@@ -60,7 +61,7 @@ export const StakeSDKProvider: React.FC<
     }
 
     const sdk = StakeSdk.create({
-      chainId: getDecimalChainId(chainId),
+      chainId: Number(getDecimalChainId(chainId)) as ChainId,
       stakingType: sdkType,
     });
 

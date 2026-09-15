@@ -1,6 +1,7 @@
-import { AnyAction } from 'redux';
+import { AnyAction, CombinedState, PreloadedState } from 'redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer, Persistor } from 'redux-persist';
+import type { PersistPartial } from 'redux-persist/es/persistReducer';
 import createSagaMiddleware from 'redux-saga';
 import { rootSaga } from './sagas';
 import rootReducer, { RootState } from '../reducers';
@@ -32,7 +33,9 @@ const createStoreAndPersistor = async () => {
   });
   // Obtain the initial state from ReadOnlyNetworkStore for E2E tests.
   const initialState = isE2E
-    ? await ReadOnlyNetworkStore.getState()
+    ? ((await ReadOnlyNetworkStore.getState()) as
+        | PreloadedState<CombinedState<RootState & PersistPartial>>
+        | undefined)
     : undefined;
 
   const sagaMiddleware = createSagaMiddleware();

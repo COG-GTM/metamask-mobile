@@ -1,6 +1,10 @@
 // Third party dependencies.
 import React, { useCallback, useState, useEffect } from 'react';
-import { SafeAreaView, View } from 'react-native';
+import {
+  SafeAreaView,
+  View,
+  type ImageSourcePropType,
+} from 'react-native';
 import { useSelector } from 'react-redux';
 
 // External dependencies.
@@ -66,7 +70,7 @@ const NetworkConnectMultiSelector = ({
       isSelected: false,
       imageSource: getNetworkImageSource({
         chainId: network.chainId,
-      }),
+      }) as ImageSourcePropType,
       chainId: network.chainId,
     }),
   );
