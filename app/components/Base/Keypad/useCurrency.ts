@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { CURRENCIES } from './constants';
+import { CURRENCIES, CurrencyData } from './constants';
 import createKeypadRule from './createKeypadRule';
 
-function useCurrency(currency, decimals) {
+function useCurrency(currency?: string, decimals?: number): CurrencyData {
   const currencyData = useMemo(() => {
     if (!currency) {
       return CURRENCIES.default;
@@ -15,7 +15,7 @@ function useCurrency(currency, decimals) {
       return existingCurrency;
     }
 
-    if (decimals > 0) {
+    if (decimals !== undefined && decimals > 0) {
       return {
         decimalSeparator: '.',
         handler: createKeypadRule({ decimalSeparator: '.', decimals }),
