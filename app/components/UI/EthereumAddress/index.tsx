@@ -4,6 +4,12 @@ import { formatAddress } from '../../../util/address';
 
 type FormatAddressType = 'short' | 'mid' | 'full';
 
+const formatEthereumAddress = (
+  address: string | undefined,
+  type: FormatAddressType | undefined,
+) =>
+  address === undefined ? undefined : formatAddress(address, type ?? 'full');
+
 interface EthereumAddressProps {
   /**
    * Styles to be applied to the text component
@@ -12,7 +18,7 @@ interface EthereumAddressProps {
   /**
    * Address to be rendered and resolved
    */
-  address: string;
+  address?: string;
   /**
    * Type of formatting for the address
    * can be "short", "mid" or "full"
@@ -22,7 +28,7 @@ interface EthereumAddressProps {
 
 interface EthereumAddressState {
   ensName: string | null;
-  address: string;
+  address?: string;
 }
 
 /**
@@ -45,7 +51,7 @@ class EthereumAddress extends PureComponent<
 
     this.state = {
       ensName: null,
-      address: formatAddress(address, type ?? 'full'),
+      address: formatEthereumAddress(address, type),
     };
   }
 
@@ -59,7 +65,7 @@ class EthereumAddress extends PureComponent<
 
   formatAndResolveIfNeeded() {
     const { address, type } = this.props;
-    const formattedAddress = formatAddress(address, type ?? 'full');
+    const formattedAddress = formatEthereumAddress(address, type);
     this.setState({ address: formattedAddress, ensName: null });
   }
 
