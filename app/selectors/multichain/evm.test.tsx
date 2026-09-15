@@ -8,6 +8,7 @@ import {
   selectStakedEvmAsset,
   selectEvmTokens,
   selectEvmTokensWithZeroBalanceFilter,
+  selectEvmTokenFiatBalances,
   makeSelectAssetByAddressAndChainId,
 } from './evm';
 import { SolScope } from '@metamask/keyring-api';
@@ -32,6 +33,7 @@ import {
 } from '@metamask/swaps-controller/dist/constants';
 import { AccountsControllerState } from '@metamask/accounts-controller';
 import { zeroAddress } from 'ethereumjs-util';
+import { cloneDeep } from 'lodash';
 
 describe('Multichain Selectors', () => {
   const mockState: RootState = {
@@ -501,6 +503,100 @@ describe('Multichain Selectors', () => {
       expect(result.every((token) => token.balance === '0')).toBeTruthy();
       expect(result.length).toBe(2); // Native tokens should remain
     });
+
+    it('should return the same reference when token balances are replaced with an identical clone', () => {
+      const state1 = {
+        ...mockState,
+        engine: {
+          ...mockState.engine,
+          backgroundState: {
+            ...mockState.engine.backgroundState,
+            TokenBalancesController: {
+              tokenBalances: cloneDeep(
+                mockState.engine.backgroundState.TokenBalancesController
+                  .tokenBalances,
+              ),
+            },
+            TokenRatesController: {
+              marketData: cloneDeep(
+                mockState.engine.backgroundState.TokenRatesController.marketData,
+              ),
+            },
+          },
+        },
+      } as unknown as RootState;
+      const state2 = {
+        ...state1,
+        engine: {
+          ...state1.engine,
+          backgroundState: {
+            ...state1.engine.backgroundState,
+            TokenBalancesController: {
+              tokenBalances: cloneDeep(
+                state1.engine.backgroundState.TokenBalancesController
+                  .tokenBalances,
+              ),
+            },
+            TokenRatesController: {
+              marketData: cloneDeep(
+                state1.engine.backgroundState.TokenRatesController.marketData,
+              ),
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      const result1 = selectEvmTokensWithZeroBalanceFilter(state1);
+      const result2 = selectEvmTokensWithZeroBalanceFilter(state2);
+
+      expect(result2).toBe(result1);
+    });
+
+    it('should return a new reference when a zero-balance token becomes non-zero', () => {
+      const state1 = {
+        ...mockState,
+        settings: { ...mockState.settings, hideZeroBalanceTokens: true },
+        engine: {
+          ...mockState.engine,
+          backgroundState: {
+            ...mockState.engine.backgroundState,
+            TokenBalancesController: {
+              tokenBalances: {
+                ...mockState.engine.backgroundState.TokenBalancesController
+                  .tokenBalances,
+                '0xAddress1': {
+                  '0x1': { '0xToken1': '0x0' },
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+      const state2 = {
+        ...state1,
+        engine: {
+          ...state1.engine,
+          backgroundState: {
+            ...state1.engine.backgroundState,
+            TokenBalancesController: {
+              tokenBalances: {
+                ...state1.engine.backgroundState.TokenBalancesController
+                  .tokenBalances,
+                '0xAddress1': {
+                  '0x1': { '0xToken1': '0x1' },
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      const result1 = selectEvmTokensWithZeroBalanceFilter(state1);
+      const result2 = selectEvmTokensWithZeroBalanceFilter(state2);
+
+      expect(result2).not.toBe(result1);
+      expect(result2.some((token) => token.address === '0xToken1')).toBe(true);
+    });
   });
 
   describe('selectEvmTokens', () => {
@@ -508,6 +604,81 @@ describe('Multichain Selectors', () => {
       const result1 = selectEvmTokens(mockState);
       const result2 = selectEvmTokens(mockState);
       expect(result1 === result2).toBe(true);
+    });
+
+    it('should return the same reference when controller maps are replaced with identical clones', () => {
+      const state1 = mockState;
+      const state2 = {
+        ...state1,
+        engine: {
+          ...state1.engine,
+          backgroundState: {
+            ...state1.engine.backgroundState,
+            TokenBalancesController: {
+              tokenBalances: cloneDeep(
+                state1.engine.backgroundState.TokenBalancesController
+                  .tokenBalances,
+              ),
+            },
+            TokenRatesController: {
+              marketData: cloneDeep(
+                state1.engine.backgroundState.TokenRatesController.marketData,
+              ),
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      const result1 = selectEvmTokens(state1);
+      const result2 = selectEvmTokens(state2);
+
+      expect(result2).toBe(result1);
+    });
+
+    it('should return a new reference when a zero-balance token becomes non-zero', () => {
+      const state1 = {
+        ...mockState,
+        settings: { ...mockState.settings, hideZeroBalanceTokens: true },
+        engine: {
+          ...mockState.engine,
+          backgroundState: {
+            ...mockState.engine.backgroundState,
+            TokenBalancesController: {
+              tokenBalances: {
+                ...mockState.engine.backgroundState.TokenBalancesController
+                  .tokenBalances,
+                '0xAddress1': {
+                  '0x1': { '0xToken1': '0x0' },
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+      const state2 = {
+        ...state1,
+        engine: {
+          ...state1.engine,
+          backgroundState: {
+            ...state1.engine.backgroundState,
+            TokenBalancesController: {
+              tokenBalances: {
+                ...state1.engine.backgroundState.TokenBalancesController
+                  .tokenBalances,
+                '0xAddress1': {
+                  '0x1': { '0xToken1': '0x1' },
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      const result1 = selectEvmTokens(state1);
+      const result2 = selectEvmTokens(state2);
+
+      expect(result2).not.toBe(result1);
+      expect(result2.some((token) => token.address === '0xToken1')).toBe(true);
     });
 
     it('should return all tokens when hideZeroBalanceTokens is false', () => {
@@ -759,6 +930,103 @@ describe('Multichain Selectors', () => {
       expect(nativePol).toBeDefined();
       expect(nativePol?.chainId).toBe(POLYGON_CHAIN_ID);
       expect(nativePol?.name).toBe('POL');
+    });
+  });
+
+  describe('selectEvmTokenFiatBalances', () => {
+    const fiatTokenAddress = '0x0000000000000000000000000000000000000001';
+    const fiatState = {
+      ...mockState,
+      engine: {
+        ...mockState.engine,
+        backgroundState: {
+          ...mockState.engine.backgroundState,
+          TokensController: {
+            allTokens: {
+              '0x1': {
+                '0xAddress1': [
+                  {
+                    address: fiatTokenAddress,
+                    symbol: 'TK1',
+                    decimals: 18,
+                    balance: '1000000000000000000',
+                  },
+                ],
+              },
+            },
+          },
+          TokenBalancesController: {
+            tokenBalances: {
+              '0xAddress1': {
+                '0x1': { [fiatTokenAddress]: '0x1' },
+              },
+            },
+          },
+          TokenRatesController: {
+            marketData: {
+              '0x1': { [fiatTokenAddress]: { price: 100 } },
+            },
+          },
+        },
+      },
+    } as unknown as RootState;
+
+    it('should return the same reference when controller maps are replaced with identical clones', () => {
+      const state1 = fiatState;
+      const state2 = {
+        ...state1,
+        engine: {
+          ...state1.engine,
+          backgroundState: {
+            ...state1.engine.backgroundState,
+            TokenBalancesController: {
+              tokenBalances: cloneDeep(
+                state1.engine.backgroundState.TokenBalancesController
+                  .tokenBalances,
+              ),
+            },
+            TokenRatesController: {
+              marketData: cloneDeep(
+                state1.engine.backgroundState.TokenRatesController.marketData,
+              ),
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      const result1 = selectEvmTokenFiatBalances(state1);
+      const result2 = selectEvmTokenFiatBalances(state2);
+
+      expect(result2).toBe(result1);
+    });
+
+    it('should return a new fiat balance when displayed token market data changes', () => {
+      const state1 = fiatState;
+      const state2 = {
+        ...state1,
+        engine: {
+          ...state1.engine,
+          backgroundState: {
+            ...state1.engine.backgroundState,
+            TokenRatesController: {
+              marketData: {
+                ...state1.engine.backgroundState.TokenRatesController.marketData,
+                '0x1': {
+                  ...state1.engine.backgroundState.TokenRatesController
+                    .marketData['0x1'],
+                  [fiatTokenAddress]: { price: 200 },
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      const result1 = selectEvmTokenFiatBalances(state1);
+      const result2 = selectEvmTokenFiatBalances(state2);
+
+      expect(result2).not.toBe(result1);
+      expect(result2).not.toEqual(result1);
     });
   });
 
