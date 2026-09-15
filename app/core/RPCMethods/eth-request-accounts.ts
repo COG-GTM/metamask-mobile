@@ -1,10 +1,42 @@
 import { rpcErrors } from '@metamask/rpc-errors';
+import type {
+  PermittedHandlerExport,
+  RequestedPermissions,
+} from '@metamask/permission-controller';
+import type {
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
+import type {
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 import {
   trackDappViewedEvent,
 } from '../../util/metrics';
 
-const requestEthereumAccounts = {
+/**
+ * Implementations used by eth_requestAccounts handler
+ */
+export interface RequestEthereumAccountsHooks {
+  getAccounts: (options?: { ignoreLock?: boolean }) => string[];
+  getUnlockPromise: (shouldShowUnlockRequest?: boolean) => Promise<void>;
+  getCaip25PermissionFromLegacyPermissionsForOrigin: (
+    requestedPermissions?: RequestedPermissions,
+  ) => RequestedPermissions;
+  requestPermissionsForOrigin: (
+    requestedPermissions: RequestedPermissions,
+  ) => Promise<unknown>;
+}
+
+const requestEthereumAccounts: PermittedHandlerExport<
+  RequestEthereumAccountsHooks,
+  JsonRpcParams,
+  Json
+> = {
   methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
   implementation: requestEthereumAccountsHandler,
   hookNames: {
@@ -17,7 +49,7 @@ const requestEthereumAccounts = {
 export default requestEthereumAccounts;
 
 // Used to rate-limit pending requests to one per origin
-const locks = new Set();
+const locks = new Set<string>();
 
 /**
  * This method attempts to retrieve the Ethereum accounts available to the
@@ -38,18 +70,18 @@ const locks = new Set();
  * @returns A promise that resolves to nothing
  */
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: JsonRpcRequest<JsonRpcParams>,
+  res: PendingJsonRpcResponse<Json>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
-) {
-  const { origin } = req;
+  }: RequestEthereumAccountsHooks,
+): Promise<void> {
+  const { origin } = req as JsonRpcRequest<JsonRpcParams> & { origin: string };
   if (locks.has(origin)) {
     res.error = rpcErrors.resourceUnavailable(
       `Already processing ${MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS}. Please wait.`,
@@ -87,7 +119,13 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  // Existing call shape (asserted by eth-request-accounts.test.ts) differs from trackDappViewedEvent's typed signature
+  (
+    trackDappViewedEvent as unknown as (
+      hostname: string,
+      numberOfConnectedAccounts: number,
+    ) => void
+  )(origin, ethAccounts.length);
 
   res.result = ethAccounts;
   return end();
