@@ -4,9 +4,12 @@ import reducer, {
   setDestAmount,
   resetBridgeState,
   setSlippage,
+  selectBridgeQuotes,
 } from '.';
 import { BridgeToken } from '../../../../components/UI/Bridge/types';
 import { Hex } from '@metamask/utils';
+import { initialState as bridgeMockState } from '../../../../components/UI/Bridge/_mocks_/initialState';
+import { RootState } from '../../../../reducers';
 
 describe('bridge slice', () => {
   const mockToken: BridgeToken = {
@@ -103,6 +106,49 @@ describe('bridge slice', () => {
       const newState = reducer(state, action);
 
       expect(newState).toEqual(initialState);
+    });
+  });
+
+  describe('selectBridgeQuotes', () => {
+    const mockState = bridgeMockState as unknown as RootState;
+
+    it('returns the same reference when controller inputs are unchanged', () => {
+      const first = selectBridgeQuotes(mockState);
+      const second = selectBridgeQuotes(mockState);
+
+      expect(second).toBe(first);
+    });
+
+    it('returns the same reference when an unrelated slice of state changes', () => {
+      const first = selectBridgeQuotes(mockState);
+      const unrelatedChange = {
+        ...mockState,
+        bridge: { ...mockState.bridge, sourceAmount: '999' },
+      } as RootState;
+      const second = selectBridgeQuotes(unrelatedChange);
+
+      expect(second).toBe(first);
+    });
+
+    it('recomputes when the BridgeController state changes', () => {
+      const first = selectBridgeQuotes(mockState);
+      const changedState = {
+        ...mockState,
+        engine: {
+          ...mockState.engine,
+          backgroundState: {
+            ...mockState.engine.backgroundState,
+            BridgeController: {
+              ...mockState.engine.backgroundState.BridgeController,
+              quotesLastFetched: 123,
+            },
+          },
+        },
+      } as unknown as RootState;
+      const second = selectBridgeQuotes(changedState);
+
+      expect(second).not.toBe(first);
+      expect(second.quotesLastFetchedMs).toBe(123);
     });
   });
 });

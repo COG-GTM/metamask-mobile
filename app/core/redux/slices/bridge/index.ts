@@ -291,17 +291,44 @@ export const selectDestAddress = createSelector(
   (bridgeState) => bridgeState.destAddress,
 );
 
-const selectControllerFields = (state: RootState) => ({
-  ...state.engine.backgroundState.BridgeController,
-  gasFeeEstimates: selectGasFeeControllerEstimates(state) as GasFeeEstimates,
-  ...state.engine.backgroundState.MultichainAssetsRatesController,
-  ...state.engine.backgroundState.TokenRatesController,
-  ...state.engine.backgroundState.CurrencyRateController,
-  participateInMetaMetrics: MetaMetrics.getInstance().isEnabled(),
-  remoteFeatureFlags: {
-    bridgeConfig: selectRemoteFeatureFlags(state).bridgeConfig,
-  },
-});
+const selectMultichainAssetsRatesControllerState = (state: RootState) =>
+  state.engine.backgroundState.MultichainAssetsRatesController;
+
+const selectTokenRatesControllerState = (state: RootState) =>
+  state.engine.backgroundState.TokenRatesController;
+
+const selectCurrencyRateControllerState = (state: RootState) =>
+  state.engine.backgroundState.CurrencyRateController;
+
+const selectBridgeConfigFeatureFlag = (state: RootState) =>
+  selectRemoteFeatureFlags(state).bridgeConfig;
+
+const selectControllerFields = createSelector(
+  selectBridgeControllerState,
+  selectGasFeeControllerEstimates,
+  selectMultichainAssetsRatesControllerState,
+  selectTokenRatesControllerState,
+  selectCurrencyRateControllerState,
+  selectBridgeConfigFeatureFlag,
+  (
+    bridgeControllerState,
+    gasFeeEstimates,
+    multichainAssetsRatesControllerState,
+    tokenRatesControllerState,
+    currencyRateControllerState,
+    bridgeConfig,
+  ) => ({
+    ...bridgeControllerState,
+    gasFeeEstimates: gasFeeEstimates as GasFeeEstimates,
+    ...multichainAssetsRatesControllerState,
+    ...tokenRatesControllerState,
+    ...currencyRateControllerState,
+    participateInMetaMetrics: MetaMetrics.getInstance().isEnabled(),
+    remoteFeatureFlags: {
+      bridgeConfig,
+    },
+  }),
+);
 
 export const selectBridgeQuotes = createSelector(
   selectControllerFields,
