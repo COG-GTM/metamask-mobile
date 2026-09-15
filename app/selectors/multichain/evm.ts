@@ -31,7 +31,10 @@ import {
   selectCurrencyRates,
   selectCurrentCurrency,
 } from '../currencyRateController';
-import { createDeepEqualSelector } from '../util';
+import {
+  createDeepEqualSelector,
+  createOutputDeepEqualSelector,
+} from '../util';
 import { getTicker } from '../../util/transactions';
 import { zeroAddress } from 'ethereumjs-util';
 import { selectHideZeroBalanceTokens } from '../settings';
@@ -361,46 +364,47 @@ export const selectStakedEvmAsset = createDeepEqualSelector(
   },
 );
 
-export const selectEvmTokensWithZeroBalanceFilter = createDeepEqualSelector(
-  selectHideZeroBalanceTokens,
-  selectAccountTokensAcrossChains,
-  selectTokensBalances,
-  selectSelectedInternalAccountAddress,
-  selectIsTokenNetworkFilterEqualCurrentNetwork,
-  (
-    hideZeroBalanceTokens,
-    selectedAccountTokensChains,
-    multiChainTokenBalance,
-    selectedInternalAccountAddress,
-    isUserOnCurrentNetwork,
-  ) => {
-    const allTokens = Object.values(
+export const selectEvmTokensWithZeroBalanceFilter =
+  createOutputDeepEqualSelector(
+    selectHideZeroBalanceTokens,
+    selectAccountTokensAcrossChains,
+    selectTokensBalances,
+    selectSelectedInternalAccountAddress,
+    selectIsTokenNetworkFilterEqualCurrentNetwork,
+    (
+      hideZeroBalanceTokens,
       selectedAccountTokensChains,
-    ).flat() as TokenI[];
+      multiChainTokenBalance,
+      selectedInternalAccountAddress,
+      isUserOnCurrentNetwork,
+    ) => {
+      const allTokens = Object.values(
+        selectedAccountTokensChains,
+      ).flat() as TokenI[];
 
-    let tokensToDisplay: TokenI[] = allTokens;
+      let tokensToDisplay: TokenI[] = allTokens;
 
-    // Respect zero balance filtering settings
-    if (hideZeroBalanceTokens) {
-      tokensToDisplay = allTokens.filter((token) => {
-        const multiChainTokenBalances =
-          multiChainTokenBalance?.[selectedInternalAccountAddress as Hex]?.[
-            token.chainId as Hex
-          ];
-        const balance =
-          multiChainTokenBalances?.[token.address as Hex] || token.balance;
+      // Respect zero balance filtering settings
+      if (hideZeroBalanceTokens) {
+        tokensToDisplay = allTokens.filter((token) => {
+          const multiChainTokenBalances =
+            multiChainTokenBalance?.[selectedInternalAccountAddress as Hex]?.[
+              token.chainId as Hex
+            ];
+          const balance =
+            multiChainTokenBalances?.[token.address as Hex] || token.balance;
 
-        return (
-          !isZero(balance) ||
-          (isUserOnCurrentNetwork && (token.isNative || token.isStaked))
-        );
-      });
-    }
-    return tokensToDisplay;
-  },
-);
+          return (
+            !isZero(balance) ||
+            (isUserOnCurrentNetwork && (token.isNative || token.isStaked))
+          );
+        });
+      }
+      return tokensToDisplay;
+    },
+  );
 
-export const selectEvmTokens = createDeepEqualSelector(
+export const selectEvmTokens = createOutputDeepEqualSelector(
   selectEvmTokensWithZeroBalanceFilter,
   selectIsAllNetworks,
   selectIsPopularNetwork,
@@ -443,7 +447,7 @@ export const selectEvmTokens = createDeepEqualSelector(
   },
 );
 
-export const selectEvmTokenFiatBalances = createDeepEqualSelector(
+export const selectEvmTokenFiatBalances = createOutputDeepEqualSelector(
   selectEvmTokens,
   selectTokenMarketData,
   selectTokensBalances,
