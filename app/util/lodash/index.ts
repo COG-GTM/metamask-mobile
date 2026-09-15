@@ -23,7 +23,7 @@ export const isZero = (value: number | any): boolean => {
  * @param other number
  * @returns
  */
-export const lte = (value: number, other: number): boolean =>
+export const lte = (value: number | string, other: number | string): boolean =>
   Number(value) <= Number(other);
 
 /**

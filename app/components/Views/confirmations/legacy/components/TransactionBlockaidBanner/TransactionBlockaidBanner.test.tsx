@@ -26,7 +26,7 @@ jest.mock('react-native-gzip', () => ({
   deflate: (val: any) => val,
 }));
 
-const mockState: DeepPartial<RootState> = {
+const mockState = {
   engine: {
     backgroundState: {
       PreferencesController: { securityAlertsEnabled: true },
@@ -44,7 +44,7 @@ const mockState: DeepPartial<RootState> = {
       },
     },
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 describe('TransactionBlockaidBanner', () => {
   it('should render correctly', () => {

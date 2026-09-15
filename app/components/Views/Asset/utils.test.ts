@@ -3,6 +3,7 @@ import { getSwapsIsLive, getIsSwapsAssetAllowed } from './utils';
 import { RootState } from '../../../reducers';
 import { SolScope } from '@metamask/keyring-api';
 import { isPortfolioViewEnabled } from '../../../util/networks';
+import type { SwapsChainState } from '../../../reducers/swaps';
 
 jest.mock('../../../util/networks', () => ({
   ...jest.requireActual('../../../util/networks'),
@@ -62,7 +63,10 @@ describe('getSwapsIsLive', () => {
       const result = getSwapsIsLive(
         {
           ...mockState,
-          swaps: { ...mockState.swaps, '0x1': { isLive: false } },
+          swaps: {
+            ...mockState.swaps,
+            '0x1': { isLive: false } as unknown as SwapsChainState,
+          },
         },
         mockChainId,
       );
@@ -73,7 +77,10 @@ describe('getSwapsIsLive', () => {
       const result = getSwapsIsLive(
         {
           ...mockState,
-          swaps: { ...mockState.swaps, '0x1': null },
+          swaps: {
+            ...mockState.swaps,
+            '0x1': null as unknown as SwapsChainState,
+          },
         },
         mockChainId,
       );

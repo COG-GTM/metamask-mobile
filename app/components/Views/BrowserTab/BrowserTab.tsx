@@ -40,6 +40,7 @@ import { strings } from '../../../../locales/i18n';
 import URLParse from 'url-parse';
 import WebviewErrorComponent from '../../UI/WebviewError';
 import { addToHistory, addToWhitelist } from '../../../actions/browser';
+import type { Bookmark } from '../../../actions/bookmarks';
 import Device from '../../../util/device';
 import AppConstants from '../../../core/AppConstants';
 import { MetaMetricsEvents } from '../../../core/Analytics';
@@ -567,7 +568,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    * Inject home page scripts to get the favourites and set analytics key
    */
   const injectHomePageScripts = useCallback(
-    async (injectedBookmarks?: string[]) => {
+    async (injectedBookmarks?: Bookmark[]) => {
       const { current } = webviewRef;
       const analyticsEnabled = isEnabled();
       const disctinctId = await getMetaMetricsId();

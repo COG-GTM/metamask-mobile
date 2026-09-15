@@ -3,7 +3,7 @@ import type { PrivacyAction } from '../../actions/privacy';
 
 export interface PrivacyState {
   approvedHosts: Record<string, boolean>;
-  revealSRPTimestamps: number[];
+  revealSRPTimestamps: (number | string)[];
 }
 
 export const initialState: PrivacyState = {
@@ -41,7 +41,7 @@ const privacyReducer = (
         ...state,
         revealSRPTimestamps: [
           ...state.revealSRPTimestamps,
-          action.timestamp as number,
+          action.timestamp,
         ],
       };
     default:

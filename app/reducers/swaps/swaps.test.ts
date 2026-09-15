@@ -8,9 +8,12 @@ import reducer, {
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
   selectSwapsChainFeatureFlags,
+  type SwapsChainState,
+  type SwapsChainFeatureFlags,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
 import type { RootState } from '..';
+import type { FeatureFlags } from './utils';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
@@ -31,7 +34,7 @@ const DEFAULT_FEATURE_FLAGS = {
     smartTransactions: {
       expectedDeadline: 45,
       maxDeadline: 150,
-      returnTxHashAsap: false,
+      mobileReturnTxHashAsap: false,
     },
   },
   bsc: {
@@ -43,11 +46,7 @@ const DEFAULT_FEATURE_FLAGS = {
     extensionActive: true,
     mobileActiveIOS: true,
     mobileActiveAndroid: true,
-    smartTransactions: {
-      expectedDeadline: 45,
-      maxDeadline: 150,
-      returnTxHashAsap: false,
-    },
+    smartTransactions: {},
   },
   smart_transactions: {
     mobile_active: false,
@@ -73,11 +72,10 @@ describe('swaps reducer', () => {
       Device.isAndroid = jest.fn().mockReturnValue(false);
 
       const initalState = reducer(undefined, emptyAction);
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags: DEFAULT_FEATURE_FLAGS,
+          featureFlags: DEFAULT_FEATURE_FLAGS as unknown as FeatureFlags,
           chainId: '0x1',
         },
       });
@@ -101,15 +99,14 @@ describe('swaps reducer', () => {
         smartTransactions: {
           expectedDeadline: 45,
           maxDeadline: 150,
-          returnTxHashAsap: false,
+          mobileReturnTxHashAsap: false,
         },
       };
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags,
+          featureFlags: featureFlags as unknown as FeatureFlags,
           chainId: '0x1',
         },
       });
@@ -133,15 +130,14 @@ describe('swaps reducer', () => {
         smartTransactions: {
           expectedDeadline: 45,
           maxDeadline: 150,
-          returnTxHashAsap: false,
+          mobileReturnTxHashAsap: false,
         },
       };
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags,
+          featureFlags: featureFlags as unknown as FeatureFlags,
           chainId: '0x1',
         },
       });
@@ -165,15 +161,14 @@ describe('swaps reducer', () => {
         smartTransactions: {
           expectedDeadline: 45,
           maxDeadline: 150,
-          returnTxHashAsap: false,
+          mobileReturnTxHashAsap: false,
         },
       };
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
-          featureFlags,
+          featureFlags: featureFlags as unknown as FeatureFlags,
           chainId: '0x1',
         },
       });
@@ -188,8 +183,6 @@ describe('swaps reducer', () => {
           backgroundState: {
             NetworkController: {
               getNetworkClientById: () => ({
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 configuration: {
                   rpcUrl: 'https://mainnet.infura.io/v3',
                   chainId: '0x1',
@@ -218,7 +211,6 @@ describe('swaps reducer', () => {
       };
 
       rootState.swaps = {
-        // @ts-ignore
         featureFlags: {
           smart_transactions: {
             mobile_active: true,
@@ -232,16 +224,15 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
-          // @ts-ignore
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,
               maxDeadline: 150,
-              returnTxHashAsap: false,
+              mobileReturnTxHashAsap: false,
             },
-          },
-        },
-      };
+          } as unknown as SwapsChainFeatureFlags,
+        } as unknown as SwapsChainState,
+      } as unknown as RootState['swaps'];
 
       const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(true);
@@ -273,7 +264,6 @@ describe('swaps reducer', () => {
       };
 
       rootState.swaps = {
-        // @ts-ignore
         featureFlags: {
           smart_transactions: {
             mobile_active: false,
@@ -287,16 +277,15 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
-          // @ts-ignore
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,
               maxDeadline: 150,
-              returnTxHashAsap: false,
+              mobileReturnTxHashAsap: false,
             },
-          },
-        },
-      };
+          } as unknown as SwapsChainFeatureFlags,
+        } as unknown as SwapsChainState,
+      } as unknown as RootState['swaps'];
 
       const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(false);
@@ -545,13 +534,11 @@ describe('swaps reducer', () => {
 
   it('should set has onboarded', () => {
     const initalState = reducer(undefined, emptyAction);
-    // @ts-ignore
     const notOnboardedState = reducer(initalState, {
       type: SWAPS_SET_HAS_ONBOARDED,
       payload: false,
     });
     expect(notOnboardedState.hasOnboarded).toBe(false);
-    // @ts-ignore
     const liveState = reducer(initalState, {
       type: SWAPS_SET_HAS_ONBOARDED,
       payload: true,

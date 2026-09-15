@@ -17,7 +17,7 @@ import { isTest } from './utils';
 export const backgroundState: EngineState =
   initialBackgroundState as unknown as EngineState;
 
-const initialRootState: RootState = {
+const initialRootState = {
   legalNotices: undefined,
   collectibles: undefined,
   engine: { backgroundState },
@@ -55,7 +55,7 @@ const initialRootState: RootState = {
   banners: {
     dismissedBanners: [],
   },
-};
+} as unknown as RootState;
 
 if (isTest) {
   initialRootState.performance = initialPerformanceState;

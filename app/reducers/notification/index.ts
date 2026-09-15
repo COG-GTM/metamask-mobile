@@ -48,7 +48,7 @@ export const currentNotificationSelector = createSelector(
 
 const notificationReducer = (
   state: NotificationState = initialState,
-  action: NotificationAction & { id?: string | number },
+  action: NotificationAction,
 ): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
@@ -89,7 +89,7 @@ const notificationReducer = (
             {
               ...notifications[index],
               ...{
-                id: action.transaction.id as string | number,
+                id: action.transaction.id,
                 isVisible: true,
                 autodismiss: action.autodismiss,
                 transaction: action.transaction,
@@ -104,7 +104,7 @@ const notificationReducer = (
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction.id as string | number,
+          id: action.transaction.id,
           isVisible: true,
           autodismiss: action.autodismiss,
           transaction: action.transaction,
@@ -123,7 +123,7 @@ const notificationReducer = (
             {
               ...notifications[index],
               ...{
-                id: action.id as string | number,
+                id: action.id,
                 isVisible: true,
                 autodismiss: action.autodismiss,
                 title: action.title,
@@ -139,7 +139,7 @@ const notificationReducer = (
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.id as string | number,
+          id: action.id,
           isVisible: true,
           autodismiss: action.autodismiss,
           title: action.title,
@@ -179,7 +179,7 @@ const notificationReducer = (
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.id as string | number,
+          id: action.id,
           isVisible: true,
           autodismiss: action.autodismiss || 5000,
           title: action.title,
@@ -193,7 +193,7 @@ const notificationReducer = (
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction.id as string | number,
+          id: action.transaction.id,
           isVisible: true,
           autodismiss: action.autodismiss || 5000,
           transaction: action.transaction,

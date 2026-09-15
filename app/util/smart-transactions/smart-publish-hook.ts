@@ -15,6 +15,7 @@ import {
 } from './index';
 import Logger from '../Logger';
 import {
+  type FeatureFlags,
   Fee,
   Fees,
   SmartTransaction,
@@ -32,6 +33,25 @@ export type AllowedActions = never;
 
 export type AllowedEvents = SmartTransactionsControllerSmartTransactionEvent;
 
+export type SmartTransactionsFeatureFlags = Omit<
+  FeatureFlags,
+  'smartTransactions'
+> & {
+  mobile_active?: boolean;
+  extension_active?: boolean;
+  fallback_to_v1?: boolean;
+  fallbackToV1?: boolean;
+  mobileActive?: boolean;
+  extensionActive?: boolean;
+  mobileActiveIOS?: boolean;
+  mobileActiveAndroid?: boolean;
+  smartTransactions: NonNullable<FeatureFlags['smartTransactions']> & {
+    expectedDeadline?: number;
+    maxDeadline?: number;
+    batchStatusPollingInterval?: number;
+  };
+};
+
 export interface SubmitSmartTransactionRequest {
   transactionMeta: TransactionMeta;
   signedTransactionInHex?: Hex;
@@ -40,24 +60,7 @@ export interface SubmitSmartTransactionRequest {
   controllerMessenger: Messenger<AllowedActions, AllowedEvents>;
   shouldUseSmartTransaction: boolean;
   approvalController: ApprovalController;
-  featureFlags: {
-    mobile_active: boolean;
-    extension_active: boolean;
-    fallback_to_v1: boolean;
-    fallbackToV1: boolean;
-    mobileActive: boolean;
-    extensionActive: boolean;
-    mobileActiveIOS: boolean;
-    mobileActiveAndroid: boolean;
-    smartTransactions:
-      | {
-          expectedDeadline: number;
-          maxDeadline: number;
-          mobileReturnTxHashAsap: boolean;
-          batchStatusPollingInterval: number;
-        }
-      | Record<string, never>;
-  };
+  featureFlags: SmartTransactionsFeatureFlags;
   transactions: PublishBatchHookTransaction[];
 }
 
@@ -71,16 +74,7 @@ class SmartTransactionHook {
   #approvalEnded: boolean;
   #approvalId: string | undefined;
   #chainId: Hex;
-  #featureFlags: {
-    extensionActive: boolean;
-    mobileActive: boolean;
-    smartTransactions: {
-      expectedDeadline?: number;
-      maxDeadline?: number;
-      mobileReturnTxHashAsap?: boolean;
-      batchStatusPollingInterval?: number;
-    };
-  };
+  #featureFlags: SmartTransactionsFeatureFlags;
   #shouldUseSmartTransaction: boolean;
   #smartTransactionsController: SmartTransactionsController;
   #transactionController: TransactionController;
@@ -261,7 +255,7 @@ class SmartTransactionHook {
         `${LOG_PREFIX}: A list of transactions are required for batch submissions`,
       );
     }
-  }
+  };
 
   async submitBatch() {
     this.#validateSubmitBatch();

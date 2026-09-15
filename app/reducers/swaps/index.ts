@@ -4,6 +4,7 @@ import type { RootState } from '..';
 import type { Hex } from '@metamask/utils';
 import type { TransactionAction } from '../../actions/transaction';
 import type { SwapsControllerState } from '@metamask/swaps-controller';
+import type { FeatureFlags as SmartTransactionsFeatureFlags } from '@metamask/smart-transactions-controller/dist/types';
 import { isMainnetByChainId } from '../../util/networks';
 import { safeToChecksumAddress } from '../../util/address';
 import { toLowerCaseEquals } from '../../util/general';
@@ -43,8 +44,24 @@ export interface SwapsToken {
   symbol?: string;
   name?: string;
   occurrences?: number;
-  [key: string]: unknown;
+  hasBalanceError?: boolean;
+  image?: string;
 }
+
+type SwapsSmartTransactionsFeatureFlags = Omit<
+  SmartTransactionsFeatureFlags,
+  'smartTransactions'
+> & {
+  smartTransactions?: SmartTransactionsFeatureFlags['smartTransactions'] & {
+    mobileActive?: boolean;
+    extensionActive?: boolean;
+    mobileActiveIOS?: boolean;
+    mobileActiveAndroid?: boolean;
+    expectedDeadline?: number;
+    maxDeadline?: number;
+    returnTxHashAsap?: boolean;
+  };
+};
 
 export interface SwapsState {
   isLive: boolean;
@@ -53,8 +70,6 @@ export interface SwapsState {
   [chainId: `0x${string}`]: SwapsChainState;
 }
 
-type SwapsFeatureFlags = FeatureFlags | Record<string, unknown>;
-
 type SwapsReducerAction =
   | TransactionAction
   | { type: null }
@@ -62,7 +77,7 @@ type SwapsReducerAction =
       type: typeof SWAPS_SET_LIVENESS;
       payload: {
         chainId: Hex;
-        featureFlags?: SwapsFeatureFlags;
+        featureFlags?: FeatureFlags | null;
       };
     }
   | {
@@ -72,7 +87,7 @@ type SwapsReducerAction =
 
 export const getFeatureFlagChainId = (chainId: Hex): Hex =>
   __DEV__ && allowedTestnetChainIds.includes(chainId)
-    ? (NETWORKS_CHAIN_ID.MAINNET as Hex)
+    ? NETWORKS_CHAIN_ID.MAINNET
     : chainId;
 
 // * Constants
@@ -83,7 +98,7 @@ const MAX_TOKENS_WITH_BALANCE = 5;
 // * Action Creator
 export const setSwapsLiveness = (
   chainId: Hex,
-  featureFlags?: SwapsFeatureFlags,
+  featureFlags?: FeatureFlags | null,
 ) => ({
   type: SWAPS_SET_LIVENESS,
   payload: { chainId, featureFlags },
@@ -100,12 +115,14 @@ function addMetadata(
   tokens: SwapsToken[],
   tokenList: Record<string, { name?: string }>,
 ): SwapsToken[] {
-  if (!isMainnetByChainId(String(chainId))) {
+  if (!isMainnetByChainId(chainId)) {
     return tokens;
   }
   return tokens.map((token) => {
-    const tokenMetadata =
-      tokenList[safeToChecksumAddress(token.address) as string];
+    const checksumAddress = safeToChecksumAddress(token.address);
+    const tokenMetadata = checksumAddress
+      ? tokenList[checksumAddress]
+      : undefined;
     if (tokenMetadata) {
       return { ...token, name: tokenMetadata.name };
     }
@@ -151,13 +168,16 @@ export const selectSwapsChainFeatureFlags = createSelector(
   swapsStateSelector,
   (_state: RootState, transactionChainId?: Hex) =>
     transactionChainId || selectEvmChainId(_state),
-  (swapsState, chainId) => ({
-    ...swapsState[chainId as Hex].featureFlags,
-    smartTransactions: {
-      ...(swapsState[chainId as Hex].featureFlags?.smartTransactions || {}),
+  (swapsState, chainId): SwapsSmartTransactionsFeatureFlags => {
+    const smartTransactions = {
+      ...(swapsState[chainId].featureFlags?.smartTransactions || {}),
       ...(swapsState.featureFlags?.smartTransactions || {}),
-    },
-  }),
+    };
+    return {
+      ...swapsState[chainId].featureFlags,
+      smartTransactions,
+    };
+  },
 );
 
 /**
@@ -262,7 +282,9 @@ const swapsControllerAndUserTokensMultichain = createSelector(
     const allTokensArr = Object.values(allTokens);
     const allUserTokensCrossChains = allTokensArr.reduce(
       (acc, tokensElement) => {
-        const found = tokensElement[currentUserAddress as string] || [];
+        const found = currentUserAddress
+          ? tokensElement[currentUserAddress] || []
+          : [];
         return [...acc, ...found.flat()];
       },
       [] as SwapsToken[],
@@ -363,15 +385,17 @@ export const swapsTokensWithBalanceSelector = createSelector(
     }
     const baseTokens = tokens;
     const tokensAddressesWithBalance = (
-      Object.entries(balances) as unknown as [string, number][]
+      Object.entries(balances)
     )
-      .filter(([, balance]) => balance !== 0)
+      .filter(([, balance]) => balance !== '0x0')
       .sort(([, balanceA], [, balanceB]) => (lte(balanceB, balanceA) ? -1 : 1))
       .map(([address]) => address.toLowerCase());
     const tokensWithBalance: SwapsToken[] = [];
     const originalTokens: SwapsToken[] = [];
 
-    for (const token of baseTokens) {
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let i = 0; i < baseTokens.length; i++) {
+      const token = baseTokens[i];
       if (tokensAddressesWithBalance.includes(token.address)) {
         tokensWithBalance.push(token);
       } else {
@@ -404,7 +428,7 @@ export const swapsTopAssetsSelector = createSelector(
   swapsControllerAndUserTokens,
   selectTokenList,
   topAssets,
-    (chainId, tokens, tokenList, topAssetsData) => {
+  (chainId, tokens, tokenList, topAssetsData) => {
     if (!topAssetsData || !tokens) {
       return [];
     }
@@ -455,12 +479,11 @@ function swapsReducer(
         };
       }
 
-      const typedFeatureFlags = featureFlags as FeatureFlags;
       const chainFeatureFlags = getChainFeatureFlags(
-        typedFeatureFlags,
+        featureFlags,
         chainId,
       );
-      const liveness = getSwapsLiveness(typedFeatureFlags, chainId);
+      const liveness = getSwapsLiveness(featureFlags, chainId);
 
       const chain = {
         ...data,
@@ -473,8 +496,8 @@ function swapsReducer(
         [chainId]: chain,
         [rawChainId]: chain,
         featureFlags: {
-          smart_transactions: typedFeatureFlags.smart_transactions,
-          smartTransactions: typedFeatureFlags.smartTransactions,
+          smart_transactions: featureFlags.smart_transactions,
+          smartTransactions: featureFlags.smartTransactions,
         },
       };
     }

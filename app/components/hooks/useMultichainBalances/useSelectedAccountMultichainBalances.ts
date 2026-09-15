@@ -90,7 +90,7 @@ const useSelectedAccountMultichainBalances =
           multichainAssets,
           multichainAssetsRates,
           nonEvmChainId,
-          shouldShowFiat,
+          Boolean(shouldShowFiat),
           ///: END:ONLY_INCLUDE_IF
         );
         return {

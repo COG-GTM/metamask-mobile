@@ -95,7 +95,7 @@ const useMultichainBalancesForAllAccounts =
           multichainAssets,
           multichainAssetsRates,
           nonEvmChainId,
-          shouldShowFiat,
+          Boolean(shouldShowFiat),
           ///: END:ONLY_INCLUDE_IF
         );
         result[account.id] = {

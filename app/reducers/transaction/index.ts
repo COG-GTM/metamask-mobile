@@ -26,7 +26,7 @@ export interface TransactionState {
   transactionFromName: string | undefined;
   transactionValue: string | undefined;
   symbol: string | undefined;
-  paymentRequest: unknown;
+  paymentRequest: boolean | undefined;
   readableValue: string | undefined;
   id: string | undefined;
   type: string | undefined;
@@ -136,9 +136,7 @@ const transactionReducer = (
         transaction: action.transaction,
       };
     case 'SET_TRANSACTION_OBJECT': {
-      const selectedAsset = action.transaction.selectedAsset as
-        | SelectedAsset
-        | undefined;
+      const selectedAsset = action.transaction.selectedAsset;
       if (selectedAsset) {
         const assetType = getAssetType(selectedAsset);
         action.transaction.assetType = assetType;
@@ -175,11 +173,14 @@ const transactionReducer = (
       };
     case 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE': {
       const { transactionId, securityAlertResponse } = action;
+      if (transactionId === undefined) {
+        return state;
+      }
       return {
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
-          [transactionId as string]: securityAlertResponse,
+          [transactionId]: securityAlertResponse,
         },
       };
     }

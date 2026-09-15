@@ -4,7 +4,7 @@
 import { ACTIONS } from '../../reducers/notification';
 
 export interface Notification {
-  id: string | number;
+  id?: string | number;
   isVisible?: boolean;
   autodismiss?: number | boolean;
   title?: string;
@@ -31,6 +31,7 @@ interface HideNotificationByIdAction {
 
 interface ModifyOrShowTransactionNotificationAction {
   type: typeof ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION;
+  id?: string | number;
   autodismiss?: number | boolean;
   transaction: TransactionNotification;
   status?: string;
@@ -38,6 +39,7 @@ interface ModifyOrShowTransactionNotificationAction {
 
 interface ModifyOrShowSimpleNotificationAction {
   type: typeof ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION;
+  id?: string | number;
   autodismiss?: number | boolean;
   title?: string;
   description?: string;
@@ -47,7 +49,7 @@ interface ModifyOrShowSimpleNotificationAction {
 interface ReplaceNotificationByIdAction {
   type: typeof ACTIONS.REPLACE_NOTIFICATION_BY_ID;
   notification: Notification;
-  id: string | number;
+  id?: string | number;
 }
 
 interface RemoveNotificationByIdAction {
@@ -107,16 +109,19 @@ export function hideNotificationById(
 }
 
 export function modifyOrShowTransactionNotificationById({
+  id,
   autodismiss,
   transaction,
   status,
 }: {
+  id?: string | number;
   autodismiss?: number | boolean;
   transaction: TransactionNotification;
   status?: string;
 }): ModifyOrShowTransactionNotificationAction {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION,
+    id,
     autodismiss,
     transaction,
     status,
@@ -124,11 +129,13 @@ export function modifyOrShowTransactionNotificationById({
 }
 
 export function modifyOrShowSimpleNotificationById({
+  id,
   autodismiss,
   title,
   description,
   status,
 }: {
+  id?: string | number;
   autodismiss?: number | boolean;
   title?: string;
   description?: string;
@@ -136,6 +143,7 @@ export function modifyOrShowSimpleNotificationById({
 }): ModifyOrShowSimpleNotificationAction {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
+    id,
     autodismiss,
     title,
     description,
