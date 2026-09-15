@@ -1,4 +1,4 @@
-import { NetworksChainId } from '@metamask/controller-utils';
+import { ChainId } from '@metamask/controller-utils';
 import { GOERLI } from '../../../app/constants/network';
 
 interface Migration15State {
@@ -21,7 +21,7 @@ export default function migrate(state: unknown) {
   // Deprecate rinkeby, ropsten and Kovan, any user that is on those we fallback to goerli
   if (chainId === '4' || chainId === '3' || chainId === '42') {
     typedState.engine.backgroundState.NetworkController.providerConfig = {
-      chainId: NetworksChainId.goerli,
+      chainId: ChainId.goerli,
       ticker: 'GoerliETH',
       type: GOERLI,
     };

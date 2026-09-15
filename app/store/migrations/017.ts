@@ -6,10 +6,7 @@ interface Migration17State {
 
 export default function migrate(state: unknown) {
   const typedState = state as Migration17State;
-  if (
-    typedState.networkOnboarded &&
-    typedState.networkOnboarded.networkOnboardedState
-  ) {
+  if (typedState.networkOnboarded?.networkOnboardedState) {
     typedState.networkOnboarded.networkOnboardedState = {};
   }
   return state;

@@ -1,13 +1,48 @@
 import { NetworkType } from '@metamask/controller-utils';
 
+interface TransactionEntry {
+  rawTransaction?: string;
+  chainId?: string;
+  transactionHash?: string;
+  origin?: string;
+  time?: number;
+  transaction?: Record<string, unknown>;
+}
+
+interface NetworkConfig {
+  chainId?: string;
+  rpcUrl?: string;
+}
+
+interface ProviderConfig {
+  chainId?: string;
+  type?: string;
+}
+
+interface Migration27State {
+  engine: {
+    backgroundState: {
+      TransactionController: {
+        transactions?: TransactionEntry[];
+        submitHistory?: unknown[];
+      };
+      NetworkController?: {
+        providerConfig?: ProviderConfig;
+        networkConfigurations?: Record<string, NetworkConfig>;
+      };
+    };
+  };
+}
+
 /**
  * Populate the submitHistory in the TransactionController using any
  * transaction metadata entries that have a rawTransaction value.
  * @param {any} state - Redux state
  * @returns
  */
-export default function migrate(state) {
-  const backgroundState = state.engine.backgroundState;
+export default function migrate(state: unknown) {
+  const typedState = state as Migration27State;
+  const backgroundState = typedState.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
 
@@ -51,7 +86,7 @@ export default function migrate(state) {
       };
     });
 
-  state.engine.backgroundState.TransactionController.submitHistory =
+  typedState.engine.backgroundState.TransactionController.submitHistory =
     submitHistory;
 
   return state;

@@ -11,7 +11,9 @@ interface Migration00State {
   engine: {
     backgroundState: {
       AddressBookController: {
-        addressBook: Record<string, AddressBookEntry>;
+        addressBook:
+          | Record<string, AddressBookEntry>
+          | Record<string, Record<string, AddressBookEntry>>;
       };
     };
   };
@@ -20,7 +22,10 @@ interface Migration00State {
 export default function migrate(state: unknown) {
   const typedState = state as Migration00State;
   const addressBook =
-    typedState.engine.backgroundState.AddressBookController.addressBook;
+    typedState.engine.backgroundState.AddressBookController.addressBook as Record<
+      string,
+      AddressBookEntry
+    >;
   const migratedAddressBook: Record<string, Record<string, AddressBookEntry>> =
     {};
   Object.keys(addressBook).forEach((address) => {

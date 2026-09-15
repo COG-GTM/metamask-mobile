@@ -1,4 +1,6 @@
-import { getAllNetworks, isSafeChainId } from '../../util/networks';
+import { isSafeChainId } from '@metamask/controller-utils';
+import type { Hex } from '@metamask/utils';
+import { getAllNetworks } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 
 interface Provider {
@@ -27,8 +29,10 @@ export default function migrate(state: unknown) {
     provider.type && getAllNetworks().includes(provider.type);
 
   // Check if the current network has a valid chainId
-  const chainIdNumber = parseInt(provider.chainId, 10);
-  const isCustomRpcWithInvalidChainId = !isSafeChainId(chainIdNumber);
+  const chainIdNumber = parseInt(provider.chainId as string, 10);
+  const isCustomRpcWithInvalidChainId = !isSafeChainId(
+    chainIdNumber as unknown as Hex,
+  );
 
   if (!isInitialNetwork && isCustomRpcWithInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.

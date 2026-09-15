@@ -23,10 +23,12 @@ export default function migrate(state: unknown) {
   const reduceTokens = (tokens: IgnoredToken[]): string[] =>
     tokens.reduce((final, token) => {
       const tokenAddress =
-        (typeof token === 'string' && token) || token?.address || '';
+        (typeof token === 'string' && token) ||
+        (typeof token === 'object' && token?.address) ||
+        '';
       tokenAddress && final.push(tokenAddress);
       return final;
-    }, []);
+    }, [] as string[]);
 
   const newIgnoredTokens = reduceTokens(ignoredTokens);
 

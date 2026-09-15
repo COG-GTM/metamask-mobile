@@ -1,27 +1,42 @@
 import { ETHERSCAN_SUPPORTED_CHAIN_IDS } from '@metamask/preferences-controller';
 
-export default function migrate(state) {
+interface Migration25State {
+  privacy?: {
+    thirdPartyApiMode?: boolean;
+  };
+  engine?: {
+    backgroundState?: {
+      PreferencesController?: {
+        showIncomingTransactions?: Record<string, boolean>;
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const typedState = state as Migration25State;
   try {
     Object.values(ETHERSCAN_SUPPORTED_CHAIN_IDS).forEach((hexChainId) => {
-      const thirdPartyApiMode = state?.privacy?.thirdPartyApiMode ?? true;
+      const thirdPartyApiMode = typedState?.privacy?.thirdPartyApiMode ?? true;
+      const preferencesController =
+        typedState?.engine?.backgroundState?.PreferencesController;
       if (
-        state?.engine?.backgroundState?.PreferencesController
-          ?.showIncomingTransactions
+        preferencesController?.showIncomingTransactions
       ) {
-        state.engine.backgroundState.PreferencesController.showIncomingTransactions =
-          {
-            ...state.engine.backgroundState.PreferencesController
-              .showIncomingTransactions,
-            [hexChainId]: thirdPartyApiMode,
-          };
-      } else if (state?.engine?.backgroundState?.PreferencesController) {
-        state.engine.backgroundState.PreferencesController.showIncomingTransactions =
-          { [hexChainId]: thirdPartyApiMode };
+        preferencesController.showIncomingTransactions = {
+          ...preferencesController.showIncomingTransactions,
+          [hexChainId]: thirdPartyApiMode,
+        };
+      } else if (preferencesController) {
+        preferencesController.showIncomingTransactions = {
+          [hexChainId]: thirdPartyApiMode,
+        };
       }
     });
 
-    if (state?.privacy?.thirdPartyApiMode !== undefined) {
-      delete state.privacy.thirdPartyApiMode;
+    const privacy = typedState?.privacy;
+    if (privacy?.thirdPartyApiMode !== undefined) {
+      delete privacy.thirdPartyApiMode;
     }
 
     return state;

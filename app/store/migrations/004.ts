@@ -1,4 +1,4 @@
-import { NetworksChainId } from '@metamask/controller-utils';
+import { ChainId } from '@metamask/controller-utils';
 
 interface NetworkEntries {
   [key: string]: unknown;
@@ -39,7 +39,7 @@ export default function migrate(state: unknown) {
     newAllTokens[address] = {};
     Object.keys(allTokens[address]).forEach((networkType) => {
       const networkChainId =
-        NetworksChainId[networkType as keyof typeof NetworksChainId];
+        ChainId[networkType as keyof typeof ChainId];
       if (networkChainId) {
         newAllTokens[address][networkChainId] =
           allTokens[address][networkType];
@@ -55,7 +55,7 @@ export default function migrate(state: unknown) {
     newAllCollectibles[address] = {};
     Object.keys(allCollectibles[address]).forEach((networkType) => {
       const networkChainId =
-        NetworksChainId[networkType as keyof typeof NetworksChainId];
+        ChainId[networkType as keyof typeof ChainId];
       if (networkChainId) {
         newAllCollectibles[address][networkChainId] =
           allCollectibles[address][networkType];
@@ -72,7 +72,7 @@ export default function migrate(state: unknown) {
     newAllCollectibleContracts[address] = {};
     Object.keys(allCollectibleContracts[address]).forEach((networkType) => {
       const networkChainId =
-        NetworksChainId[networkType as keyof typeof NetworksChainId];
+        ChainId[networkType as keyof typeof ChainId];
       if (networkChainId) {
         newAllCollectibleContracts[address][networkChainId] =
           allCollectibleContracts[address][networkType];

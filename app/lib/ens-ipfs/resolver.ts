@@ -14,11 +14,11 @@ export default async function resolveEnsToIpfsContentId({
   name,
   chainId,
 }: {
-  provider: Provider;
+  provider: Provider | undefined;
   name: string;
   chainId: string;
 }): Promise<{ type: string; hash: string }> {
-  const eth = new Eth(provider);
+  const eth = new Eth(provider as Provider);
   const hash = namehash.hash(name);
   const contract = new EthContract(eth);
   // lookup registry
@@ -76,13 +76,15 @@ export default async function resolveEnsToIpfsContentId({
 }
 
 function hexValueIsEmpty(value: unknown): boolean {
-  return [
+  return (
+    [
     undefined,
     null,
     '0x',
     '0x0',
     '0x0000000000000000000000000000000000000000000000000000000000000000',
-  ].includes(value);
+    ] as unknown[]
+  ).includes(value);
 }
 
 function getRegistryForChainId(chainId: string): string | null {

@@ -22,7 +22,7 @@ export default function migrate(state: unknown) {
     ignoredTokens: typedState.engine.backgroundState.AssetsController.ignoredTokens,
   };
 
-  state.engine.backgroundState.CollectiblesController = {
+  typedState.engine.backgroundState.CollectiblesController = {
     allCollectibles:
       typedState.engine.backgroundState.AssetsController.allCollectibles,
     allCollectibleContracts:
@@ -31,7 +31,9 @@ export default function migrate(state: unknown) {
       typedState.engine.backgroundState.AssetsController.ignoredCollectibles,
   };
 
-  delete typedState.engine.backgroundState.AssetsController;
+  delete (typedState.engine.backgroundState as {
+    AssetsController?: unknown;
+  }).AssetsController;
 
   return state;
 }

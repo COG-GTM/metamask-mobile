@@ -49,9 +49,7 @@ declare module '@metamask/ethjs-query' {
 }
 
 declare module '@metamask/ethjs-contract' {
-  interface ContractMethod {
-    (...args: unknown[]): Promise<[string]>;
-  }
+  type ContractMethod = (...args: unknown[]) => Promise<[string]>;
 
   interface ContractInstance {
     [method: string]: ContractMethod;
@@ -61,9 +59,7 @@ declare module '@metamask/ethjs-contract' {
     at(address: string): ContractInstance;
   }
 
-  interface EthContract {
-    new (eth: unknown): (abi: unknown[]) => ContractFactory;
-  }
+  type EthContract = new (eth: unknown) => (abi: unknown[]) => ContractFactory;
 
   const EthContract: EthContract;
   export default EthContract;

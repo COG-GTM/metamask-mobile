@@ -3,7 +3,8 @@ interface Migration07State {
     backgroundState: {
       TokensController: {
         allTokens: Record<string, Record<string, unknown>>;
-        ignoredTokens: unknown;
+        ignoredTokens?: unknown;
+        allIgnoredTokens?: Record<string, Record<string, unknown>>;
       };
     };
   };

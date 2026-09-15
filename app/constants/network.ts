@@ -15,6 +15,9 @@ export const PRIVATENETWORK = 'PRIVATENETWORK';
 export const DEFAULT_MAINNET_CUSTOM_NAME = 'Ethereum Main Custom';
 export const IPFS_DEFAULT_GATEWAY_URL = 'https://dweb.link/ipfs/';
 
+/**
+ * @enum {string}
+ */
 export const NETWORKS_CHAIN_ID = {
   MAINNET: toHex('1'),
   OPTIMISM: toHex('10'),

@@ -1,5 +1,24 @@
 import { v4 } from 'uuid';
 
+interface NetworkConfig {
+  chainId: string | number;
+  [key: string]: unknown;
+}
+
+interface Migration20State {
+  engine: {
+    backgroundState: {
+      PreferencesController?: {
+        frequentRpcList?: NetworkConfig[];
+      };
+      NetworkController?: {
+        networkConfigurations?: Record<string, NetworkConfig>;
+        [key: string]: unknown;
+      };
+    };
+  };
+}
+
 /**
  * Migrate network configuration from Preferences controller to Network controller.
  * See this changelog for details: https://github.com/MetaMask/core/releases/tag/v44.0.0
@@ -11,10 +30,11 @@ import { v4 } from 'uuid';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+export default function migrate(state: unknown) {
+  const typedState = state as Migration20State;
   const preferencesControllerState =
-    state.engine.backgroundState.PreferencesController;
-  const networkControllerState = state.engine.backgroundState.NetworkController;
+    typedState.engine.backgroundState.PreferencesController;
+  const networkControllerState = typedState.engine.backgroundState.NetworkController;
   const frequentRpcList = preferencesControllerState?.frequentRpcList;
   if (networkControllerState && frequentRpcList) {
     const networkConfigurations = frequentRpcList.reduce(

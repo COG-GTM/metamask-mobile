@@ -33,16 +33,21 @@ export default function migrate(state: unknown) {
     allNftContracts: allCollectibleContracts,
     ignoredNfts: ignoredCollectibles,
   };
-  delete typedState.engine.backgroundState.CollectiblesController;
+  delete (typedState.engine.backgroundState as {
+    CollectiblesController?: unknown;
+  }).CollectiblesController;
 
   typedState.engine.backgroundState.NftDetectionController =
     typedState.engine.backgroundState.CollectibleDetectionController;
-  delete typedState.engine.backgroundState.CollectibleDetectionController;
+  delete (typedState.engine.backgroundState as {
+    CollectibleDetectionController?: unknown;
+  }).CollectibleDetectionController;
 
   typedState.engine.backgroundState.PreferencesController.useNftDetection =
     typedState.engine.backgroundState.PreferencesController.useCollectibleDetection;
-  delete typedState.engine.backgroundState.PreferencesController
-    .useCollectibleDetection;
+  delete (typedState.engine.backgroundState.PreferencesController as {
+    useCollectibleDetection?: unknown;
+  }).useCollectibleDetection;
 
   return state;
 }
