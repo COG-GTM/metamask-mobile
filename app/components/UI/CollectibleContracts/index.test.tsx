@@ -353,6 +353,104 @@ describe('CollectibleContracts', () => {
     spyOnUpdateNftMetadata.mockRestore();
   });
 
+  it('does not re-fetch NFT metadata on re-render when the NFT set is unchanged', async () => {
+    const collectibleData = [
+      {
+        address: '0x72b1FDb6443338A158DeC2FbF411B71aeB157A42',
+        name: 'MyToken',
+        symbol: 'MTK',
+      },
+    ];
+    const nftItemData = [
+      {
+        address: '0x72b1FDb6443338A158DeC2FbF411B71aeB157A42',
+        description: 'Lil Pudgys',
+        favorite: false,
+        image: 'https://api.pudgypenguins.io/lil/image/11222',
+        isCurrentlyOwned: true,
+        name: 'Lil Pudgy #113',
+        standard: 'ERC721',
+        tokenId: '113',
+        tokenURI: 'https://api.pudgypenguins.io/lil/113',
+        chainId: 1,
+      },
+    ];
+    const mockState: DeepPartial<RootState> = {
+      collectibles: {
+        favorites: {},
+      },
+      engine: {
+        backgroundState: {
+          ...backgroundState,
+          NetworkController: {
+            ...mockNetworkState({
+              chainId: CHAIN_IDS.MAINNET,
+              id: 'mainnet',
+              nickname: 'Ethereum Mainnet',
+              ticker: 'ETH',
+            }),
+          },
+          AccountTrackerController: {
+            accountsByChainId: {
+              '0x1': {
+                [MOCK_ADDRESS]: { balance: '0' },
+              },
+            },
+          },
+          PreferencesController: {
+            displayNftMedia: true,
+          } as unknown as PreferencesState,
+          AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
+          NftController: {
+            allNfts: {
+              [MOCK_ADDRESS]: {
+                '0x1': [],
+              },
+            },
+            allNftContracts: {
+              [MOCK_ADDRESS]: {
+                '0x1': [],
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const stableCollectibles = { '0x1': nftItemData };
+    const spyOnCollectibles = jest
+      .spyOn(allSelectors, 'multichainCollectiblesSelector')
+      .mockReturnValue(stableCollectibles);
+    const spyOnContracts = jest
+      .spyOn(allSelectors, 'multichainCollectibleContractsSelector')
+      .mockReturnValue({ '0x1': collectibleData });
+    const spyOnUpdateNftMetadata = jest
+      .spyOn(Engine.context.NftController, 'updateNftMetadata')
+      .mockImplementation(async () => undefined);
+
+    const { store: testStore } = renderWithProvider(<CollectibleContracts />, {
+      state: mockState,
+    });
+
+    await waitFor(() => {
+      expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(1);
+    });
+
+    // Unrelated Redux updates re-render the component but must not re-fetch
+    await act(async () => {
+      testStore.dispatch(allSelectors.showNftFetchingLoadingIndicator());
+    });
+    await act(async () => {
+      testStore.dispatch(allSelectors.hideNftFetchingLoadingIndicator());
+    });
+
+    expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(1);
+
+    spyOnCollectibles.mockRestore();
+    spyOnContracts.mockRestore();
+    spyOnUpdateNftMetadata.mockRestore();
+  });
+
   it('UI pull down experience should call detectNfts when detection is enabled', async () => {
     const collectibleData = [
       {
