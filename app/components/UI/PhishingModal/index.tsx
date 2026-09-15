@@ -3,25 +3,22 @@ import {
   View,
   Text,
   StyleSheet,
-  Platform,
+  FlexAlignType,
   Linking,
   TouchableOpacity,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import URL from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import generateTestId from '../../../../wdio/utils/generateTestId';
-import { ETHEREUM_DETECTION_TITLE } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
+import { Theme } from '../../../util/theme/models';
 import Button from '../../../component-library/components/Buttons/Button/Button';
 import {
   ButtonVariants,
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     warningIcon: {
       color: colors.error.default,
@@ -89,7 +86,8 @@ const createStyles = (colors) =>
       color: colors.primary.default,
     },
     warningContainer: {
-      alignItems: 'left',
+      // Not a valid FlexAlignType, kept as-is to preserve existing rendering/snapshots
+      alignItems: 'left' as unknown as FlexAlignType,
     },
     buttonWrapper: {
       marginTop: 32,
@@ -97,28 +95,32 @@ const createStyles = (colors) =>
     },
   });
 
-export default class PhishingModal extends PureComponent {
-  static propTypes = {
-    /**
-     * name of the blacklisted url
-     */
-    fullUrl: PropTypes.string,
-    /**
-     * Called to the user decides to proceed to the phishing site
-     */
-    continueToPhishingSite: PropTypes.func,
-    /**
-     * Called to the user decides to report an issue
-     */
-    goToFilePhishingIssue: PropTypes.func,
-    /**
-     * Called when the user takes the recommended action
-     */
-    goBackToSafety: PropTypes.func,
-    /**
-     * Called to the user decides to share on Twitter
-     */
-  };
+interface PhishingModalProps {
+  /**
+   * name of the blacklisted url
+   */
+  fullUrl?: string;
+  /**
+   * Called to the user decides to proceed to the phishing site
+   */
+  continueToPhishingSite?: () => void;
+  /**
+   * Called to the user decides to report an issue
+   */
+  goToFilePhishingIssue?: () => void;
+  /**
+   * Called when the user takes the recommended action
+   */
+  goBackToSafety?: () => void;
+  /**
+   * Passed by callers but not used by this component
+   */
+  goToETHPhishingDetector?: () => void;
+  goToEtherscam?: () => void;
+}
+
+export default class PhishingModal extends PureComponent<PhishingModalProps> {
+  static contextType = ThemeContext;
 
   shareToTwitter = () => {
     const tweetText =
@@ -134,20 +136,16 @@ export default class PhishingModal extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors: Theme['colors'] =
+      (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const urlObj = new URL(this.props.fullUrl);
-    const host = urlObj.hostname;
 
     return (
       <View style={styles.phishingModalWrapper}>
         <View style={styles.warningContainer}>
           <Icon name="warning" style={styles.warningIcon} />
         </View>
-        <Text
-          style={styles.phishingModalTitle}
-          {...generateTestId(Platform, ETHEREUM_DETECTION_TITLE)}
-        >
+        <Text style={styles.phishingModalTitle}>
           {strings('phishing.site_might_be_harmful')}
         </Text>
         <Text style={styles.phishingText}>
@@ -181,7 +179,7 @@ export default class PhishingModal extends PureComponent {
         <Button
           variant={ButtonVariants.Primary}
           label={strings('phishing.back_to_safety')}
-          onPress={this.props.goBackToSafety}
+          onPress={this.props.goBackToSafety as () => void}
           style={styles.buttonWrapper}
           width={ButtonWidthTypes.Full}
         />
@@ -189,5 +187,3 @@ export default class PhishingModal extends PureComponent {
     );
   }
 }
-
-PhishingModal.contextType = ThemeContext;

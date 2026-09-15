@@ -6,6 +6,8 @@ import {
   userEvent,
 } from '@testing-library/react-native';
 import PaymentRequest from './index';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -116,13 +118,13 @@ const mockNavigation = {
   setParams: jest.fn(),
   navigate: jest.fn(),
   goBack: jest.fn(),
-};
+} as unknown as StackNavigationProp<ParamListBase>;
 
 const mockRoute = {
   params: {
     dispatch: jest.fn(),
   },
-};
+} as unknown as RouteProp<ParamListBase, string>;
 
 const renderComponent = (props = {}) =>
   render(

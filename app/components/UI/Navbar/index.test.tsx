@@ -1,21 +1,26 @@
-/* eslint-disable react/prop-types */
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import {
+  createStackNavigator,
+  StackHeaderProps,
+} from '@react-navigation/stack';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
-import { getNetworkNavbarOptions } from '.';
-import { SolScope } from '@metamask/keyring-api';
+import { getNetworkNavbarOptions, NavbarOptions } from '.';
 
 describe('getNetworkNavbarOptions', () => {
   const Stack = createStackNavigator();
 
   const mockNavigation = {
     pop: jest.fn(),
-  };
+  } as unknown as NavigationProp<ParamListBase>;
 
-  const TestNavigator = ({ options }) => (
+  const TestNavigator = ({ options }: { options: NavbarOptions }) => (
     <Stack.Navigator>
-      <Stack.Screen name="TestScreen" component={() => options.header()} />
+      <Stack.Screen
+        name="TestScreen"
+        component={() => <>{options.header?.({} as StackHeaderProps)}</>}
+      />
     </Stack.Navigator>
   );
 
@@ -30,7 +35,7 @@ describe('getNetworkNavbarOptions', () => {
       mockNavigation,
     );
 
-    const { getByText, getByRole } = renderWithProvider(
+    const { getByText } = renderWithProvider(
       <TestNavigator options={options} />,
       {
         state: {
