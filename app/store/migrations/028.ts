@@ -125,7 +125,7 @@ export default async function migrate(state: unknown) {
     await FilesystemStorage.setItem(
       rootKey,
       JSON.stringify(state),
-      Device.isIos() as unknown as (error?: Error) => void,
+      Device.isIos(),
     );
     // Root file successfully populated with controller data - Can safely delete persisted controller files
     const controllerDeleteMigration = controllerList.map(async ({ name }) => {
