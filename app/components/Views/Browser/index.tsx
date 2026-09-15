@@ -57,8 +57,8 @@ import { selectSelectedInternalAccount } from '../../../selectors/accountsContro
 import { isSolanaAccount } from '../../../core/Multichain/utils';
 // eslint-disable-next-line no-duplicate-imports, import/no-duplicates
 import { useFocusEffect } from '@react-navigation/native';
-///: END:ONLY_INCLUDE_IF
 import SolanaLogo from '../../../images/solana-logo.png';
+///: END:ONLY_INCLUDE_IF
 
 const MAX_BROWSER_TABS = 5;
 
