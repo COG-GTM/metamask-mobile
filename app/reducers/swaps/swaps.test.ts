@@ -10,6 +10,7 @@ import reducer, {
   selectSwapsChainFeatureFlags,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
+import type { RootState } from '..';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
@@ -30,7 +31,7 @@ const DEFAULT_FEATURE_FLAGS = {
     smartTransactions: {
       expectedDeadline: 45,
       maxDeadline: 150,
-      mobileReturnTxHashAsap: false,
+      returnTxHashAsap: false,
     },
   },
   bsc: {
@@ -42,7 +43,11 @@ const DEFAULT_FEATURE_FLAGS = {
     extensionActive: true,
     mobileActiveIOS: true,
     mobileActiveAndroid: true,
-    smartTransactions: {},
+    smartTransactions: {
+      expectedDeadline: 45,
+      maxDeadline: 150,
+      returnTxHashAsap: false,
+    },
   },
   smart_transactions: {
     mobile_active: false,
@@ -96,7 +101,7 @@ describe('swaps reducer', () => {
         smartTransactions: {
           expectedDeadline: 45,
           maxDeadline: 150,
-          mobileReturnTxHashAsap: false,
+          returnTxHashAsap: false,
         },
       };
 
@@ -128,7 +133,7 @@ describe('swaps reducer', () => {
         smartTransactions: {
           expectedDeadline: 45,
           maxDeadline: 150,
-          mobileReturnTxHashAsap: false,
+          returnTxHashAsap: false,
         },
       };
 
@@ -160,7 +165,7 @@ describe('swaps reducer', () => {
         smartTransactions: {
           expectedDeadline: 45,
           maxDeadline: 150,
-          mobileReturnTxHashAsap: false,
+          returnTxHashAsap: false,
         },
       };
 
@@ -232,13 +237,13 @@ describe('swaps reducer', () => {
             smartTransactions: {
               expectedDeadline: 45,
               maxDeadline: 150,
-              mobileReturnTxHashAsap: false,
+              returnTxHashAsap: false,
             },
           },
         },
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(true);
     });
 
@@ -287,13 +292,13 @@ describe('swaps reducer', () => {
             smartTransactions: {
               expectedDeadline: 45,
               maxDeadline: 150,
-              mobileReturnTxHashAsap: false,
+              returnTxHashAsap: false,
             },
           },
         },
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(false);
     });
 
@@ -322,7 +327,7 @@ describe('swaps reducer', () => {
         swaps: initialState,
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(false);
     });
   });
@@ -368,7 +373,7 @@ describe('swaps reducer', () => {
           globalSetting: true,
         },
       };
-      
+
       const chainFlags = {
         '0x1': {
           fallbackToV1: false,
@@ -378,13 +383,15 @@ describe('swaps reducer', () => {
           },
         },
       };
-      
+
       const rootState = createTestState({
         globalFeatureFlags: globalFlags,
         chainFeatureFlags: chainFlags,
       });
-      
-      const result = selectSwapsChainFeatureFlags(rootState);
+
+      const result = selectSwapsChainFeatureFlags(
+        rootState as unknown as RootState,
+      );
       expect(result).toEqual({
         fallbackToV1: false,
         mobileActive: true,
@@ -417,7 +424,10 @@ describe('swaps reducer', () => {
         },
       });
 
-      const chainFlags = selectSwapsChainFeatureFlags(rootState, '0x5');
+      const chainFlags = selectSwapsChainFeatureFlags(
+        rootState as unknown as RootState,
+        '0x5',
+      );
       expect(chainFlags).toEqual({
         goerliFlag: true,
         smartTransactions: {
@@ -439,7 +449,9 @@ describe('swaps reducer', () => {
         },
       });
 
-      const chainFlags = selectSwapsChainFeatureFlags(rootState);
+      const chainFlags = selectSwapsChainFeatureFlags(
+        rootState as unknown as RootState,
+      );
       expect(chainFlags).toEqual({
         smartTransactions: {
           globalSetting: true,
@@ -458,7 +470,9 @@ describe('swaps reducer', () => {
         // No chain feature flags for 0x89
       });
 
-      expect(() => selectSwapsChainFeatureFlags(rootState)).toThrow();
+      expect(() =>
+        selectSwapsChainFeatureFlags(rootState as unknown as RootState),
+      ).toThrow();
     });
   });
 
@@ -502,7 +516,9 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({
+      expect(
+        swapsTokensObjectSelector(state as unknown as RootState),
+      ).toStrictEqual({
         '0x0000000000000000000000000000000000000000': undefined,
         '0x0000000000000000000000000000000000000001': undefined,
         '0x0000000000000000000000000000000000000010': undefined,
@@ -521,7 +537,9 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({});
+      expect(
+        swapsTokensObjectSelector(state as unknown as RootState),
+      ).toStrictEqual({});
     });
   });
 
@@ -541,4 +559,3 @@ describe('swaps reducer', () => {
     expect(liveState.hasOnboarded).toBe(true);
   });
 });
-
