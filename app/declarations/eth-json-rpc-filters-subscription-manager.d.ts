@@ -1,6 +1,4 @@
 declare module '@metamask/eth-json-rpc-filters/subscriptionManager' {
-  // eslint-disable-next-line import/no-nodejs-modules
-  import type { EventEmitter } from 'events';
   import type { JsonRpcMiddleware } from '@metamask/json-rpc-engine';
   import type { Json, JsonRpcParams } from '@metamask/utils';
   import type { BlockTracker, Provider } from '@metamask/network-controller';
@@ -11,7 +9,7 @@ declare module '@metamask/eth-json-rpc-filters/subscriptionManager' {
   }
 
   interface SubscriptionManager {
-    events: EventEmitter;
+    events: import('events').EventEmitter;
     middleware: JsonRpcMiddleware<JsonRpcParams, Json>;
     destroy: () => void;
   }

@@ -1,6 +1,5 @@
 declare module 'pump' {
-  // eslint-disable-next-line import/no-nodejs-modules
-  import type { Stream } from 'stream';
+  type Stream = import('stream').Stream;
 
   type PumpCallback = (error?: Error | null) => void;
 
