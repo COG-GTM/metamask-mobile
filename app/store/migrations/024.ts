@@ -2,6 +2,16 @@ import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { NetworkStatus } from '@metamask/network-controller';
 
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      NetworkController?: unknown;
+      [key: string]: unknown;
+    };
+  };
+  [key: string]: unknown;
+}
+
 /**
  * Migrate NetworkController state, splitting old `network` property into
  * `networkId` and `networkStatus`. This is required to update to v8 of the
@@ -16,7 +26,8 @@ import { NetworkStatus } from '@metamask/network-controller';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
+export default function migrate(stateUnknown: unknown) {
+  const state = stateUnknown as MigrationState;
   const networkControllerState = state.engine.backgroundState.NetworkController;
 
   if (!isObject(networkControllerState)) {
