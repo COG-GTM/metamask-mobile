@@ -33,12 +33,18 @@ export async function getTransaction1559GasFeeEstimates(
   };
 }
 
+/**
+ * Gas estimate shape used by swaps: either a legacy `{ gasPrice }` estimate or
+ * a fee-market estimate keyed by option (`low` | `medium` | `high`).
+ */
+export interface SwapsGasEstimates {
+  gasPrice?: string;
+  medium: string;
+}
+
 export async function getGasFeeEstimatesForTransaction(
   transaction: Partial<TransactionParams> & { from: string; chainId: string },
-  gasEstimates: {
-    gasPrice?: string;
-    medium: string;
-  },
+  gasEstimates: SwapsGasEstimates,
   { chainId, isEIP1559Network }: { chainId: Hex; isEIP1559Network: boolean },
 ) {
   if (isEIP1559Network) {

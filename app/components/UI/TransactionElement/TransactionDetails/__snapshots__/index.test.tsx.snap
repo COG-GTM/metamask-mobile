@@ -1269,7 +1269,6 @@ exports[`TransactionDetails should render correctly 1`] = `
                               }
                             >
                               <Text
-                                italic={true}
                                 style={
                                   [
                                     {

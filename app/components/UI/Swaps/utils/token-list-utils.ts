@@ -3,16 +3,20 @@ import { isSwapsNativeAsset } from '.';
 import { safeToChecksumAddress } from '../../../../util/address';
 import { balanceToFiatNumber, hexToBN, renderFromTokenMinimalUnit, renderFromWei, weiToFiatNumber } from '../../../../util/number';
 
+/**
+ * Swaps token. Only `address`, `decimals` and `symbol` are guaranteed:
+ * user-added tokens merged in by the swaps selectors lack the API metadata.
+ */
 export interface Token {
   address: string;
-  aggregators: string[];
-  blocked: boolean;
+  aggregators?: string[];
+  blocked?: boolean;
   decimals: number;
-  iconUrl: string;
-  name: string;
-  occurrences: number;
+  iconUrl?: string;
+  name?: string;
+  occurrences?: number;
   symbol: string;
-  type: string;
+  type?: string;
 }
 
 export type TokenWithFiatValue = Token & {

@@ -1,5 +1,6 @@
 import { waitFor } from '@testing-library/react-native';
-import WalletConnectSessions from './';
+import { ComponentType } from 'react';
+import WalletConnectSessionsComponent from './';
 import StorageWrapper from '../../../store/storage-wrapper';
 import { renderScreen } from '../../../util/test/renderWithProvider';
 import Routes from '../../../constants/navigation/Routes';
@@ -11,6 +12,9 @@ jest.mock('../../../core/WalletConnect/WalletConnectV2', () => ({
     getSessions: () => [],
   }),
 }));
+
+const WalletConnectSessions =
+  WalletConnectSessionsComponent as unknown as ComponentType;
 
 describe('WalletConnectSessions', () => {
   it('does not render when not ready', () => {

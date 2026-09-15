@@ -204,14 +204,16 @@ class MetaMetrics implements IMetaMetrics {
    * @private
    */
   #getDeleteRegulationDateFromPrefs = async (): Promise<string> =>
-    await StorageWrapper.getItem(ANALYTICS_DATA_DELETION_DATE);
+    (await StorageWrapper.getItem(ANALYTICS_DATA_DELETION_DATE)) as string;
 
   /**
    * Retrieve the analytics deletion regulation ID from the preference
    * @private
    */
   #getDeleteRegulationIdFromPrefs = async (): Promise<string> =>
-    await StorageWrapper.getItem(METAMETRICS_DELETION_REGULATION_ID);
+    (await StorageWrapper.getItem(
+      METAMETRICS_DELETION_REGULATION_ID,
+    )) as string;
 
   /**
    * Persist the analytics recording status
@@ -281,9 +283,9 @@ class MetaMetrics implements IMetaMetrics {
     }
 
     // look for a new Metametics ID and use it or generate a new one
-    const metametricsId: string | undefined = await StorageWrapper.getItem(
+    const metametricsId: string | undefined = (await StorageWrapper.getItem(
       METAMETRICS_ID,
-    );
+    )) as string | undefined;
     if (!metametricsId) {
       // keep the id format compatible with MixPanel but base it on a UUIDv4
       this.metametricsId = uuidv4();
@@ -562,7 +564,9 @@ class MetaMetrics implements IMetaMetrics {
         await this.#getDeleteRegulationDateFromPrefs();
       this.dataRecorded = await this.#getIsDataRecordedFromPrefs();
 
-      this.segmentClient?.add({ plugin: new MetaMetricsPrivacySegmentPlugin(this.metametricsId) });
+      this.segmentClient?.add({
+        plugin: new MetaMetricsPrivacySegmentPlugin(this.metametricsId),
+      });
 
       this.#isConfigured = true;
 
@@ -709,8 +713,8 @@ class MetaMetrics implements IMetaMetrics {
         event.name,
         {
           anonymous: true,
-        ...event.properties,
-        ...event.sensitiveProperties,
+          ...event.properties,
+          ...event.sensitiveProperties,
         },
         saveDataRecording,
       );

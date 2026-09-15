@@ -13,6 +13,14 @@ interface TransactionSecurityAlertResponseType {
 export type TransactionType = TransactionMeta &
   TransactionSecurityAlertResponseType;
 
+/**
+ * Minimal shape needed to look up a transaction's security alert response;
+ * satisfied by both controller `TransactionMeta` and the redux transaction state.
+ */
+export type TransactionWithSecurityAlerts = Partial<
+  Pick<TransactionType, 'id' | 'securityAlertResponses'>
+>;
+
 export const isBlockaidPreferenceEnabled = (): boolean => {
   const { PreferencesController } = Engine.context;
   return PreferencesController.state.securityAlertsEnabled;
@@ -54,7 +62,7 @@ export const getBlockaidMetricsParams = (
 };
 
 export const getBlockaidTransactionMetricsParams = (
-  transaction: TransactionType,
+  transaction: TransactionWithSecurityAlerts | undefined,
 ): Record<string, unknown> => {
   let blockaidParams = {};
 
@@ -63,7 +71,7 @@ export const getBlockaidTransactionMetricsParams = (
   }
 
   const { securityAlertResponses, id } = transaction;
-  const securityAlertResponse = securityAlertResponses?.[id];
+  const securityAlertResponse = securityAlertResponses?.[id as string];
   if (securityAlertResponse) {
     blockaidParams = getBlockaidMetricsParams(securityAlertResponse);
   }

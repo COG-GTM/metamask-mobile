@@ -1,0 +1,30 @@
+import { ChainId } from '@metamask/controller-utils';
+import { GOERLI } from '../../../app/constants/network';
+
+interface Migration15State {
+  engine: {
+    backgroundState: {
+      NetworkController: {
+        providerConfig: {
+          chainId: string | number;
+          [key: string]: unknown;
+        };
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const typedState = state as Migration15State;
+  const chainId =
+    typedState.engine.backgroundState.NetworkController.providerConfig.chainId;
+  // Deprecate rinkeby, ropsten and Kovan, any user that is on those we fallback to goerli
+  if (chainId === '4' || chainId === '3' || chainId === '42') {
+    typedState.engine.backgroundState.NetworkController.providerConfig = {
+      chainId: ChainId.goerli,
+      ticker: 'GoerliETH',
+      type: GOERLI,
+    };
+  }
+  return state;
+}

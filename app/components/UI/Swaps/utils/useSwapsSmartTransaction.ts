@@ -5,7 +5,7 @@ import { decimalToHex } from '../../../../util/conversions';
 import { selectSwapsApprovalTransaction } from '../../../../reducers/swaps';
 import { Quote, TxParams } from '@metamask/swaps-controller/dist/types';
 import { selectEvmChainId, selectIsEIP1559Network } from '../../../../selectors/networkController';
-import { getGasFeeEstimatesForTransaction } from './gas';
+import { getGasFeeEstimatesForTransaction, type SwapsGasEstimates } from './gas';
 import { Hex } from '@metamask/utils';
 import { ORIGIN_METAMASK } from '@metamask/controller-utils';
 import Logger from '../../../../util/Logger';
@@ -57,10 +57,7 @@ const submitSmartTransaction = async ({
   };
   chainId: Hex;
   isEIP1559Network: boolean;
-  gasEstimates: {
-    gasPrice: string;
-    medium: string;
-  };
+  gasEstimates: SwapsGasEstimates;
 }) => {
   const { SmartTransactionsController } = Engine.context;
 
@@ -101,10 +98,7 @@ const submitSmartTransaction = async ({
 
 
 
-export const useSwapsSmartTransaction = ({ quote, gasEstimates }: { quote?: Quote & Partial<GasIncludedQuote>, gasEstimates: {
-  gasPrice: string;
-  medium: string;
-} }) => {
+export const useSwapsSmartTransaction = ({ quote, gasEstimates }: { quote?: Quote & Partial<GasIncludedQuote>, gasEstimates: SwapsGasEstimates }) => {
   const chainId = useSelector(selectEvmChainId);
   const isEIP1559Network = useSelector(selectIsEIP1559Network);
   const approvalTransaction: TxParams | null = useSelector(selectSwapsApprovalTransaction);

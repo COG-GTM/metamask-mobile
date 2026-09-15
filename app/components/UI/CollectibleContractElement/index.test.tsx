@@ -3,6 +3,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import CollectibleContractElement from '.';
+import { Nft } from '@metamask/assets-controllers';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
@@ -89,7 +90,6 @@ describe('CollectibleContractElement', () => {
   it('render matches snapshot', () => {
     // Provide the props that are required by the component.
     const onPressMock = jest.fn();
-    const removeFavoriteMock = jest.fn();
 
     const props = {
       asset: {
@@ -103,10 +103,9 @@ describe('CollectibleContractElement', () => {
         { address: '0xdef', tokenId: '2', name: 'Collectible2' },
         { address: '0xdef', tokenId: '3', name: 'Collectible3' },
         { address: '0xdef', tokenId: '4', name: 'Collectible4' },
-      ],
+      ] as Nft[],
       collectiblesVisible: true,
       onPress: onPressMock,
-      removeFavoriteCollectible: removeFavoriteMock,
     };
 
     const { toJSON } = render(
@@ -124,7 +123,6 @@ describe('CollectibleContractElement', () => {
     it('shows collectibles list when collectiblesVisible is true', () => {
       // Provide the props that are required by the component.
       const onPressMock = jest.fn();
-      const removeFavoriteMock = jest.fn();
 
       const props = {
         asset: { favorites: false, name: 'AssetName', logo: 'asset-logo.png' },
@@ -133,10 +131,9 @@ describe('CollectibleContractElement', () => {
           { address: '0xdef', tokenId: '2', name: 'Collectible2' },
           { address: '0xdef', tokenId: '3', name: 'Collectible3' },
           { address: '0xdef', tokenId: '4', name: 'Collectible4' },
-        ],
+        ] as Nft[],
         collectiblesVisible: true,
         onPress: onPressMock,
-        removeFavoriteCollectible: removeFavoriteMock,
       };
 
       const { getAllByTestId } = render(
@@ -159,7 +156,6 @@ describe('CollectibleContractElement', () => {
 
     it('hides collectibles list when pressed', async () => {
       const onPressMock = jest.fn();
-      const removeFavoriteMock = jest.fn();
 
       const props = {
         asset: {
@@ -170,10 +166,9 @@ describe('CollectibleContractElement', () => {
         },
         contractCollectibles: [
           { address: '0xdef', tokenId: '1', name: 'Collectible11' },
-        ],
+        ] as Nft[],
         collectiblesVisible: true,
         onPress: onPressMock,
-        removeFavoriteCollectible: removeFavoriteMock,
       };
 
       const { getByTestId, queryByTestId } = render(

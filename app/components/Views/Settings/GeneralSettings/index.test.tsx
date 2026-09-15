@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import GeneralSettings, {
+import GeneralSettingsConnected, {
   updateUserTraitsWithCurrentCurrency,
   updateUserTraitsWithCurrencyType,
 } from './';
@@ -28,6 +28,8 @@ const initialState = {
   },
   user: { appTheme: AppThemeKey.light },
 };
+const GeneralSettings =
+  GeneralSettingsConnected as unknown as React.ComponentType;
 const store = mockStore(initialState);
 
 describe('GeneralSettings', () => {

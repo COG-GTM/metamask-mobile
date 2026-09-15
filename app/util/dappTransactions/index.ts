@@ -242,12 +242,13 @@ export const validateAmount = async (
   return !validations[assetType] ? false : await validations[assetType]();
 };
 
-interface GasAnalyticsParams {
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+type GasAnalyticsParams = {
   dapp_host_name: string;
   dapp_url: string;
   active_currency: { value: string; anonymous: boolean };
   gas_estimate_type: string;
-}
+};
 
 export const getGasAnalyticsParams = (
   transaction: Transaction,
@@ -267,14 +268,10 @@ export const getGasAnalyticsParams = (
   }
 };
 
-interface setTransactionObjectReturn {
-  type: string;
-  transaction: Transaction;
-}
-
-type setTransactionObjectType = (
-  transaction: Partial<Transaction>,
-) => setTransactionObjectReturn;
+type setTransactionObjectType = (transaction: {
+  gas: BN4;
+  gasPrice?: BN4;
+}) => unknown;
 
 /**
  * Updates gas and gasPrice in transaction state

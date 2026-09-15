@@ -22,7 +22,7 @@ interface ApprovalTagUrlProps {
   origin?: string;
   sdkDappMetadata?: {
     url: string;
-    icon: string;
+    icon?: string;
   };
   url: string;
 }

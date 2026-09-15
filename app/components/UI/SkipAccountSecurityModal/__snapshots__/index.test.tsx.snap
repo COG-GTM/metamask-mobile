@@ -7,7 +7,6 @@ exports[`HintModal should render correctly 1`] = `
       "borderTopWidth": 0,
     }
   }
-  cancelButtonDisabled={false}
   cancelButtonMode="normal"
   cancelTestID="Cancel-Skip"
   cancelText="Secure now"
@@ -16,7 +15,6 @@ exports[`HintModal should render correctly 1`] = `
   confirmTestID="Skip-button"
   confirmText="Skip"
   displayCancelButton={true}
-  displayConfirmButton={true}
   modalVisible={false}
   onCancelPress={[Function]}
   onConfirmPress={[Function]}

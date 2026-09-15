@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { shallow } from 'enzyme';
-import ChoosePassword from './';
+import ChoosePasswordComponent from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';
+
+const ChoosePassword = ChoosePasswordComponent as unknown as ComponentType;
 
 const mockStore = configureMockStore();
 const initialState = {

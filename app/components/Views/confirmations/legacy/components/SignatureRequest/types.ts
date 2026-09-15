@@ -5,7 +5,10 @@ export interface MessageInfo {
   type: string;
 }
 
-export interface PageMeta {
+// Type alias (not interface) so it is assignable to the index-signature based
+// `SignaturePageInformation` shared with the signature utils.
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type PageMeta = {
   analytics?: {
     request_platform: string;
     request_source: string;
@@ -13,7 +16,7 @@ export interface PageMeta {
   icon?: string;
   title: string;
   url: string;
-}
+};
 
 export interface MessageParams {
   data: string;

@@ -1,6 +1,8 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import Collectible from '.';
+
+type CollectibleProps = React.ComponentProps<typeof Collectible>;
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';
@@ -45,7 +47,7 @@ jest.mock('@react-navigation/native', () => {
 const navigationMock = {
   navigate: jest.fn(),
   push: jest.fn(),
-};
+} as unknown as CollectibleProps['navigation'];
 
 const defaultCollectibleContract = {
   address: '0x1',
@@ -63,7 +65,11 @@ describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <Collectible
+          {...({
+            route: { params: { address: '0x1' } },
+          } as unknown as CollectibleProps)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -82,7 +88,11 @@ describe('Collectible', () => {
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
             navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            route={
+              {
+                params: defaultCollectibleContract,
+              } as unknown as CollectibleProps['route']
+            }
           />
         </ThemeContext.Provider>
       </Provider>,
@@ -99,7 +109,11 @@ describe('Collectible', () => {
         <ThemeContext.Provider value={mockTheme}>
           <Collectible
             navigation={navigationMock}
-            route={{ params: defaultCollectibleContract }}
+            route={
+              {
+                params: defaultCollectibleContract,
+              } as unknown as CollectibleProps['route']
+            }
           />
         </ThemeContext.Provider>
       </Provider>,

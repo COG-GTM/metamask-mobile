@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import TypedSign from '.';
+import TypedSign, { TypedSignMessageParams } from '.';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import Engine from '../../../../../../core/Engine';
@@ -72,7 +72,8 @@ const messageParamsMock = {
   origin: 'example.com',
   metamaskId: 'TestMessageId',
   from: '0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272',
-};
+  // The fixture intentionally uses a non-standard `data` shape
+} as unknown as TypedSignMessageParams;
 
 const mockStore = configureMockStore();
 

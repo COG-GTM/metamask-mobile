@@ -31,6 +31,47 @@ declare module 'images/image-icons' {
   export default content;
 }
 
+declare module 'eth-ens-namehash' {
+  const namehash: {
+    hash(name: string): string;
+  };
+  export default namehash;
+}
+
+declare module '@metamask/ethjs-contract' {
+  type ContractMethod = (...args: unknown[]) => Promise<[string]>;
+
+  interface ContractInstance {
+    [method: string]: ContractMethod;
+  }
+
+  interface ContractFactory {
+    at(address: string): ContractInstance;
+  }
+
+  type EthContract = new (eth: unknown) => (abi: unknown[]) => ContractFactory;
+
+  const EthContract: EthContract;
+  export default EthContract;
+}
+
+declare module 'content-hash' {
+  const contentHash: {
+    decode(value: string): string;
+    getCodec(value: string): string;
+  };
+  export default contentHash;
+}
+
+declare module 'multihashes' {
+  const multihash: {
+    fromHexString(value: string): Uint8Array;
+    toB58String(value: Uint8Array): string;
+    encode(value: Uint8Array, codec: string): Uint8Array;
+  };
+  export default multihash;
+}
+
 declare module '*.png' {
   import { ImageSourcePropType } from 'react-native';
   const content: ImageSourcePropType;
@@ -409,4 +450,271 @@ declare module '@sentry/react-native' {
     hint?: ExclusiveEventHintOrCaptureContext,
   ) => string;
   export { captureException };
+}
+
+declare module 'zxcvbn' {
+  interface ZXCVBNResult {
+    score: 0 | 1 | 2 | 3 | 4;
+  }
+  function zxcvbn(password: string, userInputs?: string[]): ZXCVBNResult;
+  export default zxcvbn;
+}
+
+declare module 'readable-stream' {
+  // eslint-disable-next-line import/no-nodejs-modules
+  import stream from 'stream';
+  export = stream;
+}
+
+declare module 'zxcvbn' {
+  interface ZXCVBNResult {
+    score: 0 | 1 | 2 | 3 | 4;
+    guesses: number;
+    feedback: { warning: string; suggestions: string[] };
+  }
+  function zxcvbn(password: string, userInputs?: string[]): ZXCVBNResult;
+  export default zxcvbn;
+}
+
+declare module 'react-native-confetti' {
+  import { Component } from 'react';
+
+  export interface ConfettiViewProps {
+    confettiCount?: number;
+    timeout?: number;
+    untilStopped?: boolean;
+    startOnLoad?: boolean;
+    colors?: string[];
+    size?: number;
+    bsize?: number;
+    duration?: number;
+  }
+
+  export default class ConfettiView extends Component<ConfettiViewProps> {
+    startConfetti(onComplete?: () => void): void;
+    stopConfetti(): void;
+  }
+
+  export type ConfettiViewRef = ConfettiView;
+}
+
+declare module 'react-native/Libraries/Image/resolveAssetSource' {
+  export default function resolveAssetSource(
+    source?: import('react-native').ImageSourcePropType,
+  ): import('react-native').ImageResolvedAssetSource & {
+    __packager_asset?: boolean;
+  };
+}
+
+declare module 'human-standard-token-abi' {
+  import { JsonFragment } from '@ethersproject/abi';
+  const abi: readonly JsonFragment[];
+  export default abi;
+}
+
+declare module '@metamask/ethjs-query' {
+  /**
+   * Minimal typing for the ethjs-query JSON-RPC wrapper; the instance exposes
+   * one method per `eth_*` RPC method (e.g. `getBalance`, `call`).
+   */
+  class Eth {
+    constructor(provider: unknown, options?: { debug?: boolean });
+    [rpcMethod: string]: (...args: unknown[]) => Promise<unknown>;
+  }
+  export default Eth;
+}
+
+declare module 'through2' {
+  type TransformCallback = (error?: Error | null, data?: unknown) => void;
+
+  // Minimal shape of the `readable-stream` Transform returned by through2;
+  // `readable-stream` ships no typings in this repo.
+  interface Through2Transform {
+    push(chunk: unknown, encoding?: string): boolean;
+    pipe<T>(destination: T, options?: { end?: boolean }): T;
+    on(event: string, listener: (...args: unknown[]) => void): this;
+    once(event: string, listener: (...args: unknown[]) => void): this;
+    write(chunk: unknown, callback?: (error?: Error | null) => void): boolean;
+    end(callback?: () => void): void;
+    destroy(error?: Error): void;
+  }
+
+  type TransformFunction = (
+    this: Through2Transform,
+    chunk: unknown,
+    encoding: string,
+    callback: TransformCallback,
+  ) => void;
+
+  function through2(
+    options?: Record<string, unknown>,
+    transform?: TransformFunction,
+  ): Through2Transform;
+  namespace through2 {
+    function obj(transform?: TransformFunction): Through2Transform;
+  }
+  export = through2;
+}
+
+declare module 'pump' {
+  type PumpCallback = (err?: Error | null) => void;
+  // Streams from `readable-stream` are untyped in this repo, so accept any stream-like object.
+  type PumpStream = object;
+  function pump(...streams: (PumpStream | PumpCallback)[]): PumpStream;
+  export = pump;
+}
+
+// The package ships its typings as `index.ts.d` (misnamed), so TS cannot resolve them.
+declare module 'unicode-confusables' {
+  export interface ConfusablePoint {
+    point: string;
+    similarTo?: string;
+  }
+  export const isConfusing: (input: string) => boolean;
+  export const confusables: (input: string) => ConfusablePoint[];
+  export const rectifyConfusion: (input: string) => string;
+}
+
+declare module 'ethjs-ens' {
+  interface EnsOptions {
+    provider: unknown;
+    network: string | number;
+    registryAddress?: string;
+  }
+
+  class Ens {
+    constructor(opts?: EnsOptions);
+    lookup(name?: string): Promise<string>;
+    reverse(address: string): Promise<string>;
+    getOwner(name?: string): Promise<string>;
+    getResolver(name?: string): Promise<unknown>;
+    getResolverAddress(name?: string): Promise<string>;
+  }
+
+  export = Ens;
+}
+
+declare module '@metamask/ethjs-unit' {
+  import BN from 'bnjs4';
+
+  type EthjsUnitValue = string | number | BN;
+
+  interface FromWeiOptions {
+    pad?: boolean;
+    commify?: boolean;
+  }
+
+  const ethjsUnit: {
+    unitMap: Record<string, string>;
+    numberToString(arg: EthjsUnitValue): string;
+    getValueOfUnit(unitInput?: string): BN;
+    fromWei(
+      weiInput: EthjsUnitValue,
+      unit?: string,
+      optionsInput?: FromWeiOptions,
+    ): string;
+    toWei(etherInput: EthjsUnitValue, unit?: string): BN;
+  };
+  export = ethjsUnit;
+}
+
+declare module 'number-to-bn' {
+  type BN = import('bnjs4');
+
+  function numberToBN(arg: string | number | BN | { toString(): string }): BN;
+  export = numberToBN;
+}
+
+// `lib` is es2017 but Hermes/RN ship `String.prototype.replaceAll` at runtime.
+interface String {
+  replaceAll(searchValue: string | RegExp, replaceValue: string): string;
+}
+
+declare module 'ethereumjs-abi' {
+  function rawEncode(types: string[], values: unknown[]): Buffer;
+  function rawDecode(types: string[], data: Buffer): unknown[];
+}
+
+declare module 'humanize-duration' {
+  interface HumanizeDurationOptions {
+    language?: string;
+    fallbacks?: string[];
+    delimiter?: string;
+    spacer?: string;
+    largest?: number;
+    units?: string[];
+    round?: boolean;
+    decimal?: string;
+    conjunction?: string;
+    serialComma?: boolean;
+    maxDecimalPoints?: number;
+  }
+  function humanizeDuration(
+    ms: number | null | undefined,
+    options?: HumanizeDurationOptions,
+  ): string;
+  export = humanizeDuration;
+}
+
+declare module '@react-native-clipboard/clipboard/jest/clipboard-mock.js' {
+  const mockClipboard: Record<string, jest.Mock>;
+  export default mockClipboard;
+}
+
+declare module 'enzyme-adapter-react-16' {
+  import type { EnzymeAdapter } from 'enzyme';
+
+  class Adapter extends EnzymeAdapter {}
+  export default Adapter;
+}
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: React.ReactNode,
+    callback: (child: React.ReactNode, index: number) => React.ReactNode,
+  ) => React.ReactNode[];
+  export default coalesceNonElementChildren;
+}
+
+declare module '@metamask/react-native-button' {
+  // eslint-disable-next-line no-duplicate-imports
+  import type {
+    StyleProp,
+    TextStyle,
+    TouchableOpacityProps,
+    ViewStyle,
+  } from 'react-native';
+
+  interface ButtonProps extends TouchableOpacityProps {
+    accessibilityLabel?: string;
+    allowFontScaling?: boolean;
+    containerStyle?: StyleProp<ViewStyle>;
+    disabledContainerStyle?: StyleProp<ViewStyle>;
+    style?: StyleProp<TextStyle>;
+    styleDisabled?: StyleProp<TextStyle>;
+    childGroupStyle?: StyleProp<ViewStyle>;
+  }
+
+  const Button: React.ComponentType<
+    React.PropsWithChildren<ButtonProps>
+  >;
+  export default Button;
+}
+
+declare module 'react-native-progress/Bar' {
+  const ProgressBar: React.ComponentType<{
+    progress?: number;
+    color?: string;
+    width?: number | null;
+    height?: number;
+    borderRadius?: number;
+    borderWidth?: number;
+    useNativeDriver?: boolean;
+  }>;
+  export default ProgressBar;
 }

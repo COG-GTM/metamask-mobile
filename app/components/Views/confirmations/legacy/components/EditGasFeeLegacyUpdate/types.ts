@@ -1,34 +1,35 @@
+import { ReactNode } from 'react';
+
+export interface LegacyGasObject {
+  legacyGasLimit?: string;
+  suggestedGasPrice?: string;
+  suggestedMaxFeePerGas?: string;
+}
+
 export interface EditGasFeeLegacyUpdateProps {
   /**
    * Function called when user cancels
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onCancel: any;
+  onCancel?: () => void;
   /**
    * Function called when user saves the new gas
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSave: (gasTxn: any, newGasObject: any) => void;
+  onSave: (
+    gasTxn: EditLegacyGasTransaction,
+    newGasObject: LegacyGasObject,
+  ) => void;
   /**
    * Error message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any;
+  error?: ReactNode;
   /**
    * Warning message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warning?: any;
+  warning?: ReactNode;
   /**
    * Extend options object. Object has option keys and properties will be spread
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extendOptions?: any;
+  extendOptions?: Record<string, Record<string, unknown>>;
   /**
    * Function to call when update animation starts
    */
@@ -48,21 +49,17 @@ export interface EditGasFeeLegacyUpdateProps {
   /**
    * Extra analytics params to be send with the gas analytics
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  analyticsParams: any;
+  analyticsParams?: Record<string, unknown>;
   view: string;
   onlyGas?: boolean;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectedGasObject: any;
+  selectedGasObject: LegacyGasObject;
   hasDappSuggestedGas?: boolean;
   chainId: string;
 }
 
 export interface EditLegacyGasTransaction {
-  suggestedGasLimit: string;
-  suggestedGasPrice: string;
-  transactionFee: string;
-  transactionFeeFiat: string;
+  suggestedGasLimit?: string;
+  suggestedGasPrice?: string;
+  transactionFee?: string;
+  transactionFeeFiat?: string;
 }
