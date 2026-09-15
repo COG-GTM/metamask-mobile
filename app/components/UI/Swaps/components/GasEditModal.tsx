@@ -96,8 +96,8 @@ interface GasEditModalProps {
   dismiss: () => void;
   gasEstimateType: GasEstimateType;
   gasFeeEstimates: GasFeeEstimate;
-  defaultGasFeeOptionLegacy?: GasOption;
-  defaultGasFeeOptionFeeMarket?: GasOption;
+  defaultGasFeeOptionLegacy?: string;
+  defaultGasFeeOptionFeeMarket?: string;
   isVisible: boolean;
   onGasUpdate: (
     gas: Partial<CustomGasFee> | LegacyGasUpdate,
@@ -117,6 +117,9 @@ interface GasEditModalProps {
   ticker: string;
   animateOnChange: boolean;
 }
+
+const isGasOption = (value: string): value is GasOption =>
+  value === 'low' || value === 'medium' || value === 'high';
 
 function GasEditModal({
   dismiss,
@@ -140,13 +143,19 @@ function GasEditModal({
   ticker,
   animateOnChange,
 }: GasEditModalProps) {
-  const [gasSelected, setGasSelected] = useState<GasOption | null>(
-    customGasFee
-      ? customGasFee.selected ?? null
-      : gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET
+  const defaultGasOption =
+    gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET
       ? defaultGasFeeOptionFeeMarket
-      : defaultGasFeeOptionLegacy,
-  );
+      : defaultGasFeeOptionLegacy;
+  const [gasSelected, setGasSelected] = useState<GasOption | null>(() => {
+    if (customGasFee) {
+      return customGasFee.selected ?? null;
+    }
+
+    return defaultGasOption && isGasOption(defaultGasOption)
+      ? defaultGasOption
+      : null;
+  });
   const [stopUpdateGas, setStopUpdateGas] = useState(false);
   const [hasEnoughEthBalance, setHasEnoughEthBalance] = useState(true);
   const [EIP1559TransactionDataTemp, setEIP1559TransactionDataTemp] =

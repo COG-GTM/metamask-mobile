@@ -21,10 +21,10 @@ import BigNumber from 'bignumber.js';
 import {
   useNavigation,
   useRoute,
-  type NavigationProp,
   type ParamListBase,
   type RouteProp,
 } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { swapsUtils } from '@metamask/swaps-controller';
 import {
   WalletDevice,
@@ -510,11 +510,7 @@ function SwapsQuotesView({
   shouldUseSmartTransaction,
   isEIP1559Network,
 }: QuotesViewProps) {
-  const navigation = useNavigation<NavigationProp<ParamListBase>>() as NavigationProp<
-    ParamListBase
-  > & {
-    pop: () => void;
-  };
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   /* Get params from navigation */
   const route = useRoute<QuotesRoute>();
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -1378,11 +1374,9 @@ interface GasFeeEstimateValues {
 
         if (isHardwareAddress) {
           setIsHandlingSwap(false);
-          (
-            navigation.dangerouslyGetParent() as
-              | (NavigationProp<ParamListBase> & { pop: () => void })
-              | undefined
-          )?.pop();
+          navigation
+            .dangerouslyGetParent<StackNavigationProp<ParamListBase>>()
+            ?.pop();
           return;
         }
       }
@@ -1390,11 +1384,9 @@ interface GasFeeEstimateValues {
       await handleSwapTransaction(approvalTransactionMetaId);
 
       setIsHandlingSwap(false);
-      (
-        navigation.dangerouslyGetParent() as
-          | (NavigationProp<ParamListBase> & { pop: () => void })
-          | undefined
-      )?.pop();
+      navigation
+        .dangerouslyGetParent<StackNavigationProp<ParamListBase>>()
+        ?.pop();
     }
   }, [
     selectedQuote,
@@ -2765,9 +2757,7 @@ interface GasFeeEstimateValues {
           >['gasFeeEstimates']
         }
         defaultGasFeeOptionFeeMarket={DEFAULT_GAS_FEE_OPTION_FEE_MARKET}
-        defaultGasFeeOptionLegacy={
-          DEFAULT_GAS_FEE_OPTION_LEGACY as 'medium'
-        }
+        defaultGasFeeOptionLegacy={DEFAULT_GAS_FEE_OPTION_LEGACY}
         onGasUpdate={
           handleGasFeeUpdate as React.ComponentProps<
             typeof GasEditModal

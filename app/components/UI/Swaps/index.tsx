@@ -18,10 +18,10 @@ import { connect, type ConnectedProps } from 'react-redux';
 import {
   useNavigation,
   useRoute,
-  type NavigationProp,
   type ParamListBase,
   type RouteProp,
 } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { View as AnimatableView } from 'react-native-animatable';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import Logger from '../../../util/Logger';
@@ -242,11 +242,7 @@ function SwapsAmountView({
   shouldUseSmartTransaction,
 }: SwapsAmountViewProps) {
   const accounts = accountsByChainId[chainId];
-  const navigation = useNavigation<NavigationProp<ParamListBase>>() as NavigationProp<
-    ParamListBase
-  > & {
-    pop: () => void;
-  };
+  const navigation = useNavigation<StackNavigationProp<ParamListBase>>();
   const route = useRoute<SwapsAmountRoute>();
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
