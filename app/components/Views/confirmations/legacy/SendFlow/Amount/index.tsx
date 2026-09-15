@@ -15,7 +15,7 @@ import {
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import type BN4 from 'bnjs4';
-import type BN from 'bn.js';
+import type BN from 'bnjs5';
 import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
 import { Nft, NftContract } from '@metamask/assets-controllers';
 import {

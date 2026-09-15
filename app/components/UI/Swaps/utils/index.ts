@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import BigNumber from 'bignumber.js';
 import { swapsUtils } from '@metamask/swaps-controller';
-import type { RouteProp } from '@react-navigation/native';
-import type { ParamListBase } from '@react-navigation/routers';
+import type { RouteProp, ParamListBase } from '@react-navigation/native';
 import { strings } from '../../../../../locales/i18n';
 import AppConstants from '../../../../core/AppConstants';
 import { NETWORKS_CHAIN_ID } from '../../../../constants/network';
