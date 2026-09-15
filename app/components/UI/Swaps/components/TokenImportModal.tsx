@@ -1,7 +1,7 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, SafeAreaView, View } from 'react-native';
 import Modal from 'react-native-modal';
+import { Theme } from '@metamask/design-tokens';
 import FAIcon from 'react-native-vector-icons/FontAwesome5';
 import ModalDragger from '../../../Base/ModalDragger';
 import Text from '../../../Base/Text';
@@ -10,8 +10,9 @@ import TokenIcon from './TokenIcon';
 import StyledButton from '../../StyledButton';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
+import type { SwapsTokenLike } from '../utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -56,7 +57,19 @@ const createStyles = (colors) =>
     },
   });
 
-function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
+interface TokenImportModalProps {
+  isVisible: boolean;
+  dismiss: () => void;
+  token: SwapsTokenLike;
+  onPressImport: () => void;
+}
+
+function TokenImportModal({
+  isVisible,
+  dismiss,
+  token,
+  onPressImport,
+}: TokenImportModalProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -93,7 +106,11 @@ function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
           <Text bold primary centered style={styles.title}>
             {strings('swaps.import_token')}
           </Text>
-          <TokenIcon biggest icon={token.iconUrl} symbol={token.symbol} />
+          <TokenIcon
+            biggest
+            icon={token.iconUrl}
+            symbol={token.symbol ?? undefined}
+          />
           <Text bold primary centered style={styles.tokenTitle}>
             {token.name ? `${token.name} (${token.symbol})` : token.symbol}
           </Text>
@@ -118,16 +135,4 @@ function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
   );
 }
 
-TokenImportModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  token: PropTypes.shape({
-    address: PropTypes.string,
-    name: PropTypes.string,
-    symbol: PropTypes.string,
-    decimals: PropTypes.number,
-    iconUrl: PropTypes.string,
-  }),
-  onPressImport: PropTypes.func,
-};
 export default TokenImportModal;
