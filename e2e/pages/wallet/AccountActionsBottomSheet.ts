@@ -3,7 +3,7 @@ import Matchers from '../../utils/Matchers';
 import Gestures from '../../utils/Gestures';
 import { EditAccountNameSelectorIDs } from '../../selectors/wallet/EditAccountName.selectors.js';
 import TestHelpers from '../../helpers.js';
-import EditAccountNameView from './EditAccountNameView.js';
+import EditAccountNameView from './EditAccountNameView';
 
 class AccountActionsBottomSheet {
   get editAccount() {
