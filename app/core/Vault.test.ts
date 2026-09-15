@@ -1,6 +1,7 @@
 import Logger from '../util/Logger';
 import Engine from './Engine';
 import { withLedgerKeyring } from './Ledger/Ledger';
+import type { LedgerKeyringSerializedState } from '@metamask/eth-ledger-bridge-keyring';
 
 import { restoreLedgerKeyring, restoreQRKeyring } from './Vault';
 
@@ -65,9 +66,10 @@ describe('Vault', () => {
       };
       mockWithLedgerKeyring.mockImplementation(
         // @ts-expect-error The Ledger keyring is not compatible with our keyring type yet
-        (operation) => operation(mockLedgerKeyring),
+        (operation) => operation({ keyring: mockLedgerKeyring }),
       );
-      const mockSerializedLedgerKeyring = 'serialized-keyring';
+      const mockSerializedLedgerKeyring =
+        'serialized-keyring' as unknown as LedgerKeyringSerializedState;
 
       await restoreLedgerKeyring(mockSerializedLedgerKeyring);
 
@@ -83,9 +85,10 @@ describe('Vault', () => {
       };
       mockWithLedgerKeyring.mockImplementation(
         // @ts-expect-error The Ledger keyring is not compatible with our keyring type yet
-        (operation) => operation(mockLedgerKeyring),
+        (operation) => operation({ keyring: mockLedgerKeyring }),
       );
-      const mockSerializedLedgerKeyring = 'serialized-keyring';
+      const mockSerializedLedgerKeyring =
+        'serialized-keyring' as unknown as LedgerKeyringSerializedState;
 
       await restoreLedgerKeyring(mockSerializedLedgerKeyring);
 
@@ -98,7 +101,8 @@ describe('Vault', () => {
     it('should log error if the KeyringController throws an error', async () => {
       const error = new Error('Test error');
       mockWithLedgerKeyring.mockRejectedValue(error);
-      const mockSerializedLedgerKeyring = 'serialized-keyring';
+      const mockSerializedLedgerKeyring =
+        'serialized-keyring' as unknown as LedgerKeyringSerializedState;
 
       await restoreLedgerKeyring(mockSerializedLedgerKeyring);
 

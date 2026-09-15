@@ -6,9 +6,25 @@ import {
   getCaveatSpecifications,
   getPermissionSpecifications,
   unrestrictedMethods,
+  type CaveatSpecificationsOptions,
+  type ListedAccount,
 } from './specifications';
 import { EthAccountType, EthMethod } from '@metamask/keyring-api';
 import { SnapCaveatType } from '@metamask/snaps-utils';
+
+const createOptions = (): CaveatSpecificationsOptions => ({
+  listAccounts: jest.fn(),
+  findNetworkClientIdByChainId: jest.fn(),
+});
+
+const asCaveat = (value: unknown) =>
+  ({ type: Caip25CaveatType, value } as Parameters<
+    NonNullable<
+      ReturnType<
+        typeof getCaveatSpecifications
+      >[typeof Caip25CaveatType]['validator']
+    >
+  >[0]);
 
 describe('PermissionController specifications', () => {
   const baseEoaAccount = {
@@ -24,7 +40,7 @@ describe('PermissionController specifications', () => {
   };
   describe('caveat specifications', () => {
     it('getCaveatSpecifications returns the expected specifications object', () => {
-      const caveatSpecifications = getCaveatSpecifications({});
+      const caveatSpecifications = getCaveatSpecifications(createOptions());
       expect(Object.keys(caveatSpecifications)).toHaveLength(13);
       expect(caveatSpecifications[Caip25CaveatType].type).toStrictEqual(
         Caip25CaveatType,
@@ -70,30 +86,24 @@ describe('PermissionController specifications', () => {
     describe(`${Caip25CaveatType}`, () => {
       describe('validator', () => {
         it('rejects invalid array values', () => {
-          const listAccounts = jest.fn();
-          const findNetworkClientIdByChainId = jest.fn();
-          const { validator } = getCaveatSpecifications({
-            listAccounts,
-            findNetworkClientIdByChainId,
-          })[Caip25CaveatType];
+          const { validator } = getCaveatSpecifications(createOptions())[
+            Caip25CaveatType
+          ];
 
           [null, 'foo', {}, []].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() => validator(asCaveat(invalidValue))).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
         });
 
         it('rejects falsy or non-string addresses', () => {
-          const listAccounts = jest.fn();
-          const findNetworkClientIdByChainId = jest.fn();
-          const { validator } = getCaveatSpecifications({
-            listAccounts,
-            findNetworkClientIdByChainId,
-          })[Caip25CaveatType];
+          const { validator } = getCaveatSpecifications(createOptions())[
+            Caip25CaveatType
+          ];
 
           [[{}], [[]], [null], ['']].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() => validator(asCaveat(invalidValue))).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
@@ -101,32 +111,34 @@ describe('PermissionController specifications', () => {
 
         it('rejects addresses that have no corresponding identity', () => {
           const findNetworkClientIdByChainId = jest.fn();
-          const listAccounts = jest.fn().mockImplementationOnce(() => [
-            {
-              address: '0x1',
-              id: '21066553-d8c8-4cdc-af33-efc921cd3ca9',
-              metadata: {
-                name: 'Test Account 1',
-                lastSelected: 1,
-                keyring: {
-                  type: 'HD Key Tree',
+          const listAccounts = jest
+            .fn<ListedAccount[], []>()
+            .mockImplementationOnce(() => [
+              {
+                address: '0x1',
+                id: '21066553-d8c8-4cdc-af33-efc921cd3ca9',
+                metadata: {
+                  name: 'Test Account 1',
+                  lastSelected: 1,
+                  keyring: {
+                    type: 'HD Key Tree',
+                  },
                 },
+                ...baseEoaAccount,
               },
-              ...baseEoaAccount,
-            },
-            {
-              address: '0x3',
-              id: 'ff8fda69-d416-4d25-80a2-efb77bc7d4ad',
-              metadata: {
-                name: 'Test Account 3',
-                lastSelected: 3,
-                keyring: {
-                  type: 'HD Key Tree',
+              {
+                address: '0x3',
+                id: 'ff8fda69-d416-4d25-80a2-efb77bc7d4ad',
+                metadata: {
+                  name: 'Test Account 3',
+                  lastSelected: 3,
+                  keyring: {
+                    type: 'HD Key Tree',
+                  },
                 },
+                ...baseEoaAccount,
               },
-              ...baseEoaAccount,
-            },
-          ]);
+            ]);
           const caveatValues = ['0x1', '0x2', '0x3'];
 
           const { validator } = getCaveatSpecifications({
@@ -134,7 +146,7 @@ describe('PermissionController specifications', () => {
             findNetworkClientIdByChainId,
           })[Caip25CaveatType];
 
-          expect(() => validator({ value: caveatValues })).toThrow(
+          expect(() => validator(asCaveat(caveatValues))).toThrow(
             `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
           );
         });
@@ -144,7 +156,7 @@ describe('PermissionController specifications', () => {
 
   describe('permission specifications', () => {
     it('getPermissionSpecifications returns the expected specifications object', () => {
-      const permissionSpecifications = getPermissionSpecifications({});
+      const permissionSpecifications = getPermissionSpecifications();
       expect(Object.keys(permissionSpecifications)).toHaveLength(1);
       expect(
         permissionSpecifications[Caip25EndowmentPermissionName].targetName,
