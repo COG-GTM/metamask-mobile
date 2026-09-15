@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import useIsOriginalNativeTokenSymbol from './useIsOriginalNativeTokenSymbol';
 import { backgroundState } from '../../../../app/util/test/initial-root-state';
 import axios from 'axios';
+import { resetSafeChainsListCache } from '../../../util/networks/safeChainsList';
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
@@ -11,6 +12,7 @@ jest.mock('react-redux', () => ({
 
 describe('useIsOriginalNativeTokenSymbol', () => {
   afterEach(() => {
+    resetSafeChainsListCache();
     jest.clearAllMocks();
   });
 
@@ -314,5 +316,41 @@ describe('useIsOriginalNativeTokenSymbol', () => {
     expect(result.result.current).toBe(true);
     // expect that the chainlist API was not called
     expect(spyFetch).not.toHaveBeenCalled();
+  });
+
+  it('shares one request between hook instances', async () => {
+    mockSelectorState({
+      engine: {
+        backgroundState: {
+          ...backgroundState,
+          PreferencesController: {
+            useSafeChainsListValidation: true,
+          },
+        },
+      },
+    });
+
+    const safeChainsList = [
+      {
+        chainId: 314,
+        nativeCurrency: {
+          symbol: 'FIL',
+        },
+      },
+    ];
+    const spyFetch = jest.spyOn(axios, 'get').mockResolvedValue({
+      data: safeChainsList,
+    });
+
+    await act(async () => {
+      renderHook(() =>
+        useIsOriginalNativeTokenSymbol('314', 'FIL', 'mainnet'),
+      );
+      renderHook(() =>
+        useIsOriginalNativeTokenSymbol('314', 'FIL', 'mainnet'),
+      );
+    });
+
+    expect(spyFetch).toHaveBeenCalledTimes(1);
   });
 });

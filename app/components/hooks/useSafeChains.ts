@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectUseSafeChainsListValidation } from '../../selectors/preferencesController';
+import {
+  getSafeChainsList,
+  type SafeChain,
+} from '../../util/networks/safeChainsList';
 
-export interface SafeChain {
-  chainId: string;
-  name: string;
-  nativeCurrency: { symbol: string };
-  rpc: string[];
-}
+export type { SafeChain } from '../../util/networks/safeChainsList';
 
 export const useSafeChains = () => {
   const useSafeChainsListValidation = useSelector(
@@ -23,8 +22,7 @@ export const useSafeChains = () => {
     if (useSafeChainsListValidation) {
       const fetchSafeChains = async () => {
         try {
-          const response = await fetch('https://chainid.network/chains.json');
-          const safeChainsData: SafeChain[] = await response.json();
+          const safeChainsData = await getSafeChainsList();
           setSafeChains({ safeChains: safeChainsData });
         } catch (error) {
           setSafeChains({ error });

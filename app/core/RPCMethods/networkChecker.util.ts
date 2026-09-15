@@ -1,7 +1,7 @@
-import axios from 'axios';
 import { BannerAlertSeverity } from '../../component-library/components/Banners/Banner';
 import { strings } from '../../../locales/i18n';
 import { PopularList } from '../../util/networks/customNetworks';
+import { getSafeChainByChainId } from '../../util/networks/safeChainsList';
 
 import { toHex } from '@metamask/controller-utils';
 
@@ -32,12 +32,7 @@ const checkSafeNetwork = async (
   const alerts = [];
   const EVM_NATIVE_TOKEN_DECIMALS = 18;
 
-  const response = await axios.get('https://chainid.network/chains.json');
-  const safeChainsList = response.data;
-
-  const matchedChain = safeChainsList.find(
-    (chain: { chainId: number }) => chain.chainId.toString() === chainIdDecimal,
-  );
+  const matchedChain = await getSafeChainByChainId(chainIdDecimal);
 
   if (matchedChain) {
     const { origin } = new URL(rpcUrl);
