@@ -695,3 +695,9 @@ declare module 'enzyme-adapter-react-16' {
   class Adapter extends EnzymeAdapter {}
   export default Adapter;
 }
+
+declare module '@metamask/ethjs-query' {
+  export default class Eth {
+    constructor(provider: unknown);
+  }
+}
