@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { SafeAreaView, Text, TextInput, View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
+import type { Theme } from '@metamask/design-tokens';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import ActionView from '../../UI/ActionView';
@@ -9,7 +10,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -39,21 +40,33 @@ const createStyles = (colors) =>
 /**
  * Copmonent that provides ability to add a bookmark
  */
-export default class AddBookmark extends PureComponent {
-  state = {
+interface AddBookmarkRouteParams {
+  title?: string;
+  url?: string;
+  onAddBookmark?: (bookmark: { name: string; url: string }) => void;
+}
+
+type AddBookmarkNavigation = Pick<NavigationProp<ParamListBase>, 'setOptions'> &
+  Partial<{ pop: () => void }>;
+
+interface AddBookmarkProps {
+  navigation: AddBookmarkNavigation;
+  route: { params: AddBookmarkRouteParams };
+}
+
+interface AddBookmarkState {
+  title: string;
+  url: string;
+}
+
+export default class AddBookmark extends PureComponent<
+  AddBookmarkProps,
+  AddBookmarkState
+> {
+  context = undefined as unknown as React.ContextType<typeof ThemeContext>;
+  state: AddBookmarkState = {
     title: '',
     url: '',
-  };
-
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
   };
 
   updateNavBar = () => {
@@ -90,23 +103,25 @@ export default class AddBookmark extends PureComponent {
   addBookmark = () => {
     const { title, url } = this.state;
     if (title === '' || url === '') return false;
-    this.props.route.params.onAddBookmark({ name: title, url });
-    this.props.navigation.pop();
+    this.props.route.params.onAddBookmark?.({ name: title, url });
+    const pop = this.props.navigation.pop;
+    if (pop) pop();
   };
 
   cancelAddBookmark = () => {
-    this.props.navigation.pop();
+    const pop = this.props.navigation.pop;
+    if (pop) pop();
   };
 
-  onTitleChange = (title) => {
+  onTitleChange = (title: string) => {
     this.setState({ title });
   };
 
-  onUrlChange = (url) => {
+  onUrlChange = (url: string) => {
     this.setState({ url });
   };
 
-  urlInput = React.createRef();
+  urlInput = React.createRef<TextInput>();
 
   jumpToUrl = () => {
     const { current } = this.urlInput;
@@ -147,7 +162,7 @@ export default class AddBookmark extends PureComponent {
                 returnKeyType={'next'}
                 keyboardAppearance={themeAppearance}
               />
-              <Text style={styles.warningText}>{this.state.warningSymbol}</Text>
+              <Text style={styles.warningText} />
             </View>
             <View style={styles.rowWrapper}>
               <Text style={styles.inputTitle}>
@@ -160,14 +175,12 @@ export default class AddBookmark extends PureComponent {
                 onChangeText={this.onUrlChange}
                 testID={AddBookmarkViewSelectorsIDs.URL_TEXT}
                 ref={this.urlInput}
-                onSubmitEditing={this.addToken}
+                onSubmitEditing={this.addBookmark}
                 returnKeyType={'done'}
                 placeholderTextColor={colors.text.muted}
                 keyboardAppearance={themeAppearance}
               />
-              <Text style={styles.warningText}>
-                {this.state.warningDecimals}
-              </Text>
+              <Text style={styles.warningText}>{''}</Text>
             </View>
           </View>
         </ActionView>

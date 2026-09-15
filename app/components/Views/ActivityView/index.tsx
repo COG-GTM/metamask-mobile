@@ -2,7 +2,12 @@ import React, { useEffect, useCallback, useRef } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  type NavigationProp,
+  type ParamListBase,
+} from '@react-navigation/native';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
 import { getHasOrders } from '../../../reducers/fiatOrders';
 import { getTransactionsNavbarOptions } from '../../UI/Navbar';
@@ -33,14 +38,43 @@ import { selectNetworkName } from '../../../selectors/networkInfos';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DEFAULT_HEADERBASE_TITLE_TEXTVARIANT } from '../../../component-library/components/HeaderBase/HeaderBase.constants';
-import { typography } from '@metamask/design-tokens';
+import { typography, type Theme } from '@metamask/design-tokens';
 import { useStyles } from '../../hooks/useStyles';
 import {
   getFontFamily,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
+import type { RootState } from '../../../reducers';
 
-const createStyles = (params) => {
+interface ActivityTabProps {
+  tabLabel?: string;
+}
+const TypedTransactionsView =
+  TransactionsView as unknown as React.ComponentType<ActivityTabProps>;
+const TypedMultichainTransactionsView =
+  MultichainTransactionsView as unknown as React.ComponentType<ActivityTabProps>;
+const TypedRampOrdersList =
+  RampOrdersList as unknown as React.ComponentType<ActivityTabProps>;
+const TypedScrollableTabView =
+  ScrollableTabView as unknown as React.ComponentType<{
+    children?: React.ReactNode;
+    renderTabBar?: () => React.ReactNode;
+    locked?: boolean;
+    ref?: React.Ref<{ goToPage: (page: number) => void }>;
+  }>;
+const TypedErrorBoundary = ErrorBoundary as unknown as React.ComponentType<{
+  children?: React.ReactNode;
+  navigation?: NavigationProp<ParamListBase>;
+  view?: string;
+}>;
+const TypedActivityText = Text as unknown as React.ComponentType<{
+  children?: React.ReactNode;
+  style?: object;
+  variant?: TextVariant;
+  numberOfLines?: number;
+}>;
+
+const createStyles = (params: { theme: Theme; style?: object }) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -82,7 +116,6 @@ const createStyles = (params) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
@@ -111,10 +144,12 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<{ goToPage: (page: number) => void }>(null);
+  const params = useParams<{ redirectToOrders?: boolean }>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +163,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            accountsByChainId[selectedAddress ?? ''] ?? {},
           ).length,
         })
         .build(),
@@ -175,25 +210,25 @@ const ActivityView = () => {
   );
 
   return (
-    <ErrorBoundary navigation={navigation} view="ActivityView">
+    <TypedErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
-        <Text
+        <TypedActivityText
           style={styles.title}
           variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
         >
           {strings('transactions_view.title')}
-        </Text>
+        </TypedActivityText>
       </View>
       <View style={styles.wrapper}>
         <View style={styles.controlButtonOuterWrapper}>
           <ButtonBase
             testID={WalletViewSelectorsIDs.TOKEN_NETWORK_FILTER}
             label={
-              <Text numberOfLines={1} style={styles.titleText}>
+              <TypedActivityText numberOfLines={1} style={styles.titleText}>
                 {isAllNetworks && isPopularNetwork && isEvmSelected
                   ? strings('wallet.popular_networks')
                   : networkName ?? strings('wallet.current_network')}
-              </Text>
+              </TypedActivityText>
             }
             isDisabled={isTestnetOrNotPopularNetwork}
             onPress={isEvmSelected ? showFilterControls : () => null}
@@ -206,26 +241,28 @@ const ActivityView = () => {
             disabled={isTestNet(currentChainId) || !isPopularNetwork}
           />
         </View>
-        <ScrollableTabView
+        <TypedScrollableTabView
           ref={tabViewRef}
           renderTabBar={renderTabBar}
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <TypedMultichainTransactionsView
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TypedTransactionsView
+              tabLabel={strings('transactions_view.title')}
+            />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <TypedRampOrdersList
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}
-        </ScrollableTabView>
+        </TypedScrollableTabView>
       </View>
-    </ErrorBoundary>
+    </TypedErrorBoundary>
   );
 };
 

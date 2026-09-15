@@ -8,7 +8,6 @@ import {
   InteractionManager,
   BackHandler,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -17,8 +16,10 @@ import Device from '../../../util/device';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { SuccessImportAccountIDs } from '../../../../e2e/selectors/ImportAccount/SuccessImportAccount.selectors';
+import type { Theme } from '@metamask/design-tokens';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -75,13 +76,14 @@ const createStyles = (colors) =>
 /**
  * View that's displayed the first time imports account
  */
-class ImportPrivateKeySuccess extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
+interface ImportPrivateKeySuccessProps {
+  navigation: NavigationProp<ParamListBase> & {
+    popToTop?: () => void;
   };
+}
+
+class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps> {
+  context = undefined as unknown as React.ContextType<typeof ThemeContext>;
 
   componentDidMount = () => {
     InteractionManager.runAfterInteractions(() => {
@@ -99,13 +101,14 @@ class ImportPrivateKeySuccess extends PureComponent {
   };
 
   handleBackPress = () => {
-    this.props.navigation.popToTop();
+    this.props.navigation.popToTop?.();
+    return true;
   };
 
   dismiss = () => {
     const { popToTop, canGoBack, goBack } = this.props.navigation;
-    popToTop();
-    canGoBack() && goBack(null);
+    popToTop?.();
+    if (canGoBack()) goBack();
   };
 
   render() {
@@ -120,16 +123,12 @@ class ImportPrivateKeySuccess extends PureComponent {
         >
           <View
             style={styles.content}
-            testID={
-              SuccessImportAccountIDs.CONTAINER
-            }
+            testID={SuccessImportAccountIDs.CONTAINER}
           >
             <TouchableOpacity
               onPress={this.dismiss}
               style={styles.navbarRightButton}
-              testID={
-                SuccessImportAccountIDs.CLOSE_BUTTON
-              }
+              testID={SuccessImportAccountIDs.CLOSE_BUTTON}
             >
               <MaterialIcon name="close" size={15} style={styles.closeIcon} />
             </TouchableOpacity>

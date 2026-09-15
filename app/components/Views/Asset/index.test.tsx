@@ -5,7 +5,7 @@ import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import Asset from './';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
-import { isPortfolioViewEnabled } from '../../../util/networks';
+import type { RootState } from '../../../reducers';
 
 const mockInitialState = {
   swaps: { '0x1': { isLive: true }, hasOnboarded: false, isLive: true },
@@ -85,9 +85,9 @@ jest.mock('../../../util/networks', () => ({
 }));
 
 jest.mock('../../../core/Engine', () => {
-  const {
-    MOCK_ADDRESS_1,
-  } = require('../../../util/test/accountsControllerTestUtils');
+  const { MOCK_ADDRESS_1 } = jest.requireActual(
+    '../../../util/test/accountsControllerTestUtils',
+  ) as { MOCK_ADDRESS_1: string };
 
   return {
     context: {
@@ -123,7 +123,7 @@ describe('Asset', () => {
         }}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as unknown as RootState,
       },
     );
     expect(toJSON()).toMatchSnapshot();
@@ -145,7 +145,7 @@ describe('Asset', () => {
         transactions={[]}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as unknown as RootState,
       },
     );
 
@@ -166,7 +166,7 @@ describe('Asset', () => {
         }}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as unknown as RootState,
       },
     );
 
@@ -188,7 +188,7 @@ describe('Asset', () => {
         }}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as unknown as RootState,
       },
     );
 

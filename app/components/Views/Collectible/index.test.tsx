@@ -8,6 +8,10 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { act, render } from '@testing-library/react-native';
 import Engine from '../../../core/Engine';
 
+const TestCollectible = Collectible as unknown as React.ComponentType<{
+  route: { params: { address: string } };
+}>;
+
 jest.mock('../../../core/Engine', () => ({
   context: {
     NftController: {
@@ -45,7 +49,9 @@ jest.mock('@react-navigation/native', () => {
 const navigationMock = {
   navigate: jest.fn(),
   push: jest.fn(),
-};
+} as unknown as import('@react-navigation/native').NavigationProp<
+  import('@react-navigation/native').ParamListBase
+>;
 
 const defaultCollectibleContract = {
   address: '0x1',
@@ -63,7 +69,7 @@ describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <TestCollectible route={{ params: { address: '0x1' } }} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

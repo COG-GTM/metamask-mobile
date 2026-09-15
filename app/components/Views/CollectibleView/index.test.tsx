@@ -14,6 +14,13 @@ const initialState = {
     backgroundState,
   },
 };
+interface TestCollectibleViewProps {
+  navigation: { navigate: (route: string) => void };
+  route: { params: { contractName: string; address: string } };
+  newAssetTransaction: (params: unknown) => void;
+}
+const TestCollectibleView =
+  CollectibleView as unknown as React.ComponentType<TestCollectibleViewProps>;
 const mockStore = configureMockStore();
 const store = mockStore(initialState);
 
@@ -35,7 +42,7 @@ describe('CollectibleView Snapshot', () => {
     const { toJSON } = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <TestCollectibleView {...props} />
         </ThemeContext.Provider>
       </Provider>,
     );
@@ -60,7 +67,7 @@ describe('CollectibleView Snapshot', () => {
     const wrapper = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <CollectibleView {...props} />
+          <TestCollectibleView {...props} />
         </ThemeContext.Provider>
       </Provider>,
     );
