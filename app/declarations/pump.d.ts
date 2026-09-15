@@ -1,5 +1,8 @@
 declare module 'pump' {
-  type PumpStream = NodeJS.ReadableStream | NodeJS.WritableStream;
+  type PumpStream =
+    | NodeJS.ReadableStream
+    | NodeJS.WritableStream
+    | import('stream').Stream;
 
   type PumpCallback = (error?: Error | null) => void;
 

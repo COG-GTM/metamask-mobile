@@ -46,7 +46,7 @@ export const setupBridge = ({
     remoteConnHost: connection.host,
     getRpcMethodMiddleware: ({
       getProviderState,
-    }: RPCMethodsMiddleParameters) => {
+    }: Pick<RPCMethodsMiddleParameters, 'getProviderState'>) => {
       DevLogger.log(
         `getRpcMethodMiddleware hostname=${connection.host} url=${originatorInfo.url} `,
       );
