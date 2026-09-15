@@ -97,7 +97,7 @@ const getFavoritesCollectibles = (
   selectedAddress: string | undefined,
   chainId: Hex | CaipChainId,
 ): FavoriteCollectible[] =>
-  (selectedAddress && favoriteCollectibles[selectedAddress]?.[chainId]) || [];
+  favoriteCollectibles[selectedAddress as string]?.[chainId] || [];
 
 export const ADD_FAVORITE_COLLECTIBLE = 'ADD_FAVORITE_COLLECTIBLE';
 export const REMOVE_FAVORITE_COLLECTIBLE = 'REMOVE_FAVORITE_COLLECTIBLE';
@@ -129,9 +129,6 @@ const collectiblesFavoritesReducer = (
   switch (action.type) {
     case ADD_FAVORITE_COLLECTIBLE: {
       const { selectedAddress, chainId, collectible } = action;
-      if (!selectedAddress) {
-        return state;
-      }
       const collectibles = getFavoritesCollectibles(
         state.favorites,
         selectedAddress,
@@ -142,12 +139,12 @@ const collectiblesFavoritesReducer = (
         address: collectible.address,
       });
       const selectedAddressCollectibles =
-        state.favorites[selectedAddress] || {};
+        state.favorites[selectedAddress as string] || {};
       return {
         ...state,
         favorites: {
           ...state.favorites,
-          [selectedAddress]: {
+          [selectedAddress as string]: {
             ...selectedAddressCollectibles,
             [chainId]: collectibles.slice(),
           },
@@ -156,9 +153,6 @@ const collectiblesFavoritesReducer = (
     }
     case REMOVE_FAVORITE_COLLECTIBLE: {
       const { selectedAddress, chainId, collectible } = action;
-      if (!selectedAddress) {
-        return state;
-      }
       const collectibles = getFavoritesCollectibles(
         state.favorites,
         selectedAddress,
@@ -172,12 +166,12 @@ const collectiblesFavoritesReducer = (
       );
       collectibles.splice(indexToRemove, 1);
       const selectedAddressCollectibles =
-        state.favorites[selectedAddress] || {};
+        state.favorites[selectedAddress as string] || {};
       return {
         ...state,
         favorites: {
           ...state.favorites,
-          [selectedAddress]: {
+          [selectedAddress as string]: {
             ...selectedAddressCollectibles,
             [chainId]: collectibles.slice(),
           },

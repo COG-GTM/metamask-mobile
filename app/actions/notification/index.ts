@@ -109,19 +109,16 @@ export function hideNotificationById(
 }
 
 export function modifyOrShowTransactionNotificationById({
-  id,
   autodismiss,
   transaction,
   status,
 }: {
-  id?: string | number;
   autodismiss?: number | boolean;
   transaction: TransactionNotification;
   status?: string;
 }): ModifyOrShowTransactionNotificationAction {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION,
-    id,
     autodismiss,
     transaction,
     status,
@@ -129,13 +126,11 @@ export function modifyOrShowTransactionNotificationById({
 }
 
 export function modifyOrShowSimpleNotificationById({
-  id,
   autodismiss,
   title,
   description,
   status,
 }: {
-  id?: string | number;
   autodismiss?: number | boolean;
   title?: string;
   description?: string;
@@ -143,7 +138,6 @@ export function modifyOrShowSimpleNotificationById({
 }): ModifyOrShowSimpleNotificationAction {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
-    id,
     autodismiss,
     title,
     description,
