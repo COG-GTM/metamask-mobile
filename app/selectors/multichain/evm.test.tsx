@@ -7,6 +7,7 @@ import {
   selectNativeEvmAsset,
   selectStakedEvmAsset,
   selectEvmTokens,
+  selectEvmTokenFiatBalances,
   selectEvmTokensWithZeroBalanceFilter,
   makeSelectAssetByAddressAndChainId,
 } from './evm';
@@ -759,6 +760,186 @@ describe('Multichain Selectors', () => {
       expect(nativePol).toBeDefined();
       expect(nativePol?.chainId).toBe(POLYGON_CHAIN_ID);
       expect(nativePol?.name).toBe('POL');
+    });
+  });
+
+  describe('selectEvmTokenFiatBalances', () => {
+    const TOKEN_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+    const baseState = {
+      ...mockState,
+      engine: {
+        ...mockState.engine,
+        backgroundState: {
+          ...mockState.engine.backgroundState,
+          TokensController: {
+            allTokens: {
+              '0x1': {
+                '0xAddress1': [
+                  {
+                    address: TOKEN_ADDRESS,
+                    symbol: 'DAI',
+                    decimals: 18,
+                  },
+                ],
+              },
+            },
+          },
+          TokenBalancesController: {
+            tokenBalances: {
+              '0xAddress1': {
+                '0x1': {
+                  [TOKEN_ADDRESS]: '0xde0b6b3a7640000',
+                },
+              },
+            },
+          },
+          TokenRatesController: {
+            marketData: {
+              '0x1': {
+                [TOKEN_ADDRESS]: { price: 0.0005 },
+              },
+            },
+          },
+        },
+      },
+    } as unknown as RootState;
+
+    const withBackgroundState = (
+      state: RootState,
+      overrides: Record<string, unknown>,
+    ) =>
+      ({
+        ...state,
+        engine: {
+          ...state.engine,
+          backgroundState: {
+            ...state.engine.backgroundState,
+            ...overrides,
+          },
+        },
+      } as unknown as RootState);
+
+    it('returns one fiat balance per displayed token', () => {
+      const evmTokens = selectEvmTokens(baseState);
+      const result = selectEvmTokenFiatBalances(baseState);
+
+      expect(result).toHaveLength(evmTokens.length);
+      // Native ETH: balance 1 wei rendered * 2000 ETH/USD
+      const ethIndex = evmTokens.findIndex(
+        (token) => token.isNative && token.chainId === '0x1',
+      );
+      expect(result[ethIndex]).toBe(
+        parseFloat(evmTokens[ethIndex].balance) * 2000,
+      );
+      // DAI: 1 token * 0.0005 ETH price * 2000 ETH/USD
+      const daiIndex = evmTokens.findIndex(
+        (token) => token.address === TOKEN_ADDRESS,
+      );
+      expect(result[daiIndex]).toBe(1);
+    });
+
+    it('returns the same memoized reference when called with the same state', () => {
+      const result1 = selectEvmTokenFiatBalances(baseState);
+      const result2 = selectEvmTokenFiatBalances(baseState);
+      expect(result1).toBe(result2);
+    });
+
+    it('returns the same reference when only market data for non-held chains changes', () => {
+      const result1 = selectEvmTokenFiatBalances(baseState);
+
+      const testState = withBackgroundState(baseState, {
+        TokenRatesController: {
+          marketData: {
+            ...baseState.engine.backgroundState.TokenRatesController.marketData,
+            '0xa': {
+              '0xOtherToken': { price: 5 },
+            },
+          },
+        },
+      });
+
+      const result2 = selectEvmTokenFiatBalances(testState);
+      expect(result2).toBe(result1);
+    });
+
+    it('returns the same reference when only balances of other accounts change', () => {
+      const result1 = selectEvmTokenFiatBalances(baseState);
+
+      const testState = withBackgroundState(baseState, {
+        TokenBalancesController: {
+          tokenBalances: {
+            ...baseState.engine.backgroundState.TokenBalancesController
+              .tokenBalances,
+            '0xOtherAddress': {
+              '0x1': { '0xToken1': '0x5' },
+            },
+          },
+        },
+      });
+
+      const result2 = selectEvmTokenFiatBalances(testState);
+      expect(result2).toBe(result1);
+    });
+
+    it('returns the same reference when only rates of unrelated currencies change', () => {
+      const result1 = selectEvmTokenFiatBalances(baseState);
+
+      const testState = withBackgroundState(baseState, {
+        CurrencyRateController: {
+          ...baseState.engine.backgroundState.CurrencyRateController,
+          currencyRates: {
+            ...baseState.engine.backgroundState.CurrencyRateController
+              .currencyRates,
+            BNB: { conversionRate: 300 },
+          },
+        },
+      });
+
+      const result2 = selectEvmTokenFiatBalances(testState);
+      expect(result2).toBe(result1);
+    });
+
+    it('recomputes when a held chain conversion rate changes', () => {
+      const evmTokens = selectEvmTokens(baseState);
+      const ethIndex = evmTokens.findIndex(
+        (token) => token.isNative && token.chainId === '0x1',
+      );
+      const result1 = selectEvmTokenFiatBalances(baseState);
+
+      const testState = withBackgroundState(baseState, {
+        CurrencyRateController: {
+          ...baseState.engine.backgroundState.CurrencyRateController,
+          currencyRates: {
+            ...baseState.engine.backgroundState.CurrencyRateController
+              .currencyRates,
+            ETH: { conversionRate: 4000 },
+          },
+        },
+      });
+
+      const result2 = selectEvmTokenFiatBalances(testState);
+      expect(result2).not.toBe(result1);
+      expect(result2[ethIndex]).toBe((result1[ethIndex] ?? 0) * 2);
+    });
+
+    it('recomputes when a held token balance changes', () => {
+      const result1 = selectEvmTokenFiatBalances(baseState);
+
+      const testState = withBackgroundState(baseState, {
+        TokenBalancesController: {
+          tokenBalances: {
+            '0xAddress1': {
+              '0x1': {
+                [TOKEN_ADDRESS]: '0x1bc16d674ec80000',
+              },
+            },
+          },
+        },
+      });
+
+      const result2 = selectEvmTokenFiatBalances(testState);
+      expect(result2).not.toBe(result1);
+      expect(result2).not.toEqual(result1);
     });
   });
 
