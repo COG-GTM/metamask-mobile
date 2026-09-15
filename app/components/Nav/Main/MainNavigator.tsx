@@ -7,7 +7,11 @@ import {
   BottomTabNavigationOptions,
   createBottomTabNavigator,
 } from '@react-navigation/bottom-tabs';
-import { RouteProp } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import { NftDetailsParams } from '../../Views/NftDetails/NftDetails.types';
 import { RootState } from '../../../reducers';
 import Browser from '../../Views/Browser';
@@ -87,7 +91,7 @@ import { selectAccountsLength } from '../../../selectors/accountTrackerControlle
 import isUrl from 'is-url';
 import SDKSessionsManager from '../../Views/SDK/SDKSessionsManager/SDKSessionsManager';
 import PermissionsManager from '../../Views/Settings/PermissionsSettings/PermissionsManager';
-import URL from 'url-parse';
+import UrlParser from 'url-parse';
 import Logger from '../../../util/Logger';
 import { getDecimalChainId } from '../../../util/networks';
 import { useMetrics } from '../../../components/hooks/useMetrics';
@@ -487,7 +491,7 @@ const HomeTabs = () => {
     if (!isUrl(activeTabUrl)) return [];
     try {
       const permissionsControllerState = selectPermissionControllerState(state);
-      const hostname = new URL(activeTabUrl).hostname;
+      const hostname = new UrlParser(activeTabUrl).hostname;
       const permittedAcc = getPermittedAccountsByHostname(
         permissionsControllerState,
         hostname,
@@ -823,7 +827,11 @@ const SetPasswordFlow = () => (
   </Stack.Navigator>
 );
 
-const MainNavigator = () => (
+interface MainNavigatorProps {
+  navigation?: NavigationProp<ParamListBase>;
+}
+
+const MainNavigator: React.FC<MainNavigatorProps> = () => (
   <Stack.Navigator
     screenOptions={{
       headerShown: false,

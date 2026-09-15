@@ -177,8 +177,8 @@ export const useSwapConfirmedEvent = ({
     useState<string[]>([]);
 
   const addTransactionMetaIdForListening = useCallback((txMetaId: string) => {
-    setTransactionMetaIdsForListening((transactionMetaIdsForListening) => [
-      ...transactionMetaIdsForListening,
+    setTransactionMetaIdsForListening((currentTransactionMetaIds) => [
+      ...currentTransactionMetaIds,
       txMetaId,
     ]);
   }, []);
@@ -221,8 +221,8 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
     TransactionModalType | undefined
   >(undefined);
   const tokenList = useSelector(selectTokenList);
-  const setTransactionObject = props.setTransactionObject;
-  const setEtherTransaction = props.setEtherTransaction;
+  const setTransactionObjectProp = props.setTransactionObject;
+  const setEtherTransactionProp = props.setEtherTransaction;
 
   const initializeWalletConnect = () => {
     WalletConnect.init();
@@ -231,8 +231,10 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
   const trackSwaps = useCallback<TrackSwaps>(
     async (event, transactionMeta, swapsTransactions) => {
       try {
-        const { TransactionController, SmartTransactionsController } =
-          Engine.context;
+        const {
+          TransactionController,
+          SmartTransactionsController: smartTransactionsController,
+        } = Engine.context;
         const swapTransaction = swapsTransactions[transactionMeta.id];
 
         const {
@@ -319,7 +321,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
             controller: SmartTransactionsController,
             meta: TransactionMeta,
           ) => object
-        )(SmartTransactionsController, transactionMeta);
+        )(smartTransactionsController, transactionMeta);
 
         const parameters = {
           time_to_mine: timeToMine,
@@ -385,26 +387,27 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
       try {
         Engine.controllerMessenger.subscribeOnceIf(
           'TransactionController:transactionFinished',
-          (transactionMeta) => {
-            if (transactionMeta.status === 'submitted') {
+          (finishedTransactionMeta) => {
+            if (finishedTransactionMeta.status === 'submitted') {
               NotificationManager.watchSubmittedTransaction({
-                ...transactionMeta,
+                ...finishedTransactionMeta,
                 assetType: (
-                  transactionMeta.txParams as UnapprovedTransactionParams
+                  finishedTransactionMeta.txParams as UnapprovedTransactionParams
                 ).assetType,
               });
             } else {
-              if (swapsTransactions[transactionMeta.id]?.analytics) {
+              if (swapsTransactions[finishedTransactionMeta.id]?.analytics) {
                 trackSwaps(
                   MetaMetricsEvents.SWAP_FAILED,
-                  transactionMeta,
+                  finishedTransactionMeta,
                   swapsTransactions,
                 );
               }
-              throw transactionMeta.error;
+              throw finishedTransactionMeta.error;
             }
           },
-          (transactionMeta) => transactionMeta.id === transactionId,
+          (candidateTransactionMeta) =>
+            candidateTransactionMeta.id === transactionId,
         );
 
         // Queue txMetaId to listen for confirmation event
@@ -445,7 +448,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
         ) {
           Alert.alert(
             strings('transactions.transaction_error'),
-            error && error.message,
+            error?.message,
             [{ text: strings('navigation.ok') }],
           );
           Logger.error(
@@ -495,7 +498,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
         const {
           chainId,
           networkClientId,
-          txParams: { value, gas, gasPrice, data },
+          txParams: { value, gas, gasPrice },
         } = transactionMeta;
         const { AssetsContractController } = Engine.context;
         transactionMeta.txParams.gas = hexToBN(gas);
@@ -549,7 +552,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
           transactionMeta.txParams.readableValue = tokenAmount;
           transactionMeta.txParams.to = toAddress;
 
-          setTransactionObject({
+          setTransactionObjectProp({
             selectedAsset: asset,
             id: transactionMeta.id,
             origin: transactionMeta.origin,
@@ -564,7 +567,7 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
             transactionMeta.txParams.value,
           );
 
-          setEtherTransaction({
+          setEtherTransactionProp({
             id: transactionMeta.id,
             origin: transactionMeta.origin,
             securityAlertResponse: transactionMeta.securityAlertResponse,
@@ -588,9 +591,9 @@ const RootRPCMethodsUI = (props: RootRPCMethodsUIProps) => {
       props.chainId,
       props.tokens,
       autoSign,
-      setTransactionObject,
+      setTransactionObjectProp,
       tokenList,
-      setEtherTransaction,
+      setEtherTransactionProp,
     ],
   );
 

@@ -9,6 +9,8 @@ import React, {
 import {
   ActivityIndicator,
   AppState,
+  AppStateStatus,
+  ImageSourcePropType,
   StyleSheet,
   View,
   Linking,
@@ -24,7 +26,6 @@ import {
   ParamListBase,
   RouteProp,
 } from '@react-navigation/native';
-import { AppStateStatus, ImageSourcePropType } from 'react-native';
 import { MultichainNetworkConfiguration } from '@metamask/multichain-network-controller';
 import { Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
@@ -222,7 +223,7 @@ const Main = (props: MainProps) => {
 
   const { connectionChangeHandler } = useConnectionHandler(props.navigation);
 
-  const removeNotVisibleNotifications = props.removeNotVisibleNotifications;
+  const removeNotVisibleNotificationsProp = props.removeNotVisibleNotifications;
   useNotificationHandler();
   useIdentityEffects();
   useEnableAutomaticSecurityChecks();
@@ -288,14 +289,14 @@ const Main = (props: MainProps) => {
       // If the app is now in background, we need to start
       // the background timer, which is less intense
       if (backgroundMode.current) {
-        removeNotVisibleNotifications();
+        removeNotVisibleNotificationsProp();
 
         BackgroundTimer.runBackgroundTimer(async () => {
           await updateIncomingTransactions();
         }, AppConstants.TX_CHECK_BACKGROUND_FREQUENCY);
       }
     },
-    [backgroundMode, removeNotVisibleNotifications],
+    [backgroundMode, removeNotVisibleNotificationsProp],
   );
 
   const initForceReload = () => {
@@ -353,16 +354,16 @@ const Main = (props: MainProps) => {
 
   const hasNetworkChanged = useCallback(
     (
-      chainId: ChainId,
+      currentChainId: ChainId,
       previousConfig: PreviousProviderConfig | undefined,
-      isEvmSelected: boolean,
+      isEvmNetworkSelected: boolean,
     ) => {
       if (!previousConfig) return false;
 
-      return isEvmSelected
-        ? chainId !== previousConfig.chainId ||
+      return isEvmNetworkSelected
+        ? currentChainId !== previousConfig.chainId ||
             providerConfig.type !== previousConfig.type
-        : chainId !== previousConfig.chainId;
+        : currentChainId !== previousConfig.chainId;
     },
     [providerConfig.type],
   );
@@ -473,8 +474,8 @@ const Main = (props: MainProps) => {
 
   // Remove all notifications that aren't visible
   useEffect(() => {
-    removeNotVisibleNotifications();
-  }, [removeNotVisibleNotifications]);
+    removeNotVisibleNotificationsProp();
+  }, [removeNotVisibleNotificationsProp]);
 
   useEffect(() => {
     const appStateListener = AppState.addEventListener(
@@ -519,14 +520,14 @@ const Main = (props: MainProps) => {
   };
 
   const renderDeprecatedNetworkAlert = (
-    chainId: ChainId,
+    networkChainId: ChainId,
     backUpSeedphraseVisible: boolean,
   ) => {
     if (
-      (DEPRECATED_NETWORKS as string[]).includes(chainId) &&
+      (DEPRECATED_NETWORKS as string[]).includes(networkChainId) &&
       showDeprecatedAlert
     ) {
-      if (NETWORKS_CHAIN_ID.MUMBAI === chainId) {
+      if (NETWORKS_CHAIN_ID.MUMBAI === networkChainId) {
         return (
           <WarningAlert
             text={strings('networks.network_deprecated_title')}
