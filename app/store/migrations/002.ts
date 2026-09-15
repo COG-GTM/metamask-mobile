@@ -1,8 +1,26 @@
 import { getAllNetworks, isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 
-export default function migrate(state) {
-  const provider = state.engine.backgroundState.NetworkController.provider;
+interface Provider {
+  type?: string;
+  chainId?: string | number;
+  ticker?: string;
+  [key: string]: unknown;
+}
+
+interface Migration02State {
+  engine: {
+    backgroundState: {
+      NetworkController: {
+        provider: Provider;
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const typedState = state as Migration02State;
+  const provider = typedState.engine.backgroundState.NetworkController.provider;
 
   // Check if the current network is one of the initial networks
   const isInitialNetwork =
@@ -14,7 +32,7 @@ export default function migrate(state) {
 
   if (!isInitialNetwork && isCustomRpcWithInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.
-    state.engine.backgroundState.NetworkController.provider = {
+    typedState.engine.backgroundState.NetworkController.provider = {
       ticker: 'ETH',
       type: GOERLI,
     };

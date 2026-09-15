@@ -2,10 +2,27 @@
  * Needed after https://github.com/MetaMask/controllers/pull/152
  *
  **/
-export default function migrate(state) {
+interface AddressBookEntry {
+  chainId: string | number;
+  [key: string]: unknown;
+}
+
+interface Migration00State {
+  engine: {
+    backgroundState: {
+      AddressBookController: {
+        addressBook: Record<string, AddressBookEntry>;
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const typedState = state as Migration00State;
   const addressBook =
-    state.engine.backgroundState.AddressBookController.addressBook;
-  const migratedAddressBook = {};
+    typedState.engine.backgroundState.AddressBookController.addressBook;
+  const migratedAddressBook: Record<string, Record<string, AddressBookEntry>> =
+    {};
   Object.keys(addressBook).forEach((address) => {
     const chainId = addressBook[address].chainId.toString();
     migratedAddressBook[chainId]
@@ -15,7 +32,7 @@ export default function migrate(state) {
         })
       : (migratedAddressBook[chainId] = { [address]: addressBook[address] });
   });
-  state.engine.backgroundState.AddressBookController.addressBook =
+  typedState.engine.backgroundState.AddressBookController.addressBook =
     migratedAddressBook;
   return state;
 }

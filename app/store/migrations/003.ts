@@ -3,12 +3,32 @@ import { isSafeChainId } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
 
-export default function migrate(state) {
-  const provider = state.engine.backgroundState.NetworkController.provider;
-  const chainId = NetworksChainId[provider.type];
+interface Provider {
+  type: string;
+  chainId?: string | number;
+  ticker?: string;
+  [key: string]: unknown;
+}
+
+interface Migration03State {
+  engine: {
+    backgroundState: {
+      NetworkController: {
+        provider: Provider;
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const typedState = state as Migration03State;
+  const provider = typedState.engine.backgroundState.NetworkController.provider;
+  const chainId = NetworksChainId[
+    provider.type as keyof typeof NetworksChainId
+  ];
   // if chainId === '' is a rpc
   if (chainId) {
-    state.engine.backgroundState.NetworkController.provider = {
+    typedState.engine.backgroundState.NetworkController.provider = {
       ...provider,
       chainId,
     };
@@ -24,7 +44,7 @@ export default function migrate(state) {
 
   if (hasInvalidChainId) {
     // If the current network does not have a chainId, switch to testnet.
-    state.engine.backgroundState.NetworkController.provider = {
+    typedState.engine.backgroundState.NetworkController.provider = {
       ticker: 'ETH',
       type: GOERLI,
       chainId: NetworksChainId.goerli,
