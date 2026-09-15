@@ -1,6 +1,9 @@
 import React, { PureComponent } from 'react';
 import { ParamListBase, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import {
   ActivityIndicator,
   Alert,
@@ -94,7 +97,7 @@ export default class EnterPasswordSimple extends PureComponent<
         navigation,
         false,
         colors,
-      ),
+      ) as StackNavigationOptions,
     );
   };
 

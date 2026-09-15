@@ -26,7 +26,7 @@ export function timeoutFetch(
 }
 
 export interface NavigatorRoute {
-  name: string;
+  name?: string;
   index?: number;
   routes?: NavigatorRoute[];
   state?: NavigatorRoute;
@@ -46,7 +46,8 @@ export function findRouteNameFromNavigatorState(
     }
   }
 
-  let name = route?.name;
+  // Leaf routes always carry a name; only intermediate navigator states omit it.
+  let name = route?.name as string;
 
   // For compatibility with the previous way on react navigation 4
   if (name === 'Main' || name === 'WalletTabHome' || name === 'Home')

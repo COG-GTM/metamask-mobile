@@ -10,7 +10,11 @@ import {
   fontStyles,
   colors as importedColors,
 } from '../../../../styles/common';
-import decodeTransaction from '../../TransactionElement/utils';
+import decodeTransaction, {
+  type DecodeTransactionArgs,
+  type TransactionDetailsData,
+  type TransactionElementData,
+} from '../../TransactionElement/utils';
 import TransactionActionContent from '../../TransactionActionModal/TransactionActionContent';
 import ActionContent from '../../ActionModal/ActionContent';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -134,11 +138,6 @@ interface TransactionNotificationOwnProps {
 type TransactionNotificationProps = TransactionNotificationOwnProps &
   ConnectedProps<typeof connector>;
 
-interface DecodedTransactionElement {
-  notificationKey?: string;
-  actionKey?: string;
-}
-
 function TransactionNotification(props: TransactionNotificationProps) {
   const {
     accounts,
@@ -151,10 +150,11 @@ function TransactionNotification(props: TransactionNotificationProps) {
     smartTransactions,
   } = props;
 
-  const [transactionDetails, setTransactionDetails] =
-    useState<unknown>(undefined);
+  const [transactionDetails, setTransactionDetails] = useState<
+    TransactionDetailsData | undefined
+  >(undefined);
   const [transactionElement, setTransactionElement] = useState<
-    DecodedTransactionElement | undefined
+    TransactionElementData | undefined
   >(undefined);
   const [tx, setTx] = useState<Partial<TransactionMeta>>({});
   const [transactionDetailsIsVisible, setTransactionDetailsIsVisible] =
@@ -280,8 +280,8 @@ function TransactionNotification(props: TransactionNotificationProps) {
       } = props;
       const [decodedElement, decodedDetails] = await decodeTransaction({
         ...props,
-        tx: foundTx,
-        selectedAddress,
+        tx: foundTx as DecodeTransactionArgs['tx'],
+        selectedAddress: selectedAddress as string,
         ticker,
         chainId,
         conversionRate,
@@ -305,8 +305,7 @@ function TransactionNotification(props: TransactionNotificationProps) {
       ); // strips decimals if any, coming from the 'times' operation
       setGasFee(gasFeeValue);
       setTx(foundTx);
-      // `decodeTransaction` (JS) returns an untyped [element, details] pair.
-      setTransactionElement(decodedElement as DecodedTransactionElement);
+      setTransactionElement(decodedElement);
       setTransactionDetails(decodedDetails);
     }
     getTransactionInfo();

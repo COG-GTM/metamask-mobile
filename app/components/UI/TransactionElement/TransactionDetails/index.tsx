@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import type { CaipChainId } from '@metamask/utils';
 import {
   TouchableOpacity,
   StyleSheet,
@@ -227,7 +228,7 @@ class TransactionDetails extends PureComponent<Props, State> {
       blockExplorerUrls?: string[];
       defaultBlockExplorerUrlIndex?: number;
     };
-    let blockExplorer =
+    let blockExplorer: string | undefined =
       networkConfiguration?.blockExplorerUrls?.[
         networkConfiguration.defaultBlockExplorerUrlIndex as number
       ] || NO_RPC_BLOCK_EXPLORER;
@@ -245,7 +246,9 @@ class TransactionDetails extends PureComponent<Props, State> {
 
     // Check for non-EVM chain block explorer
     if (isNonEvmChainId(chainId)) {
-      blockExplorer = findBlockExplorerForNonEvmChainId(chainId);
+      blockExplorer = findBlockExplorerForNonEvmChainId(
+        chainId as CaipChainId,
+      );
     }
 
     return blockExplorer;

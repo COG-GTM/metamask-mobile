@@ -1,7 +1,10 @@
 import React, { PureComponent } from 'react';
 import { SafeAreaView, Text, TextInput, View, StyleSheet } from 'react-native';
 import { ParamListBase, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import {
+  StackNavigationOptions,
+  StackNavigationProp,
+} from '@react-navigation/stack';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import ActionView from '../../UI/ActionView';
@@ -86,7 +89,7 @@ export default class AddBookmark extends PureComponent<
         navigation,
         false,
         colors,
-      ),
+      ) as StackNavigationOptions,
     );
   };
 

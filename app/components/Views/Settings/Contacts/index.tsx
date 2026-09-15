@@ -148,7 +148,7 @@ class Contacts extends PureComponent<ContactsProps, ContactsState> {
     const colors = (this.context as Theme).colors || mockTheme.colors;
     const themeAppearance = (this.context as Theme).themeAppearance;
     const styles = createStyles(colors);
-    const { chainId } = this.props;
+    const chainId = this.props.chainId as Hex;
 
     return (
       <SafeAreaView

@@ -14,6 +14,10 @@ interface TermsAndConditionsProps {
    * navigation object required to push and pop other views
    */
   navigation: NavigationProp<ParamListBase>;
+  /**
+   * Label of the action the terms apply to (display-only, unused)
+   */
+  action?: string;
 }
 
 const createStyles = (colors: Theme['colors']) =>

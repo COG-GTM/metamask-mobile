@@ -4,6 +4,7 @@ import {
   type TransactionMeta,
 } from '@metamask/transaction-controller';
 import React, { PureComponent } from 'react';
+import type { CaipChainId } from '@metamask/utils';
 import {
   ActivityIndicator,
   FlatList,
@@ -63,6 +64,10 @@ import withQRHardwareAwareness from '../QRHardware/withQRHardwareAwareness';
 import TransactionActionModal from '../TransactionActionModal';
 import TransactionElement from '../TransactionElement';
 import UpdateEIP1559Tx from '../../Views/confirmations/legacy/components/UpdateEIP1559Tx';
+import type {
+  ExistingGas as UpdateEIP1559ExistingGas,
+  UpdateEIP1559GasTransaction,
+} from '../../Views/confirmations/legacy/components/UpdateEIP1559Tx/types';
 import RetryModal from './RetryModal';
 import PriceChartContext, {
   PriceChartProvider,
@@ -86,7 +91,6 @@ import {
   speedUpTransaction,
   updateIncomingTransactions,
 } from '../../../util/transaction-controller';
-import type { GasTransactionProps } from '../../../core/GasPolling/types';
 import { selectGasFeeEstimates } from '../../../selectors/confirmTransaction';
 import { decGWEIToHexWEI } from '../../../util/conversions';
 import { ActivitiesViewSelectorsIDs } from '../../../../e2e/selectors/Transactions/ActivitiesView.selectors';
@@ -97,9 +101,7 @@ import {
 } from '../../../component-library/components/Texts/Text';
 import type { IQRState } from '../QRHardware/types';
 import type { Colors, Theme } from '../../../util/theme/models';
-import type {
-  Transaction as TransactionElementTransaction,
-} from '../TransactionElement/utils';
+import type { Transaction as TransactionElementTransaction } from '../TransactionElement/utils';
 
 type Transaction = TransactionElementTransaction;
 
@@ -121,12 +123,11 @@ const validateTransactionBalance = (
   accounts: ReturnType<typeof selectAccounts>,
 ): boolean =>
   Boolean(
-      // The JavaScript helper's JSDoc incorrectly declares accounts as a string.
-      validateTransactionActionBalance(
-        transaction,
-        rate as unknown as string,
-        accounts as unknown as string,
-      ),
+    validateTransactionActionBalance(
+      transaction as Parameters<typeof validateTransactionActionBalance>[0],
+      rate,
+      accounts,
+    ),
   );
 
 type LedgerTransaction = Pick<TransactionMeta, 'id'> & {
@@ -149,7 +150,7 @@ interface OwnProps {
   isSigningQRObject?: boolean;
   QRState?: IQRState;
   isSyncingQRHardware?: boolean;
-  onScrollThroughContent?: (event: unknown) => void;
+  onScrollThroughContent?: (contentOffset: number) => void;
   tokenChainId?: string;
 }
 
@@ -282,7 +283,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   existingGas: ExistingGas | null | undefined = null;
-  existingTx: TransactionMeta | null | undefined = null;
+  existingTx: Transaction | null | undefined = null;
   cancelTxId: string | null | undefined = null;
   speedUpTxId: string | null | undefined = null;
   selectedTx: SelectedTransaction | null = null;
@@ -314,14 +315,11 @@ class Transactions extends PureComponent<Props, State> {
     let blockExplorer;
     if (type === RPC) {
       blockExplorer =
-        findBlockExplorerForRpc(
-          rpcUrl as string,
-        networkConfigurations,
-        ) ||
+        findBlockExplorerForRpc(rpcUrl as string, networkConfigurations) ||
         NO_RPC_BLOCK_EXPLORER;
     } else if (isNonEvmChainId(chainId)) {
       // TODO: [SOLANA] - block explorer needs to be implemented
-      blockExplorer = findBlockExplorerForNonEvmChainId(chainId);
+      blockExplorer = findBlockExplorerForNonEvmChainId(chainId as CaipChainId);
     }
 
     this.setState({ rpcBlockExplorer: blockExplorer });
@@ -356,7 +354,7 @@ class Transactions extends PureComponent<Props, State> {
           (tx) => txToView === tx.id,
         );
         if (index >= 0) {
-          this.toggleDetailsView(txToView, index);
+          this.toggleDetailsView(txToView as string, index);
         }
       }, 1000);
     }
@@ -608,7 +606,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   speedUpTransaction = async (
-    transactionObject?: GasTransactionProps,
+    transactionObject?: UpdateEIP1559GasTransaction,
   ) => {
     try {
       if (transactionObject?.error) {
@@ -678,7 +676,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   cancelTransaction = async (
-    transactionObject?: GasTransactionProps,
+    transactionObject?: UpdateEIP1559GasTransaction,
   ) => {
     try {
       if (transactionObject?.error) {
@@ -748,20 +746,12 @@ class Transactions extends PureComponent<Props, State> {
     //If the exitsing TX id true then it is a speed up retry
     if (this.speedUpTxId) {
       InteractionManager.runAfterInteractions(() => {
-        this.onSpeedUpAction(
-          true,
-          this.existingGas,
-          this.existingTx,
-        );
+        this.onSpeedUpAction(true, this.existingGas, this.existingTx);
       });
     }
     if (this.cancelTxId) {
       InteractionManager.runAfterInteractions(() => {
-        this.onCancelAction(
-          true,
-          this.existingGas,
-          this.existingTx,
-        );
+        this.onCancelAction(true, this.existingGas, this.existingTx);
       });
     }
   };
@@ -807,7 +797,7 @@ class Transactions extends PureComponent<Props, State> {
                 isCancel ? this.onCancelCompleted : this.onSpeedUpCompleted
               }
               chainId={this.props.chainId}
-              existingGas={this.existingGas}
+              existingGas={this.existingGas as UpdateEIP1559ExistingGas}
               isCancel={isCancel}
             />
           </KeyboardAwareScrollView>
@@ -1046,16 +1036,21 @@ const ConnectedTransactions = connect(
   mapDispatchToProps,
 )(TransactionsWithQRHardware as React.ComponentType<OwnProps>);
 
-type LegacyTransactionsProps = Omit<Partial<OwnProps>, 'transactions'> & {
-  transactions?: Array<
-    Omit<Partial<Transaction>, 'status' | 'txParams'> & {
-      status?: string;
-      txParams?: Partial<Transaction['txParams']>;
-    }
-  >;
-};
+type LegacyTransactionsProps = Omit<Partial<OwnProps>, 'transactions'> &
+  Partial<
+    Pick<
+      StateProps,
+      'selectedAddress' | 'currentCurrency' | 'networkType' | 'chainId'
+    >
+  > & {
+    conversionRate?: number | null;
+    transactions?: Array<
+      Omit<Partial<Transaction>, 'status' | 'txParams'> & {
+        status?: string;
+        txParams?: Partial<Transaction['txParams']>;
+      }
+    >;
+  };
 
 // Legacy tests provide partial transaction fixtures; runtime callers provide controller transactions.
-export default ConnectedTransactions as unknown as React.ComponentType<
-  LegacyTransactionsProps
->;
+export default ConnectedTransactions as unknown as React.ComponentType<LegacyTransactionsProps>;

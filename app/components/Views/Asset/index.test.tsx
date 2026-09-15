@@ -155,7 +155,6 @@ describe('Asset', () => {
             },
           } as unknown as AssetProps['route']
         }
-        transactions={[]}
       />,
       {
         state: mockInitialState,

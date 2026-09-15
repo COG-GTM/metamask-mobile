@@ -786,7 +786,7 @@ interface TransactionElementOwnProps
 
 const TransactionElementWithBridge = (props: TransactionElementOwnProps) => {
   const bridgeTxHistoryData = useBridgeTxHistoryData({
-    evmTxMeta: props.tx,
+    evmTxMeta: props.tx as TransactionMeta,
   });
 
   return (
