@@ -10,12 +10,40 @@ import { getEtherscanBaseUrl } from '../../../../util/etherscan';
 import { useSelector } from 'react-redux';
 import {
   selectEvmChainId,
+  selectEvmNetworkConfigurationsByChainId,
   selectProviderConfig,
+  type ProviderConfig,
 } from '../../../../selectors/networkController';
 import { selectNetworkName } from '../../../../selectors/networkInfos';
 
-function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
-  const [explorer, setExplorer] = useState({
+interface ExplorerState {
+  name: string;
+  value: string | null;
+  isValid: boolean;
+  isRPC: boolean;
+  baseUrl: string;
+}
+
+type NetworkConfigurations = ReturnType<
+  typeof selectEvmNetworkConfigurationsByChainId
+>;
+
+interface BlockExplorer {
+  name: string;
+  value: string | null;
+  isValid: boolean;
+  isRPC: boolean;
+  baseUrl: string;
+  tx: (hash: string | undefined) => string;
+  account: (address: string) => string;
+  token: (address: string) => string;
+}
+
+function useBlockExplorer(
+  networkConfigurations: NetworkConfigurations,
+  providerConfigTokenExplorer?: ProviderConfig,
+): BlockExplorer {
+  const [explorer, setExplorer] = useState<ExplorerState>({
     name: '',
     value: null,
     isValid: false,
@@ -80,8 +108,8 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
   ]);
 
   const tx = useCallback(
-    (hash) => {
-      if (!explorer.isValid) {
+    (hash: string | undefined) => {
+      if (!hash || !explorer.isValid || !explorer.value) {
         return '';
       }
 
@@ -93,8 +121,8 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const account = useCallback(
-    (address) => {
-      if (!explorer.isValid) {
+    (address: string) => {
+      if (!explorer.isValid || !explorer.value) {
         return '';
       }
 
@@ -106,8 +134,8 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
     [explorer],
   );
   const token = useCallback(
-    (address) => {
-      if (!explorer.isValid) {
+    (address: string) => {
+      if (!explorer.isValid || !explorer.value) {
         return '';
       }
 

@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { Animated, View, StyleSheet, Image } from 'react-native';
-import PropTypes from 'prop-types';
 import { selectSelectedNetworkClientId } from '../../../../../selectors/networkController';
 import Engine from '../../../../../core/Engine';
 import Logger from '../../../../../util/Logger';
@@ -19,6 +18,7 @@ import Title from '../../../../Base/Title';
 import { useTheme } from '../../../../../util/theme';
 import foxImage from '../../../../../images/branding/fox.png';
 import ShapesBackgroundAnimation from './ShapesBackgroundAnimation';
+import type { Theme } from '@metamask/design-tokens';
 
 const ANIM_MULTIPLIER = 0.67;
 const INITIAL_DELAY = 1000 * ANIM_MULTIPLIER;
@@ -36,7 +36,7 @@ const PAN_RADIO = STAGE_SIZE * 0.6;
 // "finalizing" animationg
 const FINALIZING_PERCENTAGE = 80;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -108,8 +108,32 @@ const createStyles = (colors, shadows) =>
     },
   });
 
-function round(value, decimals) {
-  return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+interface AggregatorMetadata {
+  color: string;
+  iconPng: string;
+  title: string;
+}
+
+interface AggregatorMetadataEntry extends AggregatorMetadata {
+  key: string;
+}
+
+interface LoadingAnimationProps {
+  finish?: boolean;
+  onAnimationEnd?: () => void;
+  aggregatorMetadata?: Record<string, AggregatorMetadata>;
+  headPan?: boolean;
+}
+
+interface FoxRef {
+  injectJavaScript?: (script: string) => void;
+  reload?: () => void;
+}
+
+function round(value: number, decimals: number): number {
+  return Number(
+    Math.round(Number(`${value}e${decimals}`)) + `e-${decimals}`,
+  );
 }
 
 function LoadingAnimation({
@@ -117,8 +141,8 @@ function LoadingAnimation({
   onAnimationEnd,
   aggregatorMetadata,
   headPan = true,
-}) {
-  const [metadata, setMetadata] = useState([]);
+}: LoadingAnimationProps) {
+  const [metadata, setMetadata] = useState<AggregatorMetadataEntry[]>([]);
   const [shouldStart, setShouldStart] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
@@ -129,8 +153,8 @@ function LoadingAnimation({
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
 
   /* References */
-  const foxRef = useRef();
-  const foxHeadPan = useRef(new Animated.ValueXY(0, 0)).current;
+  const foxRef = useRef<FoxRef | null>(null);
+  const foxHeadPan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const currentQuoteIndexValue = useRef(new Animated.Value(0)).current;
   const progressValue = useRef(new Animated.Value(0)).current;
   const progressWidth = progressValue.interpolate({
@@ -152,7 +176,8 @@ function LoadingAnimation({
   const positions = useMemo(
     () =>
       headPan
-        ? metadata.reduce((acc, curr, index) => {
+        ? metadata.reduce<Record<string, [number, number, number, number]>>(
+            (acc, curr, index) => {
             // Vertical position is random and is in range [-0.6, 0.6]
             // making the head not look so steep up/down
             const y = Math.random() * 0.6 * (Math.random() < 0.5 ? -1 : 1);
@@ -178,12 +203,13 @@ function LoadingAnimation({
               Math.sqrt(1 - Math.pow(y, 2)) * x * AGG_RADIO -
               (isNegativeX ? 95 : 0);
 
-            return {
-              ...acc,
-              [curr.key]: [panRadioX, panRadioY, radioX, radioY],
-            };
-            // eslint-disable-next-line no-mixed-spaces-and-tabs
-          }, {})
+              return {
+                ...acc,
+                [curr.key]: [panRadioX, panRadioY, radioX, radioY],
+              };
+            },
+            {},
+          )
         : {},
     [metadata, headPan],
   );
@@ -192,13 +218,12 @@ function LoadingAnimation({
   const opacities = useMemo(
     () =>
       headPan
-        ? metadata.reduce(
+        ? metadata.reduce<Record<string, Animated.Value>>(
             (acc, curr) => ({
               ...acc,
               [curr.key]: new Animated.Value(0),
             }),
             {},
-            // eslint-disable-next-line no-mixed-spaces-and-tabs
           )
         : {},
     [metadata, headPan],
@@ -206,76 +231,83 @@ function LoadingAnimation({
 
   // The sequence for each aggregator
   const animationSequence = useMemo(
-    () =>
-      headPan
-        ? [
-            // Animated.delay(INITIAL_DELAY),
-            ...metadata.reduce(
-              (acc, cur, index, array) => [
-                ...acc,
-                // Time to delay next iteration, this is the amount of time the head looks at the icon
-                Animated.delay(index > 0 ? DELAY : 0),
-                // Track the current index of the array
-                Animated.timing(currentQuoteIndexValue, {
-                  toValue: index,
-                  duration: 0,
-                  useNativeDriver: true,
-                }),
-                Animated.parallel([
-                  // If is not the first aggregator, reduce previous aggregator opacity to 1
-                  index > 0 &&
-                    Animated.timing(opacities[array[index - 1].key], {
-                      toValue: 0,
-                      duration: PAN_DURATION,
-                      useNativeDriver: true,
-                    }),
-                  // Set current aggregator opacity to 1
-                  Animated.timing(opacities[cur.key], {
-                    toValue: 1,
-                    duration: PAN_DURATION,
-                    useNativeDriver: true,
-                  }),
-                  // Update progress bar given the current index
-                  Animated.timing(progressValue, {
-                    toValue:
-                      (FINALIZING_PERCENTAGE / array.length) * (index + 1),
-                    duration: PAN_DURATION,
-                    useNativeDriver: false,
-                  }),
-                  // Make the fox head pan to the aggregator position
-                  !Device.isAndroid() &&
-                    Animated.timing(foxHeadPan, {
-                      toValue: {
-                        x: positions[cur.key][0],
-                        y: positions[cur.key][1],
-                      },
-                      duration: PAN_DURATION,
-                      useNativeDriver: true,
-                    }),
-                ]),
-              ],
-              [],
-            ),
-            // Final animation of the sequence
-            Animated.delay(DELAY),
-            Animated.parallel([
-              // Set last aggregator icon opacity to 0
-              Animated.timing(opacities[[...metadata].pop()?.key], {
-                toValue: 0,
-                duration: PAN_DURATION,
-                useNativeDriver: true,
-              }),
-              // Reset to fox head to origing
-              !Device.isAndroid() &&
-                Animated.timing(foxHeadPan, {
-                  toValue: { x: 0, y: 0 },
-                  duration: PAN_DURATION,
-                  useNativeDriver: true,
-                }),
-            ]),
-            // eslint-disable-next-line no-mixed-spaces-and-tabs
-          ]
-        : [],
+    () => {
+      if (!headPan) {
+        return [];
+      }
+
+      const sequence: Animated.CompositeAnimation[] = [];
+      metadata.forEach((cur, index, array) => {
+        sequence.push(Animated.delay(index > 0 ? DELAY : 0));
+        sequence.push(
+          Animated.timing(currentQuoteIndexValue, {
+            toValue: index,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        );
+
+        const animations: Animated.CompositeAnimation[] = [];
+        if (index > 0) {
+          animations.push(
+            Animated.timing(opacities[array[index - 1].key], {
+              toValue: 0,
+              duration: PAN_DURATION,
+              useNativeDriver: true,
+            }),
+          );
+        }
+        animations.push(
+          Animated.timing(opacities[cur.key], {
+            toValue: 1,
+            duration: PAN_DURATION,
+            useNativeDriver: true,
+          }),
+          Animated.timing(progressValue, {
+            toValue: (FINALIZING_PERCENTAGE / array.length) * (index + 1),
+            duration: PAN_DURATION,
+            useNativeDriver: false,
+          }),
+        );
+        if (!Device.isAndroid()) {
+          animations.push(
+            Animated.timing(foxHeadPan, {
+              toValue: {
+                x: positions[cur.key][0],
+                y: positions[cur.key][1],
+              },
+              duration: PAN_DURATION,
+              useNativeDriver: true,
+            }),
+          );
+        }
+        sequence.push(Animated.parallel(animations));
+      });
+
+      sequence.push(Animated.delay(DELAY));
+      const finalAnimations: Animated.CompositeAnimation[] = [];
+      const lastMetadata = metadata[metadata.length - 1];
+      if (lastMetadata) {
+        finalAnimations.push(
+          Animated.timing(opacities[lastMetadata.key], {
+            toValue: 0,
+            duration: PAN_DURATION,
+            useNativeDriver: true,
+          }),
+        );
+      }
+      if (!Device.isAndroid()) {
+        finalAnimations.push(
+          Animated.timing(foxHeadPan, {
+            toValue: { x: 0, y: 0 },
+            duration: PAN_DURATION,
+            useNativeDriver: true,
+          }),
+        );
+      }
+      sequence.push(Animated.parallel(finalAnimations));
+      return sequence;
+    },
     [
       currentQuoteIndexValue,
       foxHeadPan,
@@ -322,19 +354,21 @@ function LoadingAnimation({
             networkClientId: selectedNetworkClientId,
           });
         } catch (error) {
+          const normalizedError =
+            error instanceof Error ? error : new Error(String(error));
           Logger.error(
-            error,
+            normalizedError,
             'Swaps: Error fetching agg metadata in animation',
           );
         }
       } else {
-        const metadata = Object.entries(aggregatorMetadata).map(
+        const metadataEntries = Object.entries(aggregatorMetadata).map(
           ([key, value]) => ({
             key,
             ...value,
           }),
         );
-        setMetadata(metadata);
+        setMetadata(metadataEntries);
         setShouldStart(true);
       }
     })();
@@ -470,7 +504,6 @@ function LoadingAnimation({
         </View>
         {renderLogos &&
           headPan &&
-          metadata &&
           metadata.map((agg) => (
             <Animated.View
               key={agg.key}
@@ -498,24 +531,5 @@ function LoadingAnimation({
     </View>
   );
 }
-
-LoadingAnimation.propTypes = {
-  /**
-   * Wether to execute the "Finalizing" animation after the main sequence
-   */
-  finish: PropTypes.bool,
-  /**
-   * Function callback executed once both the main sequence and the finalizing animation ends
-   */
-  onAnimationEnd: PropTypes.func,
-  /**
-   * Aggregator metada from Swaps controller API
-   */
-  aggregatorMetadata: PropTypes.object,
-  /**
-   * Wether to show head panning animation with aggregators logos
-   */
-  headPan: PropTypes.bool,
-};
 
 export default LoadingAnimation;
