@@ -1,4 +1,23 @@
-export default [
+export interface AbiItem {
+  constant?: boolean;
+  inputs?: {
+    name: string;
+    type: string;
+    indexed?: boolean;
+  }[];
+  name?: string;
+  outputs?: {
+    name: string;
+    type: string;
+    indexed?: boolean;
+  }[];
+  payable?: boolean;
+  type: string;
+  anonymous?: boolean;
+  stateMutability?: string;
+}
+
+const registryAbi: AbiItem[] = [
   {
     constant: true,
     inputs: [{ name: 'node', type: 'bytes32' }],
@@ -106,3 +125,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default registryAbi;

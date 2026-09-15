@@ -31,6 +31,61 @@ declare module 'images/image-icons' {
   export default content;
 }
 
+declare module 'eth-ens-namehash' {
+  const namehash: {
+    hash(name: string): string;
+  };
+  export default namehash;
+}
+
+declare module '@metamask/ethjs-query' {
+  import type { Provider } from '@metamask/network-controller';
+
+  class Eth {
+    constructor(provider: Provider);
+  }
+
+  export default Eth;
+}
+
+declare module '@metamask/ethjs-contract' {
+  interface ContractMethod {
+    (...args: unknown[]): Promise<[string]>;
+  }
+
+  interface ContractInstance {
+    [method: string]: ContractMethod;
+  }
+
+  interface ContractFactory {
+    at(address: string): ContractInstance;
+  }
+
+  interface EthContract {
+    new (eth: unknown): (abi: unknown[]) => ContractFactory;
+  }
+
+  const EthContract: EthContract;
+  export default EthContract;
+}
+
+declare module 'content-hash' {
+  const contentHash: {
+    decode(value: string): string;
+    getCodec(value: string): string;
+  };
+  export default contentHash;
+}
+
+declare module 'multihashes' {
+  const multihash: {
+    fromHexString(value: string): Uint8Array;
+    toB58String(value: Uint8Array): string;
+    encode(value: Uint8Array, codec: string): Uint8Array;
+  };
+  export default multihash;
+}
+
 declare module '*.png' {
   import { ImageSourcePropType } from 'react-native';
   const content: ImageSourcePropType;

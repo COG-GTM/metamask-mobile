@@ -15,9 +15,6 @@ export const PRIVATENETWORK = 'PRIVATENETWORK';
 export const DEFAULT_MAINNET_CUSTOM_NAME = 'Ethereum Main Custom';
 export const IPFS_DEFAULT_GATEWAY_URL = 'https://dweb.link/ipfs/';
 
-/**
- * @enum {string}
- */
 export const NETWORKS_CHAIN_ID = {
   MAINNET: toHex('1'),
   OPTIMISM: toHex('10'),
@@ -101,5 +98,5 @@ export const TEST_NETWORK_IDS = [
   NETWORKS_CHAIN_ID.SEPOLIA,
   NETWORKS_CHAIN_ID.LINEA_GOERLI,
   NETWORKS_CHAIN_ID.LINEA_SEPOLIA,
-  NETWORKS_CHAIN_ID.MEGAETH_TESTNET
+  NETWORKS_CHAIN_ID.MEGAETH_TESTNET,
 ];
