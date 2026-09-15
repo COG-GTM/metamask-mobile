@@ -1,8 +1,14 @@
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
-import ScrollableTabView from 'react-native-scrollable-tab-view';
+import { View, StyleSheet, Text, TextStyle } from 'react-native';
+import ScrollableTabView, { TabProps } from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  NavigationProp,
+  ParamListBase,
+  useFocusEffect,
+  useNavigation,
+} from '@react-navigation/native';
+import { RootState } from '../../../reducers';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
 import { getHasOrders } from '../../../reducers/fiatOrders';
 import { getTransactionsNavbarOptions } from '../../UI/Navbar';
@@ -13,6 +19,7 @@ import { strings } from '../../../../locales/i18n';
 import RampOrdersList from '../../UI/Ramp/Views/OrdersList';
 import ErrorBoundary from '../ErrorBoundary';
 import { useTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { selectAccountsByChainId } from '../../../selectors/accountTrackerController';
@@ -32,7 +39,6 @@ import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetwork
 import { selectNetworkName } from '../../../selectors/networkInfos';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DEFAULT_HEADERBASE_TITLE_TEXTVARIANT } from '../../../component-library/components/HeaderBase/HeaderBase.constants';
 import { typography } from '@metamask/design-tokens';
 import { useStyles } from '../../hooks/useStyles';
 import {
@@ -40,7 +46,20 @@ import {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+// ScrollableTabView reads `tabLabel` from its direct children; these views
+// don't declare it themselves, so widen their prop types for the tab layout.
+const TransactionsTab = TransactionsView as unknown as React.ComponentType<
+  TabProps<{ children?: React.ReactNode }>
+>;
+const MultichainTransactionsTab =
+  MultichainTransactionsView as React.ComponentType<TabProps>;
+const RampOrdersTab = RampOrdersList as React.ComponentType<TabProps>;
+
+type ScrollableTabViewRef = ScrollableTabView & {
+  goToPage: (pageNumber: number) => void;
+};
+
+const createStyles = (params: { theme: Theme }) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -82,16 +101,19 @@ const createStyles = (params) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
-    },
+    } as TextStyle,
     titleText: {
       color: colors.text.default,
     },
   });
 };
+
+interface ActivityViewParams {
+  redirectToOrders?: boolean;
+}
 
 const ActivityView = () => {
   const { colors } = useTheme();
@@ -102,7 +124,7 @@ const ActivityView = () => {
   });
 
   const { trackEvent, createEventBuilder } = useMetrics();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const selectedAddress = useSelector(
     selectSelectedInternalAccountFormattedAddress,
   );
@@ -111,10 +133,12 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<ScrollableTabViewRef>(null);
+  const params = useParams<ActivityViewParams>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +152,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            (selectedAddress && accountsByChainId[selectedAddress]) ?? {},
           ).length,
         })
         .build(),
@@ -177,12 +201,7 @@ const ActivityView = () => {
   return (
     <ErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
-        <Text
-          style={styles.title}
-          variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
-        >
-          {strings('transactions_view.title')}
-        </Text>
+        <Text style={styles.title}>{strings('transactions_view.title')}</Text>
       </View>
       <View style={styles.wrapper}>
         <View style={styles.controlButtonOuterWrapper}>
@@ -212,14 +231,14 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <MultichainTransactionsTab
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
-            <TransactionsView tabLabel={strings('transactions_view.title')} />
+            <TransactionsTab tabLabel={strings('transactions_view.title')} />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <RampOrdersTab
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}

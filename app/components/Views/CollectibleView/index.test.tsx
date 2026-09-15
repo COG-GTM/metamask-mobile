@@ -2,6 +2,8 @@ import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 import CollectibleView from '.';
+
+type CollectibleViewProps = React.ComponentProps<typeof CollectibleView>;
 import configureMockStore from 'redux-mock-store';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -30,7 +32,7 @@ describe('CollectibleView Snapshot', () => {
         },
       },
       newAssetTransaction: jest.fn(),
-    };
+    } as unknown as CollectibleViewProps;
 
     const { toJSON } = render(
       <Provider store={store}>
@@ -55,7 +57,7 @@ describe('CollectibleView Snapshot', () => {
         },
       },
       newAssetTransaction: jest.fn(),
-    };
+    } as unknown as CollectibleViewProps;
 
     const wrapper = render(
       <Provider store={store}>
