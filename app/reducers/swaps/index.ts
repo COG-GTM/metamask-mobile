@@ -52,7 +52,9 @@ type SwapsSmartTransactionsFeatureFlags = Omit<
   SmartTransactionsFeatureFlags,
   'smartTransactions'
 > & {
-  smartTransactions?: SmartTransactionsFeatureFlags['smartTransactions'] & {
+  smartTransactions: NonNullable<
+    SmartTransactionsFeatureFlags['smartTransactions']
+  > & {
     mobileActive?: boolean;
     extensionActive?: boolean;
     mobileActiveIOS?: boolean;
@@ -385,9 +387,9 @@ export const swapsTokensWithBalanceSelector = createSelector(
     }
     const baseTokens = tokens;
     const tokensAddressesWithBalance = (
-      Object.entries(balances)
+      Object.entries(balances as Record<string, Hex | number>)
     )
-      .filter(([, balance]) => balance !== '0x0')
+      .filter(([, balance]) => balance !== 0)
       .sort(([, balanceA], [, balanceB]) => (lte(balanceB, balanceA) ? -1 : 1))
       .map(([address]) => address.toLowerCase());
     const tokensWithBalance: SwapsToken[] = [];

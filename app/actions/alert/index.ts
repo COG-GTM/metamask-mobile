@@ -1,12 +1,22 @@
 export const SHOW_ALERT = 'SHOW_ALERT';
 export const HIDE_ALERT = 'HIDE_ALERT';
 
+export type AlertData =
+  | {
+      msg: string;
+    }
+  | {
+      msg: string;
+      width: string;
+    }
+  | null;
+
 interface ShowAlertAction {
   type: typeof SHOW_ALERT;
   isVisible: boolean;
   autodismiss: number | null;
   content: string | null;
-  data: unknown;
+  data: AlertData;
 }
 
 interface HideAlertAction {
@@ -25,7 +35,7 @@ interface ShowAlertArgs {
   isVisible: boolean;
   autodismiss: number | null;
   content: string | null;
-  data: unknown;
+  data: AlertData;
 }
 
 export function showAlert({

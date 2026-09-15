@@ -180,14 +180,10 @@ function publishHook({
 function getSmartTransactionCommonParams(state: RootState, chainId?: Hex) {
   const shouldUseSmartTransaction = selectShouldUseSmartTransaction(state, chainId);
   const selectedFeatureFlags = selectSwapsChainFeatureFlags(state, chainId);
-  const featureFlags = {
-    ...selectedFeatureFlags,
-    smartTransactions: selectedFeatureFlags.smartTransactions ?? {},
-  };
 
   return {
     shouldUseSmartTransaction,
-    featureFlags,
+    featureFlags: selectedFeatureFlags,
   };
 }
 

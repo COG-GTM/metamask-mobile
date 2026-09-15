@@ -173,14 +173,11 @@ const transactionReducer = (
       };
     case 'SET_TRANSACTION_SECURITY_ALERT_RESPONSE': {
       const { transactionId, securityAlertResponse } = action;
-      if (transactionId === undefined) {
-        return state;
-      }
       return {
         ...state,
         securityAlertResponses: {
           ...state.securityAlertResponses,
-          [transactionId]: securityAlertResponse,
+          [transactionId as string]: securityAlertResponse,
         },
       };
     }

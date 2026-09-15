@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/default-param-last */
-import type { AlertAction } from '../../actions/alert';
+import type { AlertAction, AlertData } from '../../actions/alert';
 
 export interface AlertState {
   isVisible: boolean;
   autodismiss: number | null;
   content: string | null;
-  data: unknown;
+  data: AlertData;
 }
 
 export const initialState: AlertState = {
