@@ -4,8 +4,23 @@ import {
   endowmentCaveatSpecifications as snapsEndowmentCaveatSpecifications,
 } from '@metamask/snaps-rpc-methods';
 ///: END:ONLY_INCLUDE_IF
-import {  RestrictedMethods } from './constants';
-import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCaip25Caveat } from '@metamask/chain-agnostic-permission';
+import { RestrictedMethods } from './constants';
+import {
+  caip25CaveatBuilder,
+  Caip25CaveatType,
+  caip25EndowmentBuilder,
+  createCaip25Caveat,
+} from '@metamask/chain-agnostic-permission';
+import type { InternalAccount } from '@metamask/keyring-internal-api';
+
+type Caip25CaveatBuilderOptions = Parameters<typeof caip25CaveatBuilder>[0];
+
+export type CaveatSpecificationOptions = Pick<
+  Caip25CaveatBuilderOptions,
+  'findNetworkClientIdByChainId'
+> & {
+  listAccounts: () => InternalAccount[];
+};
 
 /**
  * This file contains the specifications of the permissions and caveats
@@ -44,19 +59,20 @@ export const CaveatFactories = Object.freeze({
  * Gets the specifications for all caveats that will be recognized by the
  * PermissionController.
  *
- * @param {{
- * listAccounts: () => import('@metamask/keyring-api').InternalAccount[],
- * findNetworkClientIdByChainId: (chainId: `0x${string}`) => string,
- * }} options - Options bag.
+ * @param options - Options bag.
+ * @param options.listAccounts - Lists the internal accounts.
+ * @param options.findNetworkClientIdByChainId - Finds a network client id by chain id.
  */
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: CaveatSpecificationOptions) => ({
+  // The non-EVM hooks required by the builder's type are not wired up on mobile,
+  // and `InternalAccount.address` is a plain `string` where the builder expects `Hex`
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+  } as unknown as Caip25CaveatBuilderOptions),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,

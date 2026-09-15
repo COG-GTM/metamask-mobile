@@ -1,12 +1,33 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
 import { Duplex } from 'readable-stream';
+// eslint-disable-next-line import/no-nodejs-modules
+import type { EventEmitter } from 'events';
 
 // eslint-disable-next-line no-empty-function
 const noop = () => {};
 
+export interface StreamPort extends EventEmitter {
+  postMessage: (msg: unknown, origin?: string) => void;
+}
+
+interface SerializedBuffer extends ReturnType<Buffer['toJSON']> {
+  _isBuffer?: boolean;
+}
+
+/**
+ * Creates a stream that's both readable and writable.
+ * The stream supports arbitrary objects.
+ *
+ * @class
+ * @param {Object} port Remote Port object
+ */
 export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+  private _port: StreamPort;
+
+  private _url: string;
+
+  constructor(port: StreamPort, url: string) {
     super({
       objectMode: true,
     });
@@ -23,15 +44,15 @@ export default class PortDuplexStream extends Duplex {
    * @private
    * @param {Object} msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  _onMessage(msg: unknown): void {
     if (Buffer.isBuffer(msg)) {
-      delete msg._isBuffer;
+      delete (msg as Buffer & SerializedBuffer)._isBuffer;
       const data = new Buffer(msg);
       this.push(data);
     } else {
       this.push(msg);
     }
-  };
+  }
 
   /**
    * Callback triggered when the remote Port
@@ -39,9 +60,9 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect = function () {
+  _onDisconnect(): void {
     this.destroy && this.destroy();
-  };
+  }
 
   /**
    * Explicitly sets read operations to a no-op
@@ -57,10 +78,14 @@ export default class PortDuplexStream extends Duplex {
    * @param {string} encoding Encoding to use when writing payload
    * @param {Function} cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  _write(
+    msg: unknown,
+    _encoding: BufferEncoding,
+    cb: (error?: Error | null) => void,
+  ): void {
     try {
       if (Buffer.isBuffer(msg)) {
-        const data = msg.toJSON();
+        const data: SerializedBuffer = msg.toJSON();
         data._isBuffer = true;
         this._port.postMessage(data, this._url);
       } else {
@@ -70,5 +95,5 @@ export default class PortDuplexStream extends Duplex {
       return cb(new Error('PortDuplexStream - disconnected'));
     }
     cb();
-  };
+  }
 }
