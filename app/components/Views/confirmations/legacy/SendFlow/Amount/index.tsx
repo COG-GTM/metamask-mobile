@@ -453,7 +453,7 @@ interface AmountOwnProps {
   /**
    * Object that contains navigation props
    */
-  route: RouteProp<ParamListBase, string>;
+  route?: RouteProp<ParamListBase, string>;
   /**
    * function to call when the 'Next' button is clicked
    */
