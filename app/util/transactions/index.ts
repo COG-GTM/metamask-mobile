@@ -689,7 +689,7 @@ export async function getActionKey(
  * Returns corresponding transaction function type
  *
  * @param {object} tx - Transaction object
- * @param {string} chainId - Current chainId
+ * @param {string} [chainId] - Current chainId
  * @returns {string} - Transaction function type
  */
 export async function getTransactionReviewActionKey(

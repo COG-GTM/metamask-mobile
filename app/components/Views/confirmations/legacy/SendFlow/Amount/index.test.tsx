@@ -2,7 +2,11 @@ import React from 'react';
 import Amount from '.';
 // eslint-disable-next-line @typescript-eslint/no-shadow
 import { act, fireEvent, waitFor } from '@testing-library/react-native';
-import { createStackNavigator } from '@react-navigation/stack';
+import {
+  createStackNavigator,
+  StackNavigationProp,
+} from '@react-navigation/stack';
+import { ParamListBase } from '@react-navigation/native';
 import renderWithProvider from '../../../../../../util/test/renderWithProvider';
 import TransactionTypes from '../../../../../../core/TransactionTypes';
 import { addTransaction } from '../../../../../../util/transaction-controller';
@@ -210,11 +214,13 @@ const renderComponent = (state: any = {}) =>
         {(props) => (
           <Amount
             {...props}
-            navigation={{
-              navigate: mockNavigate,
-              setOptions: jest.fn(),
-              setParams: jest.fn(),
-            }}
+            navigation={
+              {
+                navigate: mockNavigate,
+                setOptions: jest.fn(),
+                setParams: jest.fn(),
+              } as unknown as StackNavigationProp<ParamListBase>
+            }
           />
         )}
       </Stack.Screen>

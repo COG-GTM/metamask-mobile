@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -15,9 +14,29 @@ import { SendViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlo
 import { selectInternalAccounts } from '../../../../../../selectors/accountsController';
 import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
+import { AddressBookEntry } from '@metamask/address-book-controller';
+import { Hex } from '@metamask/utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { RootState } from '../../../../../../reducers';
 
-const LabelElement = (styles, label) => (
+interface AddressListContact extends AddressBookEntry {
+  isAmbiguousAddress?: boolean;
+  isSmartContract: boolean;
+}
+
+type ContactElement = string | AddressListContact;
+
+export interface AddressListProps {
+  chainId: Hex;
+  inputSearch?: string;
+  onAccountPress: (address: string) => void;
+  onAccountLongPress: (address: string) => void;
+  onIconPress: () => void;
+  onlyRenderAddressBook?: boolean;
+  reloadAddressList?: boolean;
+}
+
+const LabelElement = (styles: ReturnType<typeof styleSheet>, label: string) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -33,15 +52,17 @@ const AddressList = ({
   onIconPress,
   onlyRenderAddressBook = false,
   reloadAddressList,
-}) => {
+}: AddressListProps) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
-  const [contactElements, setContactElements] = useState([]);
-  const [fuse, setFuse] = useState(undefined);
+  const [contactElements, setContactElements] = useState<ContactElement[]>([]);
+  const [fuse, setFuse] = useState<Fuse<AddressBookEntry> | undefined>(
+    undefined,
+  );
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
-    (state) => state.user.ambiguousAddressEntries,
+    (state: RootState) => state.user.ambiguousAddressEntries,
   );
 
   const networkAddressBook = useMemo(
@@ -49,17 +70,22 @@ const AddressList = ({
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
-      const contacts = networkAddressBookList.map((contact) => {
-        const isAmbiguousAddress =
-          chainId &&
-          ambiguousAddressEntries?.[chainId]?.includes(contact.address);
-        return {
-          ...contact,
-          ...(isAmbiguousAddress && { isAmbiguousAddress }),
-          isSmartContract: false,
-        };
-      });
+    (networkAddressBookList: AddressBookEntry[]) => {
+      const contacts: AddressListContact[] = networkAddressBookList.map(
+        (contact) => {
+          const ambiguousEntriesForChain: unknown = chainId
+            ? ambiguousAddressEntries?.[chainId]
+            : undefined;
+          const isAmbiguousAddress =
+            Array.isArray(ambiguousEntriesForChain) &&
+            ambiguousEntriesForChain.includes(contact.address);
+          return {
+            ...contact,
+            ...(isAmbiguousAddress && { isAmbiguousAddress }),
+            isSmartContract: false,
+          };
+        },
+      );
 
       Promise.all(
         contacts.map((contact) =>
@@ -73,11 +99,11 @@ const AddressList = ({
             .catch(() => contact),
         ),
       ).then((updatedContacts) => {
-        const newContactElements = [];
-        const addressBookTree = {};
+        const newContactElements: ContactElement[] = [];
+        const addressBookTree: Record<string, AddressListContact[]> = {};
 
         updatedContacts.forEach((contact) => {
-          const contactNameInitial = contact?.name?.[0];
+          const contactNameInitial = String(contact?.name?.[0]);
           const nameInitial = regex.nameInitial.exec(contactNameInitial);
           const initial = nameInitial
             ? nameInitial[0].toLowerCase()
@@ -175,7 +201,7 @@ const AddressList = ({
     );
   };
 
-  const renderElement = (addressElement) => {
+  const renderElement = (addressElement: ContactElement) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
     }
@@ -198,14 +224,14 @@ const AddressList = ({
   };
 
   const renderContent = () => {
-    const sendFlowContacts = [];
+    const sendFlowContacts: ContactElement[] = [];
 
     contactElements.forEach((contractElement) => {
       if (
         typeof contractElement === 'object' &&
         contractElement.isSmartContract === false
       ) {
-        const nameInitial = contractElement?.name?.[0].toLowerCase();
+        const nameInitial = contractElement?.name?.[0]?.toLowerCase() ?? '';
         if (sendFlowContacts.includes(nameInitial)) {
           sendFlowContacts.push(contractElement);
         } else {
