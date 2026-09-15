@@ -1,7 +1,11 @@
 import { getGanachePort } from '../../../e2e/fixtures/utils';
-import ganache from 'ganache';
+import ganache, { type Server, type ServerOptions } from 'ganache';
 
 export const DEFAULT_GANACHE_PORT = 8545;
+
+export type GanacheStartOptions = Partial<ServerOptions> & {
+  mnemonic?: string;
+};
 
 const defaultOptions = {
   blockTime: 2,
@@ -13,14 +17,16 @@ const defaultOptions = {
 };
 
 export default class Ganache {
-  async start(opts) {
+  _server?: Server;
+
+  async start(opts: GanacheStartOptions): Promise<void> {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
     const options = { ...defaultOptions, ...opts, port: getGanachePort() };
     const { port } = options;
     try {
-      this._server = ganache.server(options);
+      this._server = ganache.server(options as ServerOptions);
       await this._server.listen(port);
     } catch (error) {
       console.error(error);
@@ -28,23 +34,25 @@ export default class Ganache {
     }
   }
 
-  getProvider() {
+  getProvider(): Server['provider'] | undefined {
     return this._server?.provider;
   }
 
-  async getAccounts() {
-    return await this.getProvider().request({
+  async getAccounts(): Promise<string[]> {
+    return await (this.getProvider() as Server['provider']).request({
       method: 'eth_accounts',
       params: [],
     });
   }
 
-  async getBalance() {
+  async getBalance(): Promise<number | string> {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
-      method: 'eth_getBalance',
-      params: [accounts[0], 'latest'],
-    });
+    const balanceHex = await (this.getProvider() as Server['provider']).request(
+      {
+        method: 'eth_getBalance',
+        params: [accounts[0], 'latest'],
+      },
+    );
     const balanceInt = parseInt(balanceHex, 16) / 10 ** 18;
 
     const balanceFormatted =
@@ -53,7 +61,7 @@ export default class Ganache {
     return balanceFormatted;
   }
 
-  async quit() {
+  async quit(): Promise<void> {
     if (!this._server) {
       throw new Error('Server not running yet');
     }
