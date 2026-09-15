@@ -1,12 +1,12 @@
 import { Then, When } from '@wdio/cucumber-framework';
-import ImportFromSeedScreen from '../screen-objects/Onboarding/ImportFromSeedScreen.js';
-import CreateNewWalletScreen from '../screen-objects/Onboarding/CreateNewWalletScreen.js';
-import MetaMetricsScreen from '../screen-objects/Onboarding/MetaMetricsScreen.js';
-import OnboardingScreen from '../screen-objects/Onboarding/OnboardingScreen.js';
-import WelcomeScreen from '../screen-objects/Onboarding/OnboardingCarousel.js';
+import ImportFromSeedScreen from '../screen-objects/Onboarding/ImportFromSeedScreen';
+import CreateNewWalletScreen from '../screen-objects/Onboarding/CreateNewWalletScreen';
+import MetaMetricsScreen from '../screen-objects/Onboarding/MetaMetricsScreen';
+import OnboardingScreen from '../screen-objects/Onboarding/OnboardingScreen';
+import WelcomeScreen from '../screen-objects/Onboarding/OnboardingCarousel';
 
-import SkipAccountSecurityModal from '../screen-objects/Modals/SkipAccountSecurityModal.js';
-import OnboardingWizardModal from '../screen-objects/Modals/OnboardingWizardModal.js';
+import SkipAccountSecurityModal from '../screen-objects/Modals/SkipAccountSecurityModal';
+import OnboardingWizardModal from '../screen-objects/Modals/OnboardingWizardModal';
 import AddressBarScreen from '../screen-objects/BrowserObject/AddressBarScreen';
 
 Then(/^"([^"]*)?" carousel item is displayed/, async (text) => {

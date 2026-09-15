@@ -2,7 +2,7 @@ import cucumberJson from 'wdio-cucumberjs-json-reporter';
 import { Given, When, Then } from '@wdio/cucumber-framework';
 import WelcomeScreen from '../screen-objects/Onboarding/OnboardingCarousel';
 import LoginScreen from '../screen-objects/LoginScreen';
-import WalletMainScreen from '../screen-objects/WalletMainScreen.js';
+import WalletMainScreen from '../screen-objects/WalletMainScreen';
 
 let startTimer;
 let stopTimer;
