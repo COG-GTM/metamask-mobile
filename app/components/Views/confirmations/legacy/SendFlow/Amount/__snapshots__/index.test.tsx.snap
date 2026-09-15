@@ -534,14 +534,7 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
                                     >
                                       $15.00
                                     </Text>
-                                    <View
-                                      styles={
-                                        {
-                                          "alignItems": "center",
-                                          "flexDirection": "row",
-                                        }
-                                      }
-                                    >
+                                    <View>
                                       <Text
                                         allowFontScaling={false}
                                         selectable={false}
@@ -1230,14 +1223,7 @@ exports[`Amount converts ETH to USD 1`] = `
                                     >
                                       $3000.00
                                     </Text>
-                                    <View
-                                      styles={
-                                        {
-                                          "alignItems": "center",
-                                          "flexDirection": "row",
-                                        }
-                                      }
-                                    >
+                                    <View>
                                       <Text
                                         allowFontScaling={false}
                                         selectable={false}
@@ -1943,14 +1929,7 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
                                     >
                                       0.66667 LINK
                                     </Text>
-                                    <View
-                                      styles={
-                                        {
-                                          "alignItems": "center",
-                                          "flexDirection": "row",
-                                        }
-                                      }
-                                    >
+                                    <View>
                                       <Text
                                         allowFontScaling={false}
                                         selectable={false}
@@ -2656,14 +2635,7 @@ exports[`Amount converts USD to ETH 1`] = `
                                     >
                                       0.00333 ETH
                                     </Text>
-                                    <View
-                                      styles={
-                                        {
-                                          "alignItems": "center",
-                                          "flexDirection": "row",
-                                        }
-                                      }
-                                    >
+                                    <View>
                                       <Text
                                         allowFontScaling={false}
                                         selectable={false}
@@ -3351,14 +3323,7 @@ exports[`Amount displays correct balance 1`] = `
                                     >
                                       $0.00
                                     </Text>
-                                    <View
-                                      styles={
-                                        {
-                                          "alignItems": "center",
-                                          "flexDirection": "row",
-                                        }
-                                      }
-                                    >
+                                    <View>
                                       <Text
                                         allowFontScaling={false}
                                         selectable={false}
@@ -4046,14 +4011,7 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
                                     >
                                       0 LINK
                                     </Text>
-                                    <View
-                                      styles={
-                                        {
-                                          "alignItems": "center",
-                                          "flexDirection": "row",
-                                        }
-                                      }
-                                    >
+                                    <View>
                                       <Text
                                         allowFontScaling={false}
                                         selectable={false}
@@ -5403,14 +5361,7 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
                                     >
                                       $1.00
                                     </Text>
-                                    <View
-                                      styles={
-                                        {
-                                          "alignItems": "center",
-                                          "flexDirection": "row",
-                                        }
-                                      }
-                                    >
+                                    <View>
                                       <Text
                                         allowFontScaling={false}
                                         selectable={false}
@@ -6094,14 +6045,7 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
                                     >
                                       $1.00
                                     </Text>
-                                    <View
-                                      styles={
-                                        {
-                                          "alignItems": "center",
-                                          "flexDirection": "row",
-                                        }
-                                      }
-                                    >
+                                    <View>
                                       <Text
                                         allowFontScaling={false}
                                         selectable={false}
@@ -6645,7 +6589,6 @@ exports[`Amount renders correctly 1`] = `
                               }
                             >
                               <Text
-                                red={true}
                                 style={
                                   {
                                     "color": "#121314",
@@ -7335,7 +7278,6 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
                               }
                             >
                               <Text
-                                red={true}
                                 style={
                                   {
                                     "color": "#121314",
@@ -8165,14 +8107,7 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
                                     >
                                       $1.00
                                     </Text>
-                                    <View
-                                      styles={
-                                        {
-                                          "alignItems": "center",
-                                          "flexDirection": "row",
-                                        }
-                                      }
-                                    >
+                                    <View>
                                       <Text
                                         allowFontScaling={false}
                                         selectable={false}

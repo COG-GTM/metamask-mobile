@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -15,9 +14,19 @@ import { SendViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlo
 import { selectInternalAccounts } from '../../../../../../selectors/accountsController';
 import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
+import { AddressBookEntry } from '@metamask/address-book-controller';
+import { Hex } from '@metamask/utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { RootState } from '../../../../../../reducers';
+import { AddressListProps, Contact } from './AddressList.types';
 
-const LabelElement = (styles, label) => (
+interface Props extends AddressListProps {
+  chainId: Hex;
+}
+
+type ContactElement = Contact | string;
+
+const LabelElement = (styles: ReturnType<typeof styleSheet>, label: string) => (
   <View key={label} style={styles.labelElementWrapper}>
     <Text variant={TextVariant.BodyMD} style={styles.contactLabel}>
       {label.toUpperCase()}
@@ -33,15 +42,23 @@ const AddressList = ({
   onIconPress,
   onlyRenderAddressBook = false,
   reloadAddressList,
-}) => {
+}: Props) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
-  const [contactElements, setContactElements] = useState([]);
-  const [fuse, setFuse] = useState(undefined);
+  const [contactElements, setContactElements] = useState<ContactElement[]>(
+    [],
+  );
+  const [fuse, setFuse] = useState<Fuse<AddressBookEntry> | undefined>(
+    undefined,
+  );
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
-    (state) => state.user.ambiguousAddressEntries,
+    (state: RootState) =>
+      state.user.ambiguousAddressEntries as Record<
+        string,
+        string[] | undefined
+      >,
   );
 
   const networkAddressBook = useMemo(
@@ -49,8 +66,8 @@ const AddressList = ({
     [addressBook, chainId],
   );
   const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
-      const contacts = networkAddressBookList.map((contact) => {
+    (networkAddressBookList: AddressBookEntry[]) => {
+      const contacts: Contact[] = networkAddressBookList.map((contact) => {
         const isAmbiguousAddress =
           chainId &&
           ambiguousAddressEntries?.[chainId]?.includes(contact.address);
@@ -73,12 +90,12 @@ const AddressList = ({
             .catch(() => contact),
         ),
       ).then((updatedContacts) => {
-        const newContactElements = [];
-        const addressBookTree = {};
+        const newContactElements: ContactElement[] = [];
+        const addressBookTree: Record<string, Contact[]> = {};
 
         updatedContacts.forEach((contact) => {
           const contactNameInitial = contact?.name?.[0];
-          const nameInitial = regex.nameInitial.exec(contactNameInitial);
+          const nameInitial = regex.nameInitial.exec(String(contactNameInitial));
           const initial = nameInitial
             ? nameInitial[0].toLowerCase()
             : strings('address_book.others');
@@ -175,7 +192,7 @@ const AddressList = ({
     );
   };
 
-  const renderElement = (addressElement) => {
+  const renderElement = (addressElement: ContactElement) => {
     if (typeof addressElement === 'string') {
       return LabelElement(styles, addressElement);
     }
@@ -198,7 +215,7 @@ const AddressList = ({
   };
 
   const renderContent = () => {
-    const sendFlowContacts = [];
+    const sendFlowContacts: ContactElement[] = [];
 
     contactElements.forEach((contractElement) => {
       if (
