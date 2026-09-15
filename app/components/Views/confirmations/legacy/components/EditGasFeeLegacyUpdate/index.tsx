@@ -67,12 +67,14 @@ export type EditGasFeeLegacyProps = Omit<
   | 'animateOnChange'
   | 'onUpdatingValuesStart'
   | 'onUpdatingValuesEnd'
+  | 'isAnimating'
 > & {
+  isAnimating?: boolean;
   onCancel?: () => void;
-  onSave: (
+  onSave(
     gasTxn: EditLegacyGasTransaction | undefined,
     newGasObject: LegacyGasObject,
-  ) => void;
+  ): void;
   error?: React.ReactNode;
   warning?: React.ReactNode;
   analyticsParams?: Record<string, unknown>;

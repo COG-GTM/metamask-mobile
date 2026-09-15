@@ -62,7 +62,7 @@ import { SendLinkViewSelectorsIDs } from '../../../../e2e/selectors/Receive/Send
 import { SendViewSelectorsIDs } from '../../../../e2e/selectors/SendFlow/SendView.selectors';
 import {
   getBlockaidTransactionMetricsParams,
-  TransactionType,
+  type BlockaidMetricsTransaction,
 } from '../../../util/blockaid';
 import Icon, {
   IconName,
@@ -538,7 +538,7 @@ export function getPaymentRequestSuccessOptionsTitle(
  * @param {string} title - Title in string format
  * @returns {Object} - Corresponding navbar options containing title and headerTitleStyle
  */
-interface TransactionOptionsRouteParams {
+export interface TransactionOptionsRouteParams {
   mode?: string;
   disableModeChange?: boolean;
   dispatch?: (mode: string) => void;
@@ -632,7 +632,7 @@ export function getApproveNavbar(title: string): StackNavigationOptions {
  * @param {string} title - Title in string format
  * @returns {Object} - Corresponding navbar options containing title and headerTitleStyle
  */
-interface SendFlowRouteParams {
+export interface SendFlowRouteParams {
   providerType?: string;
   isPaymentRequest?: boolean;
 }
@@ -643,7 +643,7 @@ export function getSendFlowTitle(
   route: NavbarRoute<SendFlowRouteParams> | undefined,
   themeColors: Colors,
   resetTransaction: () => void,
-  transaction: TransactionType,
+  transaction: BlockaidMetricsTransaction | undefined,
 ): StackNavigationOptions {
   const innerStyles = StyleSheet.create({
     headerButtonText: {
@@ -732,7 +732,7 @@ export function getModalNavbarOptions(title: string): StackNavigationOptions {
  *
  * @returns {Object} - Corresponding navbar options containing headerTitle, headerTitle and headerTitle
  */
-interface OnboardingRouteParams {
+export interface OnboardingRouteParams {
   headerLeft?: StackNavigationOptions['headerLeft'];
 }
 

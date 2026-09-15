@@ -6,8 +6,12 @@ import { selectGasFeeEstimates } from '../../../../../../../../selectors/confirm
 import { selectGasFeeControllerEstimateType } from '../../../../../../../../selectors/gasFeeController';
 import { selectPrimaryCurrency } from '../../../../../../../../selectors/settings';
 import { useAppThemeFromContext } from '../../../../../../../../util/theme';
-import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
+import EditGasFee1559, {
+  type EditGasFee1559GasObject,
+} from '../../../../components/EditGasFee1559Update';
 import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
+import type { EditLegacyGasTransaction } from '../../../../components/EditGasFeeLegacyUpdate/types';
+import type { GasTransactionProps } from '../../../../../../../../core/GasPolling/types';
 import createStyles from './CustomGasModal.styles';
 import { RootState } from '../../../../../../../../reducers';
 import { TransactionState } from '../../../../../../../../reducers/transaction';
@@ -144,7 +148,11 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn: GasTransaction, gasObj: LegacyGasObject) => {
+    (
+      legacyGasTxn: EditLegacyGasTransaction | undefined,
+      gasObj: LegacyGasObject,
+    ) => {
+      const gasTxn: GasTransaction = { ...legacyGasTxn };
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -157,7 +165,11 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn: GasTransaction, gasObj: EIP1559GasObject) => {
+    (
+      eip1559GasTxn: GasTransactionProps | undefined,
+      gasObj: EditGasFee1559GasObject,
+    ) => {
+      const gasTxn: GasTransaction = { ...eip1559GasTxn };
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalMaxHex,
@@ -237,7 +249,7 @@ const CustomGasModal = ({
             hasDappSuggestedGas={undefined}
             onUpdatingValuesStart={onGasAnimationStart}
             onUpdatingValuesEnd={onGasAnimationEnd}
-            chainId={chainId}
+            chainId={chainId ?? ''}
           />
         ) : (
           <EditGasFee1559

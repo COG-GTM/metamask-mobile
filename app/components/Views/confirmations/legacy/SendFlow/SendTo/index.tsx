@@ -19,7 +19,10 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import AddressList from '../AddressList';
 import Text from '../../../../../Base/Text';
 import WarningMessage from '../WarningMessage';
-import { getSendFlowTitle } from '../../../../../UI/Navbar';
+import {
+  getSendFlowTitle,
+  type SendFlowRouteParams,
+} from '../../../../../UI/Navbar';
 import StyledButton from '../../../../../UI/StyledButton';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 import { getDecimalChainId } from '../../../../../../util/networks';
@@ -84,7 +87,7 @@ import { selectAddressBook } from '../../../../../../selectors/addressBookContro
 
 const dummy = () => true;
 
-interface SendToRouteParams {
+interface SendToRouteParams extends SendFlowRouteParams {
   txMeta?: { target_address?: string };
 }
 
@@ -149,7 +152,7 @@ interface SendFlowState {
   toSelectedAddressReady: boolean;
   toEnsName?: string;
   toEnsAddressResolved?: string;
-  confusableCollection: string[];
+  confusableCollection?: string[];
   inputWidth: { width: string };
   showAmbiguousAcountWarning: boolean;
   toInputHighlighted?: boolean;

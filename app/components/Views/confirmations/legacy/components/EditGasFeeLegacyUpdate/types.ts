@@ -65,4 +65,5 @@ export interface EditLegacyGasTransaction {
   suggestedGasPrice: string;
   transactionFee: string;
   transactionFeeFiat: string;
+  totalHex?: string;
 }

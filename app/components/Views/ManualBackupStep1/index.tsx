@@ -25,7 +25,10 @@ import OnboardingProgress from '../../UI/OnboardingProgress';
 import { strings } from '../../../../locales/i18n';
 import ActionView from '../../UI/ActionView';
 import Engine from '../../../core/Engine';
-import { getOnboardingNavbarOptions } from '../../UI/Navbar';
+import {
+  getOnboardingNavbarOptions,
+  type OnboardingRouteParams,
+} from '../../UI/Navbar';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import {
   MANUAL_BACKUP_STEPS,
@@ -45,7 +48,7 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import { RootState } from '../../../reducers';
 
-interface ManualBackupStep1Params {
+interface ManualBackupStep1Params extends OnboardingRouteParams {
   words?: string[];
 }
 

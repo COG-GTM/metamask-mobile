@@ -1078,7 +1078,9 @@ export class NetworkSettings extends PureComponent<
     const networkType = nickname || rpcUrl || '';
     const networkUrl = sanitizeUrl(rpcUrl ?? '');
     // Prevent the network switch modal from showing post onboarding.
-    const showNetworkOnboarding = isCustomMainnet ? false : isOnboarded;
+    const showNetworkOnboarding = isCustomMainnet
+      ? false
+      : Boolean(isOnboarded);
 
     const formChainId = (stateChainId ?? '').trim().toLowerCase();
 

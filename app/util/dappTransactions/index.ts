@@ -242,7 +242,7 @@ export const validateAmount = async (
   return !validations[assetType] ? false : await validations[assetType]();
 };
 
-interface GasAnalyticsParams {
+interface GasAnalyticsParams extends Record<string, unknown> {
   dapp_host_name: string;
   dapp_url: string;
   active_currency: { value: string; anonymous: boolean };

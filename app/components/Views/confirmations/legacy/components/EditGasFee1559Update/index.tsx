@@ -89,10 +89,10 @@ export type EditGasFee1559Props = Omit<
   updateOption?: EditGasFee1559UpdateOption;
   onChange: (option: string | null) => void;
   onCancel?: () => void;
-  onSave: (
+  onSave(
     gasTxn: GasTransactionProps | undefined,
     newGasObject: EditGasFee1559GasObject,
-  ) => void;
+  ): void;
   error?: React.ReactNode;
   warning?: React.ReactNode;
   extendOptions?: Record<string, Record<string, unknown>>;

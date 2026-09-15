@@ -63,7 +63,9 @@ import withQRHardwareAwareness from '../QRHardware/withQRHardwareAwareness';
 import TransactionActionModal from '../TransactionActionModal';
 import TransactionElement, { ExistingGas } from '../TransactionElement';
 import { TransactionObject } from '../TransactionElement/utils';
-import UpdateEIP1559Tx from '../../Views/confirmations/legacy/components/UpdateEIP1559Tx';
+import UpdateEIP1559Tx, {
+  type ExistingGas as UpdateExistingGas,
+} from '../../Views/confirmations/legacy/components/UpdateEIP1559Tx';
 import RetryModal from './RetryModal';
 import PriceChartContext, {
   PriceChartProvider,
@@ -798,14 +800,14 @@ class Transactions extends PureComponent<TransactionsProps, TransactionsState> {
             contentContainerStyle={styles.keyboardAwareWrapper}
           >
             <UpdateEIP1559Tx
-              gas={this.existingTx?.txParams?.gas}
+              gas={this.existingTx?.txParams?.gas as string}
               onSave={
                 isCancel ? this.cancelTransaction : this.speedUpTransaction
               }
               onCancel={
                 isCancel ? this.onCancelCompleted : this.onSpeedUpCompleted
               }
-              existingGas={this.existingGas}
+              existingGas={this.existingGas as UpdateExistingGas}
               isCancel={isCancel}
             />
           </KeyboardAwareScrollView>

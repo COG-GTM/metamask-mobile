@@ -25,7 +25,6 @@ export const typedSign = {
 export interface SignaturePageInformation {
   url?: string;
   analytics?: JsonMap;
-  [key: string]: unknown;
 }
 
 export interface SignatureMessageParams {
@@ -34,8 +33,9 @@ export interface SignatureMessageParams {
   version?: string;
   currentPageInformation?: SignaturePageInformation;
   meta?: SignaturePageInformation;
-  [key: string]: unknown;
 }
+
+export type SignatureErrorListener = (payload: { error?: Error }) => void;
 
 export interface SignatureAnalyticsParams extends JsonMap {
   account_type: string;
@@ -133,7 +133,7 @@ export const showWalletConnectNotification = (
 export const handleSignatureAction = async (
   onAction: () => void | Promise<void>,
   messageParams: SignatureMessageParams,
-  signType: string,
+  signType: string | undefined,
   securityAlertResponse?: SecurityAlertResponse | boolean,
   confirmation?: boolean,
 ): Promise<void> => {
@@ -160,7 +160,7 @@ export const handleSignatureAction = async (
 
 export const addSignatureErrorListener = (
   metamaskId: string,
-  onSignatureError: (...args: unknown[]) => void,
+  onSignatureError: SignatureErrorListener,
 ): void => {
   Engine.context.SignatureController.hub.on(
     `${metamaskId}:signError`,
@@ -170,7 +170,7 @@ export const addSignatureErrorListener = (
 
 export const removeSignatureErrorListener = (
   metamaskId: string,
-  onSignatureError: (...args: unknown[]) => void,
+  onSignatureError: SignatureErrorListener,
 ): void => {
   Engine.context.SignatureController.hub.removeListener(
     `${metamaskId}:signError`,

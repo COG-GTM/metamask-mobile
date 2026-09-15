@@ -518,7 +518,7 @@ class Settings extends PureComponent<SettingsProps, SettingsState> {
                     style={[styles.border, useBlockieIcon && styles.selected]}
                   >
                     <Image
-                      source={{ uri: toDataUrl(selectedAddress) }}
+                      source={{ uri: toDataUrl(selectedAddress ?? '') }}
                       style={styles.blockie}
                     />
                   </View>

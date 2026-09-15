@@ -26,6 +26,7 @@ import {
   getActiveTabUrl,
   parseTransactionEIP1559,
   parseTransactionLegacy,
+  type GasFeeEstimatesByLevel,
 } from '../../../../../../../util/transactions';
 import {
   setTransactionObject as setTransactionObjectAction,
@@ -35,8 +36,11 @@ import Engine from '../../../../../../../core/Engine';
 import collectiblesTransferInformation from '../../../../../../../util/collectibles-transfer.json';
 import { safeToChecksumAddress } from '../../../../../../../util/address';
 import { shallowEqual } from '../../../../../../../util/general';
-import EditGasFee1559 from '../../../../../../UI/EditGasFee1559';
+import EditGasFee1559, {
+  type EIP1559GasOptions,
+} from '../../../../../../UI/EditGasFee1559';
 import EditGasFeeLegacy from '../../../components/EditGasFeeLegacyUpdate';
+import type { EditLegacyGasTransaction } from '../../../components/EditGasFeeLegacyUpdate/types';
 import AppConstants from '../../../../../../../core/AppConstants';
 import {
   estimateGas,
@@ -106,6 +110,13 @@ const getEstimatedBaseFee = (
 ): string | undefined =>
   'estimatedBaseFee' in gasFeeEstimates
     ? gasFeeEstimates.estimatedBaseFee
+    : undefined;
+
+const getFeeMarketEstimates = (
+  gasFeeEstimates: GasFeeEstimates,
+): GasFeeEstimatesByLevel | undefined =>
+  'estimatedBaseFee' in gasFeeEstimates
+    ? (gasFeeEstimates as GasFeeEstimatesByLevel)
     : undefined;
 
 interface CollectibleTransferInformation {
@@ -563,10 +574,10 @@ class TransactionEditor extends PureComponent<
         },
         swapsParams: undefined,
         contractExchangeRates: undefined,
-        conversionRate,
+        conversionRate: conversionRate as number,
         currentCurrency,
-        nativeCurrency: ticker,
-        gasFeeEstimates,
+        nativeCurrency: ticker as string,
+        gasFeeEstimates: getFeeMarketEstimates(gasFeeEstimates),
       },
       { onlyGas: true },
     ) as unknown as EIP1559GasData;
@@ -589,7 +600,7 @@ class TransactionEditor extends PureComponent<
     const parsedTransactionLegacy = parseTransactionLegacy(
       {
         contractExchangeRates: undefined,
-        conversionRate,
+        conversionRate: conversionRate as number,
         currentCurrency,
         ticker,
         selectedGasFee: gasFee,
@@ -908,7 +919,7 @@ class TransactionEditor extends PureComponent<
     });
   };
 
-  saveGasEdition = (gasSelected: string | null) => {
+  saveGasEdition = (gasSelected: string | null | undefined) => {
     const { gasEstimateType, setTransactionObject } = this.props;
     const { LegacyGasDataTemp } = this.state;
 
@@ -924,8 +935,8 @@ class TransactionEditor extends PureComponent<
       {
         LegacyGasData: { ...this.state.LegacyGasDataTemp },
         EIP1559GasData: { ...this.state.EIP1559GasDataTemp },
-        gasSelected,
-        gasSelectedTemp: gasSelected,
+        gasSelected: gasSelected ?? null,
+        gasSelectedTemp: gasSelected ?? null,
         advancedGasInserted: !gasSelected,
         stopUpdateGas: false,
         dappSuggestedGasPrice: null,
@@ -966,10 +977,11 @@ class TransactionEditor extends PureComponent<
   });
 
   saveGasEditionLegacy = (
-    legacyGasTransaction: LegacyGasData,
+    gasTransaction: EditLegacyGasTransaction | undefined,
     legacyGasObject: LegacyGasObject,
   ) => {
     const { setTransactionObject, gasEstimateType } = this.props;
+    const legacyGasTransaction: LegacyGasData = { ...gasTransaction };
     const totalHex = legacyGasTransaction?.totalHex;
     legacyGasTransaction.error = this.validateTotal(totalHex);
 
@@ -1135,7 +1147,7 @@ class TransactionEditor extends PureComponent<
                 '',
                 gasEstimateType,
               )}
-              isAnimating={isAnimating}
+              isAnimating={Boolean(isAnimating)}
               onCancel={this.cancelGasEditionLegacy}
               onSave={this.saveGasEditionLegacy}
               onlyGas={false}
@@ -1154,7 +1166,7 @@ class TransactionEditor extends PureComponent<
             <EditGasFee1559
               selected={gasSelected}
               gasFee={EIP1559GasDataTemp}
-              gasOptions={gasFeeEstimates}
+              gasOptions={gasFeeEstimates as unknown as EIP1559GasOptions}
               onChange={this.calculateTempGasFee}
               gasFeeNative={EIP1559GasDataTemp.renderableGasFeeMinNative}
               gasFeeConversion={

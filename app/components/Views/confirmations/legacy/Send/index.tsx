@@ -25,7 +25,10 @@ import {
 } from '../../../../../util/number';
 import { toChecksumAddress } from 'ethereumjs-util';
 import { strings } from '../../../../../../locales/i18n';
-import { getTransactionOptionsTitle } from '../../../../UI/Navbar';
+import {
+  getTransactionOptionsTitle,
+  type TransactionOptionsRouteParams,
+} from '../../../../UI/Navbar';
 import { connect } from 'react-redux';
 import {
   resetTransaction,
@@ -117,7 +120,7 @@ export interface DeeplinkTxMeta {
   source?: string;
 }
 
-interface SendRouteParams {
+interface SendRouteParams extends TransactionOptionsRouteParams {
   txMeta?: DeeplinkTxMeta;
 }
 
@@ -407,7 +410,7 @@ class Send extends PureComponent<SendProps, SendState> {
           toAddress: newTxMeta.to as string,
           internalAccounts,
           ensRecipient: newTxMeta.ensRecipient as string,
-        });
+        }) || undefined;
 
         newTxMeta.transactionTo = newTxMeta.to;
         break;
@@ -446,7 +449,7 @@ class Send extends PureComponent<SendProps, SendState> {
           toAddress: to,
           internalAccounts,
           ensRecipient: ensRecipient as string,
-        });
+        }) || undefined;
         break;
       }
     }
@@ -548,9 +551,9 @@ class Send extends PureComponent<SendProps, SendState> {
    */
   prepareTransaction = (transaction: SendTransaction) => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
-    value: BNToHex(transaction.value),
+    gas: BNToHex(transaction.gas as BN),
+    gasPrice: BNToHex(transaction.gasPrice as BN),
+    value: BNToHex(transaction.value as BN),
   });
 
   /**
@@ -565,8 +568,8 @@ class Send extends PureComponent<SendProps, SendState> {
     selectedAsset: SendTransaction['selectedAsset'],
   ) => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
+    gas: BNToHex(transaction.gas as BN),
+    gasPrice: BNToHex(transaction.gasPrice as BN),
     value: '0x0',
     to: selectedAsset.address,
   });
@@ -578,8 +581,8 @@ class Send extends PureComponent<SendProps, SendState> {
    */
   sanitizeTransaction = (transaction: SendTransaction) => ({
     ...transaction,
-    gas: BNToHex(transaction.gas),
-    gasPrice: BNToHex(transaction.gasPrice),
+    gas: BNToHex(transaction.gas as BN),
+    gasPrice: BNToHex(transaction.gasPrice as BN),
   });
 
   /**
@@ -754,8 +757,11 @@ class Send extends PureComponent<SendProps, SendState> {
    * Call Analytics to track confirm started event for send screen
    */
   trackEditScreen = async () => {
-    const { transaction } = this.props;
-    const actionKey = await getTransactionReviewActionKey({ transaction });
+    const { transaction, globalChainId } = this.props;
+    const actionKey = await getTransactionReviewActionKey(
+      { transaction: transaction as Partial<TransactionParams> },
+      globalChainId,
+    );
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)

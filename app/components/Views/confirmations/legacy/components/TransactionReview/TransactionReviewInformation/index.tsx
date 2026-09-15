@@ -507,7 +507,8 @@ class TransactionReviewInformation extends PureComponent<
         )}
         {!!error && (
           <View style={styles.errorWrapper}>
-            {isTestNetworkWithFaucet(chainId) || isNativeTokenBuySupported ? (
+            {isTestNetworkWithFaucet(chainId ?? '') ||
+            isNativeTokenBuySupported ? (
               <TouchableOpacity onPress={errorPress}>
                 <Text style={styles.error}>{error}</Text>
                 {over && (

@@ -20,7 +20,10 @@ import { strings } from '../../../../locales/i18n';
 import { connect } from 'react-redux';
 import { seedphraseBackedUp } from '../../../actions/user';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { getOnboardingNavbarOptions } from '../../UI/Navbar';
+import {
+  getOnboardingNavbarOptions,
+  type OnboardingRouteParams,
+} from '../../UI/Navbar';
 import { shuffle, compareMnemonics } from '../../../util/mnemonic';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { useTheme } from '../../../util/theme';
@@ -29,7 +32,7 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-interface ManualBackupStep2Params {
+interface ManualBackupStep2Params extends OnboardingRouteParams {
   words?: string[];
   steps?: string[];
 }

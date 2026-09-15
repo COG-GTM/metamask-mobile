@@ -562,12 +562,14 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       const mediumGasFeeEstimates = estimates[
         AppConstants.GAS_OPTIONS.MEDIUM
       ] as GasFeeEstimateLevel;
-      const estimatedBaseFeeHex = decGWEIToHexWEI(estimates.estimatedBaseFee);
+      const estimatedBaseFeeHex = decGWEIToHexWEI(
+        estimates.estimatedBaseFee ?? '0',
+      );
       const suggestedMaxPriorityFeePerGasHex = decGWEIToHexWEI(
-        mediumGasFeeEstimates.suggestedMaxPriorityFeePerGas,
+        mediumGasFeeEstimates.suggestedMaxPriorityFeePerGas ?? '0',
       );
       const suggestedMaxFeePerGasHex = decGWEIToHexWEI(
-        mediumGasFeeEstimates.suggestedMaxFeePerGas,
+        mediumGasFeeEstimates.suggestedMaxFeePerGas ?? '0',
       );
       const gasLimitHex = BNToHex(gas);
       const gasHexes = calculateEIP1559GasFeeHexes({
@@ -582,7 +584,9 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       });
     } else if (gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
       const gasPrice = hexToBN(
-        decGWEIToHexWEI(estimates[AppConstants.GAS_OPTIONS.MEDIUM]),
+        decGWEIToHexWEI(
+          estimates[AppConstants.GAS_OPTIONS.MEDIUM] as string,
+        ),
       );
       this.setState({
         estimatedTotalGas: (gas as BNjs).mul(
@@ -590,7 +594,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         ) as unknown as BN,
       });
     } else {
-      const gasPrice = hexToBN(decGWEIToHexWEI(estimates.gasPrice));
+      const gasPrice = hexToBN(decGWEIToHexWEI(estimates.gasPrice ?? '0'));
       this.setState({
         estimatedTotalGas: (gas as BNjs).mul(
           gasPrice as unknown as BNjs,
@@ -819,7 +823,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       );
       transaction.data = generateTransferData('transfer', {
         toAddress: transactionTo,
-        amount: BNToHex(tokenAmount),
+        amount: BNToHex(tokenAmount as unknown as BNjs),
       });
       transaction.to = selectedAsset.address;
       transaction.value = '0x0';
@@ -1478,7 +1482,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         <View style={styles.collectibleInputInformationWrapper}>
           <Text style={styles.collectibleName}>{selectedAsset.name}</Text>
           <Text style={styles.collectibleId}>{`#${renderShortText(
-            selectedAsset.tokenId,
+            selectedAsset.tokenId ?? '',
             10,
           )}`}</Text>
         </View>

@@ -162,7 +162,7 @@ const TransactionsView = ({
         tx.insertImportTime =
           addedAccountTime !== undefined &&
           addAccountTimeFlagFilter(
-            tx,
+            { ...tx, time: tx.time ?? 0 },
             addedAccountTime,
             accountAddedTimeInsertPointFound,
           );

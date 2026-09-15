@@ -13,6 +13,11 @@ interface TransactionSecurityAlertResponseType {
 export type TransactionType = TransactionMeta &
   TransactionSecurityAlertResponseType;
 
+export type BlockaidMetricsTransaction = Pick<
+  Partial<TransactionType>,
+  'id' | 'securityAlertResponses'
+>;
+
 export const isBlockaidPreferenceEnabled = (): boolean => {
   const { PreferencesController } = Engine.context;
   return PreferencesController.state.securityAlertsEnabled;
@@ -54,7 +59,7 @@ export const getBlockaidMetricsParams = (
 };
 
 export const getBlockaidTransactionMetricsParams = (
-  transaction: TransactionType,
+  transaction: BlockaidMetricsTransaction | undefined,
 ): Record<string, unknown> => {
   let blockaidParams = {};
 
@@ -63,7 +68,8 @@ export const getBlockaidTransactionMetricsParams = (
   }
 
   const { securityAlertResponses, id } = transaction;
-  const securityAlertResponse = securityAlertResponses?.[id];
+  const securityAlertResponse =
+    id === undefined ? undefined : securityAlertResponses?.[id];
   if (securityAlertResponse) {
     blockaidParams = getBlockaidMetricsParams(securityAlertResponse);
   }

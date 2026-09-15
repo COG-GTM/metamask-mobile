@@ -10,7 +10,10 @@ import {
 } from 'react-native';
 import { Dispatch } from 'redux';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
-import { TransactionMeta } from '@metamask/transaction-controller';
+import {
+  TransactionMeta,
+  TransactionParams,
+} from '@metamask/transaction-controller';
 import { AddressBookEntry } from '@metamask/address-book-controller';
 import { getApproveNavbar } from '../../../../UI/Navbar';
 import { connect } from 'react-redux';
@@ -42,8 +45,14 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import NotificationManager from '../../../../../core/NotificationManager';
 import { MetaMetricsEvents } from '../../../../../core/Analytics';
 import Logger from '../../../../../util/Logger';
-import EditGasFee1559 from '../components/EditGasFee1559Update';
-import EditGasFeeLegacy from '../components/EditGasFeeLegacyUpdate';
+import EditGasFee1559, {
+  type EditGasFee1559GasObject,
+} from '../components/EditGasFee1559Update';
+import EditGasFeeLegacy, {
+  type LegacyGasObject,
+} from '../components/EditGasFeeLegacyUpdate';
+import type { EditLegacyGasTransaction } from '../components/EditGasFeeLegacyUpdate/types';
+import type { GasTransactionProps } from '../../../../../core/GasPolling/types';
 import AppConstants from '../../../../../core/AppConstants';
 import { shallowEqual } from '../../../../../util/general';
 import { KEYSTONE_TX_CANCELED } from '../../../../../constants/error';
@@ -125,11 +134,7 @@ export interface ApproveEIP1559GasObject {
   [key: string]: unknown;
 }
 
-export interface ApproveLegacyGasObject {
-  legacyGasLimit?: string;
-  suggestedGasPrice?: string;
-  [key: string]: unknown;
-}
+export type ApproveLegacyGasObject = LegacyGasObject;
 
 export interface ApproveAnalyticsParams extends JsonMap {
   dapp_host_name?: string;
@@ -403,7 +408,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
     const { networkClientId } = this.props;
     const { setTransactionObject, transaction } = this.props;
     const estimation = await getGasLimit(
-      { ...transaction, gas: undefined },
+      { ...transaction, gas: undefined } as unknown as Partial<TransactionParams>,
       false,
       networkClientId,
     );
@@ -488,9 +493,10 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
   };
 
   saveGasEditionLegacy = (
-    legacyGasTransaction: ApproveGasTransaction,
-    legacyGasObject: ApproveLegacyGasObject,
+    gasTransaction: EditLegacyGasTransaction | undefined,
+    legacyGasObject: LegacyGasObject,
   ) => {
+    const legacyGasTransaction: ApproveGasTransaction = { ...gasTransaction };
     legacyGasTransaction.error = this.validateGas(
       legacyGasTransaction.totalHex,
     );
@@ -503,10 +509,13 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
   };
 
   saveGasEdition = (
-    eip1559GasTransaction: ApproveGasTransaction,
-    eip1559GasObject: ApproveEIP1559GasObject,
+    gasTransaction: GasTransactionProps | undefined,
+    eip1559GasObject: EditGasFee1559GasObject,
   ) => {
-    this.setState({ eip1559GasTransaction, eip1559GasObject });
+    this.setState({
+      eip1559GasTransaction: { ...gasTransaction },
+      eip1559GasObject,
+    });
     this.review();
   };
 

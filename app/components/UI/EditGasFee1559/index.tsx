@@ -77,7 +77,7 @@ export interface EditGasFee1559Props {
   /**
    * Gas option selected (low, medium, high)
    */
-  selected?: string;
+  selected?: string | null;
   /**
    * Gas fee currently active
    */

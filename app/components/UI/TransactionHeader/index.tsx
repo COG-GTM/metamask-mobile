@@ -86,6 +86,7 @@ const createStyles = (colors: Colors) =>
 
 interface TransactionHeaderPageInformation {
   origin?: string;
+  title?: string;
   url?: string;
   icon?: string | { uri?: string };
   currentEnsName?: string;

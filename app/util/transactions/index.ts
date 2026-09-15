@@ -66,7 +66,7 @@ import type { RootState } from '../../reducers';
 import type { TransactionState } from '../../reducers/transaction';
 import type { TxMeta } from '../transaction-reducer-helpers';
 
-export type NormalizedTxState = Omit<TransactionState, 'transaction'> &
+export type NormalizedTxState = TransactionState &
   Partial<TxMeta>;
 
 export type TransferDataType = 'transfer' | 'transferFrom';
@@ -804,10 +804,8 @@ export function addAccountTimeFlagFilter(
 //Leaving here a comment to re-visit this function since it's probably be possible to deprecate
 export function getNormalizedTxState(
   state: Pick<RootState, 'transaction'>,
-): NormalizedTxState | undefined {
-  return state.transaction
-    ? { ...state.transaction, ...state.transaction.transaction }
-    : undefined;
+): NormalizedTxState {
+  return { ...state.transaction, ...state.transaction?.transaction };
 }
 
 export const getActiveTabUrl = ({

@@ -746,7 +746,11 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       transactionState: { transaction },
     } = this.props;
     const { networkClientId } = this.props;
-    const estimation = await getGasLimit(transaction, true, networkClientId);
+    const estimation = await getGasLimit(
+      transaction as unknown as Partial<TransactionParams>,
+      true,
+      networkClientId,
+    );
     prepareTransaction({
       ...transaction,
       ...estimation,
@@ -988,6 +992,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
         InteractionManager.runAfterInteractions(() => {
           NotificationManager.watchSubmittedTransaction({
             ...transactionMeta,
+            id: transactionMeta.id as string,
             assetType,
           });
           this.checkRemoveCollectible();
@@ -1130,6 +1135,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       InteractionManager.runAfterInteractions(() => {
         NotificationManager.watchSubmittedTransaction({
           ...transactionMeta,
+          id: transactionMeta.id as string,
           assetType,
         });
         this.checkRemoveCollectible();

@@ -58,7 +58,10 @@ import { Colors, Theme } from '../../../util/theme/models';
 import { RootState } from '../../../reducers';
 import { Dispatch } from 'redux';
 import { ParamListBase, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
+import {
+  StackNavigationProp,
+  type StackNavigationOptions,
+} from '@react-navigation/stack';
 import { BIOMETRY_TYPE } from 'react-native-keychain';
 import foxImage from '../../../images/branding/fox.png';
 
@@ -338,7 +341,7 @@ class ResetPassword extends PureComponent<
         navigation,
         false,
         colors,
-      ),
+      ) as StackNavigationOptions,
     );
   };
 
@@ -462,9 +465,9 @@ class ResetPassword extends PureComponent<
     const { originalPassword, password: newPassword } = this.state;
     // Recreate keyring with password
     await recreateVaultWithNewPassword(
-      originalPassword,
+      originalPassword ?? '',
       newPassword,
-      this.props.selectedAddress,
+      this.props.selectedAddress ?? '',
     );
   };
 

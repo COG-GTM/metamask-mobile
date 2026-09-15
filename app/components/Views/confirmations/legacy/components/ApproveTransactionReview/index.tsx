@@ -7,7 +7,10 @@ import {
   ScrollView,
 } from 'react-native';
 import Eth from '@metamask/ethjs-query';
-import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
+import ActionView, {
+  ConfirmButtonState,
+  type ConfirmButtonStateType,
+} from '../../../../../UI/ActionView';
 import { getApproveNavbar } from '../../../../../UI/Navbar';
 import { connect } from 'react-redux';
 import { getHost } from '../../../../../../util/browser';
@@ -779,7 +782,7 @@ class ApproveTransactionReview extends PureComponent<
 
   getConfirmButtonState() {
     const { securityAlertResponse } = this.props;
-    let confirmButtonState = ConfirmButtonState.Normal;
+    let confirmButtonState: ConfirmButtonStateType = ConfirmButtonState.Normal;
 
     if (securityAlertResponse) {
       if (securityAlertResponse.result_type === ResultType.Malicious) {
@@ -1058,7 +1061,7 @@ class ApproveTransactionReview extends PureComponent<
                         )}
                         {gasError && (
                           <View style={styles.errorWrapper}>
-                            {isTestNetworkWithFaucet(chainId) ||
+                            {isTestNetworkWithFaucet(chainId ?? '') ||
                             isNativeTokenBuySupported ? (
                               <TouchableOpacity onPress={errorPress}>
                                 <Text style={styles.error}>{gasError}</Text>

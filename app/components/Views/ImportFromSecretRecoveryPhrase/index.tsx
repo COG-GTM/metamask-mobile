@@ -639,10 +639,7 @@ const ImportFromSecretRecoveryPhrase = ({
         </View>
       </KeyboardAwareScrollView>
       <View style={styles.termsAndConditions}>
-        <TermsAndConditions
-          navigation={navigation}
-          action={strings('import_from_seed.import_button')}
-        />
+        <TermsAndConditions navigation={navigation} />
       </View>
       <ScreenshotDeterrent enabled isSRP />
     </SafeAreaView>

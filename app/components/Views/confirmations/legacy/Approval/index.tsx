@@ -5,6 +5,7 @@ import {
   TransactionMeta,
   SecurityAlertResponse,
   SimulationData,
+  TransactionParams,
 } from '@metamask/transaction-controller';
 import {
   StyleSheet,
@@ -365,8 +366,11 @@ class Approval extends PureComponent<ApprovalProps, ApprovalState> {
    * Call Analytics to track confirm started event for approval screen
    */
   trackEditScreen = async () => {
-    const { transaction, metrics } = this.props;
-    const actionKey = await getTransactionReviewActionKey({ transaction });
+    const { transaction, metrics, chainId } = this.props;
+    const actionKey = await getTransactionReviewActionKey(
+      { transaction: transaction as Partial<TransactionParams> },
+      chainId,
+    );
     metrics.trackEvent(
       metrics
         .createEventBuilder(MetaMetricsEvents.TRANSACTIONS_EDIT_TRANSACTION)
