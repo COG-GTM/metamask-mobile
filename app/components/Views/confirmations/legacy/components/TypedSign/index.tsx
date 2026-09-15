@@ -164,7 +164,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.QR_HARDWARE_TRANSACTION_CANCELED,
         )
-          .addProperties(getAnalyticsParams())
+          .addProperties(getAnalyticsParams(this.props.messageParams, 'typed_sign'))
           .build(),
       );
     }

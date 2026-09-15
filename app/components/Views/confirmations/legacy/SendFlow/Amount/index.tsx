@@ -17,7 +17,6 @@ import { Dispatch } from 'redux';
 import type BN4 from 'bnjs4';
 import type BN from 'bn.js';
 import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
-import { TransactionParams } from '@metamask/transaction-controller';
 import { Nft, NftContract } from '@metamask/assets-controllers';
 import {
   EthGasPriceEstimate,
@@ -31,6 +30,7 @@ import {
   prepareTransaction,
   resetTransaction,
   setMaxValueMode,
+  TransactionStateParams,
 } from '../../../../../../actions/transaction';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
 import StyledButton from '../../../../../UI/StyledButton';
@@ -148,9 +148,7 @@ export type SendFlowToken = SendFlowAsset;
 
 export type SendFlowCollectible = Nft & SendFlowAsset;
 
-interface SendFlowTransaction extends Omit<TransactionParams, 'value'> {
-  value?: string | BN4;
-}
+type SendFlowTransaction = TransactionStateParams;
 
 interface SendFlowTransactionState {
   transaction: SendFlowTransaction;
@@ -669,7 +667,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       maxFiatInput,
     } = this.state;
 
-    let value;
+    let value: string | null | undefined;
     if (internalPrimaryCurrencyIsCrypto) {
       value = inputValue;
     } else {
@@ -708,7 +706,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       }
     }
 
-    await this.prepareTransaction(value);
+    await this.prepareTransaction(value as string);
 
     this.props.metrics.trackEvent(
       this.props.metrics
@@ -725,7 +723,8 @@ class Amount extends PureComponent<AmountProps, AmountState> {
 
         const transactionParams = {
           data: transaction.data,
-          from: transaction.from,
+          // `from` is always populated by the time the amount is confirmed.
+          from: transaction.from as string,
           to: transaction.to,
           value:
             typeof transaction.value === 'string'
@@ -770,7 +769,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         {
           fromAddress: transaction.from,
           toAddress: transactionTo,
-          tokenId: toHexadecimal(selectedAsset.tokenId),
+          tokenId: toHexadecimal(selectedAsset.tokenId as string),
         },
       );
     } else if (
@@ -831,7 +830,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
    * @returns - Whether there is an error with the amount
    */
   validateAmount = (
-    inputValue: string | undefined,
+    inputValue: string | null | undefined,
     internalPrimaryCurrencyIsCrypto: boolean,
   ) => {
     const { accounts, selectedAddress, selectedAsset, contractBalances } =
@@ -1451,7 +1450,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         <View style={styles.collectibleInputInformationWrapper}>
           <Text style={styles.collectibleName}>{selectedAsset.name}</Text>
           <Text style={styles.collectibleId}>{`#${renderShortText(
-            selectedAsset.tokenId,
+            selectedAsset.tokenId as string,
             10,
           )}`}</Text>
         </View>

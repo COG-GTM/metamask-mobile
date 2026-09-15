@@ -11,7 +11,8 @@ export const selectShowFiatInTestnets = createSelector(
 
 export const selectPrimaryCurrency = createSelector(
   selectSettings,
-  (settingsState: Record<string, unknown>) => settingsState.primaryCurrency,
+  (settingsState: Record<string, unknown>) =>
+    settingsState.primaryCurrency as string,
 );
 export const selectShowCustomNonce = createSelector(
   selectSettings,

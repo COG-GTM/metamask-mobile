@@ -2,10 +2,13 @@ import React, { ComponentType, PureComponent } from 'react';
 import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
 import { Dispatch } from 'redux';
 import { Hex } from '@metamask/utils';
+import type BN from 'bnjs4';
 import {
+  SecurityAlertResponse,
   TransactionMeta,
   TransactionParams,
- WalletDevice } from '@metamask/transaction-controller';
+  WalletDevice,
+} from '@metamask/transaction-controller';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import { Nft } from '@metamask/assets-controllers';
 import { JsonMap } from '@segment/analytics-react-native';
@@ -72,6 +75,7 @@ import {
 import { fetchEstimatedMultiLayerL1Fee } from '../../../../../../util/networks/engineNetworkUtils';
 import Text from '../../../../../Base/Text';
 import { removeFavoriteCollectible } from '../../../../../../actions/collectibles';
+import { FavoriteCollectible } from '../../../../../../reducers/collectibles';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AccountFromToInfoCard from '../../../../../UI/AccountFromToInfoCard';
 import {
@@ -117,7 +121,7 @@ import ExtendedKeyringTypes from '../../../../../../constants/keyringTypes';
 import { getDeviceId } from '../../../../../../core/Ledger/Ledger';
 import {
   getBlockaidTransactionMetricsParams,
-  TransactionType as BlockaidTransactionType,
+  TransactionWithSecurityAlerts,
 } from '../../../../../../util/blockaid';
 import ppomUtil from '../../../../../../lib/ppom/ppom-util';
 import TransactionBlockaidBanner from '../../components/TransactionBlockaidBanner/TransactionBlockaidBanner';
@@ -191,6 +195,8 @@ interface ConfirmTransactionParams
 }
 
 interface ConfirmTransactionState {
+  id?: string;
+  securityAlertResponses?: Record<string, SecurityAlertResponse>;
   transaction: ConfirmTransactionParams;
   transactionTo?: string;
   transactionValue?: string;
@@ -210,7 +216,7 @@ type NormalizedTransaction = ConfirmTransactionState & ConfirmTransactionParams;
 interface GasTransaction {
   gasFeeMaxHex?: string;
   totalMaxHex?: string;
-  totalHex?: string;
+  totalHex?: string | BN;
   suggestedGasLimit?: string;
   error?: string;
 }
@@ -877,13 +883,15 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
       from,
     };
 
+    // buildTransactionParams spreads the normalized redux transaction, so the
+    // security alert metadata is carried through despite its narrower return type.
     return buildTransactionParams({
       gasDataEIP1559,
       gasDataLegacy,
       gasEstimateType,
       showCustomNonce,
       transaction,
-    });
+    }) as TransactionParams & TransactionWithSecurityAlerts;
   };
 
   /**
@@ -897,7 +905,12 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     const { fromSelectedAddress } = this.state;
     if (assetType === 'ERC721' && chainId !== ChainId.mainnet) {
       const { NftController } = Engine.context;
-      removeFavoriteCollectible(fromSelectedAddress, chainId, selectedAsset);
+      removeFavoriteCollectible(
+        fromSelectedAddress,
+        chainId,
+        // ERC721 assets always carry a tokenId.
+        selectedAsset as FavoriteCollectible,
+      );
       NftController.removeNft(
         selectedAsset.address,
         selectedAsset.tokenId as string,
@@ -1002,7 +1015,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
         InteractionManager.runAfterInteractions(() => {
           NotificationManager.watchSubmittedTransaction({
-            ...transactionMeta,
+            // The meta is fully populated once the transaction has been added.
+            ...(transactionMeta as TransactionMeta),
             assetType,
           });
           this.checkRemoveCollectible();
@@ -1096,9 +1110,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
               assetType,
               {
                 ...this.getAnalyticsParams(),
-                ...getBlockaidTransactionMetricsParams(
-                  transaction as unknown as BlockaidTransactionType,
-                ),
+                ...getBlockaidTransactionMetricsParams(transaction),
                 ...this.getTransactionMetrics(),
               } as JsonMap,
             ),
@@ -1131,7 +1143,8 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
 
       InteractionManager.runAfterInteractions(() => {
         NotificationManager.watchSubmittedTransaction({
-          ...transactionMeta,
+          // The meta is fully populated once the transaction has been added.
+          ...(transactionMeta as TransactionMeta),
           assetType,
         });
         this.checkRemoveCollectible();
@@ -1140,9 +1153,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
             .createEventBuilder(MetaMetricsEvents.SEND_TRANSACTION_COMPLETED)
             .addProperties({
               ...this.getAnalyticsParams(transactionMeta),
-              ...getBlockaidTransactionMetricsParams(
-                transaction as unknown as BlockaidTransactionType,
-              ),
+              ...getBlockaidTransactionMetricsParams(transaction),
               ...this.getTransactionMetrics(),
             } as JsonMap)
             .build(),
@@ -1390,9 +1401,7 @@ class Confirm extends PureComponent<ConfirmProps, ConfirmState> {
     const { transaction } = this.props;
     const analyticsParams = {
       ...this.getAnalyticsParams(),
-      ...getBlockaidTransactionMetricsParams(
-        transaction as unknown as BlockaidTransactionType,
-      ),
+      ...getBlockaidTransactionMetricsParams(transaction),
       external_link_clicked: 'security_alert_support_link',
     } as JsonMap;
     this.props.metrics.trackEvent(
@@ -1728,14 +1737,13 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(prepareTransaction(transaction)),
   resetTransaction: () => dispatch(resetTransaction()),
   setTransactionId: (transactionId: string) =>
-    // The action's JSDoc declares the id as an object although it is a string.
-    dispatch(setTransactionId(transactionId as unknown as object)),
+    dispatch(setTransactionId(transactionId)),
   setNonce: (nonce: number) => dispatch(setNonce(nonce)),
   setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
   removeFavoriteCollectible: (
     selectedAddress: string,
     chainId: Hex,
-    collectible: ConfirmAsset,
+    collectible: FavoriteCollectible,
   ) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
   showAlert: (config: AlertConfig) => dispatch(showAlert(config)),

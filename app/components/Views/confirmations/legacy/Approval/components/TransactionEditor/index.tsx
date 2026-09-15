@@ -23,7 +23,12 @@ import {
   parseTransactionEIP1559,
   parseTransactionLegacy,
 } from '../../../../../../../util/transactions';
-import { setTransactionObject } from '../../../../../../../actions/transaction';
+import {
+  setTransactionObject,
+  TransactionAssetType,
+  TransactionObject,
+  TransactionSelectedAsset,
+} from '../../../../../../../actions/transaction';
 import Engine from '../../../../../../../core/Engine';
 import collectiblesTransferInformation from '../../../../../../../util/collectibles-transfer.json';
 import { safeToChecksumAddress } from '../../../../../../../util/address';
@@ -65,10 +70,8 @@ const REVIEW = 'review';
 
 type DappTransaction = Parameters<typeof estimateGas>[1];
 
-interface EditorAsset {
+interface EditorAsset extends TransactionSelectedAsset {
   address: string;
-  symbol?: string;
-  decimals?: number | string;
   tokenId?: string;
 }
 
@@ -78,7 +81,7 @@ interface EditorAsset {
  */
 export interface EditorTransaction {
   id?: string;
-  assetType?: string;
+  assetType?: TransactionAssetType;
   data?: string;
   from: string;
   to?: string;
@@ -101,7 +104,7 @@ export interface EditorTransaction {
 const toDappTransaction = (transaction: EditorTransaction): DappTransaction =>
   transaction as unknown as DappTransaction;
 
-export interface EIP1559GasData {
+export type EIP1559GasData = {
   suggestedGasLimit?: string;
   suggestedMaxFeePerGas?: string;
   suggestedMaxFeePerGasHex?: string;
@@ -124,7 +127,7 @@ export interface EIP1559GasData {
   timeEstimateColor?: string;
   timeEstimateId?: string;
   error?: string;
-}
+};
 
 interface LegacyGasData {
   suggestedGasLimitHex?: string;
@@ -175,8 +178,6 @@ const collectiblesTransferInformationByAddress: Record<
 
 type GasLevel = 'low' | 'medium' | 'high';
 
-type SetTransactionObject = Parameters<typeof handleGasFeeSelection>[2];
-
 interface ParseTransactionOptions {
   onlyGas?: boolean;
 }
@@ -201,7 +202,7 @@ interface TransactionReviewProps {
   onConfirm: () => Promise<void>;
   ready: boolean;
   error: string | boolean | undefined;
-  gasSelected: string | null;
+  gasSelected: string | null | undefined;
   transactionConfirmed?: boolean;
   over: boolean;
   gasEstimateType: string;
@@ -255,7 +256,7 @@ const toBase16 = (value: BN | string | number): string =>
 export interface TransactionEditorConfirmArgs {
   gasEstimateType: string;
   EIP1559GasData: EIP1559GasData;
-  gasSelected: string | null;
+  gasSelected: string | null | undefined;
 }
 
 interface TransactionEditorOwnProps {
@@ -284,8 +285,8 @@ interface TransactionEditorState {
   amountError?: string | boolean;
   toAddressError?: string;
   over: boolean;
-  gasSelected: string | null;
-  gasSelectedTemp: string | null;
+  gasSelected: string | null | undefined;
+  gasSelectedTemp: string | null | undefined;
   EIP1559GasData: EIP1559GasData;
   EIP1559GasDataTemp: EIP1559GasData;
   LegacyGasData: LegacyGasData;
@@ -421,7 +422,7 @@ class TransactionEditor extends PureComponent<
       );
     } else if (this.props.gasEstimateType !== GAS_ESTIMATE_TYPES.NONE) {
       const suggestedGasLimit = fromWeiValue(transaction.gas, 'wei');
-      const getGas = (selected: string | null) =>
+      const getGas = (selected: string | null | undefined) =>
         dappSuggestedGasPrice
           ? fromWeiValue(dappSuggestedGasPrice, 'gwei')
           : gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
@@ -441,7 +442,7 @@ class TransactionEditor extends PureComponent<
       handleGasFeeSelection(
         hexToBN(LegacyGasData.suggestedGasLimitHex),
         hexToBN(LegacyGasData.suggestedGasPriceHex),
-        setTransactionObjectProp as SetTransactionObject,
+        setTransactionObjectProp,
       );
 
       let LegacyGasDataTemp: LegacyGasData;
@@ -495,10 +496,7 @@ class TransactionEditor extends PureComponent<
       Boolean(transaction.maxFeePerGas) &&
       Boolean(transaction.maxPriorityFeePerGas);
     if (!hasGasLimit)
-      handleGetGasLimit(
-        toDappTransaction(transaction),
-        setTransactionObjectProp as SetTransactionObject,
-      );
+      handleGetGasLimit(toDappTransaction(transaction), setTransactionObjectProp);
 
     if (!hasGasPrice && !hasEIP1559Gas) {
       this.startPolling();
@@ -881,7 +879,7 @@ class TransactionEditor extends PureComponent<
     });
   };
 
-  saveGasEdition = (gasSelected: string | null) => {
+  saveGasEdition = (gasSelected: string | null | undefined) => {
     const { gasEstimateType, setTransactionObject: setTransactionObjectProp } = this.props;
     const { LegacyGasDataTemp } = this.state;
 
@@ -889,7 +887,7 @@ class TransactionEditor extends PureComponent<
       handleGasFeeSelection(
         hexToBN(LegacyGasDataTemp.suggestedGasLimitHex),
         hexToBN(LegacyGasDataTemp.suggestedGasPriceHex),
-        setTransactionObjectProp as SetTransactionObject,
+        setTransactionObjectProp,
       );
     }
 
@@ -949,7 +947,7 @@ class TransactionEditor extends PureComponent<
     handleGasFeeSelection(
       hexToBN(legacyGasTransaction.suggestedGasLimitHex),
       hexToBN(legacyGasTransaction.suggestedGasPriceHex),
-      setTransactionObjectProp as SetTransactionObject,
+      setTransactionObjectProp,
     );
 
     this.setState({
@@ -1126,7 +1124,7 @@ class TransactionEditor extends PureComponent<
             <EditGasFee1559Component
               selected={gasSelected}
               gasFee={EIP1559GasDataTemp}
-              gasOptions={gasFeeEstimates}
+              gasOptions={gasFeeEstimates as GasFeeEstimates}
               onChange={this.calculateTempGasFee}
               gasFeeNative={EIP1559GasDataTemp.renderableGasFeeMinNative}
               gasFeeConversion={
@@ -1201,7 +1199,7 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setTransactionObject: (transaction: Partial<EditorTransaction>) =>
+  setTransactionObject: (transaction: TransactionObject) =>
     dispatch(setTransactionObject(transaction)),
 });
 

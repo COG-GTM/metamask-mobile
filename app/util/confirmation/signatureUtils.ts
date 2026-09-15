@@ -14,6 +14,7 @@ import { getDecimalChainId } from '../networks';
 import Logger from '../Logger';
 import { MetricsEventBuilder } from '../../core/Analytics/MetricsEventBuilder';
 import type { SecurityAlertResponse } from '@metamask/transaction-controller';
+import type { SecurityAlertResponse as BlockaidSecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 import type { JsonMap } from '../../core/Analytics/MetaMetrics.types';
 
 export interface SignaturePageInformation {
@@ -39,7 +40,7 @@ export interface SignatureAnalyticsParams extends JsonMap {
   version: string;
 }
 
-export type SignatureErrorListener = (...args: unknown[]) => void;
+export type SignatureErrorListener = (payload: { error?: Error }) => void;
 
 export const typedSign = {
   V1: 'eth_signTypedData',
@@ -50,7 +51,10 @@ export const typedSign = {
 export const getAnalyticsParams = (
   messageParams: SignatureMessageParams,
   signType: string | undefined,
-  securityAlertResponse?: SecurityAlertResponse | boolean,
+  securityAlertResponse?:
+    | SecurityAlertResponse
+    | BlockaidSecurityAlertResponse
+    | boolean,
 ): SignatureAnalyticsParams => {
   if (!messageParams || typeof messageParams !== 'object') {
     throw new Error('Invalid messageParams provided');
@@ -134,7 +138,10 @@ export const handleSignatureAction = async (
   onAction: () => Promise<unknown> | unknown,
   messageParams: SignatureMessageParams,
   signType: string,
-  securityAlertResponse?: SecurityAlertResponse | boolean,
+  securityAlertResponse?:
+    | SecurityAlertResponse
+    | BlockaidSecurityAlertResponse
+    | boolean,
   confirmation?: boolean,
 ): Promise<void> => {
   await onAction();

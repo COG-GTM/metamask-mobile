@@ -18,7 +18,10 @@ import { ThemeContext, mockTheme } from '../../../../../../util/theme';
 import { Colors, Theme } from '../../../../../../util/theme/models';
 import { RootState } from '../../../../../../reducers';
 import AccountInfoCard from '../../../../../UI/AccountInfoCard';
-import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
+import ActionView, {
+  ConfirmButtonState,
+  ConfirmButtonStateType,
+} from '../../../../../UI/ActionView';
 import QRSigningDetails from '../../../../../UI/QRHardware/QRSigningDetails';
 import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardwareAwareness';
 import { IQRState } from '../../../../../UI/QRHardware/types';
@@ -367,7 +370,7 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
       expandedHeight = styles.expandedHeight2;
     }
 
-    let confirmButtonState = ConfirmButtonState.Normal;
+    let confirmButtonState: ConfirmButtonStateType = ConfirmButtonState.Normal;
     if (securityAlertResponse?.result_type === ResultType.Malicious) {
       confirmButtonState = ConfirmButtonState.Error;
     } else if (securityAlertResponse?.result_type === ResultType.Warning) {

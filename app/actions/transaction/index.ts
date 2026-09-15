@@ -58,20 +58,29 @@ export interface TransactionParams {
 }
 
 /**
- * Transaction params plus any additional meta data (selectedAsset, id, etc.)
+ * Transaction params as held in redux state; the value may be replaced with a
+ * hex string via setTransactionValue, and gas fields may be stored as hex
+ * strings when they come straight from a gas estimate.
  */
-export interface TransactionObject extends TransactionParams {
-  selectedAsset?: TransactionSelectedAsset;
-  assetType?: TransactionAssetType;
-  [key: string]: unknown;
+export interface TransactionStateParams
+  extends Omit<
+    TransactionParams,
+    'value' | 'gas' | 'gasPrice' | 'maxFeePerGas' | 'maxPriorityFeePerGas'
+  > {
+  value?: BN | string;
+  gas?: BN | string;
+  gasPrice?: BN | string;
+  maxFeePerGas?: BN | string;
+  maxPriorityFeePerGas?: BN | string;
 }
 
 /**
- * Transaction params as held in redux state; the value may be replaced with a
- * hex string via setTransactionValue.
+ * Transaction params plus any additional meta data (selectedAsset, id, etc.)
  */
-export interface TransactionStateParams extends Omit<TransactionParams, 'value'> {
-  value?: BN | string;
+export interface TransactionObject extends TransactionStateParams {
+  selectedAsset?: TransactionSelectedAsset;
+  assetType?: TransactionAssetType;
+  [key: string]: unknown;
 }
 
 export type ResetTransactionAction =
@@ -99,7 +108,7 @@ export type SetSelectedAssetAction =
 
 export type PrepareTransactionAction =
   Action<TransactionActionType.PREPARE_TRANSACTION> & {
-    transaction: TransactionParams;
+    transaction: TransactionStateParams;
   };
 
 export type SetTransactionSecurityAlertResponseAction =
@@ -242,7 +251,7 @@ export function setSelectedAsset(
  * @param transaction - Transaction object with from, to, data, gas, gasPrice, value
  */
 export function prepareTransaction(
-  transaction: TransactionParams,
+  transaction: TransactionStateParams,
 ): PrepareTransactionAction {
   return {
     type: TransactionActionType.PREPARE_TRANSACTION,

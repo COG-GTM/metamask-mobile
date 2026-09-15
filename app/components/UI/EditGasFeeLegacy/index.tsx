@@ -378,7 +378,7 @@ const EditGasFeeLegacy = ({
     return error;
   };
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = isMainnetByChainId(String(chainId));
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
   let gasFeePrimary: string | undefined, gasFeeSecondary: string | undefined;
   if (nativeCurrencySelected) {

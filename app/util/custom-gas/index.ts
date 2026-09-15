@@ -128,8 +128,21 @@ export function parseWaitTime(min: number): string {
   return parsed.trim();
 }
 
+/**
+ * Transaction params as held in the legacy redux state, where gas fields may be
+ * BN instances rather than hex strings.
+ */
+export type GasLimitTransaction = Partial<
+  Omit<TransactionParams, 'gas' | 'gasPrice' | 'value' | 'nonce'>
+> & {
+  gas?: string | BN;
+  gasPrice?: string | BN;
+  value?: string | BN;
+  nonce?: string | number;
+};
+
 export async function getGasLimit(
-  transaction: Partial<TransactionParams>,
+  transaction: GasLimitTransaction,
   resetGas = false,
   networkClientId?: NetworkClientId,
 ): Promise<{ gas: ReturnType<typeof hexToBN> }> {

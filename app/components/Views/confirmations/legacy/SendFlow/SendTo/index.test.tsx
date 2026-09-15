@@ -1,10 +1,11 @@
 import React from 'react';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { Store } from 'redux';
 
-import SendTo from './index';
+import SendTo, { SendToProps } from './index';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
 import initialRootState from '../../../../../../util/test/initial-root-state';
 import { validateAddressOrENS } from '../../../../../../util/address';
@@ -29,10 +30,12 @@ const navigationPropMock = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
   navigate: jest.fn(),
-};
+  // Partial mock of the navigation object; only these methods are used.
+} as unknown as NavigationProp<ParamListBase>;
+// Route mocks omit `key`/`name`; the component only reads `params`.
 const routeMock = {
   params: {},
-};
+} as unknown as SendToProps['route'];
 
 describe('SendTo Component', () => {
   let store: Store;
@@ -74,7 +77,7 @@ describe('SendTo Component', () => {
           target_address: MOCK_TARGET_ADDRESS,
         },
       },
-    };
+    } as unknown as SendToProps['route'];
 
     render(
       <Provider store={store}>

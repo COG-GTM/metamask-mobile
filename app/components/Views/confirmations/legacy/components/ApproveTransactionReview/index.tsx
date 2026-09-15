@@ -18,7 +18,10 @@ import { TokenListToken } from '@metamask/assets-controllers';
 import { Hex } from '@metamask/utils';
 import type BN from 'bnjs4';
 import { Dispatch } from 'redux';
-import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
+import ActionView, {
+  ConfirmButtonState,
+  ConfirmButtonStateType,
+} from '../../../../../UI/ActionView';
 import { getApproveNavbar } from '../../../../../UI/Navbar';
 import { connect } from 'react-redux';
 import { getHost } from '../../../../../../util/browser';
@@ -29,7 +32,10 @@ import {
 } from '../../../../../../util/address';
 import Engine from '../../../../../../core/Engine';
 import { strings } from '../../../../../../../locales/i18n';
-import { setTransactionObject as setTransactionObjectAction } from '../../../../../../actions/transaction';
+import {
+  setTransactionObject as setTransactionObjectAction,
+  TransactionObject,
+} from '../../../../../../actions/transaction';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import {
   fromTokenMinimalUnit,
@@ -286,7 +292,7 @@ interface ApproveTransactionReviewProps extends IWithMetricsAwarenessProps {
   /**
    * Dispatch set transaction object from transaction action
    */
-  setTransactionObject: (transaction: Partial<TransactionState>) => void;
+  setTransactionObject: (transaction: TransactionObject) => void;
   /**
    * toggle nickname modal
    */
@@ -485,7 +491,7 @@ class ApproveTransactionReview extends PureComponent<
       unroundedAccountBalance = '';
 
     const { spenderAddress, encodedAmount: encodedHexAmount } =
-      decodeApproveData(data);
+      decodeApproveData(data as string);
     const encodedDecimalAmount = hexToBN(encodedHexAmount).toString();
 
     // The tokenList addresses we get from state are not checksum addresses
@@ -906,7 +912,7 @@ class ApproveTransactionReview extends PureComponent<
 
   getConfirmButtonState() {
     const { securityAlertResponse } = this.props;
-    let confirmButtonState = ConfirmButtonState.Normal;
+    let confirmButtonState: ConfirmButtonStateType = ConfirmButtonState.Normal;
 
     if (securityAlertResponse) {
       if (securityAlertResponse.result_type === ResultType.Malicious) {
@@ -1436,7 +1442,6 @@ class ApproveTransactionReview extends PureComponent<
           currentPageInformation={{
             origin,
             spenderAddress,
-            title: host,
             url: activeTabUrl,
           }}
         />
@@ -1500,7 +1505,7 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setTransactionObject: (transaction: Partial<TransactionState>) =>
+  setTransactionObject: (transaction: TransactionObject) =>
     dispatch(setTransactionObjectAction(transaction)),
   showAlert: (config: ShowAlertConfig) => dispatch(showAlert(config)),
 });

@@ -138,7 +138,7 @@ interface SendToState {
   toSelectedAddressReady: boolean;
   toEnsName?: string;
   toEnsAddressResolved?: string;
-  confusableCollection: string[];
+  confusableCollection?: string[];
   inputWidth: { width: string };
   showAmbiguousAcountWarning: boolean;
   toInputHighlighted?: boolean;

@@ -14,7 +14,7 @@ export interface CustomGasModalProps {
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transaction: any;
-    total: string;
+    total: string | undefined;
   }) => string | undefined;
   legacy: boolean;
   legacyGasData?: {

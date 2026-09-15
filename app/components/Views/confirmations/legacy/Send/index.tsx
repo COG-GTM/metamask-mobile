@@ -35,6 +35,8 @@ import { connect } from 'react-redux';
 import {
   resetTransaction,
   setTransactionObject,
+  TransactionAssetType,
+  TransactionStateParams,
 } from '../../../../../actions/transaction';
 import { toggleDappTransactionModal } from '../../../../../actions/modals';
 import NotificationManager from '../../../../../core/NotificationManager';
@@ -117,7 +119,7 @@ interface SendDeeplinkToken {
  * Transaction slice of the redux store as consumed by this screen.
  */
 interface SendTransactionState {
-  transaction: Omit<TransactionParams, 'value'> & { value?: string | BN };
+  transaction: TransactionStateParams;
   id?: string;
   gas?: BN;
   gasPrice?: BN;
@@ -126,7 +128,7 @@ interface SendTransactionState {
   from?: string;
   data?: string;
   selectedAsset: SendAsset;
-  assetType?: string;
+  assetType?: TransactionAssetType;
   providerType?: string;
   chainId?: Hex;
 }
@@ -152,9 +154,9 @@ interface DeeplinkTxMeta {
 /**
  * Transaction state built from a deeplink before being stored in redux.
  */
-interface NewTxMeta {
+type NewTxMeta = {
   symbol?: string;
-  assetType?: string;
+  assetType?: TransactionAssetType;
   paymentRequest?: boolean;
   selectedAsset?: SendAsset | SendDeeplinkToken;
   to?: string;
@@ -169,7 +171,7 @@ interface NewTxMeta {
   data?: string;
   gas?: string | BN;
   gasPrice?: string | BN;
-}
+};
 
 /**
  * Gas estimate as consumed by this screen. The controller no longer returns
@@ -704,10 +706,11 @@ class Send extends PureComponent<SendProps, SendState> {
         );
       } else if (assetType === 'ERC20') {
         try {
-          const [addressTo] = decodeTransferData(
-            'transfer',
-            transactionMeta.transaction?.data as string,
-          );
+          const [addressTo] =
+            decodeTransferData(
+              'transfer',
+              transactionMeta.transaction?.data as string,
+            ) ?? [];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }
@@ -720,7 +723,7 @@ class Send extends PureComponent<SendProps, SendState> {
             'transferFrom',
             transactionMeta.transaction?.data as string,
           );
-          const addressTo = data[1];
+          const addressTo = data?.[1];
           if (addressTo) {
             checksummedAddress = toChecksumAddress(addressTo);
           }
@@ -913,10 +916,7 @@ class Send extends PureComponent<SendProps, SendState> {
       );
     } else if (this.state.mode === REVIEW) {
       return (
-        <ConfirmSend
-          transaction={this.props.transaction}
-          navigation={this.props.navigation}
-        />
+        <ConfirmSend navigation={this.props.navigation} />
       );
     }
   }

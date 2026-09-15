@@ -1,5 +1,6 @@
 import type BN from 'bnjs4';
 import { SecurityAlertResponse } from '@metamask/transaction-controller';
+import type { TransactionAssetType } from '../../../../../../actions/transaction';
 
 /**
  * Asset selected for the transaction in the `transaction` redux slice.
@@ -36,7 +37,7 @@ export interface TransactionParams {
  */
 export interface TransactionState {
   ensRecipient?: string;
-  assetType?: string;
+  assetType?: TransactionAssetType;
   selectedAsset: SelectedAsset;
   transaction: TransactionParams;
   warningGasPriceHigh?: string;
