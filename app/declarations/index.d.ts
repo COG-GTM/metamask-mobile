@@ -410,3 +410,29 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module '@metamask/react-native-button' {
+  import { ComponentType, ReactNode } from 'react';
+  // eslint-disable-next-line no-duplicate-imports
+  import { StyleProp, TextStyle, ViewStyle } from 'react-native';
+
+  interface ButtonProps {
+    style?: StyleProp<TextStyle>;
+    containerStyle?: StyleProp<ViewStyle>;
+    onPress?: () => void;
+    disabled?: boolean;
+    testID?: string;
+    children?: ReactNode;
+  }
+
+  const Button: ComponentType<ButtonProps>;
+  export default Button;
+}
+
+declare module 'zxcvbn' {
+  interface ZXCVBNResult {
+    score: 0 | 1 | 2 | 3 | 4;
+  }
+  function zxcvbn(password: string, userInputs?: string[]): ZXCVBNResult;
+  export default zxcvbn;
+}

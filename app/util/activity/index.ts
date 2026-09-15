@@ -70,7 +70,7 @@ export const filterByAddressAndNetwork = (
   selectedAddress: string,
   networkId: string,
   chainId: string,
-  tokenNetworkFilter: { [key: string]: boolean }[],
+  tokenNetworkFilter: Record<string, unknown> | { [key: string]: boolean }[],
 ): boolean => {
   const {
     txParams: { from, to },
