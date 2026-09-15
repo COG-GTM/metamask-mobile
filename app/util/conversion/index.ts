@@ -26,23 +26,90 @@ import BN from 'bnjs4';
 
 import { stripHexPrefix } from 'ethereumjs-util';
 
+/**
+ * Defines the base type of numeric value
+ */
+export type NumericBase = 'hex' | 'dec' | 'BN';
+
+/**
+ * Defines which type of denomination a value is in
+ */
+export type EthDenomination = 'WEI' | 'GWEI' | 'ETH';
+
+/**
+ * Values accepted as conversion input. `BigNumber` is only valid when no
+ * `fromNumericBase` is given; `BN` only when `fromNumericBase` is `'BN'`.
+ */
+export type ConversionValue = string | number | BN | BigNumber;
+
+/**
+ * Result type of a conversion, derived from the requested `toNumericBase`.
+ */
+export type ConversionResult<T extends NumericBase | undefined> = T extends 'BN'
+  ? BN
+  : T extends 'hex' | 'dec'
+  ? string
+  : BigNumber;
+
+export interface ConversionOptions<
+  TBase extends NumericBase | undefined = NumericBase | undefined,
+> {
+  fromNumericBase?: NumericBase;
+  fromDenomination?: EthDenomination;
+  fromCurrency?: string | null;
+  toNumericBase?: TBase;
+  toDenomination?: EthDenomination;
+  toCurrency?: string | null;
+  numberOfDecimals?: number;
+  conversionRate?: number | string | BigNumber | null;
+  invertConversionRate?: boolean;
+  roundDown?: number;
+}
+
+export interface ConverterInput<
+  TBase extends NumericBase | undefined = NumericBase | undefined,
+> extends ConversionOptions<TBase> {
+  value: ConversionValue;
+}
+
+export interface AddCurrenciesOptions<
+  TBase extends NumericBase | undefined = NumericBase | undefined,
+> extends ConversionOptions<TBase> {
+  aBase?: number;
+  bBase?: number;
+}
+
+export interface MultiplyCurrenciesOptions<
+  TBase extends NumericBase | undefined = NumericBase | undefined,
+> extends ConversionOptions<TBase> {
+  multiplicandBase?: number;
+  multiplierBase?: number;
+}
+
 // Big Number Constants
 const BIG_NUMBER_WEI_MULTIPLIER = new BigNumber('1000000000000000000');
 const BIG_NUMBER_GWEI_MULTIPLIER = new BigNumber('1000000000');
 const BIG_NUMBER_ETH_MULTIPLIER = new BigNumber('1');
 
 // Setter Maps
-const toBigNumber = {
-  hex: (n) => new BigNumber(stripHexPrefix(n), 16),
+const toBigNumber: Record<NumericBase, (n: ConversionValue) => BigNumber> = {
+  // stripHexPrefix throws for non-strings, matching the original runtime contract for hex input.
+  hex: (n) => new BigNumber(stripHexPrefix(n as string), 16),
   dec: (n) => new BigNumber(String(n), 10),
   BN: (n) => new BigNumber(n.toString(16), 16),
 };
-const toNormalizedDenomination = {
+const toNormalizedDenomination: Record<
+  EthDenomination,
+  (bigNumber: BigNumber) => BigNumber
+> = {
   WEI: (bigNumber) => bigNumber.div(BIG_NUMBER_WEI_MULTIPLIER),
   GWEI: (bigNumber) => bigNumber.div(BIG_NUMBER_GWEI_MULTIPLIER),
   ETH: (bigNumber) => bigNumber.div(BIG_NUMBER_ETH_MULTIPLIER),
 };
-const toSpecifiedDenomination = {
+const toSpecifiedDenomination: Record<
+  EthDenomination,
+  (bigNumber: BigNumber) => BigNumber
+> = {
   WEI: (bigNumber) =>
     bigNumber.times(BIG_NUMBER_WEI_MULTIPLIER).decimalPlaces(0),
   GWEI: (bigNumber) =>
@@ -50,24 +117,15 @@ const toSpecifiedDenomination = {
   ETH: (bigNumber) =>
     bigNumber.times(BIG_NUMBER_ETH_MULTIPLIER).decimalPlaces(9),
 };
-const baseChange = {
+const baseChange: Record<NumericBase, (n: BigNumber) => string | BN> = {
   hex: (n) => n.toString(16),
   dec: (n) => new BigNumber(n).toString(10),
   BN: (n) => new BN(n.toString(16)),
 };
 
 // Utility function for checking base types
-const isValidBase = (base) => Number.isInteger(base) && base > 1;
-
-/**
- * Defines the base type of numeric value
- * @typedef {('hex' | 'dec' | 'BN')} NumericBase
- */
-
-/**
- * Defines which type of denomination a value is in
- * @typedef {('WEI' | 'GWEI' | 'ETH')} EthDenomination
- */
+const isValidBase = (base: unknown): base is number =>
+  Number.isInteger(base) && (base as number) > 1;
 
 /**
  * Utility method to convert a value between denominations, formats and currencies.
@@ -84,7 +142,7 @@ const isValidBase = (base) => Number.isInteger(base) && base > 1;
  * @param {boolean} [input.invertConversionRate]
  * @param {string} [input.roundDown]
  */
-const converter = ({
+const converter = <TBase extends NumericBase | undefined = undefined>({
   value,
   fromNumericBase,
   fromDenomination,
@@ -96,10 +154,11 @@ const converter = ({
   conversionRate,
   invertConversionRate,
   roundDown,
-}) => {
-  let convertedValue = fromNumericBase
+}: ConverterInput<TBase>): ConversionResult<TBase> => {
+  // Without a `fromNumericBase` the caller must already supply a BigNumber.
+  let convertedValue: BigNumber = fromNumericBase
     ? toBigNumber[fromNumericBase](value)
-    : value;
+    : (value as BigNumber);
 
   if (fromDenomination) {
     convertedValue = toNormalizedDenomination[fromDenomination](convertedValue);
@@ -137,13 +196,25 @@ const converter = ({
   }
 
   if (toNumericBase) {
-    convertedValue = baseChange[toNumericBase](convertedValue);
+    return baseChange[toNumericBase](convertedValue) as ConversionResult<TBase>;
   }
-  return convertedValue;
+  return convertedValue as ConversionResult<TBase>;
 };
 
-const conversionUtil = (
-  value,
+/**
+ * Without a distinct `toCurrency` the currencies always match, so the
+ * `0` fallback below is unreachable and the result is a real conversion.
+ */
+function conversionUtil<TBase extends NumericBase | undefined = undefined>(
+  value: ConversionValue | null | undefined,
+  options: ConversionOptions<TBase> & { toCurrency?: undefined },
+): ConversionResult<TBase>;
+function conversionUtil<TBase extends NumericBase | undefined = undefined>(
+  value: ConversionValue | null | undefined,
+  options: ConversionOptions<TBase>,
+): ConversionResult<TBase> | 0;
+function conversionUtil<TBase extends NumericBase | undefined = undefined>(
+  value: ConversionValue | null | undefined,
   {
     fromCurrency = null,
     toCurrency = fromCurrency,
@@ -154,12 +225,12 @@ const conversionUtil = (
     numberOfDecimals,
     conversionRate,
     invertConversionRate,
-  },
-) => {
+  }: ConversionOptions<TBase>,
+): ConversionResult<TBase> | 0 {
   if (fromCurrency !== toCurrency && !conversionRate) {
     return 0;
   }
-  return converter({
+  return converter<TBase>({
     fromCurrency,
     toCurrency,
     fromNumericBase,
@@ -171,9 +242,9 @@ const conversionUtil = (
     invertConversionRate,
     value: value || '0',
   });
-};
+}
 
-const getBigNumber = (value, base) => {
+const getBigNumber = (value: ConversionValue, base: number): BigNumber => {
   if (!isValidBase(base)) {
     throw new Error('Must specify valid base');
   }
@@ -187,7 +258,11 @@ const getBigNumber = (value, base) => {
   return new BigNumber(String(value), base);
 };
 
-const addCurrencies = (a, b, options = {}) => {
+const addCurrencies = <TBase extends NumericBase | undefined = undefined>(
+  a: ConversionValue,
+  b: ConversionValue,
+  options: AddCurrenciesOptions<TBase> = {},
+): ConversionResult<TBase> => {
   const { aBase, bBase, ...conversionOptions } = options;
 
   if (!isValidBase(aBase) || !isValidBase(bBase)) {
@@ -195,13 +270,17 @@ const addCurrencies = (a, b, options = {}) => {
   }
   const value = getBigNumber(a, aBase).plus(getBigNumber(b, bBase));
 
-  return converter({
+  return converter<TBase>({
     value,
     ...conversionOptions,
   });
 };
 
-const subtractCurrencies = (a, b, options = {}) => {
+const subtractCurrencies = <TBase extends NumericBase | undefined = undefined>(
+  a: ConversionValue,
+  b: ConversionValue,
+  options: AddCurrenciesOptions<TBase> = {},
+): ConversionResult<TBase> => {
   const { aBase, bBase, ...conversionOptions } = options;
 
   if (!isValidBase(aBase) || !isValidBase(bBase)) {
@@ -210,13 +289,17 @@ const subtractCurrencies = (a, b, options = {}) => {
 
   const value = getBigNumber(a, aBase).minus(getBigNumber(b, bBase));
 
-  return converter({
+  return converter<TBase>({
     value,
     ...conversionOptions,
   });
 };
 
-const multiplyCurrencies = (a, b, options = {}) => {
+const multiplyCurrencies = <TBase extends NumericBase | undefined = undefined>(
+  a: ConversionValue,
+  b: ConversionValue,
+  options: MultiplyCurrenciesOptions<TBase> = {},
+): ConversionResult<TBase> => {
   const { multiplicandBase, multiplierBase, ...conversionOptions } = options;
 
   if (!isValidBase(multiplicandBase) || !isValidBase(multiplierBase)) {
@@ -227,27 +310,52 @@ const multiplyCurrencies = (a, b, options = {}) => {
     getBigNumber(b, multiplierBase),
   );
 
-  return converter({
+  return converter<TBase>({
     value,
     ...conversionOptions,
   });
 };
 
-const conversionGreaterThan = ({ ...firstProps }, { ...secondProps }) => {
+/**
+ * Comparison inputs must not request a numeric base change, so that the
+ * converted values remain BigNumbers and can be compared.
+ */
+type ComparisonInput = ConverterInput<undefined>;
+
+/**
+ * bignumber.js v9 no longer exposes these legacy comparison aliases. The two
+ * helpers using them are unused and kept verbatim (not fixed) in this typing
+ * migration, so the legacy names are modelled here instead.
+ */
+interface LegacyComparableBigNumber {
+  greaterThanOrEqualTo(n: BigNumber): boolean;
+  lessThanOrEqualTo(n: BigNumber): boolean;
+}
+
+const conversionGreaterThan = (
+  { ...firstProps }: ComparisonInput,
+  { ...secondProps }: ComparisonInput,
+): boolean => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
 
   return firstValue.gt(secondValue);
 };
 
-const conversionLessThan = ({ ...firstProps }, { ...secondProps }) => {
+const conversionLessThan = (
+  { ...firstProps }: ComparisonInput,
+  { ...secondProps }: ComparisonInput,
+): boolean => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
 
   return firstValue.lt(secondValue);
 };
 
-const conversionMax = ({ ...firstProps }, { ...secondProps }) => {
+const conversionMax = (
+  { ...firstProps }: ComparisonInput,
+  { ...secondProps }: ComparisonInput,
+): ConversionValue => {
   const firstIsGreater = conversionGreaterThan(
     { ...firstProps },
     { ...secondProps },
@@ -256,19 +364,32 @@ const conversionMax = ({ ...firstProps }, { ...secondProps }) => {
   return firstIsGreater ? firstProps.value : secondProps.value;
 };
 
-const conversionGTE = ({ ...firstProps }, { ...secondProps }) => {
+const conversionGTE = (
+  { ...firstProps }: ComparisonInput,
+  { ...secondProps }: ComparisonInput,
+): boolean => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
-  return firstValue.greaterThanOrEqualTo(secondValue);
+  return (
+    firstValue as unknown as LegacyComparableBigNumber
+  ).greaterThanOrEqualTo(secondValue);
 };
 
-const conversionLTE = ({ ...firstProps }, { ...secondProps }) => {
+const conversionLTE = (
+  { ...firstProps }: ComparisonInput,
+  { ...secondProps }: ComparisonInput,
+): boolean => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
-  return firstValue.lessThanOrEqualTo(secondValue);
+  return (firstValue as unknown as LegacyComparableBigNumber).lessThanOrEqualTo(
+    secondValue,
+  );
 };
 
-const toNegative = (n, options = {}) => multiplyCurrencies(n, -1, options);
+const toNegative = <TBase extends NumericBase | undefined = undefined>(
+  n: ConversionValue,
+  options: MultiplyCurrenciesOptions<TBase> = {},
+): ConversionResult<TBase> => multiplyCurrencies<TBase>(n, -1, options);
 
 export {
   conversionUtil,

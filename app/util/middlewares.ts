@@ -1,3 +1,10 @@
+import type { JsonRpcMiddleware } from '@metamask/json-rpc-engine';
+import type {
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  JsonRpcError,
+} from '@metamask/utils';
 import Logger from './Logger';
 import trackErrorAsAnalytics from './metrics/TrackError/trackErrorAsAnalytics';
 
@@ -15,17 +22,36 @@ const USER_REJECTED_ERRORS = ['user rejected', 'user denied', 'user cancelled'];
 
 const USER_REJECTED_ERROR_CODE = 4001;
 
+export interface MiddlewareOptions {
+  origin: string;
+}
+
+/**
+ * JSON-RPC request as seen by the bridge middlewares: the origin middleware
+ * stamps `origin` onto it, and internal requests may carry `isMetamaskInternal`.
+ */
+export type OriginatedJsonRpcRequest = JsonRpcRequest<JsonRpcParams> & {
+  origin?: string;
+  isMetamaskInternal?: boolean;
+};
+
+interface LoggerMiddlewareErrorParams {
+  message: string;
+  orginalError: JsonRpcError;
+  res: Record<string, unknown>;
+  req: OriginatedJsonRpcRequest;
+  data?: Json;
+}
+
 /**
  * Returns a middleware that appends the DApp origin to request
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createOriginMiddleware(opts) {
-  return function originMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ _,
-    /** @type {Function} */ next,
-  ) {
+export function createOriginMiddleware(
+  opts: MiddlewareOptions,
+): JsonRpcMiddleware<JsonRpcParams, Json> {
+  return function originMiddleware(req: OriginatedJsonRpcRequest, _, next) {
     req.origin = opts.origin;
 
     // web3-provider-engine compatibility
@@ -43,7 +69,10 @@ export function createOriginMiddleware(opts) {
  * @param {String} errorMessage
  * @returns {boolean}
  */
-export function containsUserRejectedError(errorMessage, errorCode) {
+export function containsUserRejectedError(
+  errorMessage: unknown,
+  errorCode?: unknown,
+): boolean {
   try {
     if (!errorMessage || !(typeof errorMessage === 'string')) return false;
 
@@ -67,13 +96,11 @@ export function containsUserRejectedError(errorMessage, errorCode) {
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createLoggerMiddleware(opts) {
-  return function loggerMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ res,
-    /** @type {Function} */ next,
-  ) {
-    next((/** @type {Function} */ cb) => {
+export function createLoggerMiddleware(
+  opts: MiddlewareOptions,
+): JsonRpcMiddleware<JsonRpcParams, Json> {
+  return function loggerMiddleware(req: OriginatedJsonRpcRequest, res, next) {
+    next((cb) => {
       if (res.error) {
         const { error, ...resWithoutError } = res;
         if (error) {
@@ -86,13 +113,13 @@ export function createLoggerMiddleware(opts) {
             /**
              * Example of a rpc error:
              * { "code":-32603,
-             *   "message":"Internal JSON-RPC error.",
-             *   "data":{"code":-32000,"message":"gas required exceeds allowance (59956966) or always failing transaction"}
+             * "message":"Internal JSON-RPC error.",
+             * "data":{"code":-32000,"message":"gas required exceeds allowance (59956966) or always failing transaction"}
              * }
              * This will make the error log to sentry with the title "gas required exceeds allowance (59956966) or always failing transaction"
              * making it easier to differentiate each error.
              */
-            const errorParams = {
+            const errorParams: LoggerMiddlewareErrorParams = {
               message: 'Error in RPC response',
               orginalError: error,
               res: resWithoutError,
@@ -103,7 +130,8 @@ export function createLoggerMiddleware(opts) {
               errorParams.data = error.data;
             }
 
-            Logger.error(error, errorParams);
+            // Logger.error wraps non-Error objects at runtime but is typed to accept only Error.
+            Logger.error(error as unknown as Error, errorParams);
           }
         }
       }
