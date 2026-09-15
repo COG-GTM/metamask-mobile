@@ -1419,6 +1419,7 @@ exports[`TransactionReview should render correctly 1`] = `
   }
 >
   <Component
+    EIP1559GasData={{}}
     generateTransform={[MockFunction]}
   />
 </ContextProvider>
