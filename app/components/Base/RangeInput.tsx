@@ -33,7 +33,7 @@ export interface RangeInputProps {
   /**
    * Function that is called when the input is changed
    */
-  onChangeValue?: (value: string | undefined) => void;
+  onChangeValue?: (value: string) => void;
   /**
    * A BigNumber value per which the input is incremented when clicking on the plus and minus button
    */
@@ -168,7 +168,7 @@ const RangeInput = ({
   }, []);
 
   const changeValue = useCallback(
-    (newValue?: string, dontEmptyError?: boolean) => {
+    (newValue: string, dontEmptyError?: boolean) => {
       if (!dontEmptyError) setErrorState('');
       const cleanValue = newValue?.replace?.(',', '.');
       if (cleanValue && new BigNumber(cleanValue).isNaN()) {

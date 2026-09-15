@@ -23,6 +23,7 @@ import InfoModal from './InfoModal';
 import EditGasFeeLegacy, { type LegacyGasFee } from '../../EditGasFeeLegacy';
 import EditGasFee1559, {
   type EIP1559GasFee,
+  type EIP1559GasLevel,
   type EIP1559GasOptions,
 } from '../../EditGasFee1559';
 import {
@@ -83,8 +84,8 @@ type ParsedTransactionData = {
   transactionFeeFiat?: string;
   suggestedMaxFeePerGas?: string;
   suggestedMaxPriorityFeePerGas?: string;
-  suggestedGasLimit?: string | number;
-  suggestedGasPrice?: string | number;
+  suggestedGasLimit?: string;
+  suggestedGasPrice?: string;
   totalMaxHex?: { toString: (radix?: number) => string };
   totalHex?: { toString: (radix?: number) => string };
   estimatedBaseFee?: string;
@@ -101,7 +102,7 @@ interface GasEditModalProps {
   gasEstimateType: GasEstimateType;
   gasFeeEstimates: GasFeeEstimate;
   defaultGasFeeOptionLegacy?: string;
-  defaultGasFeeOptionFeeMarket?: string;
+  defaultGasFeeOptionFeeMarket?: EIP1559GasLevel;
   isVisible: boolean;
   onGasUpdate: (
     gas: Partial<CustomGasFee> | LegacyGasUpdate,

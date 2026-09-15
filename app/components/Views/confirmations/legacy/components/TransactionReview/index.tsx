@@ -60,7 +60,10 @@ import {
 import AccountFromToInfoCard from '../../../../../UI/AccountFromToInfoCard';
 import { AccountFromToInfoCardProps } from '../../../../../UI/AccountFromToInfoCard/AccountFromToInfoCard.types';
 import ApprovalTagUrl from '../../../../../UI/ApprovalTagUrl';
-import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
+import ActionView, {
+  ConfirmButtonState,
+  ConfirmButtonStateType,
+} from '../../../../../UI/ActionView';
 import QRSigningDetails from '../../../../../UI/QRHardware/QRSigningDetails';
 import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardwareAwareness';
 import SimulationDetails from '../../../../../UI/SimulationDetails/SimulationDetails';
@@ -414,7 +417,7 @@ class TransactionReview extends PureComponent<
       }
       const symbol = contract?.symbol || 'ERC20';
       assetAmount = `${
-        decodeTransferData('transfer', data as string)[1]
+        decodeTransferData('transfer', data as string)?.[1]
       } ${symbol}`;
     } else {
       [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
@@ -554,7 +557,7 @@ class TransactionReview extends PureComponent<
 
   getConfirmButtonState() {
     const { securityAlertResponse } = this.props;
-    let confirmButtonState = ConfirmButtonState.Normal;
+    let confirmButtonState: ConfirmButtonStateType = ConfirmButtonState.Normal;
 
     if (securityAlertResponse) {
       if (securityAlertResponse?.result_type === ResultType.Malicious) {

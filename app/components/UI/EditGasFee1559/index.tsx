@@ -53,7 +53,11 @@ export interface EIP1559GasOption {
   [key: string]: unknown;
 }
 
-export type EIP1559GasOptions = Record<string, EIP1559GasOption | undefined>;
+export type EIP1559GasLevel = 'low' | 'medium' | 'high';
+
+export type EIP1559GasOptions = Partial<
+  Record<EIP1559GasLevel, EIP1559GasOption>
+>;
 
 export interface EditGasFee1559UpdateOption {
   isCancel?: boolean;
@@ -79,7 +83,7 @@ export interface EditGasFee1559Props {
   /**
    * Gas option selected (low, medium, high)
    */
-  selected?: string;
+  selected?: string | null;
   /**
    * Gas fee currently active
    */
@@ -183,11 +187,11 @@ export interface EditGasFee1559Props {
   /**
    * Estimate option to compare with for too low warning
    */
-  warningMinimumEstimateOption?: string;
+  warningMinimumEstimateOption?: EIP1559GasLevel;
   /**
    * Suggested estimate option to show recommended values
    */
-  suggestedEstimateOption?: string;
+  suggestedEstimateOption?: EIP1559GasLevel;
   /**
    * Function to call when update animation starts
    */
@@ -512,7 +516,7 @@ const EditGasFee1559 = ({
     setSelectedOption(option);
     setMaxFeeError('');
     setMaxPriorityFeeError('');
-    changeGas({ ...gasOptions?.[option] }, option);
+    changeGas({ ...gasOptions?.[option as EIP1559GasLevel] }, option);
   };
 
   const shouldIgnore = (option: string) =>
@@ -552,7 +556,7 @@ const EditGasFee1559 = ({
         ...extendOptions[name],
       }));
 
-  const isMainnet = isMainnetByChainId(chainId);
+  const isMainnet = isMainnetByChainId(String(chainId));
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
   let gasFeePrimary: string | undefined,
     gasFeeMaxPrimary: string | undefined,

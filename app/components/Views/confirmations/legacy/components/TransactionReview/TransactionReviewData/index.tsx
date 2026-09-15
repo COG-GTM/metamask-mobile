@@ -134,7 +134,7 @@ class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
         transaction: { data },
       },
     } = this.props;
-    ClipboardManager.setString(data);
+    ClipboardManager.setString(data as string);
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,

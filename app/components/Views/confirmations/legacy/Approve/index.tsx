@@ -37,6 +37,7 @@ import {
   setTransactionObject,
   setNonce,
   setProposedNonce,
+  TransactionAssetType,
 } from '../../../../../actions/transaction';
 import {
   GAS_ESTIMATE_TYPES,
@@ -136,7 +137,7 @@ interface ApproveTransaction {
   networkId?: string;
   networkClientId?: string;
   selectedAsset?: ApproveAsset;
-  assetType?: string;
+  assetType?: TransactionAssetType;
   transaction?: Partial<TransactionParams>;
 }
 
@@ -145,7 +146,7 @@ interface EIP1559GasTransaction {
   suggestedMaxFeePerGas?: string;
   suggestedMaxPriorityFeePerGas?: string;
   totalMaxHex?: string;
-  totalHex?: string;
+  totalHex?: string | BN;
   error?: string;
 }
 
@@ -158,7 +159,7 @@ interface EIP1559GasObject {
 interface LegacyGasTransaction {
   suggestedGasLimit?: string;
   suggestedGasPrice?: string;
-  totalHex?: string;
+  totalHex?: string | BN;
   totalMaxHex?: string;
   error?: string;
 }
@@ -558,7 +559,7 @@ class Approve extends PureComponent<ApproveProps, ApproveState> {
     this.review();
   };
 
-  validateGas = (total?: string) => {
+  validateGas = (total?: string | BN) => {
     let error: string | undefined;
     const {
       ticker,

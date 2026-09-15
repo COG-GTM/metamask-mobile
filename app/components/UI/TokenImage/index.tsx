@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
 
 interface TokenAsset {
   address?: string;
-  image?: string;
+  image?: string | null;
   symbol?: string;
   decimals?: number;
 }

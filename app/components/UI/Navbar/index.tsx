@@ -62,7 +62,7 @@ import { SendLinkViewSelectorsIDs } from '../../../../e2e/selectors/Receive/Send
 import { SendViewSelectorsIDs } from '../../../../e2e/selectors/SendFlow/SendView.selectors';
 import {
   getBlockaidTransactionMetricsParams,
-  TransactionType,
+  TransactionWithSecurityAlerts,
 } from '../../../util/blockaid';
 import Icon, {
   IconName,
@@ -540,7 +540,7 @@ interface TransactionOptionsRouteParams {
 export function getTransactionOptionsTitle(
   _title: string,
   navigation: NavbarNavigation,
-  route: NavbarRoute<TransactionOptionsRouteParams>,
+  route: Partial<NavbarRoute<TransactionOptionsRouteParams>>,
   themeColors: Colors,
 ): StackNavigationOptions {
   const innerStyles = StyleSheet.create({
@@ -636,7 +636,7 @@ export function getSendFlowTitle(
   route: NavbarRoute<SendFlowRouteParams> | undefined,
   themeColors: Colors,
   resetTransaction: () => void,
-  transaction: TransactionType,
+  transaction: TransactionWithSecurityAlerts | undefined,
 ): StackNavigationOptions {
   const innerStyles = StyleSheet.create({
     headerButtonText: {

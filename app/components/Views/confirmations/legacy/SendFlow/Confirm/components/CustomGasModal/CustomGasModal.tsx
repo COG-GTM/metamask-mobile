@@ -15,23 +15,31 @@ import { selectGasFeeControllerEstimateType } from '../../../../../../../../sele
 import { selectPrimaryCurrency } from '../../../../../../../../selectors/settings';
 import { useAppThemeFromContext } from '../../../../../../../../util/theme';
 import EditGasFee1559Update from '../../../../components/EditGasFee1559Update';
+import {
+  GasFeeEstimateLevel,
+  GasFeeEstimateOptions,
+  SelectedGasObject,
+} from '../../../../components/EditGasFee1559Update/types';
 import EditGasFeeLegacyUpdate from '../../../../components/EditGasFeeLegacyUpdate';
+import {
+  EditLegacyGasTransaction,
+  LegacyGasObject,
+} from '../../../../components/EditGasFeeLegacyUpdate/types';
+import { GasTransaction } from '../../../../components/TransactionReview/TransactionReviewEIP1559Update/types';
 import createStyles from './CustomGasModal.styles';
 import { CustomGasModalProps } from './CustomGasModal.types';
 import { RootState } from '../../../../../../../../reducers';
 
-type LegacyGasData = NonNullable<CustomGasModalProps['legacyGasData']>;
 type EIP1559GasData = NonNullable<CustomGasModalProps['EIP1559GasData']>;
-type EIP1559GasTxn = NonNullable<CustomGasModalProps['EIP1559GasTxn']>;
 
-interface LegacyGasTxn {
-  totalHex: string;
+type LegacyGasTxn = EditLegacyGasTransaction & {
+  totalHex?: string;
   error?: string;
-}
+};
 
-interface EIP1559GasTxnUpdate extends EIP1559GasTxn {
+type EIP1559GasTxnUpdate = GasTransaction & {
   error?: string;
-}
+};
 
 // The gas editors are untyped JS components whose inferred props are all
 // required; they tolerate omitted props at runtime, so treat them as optional.
@@ -42,13 +50,7 @@ const EditGasFeeLegacy = EditGasFeeLegacyUpdate as ComponentType<
   Partial<ComponentProps<typeof EditGasFeeLegacyUpdate>>
 >;
 
-type EIP1559GasObj = EIP1559GasData &
-  Partial<
-    Record<
-      string,
-      { suggestedMaxFeePerGas?: string; suggestedMaxPriorityFeePerGas?: string }
-    >
-  >;
+type EIP1559GasObj = Partial<EIP1559GasData> & GasFeeEstimateOptions;
 
 const CustomGasModal = ({
   gasSelected,
@@ -70,19 +72,20 @@ const CustomGasModal = ({
   const transaction = useSelector((state: RootState) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
-  const chainId = transaction?.chainId;
+  // The transaction slice is indexed as `unknown`; chainId is set as a hex string.
+  const chainId = transaction?.chainId as string | undefined;
   const selectedAsset = useSelector(
     (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
   const [selectedGas, setSelectedGas] = useState(gasSelected);
-  const [eip1559Txn, setEIP1559Txn] = useState<EIP1559GasTxn | undefined>(
+  const [eip1559Txn, setEIP1559Txn] = useState<GasTransaction | undefined>(
     EIP1559GasTxn,
   );
-  const [legacyGasObj, setLegacyGasObj] = useState<LegacyGasData | undefined>(
-    legacyGasData,
-  );
+  const [legacyGasObj, setLegacyGasObj] = useState<
+    LegacyGasObject | undefined
+  >(legacyGasData);
   const [eip1559GasObj, setEIP1559GasObj] = useState<
     EIP1559GasObj | undefined
   >(EIP1559GasData);
@@ -101,8 +104,8 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue: string) => {
-    setSelectedGas(gasValue);
+  const onChangeGas = (gasValue: string | null) => {
+    setSelectedGas(gasValue as string);
     onGasChanged(selectedGas);
   };
 
@@ -120,7 +123,7 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn: LegacyGasTxn, gasObj: LegacyGasData) => {
+    (gasTxn: LegacyGasTxn, gasObj: LegacyGasObject) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -163,10 +166,11 @@ const CustomGasModal = ({
     suggestedGasPrice: legacyGasObj?.suggestedGasPrice,
   };
 
+  // The editor resolves any missing value from the selected estimate level.
   const eip1559GasObject = {
     suggestedMaxFeePerGas:
       eip1559GasObj?.suggestedMaxFeePerGas ||
-      eip1559GasObj?.[selectedGas]?.suggestedMaxFeePerGas,
+      eip1559GasObj?.[selectedGas as GasFeeEstimateLevel]?.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
       (
@@ -174,7 +178,7 @@ const CustomGasModal = ({
       )[selectedGas]?.suggestedMaxPriorityFeePerGas,
     suggestedGasLimit:
       eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit,
-  };
+  } as SelectedGasObject;
 
   return (
     <Modal
@@ -213,7 +217,7 @@ const CustomGasModal = ({
         ) : (
           <EditGasFee1559
             selectedGasValue={selectedGas}
-            gasOptions={gasFeeEstimate}
+            gasOptions={gasFeeEstimate as GasFeeEstimateOptions}
             onChange={onChangeGas}
             primaryCurrency={primaryCurrency}
             chainId={chainId}

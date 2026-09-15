@@ -1,17 +1,6 @@
-import { SecurityAlertResponse } from '@metamask/transaction-controller';
-import type BN from 'bnjs4';
+import type { TransactionStateParams } from '../actions/transaction';
 
-interface TxMeta {
-  data?: string;
-  from?: string;
-  gas?: BN;
-  gasPrice?: BN;
-  to?: string;
-  value?: BN;
-  maxFeePerGas?: BN;
-  maxPriorityFeePerGas?: BN;
-  securityAlertResponse?: SecurityAlertResponse;
-}
+type TxMeta = TransactionStateParams;
 
 function getDefinedProperties<T extends object>(object: T): Partial<T> {
   return Object.entries(object).reduce(

@@ -90,11 +90,17 @@ export interface TransferInformation {
  * Loose transaction shape accepted by the action-key helpers. Supports both
  * the controller `txParams` field and the legacy `transaction` field.
  */
+export interface TransactionLikeParams {
+  data?: string;
+  from?: string;
+  to?: string;
+}
+
 export interface TransactionLike {
   networkClientId?: NetworkClientId;
   type?: TransactionType | string;
-  txParams?: Partial<TransactionParams>;
-  transaction?: Partial<TransactionParams>;
+  txParams?: TransactionLikeParams;
+  transaction?: TransactionLikeParams;
   toSmartContract?: boolean;
   isTransfer?: boolean;
   transferInformation?: TransferInformation;
@@ -150,15 +156,15 @@ export interface SelectedGasFeeEIP1559 {
   suggestedMaxPriorityFeePerGas?: string | number;
   suggestedMaxFeePerGas?: string | number;
   estimatedBaseFee?: string;
-  suggestedGasLimit?: string | number;
-  suggestedEstimatedGasLimit?: string | number;
+  suggestedGasLimit?: string;
+  suggestedEstimatedGasLimit?: string;
   selectedOption?: string | null;
   recommended?: string;
 }
 
 export interface SelectedGasFeeLegacy {
-  suggestedGasLimit?: string | number;
-  suggestedGasPrice?: string | number;
+  suggestedGasLimit?: string;
+  suggestedGasPrice?: string;
 }
 
 export interface SwapsParamsLike {
@@ -670,7 +676,7 @@ export async function getTransactionActionKey(
   chainId: string,
 ): Promise<string> {
   const { networkClientId, type } = transaction ?? {};
-  const txParams: Partial<TransactionParams> =
+  const txParams: TransactionLikeParams =
     transaction.txParams ?? transaction.transaction ?? {};
   const { data, to } = txParams;
 
