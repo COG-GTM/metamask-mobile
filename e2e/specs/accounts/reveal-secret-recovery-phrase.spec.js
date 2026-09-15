@@ -12,7 +12,7 @@ import {
   SrpSecurityQuestionTwoSelectorsText,
 } from '../../selectors/Settings/SecurityAndPrivacy/SrpQuizModal.selectors';
 import RevealSecretRecoveryPhrase from '../../pages/Settings/SecurityAndPrivacy/RevealSecretRecoveryPhrase.js';
-import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAndPrivacy/RevealSeedView.selectors.js';
+import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAndPrivacy/RevealSeedView.selectors';
 import FixtureServer from '../../fixtures/fixture-server.js';
 import FixtureBuilder from '../../fixtures/fixture-builder.js';
 import {
