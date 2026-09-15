@@ -34,7 +34,7 @@ export interface EditGasFee1559UpdateProps {
   /**
    * A string representing the network chainId
    */
-  chainId: string;
+  chainId?: string;
   /**
    * Function to set the gas selected value
    */
@@ -96,7 +96,7 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Boolean to determine if the animation is happening
    */
-  isAnimating: boolean;
+  isAnimating?: boolean;
   /**
    * Extra analytics params to be send with the gas analytics
    */

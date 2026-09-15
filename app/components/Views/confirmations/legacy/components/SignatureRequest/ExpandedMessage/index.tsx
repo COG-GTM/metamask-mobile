@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   View,
@@ -15,8 +14,9 @@ import { strings } from '../../../../../../../../locales/i18n';
 import Device from '../../../../../../../util/device';
 import { getHost } from '../../../../../../../util/browser';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
+import { Colors, Theme } from '../../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     expandedRoot: {
       backgroundColor: colors.background.default,
@@ -69,24 +69,30 @@ const createStyles = (colors) =>
     },
   });
 
+export interface ExpandedMessageProps {
+  /**
+   * Object containing current page title and url
+   */
+  currentPageInformation: {
+    url: string;
+    icon?: string;
+    title?: string;
+  };
+  /**
+   * Renders the message based on its type (parent)
+   */
+  renderMessage: () => React.ReactNode;
+  /**
+   * Expands the message box on press.
+   */
+  toggleExpandedMessage?: () => void;
+}
+
 /**
  * Component that supports eth_signTypedData and eth_signTypedData_v3
  */
-export default class ExpandedMessage extends PureComponent {
-  static propTypes = {
-    /**
-     * Object containing current page title and url
-     */
-    currentPageInformation: PropTypes.object,
-    /**
-     * Renders the message based on its type (parent)
-     */
-    renderMessage: PropTypes.func,
-    /**
-     * Expands the message box on press.
-     */
-    toggleExpandedMessage: PropTypes.func,
-  };
+export default class ExpandedMessage extends PureComponent<ExpandedMessageProps> {
+  static contextType = ThemeContext;
 
   render() {
     const { currentPageInformation, renderMessage, toggleExpandedMessage } =
@@ -94,7 +100,8 @@ export default class ExpandedMessage extends PureComponent {
     const url = currentPageInformation.url;
     const icon = currentPageInformation.icon;
     const title = getHost(url);
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -103,11 +110,7 @@ export default class ExpandedMessage extends PureComponent {
           style={styles.expandedMessageHeader}
           onPress={toggleExpandedMessage}
         >
-          <Ionicons
-            name={'arrow-back'}
-            size={30}
-            style={styles.arrowIcon}
-          />
+          <Ionicons name={'arrow-back'} size={30} style={styles.arrowIcon} />
           <Text style={styles.messageLabelTextExpanded}>
             {strings('signature_request.message')}
           </Text>
@@ -133,5 +136,3 @@ export default class ExpandedMessage extends PureComponent {
     );
   }
 }
-
-ExpandedMessage.contextType = ThemeContext;

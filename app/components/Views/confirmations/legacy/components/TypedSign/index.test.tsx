@@ -1,6 +1,6 @@
 import React from 'react';
 import { shallow } from 'enzyme';
-import TypedSign from '.';
+import TypedSign, { TypedSignMessageParams } from '.';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import Engine from '../../../../../../core/Engine';
@@ -26,7 +26,9 @@ const mockMetrics = {
 
 jest.mock('../../../../../../core/Engine', () => {
   const { MOCK_ACCOUNTS_CONTROLLER_STATE: mockAccountsControllerState } =
-    jest.requireActual('../../../../../../util/test/accountsControllerTestUtils');
+    jest.requireActual(
+      '../../../../../../util/test/accountsControllerTestUtils',
+    );
   return {
     acceptPendingApproval: jest.fn(),
     rejectPendingApproval: jest.fn(),
@@ -72,7 +74,7 @@ const messageParamsMock = {
   origin: 'example.com',
   metamaskId: 'TestMessageId',
   from: '0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272',
-};
+} as unknown as TypedSignMessageParams;
 
 const mockStore = configureMockStore();
 
