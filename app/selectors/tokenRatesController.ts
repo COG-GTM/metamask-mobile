@@ -4,7 +4,7 @@ import { TokenRatesControllerState } from '@metamask/assets-controllers';
 import { RootState } from '../reducers';
 import { selectEvmChainId } from './networkController';
 import { Hex } from '@metamask/utils';
-import { createDeepEqualSelector } from './util';
+import { isEqual } from 'lodash';
 
 /**
  * utility similar to lodash.mapValues.
@@ -44,15 +44,13 @@ export const selectTokenMarketData = createSelector(
     tokenRatesControllerState.marketData,
 );
 
-export const selectTokenMarketPriceData = createDeepEqualSelector(
+export const selectTokenMarketPriceData = createSelector(
   [selectTokenMarketData],
-  (marketData) => {
-    const marketPriceData = mapValues(marketData, (tokenData) =>
+  (marketData) =>
+    mapValues(marketData, (tokenData) =>
       mapValues(tokenData, (tokenInfo) => ({ price: tokenInfo?.price })),
-    );
-
-    return marketPriceData;
-  },
+    ),
+  { memoizeOptions: { resultEqualityCheck: isEqual } },
 );
 
 export const selectTokenMarketDataByChainId = createSelector(
