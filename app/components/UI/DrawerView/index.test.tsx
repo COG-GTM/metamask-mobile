@@ -1,6 +1,6 @@
 import React from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import DrawerView from './';
+import DrawerView, { DrawerViewOwnProps } from './';
 
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
@@ -96,11 +96,16 @@ describe('DrawerView - Extended Coverage', () => {
     onCloseDrawer: jest.fn(),
     metrics: metricsMock,
     chainId: '1',
-  };
+  } as unknown as DrawerViewOwnProps;
 
   it('renders correctly (snapshot)', () => {
     const { toJSON } = renderWithProvider(
-      <DrawerView navigation={{ goBack: () => null }} />,
+      <DrawerView
+        navigation={
+          { goBack: () => null } as unknown as DrawerViewOwnProps['navigation']
+        }
+        onCloseDrawer={jest.fn()}
+      />,
       {
         state: mockInitialState,
       },
