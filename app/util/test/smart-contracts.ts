@@ -1,3 +1,4 @@
+import type { ContractInterface } from '@ethersproject/contracts';
 import {
   hstBytecode,
   hstAbi,
@@ -54,15 +55,28 @@ const SMART_CONTRACTS = {
   PIGGYBANK: 'piggybank',
   FAILING: 'failing',
   MULTISIG: 'multisig',
-};
+} as const;
 
-const contractConfiguration = {
-  [SMART_CONTRACTS.HST]: hstFactory,
-  [SMART_CONTRACTS.NFTS]: nftsFactory,
-  [SMART_CONTRACTS.ERC1155]: erc1155Factory,
-  [SMART_CONTRACTS.PIGGYBANK]: piggybankFactory,
-  [SMART_CONTRACTS.FAILING]: failingContract,
-  [SMART_CONTRACTS.MULTISIG]: multisigFactory,
-};
+export type SmartContractName =
+  (typeof SMART_CONTRACTS)[keyof typeof SMART_CONTRACTS];
+
+export interface ContractConfiguration {
+  bytecode: string;
+  abi: ContractInterface;
+  initialAmount?: number;
+  tokenName?: string;
+  decimalUnits?: number;
+  tokenSymbol?: string;
+}
+
+const contractConfiguration: Record<SmartContractName, ContractConfiguration> =
+  {
+    [SMART_CONTRACTS.HST]: hstFactory,
+    [SMART_CONTRACTS.NFTS]: nftsFactory,
+    [SMART_CONTRACTS.ERC1155]: erc1155Factory,
+    [SMART_CONTRACTS.PIGGYBANK]: piggybankFactory,
+    [SMART_CONTRACTS.FAILING]: failingContract,
+    [SMART_CONTRACTS.MULTISIG]: multisigFactory,
+  };
 
 export { SMART_CONTRACTS, contractConfiguration };
