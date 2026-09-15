@@ -191,4 +191,70 @@ describe('BackgroundBridge', () => {
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
     });
   });
+
+  describe('onDisconnect', () => {
+    // The middlewares are mocked to `undefined` in this suite, so tearing down
+    // the port stream would crash inside JsonRpcEngine.destroy(). Stub it out.
+    function setupDisconnectableBridge() {
+      const bridge = setupBackgroundBridge('https:www.mock.io');
+      bridge.port.emit = jest.fn();
+      bridge.engine.destroy = jest.fn();
+      return bridge;
+    }
+
+    it('unsubscribes every controller-messenger subscription made in the constructor', () => {
+      const bridge = setupDisconnectableBridge();
+      const { subscribe, unsubscribe } = Engine.controllerMessenger;
+      const subscribed = subscribe.mock.calls.map(([event, handler]) => [
+        event,
+        handler,
+      ]);
+      expect(subscribed.map(([event]) => event)).toEqual(
+        expect.arrayContaining([
+          'NetworkController:stateChange',
+          'PreferencesController:stateChange',
+          'SelectedNetworkController:stateChange',
+          'KeyringController:lock',
+          'KeyringController:unlock',
+          expect.stringMatching(/:stateChange$/),
+        ]),
+      );
+      expect(subscribed).toHaveLength(6);
+
+      bridge.onDisconnect();
+
+      expect(unsubscribe).toHaveBeenCalledTimes(6);
+      for (const [event, handler] of subscribed) {
+        expect(unsubscribe).toHaveBeenCalledWith(event, handler);
+      }
+      expect(bridge.disconnected).toBe(true);
+    });
+
+    it('does not throw when a subscription was already removed', () => {
+      const bridge = setupDisconnectableBridge();
+      Engine.controllerMessenger.unsubscribe.mockImplementation(() => {
+        throw new Error('Subscription not found');
+      });
+
+      expect(() => bridge.onDisconnect()).not.toThrow();
+      Engine.controllerMessenger.unsubscribe.mockReset();
+    });
+
+    it('lock/unlock handlers are no-ops after disconnect', () => {
+      const bridge = setupDisconnectableBridge();
+      bridge.isRemoteConn = false;
+      const sendNotification = jest
+        .spyOn(bridge, 'sendNotification')
+        .mockImplementation(() => undefined);
+
+      bridge.onLock();
+      bridge.onUnlock();
+      expect(sendNotification).toHaveBeenCalledTimes(2);
+
+      bridge.onDisconnect();
+      bridge.onLock();
+      bridge.onUnlock();
+      expect(sendNotification).toHaveBeenCalledTimes(2);
+    });
+  });
 });
