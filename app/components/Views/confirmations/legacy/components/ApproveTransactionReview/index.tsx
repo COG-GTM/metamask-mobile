@@ -1429,7 +1429,7 @@ class ApproveTransactionReview extends PureComponent<
   };
 
   renderQRDetails() {
-    const { host, spenderAddress } = this.state;
+    const { spenderAddress } = this.state;
     const {
       activeTabUrl,
       transaction: { origin, from },

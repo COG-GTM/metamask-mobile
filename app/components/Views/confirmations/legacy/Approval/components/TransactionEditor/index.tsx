@@ -104,6 +104,7 @@ export interface EditorTransaction {
 const toDappTransaction = (transaction: EditorTransaction): DappTransaction =>
   transaction as unknown as DappTransaction;
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type EIP1559GasData = {
   suggestedGasLimit?: string;
   suggestedMaxFeePerGas?: string;

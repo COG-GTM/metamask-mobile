@@ -18,7 +18,7 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
 import { connect } from 'react-redux';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { Dispatch } from 'redux';
 import { strings } from '../../../../locales/i18n';
@@ -518,14 +518,15 @@ class Transactions extends PureComponent<Props, State> {
     existingGas?: ExistingGas | null,
     tx?: Transaction | null,
   ) => {
+    if (!tx || !existingGas) return;
     this.existingGas = existingGas;
-    this.speedUpTxId = tx!.id;
+    this.speedUpTxId = tx.id;
     this.existingTx = tx;
-    if (existingGas!.isEIP1559Transaction) {
+    if (existingGas.isEIP1559Transaction) {
       this.setState({ speedUp1559IsOpen: speedUpAction });
     } else {
       const speedUpConfirmDisabled = validateTransactionBalance(
-        tx!,
+        tx,
         SPEED_UP_RATE,
         this.props.accounts,
       );
@@ -545,15 +546,16 @@ class Transactions extends PureComponent<Props, State> {
     existingGas?: ExistingGas | null,
     tx?: Transaction | null,
   ) => {
+    if (!tx || !existingGas) return;
     this.existingGas = existingGas;
-    this.cancelTxId = tx!.id;
+    this.cancelTxId = tx.id;
     this.existingTx = tx;
 
-    if (existingGas!.isEIP1559Transaction) {
+    if (existingGas.isEIP1559Transaction) {
       this.setState({ cancel1559IsOpen: cancelAction });
     } else {
       const cancelConfirmDisabled = validateTransactionBalance(
-        tx!,
+        tx,
         CANCEL_RATE,
         this.props.accounts,
       );
@@ -847,12 +849,12 @@ class Transactions extends PureComponent<Props, State> {
 
       if (this.existingGas.isEIP1559Transaction) return undefined;
 
-      const gasPrice = this.existingGas.gasPrice;
+      const gasPrice = this.existingGas.gasPrice ?? 0;
 
       const increasedGasPrice =
         gasPrice === 0
           ? hexToBN(this.getGasPriceEstimate())
-          : Math.floor(gasPrice! * rate);
+          : Math.floor(gasPrice * rate);
 
       return `${renderFromWei(increasedGasPrice)} ${strings('unit.eth')}`;
     };
@@ -1044,12 +1046,10 @@ type LegacyTransactionsProps = Omit<Partial<OwnProps>, 'transactions'> &
     >
   > & {
     conversionRate?: number | null;
-    transactions?: Array<
-      Omit<Partial<Transaction>, 'status' | 'txParams'> & {
+    transactions?: (Omit<Partial<Transaction>, 'status' | 'txParams'> & {
         status?: string;
         txParams?: Partial<Transaction['txParams']>;
-      }
-    >;
+      })[];
   };
 
 // Legacy tests provide partial transaction fixtures; runtime callers provide controller transactions.

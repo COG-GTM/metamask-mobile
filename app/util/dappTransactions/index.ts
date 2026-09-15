@@ -242,6 +242,7 @@ export const validateAmount = async (
   return !validations[assetType] ? false : await validations[assetType]();
 };
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type GasAnalyticsParams = {
   dapp_host_name: string;
   dapp_url: string;

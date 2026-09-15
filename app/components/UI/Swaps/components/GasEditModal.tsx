@@ -67,7 +67,7 @@ type GasFeeEstimate =
   | LegacyGasPriceEstimate
   | EthGasPriceEstimate;
 
-type ParsedTransactionData = {
+interface ParsedTransactionData {
   error?: string;
   renderableGasFeeMinNative?: string;
   renderableGasFeeMinConversion?: string;
@@ -90,7 +90,7 @@ type ParsedTransactionData = {
   totalHex?: { toString: (radix?: number) => string };
   estimatedBaseFee?: string;
   suggestedEstimatedGasLimit?: string;
-};
+}
 
 interface LegacyGasUpdate {
   gasPrice?: string;

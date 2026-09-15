@@ -6,7 +6,6 @@ import {
   View,
   type TextProps,
   type ViewProps,
-  type TouchableOpacityProps,
 } from 'react-native';
 import { query } from '@metamask/controller-utils';
 import { connect } from 'react-redux';
@@ -90,9 +89,6 @@ type StatusTextProps = TextProps & {
 };
 
 type DetailsModalProps = ViewProps;
-type DetailsModalHeaderProps = ViewProps;
-type DetailsModalTitleProps = TextProps;
-type DetailsModalCloseIconProps = TouchableOpacityProps;
 type DetailsModalBodyProps = ViewProps;
 type DetailsModalSectionProps = ViewProps & { borderBottom?: boolean };
 type DetailsModalColumnProps = ViewProps & { end?: boolean };

@@ -154,6 +154,7 @@ interface DeeplinkTxMeta {
 /**
  * Transaction state built from a deeplink before being stored in redux.
  */
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type NewTxMeta = {
   symbol?: string;
   assetType?: TransactionAssetType;
