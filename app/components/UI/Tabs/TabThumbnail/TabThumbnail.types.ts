@@ -5,6 +5,6 @@ export interface TabThumbnailProps {
     id: number;
     image: string;
   };
-  onClose: (tab: { url: string; id: number; image: string }) => void;
+  onClose?: (tab: { url: string; id: number; image: string }) => void;
   onSwitch: (tab: { url: string; id: number; image: string }) => void;
 }

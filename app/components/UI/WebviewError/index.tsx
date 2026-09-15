@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { Image, StyleSheet, View, Text, Platform } from 'react-native';
 import StyledButton from '../StyledButton';
 import { strings } from '../../../../locales/i18n';
@@ -11,8 +10,9 @@ import {
   ERROR_PAGE_RETURN_BUTTON,
   ERROR_PAGE_TITLE,
 } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
+import type { Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       ...StyleSheet.absoluteFillObject,
@@ -65,24 +65,23 @@ const createStyles = (colors) =>
 /**
  * View that renders custom error page for the browser
  */
-export default class WebviewError extends PureComponent {
-  static propTypes = {
-    /**
-     * error info
-     */
-    error: PropTypes.oneOfType([PropTypes.object, PropTypes.bool]),
-    /**
-     * Function that reloads the page
-     */
-    returnHome: PropTypes.func,
-  };
+interface WebviewErrorProps {
+  error?: { description?: string } | boolean;
+  returnHome?: () => void;
+}
 
-  static defaultProps = {
-    error: false,
-  };
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+interface WebviewError {
+  context: React.ContextType<typeof ThemeContext>;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class WebviewError extends PureComponent<WebviewErrorProps> {
+  static contextType = ThemeContext;
+
 
   returnHome = () => {
-    this.props.returnHome();
+    this.props.returnHome?.();
   };
 
   render() {
@@ -94,6 +93,7 @@ export default class WebviewError extends PureComponent {
       <View style={styles.wrapper}>
         <View style={styles.foxWrapper}>
           <Image
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             source={require('../../../images/branding/fox.png')}
             style={styles.image}
             resizeMethod={'auto'}
@@ -112,7 +112,7 @@ export default class WebviewError extends PureComponent {
           >
             {strings('webview_error.message')}
           </Text>
-          {error.description ? (
+          {typeof error === 'object' && error?.description ? (
             <Text style={styles.errorInfo}>{error.description}</Text>
           ) : null}
         </View>
@@ -129,4 +129,4 @@ export default class WebviewError extends PureComponent {
   }
 }
 
-WebviewError.contextType = ThemeContext;
+export default WebviewError;
