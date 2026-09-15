@@ -3,7 +3,11 @@ import { cloneDeep } from 'lodash';
 import ApproveTransactionModal from '.';
 import { getTokenDetails } from '../../../../../../util/address';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
-import { renderScreen } from '../../../../../../util/test/renderWithProvider';
+import {
+  renderScreen,
+  type DeepPartial,
+} from '../../../../../../util/test/renderWithProvider';
+import type { RootState } from '../../../../../../reducers';
 import { SET_APPROVAL_FOR_ALL_SIGNATURE } from '../../../../../../util/transactions';
 
 jest.mock('../../../../../../util/address', () => ({
@@ -16,7 +20,9 @@ jest.mock('react-redux', () => ({
 }));
 
 jest.mock('../../../../../../selectors/smartTransactionsController', () => ({
-  ...jest.requireActual('../../../../../../selectors/smartTransactionsController'),
+  ...jest.requireActual(
+    '../../../../../../selectors/smartTransactionsController',
+  ),
   selectShouldUseSmartTransaction: jest.fn(),
 }));
 
@@ -45,7 +51,7 @@ jest.mock('../../../../../../core/Engine', () => {
 });
 
 const data = `0x${SET_APPROVAL_FOR_ALL_SIGNATURE}00000000000000000000000056ced0d816c668d7c0bcc3fbf0ab2c6896f589a00000000000000000000000000000000000000000000000000000000000000001`;
-const transaction = {
+const transaction: Record<string, unknown> = {
   to: '0x',
   origin: 'test-dapp',
   chainId: '0x1',
@@ -57,6 +63,8 @@ const transaction = {
   },
   data,
 };
+
+type MockBackgroundState = Record<string, Record<string, unknown>>;
 
 const initialState = {
   engine: {
@@ -80,7 +88,7 @@ const initialState = {
           },
         },
       },
-    },
+    } as MockBackgroundState,
   },
   transaction,
   settings: {
@@ -108,13 +116,13 @@ describe('ApproveTransactionModal', () => {
     const { toJSON } = renderScreen(
       ApproveTransactionModal,
       { name: 'Approve' },
-      { state: initialState },
+      { state: initialState as unknown as DeepPartial<RootState> },
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('Approve button is enabled when standard is defined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({
       standard: 'ERC20',
     });
@@ -123,19 +131,20 @@ describe('ApproveTransactionModal', () => {
     state.engine.backgroundState.TokenListController = {
       tokensChainsCache: {
         '0x1': {
-          data: [{
-            '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
-              address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
-              symbol: 'SNX',
-              decimals: 18,
-              name: 'Synthetix Network Token',
-              iconUrl:
-                'https://static.cx.metamask.io/api/v1/tokenIcons/1/0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f.png',
-              type: 'erc20',
-              aggregators: ['Aave'],
-              occurrences: 10,
-              fees: {
-                '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f': 0,
+          data: [
+            {
+              '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
+                address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
+                symbol: 'SNX',
+                decimals: 18,
+                name: 'Synthetix Network Token',
+                iconUrl:
+                  'https://static.cx.metamask.io/api/v1/tokenIcons/1/0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f.png',
+                type: 'erc20',
+                aggregators: ['Aave'],
+                occurrences: 10,
+                fees: {
+                  '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f': 0,
                   '0xda4ef8520b1a57d7d63f1e249606d1a459698876': 0,
                 },
               },
@@ -164,7 +173,7 @@ describe('ApproveTransactionModal', () => {
         <ApproveTransactionModal onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
-      { state },
+      { state: state as unknown as DeepPartial<RootState> },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();
@@ -178,30 +187,32 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is disabled when standard is undefined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({});
     const state = cloneDeep(initialState);
     state.engine.backgroundState.AccountTrackerController.accounts = [];
     state.engine.backgroundState.TokenListController = {
       tokensChainsCache: {
         '0x1': {
-          data: [{
-            '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
-              address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
-              symbol: 'SNX',
-              decimals: 18,
-              name: 'Synthetix Network Token',
-              iconUrl:
-                'https://static.cx.metamask.io/api/v1/tokenIcons/1/0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f.png',
-              type: 'erc20',
-              aggregators: ['Aave'],
-              occurrences: 10,
-              fees: {
-                '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f': 0,
-                '0xda4ef8520b1a57d7d63f1e249606d1a459698876': 0,
+          data: [
+            {
+              '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
+                address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
+                symbol: 'SNX',
+                decimals: 18,
+                name: 'Synthetix Network Token',
+                iconUrl:
+                  'https://static.cx.metamask.io/api/v1/tokenIcons/1/0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f.png',
+                type: 'erc20',
+                aggregators: ['Aave'],
+                occurrences: 10,
+                fees: {
+                  '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f': 0,
+                  '0xda4ef8520b1a57d7d63f1e249606d1a459698876': 0,
+                },
               },
             },
-          }],
+          ],
         },
       },
     };
@@ -225,7 +236,7 @@ describe('ApproveTransactionModal', () => {
         <ApproveTransactionModal onConfirm={mockOnConfirm} />
       ),
       { name: 'Approve' },
-      { state },
+      { state: state as unknown as DeepPartial<RootState> },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();

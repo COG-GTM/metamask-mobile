@@ -1,4 +1,5 @@
 import React from 'react';
+import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import TransactionReviewEIP1559 from '.';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
 import renderWithProvider, {
@@ -25,12 +26,12 @@ const initialState = {
           medium: '0x0',
           high: '0x0',
         },
-        gasEstimateType: 'low',
+        gasEstimateType: GAS_ESTIMATE_TYPES.LEGACY,
       },
       TokenRatesController: {
         marketData: {
           '0x1': {
-            '0x326836cc6cd09B5aa59B81A7F72F25FcC0136b95': 1,
+            '0x326836cc6cd09B5aa59B81A7F72F25FcC0136b95': { price: 1 },
           },
         },
       },

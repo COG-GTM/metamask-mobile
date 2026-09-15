@@ -5,6 +5,10 @@ import { EditGasViewSelectorsIDs } from '../../../../../../../../e2e/selectors/S
 import { strings } from '../../../../../../../../locales/i18n';
 import AppConstants from '../../../../../../../core/AppConstants';
 import { useGasTransaction } from '../../../../../../../core/GasPolling/GasPolling';
+import {
+  GasTransactionProps,
+  UseGasTransactionProps,
+} from '../../../../../../../core/GasPolling/types';
 import Device from '../../../../../../../util/device';
 import { isMainnetByChainId } from '../../../../../../../util/networks';
 import {
@@ -19,6 +23,42 @@ import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
+import { TransactionEIP1559UpdateProps } from './types';
+
+/**
+ * Parsed gas transaction data returned by useGasTransaction for both EIP1559
+ * and legacy transactions.
+ */
+export interface GasTransaction extends Partial<GasTransactionProps> {
+  renderableTotalMinNative?: string;
+  renderableTotalMinConversion?: string;
+  renderableTotalMaxNative?: string;
+  transactionFee?: string;
+  transactionFeeFiat?: string;
+  transactionTotalAmount?: string;
+  transactionTotalAmountFiat?: string;
+}
+
+const isGasTransaction = (value: unknown): value is GasTransaction =>
+  typeof value === 'object' && value !== null;
+
+export type TransactionReviewEIP1559UpdateProps = Partial<
+  Omit<
+    TransactionEIP1559UpdateProps,
+    'updateTransactionState' | 'onEdit' | 'gasObject' | 'originWarning'
+  >
+> & {
+  /**
+   * Function called when user clicks to edit the gas fee
+   */
+  onEdit: () => void;
+  /**
+   * update gas transaction state to parent
+   */
+  updateTransactionState?: (gasTransaction: GasTransaction | undefined) => void;
+  gasObject?: UseGasTransactionProps['gasObject'];
+  originWarning?: boolean | string;
+};
 
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
@@ -39,7 +79,7 @@ const TransactionReviewEIP1559Update = ({
   onlyGas,
   updateTransactionState,
   multiLayerL1FeeTotal,
-}) => {
+}: TransactionReviewEIP1559UpdateProps) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -56,7 +96,7 @@ const TransactionReviewEIP1559Update = ({
   const { colors } = useAppThemeFromContext() || mockTheme;
   const styles = createStyles(colors);
 
-  const gasTransaction = useGasTransaction({
+  const gasTransactionResult = useGasTransaction({
     onlyGas: !!onlyGas,
     gasSelected,
     legacy: !!legacy,
@@ -64,6 +104,9 @@ const TransactionReviewEIP1559Update = ({
     gasObjectLegacy,
     multiLayerL1FeeTotal,
   });
+  const gasTransaction = isGasTransaction(gasTransactionResult)
+    ? gasTransactionResult
+    : undefined;
 
   const {
     gasFeeMaxNative,
@@ -82,11 +125,11 @@ const TransactionReviewEIP1559Update = ({
     transactionTotalAmount,
     transactionTotalAmountFiat,
     suggestedGasLimit,
-  } = gasTransaction;
+  } = gasTransaction ?? ({} as GasTransaction);
 
   useEffect(() => {
     if (gasEstimationReady) {
-      updateTransactionState(gasTransaction);
+      updateTransactionState?.(gasTransaction);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -108,7 +151,10 @@ const TransactionReviewEIP1559Update = ({
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (
+    nativeValue: string | undefined,
+    fiatValue: string | undefined,
+  ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };
@@ -137,7 +183,7 @@ const TransactionReviewEIP1559Update = ({
                 <MaterialCommunityIcons
                   name="information"
                   size={13}
-                  style={styles.gasInfoIcon(originWarning)}
+                  style={styles.gasInfoIcon(Boolean(originWarning))}
                 />
               </TouchableOpacity>
             </Text>
