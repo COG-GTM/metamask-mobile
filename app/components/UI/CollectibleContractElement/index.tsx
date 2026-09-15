@@ -116,7 +116,7 @@ const connector = connect(mapStateToProps, mapDispatchToProps);
 
 export interface CollectibleContractElementOwnProps {
   asset: CollectibleContractAsset;
-  contractCollectibles: Nft[];
+  contractCollectibles: (Nft | undefined)[];
   collectiblesVisible?: boolean;
   onPress: (collectible: Nft) => void;
 }
@@ -133,7 +133,7 @@ function CollectibleContractElement({
   selectedAddress,
   removeFavoriteCollectible,
 }: CollectibleContractElementProps) {
-  const [collectiblesGrid, setCollectiblesGrid] = useState<Nft[][]>([]);
+  const [collectiblesGrid, setCollectiblesGrid] = useState<(Nft | undefined)[][]>([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState(
     propsCollectiblesVisible,
   );
@@ -290,7 +290,7 @@ function CollectibleContractElement({
             <View key={i} style={styles.collectiblesRowContainer}>
               {row.map((collectible, index) =>
                 renderCollectible(
-                  { ...collectible, ...{ logo: asset.logo } },
+                  { ...collectible, logo: asset.logo } as Nft,
                   index,
                 ),
               )}

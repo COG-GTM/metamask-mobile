@@ -585,7 +585,7 @@ export interface AddressFromProps {
   /**
    * Address of selected address as string
    */
-  fromAccountAddress?: string;
+  fromAccountAddress?: string | null;
   /**
    * Name of selected address as string
    */
@@ -621,7 +621,7 @@ export const AddressFrom = (props: AddressFromProps) => {
         ]}
       >
         <View style={styles.identiconWrapper}>
-          <Identicon address={fromAccountAddress} diameter={30} />
+          <Identicon address={fromAccountAddress ?? undefined} diameter={30} />
         </View>
         <View style={[baseStyles.flexGrow, styles.address]}>
           <View style={styles.accountNameLabel}>
