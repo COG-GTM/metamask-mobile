@@ -131,7 +131,7 @@ function CollectibleContractElement({
   onPress,
   chainId,
   selectedAddress,
-  removeFavoriteCollectible,
+  removeFavoriteCollectible: removeFavoriteCollectibleProp,
 }: CollectibleContractElementProps) {
   const [collectiblesGrid, setCollectiblesGrid] = useState<(Nft | undefined)[][]>([]);
   const [collectiblesVisible, setCollectiblesVisible] = useState(
@@ -162,7 +162,7 @@ function CollectibleContractElement({
   const removeNft = () => {
     const { NftController } = Engine.context;
     if (!longPressedCollectible.current) return;
-    removeFavoriteCollectible(
+    removeFavoriteCollectibleProp(
       selectedAddress,
       chainId,
       longPressedCollectible.current,
@@ -205,7 +205,7 @@ function CollectibleContractElement({
   const renderCollectible = useCallback(
     (collectible: Nft, index: number) => {
       if (!collectible) return null;
-      const onPress = () => onPressCollectible({ ...collectible });
+      const onPressItem = () => onPressCollectible({ ...collectible });
       const onLongPress = () =>
         !asset.favorites ? onLongPressCollectible({ ...collectible }) : null;
       return (
@@ -215,7 +215,7 @@ function CollectibleContractElement({
           testID={`collectible-${collectible.name}-${collectible.tokenId}`}
         >
           <TouchableOpacity
-            onPress={onPress}
+            onPress={onPressItem}
             onLongPress={onLongPress}
             testID={`collectible-${collectible.name}-${collectible.tokenId}`}
           >
@@ -223,7 +223,7 @@ function CollectibleContractElement({
               <CollectibleMedia
                 style={styles.collectibleIcon}
                 collectible={{ ...collectible }}
-                onPressColectible={onPress}
+                onPressColectible={onPressItem}
                 isTokenImage
               />
             </View>

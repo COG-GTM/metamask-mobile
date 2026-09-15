@@ -49,7 +49,7 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../selector
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 import { RefreshTestId, SpinnerTestId } from './constants';
-import { debounce, cloneDeep, isEqual } from 'lodash';
+import { debounce, cloneDeep } from 'lodash';
 import ButtonBase from '../../../component-library/components/Buttons/Button/foundation/ButtonBase';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
@@ -218,7 +218,7 @@ const CollectibleContracts = ({
   collectibles: allCollectibles,
   isNftFetchingProgress,
   favoriteCollectibles,
-  removeFavoriteCollectible,
+  removeFavoriteCollectible: removeFavoriteCollectibleProp,
   useNftDetection,
   isIpfsGatewayEnabled,
   displayNftMedia,
@@ -270,10 +270,10 @@ const CollectibleContracts = ({
   );
 
   /**
-   *  Method that checks if the collectible is inside the collectibles array. If it is not it means the
-   *  collectible has been ignored, hence we should not call the updateMetadata which executes the addNft fct
+   * Method that checks if the collectible is inside the collectibles array. If it is not it means the
+   * collectible has been ignored, hence we should not call the updateMetadata which executes the addNft fct
    *
-   *  @returns Boolean indicating if the collectible is ignored or not.
+   * @returns Boolean indicating if the collectible is ignored or not.
    */
   const isCollectibleIgnored = useCallback(
     (collectible: Nft) => {
@@ -289,7 +289,7 @@ const CollectibleContracts = ({
   );
 
   /**
-   *  Method to check the token id data type of the current collectibles.
+   * Method to check the token id data type of the current collectibles.
    *
    * @param collectible - Collectible object.
    * @returns Boolean indicating if the collectible should be updated.
@@ -300,10 +300,10 @@ const CollectibleContracts = ({
       !isNaN(Number(collectible.tokenId)));
 
   const updateAllCollectibleMetadata = useCallback(
-    async (collectibles: Nft[]) => {
+    async (collectiblesToUpdate: Nft[]) => {
       const { NftController } = Engine.context;
       // Filter out ignored collectibles
-      const filteredcollectibles = collectibles.filter(
+      const filteredcollectibles = collectiblesToUpdate.filter(
         (collectible) => !isCollectibleIgnored(collectible),
       );
 
@@ -316,12 +316,12 @@ const CollectibleContracts = ({
       );
 
       removable.forEach((elm) => {
-        removeFavoriteCollectible(selectedAddress, chainId, elm);
+        removeFavoriteCollectibleProp(selectedAddress, chainId, elm);
       });
 
       filteredcollectibles.forEach((collectible) => {
         if (String(collectible.tokenId).includes('e+')) {
-          removeFavoriteCollectible(selectedAddress, chainId, collectible);
+          removeFavoriteCollectibleProp(selectedAddress, chainId, collectible);
         }
       });
 
@@ -332,7 +332,12 @@ const CollectibleContracts = ({
         });
       }
     },
-    [isCollectibleIgnored, removeFavoriteCollectible, chainId, selectedAddress],
+    [
+      isCollectibleIgnored,
+      removeFavoriteCollectibleProp,
+      chainId,
+      selectedAddress,
+    ],
   );
 
   useEffect(() => {
@@ -410,7 +415,7 @@ const CollectibleContracts = ({
   );
 
   const renderFavoriteCollectibles = useCallback(() => {
-    const filteredCollectibles = favoriteCollectibles.map((collectible) =>
+    const favoriteCollectibleItems = favoriteCollectibles.map((collectible) =>
       collectibles.find(
         ({ tokenId, address }) =>
           compareTokenIds(collectible.tokenId, tokenId) &&
@@ -418,12 +423,12 @@ const CollectibleContracts = ({
       ),
     );
     return (
-      Boolean(filteredCollectibles.length) && (
+      Boolean(favoriteCollectibleItems.length) && (
         <CollectibleContractElement
           onPress={onItemPress}
           asset={{ name: 'Favorites', favorites: true }}
           key={'Favorites'}
-          contractCollectibles={filteredCollectibles}
+          contractCollectibles={favoriteCollectibleItems}
           collectiblesVisible
         />
       )
@@ -505,6 +510,7 @@ const CollectibleContracts = ({
       <View style={styles.emptyContainer}>
         <Image
           style={styles.emptyImageContainer}
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           source={require('../../../images/no-nfts-placeholder.png')}
           resizeMode={'contain'}
         />

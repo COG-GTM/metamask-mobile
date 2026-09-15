@@ -16,7 +16,6 @@ import {
   renderShortAddress,
   renderSlightlyLongAddress,
   isENS,
-  getLabelTextByAddress,
 } from '../../../util/address';
 import { strings } from '../../../../locales/i18n';
 import { hasZeroWidthPoints } from '../../../util/confusables';
@@ -24,9 +23,7 @@ import { useTheme } from '../../../util/theme';
 import { Colors } from '../../../util/theme/models';
 import AddToAddressBookWrapper from '../AddToAddressBookWrapper/AddToAddressBookWrapper';
 import { SendViewSelectorsIDs } from '../../../../e2e/selectors/SendFlow/SendView.selectors';
-import Text, {
-  TextVariant,
-} from '../../../component-library/components/Texts/Text';
+import Text from '../../../component-library/components/Texts/Text';
 
 export type AddressInputLayout = 'horizontal' | 'vertical';
 
