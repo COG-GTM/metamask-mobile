@@ -8,13 +8,13 @@ export interface AddNicknameProps {
   address: string;
   addressNickname: string;
   networkConfigurations: NetworkState['networkConfigurationsByChainId'];
-  nicknameExists: boolean;
+  nicknameExists?: boolean;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showModalAlert: (config: any) => void;
   providerType: string;
   providerChainId: Hex;
-  providerNetwork: string;
+  providerNetwork?: string;
   providerRpcTarget: string | undefined;
   addressBook: AddressBookControllerState['addressBook'];
   internalAccounts: InternalAccount[];
