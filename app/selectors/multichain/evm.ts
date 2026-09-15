@@ -443,19 +443,89 @@ export const selectEvmTokens = createDeepEqualSelector(
   },
 );
 
-export const selectEvmTokenFiatBalances = createDeepEqualSelector(
+/**
+ * Distinct chain IDs of the tokens currently displayed in the wallet.
+ * Deep-equal memoized so downstream slice selectors only recompute when the
+ * set of held chains actually changes.
+ */
+const selectEvmTokensChainIds = createDeepEqualSelector(
   selectEvmTokens,
+  (evmTokens): Hex[] =>
+    Array.from(new Set(evmTokens.map((token) => token.chainId as Hex))).sort(),
+);
+
+/**
+ * Market data restricted to the chains of the displayed tokens.
+ */
+const selectEvmTokensMarketData = createSelector(
   selectTokenMarketData,
+  selectEvmTokensChainIds,
+  (multiChainMarketData, chainIds) => {
+    const result: Partial<typeof multiChainMarketData> = {};
+    for (const chainId of chainIds) {
+      const chainMarketData = multiChainMarketData?.[chainId];
+      if (chainMarketData) {
+        result[chainId] = chainMarketData;
+      }
+    }
+    return result;
+  },
+);
+
+/**
+ * Token balances of the selected account restricted to the chains of the
+ * displayed tokens, keyed by chain ID.
+ */
+const selectEvmTokensSelectedAccountBalances = createSelector(
   selectTokensBalances,
   selectSelectedInternalAccountAddress,
-  selectNetworkConfigurations,
+  selectEvmTokensChainIds,
+  (multiChainTokenBalance, selectedInternalAccountAddress, chainIds) => {
+    const accountBalances =
+      multiChainTokenBalance?.[selectedInternalAccountAddress as Hex];
+    const result: Partial<NonNullable<typeof accountBalances>> = {};
+    for (const chainId of chainIds) {
+      const chainBalances = accountBalances?.[chainId];
+      if (chainBalances) {
+        result[chainId] = chainBalances;
+      }
+    }
+    return result;
+  },
+);
+
+/**
+ * Currency rates restricted to the native currencies of the displayed tokens'
+ * chains.
+ */
+const selectEvmTokensCurrencyRates = createSelector(
   selectCurrencyRates,
+  selectNetworkConfigurations,
+  selectEvmTokensChainIds,
+  (multiChainCurrencyRates, networkConfigurationsByChainId, chainIds) => {
+    const result: Partial<typeof multiChainCurrencyRates> = {};
+    for (const chainId of chainIds) {
+      const nativeCurrency =
+        networkConfigurationsByChainId[chainId]?.nativeCurrency;
+      if (nativeCurrency && multiChainCurrencyRates?.[nativeCurrency]) {
+        result[nativeCurrency] = multiChainCurrencyRates[nativeCurrency];
+      }
+    }
+    return result;
+  },
+);
+
+export const selectEvmTokenFiatBalances = createDeepEqualSelector(
+  selectEvmTokens,
+  selectEvmTokensMarketData,
+  selectEvmTokensSelectedAccountBalances,
+  selectNetworkConfigurations,
+  selectEvmTokensCurrencyRates,
   selectCurrentCurrency,
   (
     evmTokens,
     multiChainMarketData,
     multiChainTokenBalance,
-    selectedInternalAccountAddress,
     networkConfigurationsByChainId,
     multiChainCurrencyRates,
     currentCurrency,
@@ -463,10 +533,7 @@ export const selectEvmTokenFiatBalances = createDeepEqualSelector(
     evmTokens.map((token) => {
       const chainId = token.chainId as Hex;
       const multiChainExchangeRates = multiChainMarketData?.[chainId];
-      const multiChainTokenBalances =
-        multiChainTokenBalance?.[selectedInternalAccountAddress as Hex]?.[
-          chainId
-        ];
+      const multiChainTokenBalances = multiChainTokenBalance?.[chainId];
       const nativeCurrency =
         networkConfigurationsByChainId[chainId].nativeCurrency;
       const multiChainConversionRate =
