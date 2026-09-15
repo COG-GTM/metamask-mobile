@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { ComponentProps, ComponentType } from 'react';
 import TransactionReviewInformation from '.';
 import configureMockStore from 'redux-mock-store';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
+
+// The component is rendered shallowly, so only a subset of its props is needed.
+const TransactionReviewInformationComponent =
+  TransactionReviewInformation as unknown as ComponentType<
+    Partial<ComponentProps<typeof TransactionReviewInformation>>
+  >;
 
 const mockStore = configureMockStore();
 const initialState = {
@@ -40,7 +46,7 @@ describe('TransactionReviewInformation', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <TransactionReviewInformation EIP1559GasData={{}} />
+        <TransactionReviewInformationComponent EIP1559GasData={{}} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

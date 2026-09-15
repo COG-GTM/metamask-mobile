@@ -539,3 +539,15 @@ declare module 'human-standard-token-abi' {
   const abi: readonly JsonFragment[];
   export default abi;
 }
+
+declare module '@metamask/ethjs-query' {
+  /**
+   * Minimal typing for the ethjs-query JSON-RPC wrapper; the instance exposes
+   * one method per `eth_*` RPC method (e.g. `getBalance`, `call`).
+   */
+  class Eth {
+    constructor(provider: unknown, options?: { debug?: boolean });
+    [rpcMethod: string]: (...args: unknown[]) => Promise<unknown>;
+  }
+  export default Eth;
+}

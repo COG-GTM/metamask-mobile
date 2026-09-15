@@ -1,5 +1,9 @@
 /* eslint-disable react/display-name */
-import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
+import {
+  EthGasPriceEstimate,
+  GAS_ESTIMATE_TYPES,
+  LegacyGasPriceEstimate,
+} from '@metamask/gas-fee-controller';
 import BigNumber from 'bignumber.js';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
@@ -40,6 +44,11 @@ import FadeAnimationView from '../../../../../UI/FadeAnimationView';
 import StyledButton from '../../../../../UI/StyledButton';
 import InfoModal from '../../../../../UI/Swaps/components/InfoModal';
 import createStyles from './styles';
+import {
+  EditGasFeeLegacyUpdateProps,
+  EditLegacyGasTransaction,
+  LegacyGasObject,
+} from './types';
 
 const EditGasFeeLegacy = ({
   onCancel,
@@ -56,13 +65,13 @@ const EditGasFeeLegacy = ({
   selectedGasObject,
   hasDappSuggestedGas,
   chainId,
-}) => {
+}: EditGasFeeLegacyUpdateProps) => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [showRangeInfoModal, setShowRangeInfoModal] = useState(false);
   const [infoText, setInfoText] = useState('');
   const [gasPriceError, setGasPriceError] = useState('');
   const [showEditUI, setShowEditUI] = useState(!hasDappSuggestedGas);
-  const [gasObjectLegacy, updateGasObjectLegacy] = useState({
+  const [gasObjectLegacy, updateGasObjectLegacy] = useState<LegacyGasObject>({
     legacyGasLimit: selectedGasObject.legacyGasLimit,
     suggestedGasPrice:
       selectedGasObject.suggestedGasPrice ||
@@ -95,11 +104,11 @@ const EditGasFeeLegacy = ({
         .build(),
     );
 
-    const newGasPriceObject = {
+    const newGasPriceObject: LegacyGasObject = {
       suggestedGasPrice: gasObjectLegacy?.suggestedGasPrice,
       legacyGasLimit: gasObjectLegacy?.legacyGasLimit,
     };
-    onSave(gasTransaction, newGasPriceObject);
+    onSave(gasTransaction as EditLegacyGasTransaction, newGasPriceObject);
   }, [
     onSave,
     gasTransaction,
@@ -111,7 +120,7 @@ const EditGasFeeLegacy = ({
     createEventBuilder,
   ]);
 
-  const changeGas = useCallback((gas) => {
+  const changeGas = useCallback((gas: EditLegacyGasTransaction) => {
     updateGasObjectLegacy({
       legacyGasLimit: gas.suggestedGasLimit,
       suggestedGasPrice: gas.suggestedGasPrice,
@@ -119,18 +128,18 @@ const EditGasFeeLegacy = ({
   }, []);
 
   const changedGasPrice = useCallback(
-    (value) => {
-      let newGas;
+    (value: string) => {
+      let newGas: EditLegacyGasTransaction;
 
       const lowerValue = new BigNumber(
-        gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? gasFeeEstimate?.low
-          : gasFeeEstimate?.gasPrice,
+        (gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
+          ? (gasFeeEstimate as LegacyGasPriceEstimate)?.low
+          : (gasFeeEstimate as EthGasPriceEstimate)?.gasPrice) ?? NaN,
       );
       const higherValue = new BigNumber(
-        gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
-          ? gasFeeEstimate?.high
-          : gasFeeEstimate?.gasPrice,
+        (gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY
+          ? (gasFeeEstimate as LegacyGasPriceEstimate)?.high
+          : (gasFeeEstimate as EthGasPriceEstimate)?.gasPrice) ?? NaN,
       ).multipliedBy(new BigNumber(1.5));
 
       const valueBN = new BigNumber(value);
@@ -155,7 +164,7 @@ const EditGasFeeLegacy = ({
   );
 
   const changedGasLimit = useCallback(
-    (value) => {
+    (value: string) => {
       const newGas =
         typeof gasTransaction === 'object'
           ? { ...gasTransaction, suggestedGasLimit: value }
@@ -227,7 +236,7 @@ const EditGasFeeLegacy = ({
     suggestedGasPrice,
     transactionFee,
     transactionFeeFiat,
-  } = gasTransaction;
+  } = gasTransaction as EditLegacyGasTransaction;
 
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
@@ -243,7 +252,7 @@ const EditGasFeeLegacy = ({
 
   const valueToWatch = transactionFee;
 
-  const handleInfoModalPress = (text) => {
+  const handleInfoModalPress = (text: string) => {
     setShowRangeInfoModal(true);
     setInfoText(text);
   };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import TransactionReviewDetailsCard from '.';
 import { shallow } from 'enzyme';
 import configureMockStore from 'redux-mock-store';
@@ -13,11 +13,15 @@ const initialState = {
 };
 const store = mockStore(initialState);
 
+// The shallow snapshot renders the card without any of its required props.
+const TransactionReviewDetailsCardWithoutProps =
+  TransactionReviewDetailsCard as unknown as ComponentType;
+
 describe('TransactionReviewDetailsCard', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <TransactionReviewDetailsCard />
+        <TransactionReviewDetailsCardWithoutProps />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
