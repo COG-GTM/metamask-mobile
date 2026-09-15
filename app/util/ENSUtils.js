@@ -67,14 +67,31 @@ export function getCachedENSName(address, chainId) {
   return cacheEntry?.name;
 }
 
-/** ENSCache key is networkId + address; must match the write sites and getCachedENSName. */
+/**
+ * Reverse-resolve an address to its ENS name, using ENSCache to avoid
+ * repeating the lookup for one hour.
+ *
+ * ENSCache entries are keyed by `networkId + address` (e.g. `'1' + address`
+ * for mainnet), never by chain ID. Reads and writes here must use the same key
+ * as `getCachedENSName`, otherwise the cache silently never hits and every call
+ * pays the reverse + forward RPC round trips.
+ *
+ * @param {string} address - The address to reverse-resolve.
+ * @param {string} chainId - The chain ID to resolve against.
+ * @returns {Promise<string|undefined>} The verified ENS name, or undefined if
+ * the address has no valid reverse record or the chain does not support ENS.
+ */
 export async function doENSReverseLookup(address, chainId) {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
+  // Undefined for chains without ENS support, so the cache key below can never
+  // collide with a mainnet entry.
   const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
   const { name: cachedName, timestamp } =
     ENSCache.cache[networkId + address] || {};
   const nowTimestamp = Date.now();
+  // A fresh entry is served as-is; `name` is undefined for cached negative
+  // results, which returns undefined without touching the network.
   if (timestamp && nowTimestamp - timestamp < CACHE_REFRESH_THRESHOLD) {
     return Promise.resolve(cachedName);
   }
@@ -84,6 +101,8 @@ export async function doENSReverseLookup(address, chainId) {
   if (networkHasEnsSupport) {
     this.ens = new ENS({ provider, network: networkId });
     try {
+      // Reverse record, then forward-resolve the name to confirm it points
+      // back at the same address before trusting it.
       const name = await this.ens.reverse(address);
       const resolvedAddress = await this.ens.lookup(name);
       if (toLowerCaseEquals(address, resolvedAddress)) {
@@ -91,6 +110,8 @@ export async function doENSReverseLookup(address, chainId) {
         return name;
       }
     } catch (e) {
+      // Cache "no name" results too, so addresses without a reverse record
+      // are not re-queried on every call.
       if (
         e.message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
         e.message.includes(INVALID_ENS_NAME_ERROR)

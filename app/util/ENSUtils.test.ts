@@ -7,6 +7,8 @@ import {
 
 const mockAddress = '0x0000000000000000000000000000000000000001';
 
+// Spies on the ENS RPC calls so tests can assert how many round trips a
+// lookup actually performs.
 const mockReverse = jest.fn();
 const mockLookup = jest.fn();
 
@@ -79,11 +81,14 @@ describe('doENSReverseLookup', () => {
   const mainnetChainId = '0x1';
   const mainnetNetworkId = '1';
   const ensName = 'cachedname.metamask.eth';
+  // Fixed clock so cache timestamps are deterministic and TTL math is exact.
   const now = 1_700_000_000_000;
   const getCache = () =>
     ENSCache.cache as Record<string, { name?: string; timestamp: number }>;
 
   beforeEach(() => {
+    // Start every test from an empty cache and restore the module-level cache
+    // afterwards so suites do not leak entries into each other.
     originalCacheContents = ENSCache.cache;
     ENSCache.cache = {};
     mockReverse.mockReset();
