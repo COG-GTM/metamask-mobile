@@ -17,7 +17,6 @@ import { fontStyles } from '../../../styles/common';
 import Device from '../../../util/device';
 import { useTheme } from '../../../util/theme';
 import type { Theme } from '../../../util/theme/models';
-import { SwapsViewSelectors } from '../../../../e2e/selectors/swaps/SwapsView.selectors';
 
 /* eslint-disable import/no-commonjs */
 // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
@@ -272,7 +271,6 @@ function SliderButton({
       onLayout={(e) => {
         setComponentWidth(e.nativeEvent.layout.width);
       }}
-      testID={SwapsViewSelectors.SWAP_BUTTON}
     >
       <View style={styles.trackBack}>
         <Image

@@ -135,10 +135,7 @@ const mockState = {
         securityAlertsEnabled: true,
       },
       AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
-      KeyringController: {
-        ...MOCK_KEYRING_CONTROLLER_STATE,
-        isUnlocked: true,
-      },
+      KeyringController: MOCK_KEYRING_CONTROLLER_STATE,
     },
   },
   settings: {
@@ -198,7 +195,6 @@ jest.mock('react-redux', () => {
 });
 
 const generateTransform = jest.fn();
-const animate = jest.fn();
 
 describe('TransactionReview', () => {
   it('should render correctly', () => {
@@ -208,8 +204,7 @@ describe('TransactionReview', () => {
       <Provider store={store}>
         <TransactionReview
           EIP1559GasData={{}}
-          animate={animate}
-          generateTransform={generateTransform}
+            generateTransform={generateTransform}
         />
       </Provider>,
     );
@@ -220,7 +215,6 @@ describe('TransactionReview', () => {
     const container = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
-        animate={animate}
         generateTransform={generateTransform}
       />,
       { state: mockState },
@@ -249,7 +243,6 @@ describe('TransactionReview', () => {
     const { queryByText, queryByTestId, getByText } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
-        animate={animate}
         generateTransform={generateTransform}
       />,
       {
@@ -293,11 +286,10 @@ describe('TransactionReview', () => {
   it('should have enabled confirm button if from account has balance', async () => {
     jest
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
-      .mockReturnValue(undefined as unknown as string);
+      .mockResolvedValue(undefined);
     const { queryByRole } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
-        animate={animate}
         generateTransform={generateTransform}
       />,
       { state: mockState },
@@ -333,7 +325,6 @@ describe('TransactionReview', () => {
     const { getByRole } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
-        animate={animate}
         generateTransform={generateTransform}
       />,
       { state: mockState },
@@ -350,7 +341,6 @@ describe('TransactionReview', () => {
     const { getByRole } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
-        animate={animate}
         generateTransform={generateTransform}
         error="You need 1 more ETH to complete the transaction"
       />,

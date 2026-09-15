@@ -233,7 +233,7 @@ interface TransactionReviewProps extends IWithMetricsAwarenessProps {
   /**
    * Drives animated values
    */
-  animate: (params: AnimateParams) => void;
+  animate?: (params: AnimateParams) => void;
   /**
    * Generates a transform style unique to the component
    */
@@ -525,7 +525,7 @@ class TransactionReview extends PureComponent<
   toggleDataView = () => {
     const { animate } = this.props;
     if (this.state.dataVisible) {
-      animate({
+      animate?.({
         modalEndValue: 1,
         xTranslationName: 'reviewToData',
         xTranslationEndValue: 0,
@@ -533,7 +533,7 @@ class TransactionReview extends PureComponent<
       this.setState({ dataVisible: false });
       return;
     }
-    animate({
+    animate?.({
       modalEndValue: 0,
       xTranslationName: 'reviewToData',
       xTranslationEndValue: 1,

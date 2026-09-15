@@ -57,7 +57,7 @@ import {
   isMainnetByChainId,
 } from '../../../util/networks';
 import { addHexPrefix, hexToBN, renderFromWei } from '../../../util/number';
-import { ThemeContext } from '../../../util/theme';
+import { ThemeContext, mockTheme } from '../../../util/theme';
 import { validateTransactionActionBalance } from '../../../util/transactions';
 import withQRHardwareAwareness from '../QRHardware/withQRHardwareAwareness';
 import TransactionActionModal from '../TransactionActionModal';
@@ -410,7 +410,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   renderLoader = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     return (
@@ -421,7 +421,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   renderEmpty = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
     if (this.props.tokenChainId !== this.props.chainId) {
       return (
@@ -470,7 +470,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   renderViewMore = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     const {
@@ -768,7 +768,7 @@ class Transactions extends PureComponent<Props, State> {
 
   renderUpdateTxEIP1559Gas = (isCancel: boolean) => {
     const { isSigningQRObject } = this.props;
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     if (!this.existingGas) return null;
@@ -817,7 +817,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   renderDisclaimer = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
     return (
       <View style={styles.disclaimerWrapper}>
@@ -843,7 +843,7 @@ class Transactions extends PureComponent<Props, State> {
       isSigningQRObject,
     } = this.props;
     const { cancelConfirmDisabled, speedUpConfirmDisabled } = this.state;
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     const transactions = submittedTransactions?.length
@@ -899,7 +899,7 @@ class Transactions extends PureComponent<Props, State> {
               ListFooterComponent={
                 transactions.length > 0
                   ? this.renderFooter
-                  : () => this.renderEmpty()
+                  : this.renderEmpty()
               }
               style={baseStyles.flexGrow}
               scrollIndicatorInsets={{ right: 1 }}
@@ -944,7 +944,7 @@ class Transactions extends PureComponent<Props, State> {
   };
 
   render = () => {
-    const { colors, typography } = this.context as Theme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     return (

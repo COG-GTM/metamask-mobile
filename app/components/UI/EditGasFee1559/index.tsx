@@ -588,7 +588,6 @@ const EditGasFee1559 = ({
           <HorizontalSelector
             selected={selectedOption ?? undefined}
             onPress={selectOption}
-            disabled={false}
             options={renderOptions()}
           />
         </View>
