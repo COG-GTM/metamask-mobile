@@ -1,8 +1,13 @@
 // Third party dependencies.
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import React, { ComponentType, PureComponent } from 'react';
 import { Linking, SafeAreaView, StyleSheet, Switch, View } from 'react-native';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import { typography } from '@metamask/design-tokens';
@@ -13,14 +18,20 @@ import Engine from '../../../../core/Engine';
 import { baseStyles } from '../../../../styles/common';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import {
-  setShowCustomNonce,
-  setShowFiatOnTestnets,
-  setShowHexData,
+  setShowCustomNonce as setShowCustomNonceAction,
+  setShowFiatOnTestnets as setShowFiatOnTestnetsAction,
+  setShowHexData as setShowHexDataAction,
 } from '../../../../actions/settings';
 import { strings } from '../../../../../locales/i18n';
 import Device from '../../../../util/device';
 import { mockTheme, ThemeContext } from '../../../../util/theme';
-import { selectChainId } from '../../../../selectors/networkController';
+import { Colors, Theme } from '../../../../util/theme/models';
+import { RootState } from '../../../../reducers';
+import { IWithMetricsAwarenessProps } from '../../../hooks/useMetrics/withMetricsAwareness.types';
+import {
+  selectChainId,
+  selectEvmChainId,
+} from '../../../../selectors/networkController';
 import {
   selectSmartTransactionsOptInStatus,
   selectUseTokenDetection,
@@ -35,6 +46,7 @@ import Text, {
   TextColor,
   getFontFamily,
 } from '../../../../component-library/components/Texts/Text';
+import { TextProps } from '../../../../component-library/components/Texts/Text/Text.types';
 import Button, {
   ButtonVariants,
   ButtonSize,
@@ -46,7 +58,7 @@ import AppConstants from '../../../../../app/core/AppConstants';
 import { downloadStateLogs } from '../../../../util/logs';
 import AutoDetectTokensSettings from '../AutoDetectTokensSettings';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -134,66 +146,85 @@ const createStyles = (colors) =>
     },
   });
 
+const linkTextProps: Partial<TextProps> & { link: boolean } = { link: true };
+
 /**
  * Main view for app configurations
  */
-class AdvancedSettings extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Indicates whether hex data should be shown in transaction editor
-     */
-    showHexData: PropTypes.bool,
-    /**
-     * Called to toggle show hex data
-     */
-    setShowHexData: PropTypes.func,
-    /**
-     * Called to toggle show custom nonce
-     */
-    setShowCustomNonce: PropTypes.func,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-    /**
-     * Indicates whether fiat conversions should be shown on testnets
-     */
-    showFiatOnTestnets: PropTypes.bool,
-    /**
-     * Called to toggle showing fiat conversions on testnets
-     */
-    setShowFiatOnTestnets: PropTypes.func,
-    /**
-     * Entire redux state used to generate state logs
-     */
-    fullState: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that checks if smart transactions is enabled
-     */
-    smartTransactionsOptInStatus: PropTypes.bool,
-  };
+interface AdvancedSettingsParams {
+  isFullScreenModal?: boolean;
+  scrollToBottom?: boolean;
+}
 
-  scrollView = React.createRef();
+interface AdvancedSettingsProps extends IWithMetricsAwarenessProps {
+  /**
+   * navigation object required to push new views
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Indicates whether hex data should be shown in transaction editor
+   */
+  showHexData: boolean;
+  /**
+   * Called to toggle show hex data
+   */
+  setShowHexData: (showHexData: boolean) => void;
+  /**
+   * Called to toggle show custom nonce
+   */
+  setShowCustomNonce: (showCustomNonce: boolean) => void;
+  /**
+   * Indicates whether custom nonce should be shown in transaction editor
+   */
+  showCustomNonce: boolean;
+  /**
+   * Indicates whether fiat conversions should be shown on testnets
+   */
+  showFiatOnTestnets: boolean;
+  /**
+   * Called to toggle showing fiat conversions on testnets
+   */
+  setShowFiatOnTestnets: (showFiatOnTestnets: boolean) => void;
+  /**
+   * Entire redux state used to generate state logs
+   */
+  fullState: RootState;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: RouteProp<{ params?: AdvancedSettingsParams }, 'params'>;
+  /**
+   * Boolean that checks if smart transactions is enabled
+   */
+  smartTransactionsOptInStatus: boolean;
+  isTokenDetectionEnabled: boolean;
+  chainId: ReturnType<typeof selectChainId>;
+  smartTransactionsEnabled: boolean;
+}
 
-  state = {
+interface AdvancedSettingsState {
+  resetModalVisible: boolean;
+  inputWidth: '99%' | '100%' | undefined;
+}
+
+class AdvancedSettings extends PureComponent<
+  AdvancedSettingsProps,
+  AdvancedSettingsState
+> {
+  static contextType = ThemeContext;
+
+  scrollView = React.createRef<KeyboardAwareScrollView>();
+
+  mounted = false;
+
+  state: AdvancedSettingsState = {
     resetModalVisible: false,
     inputWidth: Device.isAndroid() ? '99%' : undefined,
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as Theme | undefined)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     return { styles, colors };
   };
@@ -222,7 +253,7 @@ class AdvancedSettings extends PureComponent {
       }, 100);
 
     this.props.route?.params?.scrollToBottom &&
-      this.scrollView?.current?.scrollToEnd({ animated: true });
+      this.scrollView?.current?.scrollToEnd(true);
   };
 
   componentDidUpdate = () => {
@@ -252,12 +283,14 @@ class AdvancedSettings extends PureComponent {
     downloadStateLogs(fullState);
   };
 
-  toggleTokenDetection = (detectionStatus) => {
+  toggleTokenDetection = (detectionStatus: boolean) => {
     const { PreferencesController } = Engine.context;
     PreferencesController.setUseTokenDetection(detectionStatus);
   };
 
-  toggleSmartTransactionsOptInStatus = (smartTransactionsOptInStatus) => {
+  toggleSmartTransactionsOptInStatus = (
+    smartTransactionsOptInStatus: boolean,
+  ) => {
     const { PreferencesController } = Engine.context;
     PreferencesController.setSmartTransactionsOptInStatus(
       smartTransactionsOptInStatus,
@@ -290,7 +323,7 @@ class AdvancedSettings extends PureComponent {
     } = this.props;
     const { resetModalVisible } = this.state;
     const { styles, colors } = this.getStyles();
-    const theme = this.context || mockTheme;
+    const theme = (this.context as Theme | undefined) || mockTheme;
 
     return (
       <SafeAreaView style={baseStyles.flexGrow}>
@@ -316,7 +349,7 @@ class AdvancedSettings extends PureComponent {
                 <Text style={styles.modalTitle} variant={TextVariant.HeadingMD}>
                   {strings('app_settings.reset_account_modal_title')}
                 </Text>
-                <Text style={styles.modalText}>
+                <Text>
                   {strings('app_settings.reset_account_modal_message')}
                 </Text>
               </View>
@@ -376,7 +409,7 @@ class AdvancedSettings extends PureComponent {
                 )}{' '}
                 <Text
                   color={TextColor.Primary}
-                  link
+                  {...linkTextProps}
                   onPress={this.openLinkAboutStx}
                 >
                   {strings('app_settings.smart_transactions_learn_more')}
@@ -448,8 +481,8 @@ class AdvancedSettings extends PureComponent {
                   <Switch
                     testID={AdvancedViewSelectorsIDs.SHOW_FIAT_ON_TESTNETS}
                     value={showFiatOnTestnets}
-                    onValueChange={(showFiatOnTestnets) => {
-                      if (showFiatOnTestnets) {
+                    onValueChange={(value: boolean) => {
+                      if (value) {
                         this.props.navigation.navigate(
                           Routes.MODAL.ROOT_MODAL_FLOW,
                           {
@@ -505,9 +538,7 @@ class AdvancedSettings extends PureComponent {
   };
 }
 
-AdvancedSettings.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   showHexData: state.settings.showHexData,
   showCustomNonce: state.settings.showCustomNonce,
   showFiatOnTestnets: state.settings.showFiatOnTestnets,
@@ -517,19 +548,24 @@ const mapStateToProps = (state) => ({
   smartTransactionsOptInStatus: selectSmartTransactionsOptInStatus(state),
   smartTransactionsEnabled: selectSmartTransactionsEnabled(
     state,
-    selectChainId(state),
+    selectEvmChainId(state),
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setShowHexData: (showHexData) => dispatch(setShowHexData(showHexData)),
-  setShowCustomNonce: (showCustomNonce) =>
-    dispatch(setShowCustomNonce(showCustomNonce)),
-  setShowFiatOnTestnets: (showFiatOnTestnets) =>
-    dispatch(setShowFiatOnTestnets(showFiatOnTestnets)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  setShowHexData: (showHexData: boolean) =>
+    dispatch(setShowHexDataAction(showHexData)),
+  setShowCustomNonce: (showCustomNonce: boolean) =>
+    dispatch(setShowCustomNonceAction(showCustomNonce)),
+  setShowFiatOnTestnets: (showFiatOnTestnets: boolean) =>
+    dispatch(setShowFiatOnTestnetsAction(showFiatOnTestnets)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(AdvancedSettings));
+)(
+  withMetricsAwareness(
+    AdvancedSettings as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);

@@ -1,12 +1,14 @@
 import React, { PureComponent } from 'react';
 import { Alert, BackHandler, View, StyleSheet, Keyboard } from 'react-native';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
+import { Dispatch } from 'redux';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { fontStyles } from '../../../styles/common';
 import StorageWrapper from '../../../store/storage-wrapper';
 import OnboardingProgress from '../../UI/OnboardingProgress';
 import { strings } from '../../../../locales/i18n';
-import { showAlert } from '../../../actions/alert';
+import { showAlert, ShowAlertAction } from '../../../actions/alert';
 import AndroidBackHandler from '../AndroidBackHandler';
 import Device from '../../../util/device';
 import Confetti from '../../UI/Confetti';
@@ -19,11 +21,12 @@ import {
 } from '../../../constants/storage';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors, Theme } from '../../../util/theme/models';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -69,44 +72,71 @@ const createStyles = (colors) =>
     },
   });
 
-const hardwareBackPress = () => ({});
+const hardwareBackPress = () => true;
 const HARDWARE_BACK_PRESS = 'hardwareBackPress';
+
+interface ManualBackupStep3Params {
+  steps?: string[];
+  words?: string[];
+}
+
+interface ManualBackupStep3ParamList extends ParamListBase {
+  ManualBackupStep3: ManualBackupStep3Params;
+}
+
+interface ManualBackupStep3Props {
+  /**
+   * navigation object required to push and pop other views
+   */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<ManualBackupStep3ParamList, 'ManualBackupStep3'>;
+  /**
+   * Action to set onboarding wizard step
+   */
+  setOnboardingWizardStep: (step: number) => void;
+  showAlert: (config: Omit<ShowAlertAction, 'type'>) => void;
+}
+
+interface ManualBackupStep3State {
+  currentStep: number;
+  showHint: boolean;
+  hintText: string;
+}
 
 /**
  * View that's shown during the last step of
  * the backup seed phrase flow
  */
-class ManualBackupStep3 extends PureComponent {
-  constructor(props) {
+class ManualBackupStep3 extends PureComponent<
+  ManualBackupStep3Props,
+  ManualBackupStep3State
+> {
+  static contextType = ThemeContext;
+
+  steps: string[] | undefined;
+
+  constructor(props: ManualBackupStep3Props) {
     super(props);
     this.steps = props.route.params?.steps;
   }
 
-  state = {
+  state: ManualBackupStep3State = {
     currentStep: 4,
     showHint: false,
     hintText: '',
   };
 
-  static propTypes = {
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Action to set onboarding wizard step
-     */
-    setOnboardingWizardStep: PropTypes.func,
-  };
+  getColors = () =>
+    (this.context as Theme | undefined)?.colors || mockTheme.colors;
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(getTransparentOnboardingNavbarOptions(colors));
+    navigation.setOptions(
+      getTransparentOnboardingNavbarOptions(this.getColors()),
+    );
   };
 
   componentWillUnmount = () => {
@@ -149,10 +179,10 @@ class ManualBackupStep3 extends PureComponent {
       },
     });
 
-  isHintSeedPhrase = (hintText) => {
+  isHintSeedPhrase = (hintText: string) => {
     const words = this.props.route.params?.words;
     if (words) {
-      const lower = (string) => String(string).toLowerCase();
+      const lower = (string: string) => String(string).toLowerCase();
       return lower(hintText) === lower(words.join(' '));
     }
     return false;
@@ -191,7 +221,7 @@ class ManualBackupStep3 extends PureComponent {
     }
   };
 
-  handleChangeText = (text) => this.setState({ hintText: text });
+  handleChangeText = (text: string) => this.setState({ hintText: text });
 
   renderHint = () => {
     const { showHint, hintText } = this.state;
@@ -208,8 +238,7 @@ class ManualBackupStep3 extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    const styles = createStyles(this.getColors());
 
     return (
       <View style={styles.mainWrapper}>
@@ -232,11 +261,11 @@ class ManualBackupStep3 extends PureComponent {
   }
 }
 
-ManualBackupStep3.contextType = ThemeContext;
-
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  showAlert: (config: Omit<ShowAlertAction, 'type'>) =>
+    dispatch(showAlert(config)),
+  setOnboardingWizardStep: (step: number) =>
+    dispatch(setOnboardingWizardStep(step)),
 });
 
 export default connect(null, mapDispatchToProps)(ManualBackupStep3);
