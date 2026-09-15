@@ -908,4 +908,147 @@ describe('CollectibleContracts', () => {
     spyOnDetectNfts.mockRestore();
     spyOnCheckOwnership.mockRestore();
   });
+
+  describe('collectible grouping', () => {
+    const CONTRACT_A = '0x72b1FDb6443338A158DeC2FbF411B71aeB157A42';
+    const CONTRACT_B = '0x1111111111111111111111111111111111111111';
+    const buildNft = (
+      address: string,
+      tokenId: string,
+      name: string,
+      isCurrentlyOwned = true,
+    ) => ({
+      address,
+      tokenId,
+      name,
+      isCurrentlyOwned,
+      image: `https://img/${name}`,
+      standard: 'ERC721',
+      chainId: 1,
+    });
+
+    const buildState = (
+      favorites: Record<string, unknown> = {},
+    ): DeepPartial<RootState> => ({
+      collectibles: { favorites },
+      engine: {
+        backgroundState: {
+          ...backgroundState,
+          NetworkController: {
+            ...mockNetworkState({
+              chainId: CHAIN_IDS.MAINNET,
+              id: 'mainnet',
+              nickname: 'Ethereum Mainnet',
+              ticker: 'ETH',
+            }),
+          },
+          AccountTrackerController: {
+            accountsByChainId: {
+              '0x1': { [MOCK_ADDRESS]: { balance: '0' } },
+            },
+          },
+          PreferencesController: {
+            useNftDetection: true,
+            displayNftMedia: true,
+          } as unknown as PreferencesState,
+          AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
+          NftController: {
+            allNfts: { [MOCK_ADDRESS]: { '0x1': [] } },
+            allNftContracts: { [MOCK_ADDRESS]: { '0x1': [] } },
+          },
+        },
+      },
+    });
+
+    it('groups owned collectibles under their contract, matching address case-insensitively', () => {
+      const contracts = [
+        { address: CONTRACT_A.toLowerCase(), name: 'A' },
+        { address: CONTRACT_B, name: 'B' },
+      ];
+      const nfts = [
+        buildNft(CONTRACT_A, '1', 'A1'),
+        buildNft(CONTRACT_A, '2', 'A2', false),
+        buildNft(CONTRACT_B, '3', 'B3'),
+      ];
+      jest
+        .spyOn(allSelectors, 'multichainCollectiblesSelector')
+        .mockReturnValue({ '0x1': nfts });
+      jest
+        .spyOn(allSelectors, 'multichainCollectibleContractsSelector')
+        .mockReturnValue({ '0x1': contracts });
+
+      const { getAllByTestId, getByTestId, queryByTestId } = renderWithProvider(
+        <CollectibleContracts />,
+        { state: buildState() },
+      );
+
+      expect(getAllByTestId('collectible-A1-1').length).toBeGreaterThan(0);
+      expect(queryByTestId('collectible-A2-2')).toBeNull();
+      expect(queryByTestId('collectible-B3-3')).toBeNull();
+      expect(
+        getByTestId(`collectible-contract-element-${CONTRACT_B}-B`),
+      ).toBeTruthy();
+    });
+
+    it('renders favorites matched by address and token id', () => {
+      const contracts = [{ address: CONTRACT_A, name: 'A' }];
+      const nfts = [
+        buildNft(CONTRACT_A, '1', 'A1'),
+        buildNft(CONTRACT_A, '2', 'A2'),
+      ];
+      jest
+        .spyOn(allSelectors, 'multichainCollectiblesSelector')
+        .mockReturnValue({ '0x1': nfts });
+      jest
+        .spyOn(allSelectors, 'multichainCollectibleContractsSelector')
+        .mockReturnValue({ '0x1': contracts });
+
+      const favorites = {
+        [MOCK_ADDRESS.toLowerCase()]: {
+          [CHAIN_IDS.MAINNET]: [
+            { address: CONTRACT_A, tokenId: 2 },
+            { address: CONTRACT_A, tokenId: '999' },
+          ],
+        },
+      };
+
+      const { getAllByTestId, queryByTestId } = renderWithProvider(
+        <CollectibleContracts />,
+        { state: buildState(favorites) },
+      );
+
+      expect(
+        queryByTestId('collectible-contract-element-undefined-Favorites'),
+      ).toBeTruthy();
+      expect(getAllByTestId('collectible-A2-2').length).toBeGreaterThanOrEqual(
+        1,
+      );
+    });
+
+    it('keeps rendering all grouped collectibles across re-renders', () => {
+      const contracts = [{ address: CONTRACT_A, name: 'A' }];
+      const nfts = [
+        buildNft(CONTRACT_A, '1', 'A1'),
+        buildNft(CONTRACT_A, '2', 'A2'),
+        buildNft(CONTRACT_A, '3', 'A3'),
+        buildNft(CONTRACT_A, '4', 'A4'),
+      ];
+      jest
+        .spyOn(allSelectors, 'multichainCollectiblesSelector')
+        .mockReturnValue({ '0x1': nfts });
+      jest
+        .spyOn(allSelectors, 'multichainCollectibleContractsSelector')
+        .mockReturnValue({ '0x1': contracts });
+
+      const { getAllByTestId, rerender } = renderWithProvider(
+        <CollectibleContracts />,
+        { state: buildState() },
+      );
+
+      rerender(<CollectibleContracts />);
+
+      expect(getAllByTestId('collectible-A1-1').length).toBeGreaterThan(0);
+      expect(getAllByTestId('collectible-A4-4').length).toBeGreaterThan(0);
+    });
+  });
 });

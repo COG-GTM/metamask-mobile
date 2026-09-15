@@ -157,6 +157,33 @@ describe('CollectibleContractElement', () => {
       expect(onPressMock).toHaveBeenCalled();
     });
 
+    it('does not mutate the contractCollectibles prop when building the grid', () => {
+      const contractCollectibles = [
+        { address: '0xdef', tokenId: '1', name: 'Collectible1' },
+        { address: '0xdef', tokenId: '2', name: 'Collectible2' },
+        { address: '0xdef', tokenId: '3', name: 'Collectible3' },
+        { address: '0xdef', tokenId: '4', name: 'Collectible4' },
+      ];
+      const props = {
+        asset: { favorites: false, name: 'AssetName', address: '0xdef' },
+        contractCollectibles,
+        collectiblesVisible: true,
+        onPress: jest.fn(),
+        removeFavoriteCollectible: jest.fn(),
+      };
+
+      const { getAllByTestId } = render(
+        <Provider store={store}>
+          <ThemeContext.Provider value={mockTheme}>
+            <CollectibleContractElement {...props} />
+          </ThemeContext.Provider>
+        </Provider>,
+      );
+
+      expect(getAllByTestId('collectible-Collectible4-4')).toBeTruthy();
+      expect(contractCollectibles).toHaveLength(4);
+    });
+
     it('hides collectibles list when pressed', async () => {
       const onPressMock = jest.fn();
       const removeFavoriteMock = jest.fn();
