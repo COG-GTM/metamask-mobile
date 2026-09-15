@@ -1,7 +1,7 @@
 import { SecurityAlertResponse } from '@metamask/transaction-controller';
 import type BN from 'bnjs4';
 
-interface TxMeta {
+export interface TxMeta {
   data?: string;
   from?: string;
   gas?: BN;
@@ -11,6 +11,8 @@ interface TxMeta {
   maxFeePerGas?: BN;
   maxPriorityFeePerGas?: BN;
   securityAlertResponse?: SecurityAlertResponse;
+  origin?: string;
+  [key: string]: unknown;
 }
 
 function getDefinedProperties<T extends object>(object: T): Partial<T> {

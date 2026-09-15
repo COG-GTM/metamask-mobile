@@ -1,11 +1,23 @@
-const initialState = {
+import type { AlertAction } from '../../actions/alert';
+
+export interface AlertState {
+  isVisible: boolean;
+  autodismiss: number | null;
+  content: string | null;
+  data: unknown;
+}
+
+export const initialState: AlertState = {
   isVisible: false,
   autodismiss: null,
   content: null,
   data: null,
 };
 
-const alertReducer = (state = initialState, action) => {
+const alertReducer = (
+  state: AlertState = initialState,
+  action: AlertAction | Record<'type', null>,
+): AlertState => {
   switch (action.type) {
     case 'SHOW_ALERT':
       return {

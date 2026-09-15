@@ -1,4 +1,15 @@
-const initialState = {
+import type { ModalsAction } from '../../actions/modals';
+
+export interface ModalsState {
+  networkModalVisible: boolean;
+  shouldNetworkSwitchPopToWallet: boolean | null | undefined;
+  collectibleContractModalVisible: boolean;
+  dappTransactionModalVisible: boolean | undefined;
+  signMessageModalVisible: boolean;
+  infoNetworkModalVisible?: boolean;
+}
+
+export const initialState: ModalsState = {
   networkModalVisible: false,
   shouldNetworkSwitchPopToWallet: true,
   collectibleContractModalVisible: false,
@@ -6,7 +17,10 @@ const initialState = {
   signMessageModalVisible: true,
 };
 
-const modalsReducer = (state = initialState, action) => {
+const modalsReducer = (
+  state: ModalsState = initialState,
+  action: ModalsAction | Record<'type', null>,
+): ModalsState => {
   switch (action.type) {
     case 'TOGGLE_NETWORK_MODAL':
       return {

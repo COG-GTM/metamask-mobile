@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { cloneDeep } from 'lodash';
 import Device from '../../util/device';
 import reducer, {
@@ -10,6 +9,8 @@ import reducer, {
   selectSwapsChainFeatureFlags,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
+import type { FeatureFlags } from '@metamask/swaps-controller/dist/types';
+import type { RootState } from '../../reducers';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
@@ -17,7 +18,7 @@ jest.mock('../../selectors/tokensController');
 
 const emptyAction = { type: null };
 
-const DEFAULT_FEATURE_FLAGS = {
+const DEFAULT_FEATURE_FLAGS = ({
   ethereum: {
     mobile_active: true,
     extension_active: true,
@@ -54,7 +55,7 @@ const DEFAULT_FEATURE_FLAGS = {
     mobileActiveIOS: false,
     mobileActiveAndroid: false,
   },
-};
+} as unknown) as FeatureFlags;
 
 describe('swaps reducer', () => {
   it('should return initial state', () => {
@@ -68,7 +69,6 @@ describe('swaps reducer', () => {
       Device.isAndroid = jest.fn().mockReturnValue(false);
 
       const initalState = reducer(undefined, emptyAction);
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
@@ -84,7 +84,7 @@ describe('swaps reducer', () => {
 
       const initalState = reducer(undefined, emptyAction);
       const featureFlags = cloneDeep(DEFAULT_FEATURE_FLAGS);
-      featureFlags.ethereum = {
+      featureFlags.ethereum = ({
         mobile_active: false,
         extension_active: true,
         fallback_to_v1: false,
@@ -98,9 +98,8 @@ describe('swaps reducer', () => {
           maxDeadline: 150,
           mobileReturnTxHashAsap: false,
         },
-      };
+      } as unknown) as typeof featureFlags.ethereum;
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
@@ -116,7 +115,7 @@ describe('swaps reducer', () => {
 
       const initalState = reducer(undefined, emptyAction);
       const featureFlags = cloneDeep(DEFAULT_FEATURE_FLAGS);
-      featureFlags.ethereum = {
+      featureFlags.ethereum = ({
         mobile_active: true,
         extension_active: true,
         fallback_to_v1: false,
@@ -130,9 +129,8 @@ describe('swaps reducer', () => {
           maxDeadline: 150,
           mobileReturnTxHashAsap: false,
         },
-      };
+      } as unknown) as typeof featureFlags.ethereum;
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
@@ -148,7 +146,7 @@ describe('swaps reducer', () => {
 
       const initalState = reducer(undefined, emptyAction);
       const featureFlags = cloneDeep(DEFAULT_FEATURE_FLAGS);
-      featureFlags.ethereum = {
+      featureFlags.ethereum = ({
         mobile_active: false,
         extension_active: true,
         fallback_to_v1: false,
@@ -162,9 +160,8 @@ describe('swaps reducer', () => {
           maxDeadline: 150,
           mobileReturnTxHashAsap: false,
         },
-      };
+      } as unknown) as typeof featureFlags.ethereum;
 
-      // @ts-ignore
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
@@ -183,8 +180,6 @@ describe('swaps reducer', () => {
           backgroundState: {
             NetworkController: {
               getNetworkClientById: () => ({
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 configuration: {
                   rpcUrl: 'https://mainnet.infura.io/v3',
                   chainId: '0x1',
@@ -212,8 +207,7 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
-      rootState.swaps = {
-        // @ts-ignore
+      rootState.swaps = ({
         featureFlags: {
           smart_transactions: {
             mobile_active: true,
@@ -227,7 +221,6 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
-          // @ts-ignore
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,
@@ -236,9 +229,9 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      } as unknown) as typeof rootState.swaps;
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(true);
     });
 
@@ -267,8 +260,7 @@ describe('swaps reducer', () => {
         swaps: cloneDeep(initialState),
       };
 
-      rootState.swaps = {
-        // @ts-ignore
+      rootState.swaps = ({
         featureFlags: {
           smart_transactions: {
             mobile_active: false,
@@ -282,7 +274,6 @@ describe('swaps reducer', () => {
           },
         },
         '0x1': {
-          // @ts-ignore
           featureFlags: {
             smartTransactions: {
               expectedDeadline: 45,
@@ -291,9 +282,9 @@ describe('swaps reducer', () => {
             },
           },
         },
-      };
+      } as unknown) as typeof rootState.swaps;
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(false);
     });
 
@@ -322,7 +313,7 @@ describe('swaps reducer', () => {
         swaps: initialState,
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(rootState as unknown as RootState);
       expect(enabled).toEqual(false);
     });
   });
@@ -368,7 +359,7 @@ describe('swaps reducer', () => {
           globalSetting: true,
         },
       };
-      
+
       const chainFlags = {
         '0x1': {
           fallbackToV1: false,
@@ -378,13 +369,13 @@ describe('swaps reducer', () => {
           },
         },
       };
-      
+
       const rootState = createTestState({
         globalFeatureFlags: globalFlags,
         chainFeatureFlags: chainFlags,
       });
-      
-      const result = selectSwapsChainFeatureFlags(rootState);
+
+      const result = selectSwapsChainFeatureFlags(rootState as unknown as RootState);
       expect(result).toEqual({
         fallbackToV1: false,
         mobileActive: true,
@@ -417,7 +408,7 @@ describe('swaps reducer', () => {
         },
       });
 
-      const chainFlags = selectSwapsChainFeatureFlags(rootState, '0x5');
+      const chainFlags = selectSwapsChainFeatureFlags(rootState as unknown as RootState, '0x5');
       expect(chainFlags).toEqual({
         goerliFlag: true,
         smartTransactions: {
@@ -439,7 +430,7 @@ describe('swaps reducer', () => {
         },
       });
 
-      const chainFlags = selectSwapsChainFeatureFlags(rootState);
+      const chainFlags = selectSwapsChainFeatureFlags(rootState as unknown as RootState);
       expect(chainFlags).toEqual({
         smartTransactions: {
           globalSetting: true,
@@ -458,7 +449,7 @@ describe('swaps reducer', () => {
         // No chain feature flags for 0x89
       });
 
-      expect(() => selectSwapsChainFeatureFlags(rootState)).toThrow();
+      expect(() => selectSwapsChainFeatureFlags(rootState as unknown as RootState)).toThrow();
     });
   });
 
@@ -502,7 +493,7 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({
+      expect(swapsTokensObjectSelector(state as unknown as RootState)).toStrictEqual({
         '0x0000000000000000000000000000000000000000': undefined,
         '0x0000000000000000000000000000000000000001': undefined,
         '0x0000000000000000000000000000000000000010': undefined,
@@ -521,19 +512,17 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({});
+      expect(swapsTokensObjectSelector(state as unknown as RootState)).toStrictEqual({});
     });
   });
 
   it('should set has onboarded', () => {
     const initalState = reducer(undefined, emptyAction);
-    // @ts-ignore
     const notOnboardedState = reducer(initalState, {
       type: SWAPS_SET_HAS_ONBOARDED,
       payload: false,
     });
     expect(notOnboardedState.hasOnboarded).toBe(false);
-    // @ts-ignore
     const liveState = reducer(initalState, {
       type: SWAPS_SET_HAS_ONBOARDED,
       payload: true,
@@ -541,4 +530,3 @@ describe('swaps reducer', () => {
     expect(liveState.hasOnboarded).toBe(true);
   });
 });
-

@@ -1,8 +1,27 @@
 import { createSelector } from 'reselect';
-import { NotificationTypes } from '../../util/notifications';
+import { NotificationTypes, type NotificationTypesType } from '../../util/notifications';
+import type {
+  NotificationAction,
+  NotificationTransaction,
+} from '../../actions/notification';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+export interface InAppNotification {
+  id: string;
+  isVisible: boolean;
+  autodismiss?: number | boolean | null;
+  type: NotificationTypesType;
+  status?: string;
+  title?: string;
+  description?: string;
+  transaction?: NotificationTransaction;
+}
+
+export interface NotificationState {
+  notifications: InAppNotification[];
+}
+
+export const initialState: NotificationState = {
   notifications: [],
 };
 
@@ -19,23 +38,28 @@ export const ACTIONS = {
   SHOW_SIMPLE_NOTIFICATION: 'SHOW_SIMPLE_NOTIFICATION',
   SHOW_TRANSACTION_NOTIFICATION: 'SHOW_TRANSACTION_NOTIFICATION',
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
-};
+} as const;
 
-const enqueue = (notifications, notification) => [
+const enqueue = (
+  notifications: InAppNotification[],
+  notification: InAppNotification,
+): InAppNotification[] => [
   ...notifications,
   notification,
 ];
-const dequeue = (notifications) => notifications.slice(1);
+const dequeue = (notifications: InAppNotification[]): InAppNotification[] =>
+  notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+  (state: { notifications?: InAppNotification[] }) => state?.notifications,
+  (notifications): InAppNotification | Record<string, never> =>
+    notifications?.[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+const notificationReducer = (
+  state: NotificationState = initialState,
+  action: NotificationAction | Record<'type', null>,
+): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
@@ -72,7 +96,7 @@ const notificationReducer = (state = initialState, action) => {
           ...state,
           notifications: [
             ...notifications.slice(0, index),
-            {
+            ({
               ...notifications[index],
               ...{
                 id: action.transaction.id,
@@ -82,7 +106,7 @@ const notificationReducer = (state = initialState, action) => {
                 status: action.status,
                 type: TRANSACTION,
               },
-            },
+            } as InAppNotification),
             ...notifications.slice(index + 1),
           ],
         };
@@ -106,7 +130,7 @@ const notificationReducer = (state = initialState, action) => {
           ...state,
           notifications: [
             ...notifications.slice(0, index),
-            {
+            ({
               ...notifications[index],
               ...{
                 id: action.id,
@@ -117,7 +141,7 @@ const notificationReducer = (state = initialState, action) => {
                 status: action.status,
                 type: SIMPLE,
               },
-            },
+            } as InAppNotification),
             ...notifications.slice(index + 1),
           ],
         };
@@ -132,7 +156,7 @@ const notificationReducer = (state = initialState, action) => {
           description: action.description,
           status: action.status,
           type: SIMPLE,
-        }),
+        } as InAppNotification),
       };
     }
     case ACTIONS.REPLACE_NOTIFICATION_BY_ID: {
@@ -144,7 +168,7 @@ const notificationReducer = (state = initialState, action) => {
         ...state,
         notifications: [
           ...notifications.slice(0, index),
-          action.notification,
+          action.notification as InAppNotification,
           ...notifications.slice(index + 1),
         ],
       };

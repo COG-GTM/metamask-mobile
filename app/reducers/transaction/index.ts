@@ -1,7 +1,43 @@
 import { REHYDRATE } from 'redux-persist';
-import { getTxData, getTxMeta } from '../../util/transaction-reducer-helpers';
+import {
+  getTxData,
+  getTxMeta,
+  type TxMeta,
+} from '../../util/transaction-reducer-helpers';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
+import type {
+  AssetType,
+  SelectedAsset,
+  TransactionAction,
+} from '../../actions/transaction';
 
-const initialState = {
+export type { SelectedAsset } from '../../actions/transaction';
+
+export interface TransactionState {
+  ensRecipient?: string;
+  chainId?: string;
+  assetType?: AssetType;
+  selectedAsset: SelectedAsset;
+  transaction: Partial<TxMeta>;
+  origin?: string;
+  warningGasPriceHigh?: string;
+  transactionTo?: string;
+  transactionToName?: string;
+  transactionFromName?: string;
+  transactionValue?: string;
+  symbol?: string;
+  paymentRequest?: boolean;
+  readableValue?: string;
+  id?: string;
+  type?: string;
+  proposedNonce?: number;
+  nonce?: number;
+  securityAlertResponses: Record<string, SecurityAlertResponse>;
+  useMax: boolean;
+  maxValueMode?: boolean;
+}
+
+export const initialState: TransactionState = {
   ensRecipient: undefined,
   assetType: undefined,
   selectedAsset: {},
@@ -32,8 +68,8 @@ const initialState = {
   useMax: false,
 };
 
-const getAssetType = (selectedAsset) => {
-  let assetType;
+const getAssetType = (selectedAsset: SelectedAsset): AssetType | undefined => {
+  let assetType: AssetType | undefined;
   if (selectedAsset) {
     if (selectedAsset.tokenId) {
       assetType = 'ERC721';
@@ -46,7 +82,10 @@ const getAssetType = (selectedAsset) => {
   return assetType;
 };
 
-const transactionReducer = (state = initialState, action) => {
+const transactionReducer = (
+  state: TransactionState = initialState,
+  action: TransactionAction | Record<'type', null>,
+): TransactionState => {
   switch (action.type) {
     case REHYDRATE:
       return {
