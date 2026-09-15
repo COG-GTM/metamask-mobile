@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { shallow } from 'enzyme';
 import ContactForm from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../../../util/test/initial-root-state';
+
+const ContactFormScreen = ContactForm as unknown as ComponentType;
 
 const mockStore = configureMockStore();
 const initialState = {
@@ -17,7 +19,7 @@ describe('ContactForm', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ContactForm />
+        <ContactFormScreen />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

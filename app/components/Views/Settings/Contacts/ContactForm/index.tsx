@@ -9,12 +9,18 @@ import {
   View,
 } from 'react-native';
 import { fontStyles } from '../../../../../styles/common';
-import PropTypes from 'prop-types';
 import { getEditableOptions } from '../../../../UI/Navbar';
 import StyledButton from '../../../../UI/StyledButton';
 import Engine from '../../../../../core/Engine';
 import { toChecksumAddress } from 'ethereumjs-util';
 import { connect } from 'react-redux';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Hex } from '@metamask/utils';
+import { AddressBookControllerState } from '@metamask/address-book-controller';
+import { InternalAccount } from '@metamask/keyring-internal-api';
+import { RootState } from '../../../../../reducers';
+import { Colors, Theme } from '../../../../../util/theme/models';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { strings } from '../../../../../../locales/i18n';
 import {
@@ -37,7 +43,7 @@ import { selectInternalAccounts } from '../../../../../selectors/accountsControl
 import { toLowerCaseEquals } from '../../../../../util/general';
 import { selectAddressBook } from '../../../../../selectors/addressBookController';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -102,9 +108,7 @@ const createStyles = (colors) =>
       flex: 1,
       flexDirection: 'column',
     },
-    textInputDisaled: {
-      borderColor: colors.transparent,
-    },
+    textInputDisaled: {},
     actionButton: {
       marginVertical: 4,
     },
@@ -116,31 +120,63 @@ const EDIT = 'edit';
 /**
  * View that contains app information
  */
-class ContactForm extends PureComponent {
-  static propTypes = {
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * An array containing each account with metadata
-     */
-    internalAccounts: PropTypes.array,
-    /**
-     * Map representing the address book
-     */
-    addressBook: PropTypes.object,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Network chainId
-     */
-    chainId: PropTypes.string,
-  };
+type ContactFormMode = typeof ADD | typeof EDIT;
 
-  state = {
+interface ContactFormParams {
+  mode?: ContactFormMode;
+  editMode?: ContactFormMode;
+  address?: string;
+  onDelete?: () => void;
+  dispatch?: () => void;
+}
+
+type ValidationResult = Awaited<ReturnType<typeof validateAddressOrENS>>;
+
+interface ContactFormProps {
+  /**
+   * Object that represents the navigator
+   */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+   * An array containing each account with metadata
+   */
+  internalAccounts: InternalAccount[];
+  /**
+   * Map representing the address book
+   */
+  addressBook: AddressBookControllerState['addressBook'];
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<{ params: ContactFormParams }, 'params'>;
+  /**
+   * Network chainId
+   */
+  chainId: Hex;
+}
+
+interface ContactFormState {
+  name: string | null;
+  address: string | null;
+  addressError: ValidationResult['addressError'] | null;
+  toEnsName: ValidationResult['toEnsName'] | null;
+  toEnsAddress: ValidationResult['toEnsAddress'] | null;
+  addressReady: boolean;
+  mode: ContactFormMode;
+  memo: string | null;
+  editable: boolean;
+  inputWidth: '99%' | '100%' | undefined;
+  errorContinue?: ValidationResult['errorContinue'];
+}
+
+interface ActionSheetRef {
+  show: () => void;
+}
+
+class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
+  static contextType = ThemeContext;
+
+  state: ContactFormState = {
     name: null,
     address: null,
     addressError: null,
@@ -153,13 +189,15 @@ class ContactForm extends PureComponent {
     inputWidth: Platform.OS === 'android' ? '99%' : undefined,
   };
 
-  actionSheet = React.createRef();
-  addressInput = React.createRef();
-  memoInput = React.createRef();
+  actionSheet: ActionSheetRef | null = null;
+  addressInput = React.createRef<TextInput>();
+  memoInput = React.createRef<TextInput>();
+  contactAddressToRemove: string | null | undefined;
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as Theme | undefined)?.colors || mockTheme.colors;
     navigation.setOptions(
       getEditableOptions(
         strings(`address_book.${route.params?.mode ?? ADD}_contact_title`),
@@ -183,16 +221,17 @@ class ContactForm extends PureComponent {
       const { addressBook, chainId, internalAccounts } = this.props;
       const networkAddressBook = addressBook[chainId] || {};
       const address = this.props.route.params?.address ?? '';
-      const contact =
-        networkAddressBook[address] ||
-        (address &&
-          internalAccounts.find((account) =>
+      const savedContact = networkAddressBook[address];
+      const matchedAccount = address
+        ? internalAccounts.find((account) =>
             toLowerCaseEquals(account.address, address),
-          ));
+          )
+        : undefined;
+      const contact = savedContact || matchedAccount;
       this.setState({
         address,
-        name: contact?.name ?? '',
-        memo: contact?.memo ?? '',
+        name: (contact && 'name' in contact ? contact.name : undefined) ?? '',
+        memo: (contact && 'memo' in contact ? contact.memo : undefined) ?? '',
         addressReady: true,
         editable: false,
       });
@@ -215,14 +254,14 @@ class ContactForm extends PureComponent {
 
   onDelete = () => {
     this.contactAddressToRemove = this.state.address;
-    this.actionSheet && this.actionSheet.show();
+    this.actionSheet?.show();
   };
 
-  onChangeName = (name) => {
+  onChangeName = (name: string) => {
     this.setState({ name });
   };
 
-  validateAddressOrENSFromInput = async (address) => {
+  validateAddressOrENSFromInput = async (address: string) => {
     const { addressBook, internalAccounts, chainId } = this.props;
 
     const {
@@ -247,12 +286,12 @@ class ContactForm extends PureComponent {
     });
   };
 
-  onChangeAddress = (address) => {
+  onChangeAddress = (address: string) => {
     this.validateAddressOrENSFromInput(address);
     this.setState({ address });
   };
 
-  onChangeMemo = (memo) => {
+  onChangeMemo = (memo: string) => {
     this.setState({ memo });
   };
 
@@ -275,7 +314,7 @@ class ContactForm extends PureComponent {
       toChecksumAddress(toEnsAddress || address),
       name,
       chainId,
-      memo,
+      memo ?? undefined,
     );
     navigation.pop();
   };
@@ -283,8 +322,10 @@ class ContactForm extends PureComponent {
   deleteContact = () => {
     const { AddressBookController } = Engine.context;
     const { chainId, navigation, route } = this.props;
-    AddressBookController.delete(chainId, this.contactAddressToRemove);
-    route.params.onDelete();
+    if (this.contactAddressToRemove) {
+      AddressBookController.delete(chainId, this.contactAddressToRemove);
+    }
+    route.params.onDelete?.();
     navigation.pop();
   };
 
@@ -301,11 +342,11 @@ class ContactForm extends PureComponent {
     );
   };
 
-  createActionSheetRef = (ref) => {
+  createActionSheetRef = (ref: ActionSheetRef | null) => {
     this.actionSheet = ref;
   };
 
-  renderErrorMessage = (addressError) => {
+  renderErrorMessage = (addressError: string) => {
     let errorMessage = addressError;
 
     if (addressError === CONTACT_ALREADY_SAVED) {
@@ -340,8 +381,9 @@ class ContactForm extends PureComponent {
       toEnsAddress,
       errorContinue,
     } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const theme = this.context as Theme | undefined;
+    const colors = theme?.colors || mockTheme.colors;
+    const themeAppearance = theme?.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (
@@ -366,7 +408,7 @@ class ContactForm extends PureComponent {
                 inputWidth ? { width: inputWidth } : {},
                 editable ? {} : styles.textInputDisaled,
               ]}
-              value={name}
+              value={name ?? undefined}
               onSubmitEditing={this.jumpToAddressInput}
               testID={AddContactViewSelectorsIDs.NAME_INPUT}
               keyboardAppearance={themeAppearance}
@@ -390,7 +432,7 @@ class ContactForm extends PureComponent {
                     styles.textInput,
                     inputWidth ? { width: inputWidth } : {},
                   ]}
-                  value={toEnsName || address}
+                  value={toEnsName || address || undefined}
                   ref={this.addressInput}
                   onSubmitEditing={this.jumpToMemoInput}
                   testID={AddContactViewSelectorsIDs.ADDRESS_INPUT}
@@ -437,7 +479,7 @@ class ContactForm extends PureComponent {
                     styles.textInput,
                     inputWidth ? { width: inputWidth } : {},
                   ]}
-                  value={memo}
+                  value={memo ?? undefined}
                   ref={this.memoInput}
                   testID={AddContactViewSelectorsIDs.MEMO_INPUT}
                   keyboardAppearance={themeAppearance}
@@ -493,7 +535,9 @@ class ContactForm extends PureComponent {
             cancelButtonIndex={1}
             destructiveButtonIndex={0}
             // eslint-disable-next-line react/jsx-no-bind
-            onPress={(index) => (index === 0 ? this.deleteContact() : null)}
+            onPress={(index: number) =>
+              index === 0 ? this.deleteContact() : null
+            }
             theme={themeAppearance}
           />
         </KeyboardAwareScrollView>
@@ -502,9 +546,7 @@ class ContactForm extends PureComponent {
   };
 }
 
-ContactForm.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   addressBook: selectAddressBook(state),
   internalAccounts: selectInternalAccounts(state),
   chainId: selectEvmChainId(state),
