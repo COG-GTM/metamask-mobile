@@ -112,6 +112,18 @@ class CollectibleAddresses {
 }
 
 /**
+ * Utility class with the single responsibility
+ * of caching whether an address is a smart contract, keyed by `${chainId}:${address}`
+ */
+export class SmartContractAddresses {
+  static cache = {};
+
+  static clear() {
+    SmartContractAddresses.cache = {};
+  }
+}
+
+/**
  * Object containing all known action keys, to be used in transaction review
  */
 const reviewActionKeys = {
@@ -391,6 +403,12 @@ export async function isSmartContractAddress(
     return Promise.resolve(true);
   }
 
+  const cacheKey = `${chainId}:${address}`;
+  const cached = SmartContractAddresses.cache[cacheKey];
+  if (cached !== undefined) {
+    return cached;
+  }
+
   const { NetworkController } = Engine.context;
   const finalNetworkClientId =
     networkClientId ?? NetworkController.findNetworkClientIdByChainId(chainId);
@@ -398,11 +416,11 @@ export async function isSmartContractAddress(
     NetworkController.getNetworkClientById(finalNetworkClientId).provider,
   );
 
-  const code = address
-    ? await query(ethQuery, 'getCode', [address])
-    : undefined;
+  const code = await query(ethQuery, 'getCode', [address]);
+  const isSmartContract = isSmartContractCode(code);
+  SmartContractAddresses.cache[cacheKey] = isSmartContract;
 
-  return isSmartContractCode(code);
+  return isSmartContract;
 }
 
 /**

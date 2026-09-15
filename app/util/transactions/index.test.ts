@@ -1,5 +1,6 @@
 import { swapsUtils } from '@metamask/swaps-controller';
 import BN from 'bnjs4';
+import { toChecksumAddress } from 'ethereumjs-util';
 
 /* eslint-disable-next-line import/no-namespace */
 import * as controllerUtilsModule from '@metamask/controller-utils';
@@ -39,6 +40,8 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  isSmartContractAddress,
+  SmartContractAddresses,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
@@ -433,6 +436,7 @@ describe('Transactions utils :: getMethodData', () => {
 
 describe('Transactions utils :: getActionKey', () => {
   beforeEach(() => {
+    SmartContractAddresses.clear();
     jest
       .spyOn(swapsUtils, 'getSwapsContractAddress')
       .mockImplementation(() => 'SWAPS_CONTRACT_ADDRESS');
@@ -1094,6 +1098,82 @@ describe('Transactions utils :: getIsNativeTokenTransferred', () => {
     };
     const result = getIsNativeTokenTransferred(tx);
     expect(result).toBe(false);
+  });
+});
+
+describe('Transactions utils :: isSmartContractAddress', () => {
+  const CONTRACT_CODE = '0x6080604052';
+
+  beforeEach(() => {
+    SmartContractAddresses.clear();
+    jest.clearAllMocks();
+  });
+
+  it('returns false for an empty address without querying the network', async () => {
+    const querySpy = spyOnQueryMethod(CONTRACT_CODE);
+    expect(await isSmartContractAddress('', MOCK_CHAIN_ID)).toBe(false);
+    expect(querySpy).not.toHaveBeenCalled();
+  });
+
+  it('queries getCode once and caches a contract result per chainId and address', async () => {
+    const querySpy = spyOnQueryMethod(CONTRACT_CODE);
+
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      true,
+    );
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      true,
+    );
+    expect(
+      await isSmartContractAddress(
+        toChecksumAddress(MOCK_ADDRESS3),
+        MOCK_CHAIN_ID,
+      ),
+    ).toBe(true);
+
+    expect(querySpy).toHaveBeenCalledTimes(1);
+    expect(querySpy).toHaveBeenCalledWith(expect.anything(), 'getCode', [
+      toChecksumAddress(MOCK_ADDRESS3),
+    ]);
+  });
+
+  it('caches a non-contract result and does not re-query', async () => {
+    const querySpy = spyOnQueryMethod('0x');
+
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      false,
+    );
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      false,
+    );
+
+    expect(querySpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('keys the cache by chainId so the same address is queried per chain', async () => {
+    const querySpy = spyOnQueryMethod(CONTRACT_CODE);
+
+    await isSmartContractAddress(MOCK_ADDRESS3, '0x1');
+    await isSmartContractAddress(MOCK_ADDRESS3, '0x89');
+    await isSmartContractAddress(MOCK_ADDRESS3, '0x89');
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not cache when the getCode query rejects', async () => {
+    const querySpy = jest
+      .spyOn(controllerUtilsModule, 'query')
+      .mockRejectedValueOnce(new Error('network error'))
+      .mockResolvedValueOnce(CONTRACT_CODE);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).rejects.toThrow('network error');
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      true,
+    );
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
   });
 });
 
