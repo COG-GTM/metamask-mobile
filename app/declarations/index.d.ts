@@ -415,3 +415,10 @@ declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
   const dismissKeyboard: () => void;
   export default dismissKeyboard;
 }
+
+declare module '@metamask/ethjs-query' {
+  class Eth {
+    constructor(provider: unknown, options?: Record<string, unknown>);
+  }
+  export default Eth;
+}
