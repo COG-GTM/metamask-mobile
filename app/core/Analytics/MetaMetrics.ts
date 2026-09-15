@@ -5,6 +5,7 @@ import {
   UserTraits,
 } from '@segment/analytics-react-native';
 import axios, { AxiosHeaderValue } from 'axios';
+import branch from 'react-native-branch';
 import StorageWrapper from '../../store/storage-wrapper';
 import Logger from '../../util/Logger';
 import {
@@ -561,6 +562,7 @@ class MetaMetrics implements IMetaMetrics {
       this.deleteRegulationDate =
         await this.#getDeleteRegulationDateFromPrefs();
       this.dataRecorded = await this.#getIsDataRecordedFromPrefs();
+      this.#syncThirdPartyTracking();
 
       this.segmentClient?.add({ plugin: new MetaMetricsPrivacySegmentPlugin(this.metametricsId) });
 
@@ -591,7 +593,20 @@ class MetaMetrics implements IMetaMetrics {
    */
   enable = async (enable = true): Promise<void> => {
     this.enabled = enable;
+    this.#syncThirdPartyTracking();
     await this.#storeMetricsOptInPreference(this.enabled);
+  };
+
+  /**
+   * Keep third-party attribution tracking (Branch.io) aligned with the
+   * MetaMetrics opt-in state so device data is not collected without consent.
+   */
+  #syncThirdPartyTracking = (): void => {
+    try {
+      branch.disableTracking(!this.enabled);
+    } catch (error) {
+      Logger.error(error as Error, 'Error syncing Branch tracking state');
+    }
   };
 
   /**
