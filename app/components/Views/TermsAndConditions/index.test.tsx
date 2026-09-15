@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import TermsAndConditions from './';
+import TermsAndConditionsComponent from './';
+
+const TermsAndConditions =
+  TermsAndConditionsComponent as unknown as ComponentType<{
+    action: string;
+  }>;
 
 describe('TermsAndConditions', () => {
   it('should render correctly', () => {
