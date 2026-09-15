@@ -34,7 +34,7 @@ export interface TokenToFiatParams {
   value: ConversionInput;
   fromCurrency?: string;
   toCurrency?: string;
-  conversionRate: number;
+  conversionRate: number | null | undefined;
   contractExchangeRate?: number | null;
 }
 
@@ -178,7 +178,7 @@ export function convertTokenToFiat({
   contractExchangeRate,
 }: TokenToFiatParams): string | 0 {
   if (!contractExchangeRate) return 0;
-  const totalExchangeRate = conversionRate * contractExchangeRate;
+  const totalExchangeRate = Number(conversionRate) * contractExchangeRate;
 
   return conversionUtil(value, {
     fromNumericBase: 'dec',

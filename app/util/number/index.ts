@@ -671,13 +671,13 @@ export function addCurrencySymbol(
  */
 export function weiToFiatNumber(
   wei: NumericInput,
-  conversionRate: number,
+  conversionRate: number | null | undefined,
   decimalsToShow = 5,
 ): number {
   const base = Math.pow(10, decimalsToShow);
   const eth = fromWei(wei).toString();
   let value = parseFloat(
-    String(Math.floor(Number(eth) * conversionRate * base) / base),
+    String(Math.floor(Number(eth) * Number(conversionRate) * base) / base),
   );
   value = isNaN(value) ? 0.0 : value;
   return value;
@@ -800,14 +800,15 @@ export function balanceToFiat(
  */
 export function balanceToFiatNumber(
   balance: number | string,
-  conversionRate: number,
+  conversionRate: number | null | undefined,
   exchangeRate: number,
   decimalsToShow = 5,
 ): number {
   const base = Math.pow(10, decimalsToShow);
   let fiatFixed = parseFloat(
     String(
-      Math.floor(Number(balance) * conversionRate * exchangeRate * base) / base,
+      Math.floor(Number(balance) * Number(conversionRate) * exchangeRate * base) /
+        base,
     ),
   );
   fiatFixed = isNaN(fiatFixed) ? 0.0 : fiatFixed;

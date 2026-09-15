@@ -150,6 +150,7 @@ import {
   DEFAULT_GAS_FEE_OPTION_FEE_MARKET,
   DEFAULT_GAS_FEE_OPTION_LEGACY,
   getGasFeeEstimatesForTransaction,
+  type SwapsGasEstimates,
 } from './utils/gas';
 import { getGlobalEthQuery } from '../../../util/networks/global-network';
 import SmartTransactionsMigrationBanner from '../../Views/confirmations/legacy/components/SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
@@ -677,8 +678,10 @@ interface GasFeeEstimateValues {
     selectedQuoteId,
   ]);
 
+  // Either a custom `{ gasPrice }` / fee-market override or the controller's
+  // legacy / fee-market estimate; both shapes are read via `SwapsGasEstimates`.
   const gasEstimates = useMemo(
-    () => customGasEstimate || usedGasEstimate,
+    () => (customGasEstimate || usedGasEstimate) as SwapsGasEstimates,
     [customGasEstimate, usedGasEstimate],
   );
 
@@ -1260,7 +1263,7 @@ interface GasFeeEstimateValues {
           },
           destinationToken: { swaps: 'swaps' },
           upTo: new BigNumber(
-            decodeApproveData(approvalTransaction.data).encodedAmount,
+            decodeApproveData(approvalTransaction.data ?? '').encodedAmount,
             16,
           ).toString(10),
         });
@@ -1331,7 +1334,7 @@ interface GasFeeEstimateValues {
             },
             destinationToken: { swaps: 'swaps' },
             upTo: new BigNumber(
-              decodeApproveData(approvalTransaction.data).encodedAmount,
+              decodeApproveData(approvalTransaction.data ?? '').encodedAmount,
               16,
             ).toString(10),
           });
@@ -1412,14 +1415,14 @@ interface GasFeeEstimateValues {
       return;
     }
     const originalApprovalTransactionEncodedAmount = decodeApproveData(
-      originalApprovalTransaction.data,
+      originalApprovalTransaction.data ?? '',
     ).encodedAmount;
     const originalAmount = fromTokenMinimalUnitString(
       hexToBN(originalApprovalTransactionEncodedAmount).toString(10),
       sourceToken.decimals,
     );
     const currentApprovalTransactionEncodedAmount = approvalTransaction
-      ? decodeApproveData(approvalTransaction.data).encodedAmount
+      ? decodeApproveData(approvalTransaction.data ?? '').encodedAmount
       : '0';
     const currentAmount = fromTokenMinimalUnitString(
       hexToBN(currentApprovalTransactionEncodedAmount).toString(10),
@@ -1730,7 +1733,7 @@ interface GasFeeEstimateValues {
   /* First load effect: handle initial animation */
   useEffect(() => {
     if (isFirstLoad && !shouldFinishFirstLoad) {
-      if (firstLoadTime < quotesLastFetched || error) {
+      if ((quotesLastFetched && firstLoadTime < quotesLastFetched) || error) {
         setShouldFinishFirstLoad(true);
         if (!error) {
           navigation.setParams({ leftAction: strings('swaps.edit') });
@@ -1761,7 +1764,10 @@ interface GasFeeEstimateValues {
   useEffect(() => {
     const tick = setInterval(() => {
       const newRemainingTime =
-        quotesLastFetched + quoteRefreshSeconds * 1000 - Date.now() + 1000;
+        (quotesLastFetched ?? 0) +
+        (quoteRefreshSeconds ?? 0) * 1000 -
+        Date.now() +
+        1000;
       // If newRemainingTime > remainingTime means that a new set of quotes were fetched
       if (newRemainingTime > remainingTime) {
         hideFeeModal();
@@ -2365,7 +2371,9 @@ interface GasFeeEstimateValues {
                       </TouchableOpacity>
                     </View>
                   </View>
-                  {usedGasEstimate.gasPrice ? (
+                  {usedGasEstimate &&
+                  'gasPrice' in usedGasEstimate &&
+                  usedGasEstimate.gasPrice ? (
                     <View style={styles.quotesFiatColumn}>
                       <Text primary bold>
                         {renderFromWei(toWei(selectedQuoteValue?.ethFee))}{' '}
@@ -2425,7 +2433,9 @@ interface GasFeeEstimateValues {
                       </View>
                     </View>
 
-                    {usedGasEstimate.gasPrice ? (
+                    {usedGasEstimate &&
+                  'gasPrice' in usedGasEstimate &&
+                  usedGasEstimate.gasPrice ? (
                       <View style={styles.quotesFiatColumn}>
                         <Text primary bold>
                           {renderFromWei(toWei(selectedQuoteValue?.ethFee))}{' '}
@@ -2518,7 +2528,9 @@ interface GasFeeEstimateValues {
                   </View>
 
                   <View style={styles.quotesRow}>
-                    {usedGasEstimate.gasPrice ? (
+                    {usedGasEstimate &&
+                  'gasPrice' in usedGasEstimate &&
+                  usedGasEstimate.gasPrice ? (
                       <>
                         <View style={styles.quotesDescription}>
                           <View style={styles.quotesLegend}>
@@ -2786,9 +2798,9 @@ const mapStateToProps = (state: RootState) => {
   const balances: Balances = selectContractBalances(state);
   const quotes: Record<string, QuoteWithSlippage> = selectSwapsQuotes(state);
   const quoteValues: Record<string, QuoteValues> =
-    selectSwapsQuoteValues(state);
+    selectSwapsQuoteValues(state) ?? {};
   const aggregatorMetadata: Record<string, APIAggregatorMetadata> =
-    selectSwapsAggregatorMetadata(state);
+    selectSwapsAggregatorMetadata(state) ?? {};
   const swapsTokens: Token[] = swapsTokensSelector(state);
 
   return {

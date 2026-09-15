@@ -197,8 +197,8 @@ export interface TransactionStateLike {
 export interface ParseTransactionEIP1559Params {
   selectedGasFee: SelectedGasFeeEIP1559;
   swapsParams?: SwapsParamsLike;
-  contractExchangeRates: ContractExchangeRates;
-  conversionRate: number;
+  contractExchangeRates?: ContractExchangeRates;
+  conversionRate: number | null | undefined;
   currentCurrency: string;
   nativeCurrency: string;
   transactionState?: TransactionStateLike;
@@ -207,7 +207,7 @@ export interface ParseTransactionEIP1559Params {
 
 export interface ParseTransactionLegacyParams {
   contractExchangeRates?: ContractExchangeRates;
-  conversionRate: number;
+  conversionRate: number | null | undefined;
   currentCurrency: string;
   transactionState?: TransactionStateLike;
   ticker?: string;
@@ -897,16 +897,16 @@ export const calculateAmountsEIP1559 = ({
   gasFeeMaxHex,
   gasFeeMinHex,
 }: {
-  value: string;
+  value: string | undefined;
   nativeCurrency: string;
   currentCurrency: string;
-  conversionRate: number;
-  gasFeeMinConversion: ConversionValue;
-  gasFeeMinNative: ConversionValue;
-  gasFeeMaxNative: ConversionValue;
-  gasFeeMaxConversion: ConversionValue;
-  gasFeeMaxHex: string;
-  gasFeeMinHex: string;
+  conversionRate: number | null | undefined;
+  gasFeeMinConversion: ConversionValue | null | undefined;
+  gasFeeMinNative: ConversionValue | null | undefined;
+  gasFeeMaxNative: ConversionValue | null | undefined;
+  gasFeeMaxConversion: ConversionValue | null | undefined;
+  gasFeeMaxHex: string | undefined;
+  gasFeeMinHex: string | undefined;
 }) => {
   // amount numbers
   const amountConversion = getValueFromWeiHex({
@@ -925,18 +925,24 @@ export const calculateAmountsEIP1559 = ({
   });
 
   // Total numbers
-  const totalMinNative = addEth(gasFeeMinNative, amountNative);
-  const totalMinConversion = addFiat(gasFeeMinConversion, amountConversion);
-  const totalMaxNative = addEth(gasFeeMaxNative, amountNative);
-  const totalMaxConversion = addFiat(gasFeeMaxConversion, amountConversion);
+  const totalMinNative = addEth(gasFeeMinNative ?? 0, amountNative);
+  const totalMinConversion = addFiat(
+    gasFeeMinConversion ?? 0,
+    amountConversion,
+  );
+  const totalMaxNative = addEth(gasFeeMaxNative ?? 0, amountNative);
+  const totalMaxConversion = addFiat(
+    gasFeeMaxConversion ?? 0,
+    amountConversion,
+  );
 
-  const totalMinHex = addCurrencies(gasFeeMinHex, value, {
+  const totalMinHex = addCurrencies(gasFeeMinHex ?? '0x0', value ?? '0x0', {
     toNumericBase: 'hex',
     aBase: MULTIPLIER_HEX,
     bBase: MULTIPLIER_HEX,
   });
 
-  const totalMaxHex = addCurrencies(gasFeeMaxHex, value, {
+  const totalMaxHex = addCurrencies(gasFeeMaxHex ?? '0x0', value ?? '0x0', {
     toNumericBase: 'hex',
     aBase: MULTIPLIER_HEX,
     bBase: MULTIPLIER_HEX,
@@ -1000,7 +1006,7 @@ export const calculateERC20EIP1559 = ({
 }: {
   currentCurrency: string;
   nativeCurrency: string;
-  conversionRate: number;
+  conversionRate: number | null | undefined;
   exchangeRate?: number | null;
   tokenAmount: string;
   totalMinConversion: ConversionValue;
@@ -1552,7 +1558,7 @@ export const parseTransactionEIP1559 = (
     );
 
     const exchangeRate = (
-      contractExchangeRates[address as string] as
+      contractExchangeRates?.[address as string] as
         | ContractExchangeRate
         | undefined
     )?.price;

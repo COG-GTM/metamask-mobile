@@ -41,7 +41,7 @@ const createStyles = (colors: Theme['colors']) =>
 interface SlippageModalProps {
   isVisible?: boolean;
   dismiss?: () => void;
-  onChange?: (value: number) => void;
+  onChange: (value: number) => void;
   slippage?: number;
 }
 

@@ -79,7 +79,7 @@ export function isDynamicToken(
   }
   return (
     token.occurrences === 1 &&
-    token.aggregators.length === 1 &&
+    token.aggregators?.length === 1 &&
     token.aggregators[0] === 'dynamic'
   );
 }

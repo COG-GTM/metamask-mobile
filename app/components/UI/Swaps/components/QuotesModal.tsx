@@ -432,7 +432,7 @@ function QuotesModal({
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
                       const quoteValue = quoteValues[aggregator];
-                      let quoteEthFee: string | number | undefined =
+                      let quoteEthFee: string | number | null | undefined =
                         quoteValue?.ethFee;
                       if (multiLayerL1ApprovalFeeTotal) {
                         quoteEthFee = calculateEthFeeForMultiLayer({
@@ -521,7 +521,7 @@ function QuotesModal({
 
 const mapStateToProps = (state: RootState) => {
   const quoteValues: Record<string, QuoteValues> =
-    selectSwapsQuoteValues(state);
+    selectSwapsQuoteValues(state) ?? {};
   return {
     conversionRate: selectConversionRate(state),
     currentCurrency: selectCurrentCurrency(state),

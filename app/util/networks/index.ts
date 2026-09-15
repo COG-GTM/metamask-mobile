@@ -380,7 +380,7 @@ export function isPrivateConnection(hostname: string): boolean {
  * @param {object} networkConfigurations
  */
 export function findBlockExplorerForRpc(
-  rpcTargetUrl: string,
+  rpcTargetUrl: string | undefined,
   networkConfigurations: Record<string, NetworkConfigurationLike>,
 ): string | undefined {
   const networkConfiguration = Object.values(networkConfigurations).find(

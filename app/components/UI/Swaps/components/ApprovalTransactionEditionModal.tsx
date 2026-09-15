@@ -110,7 +110,7 @@ function ApprovalTransactionEditionModal({
     setApprovalTransaction(newApprovalTx);
     if (newApprovalTx) {
       const currentApprovalTransactionAmount = decodeApproveData(
-        newApprovalTx.data,
+        newApprovalTx.data ?? '',
       ).encodedAmount;
       const amountDec = hexToBN(currentApprovalTransactionAmount).toString(10);
       setApprovalTransactionAmount(

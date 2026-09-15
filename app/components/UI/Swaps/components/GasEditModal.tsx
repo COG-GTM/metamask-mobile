@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
@@ -12,6 +12,7 @@ import {
 import MaterialCommunityIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { connect } from 'react-redux';
 import type {
+  CustomEthGasPriceEstimate,
   CustomGasFee,
 } from '@metamask/swaps-controller/dist/types';
 import type { Hex } from '@metamask/utils';
@@ -19,8 +20,11 @@ import type { RootState } from '../../../../reducers';
 
 import Text from '../../../Base/Text';
 import InfoModal from './InfoModal';
-import EditGasFeeLegacy from '../../EditGasFeeLegacy';
-import EditGasFee1559 from '../../EditGasFee1559';
+import EditGasFeeLegacy, { type LegacyGasFee } from '../../EditGasFeeLegacy';
+import EditGasFee1559, {
+  type EIP1559GasFee,
+  type EIP1559GasOptions,
+} from '../../EditGasFee1559';
 import {
   parseTransactionEIP1559,
   parseTransactionLegacy,
@@ -62,7 +66,7 @@ type GasFeeEstimate =
   | LegacyGasPriceEstimate
   | EthGasPriceEstimate;
 
-interface ParsedTransactionData {
+type ParsedTransactionData = {
   error?: string;
   renderableGasFeeMinNative?: string;
   renderableGasFeeMinConversion?: string;
@@ -79,13 +83,13 @@ interface ParsedTransactionData {
   transactionFeeFiat?: string;
   suggestedMaxFeePerGas?: string;
   suggestedMaxPriorityFeePerGas?: string;
-  suggestedGasLimit?: string;
-  suggestedGasPrice?: string;
+  suggestedGasLimit?: string | number;
+  suggestedGasPrice?: string | number;
   totalMaxHex?: { toString: (radix?: number) => string };
   totalHex?: { toString: (radix?: number) => string };
   estimatedBaseFee?: string;
   suggestedEstimatedGasLimit?: string;
-}
+};
 
 interface LegacyGasUpdate {
   gasPrice?: string;
@@ -103,7 +107,7 @@ interface GasEditModalProps {
     gas: Partial<CustomGasFee> | LegacyGasUpdate,
     gasLimit?: string,
   ) => void;
-  customGasFee?: CustomGasFee | null;
+  customGasFee?: CustomEthGasPriceEstimate | CustomGasFee | null;
   initialGasLimit: string;
   tradeGasLimit?: string;
   isNativeAsset: boolean;
@@ -120,6 +124,9 @@ interface GasEditModalProps {
 
 const isGasOption = (value: string): value is GasOption =>
   value === 'low' || value === 'medium' || value === 'high';
+
+const toGasOption = (value: string | null | undefined): GasOption | null =>
+  value && isGasOption(value) ? value : null;
 
 function GasEditModal({
   dismiss,
@@ -281,8 +288,9 @@ function GasEditModal({
         estimatedBaseFee,
         suggestedEstimatedGasLimit,
       }: ParsedTransactionData,
-      selected: GasOption | null,
+      selectedOption: string | null,
     ) => {
+      const selected = toGasOption(selectedOption);
       if (!selected) {
         setStopUpdateGas(true);
       }
@@ -331,8 +339,9 @@ function GasEditModal({
   const calculateTempGasFeeLegacy = useCallback(
     (
       { suggestedGasLimit, suggestedGasPrice }: ParsedTransactionData,
-      selected: GasOption | null,
+      selectedOption: string | null,
     ) => {
+      const selected = toGasOption(selectedOption);
       setStopUpdateGas(!selected);
       setGasSelected(selected);
       setLegacyTransactionDataTemp(
@@ -354,7 +363,8 @@ function GasEditModal({
   );
 
   const saveGasEdition = useCallback(
-    (selected: GasOption | null) => {
+    (selectedOption: string | null | undefined) => {
+      const selected = toGasOption(selectedOption);
       if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
         const {
           suggestedMaxFeePerGas: maxFeePerGas,
@@ -404,6 +414,11 @@ function GasEditModal({
     dismiss();
   }, [customGasFee, dismiss, gasEstimateType]);
 
+  const feeMarketGasOptions = useMemo<EIP1559GasOptions>(() => {
+    const { low, medium, high } = gasFeeEstimates as GasFeeEstimates;
+    return { low, medium, high };
+  }, [gasFeeEstimates]);
+
   const onGasAnimationStart = useCallback(() => setIsAnimating(true), []);
   const onGasAnimationEnd = useCallback(() => setIsAnimating(false), []);
 
@@ -429,7 +444,7 @@ function GasEditModal({
         {gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET ? (
           <>
             <EditGasFee1559
-              selected={gasSelected}
+              selected={gasSelected ?? undefined}
               ignoreOptions={[GAS_OPTIONS.LOW]}
               extendOptions={{ [GAS_OPTIONS.MEDIUM]: { error: true } }}
               warningMinimumEstimateOption={GAS_OPTIONS.MEDIUM}
@@ -444,8 +459,8 @@ function GasEditModal({
                   : EIP1559TransactionDataTemp.error
               }
               suggestedEstimateOption={defaultGasFeeOptionFeeMarket}
-              gasFee={EIP1559TransactionDataTemp}
-              gasOptions={gasFeeEstimates}
+              gasFee={EIP1559TransactionDataTemp as EIP1559GasFee}
+              gasOptions={feeMarketGasOptions}
               onChange={calculateTempGasFee}
               gasFeeNative={
                 EIP1559TransactionDataTemp.renderableGasFeeMinNative
@@ -513,12 +528,14 @@ function GasEditModal({
           </>
         ) : (
           <EditGasFeeLegacy
-            selected={gasSelected}
+            selected={gasSelected ?? undefined}
             ignoreOptions={[GAS_OPTIONS.LOW]}
             warningMinimumEstimateOption={GAS_OPTIONS.MEDIUM}
-            gasFee={LegacyTransactionDataTemp}
+            gasFee={LegacyTransactionDataTemp as LegacyGasFee}
             gasEstimateType={gasEstimateType}
-            gasOptions={gasFeeEstimates}
+            gasOptions={
+              gasFeeEstimates as LegacyGasPriceEstimate | EthGasPriceEstimate
+            }
             onChange={calculateTempGasFeeLegacy}
             gasFeeNative={LegacyTransactionDataTemp.transactionFee}
             gasFeeConversion={LegacyTransactionDataTemp.transactionFeeFiat}
