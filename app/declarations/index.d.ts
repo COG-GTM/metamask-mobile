@@ -410,3 +410,8 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}

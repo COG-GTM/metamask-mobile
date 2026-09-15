@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { ComponentType, PureComponent, RefObject } from 'react';
 import { fontStyles } from '../../../../../../styles/common';
 import {
   StyleSheet,
@@ -10,18 +10,30 @@ import {
   FlatList,
   InteractionManager,
   ScrollView,
+  ListRenderItemInfo,
 } from 'react-native';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
+import type BN4 from 'bnjs4';
+import type BN from 'bn.js';
+import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import { TransactionParams } from '@metamask/transaction-controller';
+import { Nft, NftContract } from '@metamask/assets-controllers';
+import {
+  EthGasPriceEstimate,
+  GasFeeEstimates,
+  GAS_ESTIMATE_TYPES,
+  LegacyGasPriceEstimate,
+} from '@metamask/gas-fee-controller';
+import { Hex } from '@metamask/utils';
 import {
   setSelectedAsset,
   prepareTransaction,
-  setTransactionObject,
   resetTransaction,
   setMaxValueMode,
 } from '../../../../../../actions/transaction';
 import { getSendFlowTitle } from '../../../../../UI/Navbar';
 import StyledButton from '../../../../../UI/StyledButton';
-import PropTypes from 'prop-types';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Modal from 'react-native-modal';
@@ -52,13 +64,12 @@ import {
   getEther,
   calculateEIP1559GasFeeHexes,
 } from '../../../../../../util/transactions';
-import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import { BNToHex } from '@metamask/controller-utils';
 import ErrorMessage from '../ErrorMessage';
 import { getGasLimit } from '../../../../../../util/custom-gas';
 import Engine from '../../../../../../core/Engine';
 import CollectibleMedia from '../../../../../UI/CollectibleMedia';
-import collectiblesTransferInformation from '../../../../../../util/collectibles-transfer';
+import collectiblesTransferInformation from '../../../../../../util/collectibles-transfer.json';
 import { strings } from '../../../../../../../locales/i18n';
 import Device from '../../../../../../util/device';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
@@ -110,10 +121,64 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import { isNativeToken } from '../../../utils/generic';
 import { selectConfirmationRedesignFlags } from '../../../../../../selectors/featureFlagController/confirmations';
 import { MMM_ORIGIN } from '../../../constants/confirmations';
+import { RootState } from '../../../../../../reducers';
+import { Colors, Theme } from '../../../../../../util/theme/models';
+import { TokenI } from '../../../../../UI/Tokens/types';
+import { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 
 const KEYBOARD_OFFSET = Device.isSmallDevice() ? 80 : 120;
 
-const createStyles = (colors) =>
+/**
+ * Asset selected in the send flow: the native token, an ERC20 token or a collectible.
+ */
+export interface SendFlowAsset {
+  address: string;
+  symbol?: string;
+  decimals?: number;
+  name?: string | null;
+  image?: string | null;
+  logo?: string;
+  standard?: string | null;
+  tokenId?: string;
+  isETH?: boolean;
+  isNative?: boolean;
+}
+
+export type SendFlowToken = SendFlowAsset;
+
+export type SendFlowCollectible = Nft & SendFlowAsset;
+
+interface SendFlowTransaction extends Omit<TransactionParams, 'value'> {
+  value?: string | BN4;
+}
+
+interface SendFlowTransactionState {
+  transaction: SendFlowTransaction;
+  transactionTo?: string;
+  readableValue?: string;
+  selectedAsset: SendFlowAsset;
+  isPaymentRequest?: boolean;
+  paymentRequest?: boolean;
+}
+
+interface CollectibleTransferInformation {
+  name: string;
+  tradable: boolean;
+  method?: string;
+}
+
+const collectiblesTransferInformationByAddress: Record<
+  string,
+  CollectibleTransferInformation | undefined
+> = collectiblesTransferInformation;
+
+// bnjs4 and bn.js v5 instances share the same runtime API; only their typings differ.
+const bn4ToHex = (value: BN4) => BNToHex(value as unknown as BN);
+
+const isNativeAsset = (asset: SendFlowAsset) =>
+  isNativeToken(asset as unknown as TokenI);
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -378,131 +443,56 @@ const createStyles = (colors) =>
 /**
  * View that wraps the wraps the "Send" screen
  */
-class Amount extends PureComponent {
-  static propTypes = {
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * Array of collectible objects
-     */
-    collectibles: PropTypes.array,
-    /**
-     * An array that represents the user collectible contracts
-     */
-    collectibleContracts: PropTypes.array,
-    /**
-     * Object containing token balances in the format address => balance
-     */
-    contractBalances: PropTypes.object,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Object that contains navigation props
-     */
-    route: PropTypes.object,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * An array that represents the user tokens
-     */
-    tokens: PropTypes.array,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Set selected in transaction state
-     */
-    setSelectedAsset: PropTypes.func,
-    /**
-     * Set transaction object to be sent
-     */
-    prepareTransaction: PropTypes.func,
-    /**
-     * Primary currency, either ETH or Fiat
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Selected asset from current transaction state
-     */
-    selectedAsset: PropTypes.object,
-    /**
-     * Current transaction state
-     */
-    transactionState: PropTypes.object,
-    /**
-     * Network provider type as mainnet
-     */
-    providerType: PropTypes.string,
-    /**
-     * function to call when the 'Next' button is clicked
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Indicates whether the current transaction is a deep link transaction
-     */
-    isPaymentRequest: PropTypes.bool,
-    /**
-     * Resets transaction state
-     */
-    resetTransaction: PropTypes.func,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNetworkBuyNativeTokenSupported: PropTypes.bool,
-    /**
-     * Boolean that indicates if the swap is live
-     */
-    swapsIsLive: PropTypes.bool,
-    /**
-     * String that indicates the current chain id
-     */
-    globalChainId: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Gas fee estimates for the transaction.
-     */
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Type of gas fee estimate provided by the gas fee controller.
-     */
-    gasEstimateType: PropTypes.string,
-    /**
-     * Function that sets the max value mode
-     */
-    setMaxValueMode: PropTypes.func,
-    /**
-     * Network client id
-     */
-    globalNetworkClientId: PropTypes.string,
-    /**
-     * Boolean that indicates if the redesigned transfer confirmation is enabled
-     */
-    isRedesignedTransferConfirmationEnabled: PropTypes.bool,
+interface AmountOwnProps {
+  /**
+   * Object that represents the navigator
+   */
+  navigation: NavigationProp<ParamListBase> & {
+    replace: (name: string, params?: object) => void;
   };
+  /**
+   * Object that contains navigation props
+   */
+  route: RouteProp<ParamListBase, string>;
+  /**
+   * function to call when the 'Next' button is clicked
+   */
+  onConfirm?: () => void;
+  /**
+   * Transaction state override, defaults to the redux transaction state
+   */
+  transaction?: SendFlowTransactionState;
+}
 
-  state = {
+type AmountStateProps = ReturnType<typeof mapStateToProps>;
+type AmountDispatchProps = ReturnType<typeof mapDispatchToProps>;
+
+export type AmountProps = AmountOwnProps &
+  AmountStateProps &
+  AmountDispatchProps &
+  IWithMetricsAwarenessProps;
+
+interface AmountState {
+  amountError?: string;
+  inputValue?: string;
+  inputValueConversion?: string;
+  renderableInputValueConversion?: string;
+  assetsModalVisible: boolean;
+  internalPrimaryCurrencyIsCrypto: boolean;
+  estimatedTotalGas?: BN4;
+  hasExchangeRate: boolean;
+  isRedesignedTransferTransactionLoading: boolean;
+  maxFiatInput?: string;
+  currentBalance?: string;
+}
+
+/**
+ * View that wraps the wraps the "Send" screen
+ */
+class Amount extends PureComponent<AmountProps, AmountState> {
+  static contextType = ThemeContext;
+
+  state: AmountState = {
     amountError: undefined,
     inputValue: undefined,
     inputValueConversion: undefined,
@@ -514,20 +504,25 @@ class Amount extends PureComponent {
     isRedesignedTransferTransactionLoading: false,
   };
 
-  amountInput = React.createRef();
-  tokens = [];
-  collectibles = [];
+  amountInput: RefObject<TextInput> = React.createRef();
+  tokens: SendFlowToken[] = [];
+  collectibles: SendFlowCollectible[] = [];
 
   updateNavBar = () => {
-    const { navigation, route, resetTransaction } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const {
+      navigation,
+      route,
+      resetTransaction: resetTransactionProp,
+    } = this.props;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     navigation.setOptions(
       getSendFlowTitle(
         'send.amount',
         navigation,
         route,
         colors,
-        resetTransaction,
+        resetTransactionProp,
+        undefined,
       ),
     );
   };
@@ -548,7 +543,7 @@ class Amount extends PureComponent {
     this.updateNavBar();
     navigation.setParams({ providerType, isPaymentRequest });
 
-    this.tokens = [getEther(ticker), ...tokens];
+    this.tokens = [getEther(ticker) as SendFlowToken, ...tokens];
     this.collectibles = this.processCollectibles();
     // Wait until navigation finishes to focus
     InteractionManager.runAfterInteractions(() =>
@@ -557,13 +552,16 @@ class Amount extends PureComponent {
     this.onInputChange(readableValue);
     !selectedAsset.tokenId && this.handleSelectedAssetBalance(selectedAsset);
 
-    const [gas] = await Promise.all([this.estimateGasLimit()]);
+    const [estimatedGas] = await Promise.all([this.estimateGasLimit()]);
+    // estimateGas returns a bn.js v5 instance; the rest of this file works with bnjs4.
+    const gas = estimatedGas as unknown as BN4;
 
     if (gasEstimateType === GAS_ESTIMATE_TYPES.FEE_MARKET) {
+      const feeMarketEstimates = gasFeeEstimates as GasFeeEstimates;
       const mediumGasFeeEstimates =
-        gasFeeEstimates[AppConstants.GAS_OPTIONS.MEDIUM];
+        feeMarketEstimates[AppConstants.GAS_OPTIONS.MEDIUM];
       const estimatedBaseFeeHex = decGWEIToHexWEI(
-        gasFeeEstimates.estimatedBaseFee,
+        feeMarketEstimates.estimatedBaseFee,
       );
       const suggestedMaxPriorityFeePerGasHex = decGWEIToHexWEI(
         mediumGasFeeEstimates.suggestedMaxPriorityFeePerGas,
@@ -571,9 +569,10 @@ class Amount extends PureComponent {
       const suggestedMaxFeePerGasHex = decGWEIToHexWEI(
         mediumGasFeeEstimates.suggestedMaxFeePerGas,
       );
-      const gasLimitHex = BNToHex(gas);
+      const gasLimitHex = bn4ToHex(gas);
       const gasHexes = calculateEIP1559GasFeeHexes({
         gasLimitHex,
+        estimatedGasLimitHex: undefined,
         estimatedBaseFeeHex,
         suggestedMaxFeePerGasHex,
         suggestedMaxPriorityFeePerGasHex,
@@ -583,11 +582,17 @@ class Amount extends PureComponent {
       });
     } else if (gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
       const gasPrice = hexToBN(
-        decGWEIToHexWEI(gasFeeEstimates[AppConstants.GAS_OPTIONS.MEDIUM]),
+        decGWEIToHexWEI(
+          (gasFeeEstimates as LegacyGasPriceEstimate)[
+            AppConstants.GAS_OPTIONS.MEDIUM
+          ],
+        ),
       );
       this.setState({ estimatedTotalGas: gas.mul(gasPrice) });
     } else {
-      const gasPrice = hexToBN(decGWEIToHexWEI(gasFeeEstimates.gasPrice));
+      const gasPrice = hexToBN(
+        decGWEIToHexWEI((gasFeeEstimates as EthGasPriceEstimate).gasPrice),
+      );
       this.setState({ estimatedTotalGas: gas.mul(gasPrice) });
     }
 
@@ -614,7 +619,7 @@ class Amount extends PureComponent {
   hasExchangeRate = () => {
     const { selectedAsset, conversionRate, contractExchangeRates } = this.props;
 
-    if (isNativeToken(selectedAsset)) {
+    if (isNativeAsset(selectedAsset)) {
       return !!conversionRate;
     }
     const exchangeRate =
@@ -636,7 +641,11 @@ class Amount extends PureComponent {
       selectedAddress,
     } = this.props;
     try {
-      return await NftController.isNftOwner(selectedAddress, address, tokenId);
+      return await NftController.isNftOwner(
+        selectedAddress,
+        address,
+        tokenId as string,
+      );
     } catch (e) {
       return false;
     }
@@ -646,7 +655,7 @@ class Amount extends PureComponent {
     const {
       navigation,
       selectedAsset,
-      setSelectedAsset,
+      setSelectedAsset: setSelectedAssetProp,
       transactionState: { transaction },
       providerType,
       onConfirm,
@@ -670,16 +679,19 @@ class Amount extends PureComponent {
           fiatNumberToWei(
             handleWeiNumber(maxFiatInput),
             this.props.conversionRate,
-          ),
+          ) as BN4,
           18,
         )}`;
       }
     }
-    if (value && value.includes(',')) {
-      value = inputValue.replace(',', '.');
+    if (value?.includes(',')) {
+      value = (inputValue as string).replace(',', '.');
     }
 
-    value = formatValueToMatchTokenDecimals(value, selectedAsset.decimals);
+    value = formatValueToMatchTokenDecimals(
+      value,
+      selectedAsset.decimals as number,
+    );
     if (
       !selectedAsset.tokenId &&
       this.validateAmount(value, internalPrimaryCurrencyIsCrypto)
@@ -705,7 +717,7 @@ class Amount extends PureComponent {
         .build(),
     );
 
-    setSelectedAsset(selectedAsset);
+    setSelectedAssetProp(selectedAsset);
     if (onConfirm) {
       onConfirm();
     } else if (isRedesignedTransferConfirmationEnabled) {
@@ -718,7 +730,7 @@ class Amount extends PureComponent {
           value:
             typeof transaction.value === 'string'
               ? transaction.value
-              : BNToHex(transaction.value),
+              : bn4ToHex(transaction.value as BN4),
         };
 
         await addTransaction(transactionParams, {
@@ -740,10 +752,14 @@ class Amount extends PureComponent {
       transactionState: { transaction, transactionTo },
     } = this.props;
 
-    const collectibleTransferTransactionProperties = {};
+    const collectibleTransferTransactionProperties: {
+      data?: string;
+      to?: string;
+      value?: string;
+    } = {};
 
     const collectibleTransferInformation =
-      collectiblesTransferInformation[selectedAsset.address.toLowerCase()];
+      collectiblesTransferInformationByAddress[selectedAsset.address.toLowerCase()];
     if (
       !collectibleTransferInformation ||
       (collectibleTransferInformation.tradable &&
@@ -765,7 +781,8 @@ class Amount extends PureComponent {
         'transfer',
         {
           toAddress: transactionTo,
-          amount: selectedAsset.tokenId.toString(16),
+          // tokenId is a decimal string at runtime; String#toString ignores the radix.
+          amount: (selectedAsset.tokenId as unknown as number).toString(16),
         },
       );
     }
@@ -775,17 +792,17 @@ class Amount extends PureComponent {
     return collectibleTransferTransactionProperties;
   }
 
-  prepareTransaction = async (value) => {
+  prepareTransaction = async (value: string) => {
     const {
-      prepareTransaction,
+      prepareTransaction: prepareTransactionProp,
       selectedAsset,
       transactionState: { transaction, transactionTo },
     } = this.props;
 
-    if (isNativeToken(selectedAsset)) {
+    if (isNativeAsset(selectedAsset)) {
       transaction.data = '0x';
       transaction.to = transactionTo;
-      transaction.value = BNToHex(toWei(value));
+      transaction.value = bn4ToHex(toWei(value));
     } else if (selectedAsset.tokenId) {
       const collectibleTransferTransactionProperties =
         this.getCollectibleTranferTransactionProperties();
@@ -793,15 +810,18 @@ class Amount extends PureComponent {
       transaction.to = collectibleTransferTransactionProperties.to;
       transaction.value = collectibleTransferTransactionProperties.value;
     } else {
-      const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals);
+      const tokenAmount = toTokenMinimalUnit(
+        value,
+        selectedAsset.decimals as number,
+      );
       transaction.data = generateTransferData('transfer', {
         toAddress: transactionTo,
-        amount: BNToHex(tokenAmount),
+        amount: bn4ToHex(tokenAmount),
       });
       transaction.to = selectedAsset.address;
       transaction.value = '0x0';
     }
-    prepareTransaction(transaction);
+    prepareTransactionProp(transaction);
   };
 
   /**
@@ -810,7 +830,10 @@ class Amount extends PureComponent {
    * @param {string} - Crypto value
    * @returns - Whether there is an error with the amount
    */
-  validateAmount = (inputValue, internalPrimaryCurrencyIsCrypto) => {
+  validateAmount = (
+    inputValue: string | undefined,
+    internalPrimaryCurrencyIsCrypto: boolean,
+  ) => {
     const { accounts, selectedAddress, selectedAsset, contractBalances } =
       this.props;
     const { estimatedTotalGas, inputValueConversion } = this.state;
@@ -820,12 +843,14 @@ class Amount extends PureComponent {
       value = inputValueConversion;
     }
 
-    let weiBalance, weiInput, amountError;
-    if (isDecimal(value)) {
+    let weiBalance: BN4 | undefined;
+    let weiInput: BN4 | undefined;
+    let amountError: string | undefined;
+    if (isDecimal(value as string)) {
       // toWei can throw error if input is not a number: Error: while converting number to string, invalid number value
-      let weiValue = 0;
+      let weiValue: BN4 | 0 = 0;
       try {
-        weiValue = toWei(value);
+        weiValue = toWei(value as string);
       } catch (error) {
         amountError = strings('transaction.invalid_amount');
       }
@@ -835,15 +860,21 @@ class Amount extends PureComponent {
       }
 
       if (!amountError) {
-        if (isNativeToken(selectedAsset)) {
+        if (isNativeAsset(selectedAsset)) {
           weiBalance = hexToBN(accounts[selectedAddress].balance);
-          weiInput = weiValue.add(estimatedTotalGas);
+          weiInput = (weiValue as BN4).add(estimatedTotalGas as BN4);
         } else {
           weiBalance = hexToBN(contractBalances[selectedAsset.address]);
-          weiInput = toTokenMinimalUnit(value, selectedAsset.decimals);
+          weiInput = toTokenMinimalUnit(
+            value as string,
+            selectedAsset.decimals as number,
+          );
         }
         // TODO: weiBalance is not always guaranteed to be type BN. Need to consolidate type.
-        amountError = gte(weiBalance, weiInput)
+        amountError = gte(
+          weiBalance as unknown as number,
+          weiInput as unknown as number,
+        )
           ? undefined
           : strings('transaction.insufficient');
       }
@@ -890,9 +921,9 @@ class Amount extends PureComponent {
     const { internalPrimaryCurrencyIsCrypto, estimatedTotalGas } = this.state;
     const tokenBalance = contractBalances[selectedAsset.address] || '0x0';
     let input;
-    if (isNativeToken(selectedAsset)) {
+    if (isNativeAsset(selectedAsset)) {
       const balanceBN = hexToBN(accounts[selectedAddress].balance);
-      const realMaxValue = balanceBN.sub(estimatedTotalGas);
+      const realMaxValue = balanceBN.sub(estimatedTotalGas as BN4);
       const maxValue =
         balanceBN.isZero() || realMaxValue.isNeg() ? hexToBN('0x0') : realMaxValue;
       if (internalPrimaryCurrencyIsCrypto) {
@@ -910,11 +941,14 @@ class Amount extends PureComponent {
       if (internalPrimaryCurrencyIsCrypto || !exchangeRate) {
         input = fromTokenMinimalUnitString(
           tokenBalance,
-          selectedAsset.decimals,
+          selectedAsset.decimals as number,
         );
       } else {
         input = `${balanceToFiatNumber(
-          fromTokenMinimalUnitString(tokenBalance, selectedAsset.decimals),
+          fromTokenMinimalUnitString(
+            tokenBalance,
+            selectedAsset.decimals as number,
+          ),
           conversionRate,
           exchangeRate,
         )}`;
@@ -923,37 +957,41 @@ class Amount extends PureComponent {
     this.onInputChange(input, undefined, true);
   };
 
-  onInputChange = (inputValue, selectedAsset, useMax) => {
+  onInputChange = (
+    inputValue?: string,
+    selectedAsset?: SendFlowAsset,
+    useMax?: boolean,
+  ) => {
     const {
       contractExchangeRates,
       conversionRate,
       currentCurrency,
       ticker,
-      setMaxValueMode,
+      setMaxValueMode: setMaxValueModeProp,
     } = this.props;
     const { internalPrimaryCurrencyIsCrypto } = this.state;
 
-    setMaxValueMode(useMax ?? false);
+    setMaxValueModeProp(useMax ?? false);
 
-    let inputValueConversion,
-      renderableInputValueConversion,
-      hasExchangeRate,
-      comma;
+    let inputValueConversion: string | undefined;
+    let renderableInputValueConversion: string | undefined;
+    let hasExchangeRate: boolean;
+    let comma: boolean | undefined;
     // Remove spaces from input
-    inputValue = inputValue && inputValue.replace(regex.whiteSpaces, '');
+    inputValue = inputValue?.replace(regex.whiteSpaces, '');
     // Handle semicolon for other languages
-    if (inputValue && inputValue.includes(',')) {
+    if (inputValue?.includes(',')) {
       comma = true;
       inputValue = inputValue.replace(',', '.');
     }
     const processedTicker = getTicker(ticker);
-    const processedInputValue = isDecimal(inputValue)
-      ? handleWeiNumber(inputValue)
+    const processedInputValue = isDecimal(inputValue as string)
+      ? handleWeiNumber(inputValue as string)
       : '0';
     selectedAsset = selectedAsset || this.props.selectedAsset;
-    if (isNativeToken(selectedAsset)) {
+    if (isNativeAsset(selectedAsset)) {
       // toWei can throw error if input is not a number: Error: while converting number to string, invalid number value
-      let weiValue = 0;
+      let weiValue: BN4 | 0 = 0;
 
       try {
         weiValue = toWei(processedInputValue);
@@ -971,7 +1009,7 @@ class Amount extends PureComponent {
         )}`;
       } else {
         inputValueConversion = `${renderFromWei(
-          fiatNumberToWei(processedInputValue, conversionRate),
+          fiatNumberToWei(processedInputValue, conversionRate) as BN4,
         )}`;
         renderableInputValueConversion = `${inputValueConversion} ${processedTicker}`;
       }
@@ -984,12 +1022,12 @@ class Amount extends PureComponent {
         inputValueConversion = `${balanceToFiatNumber(
           processedInputValue,
           conversionRate,
-          exchangeRate,
+          exchangeRate as number,
         )}`;
         renderableInputValueConversion = `${balanceToFiat(
           processedInputValue,
           conversionRate,
-          exchangeRate,
+          exchangeRate as number,
           currentCurrency,
         )}`;
       } else {
@@ -997,15 +1035,15 @@ class Amount extends PureComponent {
           fiatNumberToTokenMinimalUnit(
             processedInputValue,
             conversionRate,
-            exchangeRate,
-            selectedAsset.decimals,
-          ),
-          selectedAsset.decimals,
+            exchangeRate as number,
+            selectedAsset.decimals as number,
+          ) as BN4,
+          selectedAsset.decimals as number,
         )}`;
         renderableInputValueConversion = `${inputValueConversion} ${selectedAsset.symbol}`;
       }
     }
-    if (comma) inputValue = inputValue && inputValue.replace('.', ',');
+    if (comma) inputValue = inputValue?.replace('.', ',');
     inputValueConversion =
       inputValueConversion === '0' ? undefined : inputValueConversion;
     this.setState({
@@ -1014,7 +1052,7 @@ class Amount extends PureComponent {
       renderableInputValueConversion,
       amountError: undefined,
       hasExchangeRate,
-      maxFiatInput: !useMax && undefined,
+      maxFiatInput: !useMax ? undefined : this.state.maxFiatInput,
     });
   };
 
@@ -1023,49 +1061,46 @@ class Amount extends PureComponent {
     this.setState({ assetsModalVisible: !assetsModalVisible });
   };
 
-  handleSelectedAssetBalance = (selectedAsset, renderableBalance) => {
+  handleSelectedAssetBalance = (
+    selectedAsset: SendFlowAsset,
+    renderableBalance?: string,
+  ) => {
     const { accounts, selectedAddress, contractBalances } = this.props;
     let currentBalance;
     if (renderableBalance) {
       currentBalance = `${renderableBalance} ${selectedAsset.symbol}`;
-    } else if (isNativeToken(selectedAsset)) {
+    } else if (isNativeAsset(selectedAsset)) {
       currentBalance = `${renderFromWei(accounts[selectedAddress].balance)} ${
         selectedAsset.symbol
       }`;
     } else {
       currentBalance = `${renderFromTokenMinimalUnit(
         contractBalances[selectedAsset.address],
-        selectedAsset.decimals,
+        selectedAsset.decimals as number,
       )} ${selectedAsset.symbol}`;
     }
     this.setState({ currentBalance });
   };
 
-  pickSelectedAsset = (selectedAsset) => {
+  pickSelectedAsset = (selectedAsset: SendFlowAsset) => {
     this.toggleAssetsModal();
     this.props.setSelectedAsset(selectedAsset);
     if (!selectedAsset.tokenId) {
       this.onInputChange(undefined, selectedAsset);
       this.handleSelectedAssetBalance(selectedAsset);
       // Wait for input to mount first
-      setTimeout(
-        () =>
-          this.amountInput &&
-          this.amountInput.current &&
-          this.amountInput.current.focus(),
-        500,
-      );
+      setTimeout(() => this.amountInput?.current?.focus(), 500);
     }
   };
 
-  assetKeyExtractor = (asset) => {
+  assetKeyExtractor = (asset: SendFlowAsset) => {
     if (asset.tokenId) {
       return asset.address + asset.tokenId;
     }
     return asset.address;
   };
 
-  renderToken = (token, index) => {
+  renderToken = (token: SendFlowAsset, index: number) => {
     const {
       accounts,
       selectedAddress,
@@ -1074,12 +1109,13 @@ class Amount extends PureComponent {
       contractBalances,
       contractExchangeRates,
     } = this.props;
-    let balance, balanceFiat;
+    let balance: string;
+    let balanceFiat: string | undefined;
     const { address, decimals, symbol } = token;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
-    if (isNativeToken(token)) {
+    if (isNativeAsset(token)) {
       balance = renderFromWei(accounts[selectedAddress].balance);
       balanceFiat = weiToFiat(
         hexToBN(accounts[selectedAddress].balance),
@@ -1087,7 +1123,10 @@ class Amount extends PureComponent {
         currentCurrency,
       );
     } else {
-      balance = renderFromTokenMinimalUnit(contractBalances[address], decimals);
+      balance = renderFromTokenMinimalUnit(
+        contractBalances[address],
+        decimals as number,
+      );
       const exchangeRate = contractExchangeRates
         ? contractExchangeRates[address]?.price
         : undefined;
@@ -1107,7 +1146,7 @@ class Amount extends PureComponent {
         onPress={() => this.pickSelectedAsset(token)}
       >
         <View style={styles.assetElement}>
-          {isNativeToken(token) ? (
+          {isNativeAsset(token) ? (
             <NetworkMainAssetLogo big />
           ) : (
             <TokenImage
@@ -1130,9 +1169,9 @@ class Amount extends PureComponent {
     );
   };
 
-  renderCollectible = (collectible, index) => {
+  renderCollectible = (collectible: SendFlowCollectible, index: number) => {
     const { name } = collectible;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1143,12 +1182,7 @@ class Amount extends PureComponent {
         onPress={() => this.pickSelectedAsset(collectible)}
       >
         <View style={styles.assetElement}>
-          <CollectibleMedia
-            small
-            collectible={collectible}
-            iconStyle={styles.tokenImage}
-            containerStyle={styles.tokenImage}
-          />
+          <CollectibleMedia small collectible={collectible} />
           <View style={styles.assetInformationWrapper}>
             <Text style={styles.textAssetTitle}>{name}</Text>
           </View>
@@ -1157,17 +1191,17 @@ class Amount extends PureComponent {
     );
   };
 
-  renderAsset = (props) => {
+  renderAsset = (props: ListRenderItemInfo<SendFlowAsset>) => {
     const { item: asset, index } = props;
     if (!asset.tokenId) {
       return this.renderToken(asset, index);
     }
-    return this.renderCollectible(asset, index);
+    return this.renderCollectible(asset as SendFlowCollectible, index);
   };
 
   processCollectibles = () => {
     const { collectibleContracts } = this.props;
-    const collectibles = [];
+    const collectibles: SendFlowCollectible[] = [];
     const sortedCollectibles = [...this.props.collectibles].sort((a, b) => {
       if (a.address < b.address) return -1;
       if (a.address > b.address) return 1;
@@ -1176,14 +1210,16 @@ class Amount extends PureComponent {
     sortedCollectibles.forEach((collectible) => {
       const address = collectible.address.toLowerCase();
       const isTradable =
-        !collectiblesTransferInformation[address] ||
-        collectiblesTransferInformation[address].tradable;
+        !collectiblesTransferInformationByAddress[address] ||
+        collectiblesTransferInformationByAddress[address]?.tradable;
       if (!isTradable) return;
       const collectibleContract = collectibleContracts.find(
         (contract) => contract.address.toLowerCase() === address,
       );
-      if (!collectible.name) collectible.name = collectibleContract.name;
-      if (!collectible.image) collectible.image = collectibleContract.logo;
+      if (!collectible.name)
+        collectible.name = collectibleContract?.name as string;
+      if (!collectible.image)
+        collectible.image = collectibleContract?.logo as string;
       collectibles.push(collectible);
     });
     return collectibles;
@@ -1194,7 +1230,7 @@ class Amount extends PureComponent {
     const tradableCollectibles = this.collectibles.filter(
       ({ standard }) => standard === 'ERC721',
     );
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1254,8 +1290,8 @@ class Amount extends PureComponent {
       globalChainId,
       ticker,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const colors = (this.context as Theme).colors || mockTheme.colors;
+    const themeAppearance = (this.context as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);
     const navigateToSwap = () => {
       navigation.replace('Swaps', {
@@ -1269,7 +1305,7 @@ class Amount extends PureComponent {
     };
 
     const isSwappable =
-      !isNativeToken(selectedAsset) &&
+      !isNativeAsset(selectedAsset) &&
       AppConstants.SWAPS.ACTIVE &&
       swapsIsLive &&
       isSwapsAllowed(globalChainId) &&
@@ -1289,7 +1325,7 @@ class Amount extends PureComponent {
         navigateToSwap();
       } else if (
         isNetworkBuyNativeTokenSupported &&
-        isNativeToken(selectedAsset)
+        isNativeAsset(selectedAsset)
       ) {
         this.props.metrics.trackEvent(
           this.props.metrics
@@ -1343,7 +1379,7 @@ class Amount extends PureComponent {
                 >
                   {renderableInputValueConversion}
                 </Text>
-                <View styles={styles.switchWrapper}>
+                <View>
                   <MaterialCommunityIcons
                     name="swap-vertical"
                     size={16}
@@ -1370,7 +1406,7 @@ class Amount extends PureComponent {
               style={styles.errorBuyWrapper}
             >
               {isNetworkBuyNativeTokenSupported &&
-              isNativeToken(selectedAsset) ? (
+              isNativeAsset(selectedAsset) ? (
                 <Text style={[styles.error]}>
                   {strings('transaction.more_to_continue', {
                     ticker: getTicker(ticker),
@@ -1401,7 +1437,7 @@ class Amount extends PureComponent {
   renderCollectibleInput = () => {
     const { amountError } = this.state;
     const { selectedAsset } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1409,9 +1445,7 @@ class Amount extends PureComponent {
         <View style={styles.collectibleInputImageWrapper}>
           <CollectibleMedia
             small
-            containerStyle={styles.CollectibleMedia}
-            iconStyle={styles.CollectibleMedia}
-            collectible={selectedAsset}
+            collectible={selectedAsset as SendFlowCollectible}
           />
         </View>
         <View style={styles.collectibleInputInformationWrapper}>
@@ -1443,7 +1477,7 @@ class Amount extends PureComponent {
       selectedAsset,
       transactionState: { isPaymentRequest },
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1469,7 +1503,6 @@ class Amount extends PureComponent {
               {() => (
                 <View style={styles.warningTextContainer}>
                   <Text
-                    red
                     style={styles.warningText}
                     testID={AmountViewSelectorsIDs.FIAT_CONVERSION_WARNING_TEXT}
                   >
@@ -1491,7 +1524,7 @@ class Amount extends PureComponent {
                   <Text style={styles.textDropdown}>
                     {selectedAsset.symbol || strings('wallet.collectible')}
                   </Text>
-                  <View styles={styles.arrow}>
+                  <View>
                     <Ionicons
                       name="arrow-down"
                       size={16}
@@ -1547,34 +1580,38 @@ class Amount extends PureComponent {
   };
 }
 
-Amount.contextType = ThemeContext;
-
-const mapStateToProps = (state, ownProps) => {
-  const transaction = ownProps.transaction || state.transaction;
+const mapStateToProps = (state: RootState, ownProps: AmountOwnProps) => {
+  const transaction: SendFlowTransactionState =
+    ownProps.transaction || state.transaction;
   const globalChainId = selectEvmChainId(state);
   const globalNetworkClientId = selectNetworkClientId(state);
 
   return {
-    accounts: selectAccounts(state),
+    accounts: selectAccounts(state) as Record<string, { balance: string }>,
     contractExchangeRates: selectContractExchangeRatesByChainId(
       state,
       globalChainId,
-    ),
-    contractBalances: selectContractBalances(state),
-    collectibles: collectiblesSelector(state),
-    collectibleContracts: collectibleContractsSelector(state),
-    conversionRate: selectConversionRateByChainId(state, globalChainId),
+    ) as Record<string, { price?: number } | undefined>,
+    contractBalances: selectContractBalances(state) as Record<string, Hex>,
+    collectibles: collectiblesSelector(state) as SendFlowCollectible[],
+    collectibleContracts: collectibleContractsSelector(state) as NftContract[],
+    conversionRate: selectConversionRateByChainId(
+      state,
+      globalChainId,
+    ) as number,
     currentCurrency: selectCurrentCurrency(state),
     gasEstimateType: selectGasFeeControllerEstimateType(state),
     gasFeeEstimates: selectGasFeeEstimates(state),
     providerType: selectProviderTypeByChainId(state, globalChainId),
-    primaryCurrency: state.settings.primaryCurrency,
-    selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
+    primaryCurrency: state.settings.primaryCurrency as string,
+    selectedAddress: selectSelectedInternalAccountFormattedAddress(
+      state,
+    ) as string,
     ticker: selectNativeCurrencyByChainId(state, globalChainId),
-    tokens: selectTokens(state),
+    tokens: selectTokens(state) as SendFlowToken[],
     transactionState: transaction,
-    selectedAsset: state.transaction.selectedAsset,
-    isPaymentRequest: state.transaction.paymentRequest,
+    selectedAsset: state.transaction.selectedAsset as SendFlowAsset,
+    isPaymentRequest: state.transaction.paymentRequest as boolean,
     isNetworkBuyNativeTokenSupported: isNetworkRampNativeTokenSupported(
       globalChainId,
       getRampNetworks(state),
@@ -1587,16 +1624,23 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  prepareTransaction: (transaction) =>
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  prepareTransaction: (transaction: SendFlowTransaction) =>
     dispatch(prepareTransaction(transaction)),
-  setSelectedAsset: (selectedAsset) =>
+  setSelectedAsset: (selectedAsset: SendFlowAsset) =>
     dispatch(setSelectedAsset(selectedAsset)),
   resetTransaction: () => dispatch(resetTransaction()),
-  setMaxValueMode: (maxValueMode) => dispatch(setMaxValueMode(maxValueMode)),
+  setMaxValueMode: (maxValueMode: boolean) =>
+    dispatch(setMaxValueMode(maxValueMode)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Amount));
+)(
+  // withMetricsAwareness only preserves the `metrics` prop in its signature;
+  // the remaining props are supplied by connect.
+  withMetricsAwareness(
+    Amount as ComponentType<Partial<AmountProps> & IWithMetricsAwarenessProps>,
+  ),
+);
