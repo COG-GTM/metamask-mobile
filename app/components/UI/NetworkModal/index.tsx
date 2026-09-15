@@ -35,7 +35,10 @@ import NetworkVerificationInfo from '../NetworkVerificationInfo';
 import createNetworkModalStyles from './index.styles';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 import { toHex } from '@metamask/controller-utils';
-import { rpcIdentifierUtility } from '../../../components/hooks/useSafeChains';
+import {
+  rpcIdentifierUtility,
+  type SafeChain,
+} from '../../../components/hooks/useSafeChains';
 import Logger from '../../../util/Logger';
 import {
   selectIsAllNetworks,
@@ -46,13 +49,6 @@ import {
   RpcEndpointType,
   AddNetworkFields,
 } from '@metamask/network-controller';
-
-export interface SafeChain {
-  chainId: string;
-  name: string;
-  nativeCurrency: { symbol: string };
-  rpc: string[];
-}
 
 interface NetworkProps {
   isVisible: boolean;
