@@ -20,6 +20,19 @@ jest.mock('../../../selectors/multichain/', () => ({
   selectAccountTokensAcrossChains: jest.fn(() => ({})),
 }));
 
+const mockUseEarnTokens = jest.fn(() => []);
+jest.mock('../Earn/hooks/useEarnTokens', () => ({
+  __esModule: true,
+  default: () => mockUseEarnTokens(),
+}));
+
+const mockSelectStablecoinLendingEnabledFlag = jest.fn(() => false);
+jest.mock('../Earn/selectors/featureFlags', () => ({
+  ...jest.requireActual('../Earn/selectors/featureFlags'),
+  selectStablecoinLendingEnabledFlag: () =>
+    mockSelectStablecoinLendingEnabledFlag(),
+}));
+
 jest.mock('../../../core/NotificationManager', () => ({
   showSimpleNotification: jest.fn(() => Promise.resolve()),
 }));
@@ -851,6 +864,59 @@ describe('Tokens', () => {
         expect(queryByText('NON_ZERO_ERC20_2')).toBeDefined();
         expect(queryByText('NON_ZERO_ERC20_3')).toBeDefined();
       });
+    });
+  });
+
+  describe('earn CTA', () => {
+    const stateWithoutZeroBalanceFilter = {
+      ...initialState,
+      settings: { ...initialState.settings, hideZeroBalanceTokens: false },
+    };
+
+    afterEach(() => {
+      mockUseEarnTokens.mockReturnValue([]);
+      mockSelectStablecoinLendingEnabledFlag.mockReturnValue(false);
+    });
+
+    it('computes the earn token list once at the list level rather than once per row', () => {
+      const { getAllByTestId } = renderComponent(stateWithoutZeroBalanceFilter);
+
+      const rowCount = getAllByTestId(/asset-/).length;
+      expect(rowCount).toBeGreaterThan(1);
+      // TokenList calls the hook on each of its own renders; rows never do.
+      expect(mockUseEarnTokens.mock.calls.length).toBeLessThan(rowCount);
+    });
+
+    it('shows the stablecoin lending CTA only on rows matching a supported earn token', () => {
+      mockSelectStablecoinLendingEnabledFlag.mockReturnValue(true);
+      mockUseEarnTokens.mockReturnValue([
+        { symbol: 'BAT', chainId: '0x1', address: '0x01' },
+      ] as never);
+
+      const { getAllByTestId, getByTestId } = renderComponent(
+        stateWithoutZeroBalanceFilter,
+      );
+
+      const stakeButtons = getAllByTestId(WalletViewSelectorsIDs.STAKE_BUTTON);
+      expect(stakeButtons).toHaveLength(1);
+      expect(getByTestId(getAssetTestId('BAT'))).toContainElement(
+        stakeButtons[0],
+      );
+    });
+
+    it('does not show the stablecoin lending CTA when the token chain does not match', () => {
+      mockSelectStablecoinLendingEnabledFlag.mockReturnValue(true);
+      mockUseEarnTokens.mockReturnValue([
+        { symbol: 'BAT', chainId: '0x89', address: '0x01' },
+      ] as never);
+
+      const { queryAllByTestId } = renderComponent(
+        stateWithoutZeroBalanceFilter,
+      );
+
+      expect(
+        queryAllByTestId(WalletViewSelectorsIDs.STAKE_BUTTON),
+      ).toHaveLength(0);
     });
   });
 });
