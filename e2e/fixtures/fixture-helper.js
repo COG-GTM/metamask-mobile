@@ -170,6 +170,15 @@ export const stopFixtureServer = async (fixtureServer) => {
  * @param {Object} options - An object containing configuration options.
  * @param {Object} options.fixture - The fixture to load.
  * @param {boolean} [options.restartDevice=false] - If true, restarts the app to apply the loaded fixture.
+ * @param {Object} [options.ganacheOptions] - Ganache options.
+ * @param {string | string[]} [options.smartContract] - Smart contract(s) to deploy.
+ * @param {boolean} [options.disableGanache] - If true, the local node is not started.
+ * @param {boolean} [options.dapp] - If true, starts the test dapp server.
+ * @param {string | Object | Array} [options.localNodeOptions='ganache'] - Local node options.
+ * @param {Object} [options.dappOptions] - Options for the test dapp server.
+ * @param {string} [options.dappPath] - Path to the test dapp.
+ * @param {string[]} [options.dappPaths] - Paths to multiple test dapps.
+ * @param {Object} [options.testSpecificMock] - Test specific mock server events.
  * @param {Object} [options.launchArgs] - Additional launch arguments for the app.
  * @param {Function} testSuite - The test suite function to execute after setting up the fixture.
  * @returns {Promise<void>} - A promise that resolves once the test suite completes.

@@ -654,7 +654,7 @@ class FixtureBuilder {
 
   /**
    * Merges provided data into the background state of the PermissionController.
-   * @param {object} data - Data to merge into the PermissionController's state.
+   * @param {object} [data] - Data to merge into the PermissionController's state.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
   withPermissionController(data) {
@@ -761,6 +761,10 @@ class FixtureBuilder {
     return this;
   }
 
+  /**
+   * @param {object | null} [region] - The selected ramps region.
+   * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
+   */
   withRampsSelectedRegion(region = null) {
     const defaultRegion = {
       currencies: ['/currencies/fiat/xcd'],
@@ -795,7 +799,7 @@ class FixtureBuilder {
       .map((id) => ({
         [`eip155:${parseInt(id)}`]: { accounts: [] },
       }))
-      .reduce(((acc, obj) => ({ ...acc, ...obj })));
+      .reduce((acc, obj) => ({ ...acc, ...obj }));
 
     const defaultCaip25CaveatValue = {
       optionalScopes,
@@ -1088,7 +1092,7 @@ class FixtureBuilder {
 
   /**
    * Build and return the fixture object.
-   * @returns {Object} - The built fixture object.
+   * @returns {any} - The built fixture object.
    */
   build() {
     return this.fixture;

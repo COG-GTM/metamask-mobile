@@ -10,7 +10,7 @@ const TIMEOUT = 15000;
 class Assertions {
   /**
    * Check if an element with the specified ID is visible.
-   * @param {Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement | Detox.NativeElement>} elementId - The ID of the element to check.
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement} elementId - The ID of the element to check.
    * @param timeout
    */
   static async checkIfVisible(elementId, timeout = TIMEOUT) {
@@ -24,10 +24,9 @@ class Assertions {
     }
   }
 
-
   /**
    * Check if an element with the specified web selector exists.
-   * @param {Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement | Detox.NativeElement>} elementId - The ID of the element to check.
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement} elementId - The ID of the element to check.
    */
   static async webViewElementExists(elementId) {
     // rename this. We are checking if element is visible.
@@ -36,7 +35,7 @@ class Assertions {
 
   /**
    * Check if an element with the specified ID is not visible.
-   * @param {Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>} elementId - The ID of the element to check.
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement} elementId - The ID of the element to check.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
   static async checkIfNotVisible(elementId, timeout = TIMEOUT) {
@@ -49,7 +48,7 @@ class Assertions {
 
   /**
    * Check if an element with the specified ID does have the specified text.
-   * @param {Promise<Detox.IndexableNativeElement>} elementId - The ID of the element to check.
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement} elementId - The ID of the element to check.
    * @param {string} text - The text content to check.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
@@ -63,7 +62,7 @@ class Assertions {
 
   /**
    * Check if an element with the specified ID does have the specified label.
-   * @param {Promise<Detox.IndexableNativeElement>} elementId - The ID of the element to check.
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement} elementId - The ID of the element to check.
    * @param {string} label - The label content to check.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
@@ -75,7 +74,7 @@ class Assertions {
 
   /**
    * Check if text is visible.
-   * @param {string} text - The text to check if displayed.
+   * @param {string | RegExp} text - The text to check if displayed.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
   static async checkIfTextIsDisplayed(text, timeout = TIMEOUT) {
@@ -85,7 +84,7 @@ class Assertions {
 
   /**
    * Check if text is not visible.
-   * @param {string} text - The text to check if not displayed.
+   * @param {string | RegExp} text - The text to check if not displayed.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
   static async checkIfTextIsNotDisplayed(text, timeout = TIMEOUT) {
@@ -95,7 +94,7 @@ class Assertions {
 
   /**
    * Check if an element with the specified ID does not have the specified text.
-   * @param {Promise<Detox.IndexableNativeElement>} elementId - The ID of the element to check.
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement} elementId - The ID of the element to check.
    * @param {string} text - The text content to check.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
@@ -109,7 +108,7 @@ class Assertions {
 
   /**
    * Check if an element with the specified ID does not have the specified label.
-   * @param {Promise<Detox.IndexableNativeElement>} elementId - The ID of the element to check.
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement} elementId - The ID of the element to check.
    * @param {string} label - The label content to check.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
@@ -127,7 +126,7 @@ class Assertions {
 
   /**
    * Check if the toggle with the specified ID is in the "on" state.
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - The ID of the toggle element.
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement} elementID - The ID of the toggle element.
    */
   static async checkIfToggleIsOn(elementID) {
     return expect(await elementID).toHaveToggleValue(true);
@@ -135,7 +134,7 @@ class Assertions {
 
   /**
    * Check if the toggle with the specified ID is in the "off" state.
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - The ID of the toggle element.
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement | Detox.IndexableSystemElement | Detox.SystemElement} elementID - The ID of the toggle element.
    */
   static async checkIfToggleIsOff(elementID) {
     return expect(await elementID).toHaveToggleValue(false);
@@ -221,7 +220,9 @@ class Assertions {
    */
   static async checkIfValueIsPresent(value) {
     if (value === null || value === undefined || value === '') {
-      throw new Error('Value is not present (null, undefined, or empty string)');
+      throw new Error(
+        'Value is not present (null, undefined, or empty string)',
+      );
     }
     return true;
   }

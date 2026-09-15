@@ -50,7 +50,7 @@ class Gestures {
   /**
    * Wait for an element to be visible and then tap it.
    *
-   * @param {Promise<Detox.IndexableNativeElement | Detox.SystemElement>} elementID - ID of the element to tap
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.SystemElement> | Detox.IndexableNativeElement | Detox.NativeElement} elementID - ID of the element to tap
    * @param {number} timeout - Timeout for waiting (default: 8000ms)
    */
   static async waitAndTap(elementID, timeout = 15000) {
@@ -136,7 +136,7 @@ class Gestures {
   /**
    * Swipe on an element identified by ID.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to swipe on
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement> | Detox.IndexableNativeElement | Detox.NativeElement} elementID - ID of the element to swipe on
    * @param {Detox.Direction} direction - Direction of the swipe - left | right | top | bottom | up | down
    * @param {Detox.Speed} [speed] - Speed of the swipe (fast, slow)
    * @param {number} [percentage] - Percentage of the swipe (0 to 1)
