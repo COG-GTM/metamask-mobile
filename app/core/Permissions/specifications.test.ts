@@ -2,11 +2,18 @@ import {
   Caip25CaveatType,
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
+import type { Caveat } from '@metamask/permission-controller';
+import type { Json } from '@metamask/utils';
 import {
   getCaveatSpecifications,
   getPermissionSpecifications,
   unrestrictedMethods,
+  type CaveatSpecificationOptions,
 } from './specifications';
+
+// The validators under test only read `value`
+const caveatWithValue = (value: unknown) =>
+  ({ value } as Caveat<string, Json>);
 import { EthAccountType, EthMethod } from '@metamask/keyring-api';
 import { SnapCaveatType } from '@metamask/snaps-utils';
 
@@ -24,7 +31,9 @@ describe('PermissionController specifications', () => {
   };
   describe('caveat specifications', () => {
     it('getCaveatSpecifications returns the expected specifications object', () => {
-      const caveatSpecifications = getCaveatSpecifications({});
+      const caveatSpecifications = getCaveatSpecifications(
+        {} as CaveatSpecificationOptions,
+      );
       expect(Object.keys(caveatSpecifications)).toHaveLength(13);
       expect(caveatSpecifications[Caip25CaveatType].type).toStrictEqual(
         Caip25CaveatType,
@@ -78,7 +87,7 @@ describe('PermissionController specifications', () => {
           })[Caip25CaveatType];
 
           [null, 'foo', {}, []].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() => validator(caveatWithValue(invalidValue))).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
@@ -93,7 +102,7 @@ describe('PermissionController specifications', () => {
           })[Caip25CaveatType];
 
           [[{}], [[]], [null], ['']].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() => validator(caveatWithValue(invalidValue))).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
@@ -134,7 +143,7 @@ describe('PermissionController specifications', () => {
             findNetworkClientIdByChainId,
           })[Caip25CaveatType];
 
-          expect(() => validator({ value: caveatValues })).toThrow(
+          expect(() => validator(caveatWithValue(caveatValues))).toThrow(
             `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
           );
         });
@@ -144,7 +153,7 @@ describe('PermissionController specifications', () => {
 
   describe('permission specifications', () => {
     it('getPermissionSpecifications returns the expected specifications object', () => {
-      const permissionSpecifications = getPermissionSpecifications({});
+      const permissionSpecifications = getPermissionSpecifications();
       expect(Object.keys(permissionSpecifications)).toHaveLength(1);
       expect(
         permissionSpecifications[Caip25EndowmentPermissionName].targetName,
