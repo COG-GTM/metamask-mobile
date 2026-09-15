@@ -17,7 +17,11 @@ describe('TransactionReviewDetailsCard', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <TransactionReviewDetailsCard />
+        <TransactionReviewDetailsCard
+          toggleViewDetails={jest.fn()}
+          copyContractAddress={jest.fn()}
+          address="0x0000000000000000000000000000000000000000"
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

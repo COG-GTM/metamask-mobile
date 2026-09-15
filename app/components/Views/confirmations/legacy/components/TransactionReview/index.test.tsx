@@ -9,6 +9,7 @@ import * as BlockaidUtils from '../../../../../../util/blockaid';
 import { createMockAccountsControllerState } from '../../../../../../util/test/accountsControllerTestUtils';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import renderWithProvider from '../../../../../../util/test/renderWithProvider';
+import { SecurityAlertResponse } from '@metamask/transaction-controller';
 // eslint-disable-next-line import/no-namespace
 import * as TransactionUtils from '../../../../../../util/transactions';
 // eslint-disable-next-line import/no-namespace
@@ -38,7 +39,7 @@ jest.mock('react-native-keyboard-aware-scroll-view', () => {
 
 jest.mock(
   '../../../../../UI/QRHardware/withQRHardwareAwareness',
-  () => (obj) => obj,
+  () => (obj: unknown) => obj,
 );
 
 jest.mock('../../../../../../selectors/smartTransactionsController', () => ({
@@ -108,12 +109,12 @@ jest.mock('@react-navigation/compat', () => {
   const actualNav = jest.requireActual('@react-navigation/compat');
   return {
     actualNav,
-    withNavigation: (obj) => obj,
+    withNavigation: (obj: unknown) => obj,
   };
 });
 
 jest.mock('react-native-gzip', () => ({
-  deflate: (val) => val,
+  deflate: (val: unknown) => val,
 }));
 
 const mockState = {
@@ -133,7 +134,10 @@ const mockState = {
         securityAlertsEnabled: true,
       },
       AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
-      KeyringController: MOCK_KEYRING_CONTROLLER_STATE,
+      KeyringController: {
+        ...MOCK_KEYRING_CONTROLLER_STATE,
+        isUnlocked: true,
+      },
     },
   },
   settings: {
@@ -178,7 +182,7 @@ jest.mock('react-redux', () => {
   };
   return {
     ...jest.requireActual('react-redux'),
-    useSelector: (fn) =>
+    useSelector: (fn: (state: unknown) => unknown) =>
       fn({
         ...mockState,
         transaction: {
@@ -193,6 +197,7 @@ jest.mock('react-redux', () => {
 });
 
 const generateTransform = jest.fn();
+const animate = jest.fn();
 
 describe('TransactionReview', () => {
   it('should render correctly', () => {
@@ -201,6 +206,8 @@ describe('TransactionReview', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <TransactionReview
+          EIP1559GasData={{}}
+          animate={animate}
           generateTransform={generateTransform}
         />
       </Provider>,
@@ -212,6 +219,7 @@ describe('TransactionReview', () => {
     const container = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
+        animate={animate}
         generateTransform={generateTransform}
       />,
       { state: mockState },
@@ -232,16 +240,15 @@ describe('TransactionReview', () => {
 
     const blockaidMetricsParamsSpy = jest
       .spyOn(BlockaidUtils, 'getBlockaidMetricsParams')
-      .mockImplementation(
-        ({ result_type, reason, providerRequestsCount }) => ({
-          security_alert_response: result_type,
-          security_alert_reason: reason,
-          security_alert_provider_requests_count: providerRequestsCount,
-        }),
-      );
+      .mockImplementation((response?: SecurityAlertResponse) => ({
+        security_alert_response: response?.result_type,
+        security_alert_reason: response?.reason,
+        security_alert_provider_requests_count: response?.providerRequestsCount,
+      }));
     const { queryByText, queryByTestId, getByText } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
+        animate={animate}
         generateTransform={generateTransform}
       />,
       {
@@ -285,16 +292,17 @@ describe('TransactionReview', () => {
   it('should have enabled confirm button if from account has balance', async () => {
     jest
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
-      .mockReturnValue(Promise.resolve(undefined));
+      .mockReturnValue(undefined as unknown as string);
     const { queryByRole } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
+        animate={animate}
         generateTransform={generateTransform}
       />,
       { state: mockState },
     );
     const confirmButton = await queryByRole('button', { name: 'Confirm' });
-    expect(confirmButton.props.disabled).not.toBe(true);
+    expect(confirmButton?.props.disabled).not.toBe(true);
   });
 
   it('should not have confirm button disabled if from account has no balance and also if there is no error', async () => {
@@ -319,11 +327,12 @@ describe('TransactionReview', () => {
     };
     jest.mock('react-redux', () => ({
       ...jest.requireActual('react-redux'),
-      useSelector: (fn) => fn(mockNewState),
+      useSelector: (fn: (state: unknown) => unknown) => fn(mockNewState),
     }));
     const { getByRole } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
+        animate={animate}
         generateTransform={generateTransform}
       />,
       { state: mockState },
@@ -335,11 +344,12 @@ describe('TransactionReview', () => {
   it('should have confirm button disabled if error is defined', async () => {
     jest.mock('react-redux', () => ({
       ...jest.requireActual('react-redux'),
-      useSelector: (fn) => fn(mockState),
+      useSelector: (fn: (state: unknown) => unknown) => fn(mockState),
     }));
     const { getByRole } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
+        animate={animate}
         generateTransform={generateTransform}
         error="You need 1 more ETH to complete the transaction"
       />,

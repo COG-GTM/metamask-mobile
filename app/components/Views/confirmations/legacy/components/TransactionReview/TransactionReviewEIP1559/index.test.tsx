@@ -11,9 +11,12 @@ const initialState = {
 
 describe('TransactionReviewEIP1559', () => {
   it('should match snapshot', async () => {
-    const container = renderWithProvider(<TransactionReviewEIP1559 />, {
-      state: initialState,
-    });
+    const container = renderWithProvider(
+      <TransactionReviewEIP1559 chainId="0x1" onEdit={jest.fn()} />,
+      {
+        state: initialState,
+      },
+    );
     expect(container).toMatchSnapshot();
   });
 });
