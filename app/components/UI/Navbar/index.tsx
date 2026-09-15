@@ -103,7 +103,9 @@ export type NavbarOptions = Omit<
 
 type NavbarNavigation = NavigationProp<ParamListBase>;
 type NavbarStackNavigation = StackNavigationProp<ParamListBase>;
-type NavbarRoute<Params extends object> = RouteProp<ParamListBase, string> & {
+type NavbarRoute<Params extends object> = Partial<
+  Omit<RouteProp<ParamListBase, string>, 'params'>
+> & {
   params?: Params;
 };
 
@@ -1706,6 +1708,7 @@ export function getTransakWebviewNavbar(
 
 interface SwapsAmountRouteParams {
   title?: string;
+  [key: string]: unknown;
 }
 
 export function getSwapsAmountNavbar(
@@ -1761,6 +1764,7 @@ interface SwapsQuotesRouteParams {
   requestedTrade?: SwapsRequestedTrade;
   selectedQuote?: unknown;
   quoteBegin?: number;
+  [key: string]: unknown;
 }
 
 export function getSwapsQuotesNavbar(

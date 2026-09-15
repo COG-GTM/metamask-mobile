@@ -1,7 +1,8 @@
 import React, { PureComponent } from 'react';
 import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
 import type { Theme } from '@metamask/design-tokens';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
 import Collectibles from '../../UI/Collectibles';
@@ -40,7 +41,7 @@ interface CollectibleParams {
 
 interface CollectibleProps {
   collectibles: ReturnType<typeof collectiblesSelector>;
-  navigation: NavigationProp<ParamListBase>;
+  navigation: StackNavigationProp<ParamListBase>;
   toggleCollectibleContractModal: () => void;
   collectibleContractModalVisible: boolean;
   route: { params: CollectibleParams };

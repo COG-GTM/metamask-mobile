@@ -155,29 +155,35 @@ export function getHexGasTotal({
   );
 }
 
-export function addEth(...args: string[]): string {
-  return args.reduce((acc, ethAmount) =>
-    conversionResultToString(
-      addCurrencies(acc, ethAmount, {
-        toNumericBase: 'dec',
-        numberOfDecimals: 6,
-        aBase: 10,
-        bBase: 10,
-      }),
-    ),
+export function addEth(...args: (string | number)[]): string {
+  const [first = 0, ...rest] = args;
+  return rest.reduce<string>(
+    (acc, ethAmount) =>
+      conversionResultToString(
+        addCurrencies(acc, ethAmount, {
+          toNumericBase: 'dec',
+          numberOfDecimals: 6,
+          aBase: 10,
+          bBase: 10,
+        }),
+      ),
+    String(first),
   );
 }
 
-export function addFiat(...args: string[]): string {
-  return args.reduce((acc, fiatAmount) =>
-    conversionResultToString(
-      addCurrencies(acc, fiatAmount, {
-        toNumericBase: 'dec',
-        numberOfDecimals: 2,
-        aBase: 10,
-        bBase: 10,
-      }),
-    ),
+export function addFiat(...args: (string | number)[]): string {
+  const [first = 0, ...rest] = args;
+  return rest.reduce<string>(
+    (acc, fiatAmount) =>
+      conversionResultToString(
+        addCurrencies(acc, fiatAmount, {
+          toNumericBase: 'dec',
+          numberOfDecimals: 2,
+          aBase: 10,
+          bBase: 10,
+        }),
+      ),
+    String(first),
   );
 }
 

@@ -26,6 +26,10 @@ import {
   type TransactionControllerSpeedupTransactionAddedEvent,
 } from '@metamask/transaction-controller';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type {
+  ShowSimpleNotificationAction,
+  ShowTransactionNotificationAction,
+} from '../actions/notification';
 
 export type NotificationTransactionType =
   (typeof NotificationTransactionTypes)[keyof typeof NotificationTransactionTypes];
@@ -35,6 +39,7 @@ export interface NotificationTransaction {
   nonce?: string;
   amount?: string;
   assetType?: string;
+  [key: string]: unknown;
 }
 
 export interface TransactionNotification {
@@ -61,20 +66,13 @@ export interface WatchedTransaction {
   assetType?: string;
 }
 
-type TransactionNotificationAction = (args: {
-  autodismiss?: number;
-  transaction?: NotificationTransaction;
-  status: string;
-}) => void;
+type TransactionNotificationAction = (
+  args: Omit<ShowTransactionNotificationAction, 'type'>,
+) => void;
 
-type SimpleNotificationAction = (args: {
-  id?: number | string;
-  autodismiss?: number;
-  duration?: number;
-  title: string;
-  description: string;
-  status: string;
-}) => void;
+type SimpleNotificationAction = (
+  args: Omit<ShowSimpleNotificationAction, 'type'>,
+) => void;
 
 type RemoveNotificationByIdAction = (id: string) => void;
 
@@ -274,6 +272,9 @@ class NotificationManager {
       }
       await NotificationsService.displayNotification(pushData);
     } else {
+      if (!data.transaction) {
+        return;
+      }
       this._showTransactionNotification({
         autodismiss: data.duration,
         transaction: data.transaction,

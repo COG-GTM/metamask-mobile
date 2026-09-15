@@ -202,6 +202,7 @@ class ReceiveRequest extends PureComponent<
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
+    if (!selectedAddress) return;
     ClipboardManager.setString(selectedAddress);
     this.props.showAlert({
       isVisible: true,

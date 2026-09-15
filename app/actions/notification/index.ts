@@ -3,8 +3,10 @@
  */
 import { ACTIONS } from '../../reducers/notification';
 
+export type NotificationId = string | number;
+
 export interface NotificationTransaction {
-  id: string;
+  id?: NotificationId;
   [key: string]: unknown;
 }
 
@@ -14,7 +16,7 @@ export interface HideCurrentNotificationAction {
 
 export interface HideNotificationByIdAction {
   type: typeof ACTIONS.HIDE_NOTIFICATION_BY_ID;
-  id: string;
+  id: NotificationId;
 }
 
 export interface ModifyOrShowTransactionNotificationAction {
@@ -36,13 +38,13 @@ export interface ModifyOrShowSimpleNotificationAction {
 
 export interface ReplaceNotificationByIdAction {
   type: typeof ACTIONS.REPLACE_NOTIFICATION_BY_ID;
-  id: string;
+  id: NotificationId;
   notification: NotificationInput;
 }
 
 export interface RemoveNotificationByIdAction {
   type: typeof ACTIONS.REMOVE_NOTIFICATION_BY_ID;
-  id: string;
+  id: NotificationId;
 }
 
 export interface RemoveCurrentNotificationAction {
@@ -51,7 +53,7 @@ export interface RemoveCurrentNotificationAction {
 
 export interface ShowSimpleNotificationAction {
   type: typeof ACTIONS.SHOW_SIMPLE_NOTIFICATION;
-  id: string;
+  id: NotificationId;
   autodismiss?: number | boolean | null;
   title?: string;
   description?: string;
@@ -70,7 +72,7 @@ export interface RemoveNotVisibleNotificationsAction {
 }
 
 export interface NotificationInput {
-  id: string;
+  id: NotificationId;
   isVisible?: boolean;
   autodismiss?: number | boolean | null;
   type?: 'transaction' | 'simple';
@@ -98,7 +100,7 @@ export function hideCurrentNotification(): HideCurrentNotificationAction {
   };
 }
 
-export function hideNotificationById(id: string): HideNotificationByIdAction {
+export function hideNotificationById(id: NotificationId): HideNotificationByIdAction {
   return {
     type: ACTIONS.HIDE_NOTIFICATION_BY_ID,
     id,
@@ -150,7 +152,7 @@ export function replaceNotificationById(
 }
 
 export function removeNotificationById(
-  id: string,
+  id: NotificationId,
 ): RemoveNotificationByIdAction {
   return {
     type: ACTIONS.REMOVE_NOTIFICATION_BY_ID,

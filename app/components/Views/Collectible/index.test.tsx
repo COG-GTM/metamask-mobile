@@ -49,7 +49,7 @@ jest.mock('@react-navigation/native', () => {
 const navigationMock = {
   navigate: jest.fn(),
   push: jest.fn(),
-} as unknown as import('@react-navigation/native').NavigationProp<
+} as unknown as import('@react-navigation/stack').StackNavigationProp<
   import('@react-navigation/native').ParamListBase
 >;
 

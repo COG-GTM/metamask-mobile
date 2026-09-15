@@ -170,7 +170,7 @@ class AccountInfoCard extends PureComponent<AccountInfoCardProps> {
     const accountLabel = renderAccountName(fromAddress, internalAccounts);
     const address = renderShortAddress(fromAddress);
     const dollarBalance = showFiatBalance
-      ? weiToFiat(weiBalance, conversionRate, currentCurrency, 2)?.toUpperCase()
+      ? weiToFiat(weiBalance, conversionRate, currentCurrency)?.toUpperCase()
       : undefined;
 
     const sdkConnections = SDKConnect.getInstance().getConnections();

@@ -100,7 +100,9 @@ export function lastSelectedAccountAddressInEvmNetwork(): string | undefined {
  * @param chainId - The chain id to check.
  * @returns `true` if the chain id is a non-EVM chain id, `false` otherwise.
  */
-export function isNonEvmChainId(chainId: string | Hex | CaipChainId): boolean {
+export function isNonEvmChainId(
+  chainId: string | Hex | CaipChainId,
+): chainId is CaipChainId {
   return chainId === SolScope.Mainnet || chainId === BtcScope.Mainnet;
 }
 

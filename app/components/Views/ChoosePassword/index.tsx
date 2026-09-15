@@ -216,7 +216,9 @@ const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
 /**
  * View where users can set their password for the first time
  */
-type ChoosePasswordParams = string[];
+interface ChoosePasswordParams {
+  [key: string]: unknown;
+}
 
 interface ChoosePasswordProps {
   navigation: NavigationProp<ParamListBase>;

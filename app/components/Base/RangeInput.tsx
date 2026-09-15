@@ -116,7 +116,7 @@ interface RangeInputProps {
   /**
    * Function that is called when the input is changed
    */
-  onChangeValue?: (value: string | undefined) => void;
+  onChangeValue?: (value: string) => void;
   /**
    * A BigNumber value per which the input is incremented when clicking on the plus and minus button
    */
@@ -128,7 +128,7 @@ interface RangeInputProps {
   /**
    * The error to show bellow the input. Also when the error exists the input text will turn red
    */
-  error?: string;
+  error?: string | null;
   /**
    * A BigNumber minimum value the input is allowed to have when clicking on the minus button
    */
@@ -136,7 +136,7 @@ interface RangeInputProps {
   /**
    * A BigNumber maximum value the input is allowed to have when clicking on the plus button
    */
-  max: BigNumber;
+  max?: BigNumber;
   /**
    * The name of the input
    */
@@ -166,9 +166,9 @@ const RangeInput = ({
   }, []);
 
   const changeValue = useCallback(
-    (newValue: string | undefined, dontEmptyError?: boolean) => {
+    (newValue: string, dontEmptyError?: boolean) => {
       if (!dontEmptyError) setErrorState('');
-      const cleanValue = newValue?.replace(',', '.');
+      const cleanValue = newValue.replace(',', '.');
       if (cleanValue && new BigNumber(cleanValue).isNaN()) {
         setErrorState(`${name} must be a number`);
         return;
@@ -181,7 +181,7 @@ const RangeInput = ({
 
   const increaseNumber = useCallback(() => {
     const newValue = new BigNumber(value ?? NaN).plus(new BigNumber(increment));
-    if (!new BigNumber(max).isNaN() && newValue.gt(max)) return;
+    if (max && !new BigNumber(max).isNaN() && newValue.gt(max)) return;
     changeValue(newValue.toString());
   }, [changeValue, increment, max, value]);
 
@@ -209,7 +209,7 @@ const RangeInput = ({
       setErrorState(`${name} must be at least ${min}`);
       return changeValue(min.toString(), true);
     }
-    if (new BigNumber(value || 0).gt(max)) {
+    if (max && new BigNumber(value || 0).gt(max)) {
       setErrorState(`${name} must be at most ${max}`);
       return changeValue(max.toString());
     }

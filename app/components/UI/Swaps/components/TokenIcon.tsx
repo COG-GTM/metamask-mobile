@@ -122,7 +122,7 @@ function TokenIcon({
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const getSource = useCallback((): ImageSourcePropType | null => {
+  const getSource = useCallback((): ImageSourcePropType | undefined => {
     if (symbol === 'ETH') {
       return ethLogo;
     }
@@ -139,7 +139,7 @@ function TokenIcon({
       return { uri: icon };
     }
 
-    return null;
+    return undefined;
   }, [symbol, icon]);
   const source = getSource();
 

@@ -76,7 +76,7 @@ export default class AddBookmark extends PureComponent<
     navigation.setOptions(
       getNavigationOptionsTitle(
         strings('add_favorite.title'),
-        navigation,
+        navigation as NavigationProp<ParamListBase>,
         false,
         colors,
       ),

@@ -108,7 +108,7 @@ export interface DecodeTransactionArgs {
   tx: DecodableTransaction;
   txChainId?: string;
   chainId?: string;
-  selectedAddress: string;
+  selectedAddress?: string;
   networkConfigurationsByChainId?: Record<
     string,
     { nativeCurrency?: string } | undefined
@@ -152,7 +152,7 @@ export interface TransactionDetailsInfo {
   hash?: string;
   renderValue?: string;
   renderGas?: string | number;
-  renderGasPrice?: string;
+  renderGasPrice?: string | number;
   renderTotalGas?: string;
   transactionType?: string;
   txChainId?: string;
@@ -196,11 +196,11 @@ function calculateTotalGas(transaction: DecodableTxParams): BN {
   } = transaction;
   if (isEIP1559Transaction(transaction)) {
     const eip1559GasHex = calculateEIP1559GasFeeHexes({
-      gasLimitHex: gasUsed || gas,
+      gasLimitHex: gasUsed || gas || '0x0',
       estimatedGasLimitHex: undefined,
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
-      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas,
-      suggestedMaxFeePerGasHex: maxFeePerGas,
+      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas ?? '0x0',
+      suggestedMaxFeePerGasHex: maxFeePerGas ?? '0x0',
     });
     return hexToBN(eip1559GasHex.gasFeeMinHex);
   }
@@ -220,7 +220,7 @@ function calculateTotalGas(transaction: DecodableTxParams): BN {
   return totalGas;
 }
 
-function renderGwei(transaction: DecodableTxParams): string {
+function renderGwei(transaction: DecodableTxParams): number {
   const {
     gasPrice,
     estimatedBaseFee,
@@ -231,18 +231,16 @@ function renderGwei(transaction: DecodableTxParams): string {
 
   if (isEIP1559Transaction(transaction)) {
     const eip1559GasHex = calculateEIP1559GasFeeHexes({
-      gasLimitHex: gas,
+      gasLimitHex: gas ?? '0x0',
       estimatedGasLimitHex: undefined,
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
-      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas,
-      suggestedMaxFeePerGasHex: maxFeePerGas,
+      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas ?? '0x0',
+      suggestedMaxFeePerGasHex: maxFeePerGas ?? '0x0',
     });
 
     const gasPriceHex =
       eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex;
-    return renderToGwei(
-      typeof gasPriceHex === 'string' ? gasPriceHex : gasPriceHex.toString(16),
-    );
+    return renderToGwei(gasPriceHex);
   }
   return renderToGwei(gasPrice ?? '');
 }
@@ -1116,7 +1114,7 @@ export default async function decodeTransaction(
   } = args;
   const ticker =
     networkConfigurationsByChainId?.[txChainId ?? '']?.nativeCurrency;
-  const chainIdToUse = tx.chainId || chainId;
+  const chainIdToUse = tx.chainId || chainId || '';
   const { isTransfer } = tx || {};
 
   const actionKey = await getActionKey(

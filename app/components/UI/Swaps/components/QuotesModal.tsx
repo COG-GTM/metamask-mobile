@@ -254,12 +254,12 @@ function QuotesModal({
     }
   }, [displayDetails, selectedDetailsQuote]);
 
-  let selectedDetailsQuoteValuesEthFee: string | number | undefined =
+  let selectedDetailsQuoteValuesEthFee: string | number | null | undefined =
     selectedDetailsQuoteValues?.ethFee;
   if (multiLayerL1ApprovalFeeTotal) {
     selectedDetailsQuoteValuesEthFee = calculateEthFeeForMultiLayer({
       multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-      ethFee: selectedDetailsQuoteValuesEthFee as number | undefined,
+      ethFee: selectedDetailsQuoteValuesEthFee,
     });
   }
 
@@ -430,12 +430,12 @@ function QuotesModal({
                       const { aggregator } = quote;
                       const isSelected = aggregator === selectedQuote;
                       const quoteValue = quoteValues?.[aggregator];
-                      let quoteEthFee: string | number | undefined =
+                      let quoteEthFee: string | number | null | undefined =
                         quoteValue?.ethFee;
                       if (multiLayerL1ApprovalFeeTotal) {
                         quoteEthFee = calculateEthFeeForMultiLayer({
                           multiLayerL1FeeTotal: multiLayerL1ApprovalFeeTotal,
-                          ethFee: quoteEthFee as number | undefined,
+                          ethFee: quoteEthFee,
                         });
                       }
                       return (

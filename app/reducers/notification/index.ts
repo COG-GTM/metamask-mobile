@@ -5,12 +5,13 @@ import {
 } from '../../util/notifications';
 import type {
   NotificationAction,
+  NotificationId,
   NotificationTransaction,
 } from '../../actions/notification';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
 export interface InAppNotification {
-  id: string;
+  id?: NotificationId;
   isVisible: boolean;
   autodismiss?: number | boolean | null;
   type: NotificationTypesType;

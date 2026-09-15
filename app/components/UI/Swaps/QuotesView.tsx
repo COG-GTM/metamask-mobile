@@ -874,7 +874,7 @@ function SwapsQuotesView({
                   .calcTokenAmount(
                     new BigNumber(changedGasLimit as string, 10).times(
                       new BigNumber(
-                        decGWEIToHexWEI(changedGasEstimate.gasPrice) as string,
+                        decGWEIToHexWEI(changedGasEstimate.gasPrice ?? 0),
                         16,
                       ),
                     ),
@@ -1233,7 +1233,7 @@ function SwapsQuotesView({
           destinationToken: { swaps: 'swaps' },
           upTo: new BigNumber(
             decodeApproveData(
-              (approvalTransaction as TxParams).data,
+              (approvalTransaction as TxParams).data ?? '',
             ).encodedAmount,
             16,
           ).toString(10),
@@ -1310,7 +1310,7 @@ function SwapsQuotesView({
             destinationToken: { swaps: 'swaps' },
             upTo: new BigNumber(
               decodeApproveData(
-                (approvalTransaction as TxParams).data,
+                (approvalTransaction as TxParams).data ?? '',
               ).encodedAmount,
               16,
             ).toString(10),
@@ -1391,14 +1391,14 @@ function SwapsQuotesView({
       return;
     }
     const originalApprovalTransactionEncodedAmount = decodeApproveData(
-      originalApprovalTransaction.data,
+      originalApprovalTransaction.data ?? '',
     ).encodedAmount;
     const originalAmount = fromTokenMinimalUnitString(
       hexToBN(originalApprovalTransactionEncodedAmount).toString(10),
       sourceToken.decimals,
     );
     const currentApprovalTransactionEncodedAmount = approvalTransaction
-      ? decodeApproveData(approvalTransaction.data).encodedAmount
+      ? decodeApproveData(approvalTransaction.data ?? '').encodedAmount
       : '0';
     const currentAmount = fromTokenMinimalUnitString(
       hexToBN(currentApprovalTransactionEncodedAmount).toString(10),

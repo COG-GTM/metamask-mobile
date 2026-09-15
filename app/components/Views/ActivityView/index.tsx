@@ -189,7 +189,7 @@ const ActivityView = () => {
           title,
           colors,
           navigation,
-          selectedAddress,
+          selectedAddress ?? '',
           openAccountSelector,
         ),
       );

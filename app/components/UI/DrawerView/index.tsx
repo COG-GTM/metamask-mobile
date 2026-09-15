@@ -502,7 +502,7 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
           'ManualBackupStep3',
           'Webview',
           Routes.LOCK_SCREEN,
-        ].includes(route)
+        ].includes(route ?? '')
       ) {
         this.state.showProtectWalletModal &&
           // eslint-disable-next-line react/no-did-update-set-state
@@ -705,10 +705,9 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
   viewInEtherscan = () => {
     const { providerConfig, networkConfigurations } = this.props;
     if (providerConfig.type === RPC) {
-      const blockExplorer = findBlockExplorerForRpc(
-        providerConfig.rpcUrl,
-        networkConfigurations,
-      );
+      const blockExplorer =
+        findBlockExplorerForRpc(providerConfig.rpcUrl, networkConfigurations) ??
+        '';
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
       const title = new URL(blockExplorer).hostname;
       this.goToBrowserUrl(url, title);

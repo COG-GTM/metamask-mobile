@@ -233,7 +233,7 @@ const GasEducationCarousel = ({
           fromCurrency: ticker,
           toCurrency: currentCurrency,
           numberOfDecimals: 2,
-          conversionRate,
+          conversionRate: conversionRate ?? undefined,
         });
 
         const gasFiatValue = formatCurrency(

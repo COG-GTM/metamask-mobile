@@ -17,7 +17,9 @@ import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import Engine from '../../../core/Engine';
-import CollectibleContractElement from '../CollectibleContractElement';
+import CollectibleContractElement, {
+  CollectibleContractCollectible,
+} from '../CollectibleContractElement';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import {
   favoritesCollectiblesSelector,
@@ -167,7 +169,7 @@ type CollectibleContractsNavigation = Pick<
 const debouncedNavigation = debounce(
   (
     navigation: CollectibleContractsNavigation | undefined,
-    collectible: Nft,
+    collectible: CollectibleContractCollectible,
   ) => {
     navigation?.navigate('NftDetails', { collectible });
   },
@@ -276,7 +278,7 @@ const CollectibleContracts = ({
     networkType === MAINNET && !useNftDetection;
 
   const onItemPress = useCallback(
-    (collectible: Nft) => {
+    (collectible: CollectibleContractCollectible) => {
       debouncedNavigation(navigation, collectible);
     },
     [navigation],
@@ -428,13 +430,15 @@ const CollectibleContracts = ({
   );
 
   const renderFavoriteCollectibles = useCallback(() => {
-    const favoriteCollectibleItems = favoriteCollectibles.map((collectible) =>
-      collectibles.find(
-        ({ tokenId, address }) =>
-          compareTokenIds(collectible.tokenId, tokenId) &&
-          collectible.address === address,
-      ),
-    );
+    const favoriteCollectibleItems = favoriteCollectibles
+      .map((collectible) =>
+        collectibles.find(
+          ({ tokenId, address }) =>
+            compareTokenIds(collectible.tokenId, tokenId) &&
+            collectible.address === address,
+        ),
+      )
+      .filter((collectible): collectible is Nft => Boolean(collectible));
     return (
       Boolean(favoriteCollectibleItems.length) && (
         <CollectibleContractElement

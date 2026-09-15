@@ -63,11 +63,11 @@ import type { NetworkClientId } from '@metamask/network-controller';
 import type { InternalAccount } from '@metamask/keyring-internal-api';
 import type { Hex } from '@metamask/utils';
 import type { RootState } from '../../reducers';
+import type { TransactionState } from '../../reducers/transaction';
+import type { TxMeta } from '../transaction-reducer-helpers';
 
-export type NormalizedTxState = Partial<TransactionParams> & {
-  transaction?: Partial<TransactionParams>;
-  [key: string]: unknown;
-};
+export type NormalizedTxState = Omit<TransactionState, 'transaction'> &
+  Partial<TxMeta>;
 
 export type TransferDataType = 'transfer' | 'transferFrom';
 
@@ -811,12 +811,9 @@ export function getNormalizedTxState(
 }
 
 export const getActiveTabUrl = ({
-  browser = {},
-}: Pick<RootState, 'browser'>): string =>
-  browser.tabs &&
-  browser.activeTab &&
-  browser.tabs.find((tab: { id: unknown }) => tab.id === browser.activeTab)
-    ?.url;
+  browser,
+}: Pick<RootState, 'browser'>): string | undefined =>
+  browser?.tabs?.find((tab) => tab.id === browser.activeTab)?.url;
 
 export const calculateAmountsEIP1559 = ({
   value,
@@ -1219,7 +1216,7 @@ export const parseTransactionEIP1559 = (
   }: {
     selectedGasFee: SelectedGasFee;
     swapsParams?: SwapsParams;
-    contractExchangeRates: ContractExchangeRates;
+    contractExchangeRates?: ContractExchangeRates;
     conversionRate: number;
     currentCurrency: string;
     nativeCurrency: string;
@@ -1691,18 +1688,29 @@ export const parseTransactionLegacy = (
  * @returns {boolean} - Whether the balance is validated or not
  */
 export function validateTransactionActionBalance(
-  transaction: { transaction: TransactionParams },
+  transaction: {
+    transaction?: Partial<TransactionParams>;
+    txParams?: unknown;
+  },
   rate: number,
   accounts: Record<string, { balance: string }>,
 ): boolean {
   try {
-    const checksummedFrom = safeToChecksumAddress(transaction.transaction.from);
-    const balance = accounts[checksummedFrom ?? ''].balance;
-
-    let gasPrice = transaction.transaction.gasPrice;
     const transactionToCheck = transaction.transaction;
+    if (!transactionToCheck) {
+      throw new Error('Missing transaction params');
+    }
+    const checksummedFrom = safeToChecksumAddress(
+      transactionToCheck.from ?? '',
+    );
+    if (!checksummedFrom) {
+      throw new Error('Missing transaction sender');
+    }
+    const balance = accounts[checksummedFrom].balance;
 
-    if (isEIP1559Transaction(transactionToCheck)) {
+    let gasPrice = transactionToCheck.gasPrice;
+
+    if (isEIP1559Transaction(transactionToCheck as TransactionParams)) {
       gasPrice = transactionToCheck.maxFeePerGas;
     }
 
@@ -1710,8 +1718,8 @@ export function validateTransactionActionBalance(
       hexToBN(gasPrice ?? '0x0')
         .mul(new BN(rate * 10))
         .div(new BN(10))
-        .mul(hexToBN(transaction.transaction.gas ?? '0x0'))
-        .add(hexToBN(transaction.transaction.value ?? '0x0')),
+        .mul(hexToBN(transactionToCheck.gas ?? '0x0'))
+        .add(hexToBN(transactionToCheck.value ?? '0x0')),
     );
   } catch (e) {
     return false;

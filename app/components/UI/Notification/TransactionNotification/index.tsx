@@ -10,7 +10,10 @@ import {
   fontStyles,
   colors as importedColors,
 } from '../../../../styles/common';
-import decodeTransaction from '../../TransactionElement/utils';
+import decodeTransaction, {
+  TransactionDetailsInfo,
+  TransactionObject,
+} from '../../TransactionElement/utils';
 import TransactionActionContent from '../../TransactionActionModal/TransactionActionContent';
 import ActionContent from '../../ActionModal/ActionContent';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -253,7 +256,6 @@ function TransactionNotification(props: TransactionNotificationProps) {
       if (!foundTx) return;
       const {
         selectedAddress,
-        ticker,
         chainId,
         conversionRate,
         currentCurrency,
@@ -268,7 +270,6 @@ function TransactionNotification(props: TransactionNotificationProps) {
         ...props,
         tx: foundTx,
         selectedAddress,
-        ticker,
         chainId,
         conversionRate,
         currentCurrency,
@@ -359,8 +360,8 @@ function TransactionNotification(props: TransactionNotificationProps) {
                 />
               </View>
               <TransactionDetails
-                transactionObject={tx}
-                transactionDetails={transactionDetails}
+                transactionObject={tx as unknown as TransactionObject}
+                transactionDetails={transactionDetails as TransactionDetailsInfo}
                 close={onCloseDetails}
                 showSpeedUpModal={onSpeedUpPress}
                 showCancelModal={onCancelPress}

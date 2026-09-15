@@ -119,7 +119,9 @@ function ApprovalTransactionEditionModal({
       : customApprovalTransaction;
     setApprovalTransaction(newApprovalTx);
     if (newApprovalTx) {
-      const encodedAmount = decodeApproveData(newApprovalTx.data).encodedAmount;
+      const encodedAmount = decodeApproveData(
+        newApprovalTx.data ?? '',
+      ).encodedAmount;
       const amountDec = hexToBN(encodedAmount).toString(10);
       setApprovalTransactionAmount(
         fromTokenMinimalUnitString(amountDec, sourceToken.decimals),

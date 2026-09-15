@@ -8,8 +8,9 @@ export function toLocaleDateTime(timestamp: number | string | Date): string {
   return `${date} ${time}`;
 }
 
-export function toDateFormat(timestamp: number | string | Date): string {
-  const date = new Date(timestamp);
+export function toDateFormat(timestamp?: number | string | Date): string {
+  const date =
+    timestamp === undefined ? new Date(NaN) : new Date(timestamp);
   const month = strings(`date.months.${date.getMonth()}`);
   const day = date.getDate();
   let hours = date.getHours();
