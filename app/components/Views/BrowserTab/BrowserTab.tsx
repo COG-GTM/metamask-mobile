@@ -567,7 +567,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    * Inject home page scripts to get the favourites and set analytics key
    */
   const injectHomePageScripts = useCallback(
-    async (injectedBookmarks?: string[]) => {
+    async (injectedBookmarks?: typeof bookmarks) => {
       const { current } = webviewRef;
       const analyticsEnabled = isEnabled();
       const disctinctId = await getMetaMetricsId();

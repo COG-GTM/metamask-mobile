@@ -4,14 +4,16 @@ import Settings from './';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { SettingsViewSelectorsIDs } from '../../../../e2e/selectors/Settings/SettingsView.selectors';
 import { backgroundState } from '../../../util/test/initial-root-state';
+import { initialState as initialSettingsState } from '../../../reducers/settings';
 import { fireEvent } from '@testing-library/react-native';
 import Routes from '../../../constants/navigation/Routes';
 
 const initialState = {
   user: { seedphraseBackedUp: true, passwordSet: true },
-  privacy: { approvedHosts: [] },
+  privacy: { approvedHosts: {} },
   browser: { history: [] },
   settings: {
+    ...initialSettingsState,
     lockTime: 1000,
     searchEngine: 'Google',
     useBlockieIcon: true,

@@ -29,7 +29,7 @@ import ImportedEngine from '../Engine';
 import { strings } from '../../../locales/i18n';
 import { resemblesAddress, safeToChecksumAddress } from '../../util/address';
 import { store } from '../../store';
-import { removeBookmark } from '../../actions/bookmarks';
+import { removeBookmark, type Bookmark } from '../../actions/bookmarks';
 import setOnboardingWizardStep from '../../actions/wizard';
 import { v1 as random } from 'uuid';
 import { getDefaultCaip25CaveatValue, getPermittedAccounts } from '../Permissions';
@@ -115,7 +115,7 @@ export interface RPCMethodsMiddleParameters {
   isWalletConnect: boolean;
   // For MM SDK
   isMMSDK: boolean;
-  injectHomePageScripts: (bookmarks?: []) => void;
+  injectHomePageScripts: (bookmarks?: Bookmark[]) => void;
   analytics: { [key: string]: string | boolean };
 }
 
@@ -900,7 +900,9 @@ export const getRpcMethodMiddleware = ({
                 {
                   text: strings('browser.yes'),
                   onPress: () => {
-                    const bookmark = { url: req.params[0] };
+                    const bookmark: Pick<Bookmark, 'url'> = {
+                      url: req.params[0] as string,
+                    };
 
                     store.dispatch(removeBookmark(bookmark));
 

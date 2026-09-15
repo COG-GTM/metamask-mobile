@@ -325,7 +325,7 @@ describe('captureSentryFeedback', () => {
         },
       },
       privacy: {},
-      bookmarks: {},
+      bookmarks: {} as unknown as RootState['bookmarks'],
       browser: {
         activeTab: null,
         favicons: [],
@@ -342,7 +342,7 @@ describe('captureSentryFeedback', () => {
         receiveModalVisible: false,
         shouldNetworkSwitchPopToWallet: true,
         signMessageModalVisible: true,
-      },
+      } as unknown as RootState['modals'],
       settings: {
         basicFunctionalityEnabled: true,
         hideZeroBalanceTokens: false,
@@ -408,7 +408,7 @@ describe('captureSentryFeedback', () => {
           notificationsSettings: {},
         },
         notifications: [],
-      },
+      } as unknown as RootState['notification'],
       swaps: {
         '0x1': {
           isLive: true,

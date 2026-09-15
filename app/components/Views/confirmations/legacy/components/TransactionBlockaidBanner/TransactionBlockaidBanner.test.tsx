@@ -33,7 +33,7 @@ const mockState: DeepPartial<RootState> = {
     },
   },
   transaction: {
-    id: 123,
+    id: '123',
     securityAlertResponses: {
       123: {
         result_type: ResultType.Warning,
@@ -42,7 +42,7 @@ const mockState: DeepPartial<RootState> = {
         req: {},
         chainId: '0x1',
       },
-    },
+    } as unknown as RootState['transaction']['securityAlertResponses'],
   },
 };
 

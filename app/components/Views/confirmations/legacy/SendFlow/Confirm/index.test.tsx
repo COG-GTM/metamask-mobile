@@ -88,14 +88,14 @@ const mockInitialState: DeepPartial<RootState> = {
         providerRequestsCount: {},
         chainId: '0x1',
       },
-    },
+    } as unknown as RootState['transaction']['securityAlertResponses'],
     selectedAsset: {},
     chainId: '0x1',
     transaction: {
       from: '0x15249D1a506AFC731Ee941d0D40Cf33FacD34E58',
       to: '0xe64dD0AB5ad7e8C5F2bf6Ce75C34e187af8b920A',
       value: '0x2',
-    },
+    } as unknown as RootState['transaction']['transaction'],
   },
   fiatOrders: {
     networks: [

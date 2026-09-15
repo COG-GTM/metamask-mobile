@@ -2,6 +2,18 @@ import type { RootState } from '../../reducers';
 import type { EngineState } from '../../core/Engine';
 import { initialState as initialFiatOrdersState } from '../../reducers/fiatOrders';
 import { initialState as initialSecurityState } from '../../reducers/security';
+import { initialState as initialCollectiblesState } from '../../reducers/collectibles';
+import { initialState as initialPrivacyState } from '../../reducers/privacy';
+import { initialState as initialBookmarksState } from '../../reducers/bookmarks';
+import { initialState as initialBrowserState } from '../../reducers/browser';
+import { initialState as initialModalsState } from '../../reducers/modals';
+import { initialState as initialSettingsState } from '../../reducers/settings';
+import { initialState as initialAlertState } from '../../reducers/alert';
+import { initialState as initialTransactionState } from '../../reducers/transaction';
+import { initialState as initialWizardState } from '../../reducers/wizard';
+import { initialState as initialNotificationState } from '../../reducers/notification';
+import { initialState as initialSwapsState } from '../../reducers/swaps';
+import { initialState as initialInfuraAvailabilityState } from '../../reducers/infuraAvailability';
 import { initialState as initialInpageProvider } from '../../core/redux/slices/inpageProvider';
 import { initialState as confirmationMetrics } from '../../core/redux/slices/confirmationMetrics';
 import { initialState as originThrottling } from '../../core/redux/slices/originThrottling';
@@ -19,22 +31,22 @@ export const backgroundState: EngineState =
 
 const initialRootState: RootState = {
   legalNotices: undefined,
-  collectibles: undefined,
+  collectibles: initialCollectiblesState,
   engine: { backgroundState },
-  privacy: undefined,
-  bookmarks: undefined,
-  browser: undefined,
-  modals: undefined,
-  settings: undefined,
-  alert: undefined,
-  transaction: undefined,
+  privacy: initialPrivacyState,
+  bookmarks: initialBookmarksState,
+  browser: initialBrowserState,
+  modals: initialModalsState,
+  settings: initialSettingsState,
+  alert: initialAlertState,
+  transaction: initialTransactionState,
   user: userInitialState,
-  wizard: undefined,
+  wizard: initialWizardState,
   onboarding: initialOnboardingState,
-  notification: undefined,
-  swaps: undefined,
+  notification: initialNotificationState,
+  swaps: initialSwapsState,
   fiatOrders: initialFiatOrdersState,
-  infuraAvailability: undefined,
+  infuraAvailability: initialInfuraAvailabilityState,
   navigation: initialNavigationState,
   networkOnboarded: undefined,
   security: initialSecurityState,

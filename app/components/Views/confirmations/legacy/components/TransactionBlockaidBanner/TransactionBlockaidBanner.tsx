@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { selectCurrentTransactionSecurityAlertResponse } from '../../../../../../selectors/confirmTransaction';
 import BlockaidBanner from '../BlockaidBanner/BlockaidBanner';
 import { TransactionBlockaidBannerProps } from './TransactionBlockaidBanner.types';
+import type { SecurityAlertResponse } from '../BlockaidBanner/BlockaidBanner.types';
 
 const TransactionBlockaidBanner = (
   bannerProps: TransactionBlockaidBannerProps,
@@ -19,7 +20,12 @@ const TransactionBlockaidBanner = (
   }
 
   return (
-    <BlockaidBanner securityAlertResponse={securityAlertResponse} {...rest} />
+    <BlockaidBanner
+      securityAlertResponse={
+        securityAlertResponse as unknown as SecurityAlertResponse
+      }
+      {...rest}
+    />
   );
 };
 

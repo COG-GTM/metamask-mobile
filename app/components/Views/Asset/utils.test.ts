@@ -62,7 +62,10 @@ describe('getSwapsIsLive', () => {
       const result = getSwapsIsLive(
         {
           ...mockState,
-          swaps: { ...mockState.swaps, '0x1': { isLive: false } },
+          swaps: {
+            ...mockState.swaps,
+            '0x1': { isLive: false, featureFlags: undefined },
+          },
         },
         mockChainId,
       );
@@ -73,7 +76,10 @@ describe('getSwapsIsLive', () => {
       const result = getSwapsIsLive(
         {
           ...mockState,
-          swaps: { ...mockState.swaps, '0x1': null },
+          swaps: {
+            ...mockState.swaps,
+            '0x1': null,
+          } as unknown as RootState['swaps'],
         },
         mockChainId,
       );

@@ -14,6 +14,7 @@ import { updateSecurityAlertResponse } from '../../util/transaction-controller';
 import {
   TransactionParams,
   normalizeTransactionParams,
+  type SecurityAlertResponse as TransactionSecurityAlertResponse,
 } from '@metamask/transaction-controller';
 import { WALLET_CONNECT_ORIGIN } from '../../util/walletconnect';
 import AppConstants from '../../core/AppConstants';
@@ -185,8 +186,14 @@ function setSecurityAlertResponse(
   }: { updateControllerState?: boolean; securityAlertId?: string } = {},
 ) {
   if (isTransactionRequest(request)) {
+    if (!transactionId) {
+      return;
+    }
     store.dispatch(
-      setTransactionSecurityAlertResponse(transactionId, response),
+      setTransactionSecurityAlertResponse(
+        transactionId,
+        response as unknown as TransactionSecurityAlertResponse,
+      ),
     );
 
     if (updateControllerState) {

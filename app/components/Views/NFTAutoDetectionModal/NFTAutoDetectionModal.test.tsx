@@ -37,7 +37,7 @@ const initialState = {
       },
     },
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 jest.mock('../../hooks/useMetrics');
 
