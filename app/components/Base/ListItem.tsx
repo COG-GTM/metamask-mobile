@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -70,6 +70,11 @@ interface ListItemTextProps extends TextProps {
   style?: StyleProp<TextStyle>;
 }
 
+const useListItemStyles = () => {
+  const { colors } = useTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
 type ListItemComponent = React.FC<ListItemProps> & {
   Date: React.FC<ListItemTextProps>;
   Content: React.FC<ListItemProps>;
@@ -83,62 +88,55 @@ type ListItemComponent = React.FC<ListItemProps> & {
 };
 
 const ListItem: ListItemComponent = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useListItemStyles();
   return <View style={[styles.wrapper, style]} {...props} />;
 };
 
 const ListItemDate: React.FC<ListItemTextProps> = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useListItemStyles();
   return <Text style={[styles.date, style]} {...props} />;
 };
 
 const ListItemContent: React.FC<ListItemProps> = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useListItemStyles();
   return <View style={[styles.content, style]} {...props} />;
 };
 
 const ListItemActions: React.FC<ListItemProps> = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useListItemStyles();
   return <View style={[styles.actions, style]} {...props} />;
 };
 
 const ListItemIcon: React.FC<ListItemProps> = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useListItemStyles();
   return <View style={[styles.icon, style]} {...props} />;
 };
 
 const ListItemBody: React.FC<ListItemProps> = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useListItemStyles();
   return <View style={[styles.body, style]} {...props} />;
 };
 
 const ListItemTitle: React.FC<ListItemTextProps> = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useListItemStyles();
   return <Text style={[styles.title, style]} {...props} />;
 };
 
 const ListItemAmounts: React.FC<ListItemProps> = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useListItemStyles();
   return <View style={[styles.amounts, style]} {...props} />;
 };
 
 const ListItemAmount: React.FC<ListItemTextProps> = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useListItemStyles();
   return <Text style={[styles.amount, style]} {...props} />;
 };
 
-const ListItemFiatAmount: React.FC<ListItemTextProps> = ({ style, ...props }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
+const ListItemFiatAmount: React.FC<ListItemTextProps> = ({
+  style,
+  ...props
+}) => {
+  const styles = useListItemStyles();
   return <Text style={[styles.fiatAmount, style]} {...props} />;
 };
 

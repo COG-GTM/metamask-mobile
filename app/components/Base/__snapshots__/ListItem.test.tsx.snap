@@ -1,0 +1,268 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ListItem renders all sub-components with expected styles 1`] = `
+<View
+  style={
+    [
+      {
+        "padding": 15,
+      },
+      undefined,
+    ]
+  }
+  testID="wrapper"
+>
+  <Text
+    style={
+      [
+        {
+          "color": "#121314",
+          "fontFamily": "CentraNo1-Book",
+          "fontSize": 30,
+          "fontWeight": "400",
+          "marginVertical": 2,
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        [
+          {
+            "color": "#121314",
+            "fontFamily": "CentraNo1-Book",
+            "fontSize": 12,
+            "fontWeight": "400",
+            "marginBottom": 10,
+          },
+          undefined,
+        ],
+      ]
+    }
+    testID="date"
+  >
+    date
+  </Text>
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        undefined,
+      ]
+    }
+    testID="content"
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "marginRight": 15,
+          },
+          undefined,
+        ]
+      }
+      testID="icon"
+    />
+    <View
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          undefined,
+        ]
+      }
+      testID="body"
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 15,
+              },
+              undefined,
+            ],
+          ]
+        }
+        testID="title"
+      >
+        title
+      </Text>
+    </View>
+    <View
+      style={
+        [
+          {
+            "alignItems": "flex-end",
+            "flex": 0.6,
+          },
+          undefined,
+        ]
+      }
+      testID="amounts"
+    >
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#121314",
+                "fontSize": 15,
+              },
+              undefined,
+            ],
+          ]
+        }
+        testID="amount"
+      >
+        1 ETH
+      </Text>
+      <Text
+        style={
+          [
+            {
+              "color": "#121314",
+              "fontFamily": "CentraNo1-Book",
+              "fontSize": 30,
+              "fontWeight": "400",
+              "marginVertical": 2,
+            },
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            [
+              {
+                "color": "#686e7d",
+                "fontSize": 12,
+                "textTransform": "uppercase",
+              },
+              undefined,
+            ],
+          ]
+        }
+        testID="fiat"
+      >
+        $1
+      </Text>
+    </View>
+  </View>
+  <View
+    style={
+      [
+        {
+          "flexDirection": "row",
+          "paddingLeft": 40,
+          "paddingTop": 10,
+        },
+        undefined,
+      ]
+    }
+    testID="actions"
+  />
+</View>
+`;
