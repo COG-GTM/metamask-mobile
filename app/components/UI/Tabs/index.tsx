@@ -240,7 +240,7 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
             key={tab.id}
             tab={tab}
             isActiveTab={activeTab === tab.id}
-            onClose={this.props.closeTab ?? (() => undefined)}
+            onClose={this.props.closeTab}
             onSwitch={this.onSwitch}
           />
         ))}

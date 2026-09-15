@@ -323,13 +323,13 @@ class TransactionElement extends PureComponent<Props, State> {
   renderTxTime = () => {
     const { tx, selectedInternalAccount } = this.props;
     const selectedAddress = safeToChecksumAddress(
-      selectedInternalAccount?.address ?? '',
+      selectedInternalAccount?.address as string,
     );
     const incoming =
-      safeToChecksumAddress(tx.txParams.to ?? '') === selectedAddress;
+      safeToChecksumAddress(tx.txParams.to as string) === selectedAddress;
     const selfSent =
       incoming &&
-      safeToChecksumAddress(tx.txParams.from ?? '') === selectedAddress;
+      safeToChecksumAddress(tx.txParams.from as string) === selectedAddress;
     return `${
       (!incoming || selfSent) && tx.deviceConfirmedOn === WalletDevice.MM_MOBILE
         ? `#${parseInt(tx.txParams.nonce as string, 16)} - ${toDateFormat(

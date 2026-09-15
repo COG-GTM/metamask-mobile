@@ -55,11 +55,11 @@ const TokenImage = ({
 
   const assetImage =
     asset?.image && isUrl(asset.image) ? asset.image : null;
-  const assetAddress = asset?.address ?? '';
+  const assetAddress = asset?.address;
   const iconUrl =
     assetImage ||
-    tokenList[assetAddress]?.iconUrl ||
-    tokenList[assetAddress.toLowerCase()]?.iconUrl ||
+    tokenList[assetAddress as string]?.iconUrl ||
+    tokenList[assetAddress?.toLowerCase() as string]?.iconUrl ||
     '';
 
   const isIpfsDisabledAndUriIsIpfs =

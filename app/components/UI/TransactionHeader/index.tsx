@@ -126,7 +126,7 @@ const TransactionHeader = (props: Props) => {
       string,
       { color?: string; shortName?: string } | undefined
     >
-  )[props.networkType ?? ''];
+  )[props.networkType as string];
 
   /**
    * Returns a small circular indicator, red if the current selected network is offline, green if it's online.
@@ -154,14 +154,14 @@ const TransactionHeader = (props: Props) => {
    */
   const renderSecureIcon = () => {
     if (originIsDeeplink) return null;
-    const { url, origin = '' } = props.currentPageInformation;
+    const { url, origin } = props.currentPageInformation;
     const name =
       getUrlObj(
         originIsWalletConnect
-          ? origin.split(WALLET_CONNECT_ORIGIN)[1]
+          ? (origin as string).split(WALLET_CONNECT_ORIGIN)[1]
           : originIsMMSDKRemoteConn
-          ? origin.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1]
-          : url ?? '',
+          ? (origin as string).split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1]
+          : (url as string),
       ).protocol === 'https:'
         ? 'lock'
         : 'warning';
@@ -169,7 +169,7 @@ const TransactionHeader = (props: Props) => {
   };
 
   const renderTopIcon = () => {
-    const { currentEnsName, icon, origin = '' } = props.currentPageInformation;
+    const { currentEnsName, icon, origin } = props.currentPageInformation;
     let url = props.currentPageInformation.url;
     if (originIsDeeplink && !icon) {
       return (
@@ -183,19 +183,19 @@ const TransactionHeader = (props: Props) => {
         </View>
       );
     }
-    let iconTitle = getHost(currentEnsName || url || '');
+    let iconTitle = getHost((currentEnsName || url) as string);
     if (originIsWalletConnect) {
-      url = origin.split(WALLET_CONNECT_ORIGIN)[1];
-      iconTitle = getHost(url);
+      url = (origin as string).split(WALLET_CONNECT_ORIGIN)[1];
+      iconTitle = getHost(url as string);
     } else if (originIsMMSDKRemoteConn) {
-      url = origin.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1];
+      url = (origin as string).split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1];
     }
     return (
       <WebsiteIcon
         style={styles.domainLogo}
         viewStyle={styles.assetLogo}
         title={iconTitle}
-        url={currentEnsName || url || ''}
+        url={currentEnsName || (url as string)}
         icon={typeof icon === 'string' ? icon : icon?.uri}
       />
     );
@@ -204,19 +204,21 @@ const TransactionHeader = (props: Props) => {
   const renderTitle = () => {
     const { url, currentEnsName, spenderAddress, origin } =
       props.currentPageInformation;
-    const safeOrigin = origin ?? '';
     let title = '';
 
-    if (originIsDeeplink) title = renderShortAddress(spenderAddress ?? '');
+    if (originIsDeeplink) title = renderShortAddress(spenderAddress as string);
     else if (originIsWalletConnect)
-      title = getHost(safeOrigin.split(WALLET_CONNECT_ORIGIN)[1]);
+      title = getHost(
+        (origin as string).split(WALLET_CONNECT_ORIGIN)[1] as string,
+      );
     else if (originIsMMSDKRemoteConn) {
       title = getHost(
-        safeOrigin.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1],
+        (origin as string).split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1] as
+          string,
       );
     }
 
-    if (!title) title = getHost(currentEnsName || url || safeOrigin);
+    if (!title) title = getHost((currentEnsName || url || origin) as string);
 
     return <Text style={styles.domainUrl}>{title}</Text>;
   };

@@ -196,8 +196,8 @@ interface State {
   speedUpConfirmDisabled: boolean;
   rpcBlockExplorer?: string;
   errorMsg?: string;
-  isQRHardwareAccount: boolean;
-  isLedgerAccount: boolean;
+  isQRHardwareAccount: boolean | undefined;
+  isLedgerAccount: boolean | undefined;
 }
 
 const createStyles = (colors: Colors, typography: Theme['typography']) =>
@@ -281,10 +281,10 @@ class Transactions extends PureComponent<Props, State> {
     isLedgerAccount: false,
   };
 
-  existingGas: ExistingGas | null = null;
-  existingTx: TransactionMeta | null = null;
-  cancelTxId: string | null = null;
-  speedUpTxId: string | null = null;
+  existingGas: ExistingGas | null | undefined = null;
+  existingTx: TransactionMeta | null | undefined = null;
+  cancelTxId: string | null | undefined = null;
+  speedUpTxId: string | null | undefined = null;
   selectedTx: SelectedTransaction | null = null;
 
   flatList = React.createRef<FlatList>();
@@ -297,9 +297,7 @@ class Transactions extends PureComponent<Props, State> {
       this.props.onRefSet && this.props.onRefSet(this.flatList);
     }, 100);
     this.setState({
-      isQRHardwareAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress),
-      ),
+      isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress),
     });
   };
 
@@ -328,16 +326,12 @@ class Transactions extends PureComponent<Props, State> {
 
     this.setState({ rpcBlockExplorer: blockExplorer });
     this.setState({
-      isQRHardwareAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress, [
-          ExtendedKeyringTypes.qr,
-        ]),
-      ),
-      isLedgerAccount: Boolean(
-        isHardwareAccount(this.props.selectedAddress, [
-          ExtendedKeyringTypes.ledger,
-        ]),
-      ),
+      isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress, [
+        ExtendedKeyringTypes.qr,
+      ]),
+      isLedgerAccount: isHardwareAccount(this.props.selectedAddress, [
+        ExtendedKeyringTypes.ledger,
+      ]),
     });
   };
 
@@ -523,20 +517,20 @@ class Transactions extends PureComponent<Props, State> {
 
   onSpeedUpAction = (
     speedUpAction: boolean,
-    existingGas?: ExistingGas,
-    tx?: Transaction,
+    existingGas?: ExistingGas | null,
+    tx?: Transaction | null,
   ) => {
-    this.existingGas = existingGas ?? null;
-    this.speedUpTxId = tx?.id ?? null;
-    this.existingTx = tx ?? null;
-    if (existingGas?.isEIP1559Transaction) {
+    this.existingGas = existingGas;
+    this.speedUpTxId = tx!.id;
+    this.existingTx = tx;
+    if (existingGas!.isEIP1559Transaction) {
       this.setState({ speedUp1559IsOpen: speedUpAction });
     } else {
-      const speedUpConfirmDisabled = tx
-        ? Boolean(
-            validateTransactionBalance(tx, SPEED_UP_RATE, this.props.accounts),
-          )
-        : false;
+      const speedUpConfirmDisabled = validateTransactionBalance(
+        tx!,
+        SPEED_UP_RATE,
+        this.props.accounts,
+      );
       this.setState({ speedUpIsOpen: speedUpAction, speedUpConfirmDisabled });
     }
   };
@@ -550,21 +544,21 @@ class Transactions extends PureComponent<Props, State> {
 
   onCancelAction = (
     cancelAction: boolean,
-    existingGas?: ExistingGas,
-    tx?: Transaction,
+    existingGas?: ExistingGas | null,
+    tx?: Transaction | null,
   ) => {
-    this.existingGas = existingGas ?? null;
-    this.cancelTxId = tx?.id ?? null;
-    this.existingTx = tx ?? null;
+    this.existingGas = existingGas;
+    this.cancelTxId = tx!.id;
+    this.existingTx = tx;
 
-    if (existingGas?.isEIP1559Transaction) {
+    if (existingGas!.isEIP1559Transaction) {
       this.setState({ cancel1559IsOpen: cancelAction });
     } else {
-      const cancelConfirmDisabled = tx
-        ? Boolean(
-            validateTransactionBalance(tx, CANCEL_RATE, this.props.accounts),
-          )
-        : false;
+      const cancelConfirmDisabled = validateTransactionBalance(
+        tx!,
+        CANCEL_RATE,
+        this.props.accounts,
+      );
       this.setState({ cancelIsOpen: cancelAction, cancelConfirmDisabled });
     }
   };
@@ -588,7 +582,7 @@ class Transactions extends PureComponent<Props, State> {
   handleSpeedUpTransactionFailure = (e: unknown) => {
     const speedUpTxId = this.speedUpTxId;
     const message = e instanceof TransactionError ? e.message : undefined;
-    Logger.error(e instanceof Error ? e : new Error(String(e)), {
+    Logger.error(e as Error, {
       message: `speedUpTransaction failed `,
       speedUpTxId,
     });
@@ -602,7 +596,7 @@ class Transactions extends PureComponent<Props, State> {
   handleCancelTransactionFailure = (e: unknown) => {
     const cancelTxId = this.cancelTxId;
     const message = e instanceof TransactionError ? e.message : undefined;
-    Logger.error(e instanceof Error ? e : new Error(String(e)), {
+    Logger.error(e as Error, {
       message: `cancelTransaction failed `,
       cancelTxId,
     });
@@ -756,8 +750,8 @@ class Transactions extends PureComponent<Props, State> {
       InteractionManager.runAfterInteractions(() => {
         this.onSpeedUpAction(
           true,
-          this.existingGas ?? undefined,
-          this.existingTx ?? undefined,
+          this.existingGas,
+          this.existingTx,
         );
       });
     }
@@ -765,8 +759,8 @@ class Transactions extends PureComponent<Props, State> {
       InteractionManager.runAfterInteractions(() => {
         this.onCancelAction(
           true,
-          this.existingGas ?? undefined,
-          this.existingTx ?? undefined,
+          this.existingGas,
+          this.existingTx,
         );
       });
     }
@@ -863,12 +857,12 @@ class Transactions extends PureComponent<Props, State> {
 
       if (this.existingGas.isEIP1559Transaction) return undefined;
 
-      const gasPrice = this.existingGas.gasPrice ?? 0;
+      const gasPrice = this.existingGas.gasPrice;
 
       const increasedGasPrice =
         gasPrice === 0
           ? hexToBN(this.getGasPriceEstimate())
-          : Math.floor(gasPrice * rate);
+          : Math.floor(gasPrice! * rate);
 
       return `${renderFromWei(increasedGasPrice)} ${strings('unit.eth')}`;
     };

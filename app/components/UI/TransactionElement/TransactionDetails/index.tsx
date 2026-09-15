@@ -320,11 +320,9 @@ class TransactionDetails extends PureComponent<Props, State> {
       chainId,
       networkConfigurations,
     } = this.props;
-    const transactionChainId = txChainId ?? chainId;
-
     const blockExplorer = this.getBlockExplorerForChain(
       chainId,
-      transactionChainId,
+      txChainId,
       networkConfigurations,
     );
     this.setState({ rpcBlockExplorer: blockExplorer });

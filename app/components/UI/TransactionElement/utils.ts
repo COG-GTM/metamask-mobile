@@ -110,7 +110,7 @@ export interface SwapTransaction {
   action?: string;
   sourceAmount?: string;
   destinationAmount?: string;
-  receivedDestinationAmount?: string;
+  receivedDestinationAmount?: string | number;
   upTo?: string;
   sourceToken: SwapToken;
   destinationToken: SwapToken;
@@ -186,12 +186,11 @@ function calculateTotalGas(transaction: TransactionParams) {
   } = transaction;
   if (isEIP1559Transaction(transaction)) {
     const eip1559GasHex = calculateEIP1559GasFeeHexes({
-      gasLimitHex: gasUsed || gas || '0x0',
-      estimatedGasLimitHex: gasUsed || gas || '0x0',
+      gasLimitHex: gasUsed || gas,
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
-      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas || '0x0',
-      suggestedMaxFeePerGasHex: maxFeePerGas || '0x0',
-    });
+      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas,
+      suggestedMaxFeePerGasHex: maxFeePerGas,
+    } as Parameters<typeof calculateEIP1559GasFeeHexes>[0]);
     return hexToBN(eip1559GasHex.gasFeeMinHex);
   }
   const gasBN = hexToBN(gas);
@@ -221,17 +220,15 @@ function renderGwei(transaction: TransactionParams) {
 
   if (isEIP1559Transaction(transaction)) {
     const eip1559GasHex = calculateEIP1559GasFeeHexes({
-      gasLimitHex: gas || '0x0',
-      estimatedGasLimitHex: gas || '0x0',
+      gasLimitHex: gas,
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
-      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas || '0x0',
-      suggestedMaxFeePerGasHex: maxFeePerGas || '0x0',
-    });
+      suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas,
+      suggestedMaxFeePerGasHex: maxFeePerGas,
+    } as Parameters<typeof calculateEIP1559GasFeeHexes>[0]);
 
     return renderToGwei(
-      String(
-        eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex,
-      ),
+      eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex as
+        Parameters<typeof renderToGwei>[0],
     );
   }
   return renderToGwei(gasPrice);
@@ -254,11 +251,12 @@ function getTokenTransfer(args: DecodeTransactionArgs): DecodeResult {
     selectedAddress,
   } = args;
 
-  const [, , encodedAmount] = decodeTransferData('transfer', data) ?? [];
+  const [, , encodedAmount] = decodeTransferData('transfer', data);
   const amount = hexToBN(encodedAmount);
-  const tokenAddress = safeToChecksumAddress(to as string) ?? '';
-  const userHasToken = tokenAddress in tokens;
-  const token = userHasToken ? tokens[tokenAddress] : null;
+  const userHasToken = safeToChecksumAddress(to) as string in tokens;
+  const token = userHasToken
+    ? tokens[safeToChecksumAddress(to) as string]
+    : null;
   const renderActionKey = token
     ? `${strings('transactions.sent')} ${token.symbol}`
     : actionKey;
@@ -357,7 +355,7 @@ function getCollectibleTransfer(args: DecodeTransactionArgs): DecodeResult {
     selectedAddress,
   } = args;
   let actionKey;
-  const [, tokenId] = decodeTransferData('transfer', data) ?? [];
+  const [, tokenId] = decodeTransferData('transfer', data);
   const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
   const collectible = collectibleContracts.find((item) =>
     toLowerCaseEquals(item.address, to),
@@ -544,7 +542,7 @@ async function decodeTransferTx(
     txChainId,
   } = args;
 
-  const decodedData = decodeTransferData('transfer', data) ?? [];
+  const decodedData = decodeTransferData('transfer', data);
   const addressTo = decodedData[0];
   let isCollectible = false;
   try {
@@ -589,8 +587,10 @@ function decodeTransferFromTx(args: DecodeTransactionArgs): DecodeResult {
     primaryCurrency,
     selectedAddress,
   } = args;
-  const [addressFrom, addressTo, tokenId] =
-    decodeTransferData('transferFrom', data) ?? [];
+  const [addressFrom, addressTo, tokenId] = decodeTransferData(
+    'transferFrom',
+    data,
+  );
   const collectible = collectibleContracts.find((item) =>
     toLowerCaseEquals(item.address, to),
   );
@@ -907,8 +907,8 @@ function decodeSwapsTx(args: DecodeTransactionArgs): DecodeResult {
       sourceSwapToken.decimals,
     );
   const destinationAmount =
-    swapTransaction.receivedDestinationAmount &&
-    Number(swapTransaction.receivedDestinationAmount) > 0
+    !!swapTransaction.receivedDestinationAmount &&
+    (swapTransaction.receivedDestinationAmount as number) > 0
       ? swapTransaction.receivedDestinationAmount
       : swapTransaction.destinationAmount;
   const decimalDestinationAmount =

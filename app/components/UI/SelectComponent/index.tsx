@@ -97,12 +97,16 @@ interface SelectOption {
   label: string;
 }
 
+type ValueChangeHandler = {
+  bivarianceHack(value: string | number | undefined): void;
+}['bivarianceHack'];
+
 interface SelectComponentProps {
   defaultValue?: string;
   label?: string;
   selectedValue?: string | number;
   options: SelectOption[];
-  onValueChange?: ((value: string) => void) | ((value: number) => void);
+  onValueChange?: ValueChangeHandler;
   testID?: string;
 }
 
@@ -131,12 +135,8 @@ class SelectComponent extends PureComponent<
     ? React.createRef<ScrollView>()
     : null;
 
-  onValueChange = (val: string | number) => {
-    if (typeof val === 'string') {
-      (this.props.onValueChange as ((value: string) => void) | undefined)?.(val);
-    } else {
-      (this.props.onValueChange as ((value: number) => void) | undefined)?.(val);
-    }
+  onValueChange = (val: string | number | undefined) => {
+    this.props.onValueChange?.(val);
     setTimeout(() => {
       this.hidePicker();
     }, 1000);
@@ -217,7 +217,7 @@ class SelectComponent extends PureComponent<
                 {this.props.options.map((option) => (
                   <TouchableOpacity
                     // eslint-disable-next-line react/jsx-no-bind
-                    onPress={() => this.onValueChange(option.value ?? '')}
+                    onPress={() => this.onValueChange(option.value)}
                     style={styles.optionButton}
                     key={option.key}
                   >
