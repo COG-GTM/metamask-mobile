@@ -67,6 +67,7 @@ export function getCachedENSName(address, chainId) {
   return cacheEntry?.name;
 }
 
+/** ENSCache key is networkId + address; must match the write sites and getCachedENSName. */
 export async function doENSReverseLookup(address, chainId) {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
