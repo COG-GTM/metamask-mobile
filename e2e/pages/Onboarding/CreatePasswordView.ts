@@ -35,11 +35,11 @@ class CreatePasswordView {
       : Matchers.getElementByLabel(ChoosePasswordSelectorsIDs.SUBMIT_BUTTON_ID);
   }
 
-  async enterPassword(password) {
+  async enterPassword(password: string) {
     await Gestures.typeTextAndHideKeyboard(this.newPasswordInput, password);
   }
 
-  async reEnterPassword(password) {
+  async reEnterPassword(password: string) {
     await Gestures.typeTextAndHideKeyboard(this.confirmPasswordInput, password);
   }
 

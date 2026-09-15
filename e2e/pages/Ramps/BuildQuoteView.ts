@@ -48,7 +48,9 @@ class BuildQuoteView {
   }
 
   get insufficientBalanceErrorMessage() {
-    return Matchers.getElementByID(BuildQuoteSelectors.INSUFFICIENT_BALANCE_ERROR);
+    return Matchers.getElementByID(
+      BuildQuoteSelectors.INSUFFICIENT_BALANCE_ERROR,
+    );
   }
 
   get keypadDeleteButton() {
@@ -75,12 +77,12 @@ class BuildQuoteView {
     await Gestures.waitAndTap(this.cancelButton);
   }
 
-  async selectToken(token) {
+  async selectToken(token: string) {
     const tokenOption = Matchers.getElementByText(token);
     await Gestures.waitAndTap(tokenOption);
   }
 
-  async tapTokenDropdown(token) {
+  async tapTokenDropdown(token: string) {
     const tokenOption = Matchers.getElementByText(token);
     await Gestures.waitAndTap(tokenOption);
   }
@@ -93,20 +95,24 @@ class BuildQuoteView {
     await Gestures.waitAndTap(this.selectCurrencyDropdown);
   }
 
-  async enterAmount(amount) {
-    await Gestures.waitAndTap(Matchers.getElementByID(BuildQuoteSelectors.AMOUNT_INPUT));
-    for (let digit = 0; digit < amount.length; digit++) {
-      const numberButton = Matchers.getElementByText(amount[digit]);
+  async enterAmount(amount: string) {
+    await Gestures.waitAndTap(
+      Matchers.getElementByID(BuildQuoteSelectors.AMOUNT_INPUT),
+    );
+    for (const digit of amount) {
+      const numberButton = Matchers.getElementByText(digit);
       await Gestures.waitAndTap(numberButton);
     }
-    await Gestures.waitAndTap(Matchers.getElementByText(BuildQuoteSelectors.DONE_BUTTON));
+    await Gestures.waitAndTap(
+      Matchers.getElementByText(BuildQuoteSelectors.DONE_BUTTON),
+    );
   }
 
   async tapGetQuotesButton() {
     await Gestures.waitAndTap(this.getQuotesButton);
   }
 
-  async tapPaymentMethodDropdown(paymentMethod) {
+  async tapPaymentMethodDropdown(paymentMethod: string) {
     const paymentMethodOption = Matchers.getElementByText(paymentMethod);
     await Gestures.waitAndTap(paymentMethodOption);
   }
@@ -115,8 +121,10 @@ class BuildQuoteView {
     await Gestures.waitAndTap(this.regionDropdown);
   }
 
-  async tapKeypadDeleteButton(times) {
-    await Gestures.waitAndTap(Matchers.getElementByID(BuildQuoteSelectors.AMOUNT_INPUT));
+  async tapKeypadDeleteButton(times: number) {
+    await Gestures.waitAndTap(
+      Matchers.getElementByID(BuildQuoteSelectors.AMOUNT_INPUT),
+    );
     for (let i = 0; i < times; i++) {
       await Gestures.waitAndTap(this.keypadDeleteButton);
     }

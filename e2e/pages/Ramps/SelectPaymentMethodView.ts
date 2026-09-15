@@ -9,7 +9,7 @@ class SelectPaymentMethodView {
     );
   }
 
-  async tapPaymentMethodOption(paymentMethod) {
+  async tapPaymentMethodOption(paymentMethod: string) {
     const paymentMethodOption = Matchers.getElementByText(paymentMethod);
     await Gestures.waitAndTap(paymentMethodOption);
   }

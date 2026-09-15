@@ -7,7 +7,7 @@ class Gestures {
   /**
    * Tap an element and long press.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to tap
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - ID of the element to tap
    * @param {number} timeout - Timeout for waiting (default: 2000ms)
    */
   static async tapAndLongPress(elementID, timeout = 2000) {
@@ -19,7 +19,7 @@ class Gestures {
   /**
    * Tap an element at a specific point.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to tap
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - ID of the element to tap
    * @param {Object} point - Coordinates { x, y } where the element will be tapped
    */
   static async tapAtPoint(elementID, point) {
@@ -30,7 +30,7 @@ class Gestures {
   /**
    * Wait for an element to be visible and then tap it.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to tap
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - ID of the element to tap
 
    */
   static async tap(elementID) {
@@ -50,7 +50,7 @@ class Gestures {
   /**
    * Wait for an element to be visible and then tap it.
    *
-   * @param {Promise<Detox.IndexableNativeElement | Detox.SystemElement>} elementID - ID of the element to tap
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement | Detox.SystemElement>} elementID - ID of the element to tap
    * @param {number} timeout - Timeout for waiting (default: 8000ms)
    */
   static async waitAndTap(elementID, timeout = 15000) {
@@ -62,7 +62,7 @@ class Gestures {
   /**
    * Wait for an element at a specific index to be visible and then tap it.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to tap
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - ID of the element to tap
    * @param {number} index - Index of the element to tap
    * @param {number} timeout - Timeout for waiting (default: 15000ms)
    */
@@ -75,7 +75,7 @@ class Gestures {
   /**
    * Wait for an element to be visible and then tap it.
    *
-   * @param {Promise<Detox.IndexableWebElement>} elementID - ID of the element to tap
+   * @param {Promise<Detox.IndexableWebElement | Detox.SecuredWebElementFacade>} elementID - ID of the element to tap
    */
   static async tapWebElement(elementID) {
     const element = await elementID;
@@ -85,7 +85,7 @@ class Gestures {
   /**
    * Double tap an element by text.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - Text of the element to double tap
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - Text of the element to double tap
    */
   static async doubleTap(elementID) {
     const element = await elementID;
@@ -96,7 +96,7 @@ class Gestures {
   /**
    * Clear the text field of an element identified by ID.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to clear
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - ID of the element to clear
    * @param {number} timeout - Timeout for waiting (default: 8000ms)
 
   */
@@ -110,7 +110,7 @@ class Gestures {
   /**
    * Type text into an element and hide the keyboard.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to type into
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - ID of the element to type into
    * @param {string} text - Text to be typed into the element
    */
   static async typeTextAndHideKeyboard(elementID, text) {
@@ -123,7 +123,7 @@ class Gestures {
   /**
    * Replace the text in the field of an element identified by ID.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to replace the text in
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - ID of the element to replace the text in
    * @param {string} text - Text to replace the existing text in the element
    */
   static async replaceTextInField(elementID, text, timeout = 10000) {
@@ -136,7 +136,7 @@ class Gestures {
   /**
    * Swipe on an element identified by ID.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to swipe on
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - ID of the element to swipe on
    * @param {Detox.Direction} direction - Direction of the swipe - left | right | top | bottom | up | down
    * @param {Detox.Speed} [speed] - Speed of the swipe (fast, slow)
    * @param {number} [percentage] - Percentage of the swipe (0 to 1)
@@ -152,7 +152,7 @@ class Gestures {
   /**
    * Swipe on an element identified by ID.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to swipe on
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} elementID - ID of the element to swipe on
    * @param {Detox.Direction} direction - Direction of the swipe - left | right | top | bottom | up | down
    * @param {Detox.Speed} [speed] - Speed of the swipe (fast, slow)
    * @param {number} [percentage] - Percentage of the swipe (0 to 1)
@@ -188,7 +188,7 @@ class Gestures {
   /**
    * Dynamically Scrolls to an element identified by ID.
    *
-   * @param {Promise<Detox.IndexableNativeElement>} destinationElementID - ID of the element to scroll up to
+   * @param {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} destinationElementID - ID of the element to scroll up to
    * @param {number} scrollIdentifier - The identifier (by.id) NOT elementID (element(by.id)). Keep this distinction in mind. If you pass in an elementID this method would not work as intended
    * @param {Detox.Direction} direction - Direction of the scroll (up, down, left, right). The default is down.
    * @param {number} [scrollAmount=350] - The amount to scroll (default is 350). Optional parameter.   */

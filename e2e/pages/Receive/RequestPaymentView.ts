@@ -35,16 +35,16 @@ class RequestPaymentView {
     await Gestures.waitAndTap(this.backButton);
   }
 
-  async searchForToken(token) {
+  async searchForToken(token: string) {
     await Gestures.typeTextAndHideKeyboard(this.tokenSearchInput, token);
   }
 
-  async tapOnToken(token) {
-    const tokenElement = await Matchers.getElementByText(token, 1);
+  async tapOnToken(token: string) {
+    const tokenElement = Matchers.getElementByText(token, 1);
     await Gestures.waitAndTap(tokenElement);
   }
 
-  async typeInTokenAmount(amount) {
+  async typeInTokenAmount(amount: string) {
     await Gestures.typeTextAndHideKeyboard(this.requestAmountInput, amount);
   }
 }

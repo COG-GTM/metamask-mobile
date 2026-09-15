@@ -11,7 +11,9 @@ import TestHelpers from '../../helpers';
 
 class AccountListBottomSheet {
   get accountList() {
-    return Matchers.getElementByID(AccountListBottomSheetSelectorsIDs.ACCOUNT_LIST_ID);
+    return Matchers.getElementByID(
+      AccountListBottomSheetSelectorsIDs.ACCOUNT_LIST_ID,
+    );
   }
 
   get accountTypeLabel() {
@@ -48,55 +50,55 @@ class AccountListBottomSheet {
     );
   }
 
-  async getAccountElementByAccountName(accountName) {
+  async getAccountElementByAccountName(accountName: string) {
     return Matchers.getElementByIDAndLabel(
       CellComponentSelectorsIDs.BASE_TITLE,
       accountName,
     );
   }
 
-  getSelectElement(index) {
+  getSelectElement(index: number) {
     return Matchers.getElementByID(CellComponentSelectorsIDs.SELECT, index);
   }
 
-  getMultiselectElement(index) {
-    return Matchers.getElementByID(CellComponentSelectorsIDs.MULTISELECT, index);
+  getMultiselectElement(index: number) {
+    return Matchers.getElementByID(
+      CellComponentSelectorsIDs.MULTISELECT,
+      index,
+    );
   }
 
   /**
    * Retrieves the title/name of an element using the `cellbase-avatar-title` ID.
-   * Note: The `select-with-menu` ID element seems to never receive the tap event, 
+   * Note: The `select-with-menu` ID element seems to never receive the tap event,
    * so this method fetches the title/name instead.
    *
    * @param {number} index - The index of the element to retrieve.
    * @returns {Detox.IndexableNativeElement} The matcher for the element's title/name.
    */
-  getSelectWithMenuElementName(index) {
-    return Matchers.getElementByID(
-      CellComponentSelectorsIDs.BASE_TITLE,
-      index,
-    );
+  getSelectWithMenuElementName(index: number) {
+    return Matchers.getElementByID(CellComponentSelectorsIDs.BASE_TITLE, index);
   }
 
-  async tapEditAccountActionsAtIndex(index) {
+  async tapEditAccountActionsAtIndex(index: number) {
     const accountActionsButton = Matchers.getElementByID(
       `${WalletViewSelectorsIDs.ACCOUNT_ACTIONS}-${index}`,
     );
     await Gestures.waitAndTap(accountActionsButton);
   }
 
-  async accountNameInList(accountName) {
+  async accountNameInList(accountName: string) {
     return Matchers.getElementByText(accountName, 1);
   }
-  async tapAccountIndex(index) {
+  async tapAccountIndex(index: number) {
     await Gestures.tap(this.getMultiselectElement(index));
   }
 
-  async tapToSelectActiveAccountAtIndex(index) {
+  async tapToSelectActiveAccountAtIndex(index: number) {
     await Gestures.tap(this.getSelectWithMenuElementName(index));
   }
 
-  async longPressAccountAtIndex(index) {
+  async longPressAccountAtIndex(index: number) {
     await Gestures.tapAndLongPress(this.getSelectWithMenuElementName(index));
   }
 

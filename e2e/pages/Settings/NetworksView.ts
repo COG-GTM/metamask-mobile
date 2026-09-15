@@ -139,7 +139,7 @@ class NetworkView {
     return Matchers.getElementByText(NetworkViewSelectorsText.SAVE_BUTTON);
   }
 
-  async getnetworkName(networkName) {
+  async getnetworkName(networkName: string) {
     return Matchers.getElementByText(networkName);
   }
   async tapAddNetworkButton() {
@@ -170,18 +170,18 @@ class NetworkView {
     await Gestures.waitAndTap(this.customNetworkTab);
   }
 
-  async tapNetworkByName(networkName) {
+  async tapNetworkByName(networkName: string) {
     const network = this.getnetworkName(networkName);
     await Gestures.waitAndTap(network);
   }
 
-  async SearchNetworkName(networkName) {
+  async SearchNetworkName(networkName: string) {
     await Gestures.typeTextAndHideKeyboard(
       this.networkSearchInput,
       networkName,
     );
   }
-  async longPressToRemoveNetwork(networkName) {
+  async longPressToRemoveNetwork(networkName: string) {
     const network = this.getnetworkName(networkName);
     await Gestures.tapAndLongPress(network);
     await Gestures.waitAndTap(this.removeNetwork);
@@ -199,24 +199,24 @@ class NetworkView {
   }
 
   // CUSTOM NETWORK SCREEN
-  async typeInNetworkName(networkName) {
+  async typeInNetworkName(networkName: string) {
     await Gestures.typeTextAndHideKeyboard(this.networkNameInput, networkName);
   }
-  async typeInRpcUrl(rPCUrl) {
+  async typeInRpcUrl(rPCUrl: string) {
     await Gestures.typeTextAndHideKeyboard(this.rpcURLInput, rPCUrl);
   }
-  async typeInChainId(chainID) {
+  async typeInChainId(chainID: string) {
     await Gestures.typeTextAndHideKeyboard(this.chainIDInput, chainID);
   }
 
-  async typeInNetworkSymbol(networkSymbol) {
+  async typeInNetworkSymbol(networkSymbol: string) {
     await Gestures.typeTextAndHideKeyboard(
       this.networkSymbolInput,
       networkSymbol,
     );
   }
 
-  async typeInNetworkBlockExplorer(networkBlockExplorer) {
+  async typeInNetworkBlockExplorer(networkBlockExplorer: string) {
     await Gestures.typeTextAndHideKeyboard(
       this.networkBlockExplorerInput,
       networkBlockExplorer,

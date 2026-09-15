@@ -5,7 +5,6 @@ import {
 
 import Matchers from '../../utils/Matchers';
 import Gestures from '../../utils/Gestures';
-import TestHelpers from '../..//helpers';
 
 class SwapView {
   get quoteSummary() {
@@ -30,7 +29,7 @@ class SwapView {
     return Matchers.getElementByText(SwapViewSelectorsTexts.I_UNDERSTAND);
   }
 
-  generateSwapCompleteLabel(sourceToken, destinationToken) {
+  generateSwapCompleteLabel(sourceToken: string, destinationToken: string) {
     let title = SwapViewSelectorsTexts.SWAP_CONFIRMED;
     title = title.replace('{{sourceToken}}', sourceToken);
     title = title.replace('{{destinationToken}}', destinationToken);
@@ -38,9 +37,11 @@ class SwapView {
   }
 
   // Function to check if the button is enabled
-  async isButtonEnabled(element) {
-    const attributes = await element.getAttributes();
-    return attributes.enabled === true; // Check if enabled is true
+  async isButtonEnabled(
+    elem: Detox.IndexableNativeElement | Detox.NativeElement,
+  ) {
+    const attributes = await elem.getAttributes();
+    return 'enabled' in attributes && attributes.enabled === true; // Check if enabled is true
   }
 
   async tapSwapButton() {

@@ -4,6 +4,7 @@ import Gestures from '../../../../utils/Gestures';
 
 class SRPListItemComponent {
   get listItem() {
+    // @ts-expect-error CONTAINER is not defined on SRPListItemSelectorsIDs (pre-existing; resolves to undefined at runtime)
     return Matchers.getElementByID(SRPListItemSelectorsIDs.CONTAINER);
   }
 
@@ -23,7 +24,7 @@ class SRPListItemComponent {
     await Gestures.waitAndTap(this.accountToggle);
   }
 
-  async tapListItem(srpId) {
+  async tapListItem(srpId: string) {
     const srpSelector = Matchers.getElementByID(
       `${SRPListItemSelectorsIDs.SRP_LIST_ITEM}-${srpId}`,
     );

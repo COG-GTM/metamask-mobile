@@ -26,15 +26,15 @@ class ImportWalletView {
     );
   }
 
-  async enterPassword(password) {
+  async enterPassword(password: string) {
     await Gestures.typeTextAndHideKeyboard(this.newPasswordInput, password);
   }
 
-  async reEnterPassword(password) {
+  async reEnterPassword(password: string) {
     await Gestures.typeTextAndHideKeyboard(this.confirmPasswordInput, password);
   }
 
-  async enterSecretRecoveryPhrase(secretRecoveryPhrase) {
+  async enterSecretRecoveryPhrase(secretRecoveryPhrase: string) {
     await Gestures.typeTextAndHideKeyboard(
       this.seedPhraseInput,
       secretRecoveryPhrase,

@@ -18,7 +18,7 @@ class EditAccountNameView {
     await Gestures.waitAndTap(this.saveButton);
   }
 
-  async updateAccountName(accountName) {
+  async updateAccountName(accountName: string) {
     await Gestures.clearField(this.accountNameInput);
     await Gestures.typeTextAndHideKeyboard(this.accountNameInput, accountName);
   }

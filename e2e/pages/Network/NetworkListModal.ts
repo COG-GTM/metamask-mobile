@@ -50,7 +50,7 @@ class NetworkListModal {
     return Matchers.getElementByID('delete-network-button');
   }
 
-  async getCustomNetwork(network, custom = false) {
+  async getCustomNetwork(network: string, custom = false) {
     if (device.getPlatform() === 'android' || !custom) {
       return Matchers.getElementByText(network);
     }
@@ -68,7 +68,7 @@ class NetworkListModal {
     await Gestures.swipe(this.networkScroll, 'down', 'fast');
   }
 
-  async changeNetworkTo(networkName, custom) {
+  async changeNetworkTo(networkName: string, custom: boolean) {
     const elem = this.getCustomNetwork(networkName, custom);
     await TestHelpers.delay(3000);
     await Gestures.waitAndTap(elem);
@@ -87,12 +87,12 @@ class NetworkListModal {
     await Gestures.waitAndTap(this.testNetToggle);
   }
 
-  async longPressOnNetwork(networkName) {
+  async longPressOnNetwork(networkName: string) {
     const network = Matchers.getElementByText(networkName);
     await Gestures.tapAndLongPress(network);
   }
 
-  async SearchNetworkName(networkName) {
+  async SearchNetworkName(networkName: string) {
     await Gestures.typeTextAndHideKeyboard(
       this.networkSearchInput,
       networkName,

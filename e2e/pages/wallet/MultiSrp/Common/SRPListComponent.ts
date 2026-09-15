@@ -1,10 +1,10 @@
-import { SRPListIds } from '../../../../selectors/MultiSRP/SRPList.selectors';
+import { SRPListSelectorsIDs } from '../../../../selectors/MultiSRP/SRPList.selectors';
 import Matchers from '../../../../utils/Matchers';
-import Gestures from '../../../../utils/Gestures';
 
 class SRPListComponent {
   get SRP_LIST() {
-    return Matchers.getElementByID(SRPListIds.CONTAINER);
+    // @ts-expect-error CONTAINER is not defined on SRPListSelectorsIDs (pre-existing; resolves to undefined at runtime)
+    return Matchers.getElementByID(SRPListSelectorsIDs.CONTAINER);
   }
 }
 

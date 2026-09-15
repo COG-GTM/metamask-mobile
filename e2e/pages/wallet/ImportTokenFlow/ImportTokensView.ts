@@ -56,7 +56,7 @@ class ImportTokensView {
     await Gestures.swipe(this.symbolInput, 'up', 'slow', 0.6);
   }
 
-  async typeTokenAddress(address) {
+  async typeTokenAddress(address: string) {
     await Gestures.typeTextAndHideKeyboard(this.addressInput, address);
   }
 
@@ -64,7 +64,7 @@ class ImportTokensView {
     await Gestures.waitAndTap(this.customTokenTab);
   }
 
-  async searchToken(tokenName) {
+  async searchToken(tokenName: string) {
     await Gestures.typeTextAndHideKeyboard(this.searchTokenBar, tokenName);
   }
 
@@ -80,7 +80,7 @@ class ImportTokensView {
     await Gestures.waitAndTap(this.networkInput);
   }
 
-  async tapNetworkOption(networkName) {
+  async tapNetworkOption(networkName: string) {
     await Gestures.waitAndTap(Matchers.getElementByText(networkName));
   }
 }

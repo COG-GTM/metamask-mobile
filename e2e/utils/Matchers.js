@@ -21,7 +21,7 @@ class Matchers {
   /**
    * Get element by text.
    *
-   * @param {string} text - Match elements with the specified text
+   * @param {string | RegExp} text - Match elements with the specified text
    * @param {number} index - Index of the element (default: 0)
    * @return {Promise<Detox.NativeElement>} - Resolves to the located element
    */

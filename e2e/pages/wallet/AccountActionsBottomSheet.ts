@@ -36,7 +36,7 @@ class AccountActionsBottomSheet {
     await Gestures.waitAndTap(this.showSrp);
   }
 
-  async renameActiveAccount(newName) {
+  async renameActiveAccount(newName: string) {
     await this.tapEditAccount();
     await Gestures.clearField(EditAccountNameView.accountNameInput);
     await TestHelpers.typeTextAndHideKeyboard(

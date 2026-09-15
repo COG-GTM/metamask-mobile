@@ -2,9 +2,7 @@ import TestHelpers from '../../helpers';
 import Gestures from '../../utils/Gestures';
 import Matchers from '../../utils/Matchers';
 import { SendViewSelectorsIDs } from '../../selectors/SendFlow/SendView.selectors';
-import {AddAddressModalSelectorsIDs} from '../../selectors/SendFlow/AddAddressModal.selectors';
-import Assertions from '../../utils/Assertions';
-
+import { AddAddressModalSelectorsIDs } from '../../selectors/SendFlow/AddAddressModal.selectors';
 
 class SendView {
   get cancelButton() {
@@ -32,7 +30,9 @@ class SendView {
   }
 
   get sendAddressConfirmation() {
-    return Matchers.getElementByID(AddAddressModalSelectorsIDs.ADD_ADDRESS_BUTTON);
+    return Matchers.getElementByID(
+      AddAddressModalSelectorsIDs.ADD_ADDRESS_BUTTON,
+    );
   }
 
   get removeAddressButton() {
@@ -66,7 +66,7 @@ class SendView {
     await Gestures.waitAndTap(this.addressInputField);
   }
 
-  async tapAccountName(account) {
+  async tapAccountName(account: string) {
     const accountName = Matchers.getElementByText(account);
     await Gestures.waitAndTap(accountName);
   }
@@ -75,7 +75,7 @@ class SendView {
     await Gestures.waitAndTap(this.nextButton);
   }
 
-  async inputAddress(address) {
+  async inputAddress(address: string) {
     await Gestures.replaceTextInField(this.addressInputField, address);
   }
 
@@ -88,9 +88,14 @@ class SendView {
     await TestHelpers.delay(1000);
   }
 
-  async splitAddressText(){
-    const attributes = await (await this.sendAddressConfirmation).getAttributes();
-    return await attributes.label.split(' ');
+  async splitAddressText() {
+    const attributes = await (
+      await this.sendAddressConfirmation
+    ).getAttributes();
+    if (!('label' in attributes) || typeof attributes.label !== 'string') {
+      throw new Error('Send address confirmation element has no label');
+    }
+    return attributes.label.split(' ');
   }
 }
 export default new SendView();

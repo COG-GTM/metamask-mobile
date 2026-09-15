@@ -14,7 +14,7 @@ class ContactsView {
       : Matchers.getElementByLabel(ContactsViewSelectorIDs.ADD_BUTTON);
   }
 
-  async tapOnAlias(alias) {
+  async tapOnAlias(alias: string) {
     const contactAlias = Matchers.getElementByText(alias);
     await Gestures.waitAndTap(contactAlias);
   }
@@ -23,11 +23,11 @@ class ContactsView {
     await Gestures.waitAndTap(this.addButton);
   }
 
-  async isContactAliasVisible(alias) {
+  async isContactAliasVisible(alias: string) {
     await TestHelpers.checkIfElementWithTextIsVisible(alias);
   }
 
-  async isContactAliasNotVisible(alias) {
+  async isContactAliasNotVisible(alias: string) {
     await TestHelpers.checkIfElementWithTextIsNotVisible(alias);
   }
 }

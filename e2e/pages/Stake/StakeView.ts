@@ -20,15 +20,15 @@ class StakeView {
     return Matchers.getElementByText(StakeViewSelectors.CONTINUE);
   }
 
-  async selectAmount(amount) {
-      const amountButton = await Matchers.getElementByText(amount);
-      await Gestures.waitAndTap(amountButton);
+  async selectAmount(amount: string) {
+    const amountButton = Matchers.getElementByText(amount);
+    await Gestures.waitAndTap(amountButton);
   }
 
-  async enterAmount(amount) {
-    for (let idx = 0; idx < amount.length; idx++) {
-      const element = Matchers.getElementByText(amount[idx]);
-      await Gestures.waitAndTap(element);
+  async enterAmount(amount: string) {
+    for (const digit of amount) {
+      const elem = Matchers.getElementByText(digit);
+      await Gestures.waitAndTap(elem);
     }
   }
 
@@ -39,7 +39,6 @@ class StakeView {
   async tapContinue() {
     await Gestures.waitAndTap(this.continueButton);
   }
-
 }
 
 export default new StakeView();

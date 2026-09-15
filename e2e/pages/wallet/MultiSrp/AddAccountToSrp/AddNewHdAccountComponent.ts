@@ -35,7 +35,7 @@ class AddNewHdAccountComponent {
     await Gestures.waitAndTap(this.confirmButton);
   }
 
-  async enterName(accountName) {
+  async enterName(accountName: string) {
     await Gestures.clearField(this.nameInput);
     await Gestures.typeTextAndHideKeyboard(this.nameInput, accountName);
   }

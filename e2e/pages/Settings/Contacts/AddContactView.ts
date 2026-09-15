@@ -64,16 +64,16 @@ class AddContactView {
     await Gestures.waitAndTap(this.deleteButton);
   }
 
-  async typeInName(name) {
+  async typeInName(name: string) {
     await Gestures.replaceTextInField(this.nameInput, name);
   }
 
-  async typeInMemo(memo) {
+  async typeInMemo(memo: string) {
     await Gestures.replaceTextInField(this.memoInput, memo);
     await Gestures.waitAndTap(this.memoLabel);
   }
 
-  async typeInAddress(address) {
+  async typeInAddress(address: string) {
     await Gestures.replaceTextInField(this.addressInput, address);
   }
 

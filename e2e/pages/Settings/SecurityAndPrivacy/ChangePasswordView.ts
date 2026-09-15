@@ -36,11 +36,11 @@ class ChangePasswordView {
     );
   }
 
-  async typeInConfirmPasswordInputBox(PASSWORD) {
+  async typeInConfirmPasswordInputBox(PASSWORD: string) {
     await Gestures.typeTextAndHideKeyboard(this.passwordInput, PASSWORD);
   }
 
-  async reEnterPassword(PASSWORD) {
+  async reEnterPassword(PASSWORD: string) {
     await Gestures.typeTextAndHideKeyboard(this.confirmPasswordInput, PASSWORD);
   }
 

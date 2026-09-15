@@ -60,7 +60,7 @@ class RevealSecretRecoveryPhrase {
     );
   }
 
-  async enterPasswordToRevealSecretCredential(password) {
+  async enterPasswordToRevealSecretCredential(password: string) {
     await Gestures.typeTextAndHideKeyboard(
       this.passwordInputToRevealCredential,
       password,

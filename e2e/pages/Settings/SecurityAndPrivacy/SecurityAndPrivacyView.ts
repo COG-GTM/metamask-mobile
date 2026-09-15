@@ -82,6 +82,7 @@ class SecurityAndPrivacy {
 
   get showPrivateKeyButton() {
     return Matchers.getElementByText(
+      // @ts-expect-error SHOW_PRIVATE_KEY is not defined on SecurityPrivacyViewSelectorsText (pre-existing; resolves to undefined at runtime)
       SecurityPrivacyViewSelectorsText.SHOW_PRIVATE_KEY,
     );
   }

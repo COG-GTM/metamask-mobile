@@ -19,7 +19,7 @@ class LoginView {
     return Matchers.getElementByID(LoginViewSelectors.REMEMBER_ME_SWITCH);
   }
 
-  async enterPassword(password) {
+  async enterPassword(password: string) {
     await Gestures.typeTextAndHideKeyboard(this.passwordInput, password);
   }
 

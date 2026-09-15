@@ -19,12 +19,13 @@ class TransactionDetailsModal {
 
   get statusConfirmed() {
     return Matchers.getElementIDWithAncestor(
+      // @ts-expect-error STATUS_CONFIRMED is not defined on CommonSelectorsIDs (pre-existing; resolves to undefined at runtime)
       CommonSelectorsIDs.STATUS_CONFIRMED,
       TransactionDetailsModalSelectorsIDs.BODY,
     );
   }
 
-  generateExpectedTitle(sourceToken, destinationToken) {
+  generateExpectedTitle(sourceToken: string, destinationToken: string) {
     let title = TransactionDetailsModalSelectorsText.TITLE;
     title = title.replace('{{sourceToken}}', sourceToken);
     title = title.replace('{{destinationToken}}', destinationToken);

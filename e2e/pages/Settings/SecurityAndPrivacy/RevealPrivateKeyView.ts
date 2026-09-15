@@ -82,7 +82,7 @@ class RevealPrivateKey {
   async scrollToDone() {
     await Gestures.scrollToElement(this.doneButton, this.scrollViewIdentifier);
   }
-  async enterPasswordToRevealSecretCredential(password) {
+  async enterPasswordToRevealSecretCredential(password: string) {
     await Gestures.typeTextAndHideKeyboard(
       this.passwordInputToRevealCredential,
       password,

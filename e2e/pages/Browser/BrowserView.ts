@@ -60,6 +60,7 @@ class Browser {
 
   get addFavouritesButton() {
     return Matchers.getElementByText(
+      // @ts-expect-error ADD_FAVORITES_BUTTON is not defined on BrowserViewSelectorsText (pre-existing; resolves to undefined at runtime)
       BrowserViewSelectorsText.ADD_FAVORITES_BUTTON,
     );
   }
@@ -118,7 +119,7 @@ class Browser {
     return Matchers.getElementByID(BrowserViewSelectorsIDs.NO_TABS_MESSAGE);
   }
 
-  async getFavoritesURL(url) {
+  async getFavoritesURL(url: string) {
     return Matchers.getElementByHref(
       BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
       url,
@@ -187,7 +188,7 @@ class Browser {
     }
   }
 
-  async navigateToURL(url) {
+  async navigateToURL(url: string) {
     await device.disableSynchronization(); // because animations makes typing into the browser slow
 
     await Gestures.typeTextAndHideKeyboard(this.urlInputBoxID, url);

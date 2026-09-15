@@ -181,12 +181,12 @@ class WalletView {
     await Gestures.waitAndTap(this.currentMainWalletAccountActions);
   }
 
-  async tapOnToken(token, index = 0) {
-    const element = Matchers.getElementByText(
+  async tapOnToken(token: string, index = 0) {
+    const elem = Matchers.getElementByText(
       token || WalletViewSelectorsText.DEFAULT_TOKEN,
       index,
     );
-    await Gestures.waitAndTap(element);
+    await Gestures.waitAndTap(elem);
   }
 
   async tapIdenticon() {
@@ -220,7 +220,7 @@ class WalletView {
   get testCollectible() {
     return device.getPlatform() === 'android'
       ? Matchers.getElementByID(WalletViewSelectorsIDs.COLLECTIBLE_FALLBACK, 1)
-      : Matchers.getElementByID(WalletViewSelectorsIDs.TEST_COLLECTIBLE,1);
+      : Matchers.getElementByID(WalletViewSelectorsIDs.TEST_COLLECTIBLE, 1);
   }
 
   async tapOnNftName() {
@@ -235,18 +235,18 @@ class WalletView {
     await Gestures.waitAndTap(this.importTokensFooterLink);
   }
 
-  async tapOnNFTInWallet(nftName) {
+  async tapOnNFTInWallet(nftName: string) {
     const elem = Matchers.getElementByText(nftName);
     await Gestures.waitAndTap(elem);
   }
 
-  async removeTokenFromWallet(token) {
+  async removeTokenFromWallet(token: string) {
     const elem = Matchers.getElementByText(token);
     await Gestures.tapAndLongPress(elem);
     await Gestures.waitAndTap(this.hideTokensLabel);
   }
 
-  async tokenInWallet(tokenName) {
+  async tokenInWallet(tokenName: string) {
     return Matchers.getElementByText(tokenName);
   }
 
@@ -256,11 +256,11 @@ class WalletView {
     );
   }
 
-  async nftIDInWallet(nftId) {
+  async nftIDInWallet(nftId: string) {
     return Matchers.getElementByID(nftId);
   }
 
-  async nftInWallet(nftName) {
+  async nftInWallet(nftName: string) {
     return Matchers.getElementByText(nftName);
   }
 
@@ -305,6 +305,7 @@ class WalletView {
   }
 
   async tapCarouselCloseButton() {
+    // @ts-expect-error carouselCloseButton getter does not exist on WalletView (pre-existing; resolves to undefined at runtime)
     await Gestures.tap(this.carouselCloseButton);
   }
 

@@ -24,10 +24,7 @@ class EnableNotificationsModal {
     );
   }
 
-  selectNotificationItem(
-    /** @type {string} */
-    id,
-  ) {
+  selectNotificationItem(id: string) {
     return Matchers.getElementByID(NotificationMenuViewSelectorsIDs.ITEM(id));
   }
 
@@ -37,10 +34,7 @@ class EnableNotificationsModal {
   async tapOnAnnouncementsTab() {
     await Gestures.waitAndTap(this.announcements_tab);
   }
-  async tapOnNotificationItem(
-    /** @type {string} */
-    id,
-  ) {
+  async tapOnNotificationItem(id: string) {
     await Gestures.waitAndTap(this.selectNotificationItem(id));
   }
 }

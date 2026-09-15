@@ -23,7 +23,7 @@ class AddAddressModal {
     return Matchers.getElementByID(AddAddressModalSelectorsIDs.TITLE);
   }
 
-  async typeInAlias(name) {
+  async typeInAlias(name: string) {
     await Gestures.typeTextAndHideKeyboard(this.aliasInput, name);
   }
 

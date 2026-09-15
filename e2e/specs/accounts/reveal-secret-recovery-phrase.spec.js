@@ -3,15 +3,15 @@
 import { SmokeNetworkExpansion } from '../../tags.js';
 import TestHelpers from '../../helpers.js';
 import { loginToApp } from '../../viewHelper.js';
-import TabBarComponent from '../../pages/wallet/TabBarComponent.js';
-import SettingsView from '../../pages/Settings/SettingsView.js';
-import SecurityAndPrivacy from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView.js';
+import TabBarComponent from '../../pages/wallet/TabBarComponent';
+import SettingsView from '../../pages/Settings/SettingsView';
+import SecurityAndPrivacy from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView';
 import SrpQuizModal from '../../pages/Settings/SecurityAndPrivacy/SrpQuizModal';
 import {
   SrpSecurityQuestionOneSelectorsText,
   SrpSecurityQuestionTwoSelectorsText,
 } from '../../selectors/Settings/SecurityAndPrivacy/SrpQuizModal.selectors';
-import RevealSecretRecoveryPhrase from '../../pages/Settings/SecurityAndPrivacy/RevealSecretRecoveryPhrase.js';
+import RevealSecretRecoveryPhrase from '../../pages/Settings/SecurityAndPrivacy/RevealSecretRecoveryPhrase';
 import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAndPrivacy/RevealSeedView.selectors.js';
 import FixtureServer from '../../fixtures/fixture-server.js';
 import FixtureBuilder from '../../fixtures/fixture-builder.js';
