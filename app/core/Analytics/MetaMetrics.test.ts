@@ -1,4 +1,5 @@
 import MetaMetrics from './MetaMetrics';
+import branch from 'react-native-branch';
 import StorageWrapper from '../../store/storage-wrapper';
 import {
   AGREED,
@@ -108,6 +109,45 @@ describe('MetaMetrics', () => {
 
       expect(StorageWrapper.getItem).toHaveBeenCalledWith(METRICS_OPT_IN);
       expect(metaMetrics.isEnabled()).toBeTruthy();
+    });
+
+    it('disables Branch tracking when configured without consent', async () => {
+      mockGet.mockResolvedValue(undefined);
+      const metaMetrics = TestMetaMetrics.getInstance();
+      expect(await metaMetrics.configure()).toBeTruthy();
+
+      expect(branch.disableTracking).toHaveBeenLastCalledWith(true);
+    });
+
+    it('enables Branch tracking when configured with stored consent', async () => {
+      mockGet.mockImplementation(async () => AGREED);
+      const metaMetrics = TestMetaMetrics.getInstance();
+      expect(await metaMetrics.configure()).toBeTruthy();
+
+      expect(branch.disableTracking).toHaveBeenLastCalledWith(false);
+    });
+
+    it('syncs Branch tracking with runtime opt-in changes', async () => {
+      const metaMetrics = TestMetaMetrics.getInstance();
+      await metaMetrics.enable();
+      expect(branch.disableTracking).toHaveBeenLastCalledWith(false);
+
+      await metaMetrics.enable(false);
+      expect(branch.disableTracking).toHaveBeenLastCalledWith(true);
+    });
+
+    it('still stores the opt-in preference if Branch throws', async () => {
+      (branch.disableTracking as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('native failure');
+      });
+      const metaMetrics = TestMetaMetrics.getInstance();
+      await metaMetrics.enable(false);
+
+      expect(StorageWrapper.setItem).toHaveBeenLastCalledWith(
+        METRICS_OPT_IN,
+        DENIED,
+      );
+      expect(metaMetrics.isEnabled()).toBeFalsy();
     });
 
     it('enables metrics', async () => {
