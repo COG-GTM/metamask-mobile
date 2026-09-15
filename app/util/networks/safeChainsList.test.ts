@@ -71,6 +71,42 @@ describe('safeChainsList', () => {
     expect(result).toBe(refreshedList);
   });
 
+  it('treats a cache written in the future as expired', async () => {
+    const now = jest.spyOn(Date, 'now').mockReturnValue(10_000);
+    const spyGet = jest
+      .spyOn(axios, 'get')
+      .mockResolvedValueOnce({ data: safeChainsList })
+      .mockResolvedValueOnce({ data: [...safeChainsList] });
+
+    await getSafeChainsList();
+    now.mockReturnValue(5_000);
+    await getSafeChainsList();
+
+    expect(spyGet).toHaveBeenCalledTimes(2);
+  });
+
+  it('discards an in-flight request result after reset', async () => {
+    const listA = safeChainsList;
+    const listB = [...safeChainsList];
+    let resolveRequest!: (value: { data: typeof listA }) => void;
+    const deferredRequest = new Promise<{ data: typeof listA }>((resolve) => {
+      resolveRequest = resolve;
+    });
+    const spyGet = jest
+      .spyOn(axios, 'get')
+      .mockImplementation(() => deferredRequest as never);
+
+    const firstRequest = getSafeChainsList();
+    resetSafeChainsListCache();
+    resolveRequest({ data: listA });
+
+    await expect(firstRequest).resolves.toBe(listA);
+
+    spyGet.mockResolvedValue({ data: listB });
+    await expect(getSafeChainsList()).resolves.toBe(listB);
+    expect(spyGet).toHaveBeenCalledTimes(2);
+  });
+
   it('does not cache rejected requests', async () => {
     const error = new Error('request failed');
     const spyGet = jest

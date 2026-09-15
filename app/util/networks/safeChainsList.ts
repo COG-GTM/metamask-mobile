@@ -15,6 +15,7 @@ let cachedAt = 0;
 let cachedByChainId: Map<string, SafeChain> | null = null;
 let mapForList: SafeChain[] | null = null;
 let inFlight: Promise<SafeChain[]> | null = null;
+let generation = 0;
 
 /**
  * Fetches the community chain list once and shares the parsed result
@@ -22,23 +23,29 @@ let inFlight: Promise<SafeChain[]> | null = null;
  * the in-flight request. Failures are not cached.
  */
 export async function getSafeChainsList(): Promise<SafeChain[]> {
-  if (cachedList && Date.now() - cachedAt < SAFE_CHAINS_LIST_TTL_MS) {
+  const age = Date.now() - cachedAt;
+  if (cachedList && age >= 0 && age < SAFE_CHAINS_LIST_TTL_MS) {
     return cachedList;
   }
   if (inFlight) {
     return inFlight;
   }
+  const requestGeneration = generation;
   inFlight = axios
     .get<SafeChain[]>(CHAIN_ID_NETWORK_URL)
     .then(({ data }) => {
-      cachedList = data;
-      cachedAt = Date.now();
-      cachedByChainId = null;
-      mapForList = null;
+      if (requestGeneration === generation) {
+        cachedList = data;
+        cachedAt = Date.now();
+        cachedByChainId = null;
+        mapForList = null;
+      }
       return data;
     })
     .finally(() => {
-      inFlight = null;
+      if (requestGeneration === generation) {
+        inFlight = null;
+      }
     });
   return inFlight;
 }
@@ -59,6 +66,7 @@ export async function getSafeChainByChainId(
 
 /** Test-only helper. */
 export function resetSafeChainsListCache(): void {
+  generation += 1;
   cachedList = null;
   cachedAt = 0;
   cachedByChainId = null;
