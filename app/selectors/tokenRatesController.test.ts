@@ -105,6 +105,45 @@ describe('selectTokenMarketPriceData', () => {
       },
     });
   });
+
+  it('returns the same reference when marketData changes but prices do not', () => {
+    const { mockState } = arrange();
+    const first = selectTokenMarketPriceData(mockState);
+
+    const nextState = createMockState();
+    nextState.engine.backgroundState.TokenRatesController.marketData = {
+      '0x1': {
+        '0x111': { price: 0.1, allTimeHigh: 99 } as MarketDataDetails,
+      },
+    };
+    const second = selectTokenMarketPriceData(nextState);
+
+    expect(second).toBe(first);
+  });
+
+  it('returns a new reference when a price changes', () => {
+    const { mockState } = arrange();
+    const first = selectTokenMarketPriceData(mockState);
+
+    const nextState = createMockState();
+    nextState.engine.backgroundState.TokenRatesController.marketData = {
+      '0x1': {
+        '0x111': { price: 0.2 } as MarketDataDetails,
+      },
+    };
+    const second = selectTokenMarketPriceData(nextState);
+
+    expect(second).not.toBe(first);
+    expect(second).toStrictEqual({ '0x1': { '0x111': { price: 0.2 } } });
+  });
+
+  it('does not recompute when the marketData reference is unchanged', () => {
+    const { mockState } = arrange();
+    selectTokenMarketPriceData.resetRecomputations();
+    selectTokenMarketPriceData(mockState);
+    selectTokenMarketPriceData(mockState);
+    expect(selectTokenMarketPriceData.recomputations()).toBe(1);
+  });
 });
 
 describe('selectTokenMarketDataByChainId', () => {
