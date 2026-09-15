@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   Alert,
@@ -55,15 +54,27 @@ import {
 import { CHOOSE_PASSWORD_STEPS } from '../../../constants/onboarding';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { Authentication } from '../../../core';
+import type { AuthData } from '../../../core/Authentication/Authentication';
 import AUTHENTICATION_TYPE from '../../../constants/userProperties';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { AccountImportStrategy } from '@metamask/keyring-controller';
+import { BIOMETRY_TYPE } from 'react-native-keychain';
 
 import { LoginOptionsSwitch } from '../../UI/LoginOptionsSwitch';
+import FoxImage from '../../../images/branding/fox.png';
 import navigateTermsOfUse from '../../../util/termsOfUse/termsOfUse';
 import { ChoosePasswordSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ChoosePassword.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
-const createStyles = (colors) =>
+import type { Theme } from '@metamask/design-tokens';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { Dispatch } from 'redux';
+import type {
+  IMetaMetricsEvent,
+  JsonMap,
+} from '../../../core/Analytics/MetaMetrics.types';
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -205,38 +216,37 @@ const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
 /**
  * View where users can set their password for the first time
  */
-class ChoosePassword extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * The action to update the password set flag
-     * in the redux store
-     */
-    passwordSet: PropTypes.func,
-    /**
-     * The action to update the password set flag
-     * in the redux store to false
-     */
-    passwordUnset: PropTypes.func,
-    /**
-     * The action to update the lock time
-     * in the redux store
-     */
-    setLockTime: PropTypes.func,
-    /**
-     * Action to reset the flag seedphraseBackedUp in redux
-     */
-    seedphraseNotBackedUp: PropTypes.func,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+type ChoosePasswordParams = string[];
 
-  state = {
+interface ChoosePasswordProps {
+  navigation: NavigationProp<ParamListBase>;
+  passwordSet: () => void;
+  passwordUnset: () => void;
+  setLockTime: (time: number) => void;
+  seedphraseNotBackedUp: () => void;
+  route: { params: ChoosePasswordParams };
+}
+
+interface ChoosePasswordState {
+  isSelected: boolean;
+  password: string;
+  confirmPassword: string;
+  secureTextEntry: boolean;
+  biometryType: BIOMETRY_TYPE | string | null;
+  biometryChoice: boolean;
+  rememberMe: boolean;
+  loading: boolean;
+  error: string | null;
+  inputWidth: { width: string };
+  passwordStrength?: number;
+}
+
+class ChoosePassword extends PureComponent<
+  ChoosePasswordProps,
+  ChoosePasswordState
+> {
+  context = undefined as unknown as React.ContextType<typeof ThemeContext>;
+  state: ChoosePasswordState = {
     isSelected: false,
     password: '',
     confirmPassword: '',
@@ -251,26 +261,26 @@ class ChoosePassword extends PureComponent {
 
   mounted = true;
 
-  confirmPasswordInput = React.createRef();
+  confirmPasswordInput = React.createRef<TextInput>();
   // Flag to know if password in keyring was set or not
   keyringControllerPasswordSet = false;
 
-  track = (event, properties) => {
+  track = (event: IMetaMetricsEvent, properties?: JsonMap) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
-    eventBuilder.addProperties(properties);
+    eventBuilder.addProperties(properties ?? {});
     trackOnboarding(eventBuilder.build());
   };
 
   updateNavBar = () => {
     const { route, navigation } = this.props;
     const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(
+      getOnboardingNavbarOptions(route, { headerLeft: undefined }, colors),
+    );
   };
 
   termsOfUse = async () => {
-    if (this.props.navigation) {
-      await navigateTermsOfUse(this.props.navigation.navigate);
-    }
+    await navigateTermsOfUse(this.props.navigation.navigate);
   };
 
   async componentDidMount() {
@@ -303,7 +313,10 @@ class ChoosePassword extends PureComponent {
     this.termsOfUse();
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  componentDidUpdate(
+    _prevProps: ChoosePasswordProps,
+    prevState: ChoosePasswordState,
+  ) {
     this.updateNavBar();
     const prevLoading = prevState.loading;
     const { loading } = this.state;
@@ -343,7 +356,9 @@ class ChoosePassword extends PureComponent {
 
     try {
       this.setState({ loading: true });
-      const previous_screen = this.props.route.params?.[PREVIOUS_SCREEN];
+      const previous_screen = (
+        this.props.route.params as unknown as Record<string, string | undefined>
+      )[PREVIOUS_SCREEN];
 
       const authType = await Authentication.componentAuthenticationType(
         this.state.biometryChoice,
@@ -354,7 +369,7 @@ class ChoosePassword extends PureComponent {
         try {
           await Authentication.newWalletAndKeychain(password, authType);
         } catch (error) {
-          if (Device.isIos) await this.handleRejectedOsBiometricPrompt();
+          if (Device.isIos()) await this.handleRejectedOsBiometricPrompt();
         }
         this.keyringControllerPasswordSet = true;
         this.props.seedphraseNotBackedUp();
@@ -365,7 +380,11 @@ class ChoosePassword extends PureComponent {
       this.props.passwordSet();
       this.props.setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT);
       this.setState({ loading: false });
-      this.props.navigation.replace('AccountBackupStep1');
+      (
+        this.props.navigation as NavigationProp<ParamListBase> & {
+          replace: NavigationProp<ParamListBase>['navigate'];
+        }
+      ).replace('AccountBackupStep1');
       this.track(MetaMetricsEvents.WALLET_CREATED, {
         biometrics_enabled: Boolean(this.state.biometryType),
       });
@@ -374,10 +393,12 @@ class ChoosePassword extends PureComponent {
         new_wallet: true,
       });
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       try {
         await this.recreateVault('');
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e instanceof Error ? e : new Error(String(e)));
       }
       // Set state in app as it was with no password
       await StorageWrapper.setItem(EXISTING_USER, TRUE);
@@ -385,18 +406,18 @@ class ChoosePassword extends PureComponent {
       this.props.passwordUnset();
       this.props.setLockTime(-1);
       // Should we force people to enable passcode / biometrics?
-      if (error.toString() === PASSCODE_NOT_SET_ERROR) {
+      if (errorMessage === PASSCODE_NOT_SET_ERROR) {
         Alert.alert(
           strings('choose_password.security_alert_title'),
           strings('choose_password.security_alert_message'),
         );
         this.setState({ loading: false });
       } else {
-        this.setState({ loading: false, error: error.toString() });
+        this.setState({ loading: false, error: errorMessage });
       }
       this.track(MetaMetricsEvents.WALLET_SETUP_FAILURE, {
         wallet_setup_type: 'new',
-        error_type: error.toString(),
+        error_type: errorMessage,
       });
     }
   };
@@ -419,7 +440,7 @@ class ChoosePassword extends PureComponent {
       throw Error(strings('choose_password.disable_biometric_error'));
     }
     this.setState({
-      biometryType: newAuthData.availableBiometryType,
+      biometryType: newAuthData.availableBiometryType ?? null,
       biometryChoice: false,
     });
   };
@@ -429,10 +450,10 @@ class ChoosePassword extends PureComponent {
    *
    * @param password - Password to recreate and set the vault with
    */
-  recreateVault = async (password, authType) => {
+  recreateVault = async (password: string, authType?: AuthData) => {
     const { KeyringController } = Engine.context;
     const seedPhrase = await this.getSeedPhrase();
-    let importedAccounts = [];
+    let importedAccounts: string[] = [];
     try {
       const keychainPassword = this.keyringControllerPasswordSet
         ? this.state.password
@@ -441,8 +462,7 @@ class ChoosePassword extends PureComponent {
       const simpleKeyrings = KeyringController.state.keyrings.filter(
         (keyring) => keyring.type === 'Simple Key Pair',
       );
-      for (let i = 0; i < simpleKeyrings.length; i++) {
-        const simpleKeyring = simpleKeyrings[i];
+      for (const simpleKeyring of simpleKeyrings) {
         const simpleKeyringAccounts = await Promise.all(
           simpleKeyring.accounts.map((account) =>
             KeyringController.exportAccount(keychainPassword, account),
@@ -452,16 +472,19 @@ class ChoosePassword extends PureComponent {
       }
     } catch (e) {
       Logger.error(
-        e,
+        e instanceof Error ? e : new Error(String(e)),
         'error while trying to get imported accounts on recreate vault',
       );
     }
 
     // Recreate keyring with password given to this method
+    if (!authType) {
+      throw new Error('Authentication data is unavailable');
+    }
     await Authentication.newWalletAndRestore(
       password,
       authType,
-      seedPhrase,
+      seedPhrase as unknown as string,
       true,
     );
     // Keyring is set with empty password or not
@@ -478,14 +501,15 @@ class ChoosePassword extends PureComponent {
 
     try {
       // Import imported accounts again
-      for (let i = 0; i < importedAccounts.length; i++) {
-        await KeyringController.importAccountWithStrategy('privateKey', [
-          importedAccounts[i],
-        ]);
+      for (const importedAccount of importedAccounts) {
+        await KeyringController.importAccountWithStrategy(
+          AccountImportStrategy.privateKey,
+          [importedAccount],
+        );
       }
     } catch (e) {
       Logger.error(
-        e,
+        e instanceof Error ? e : new Error(String(e)),
         'error while trying to import accounts on recreate vault',
       );
     }
@@ -508,14 +532,14 @@ class ChoosePassword extends PureComponent {
     current && current.focus();
   };
 
-  updateBiometryChoice = async (biometryChoice) => {
+  updateBiometryChoice = async (biometryChoice: boolean) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     this.setState({ biometryChoice });
   };
 
   renderSwitch = () => {
     const { biometryType, biometryChoice } = this.state;
-    const handleUpdateRememberMe = (rememberMe) => {
+    const handleUpdateRememberMe = (rememberMe: boolean) => {
       this.setState({ rememberMe });
     };
     return (
@@ -528,7 +552,7 @@ class ChoosePassword extends PureComponent {
     );
   };
 
-  onPasswordChange = (val) => {
+  onPasswordChange = (val: string) => {
     const passInfo = zxcvbn(val);
 
     this.setState({ password: val, passwordStrength: passInfo.score });
@@ -539,7 +563,11 @@ class ChoosePassword extends PureComponent {
   };
 
   learnMore = () => {
-    this.props.navigation.push('Webview', {
+    (
+      this.props.navigation as NavigationProp<ParamListBase> & {
+        push: NavigationProp<ParamListBase>['navigate'];
+      }
+    ).push('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: 'https://support.metamask.io/managing-my-wallet/resetting-deleting-and-restoring/how-can-i-reset-my-password/',
@@ -548,7 +576,7 @@ class ChoosePassword extends PureComponent {
     });
   };
 
-  setConfirmPassword = (val) => this.setState({ confirmPassword: val });
+  setConfirmPassword = (val: string) => this.setState({ confirmPassword: val });
 
   render() {
     const {
@@ -563,11 +591,14 @@ class ChoosePassword extends PureComponent {
     } = this.state;
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
-    const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
-    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
+    const previousScreen = (
+      this.props.route.params as unknown as Record<string, string | undefined>
+    )[PREVIOUS_SCREEN];
+    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength ?? 0);
     const colors = this.context.colors || mockTheme.colors;
     const themeAppearance = this.context.themeAppearance || 'light';
-    const styles = createStyles(colors);
+    const styles = createStyles(colors) as ReturnType<typeof createStyles> &
+      Record<string, object>;
 
     return (
       <SafeAreaView style={styles.mainWrapper}>
@@ -575,7 +606,7 @@ class ChoosePassword extends PureComponent {
           <View style={styles.loadingWrapper}>
             <View style={styles.foxWrapper}>
               <Image
-                source={require('../../../images/branding/fox.png')}
+                source={FoxImage}
                 style={styles.image}
                 resizeMethod={'auto'}
               />
@@ -631,7 +662,11 @@ class ChoosePassword extends PureComponent {
                     )}
                   </Text>
                   <TextInput
-                    style={[styles.input, inputWidth]}
+                    style={
+                      [styles.input, inputWidth] as React.ComponentProps<
+                        typeof TextInput
+                      >['style']
+                    }
                     value={password}
                     onChangeText={this.onPasswordChange}
                     secureTextEntry={secureTextEntry}
@@ -663,7 +698,9 @@ class ChoosePassword extends PureComponent {
                     <Text
                       variant={TextVariant.BodySM}
                       style={styles.passwordStrengthLabel}
-                    />
+                    >
+                      {' '}
+                    </Text>
                   )}
                 </View>
                 <View style={styles.field}>
@@ -672,7 +709,11 @@ class ChoosePassword extends PureComponent {
                   </Text>
                   <TextInput
                     ref={this.confirmPasswordInput}
-                    style={[styles.input, inputWidth]}
+                    style={
+                      [styles.input, inputWidth] as React.ComponentProps<
+                        typeof TextInput
+                      >['style']
+                    }
                     value={confirmPassword}
                     onChangeText={this.setConfirmPassword}
                     secureTextEntry={secureTextEntry}
@@ -768,10 +809,10 @@ class ChoosePassword extends PureComponent {
 
 ChoosePassword.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   passwordSet: () => dispatch(passwordSet()),
   passwordUnset: () => dispatch(passwordUnset()),
-  setLockTime: (time) => dispatch(setLockTime(time)),
+  setLockTime: (time: number) => dispatch(setLockTime(time)),
   seedphraseNotBackedUp: () => dispatch(seedphraseNotBackedUp()),
 });
 

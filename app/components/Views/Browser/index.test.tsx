@@ -10,7 +10,11 @@ import { backgroundState } from '../../../util/test/initial-root-state';
 
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  type NavigationProp,
+  type ParamListBase,
+} from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { act } from '@testing-library/react';
@@ -112,7 +116,9 @@ describe('Browser', () => {
                     route={routeMock}
                     tabs={mockTabs}
                     activeTab={1}
-                    navigation={mockNavigation}
+                    navigation={
+                      mockNavigation as unknown as NavigationProp<ParamListBase>
+                    }
                     createNewTab={jest.fn}
                     closeAllTabs={jest.fn}
                     closeTab={jest.fn}
@@ -142,7 +148,9 @@ describe('Browser', () => {
                   route={routeMock}
                   tabs={[]}
                   activeTab={1}
-                  navigation={mockNavigation}
+                  navigation={
+                    mockNavigation as unknown as NavigationProp<ParamListBase>
+                  }
                   createNewTab={jest.fn}
                   closeAllTabs={jest.fn}
                   closeTab={jest.fn}
@@ -169,11 +177,13 @@ describe('Browser', () => {
               {() => (
                 <Browser
                   route={{
-                    params: { newTabUrl: 'about:blank', timestamp: '987' },
+                    params: { newTabUrl: 'about:blank', timestamp: 987 },
                   }}
                   tabs={mockTabs}
                   activeTab={1}
-                  navigation={mockNavigation}
+                  navigation={
+                    mockNavigation as unknown as NavigationProp<ParamListBase>
+                  }
                   createNewTab={jest.fn}
                   closeAllTabs={jest.fn}
                   closeTab={jest.fn}
@@ -214,7 +224,9 @@ describe('Browser', () => {
                   route={{ params: {} }}
                   tabs={mockTabsForIdling}
                   activeTab={1}
-                  navigation={mockNavigation}
+                  navigation={
+                    mockNavigation as unknown as NavigationProp<ParamListBase>
+                  }
                   createNewTab={jest.fn}
                   closeAllTabs={jest.fn}
                   closeTab={jest.fn}

@@ -4,6 +4,11 @@ import EnterPasswordSimple from './';
 import { NavigationContainer } from '@react-navigation/native';
 import { ThemeContext } from '../../../util/theme';
 
+const TestEnterPasswordSimple =
+  EnterPasswordSimple as unknown as React.ComponentType<{
+    navigation: typeof mockNavigation;
+  }>;
+
 const mockTheme = {
   colors: {
     background: { default: 'white' },
@@ -33,7 +38,7 @@ describe('EnterPasswordSimple', () => {
     render(
       <ThemeContext.Provider value={mockTheme}>
         <NavigationContainer>
-          <EnterPasswordSimple navigation={mockNavigation} />
+          <TestEnterPasswordSimple navigation={mockNavigation} />
         </NavigationContainer>
       </ThemeContext.Provider>,
     );

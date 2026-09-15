@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   ScrollView,
@@ -36,6 +35,9 @@ import {
   selectConversionRate,
   selectCurrentCurrency,
 } from '../../../selectors/currencyRateController';
+import type { Theme } from '@metamask/design-tokens';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import type { RootState } from '../../../reducers';
 
 const IMAGE_3_RATIO = 281 / 354;
 const IMAGE_2_RATIO = 353 / 416;
@@ -44,7 +46,7 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     scroll: {
       flexGrow: 1,
@@ -127,6 +129,7 @@ const createStyles = (colors) =>
     tab: {
       margin: 32,
     },
+    scrollTabs: {},
   });
 
 const gas_education_carousel_1 = require('../../../images/gas-education-carousel-1.png'); // eslint-disable-line
@@ -141,17 +144,39 @@ const carousel_images = [
 /**
  * View that is displayed to first time (new) users
  */
+interface GasEducationCarouselParams {
+  navigateTo?: () => void;
+  [key: string]: unknown;
+}
+
+type GasEducationNavigation = Pick<
+  NavigationProp<ParamListBase>,
+  'setOptions'
+> &
+  Partial<Pick<NavigationProp<ParamListBase>, 'goBack' | 'navigate'>> & {
+    getParam?: (name: string) => unknown;
+  };
+
+interface GasEducationCarouselProps {
+  navigation: GasEducationNavigation;
+  route?: { params: GasEducationCarouselParams };
+  conversionRate: ReturnType<typeof selectConversionRate>;
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  ticker: ReturnType<typeof selectEvmTicker>;
+}
+
 const GasEducationCarousel = ({
   navigation,
   route,
   conversionRate,
   currentCurrency,
   ticker,
-}) => {
+}: GasEducationCarouselProps) => {
   const [currentTab, setCurrentTab] = useState(1);
-  const [gasFiat, setGasFiat] = useState(null);
+  const [gasFiat, setGasFiat] = useState<string | null>(null);
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = createStyles(colors) as ReturnType<typeof createStyles> &
+    Record<string, object>;
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -183,6 +208,7 @@ const GasEducationCarousel = ({
           const gasLimitHex = BNToHex(gas);
           const gasHexes = calculateEIP1559GasFeeHexes({
             gasLimitHex,
+            estimatedGasLimitHex: gasLimitHex,
             estimatedBaseFeeHex,
             suggestedMaxFeePerGasHex,
             suggestedMaxPriorityFeePerGasHex,
@@ -210,10 +236,13 @@ const GasEducationCarousel = ({
           conversionRate,
         });
 
-        const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
-        setGasFiat(gasFiat);
+        const gasFiatValue = formatCurrency(
+          maxFeePerGasConversion,
+          currentCurrency,
+        );
+        setGasFiat(gasFiatValue);
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e instanceof Error ? e : new Error(String(e)));
       }
       setIsLoading(false);
     };
@@ -221,25 +250,25 @@ const GasEducationCarousel = ({
   }, [conversionRate, currentCurrency, ticker]);
 
   const onPresGetStarted = () => {
-    navigation.pop();
+    navigation.goBack?.();
     route?.params?.navigateTo?.();
   };
 
   const renderTabBar = () => <View />;
 
-  const onChangeTab = (obj) => {
+  const onChangeTab = (obj: { i: number }) => {
     setCurrentTab(obj.i + 1);
   };
 
   const openLink = () =>
-    navigation.navigate('Webview', {
+    navigation.navigate?.('Webview', {
       screen: 'SimpleWebview',
       params: {
         url: 'https://community.metamask.io/t/what-is-gas-why-do-transactions-take-so-long/3172',
       },
     });
 
-  const renderText = (key) => {
+  const renderText = (key: number) => {
     if (key === 1) {
       return (
         <View style={styles.tab}>
@@ -331,7 +360,7 @@ const GasEducationCarousel = ({
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
-              {['one', 'two', 'three'].map((value, index) => {
+              {['one', 'two', 'three'].map((_value, index) => {
                 const key = index + 1;
                 const imgStyleKey = `carouselImage${key}`;
                 return (
@@ -387,30 +416,7 @@ const GasEducationCarousel = ({
   );
 };
 
-GasEducationCarousel.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-    /* conversion rate of ETH - FIAT
-    */
-  conversionRate: PropTypes.any,
-  /**
-    /* Selected currency
-    */
-  currentCurrency: PropTypes.string,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),
