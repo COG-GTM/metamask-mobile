@@ -31,7 +31,7 @@ interface ApprovalFlowLoaderProps {
   /**
    * Text that will be displayed while the approval flow modal is active
    */
-  loadingText?: string;
+  loadingText?: string | null;
 }
 
 const ApprovalFlowLoader = ({ loadingText }: ApprovalFlowLoaderProps) => {

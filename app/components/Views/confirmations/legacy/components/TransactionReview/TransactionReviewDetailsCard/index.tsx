@@ -109,8 +109,6 @@ interface TransactionReviewDetailsCardProps {
 export default class TransactionReviewDetailsCard extends Component<TransactionReviewDetailsCardProps> {
   static contextType = ThemeContext;
 
-  declare context: Theme;
-
   render() {
     const {
       toggleViewDetails,
@@ -129,7 +127,7 @@ export default class TransactionReviewDetailsCard extends Component<TransactionR
       tokenName,
       tokenStandard,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

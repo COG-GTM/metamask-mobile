@@ -283,14 +283,14 @@ interface OptionType {
   label:
     | string
     | ReactNode
-    | ((selected: boolean, disabled: boolean) => ReactNode);
+    | ((selected: boolean, disabled?: boolean) => ReactNode);
   /**
    * Top label of the option. It can be a string, component or a render function.
    */
   topLabel?:
     | string
     | ReactNode
-    | ((selected: boolean, disabled: boolean) => ReactNode);
+    | ((selected: boolean, disabled?: boolean) => ReactNode);
   /**
    * Option name string, this is used as argument when calling the onPress function.
    */
@@ -319,7 +319,7 @@ interface HorizontalSelectorProps {
   /**
    * Boolean value to determine whether the options are disabled or not.
    */
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 export default HorizontalSelector;

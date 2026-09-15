@@ -126,8 +126,6 @@ interface TransactionReviewDataProps {
 class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
   static contextType = ThemeContext;
 
-  declare context: Theme;
-
   applyRootHeight = () => ({ height: this.props.customGasHeight });
 
   handleCopyHex = () => {
@@ -153,7 +151,7 @@ class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
       actionKey,
       toggleDataView,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

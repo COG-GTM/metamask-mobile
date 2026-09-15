@@ -39,8 +39,8 @@ import {
 } from '../../../../../../../util/networks';
 import CustomNonceModal from '../../../SendFlow/components/CustomNonceModal';
 import {
-  setNonce,
-  setProposedNonce,
+  setNonce as setNonceAction,
+  setProposedNonce as setProposedNonceAction,
 } from '../../../../../../../actions/transaction';
 import TransactionReviewEIP1559 from '../TransactionReviewEIP1559';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
@@ -273,8 +273,6 @@ class TransactionReviewInformation extends PureComponent<
 > {
   static contextType = ThemeContext;
 
-  declare context: Theme;
-
   state: TransactionReviewInformationState = {
     toFocused: false,
     amountError: '',
@@ -316,7 +314,7 @@ class TransactionReviewInformation extends PureComponent<
   };
 
   getTotalFiat = (
-    asset: SelectedAsset,
+    _asset: SelectedAsset,
     totalGas: BN,
     conversionRate: number | null | undefined,
     exchangeRate: number,
@@ -715,7 +713,7 @@ class TransactionReviewInformation extends PureComponent<
       shouldUseSmartTransaction,
     } = this.props;
     const { nonce } = this.props.transaction;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const errorPress = this.isTestNetwork() ? this.goToFaucet : this.buyEth;
@@ -823,8 +821,8 @@ const mapStateToProps = (state: RootState) => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
+  setNonce: (nonce: number) => dispatch(setNonceAction(nonce)),
+  setProposedNonce: (nonce: number) => dispatch(setProposedNonceAction(nonce)),
 });
 
 export default connect(

@@ -11,7 +11,6 @@ import {
 } from '@metamask/transaction-controller';
 import { TokenListToken } from '@metamask/assets-controllers';
 import { Hex } from '@metamask/utils';
-import type BN from 'bnjs4';
 import { strings } from '../../../../../../../locales/i18n';
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
@@ -340,8 +339,6 @@ class TransactionReview extends PureComponent<
 > {
   static contextType = ThemeContext;
 
-  declare context: Theme;
-
   state: TransactionReviewState = {
     toFocused: false,
     actionKey: strings('transactions.tx_review_confirm'),
@@ -415,7 +412,7 @@ class TransactionReview extends PureComponent<
           ({ address }) => address === safeToChecksumAddress(to),
         );
       }
-      const symbol = (contract && contract.symbol) || 'ERC20';
+      const symbol = contract?.symbol || 'ERC20';
       assetAmount = `${
         decodeTransferData('transfer', data as string)[1]
       } ${symbol}`;
@@ -521,7 +518,7 @@ class TransactionReview extends PureComponent<
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 

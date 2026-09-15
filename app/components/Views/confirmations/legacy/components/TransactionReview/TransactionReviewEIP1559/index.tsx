@@ -210,7 +210,7 @@ const TransactionReviewEIP1559 = ({
   const [isVisibleLegacyLearnMore, , showLegacyLearnMore, hideLegacyLearnMore] =
     useModalHandler(false);
   const toggleLearnMoreModal = useCallback(() => {
-    setShowLearnMoreModal((showLearnMoreModal) => !showLearnMoreModal);
+    setShowLearnMoreModal((visible) => !visible);
   }, []);
   const { colors } = useTheme();
   const styles = createStyles(colors);

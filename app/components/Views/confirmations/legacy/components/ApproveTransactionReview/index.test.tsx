@@ -1,9 +1,11 @@
+import React, { ComponentType } from 'react';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { cloneDeep } from 'lodash';
-import ApproveTransactionModal from '.';
+import ApproveTransactionReview from '.';
+import { RootState } from '../../../../../../reducers';
+import { DeepPartial, renderScreen } from '../../../../../../util/test/renderWithProvider';
 import { getTokenDetails } from '../../../../../../util/address';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
-import { renderScreen } from '../../../../../../util/test/renderWithProvider';
 import { SET_APPROVAL_FOR_ALL_SIGNATURE } from '../../../../../../util/transactions';
 
 jest.mock('../../../../../../util/address', () => ({
@@ -58,6 +60,14 @@ const transaction = {
   data,
 };
 
+type TokenDetails = Awaited<ReturnType<typeof getTokenDetails>>;
+
+// The legacy fixture intentionally omits most of the props the Approve screen
+// supplies, and its state only loosely follows the real controller shapes.
+const ApproveTransactionModal = ApproveTransactionReview as unknown as ComponentType<{
+  onConfirm?: () => void;
+}>;
+
 const initialState = {
   engine: {
     backgroundState: {
@@ -101,7 +111,18 @@ const initialState = {
       },
     ],
   },
-};
+} as unknown as DeepPartial<RootState>;
+
+/**
+ * The fixtures below deliberately use shapes that differ from the real
+ * controller state (e.g. `TokenListController.tokensChainsCache[chainId].data`
+ * as an array), so they are edited through an untyped view of the state.
+ */
+const getMutableBackgroundState = (state: DeepPartial<RootState>) =>
+  state.engine?.backgroundState as unknown as Record<
+    string,
+    Record<string, unknown>
+  >;
 
 describe('ApproveTransactionModal', () => {
   it('render matches snapshot', () => {
@@ -114,13 +135,14 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is enabled when standard is defined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
-    mockGetTokenDetails.mockReturnValue({
+    const mockGetTokenDetails = jest.mocked(getTokenDetails);
+    mockGetTokenDetails.mockResolvedValue({
       standard: 'ERC20',
-    });
+    } as TokenDetails);
     const state = cloneDeep(initialState);
-    state.engine.backgroundState.AccountTrackerController.accounts = [];
-    state.engine.backgroundState.TokenListController = {
+    const mutableBackgroundState = getMutableBackgroundState(state);
+    mutableBackgroundState.AccountTrackerController.accounts = [];
+    mutableBackgroundState.TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
@@ -159,10 +181,7 @@ describe('ApproveTransactionModal', () => {
     };
     const mockOnConfirm = jest.fn();
     const { getByTestId } = renderScreen(
-      () => (
-        // eslint-disable-next-line react/react-in-jsx-scope
-        <ApproveTransactionModal onConfirm={mockOnConfirm} />
-      ),
+      () => <ApproveTransactionModal onConfirm={mockOnConfirm} />,
       { name: 'Approve' },
       { state },
     );
@@ -178,11 +197,12 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is disabled when standard is undefined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
-    mockGetTokenDetails.mockReturnValue({});
+    const mockGetTokenDetails = jest.mocked(getTokenDetails);
+    mockGetTokenDetails.mockResolvedValue({} as TokenDetails);
     const state = cloneDeep(initialState);
-    state.engine.backgroundState.AccountTrackerController.accounts = [];
-    state.engine.backgroundState.TokenListController = {
+    const mutableBackgroundState = getMutableBackgroundState(state);
+    mutableBackgroundState.AccountTrackerController.accounts = [];
+    mutableBackgroundState.TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
@@ -220,10 +240,7 @@ describe('ApproveTransactionModal', () => {
     };
     const mockOnConfirm = jest.fn();
     const { getByTestId } = renderScreen(
-      () => (
-        // eslint-disable-next-line react/react-in-jsx-scope
-        <ApproveTransactionModal onConfirm={mockOnConfirm} />
-      ),
+      () => <ApproveTransactionModal onConfirm={mockOnConfirm} />,
       { name: 'Approve' },
       { state },
     );

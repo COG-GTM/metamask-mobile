@@ -96,8 +96,6 @@ interface TransactionReviewSummaryProps {
 class TransactionReviewSummary extends PureComponent<TransactionReviewSummaryProps> {
   static contextType = ThemeContext;
 
-  declare context: Theme;
-
   renderWarning = () => (
     <Text>{`${strings('transaction.approve_warning')} ${
       this.props.assetAmount
@@ -114,7 +112,7 @@ class TransactionReviewSummary extends PureComponent<TransactionReviewSummaryPro
       primaryCurrency,
       chainId,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const isTestNetResult = isTestNet(chainId ?? '');
 
