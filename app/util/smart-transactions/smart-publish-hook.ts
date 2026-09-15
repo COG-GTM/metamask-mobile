@@ -2,7 +2,7 @@ import {
   TransactionParams,
   TransactionController,
   TransactionMeta,
-  type PublishBatchHookTransaction
+  type PublishBatchHookTransaction,
 } from '@metamask/transaction-controller';
 import SmartTransactionsController, {
   SmartTransactionsControllerSmartTransactionEvent,
@@ -140,9 +140,9 @@ class SmartTransactionHook {
     } = getTransactionType(this.#transactionMeta, this.#chainId);
     this.#isDapp = isDapp;
     this.#isSend = isSend;
-    this.#isInSwapFlow = isInSwapFlow;
-    this.#isSwapApproveTx = isSwapApproveTx;
-    this.#isSwapTransaction = isSwapTransaction;
+    this.#isInSwapFlow = isInSwapFlow as boolean;
+    this.#isSwapApproveTx = isSwapApproveTx as boolean;
+    this.#isSwapTransaction = isSwapTransaction as boolean;
     this.#isNativeTokenTransferred = isNativeTokenTransferred;
 
     const approvalIdForPendingSwapApproveTx =
@@ -261,7 +261,7 @@ class SmartTransactionHook {
         `${LOG_PREFIX}: A list of transactions are required for batch submissions`,
       );
     }
-  }
+  };
 
   async submitBatch() {
     this.#validateSubmitBatch();
@@ -435,7 +435,11 @@ class SmartTransactionHook {
     getFeesResponse?: Fees;
   } = {}) => {
     let signedTransactions: string[] = [];
-    if (this.#transactions && Array.isArray(this.#transactions) && this.#transactions.length > 0) {
+    if (
+      this.#transactions &&
+      Array.isArray(this.#transactions) &&
+      this.#transactions.length > 0
+    ) {
       // Batch transaction mode - extract signed transactions from this.#transactions[].signedTx
       signedTransactions = this.#transactions
         .filter((tx) => tx?.signedTx)

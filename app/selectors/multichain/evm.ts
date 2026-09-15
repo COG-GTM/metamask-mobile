@@ -163,14 +163,14 @@ export const selectNativeTokensAcrossChainsForAddress = createSelector(
         hexToBN(nativeTokenInfoByChainId?.balance) as any,
         conversionRate,
         currentCurrency,
-      );
+      ) as string;
       stakedBalanceFiat = weiToFiat(
         // TODO: Replace "any" with type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         hexToBN(nativeTokenInfoByChainId?.stakedBalance) as any,
         conversionRate,
         currentCurrency,
-      );
+      ) as string;
 
       const tokenByChain = {
         ...nativeTokenInfoByChainId,
