@@ -56,7 +56,15 @@ interface WebsiteIconProps {
   faviconSource?: string;
 }
 
-class WebsiteIcon extends PureComponent<WebsiteIconProps> {
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+interface WebsiteIcon {
+  context: React.ContextType<typeof ThemeContext>;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class WebsiteIcon extends PureComponent<WebsiteIconProps, Record<string, never>, React.ContextType<typeof ThemeContext>> {
+  static contextType = ThemeContext;
+
 
   state = {
     renderIconUrlError: false,
@@ -120,8 +128,8 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps> {
         {imageSVG ? (
           <SvgUri
             uri={imageSVG}
-            width={style.width}
-            height={style.height}
+            width={style?.width as string | number | undefined}
+            height={style?.height as string | number | undefined}
             style={style}
             onError={this.onRenderIconUrlError}
           />
@@ -144,7 +152,5 @@ class WebsiteIcon extends PureComponent<WebsiteIconProps> {
     );
   };
 }
-
-WebsiteIcon.contextType = ThemeContext;
 
 export default withFaviconAwareness(WebsiteIcon);

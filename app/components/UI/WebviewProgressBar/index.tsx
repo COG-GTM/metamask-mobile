@@ -12,9 +12,17 @@ interface WebviewProgressBarProps {
  * and allows to fade it in / out
  * via the boolean prop visible
  */
-export default class WebviewProgressBar extends PureComponent<
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+interface WebviewProgressBar {
+  context: React.ContextType<typeof ThemeContext>;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class WebviewProgressBar extends PureComponent<
   WebviewProgressBarProps
 > {
+  static contextType = ThemeContext;
+
   state: { visible: boolean } = {
     visible: true,
   };
@@ -66,4 +74,4 @@ export default class WebviewProgressBar extends PureComponent<
   };
 }
 
-WebviewProgressBar.contextType = ThemeContext;
+export default WebviewProgressBar;

@@ -319,5 +319,5 @@ export default connect(
     ReceiveRequest as unknown as React.ComponentType<{
       metrics: IUseMetricsHook;
     }>,
-  ) as React.ComponentType<Omit<Props, 'metrics'>>,
+  ) as React.ComponentType<Partial<Omit<Props, 'metrics'>>>,
 );

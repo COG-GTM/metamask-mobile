@@ -95,7 +95,10 @@ interface OwnProps {
   navigation: CompatNavigationProp<NavigationProp<ParamListBase>> & {
     push: (route: string, params?: Record<string, unknown>) => void;
   };
-  transactionObject: TransactionMeta;
+  transactionObject: TransactionMeta & {
+    transaction?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
   transactionDetails: TransactionDetailsData;
   close?: () => void;
   showSpeedUpModal?: () => void;
@@ -300,10 +303,11 @@ class TransactionDetails extends PureComponent<Props, State> {
       chainId,
       networkConfigurations,
     } = this.props;
+    const transactionChainId = txChainId ?? chainId;
 
     const blockExplorer = this.getBlockExplorerForChain(
       chainId,
-      txChainId,
+      transactionChainId,
       networkConfigurations,
     );
     this.setState({ rpcBlockExplorer: blockExplorer });
@@ -584,7 +588,5 @@ const ConnectedTransactionDetails = connect(
 )(TransactionDetailsWithNavigation);
 
 export default ConnectedTransactionDetails as unknown as React.ComponentType<
-  Omit<OwnProps, 'navigation'> & {
-    navigation?: OwnProps['navigation'];
-  }
+  Record<string, unknown>
 >;

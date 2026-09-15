@@ -66,11 +66,19 @@ const createStyles = (colors: Theme['colors']) =>
  * View that renders custom error page for the browser
  */
 interface WebviewErrorProps {
-  error?: { description?: string } | false;
+  error?: { description?: string } | boolean;
   returnHome?: () => void;
 }
 
-export default class WebviewError extends PureComponent<WebviewErrorProps> {
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+interface WebviewError {
+  context: React.ContextType<typeof ThemeContext>;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class WebviewError extends PureComponent<WebviewErrorProps> {
+  static contextType = ThemeContext;
+
 
   returnHome = () => {
     this.props.returnHome?.();
@@ -104,7 +112,7 @@ export default class WebviewError extends PureComponent<WebviewErrorProps> {
           >
             {strings('webview_error.message')}
           </Text>
-          {error.description ? (
+          {typeof error === 'object' && error?.description ? (
             <Text style={styles.errorInfo}>{error.description}</Text>
           ) : null}
         </View>
@@ -121,4 +129,4 @@ export default class WebviewError extends PureComponent<WebviewErrorProps> {
   }
 }
 
-WebviewError.contextType = ThemeContext;
+export default WebviewError;

@@ -85,7 +85,12 @@ interface InternalAccount {
 }
 
 interface OwnProps {
-  tx: TransactionMeta & { isSmartTransaction?: boolean };
+  tx: TransactionMeta & {
+    isSmartTransaction?: boolean;
+    txParams: TransactionMeta['txParams'] & { status?: string };
+    transaction?: Record<string, unknown>;
+    [key: string]: unknown;
+  };
   txChainId?: string;
   selectedAddress?: string;
   tokens?: Record<string, unknown>;
@@ -780,4 +785,6 @@ const TransactionElementWithBridge = (props: TransactionElementOwnProps) => {
   );
 };
 
-export default connect(mapStateToProps)(TransactionElementWithBridge);
+export default connect(mapStateToProps)(
+  TransactionElementWithBridge,
+) as unknown as React.ComponentType<Record<string, unknown>>;

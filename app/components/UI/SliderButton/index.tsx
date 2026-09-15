@@ -121,7 +121,7 @@ function SliderButton({
   const [isPressed, setIsPressed] = useState(false);
 
   const shineOffset = useRef(new Animated.Value(0)).current;
-  const pan = useRef(new Animated.ValueXY(0, 0)).current;
+  const pan = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
   const completion = useRef(new Animated.Value(0)).current;
 
   const onCompleteCallback = useRef(onComplete);
@@ -272,7 +272,7 @@ function SliderButton({
       onLayout={(e) => {
         setComponentWidth(e.nativeEvent.layout.width);
       }}
-      testID={SwapsViewSelectors.SWIPE_TO_SWAP_BUTTON}
+      testID={SwapsViewSelectors.SWAP_BUTTON}
     >
       <View style={styles.trackBack}>
         <Image

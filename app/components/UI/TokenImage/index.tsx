@@ -14,6 +14,7 @@ import { selectTokenList } from '../../../selectors/tokenListController';
 import { selectIsIpfsGatewayEnabled } from '../../../selectors/preferencesController';
 import { isIPFSUri } from '../../../util/general';
 import type { RootState } from '../../../reducers';
+import type { TokenI } from '../Tokens/types';
 
 const styles = StyleSheet.create({
   itemLogoWrapper: {
@@ -29,6 +30,8 @@ const styles = StyleSheet.create({
 interface TokenAsset {
   address?: string;
   image?: string;
+  symbol?: string;
+  decimals?: number;
 }
 
 interface TokenListItem {
@@ -36,9 +39,9 @@ interface TokenListItem {
 }
 
 interface TokenImageProps {
-  asset?: TokenAsset;
+  asset?: TokenAsset | TokenI;
   containerStyle?: StyleProp<ViewStyle>;
-  iconStyle?: StyleProp<ImageStyle>;
+  iconStyle?: ImageStyle;
   tokenList?: Record<string, TokenListItem>;
 }
 
@@ -50,11 +53,13 @@ const TokenImage = ({
 }: TokenImageProps) => {
   const isIpfsGatewayEnabled = useSelector(selectIsIpfsGatewayEnabled);
 
-  const assetImage = isUrl(asset?.image) ? asset.image : null;
+  const assetImage =
+    asset?.image && isUrl(asset.image) ? asset.image : null;
+  const assetAddress = asset?.address ?? '';
   const iconUrl =
     assetImage ||
-    tokenList[asset?.address]?.iconUrl ||
-    tokenList[asset?.address?.toLowerCase()]?.iconUrl ||
+    tokenList[assetAddress]?.iconUrl ||
+    tokenList[assetAddress.toLowerCase()]?.iconUrl ||
     '';
 
   const isIpfsDisabledAndUriIsIpfs =
@@ -64,12 +69,12 @@ const TokenImage = ({
     <View style={[styles.itemLogoWrapper, containerStyle, styles.roundImage]}>
       {iconUrl || !isIpfsDisabledAndUriIsIpfs ? (
         <AssetIcon
-          address={asset?.address}
+          address={assetAddress}
           logo={iconUrl}
           customStyle={iconStyle}
         />
       ) : (
-        <Identicon address={asset?.address} customStyle={iconStyle} />
+        <Identicon address={assetAddress} customStyle={iconStyle} />
       )}
     </View>
   );

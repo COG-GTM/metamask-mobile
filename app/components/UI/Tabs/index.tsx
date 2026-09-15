@@ -144,6 +144,10 @@ interface TabsState {
   currentTab: number | null;
 }
 
+const TypedTabThumbnail = TabThumbnail as React.ComponentType<
+  TabThumbnailProps & { ref?: React.RefObject<unknown> }
+>;
+
 class Tabs extends PureComponent<TabsProps, TabsState> {
   thumbnails: Record<number, React.RefObject<unknown>> = {};
 
@@ -199,8 +203,9 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const shadows = this.context.shadows || mockTheme.shadows;
+    const theme = this.context as { colors?: Theme['colors']; shadows?: Theme['shadows'] };
+    const colors = theme.colors || mockTheme.colors;
+    const shadows = theme.shadows || mockTheme.shadows;
     return createStyles(colors, shadows);
   };
 
@@ -230,7 +235,7 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
       >
         {tabs.map((tab) => (
           // eslint-disable-next-line react/jsx-key
-          <TabThumbnail
+          <TypedTabThumbnail
             ref={this.thumbnails[tab.id]}
             key={tab.id}
             tab={tab}
@@ -338,4 +343,6 @@ class Tabs extends PureComponent<TabsProps, TabsState> {
 
 Tabs.contextType = ThemeContext;
 
-export default withMetricsAwareness(Tabs);
+export default withMetricsAwareness(
+  Tabs as unknown as React.ComponentType<{ metrics: IUseMetricsHook }>,
+);

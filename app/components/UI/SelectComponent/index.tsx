@@ -91,18 +91,18 @@ const createStyles = (colors: Theme['colors']) =>
   });
 
 interface SelectOption {
-  key: string | number;
-  value?: string;
-  val?: string;
+  key?: string | number;
+  value?: string | number;
+  val?: string | number;
   label: string;
 }
 
 interface SelectComponentProps {
   defaultValue?: string;
   label?: string;
-  selectedValue?: string;
+  selectedValue?: string | number;
   options: SelectOption[];
-  onValueChange?: (value: string) => void;
+  onValueChange?: ((value: string) => void) | ((value: number) => void);
   testID?: string;
 }
 
@@ -110,19 +110,33 @@ interface SelectComponentState {
   pickerVisible: boolean;
 }
 
-export default class SelectComponent extends PureComponent<
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+interface SelectComponent {
+  context: React.ContextType<typeof ThemeContext>;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class SelectComponent extends PureComponent<
   SelectComponentProps,
   SelectComponentState
 > {
+  static contextType = ThemeContext;
+
 
   state: SelectComponentState = {
     pickerVisible: false,
   };
 
-  scrollView = Device.isIos() ? React.createRef() : null;
+  scrollView: React.RefObject<ScrollView> | null = Device.isIos()
+    ? React.createRef<ScrollView>()
+    : null;
 
-  onValueChange = (val: string) => {
-    this.props.onValueChange?.(val);
+  onValueChange = (val: string | number) => {
+    if (typeof val === 'string') {
+      (this.props.onValueChange as ((value: string) => void) | undefined)?.(val);
+    } else {
+      (this.props.onValueChange as ((value: number) => void) | undefined)?.(val);
+    }
     setTimeout(() => {
       this.hidePicker();
     }, 1000);
@@ -203,7 +217,7 @@ export default class SelectComponent extends PureComponent<
                 {this.props.options.map((option) => (
                   <TouchableOpacity
                     // eslint-disable-next-line react/jsx-no-bind
-                    onPress={() => this.onValueChange(option.value)}
+                    onPress={() => this.onValueChange(option.value ?? '')}
                     style={styles.optionButton}
                     key={option.key}
                   >
@@ -233,4 +247,4 @@ export default class SelectComponent extends PureComponent<
   );
 }
 
-SelectComponent.contextType = ThemeContext;
+export default SelectComponent;

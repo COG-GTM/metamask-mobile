@@ -41,7 +41,15 @@ interface TabCountIconProps {
   style?: StyleProp<ViewStyle>;
 }
 
-class TabCountIcon extends PureComponent<TabCountIconProps> {
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+interface TabCountIcon {
+  context: React.ContextType<typeof ThemeContext>;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class TabCountIcon extends PureComponent<TabCountIconProps, Record<string, never>, React.ContextType<typeof ThemeContext>> {
+  static contextType = ThemeContext;
+
 
   render() {
     const { tabCount, style } = this.props;
@@ -64,7 +72,5 @@ class TabCountIcon extends PureComponent<TabCountIconProps> {
 const mapStateToProps = (state: RootState): Pick<TabCountIconProps, 'tabCount'> => ({
   tabCount: state.browser.tabs.length,
 });
-
-TabCountIcon.contextType = ThemeContext;
 
 export default connect(mapStateToProps)(TabCountIcon);

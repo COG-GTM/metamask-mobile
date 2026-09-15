@@ -97,6 +97,7 @@ interface SwapToken extends Token {
 
 interface SwapTransaction {
   gasUsed?: string;
+  status?: string;
   action?: string;
   sourceAmount?: string;
   destinationAmount?: string;

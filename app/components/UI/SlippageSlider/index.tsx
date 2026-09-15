@@ -182,10 +182,7 @@ const SlippageSlider = ({
         onMoveShouldSetPanResponder: () => !disabled,
         onPanResponderGrant: () => {
           setIsResponderGranted(true);
-          pan.setOffset({
-            x: pan.x.__getValue(),
-            y: pan.y.__getValue(),
-          });
+          pan.setOffset((pan as Animated.Value & { __getValue: () => number }).__getValue());
         },
         /**
          * When the slider is being dragged, this handler will figure out which tick
@@ -193,13 +190,12 @@ const SlippageSlider = ({
          */
         onPanResponderMove: (_ev, gestureState) => {
           pan.setValue(gestureState.dx);
-          const relativeValue = pan
+          const relativeValue = (pan
             .interpolate({
               inputRange: [0, trackWidth],
               outputRange: [0, trackWidth],
               extrapolate: 'clamp',
-            })
-            .__getValue();
+            }) as Animated.Value & { __getValue: () => number }).__getValue();
 
           const [sliderValue, newValue] = getValuesByProgress(
             relativeValue / trackWidth,
@@ -215,7 +211,10 @@ const SlippageSlider = ({
         onPanResponderRelease: () => {
           pan.flattenOffset();
           const relativeValue = Math.min(
-            Math.max(0, pan.x.__getValue()),
+            Math.max(
+              0,
+              (pan as Animated.Value & { __getValue: () => number }).__getValue(),
+            ),
             trackWidth,
           );
           pan.setValue(relativeValue);
@@ -252,7 +251,7 @@ const SlippageSlider = ({
         onLayout={(e) => setTrackWidth(e.nativeEvent.layout.width)}
       >
         <View style={styles.trackBack}>
-          {new Array(ticksLength + 1).fill().map((_, i) => (
+          {new Array(ticksLength + 1).fill(null).map((_, i) => (
             <View key={i} style={styles.tick} />
           ))}
         </View>

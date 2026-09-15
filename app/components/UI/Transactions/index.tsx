@@ -97,7 +97,11 @@ import {
 import type { IQRState } from '../QRHardware/types';
 import type { Colors, Theme } from '../../../util/theme/models';
 
-interface Transaction extends TransactionMeta {
+interface Transaction
+  extends Omit<TransactionMeta, 'status' | 'chainId' | 'networkClientId'> {
+  status: string;
+  chainId?: string;
+  networkClientId?: string;
   [key: string]: unknown;
 }
 
@@ -1040,7 +1044,11 @@ const TransactionsWithQRHardware = withQRHardwareAwareness(
   }>,
 );
 
-export default connect(
+const ConnectedTransactions = connect(
   mapStateToProps,
   mapDispatchToProps,
 )(TransactionsWithQRHardware as React.ComponentType<OwnProps>);
+
+export default ConnectedTransactions as unknown as React.ComponentType<
+  Record<string, unknown>
+>;

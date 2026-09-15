@@ -10,7 +10,13 @@ import type { PermissionsSummaryProps } from '../PermissionsSummary/PermissionsS
  * Account access approval component
  */
 interface SwitchCustomNetworkProps {
-  currentPageInformation: PermissionsSummaryProps['currentPageInformation'];
+  currentPageInformation: Omit<
+    PermissionsSummaryProps['currentPageInformation'],
+    'currentEnsName' | 'icon'
+  > &
+    Partial<
+      Pick<PermissionsSummaryProps['currentPageInformation'], 'currentEnsName' | 'icon'>
+    >;
   onConfirm?: () => void;
   onCancel?: () => void;
   customNetworkInformation: NonNullable<
@@ -51,7 +57,9 @@ const SwitchCustomNetwork = ({
   return (
     <PermissionSummary
       customNetworkInformation={customNetworkInformation}
-      currentPageInformation={currentPageInformation}
+      currentPageInformation={
+        currentPageInformation as PermissionsSummaryProps['currentPageInformation']
+      }
       onCancel={onCancel}
       onConfirm={onConfirm}
       isDisconnectAllShown={false}
@@ -60,4 +68,6 @@ const SwitchCustomNetwork = ({
   );
 };
 
-export default SwitchCustomNetwork;
+export default SwitchCustomNetwork as unknown as React.ComponentType<
+  Record<string, unknown>
+>;

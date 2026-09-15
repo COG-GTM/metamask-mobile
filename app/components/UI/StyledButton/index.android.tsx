@@ -33,9 +33,19 @@ interface StyledButtonProps {
   testID?: string;
   childGroupStyle?: StyleProp<ViewStyle>;
   allowFontScaling?: boolean;
+  accessible?: boolean;
+  accessibilityRole?: string;
 }
 
-export default class StyledButton extends PureComponent<StyledButtonProps> {
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+interface StyledButton {
+  context: React.ContextType<typeof ThemeContext>;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class StyledButton extends PureComponent<StyledButtonProps> {
+  static contextType = ThemeContext;
+
   static defaultProps: Partial<StyledButtonProps> = {
     styleDisabled: { opacity: 0.6 },
     disabledContainerStyle: { opacity: 0.6 },
@@ -108,4 +118,4 @@ export default class StyledButton extends PureComponent<StyledButtonProps> {
   };
 }
 
-StyledButton.contextType = ThemeContext;
+export default StyledButton;
