@@ -20,7 +20,7 @@ import { ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Hex } from '@metamask/utils';
 import type BN from 'bnjs4';
-import type BNjs from 'bn.js';
+import type { BN as BNjs } from 'ethereumjs-util';
 import type { Nft, NftContract } from '@metamask/assets-controllers';
 import type { TransactionParams } from '@metamask/transaction-controller';
 import {

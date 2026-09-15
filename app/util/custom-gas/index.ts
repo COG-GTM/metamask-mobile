@@ -1,5 +1,5 @@
 import BN from 'bnjs4';
-import type BNjs from 'bn.js';
+import type { BN as BNjs } from 'ethereumjs-util';
 import type { TransactionParams } from '@metamask/transaction-controller';
 import type { NetworkClientId } from '@metamask/network-controller';
 import {
