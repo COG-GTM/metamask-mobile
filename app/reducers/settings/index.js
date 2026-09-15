@@ -58,6 +58,11 @@ const settingsReducer = (state = initialState, action) => {
       };
 
     case 'TOGGLE_DEVICE_NOTIFICATIONS':
+      if (
+        state.deviceNotificationEnabled === action.deviceNotificationEnabled
+      ) {
+        return state;
+      }
       return {
         ...state,
         deviceNotificationEnabled: action.deviceNotificationEnabled,
