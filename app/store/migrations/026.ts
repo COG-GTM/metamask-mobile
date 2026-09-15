@@ -1,16 +1,35 @@
 import { captureException } from '@sentry/react-native';
 import { isObject } from '@metamask/utils';
 
+interface PhishingControllerState {
+  listState?: unknown;
+  hotlistLastFetched?: number;
+  stalelistLastFetched?: number;
+  [key: string]: unknown;
+}
+
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      KeyringController?: unknown;
+      PhishingController?: PhishingControllerState;
+      [key: string]: unknown;
+    };
+  };
+  [key: string]: unknown;
+}
+
 /**
  * This migration is to free space of unused data in the user devices
  * regarding the phishing list property listState, that is no longer used
  *
  **/
-export default function migrate(state) {
+export default function migrate(stateUnknown: unknown) {
+  const state = stateUnknown as MigrationState;
   const keyringControllerState = state.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(
-      // @ts-expect-error We are not returning state not to stop the flow of Vault recovery
+      // We are not returning state not to stop the flow of Vault recovery
       new Error(
         `Migration 26: Invalid vault in KeyringController: '${typeof keyringControllerState}'`,
       ),
@@ -19,7 +38,7 @@ export default function migrate(state) {
   const phishingControllerState =
     state.engine.backgroundState.PhishingController;
   if (phishingControllerState?.listState) {
-    delete state.engine.backgroundState.PhishingController.listState;
+    delete phishingControllerState.listState;
   } else {
     captureException(
       new Error(
@@ -35,8 +54,8 @@ export default function migrate(state) {
     phishingControllerState?.stalelistLastFetched
   ) {
     // This will make the list be fetched again when the user updates the app
-    state.engine.backgroundState.PhishingController.hotlistLastFetched = 0;
-    state.engine.backgroundState.PhishingController.stalelistLastFetched = 0;
+    phishingControllerState.hotlistLastFetched = 0;
+    phishingControllerState.stalelistLastFetched = 0;
   } else {
     captureException(
       new Error(
