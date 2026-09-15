@@ -1,26 +1,36 @@
 import React from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleProp,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
 import { fontStyles, baseStyles } from '../../../styles/common';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import PropTypes from 'prop-types';
 import Identicon from '../Identicon';
 import {
   renderShortAddress,
   renderSlightlyLongAddress,
   isENS,
-  getLabelTextByAddress,
 } from '../../../util/address';
 import { strings } from '../../../../locales/i18n';
 import { hasZeroWidthPoints } from '../../../util/confusables';
 import { useTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
 import AddToAddressBookWrapper from '../AddToAddressBookWrapper/AddToAddressBookWrapper';
 import { SendViewSelectorsIDs } from '../../../../e2e/selectors/SendFlow/SendView.selectors';
-import Text, {
-  TextVariant,
-} from '../../../component-library/components/Texts/Text';
+import Text from '../../../component-library/components/Texts/Text';
 
-const createStyles = (colors, layout = 'horizontal') => {
+export type AddressInputLayout = 'horizontal' | 'vertical';
+
+const createStyles = (
+  colors: Colors,
+  layout: AddressInputLayout = 'horizontal',
+) => {
   const isVerticalLayout = layout === 'vertical';
   return StyleSheet.create({
     wrapper: {
@@ -178,7 +188,15 @@ const createStyles = (colors, layout = 'horizontal') => {
   });
 };
 
-const AddressName = ({ toAddressName, confusableCollection = [] }) => {
+interface AddressNameProps {
+  toAddressName?: string;
+  confusableCollection?: string[];
+}
+
+const AddressName = ({
+  toAddressName,
+  confusableCollection = [],
+}: AddressNameProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   if (confusableCollection.length) {
@@ -188,13 +206,13 @@ const AddressName = ({ toAddressName, confusableCollection = [] }) => {
         // if the confusable is zero width, replace it with `?`
         const replacement = hasZeroWidthPoints(char) ? '?' : char;
         return (
-          <Text red key={index}>
+          <Text key={index}>
             {replacement}
           </Text>
         );
       }
       return (
-        <Text black key={index}>
+        <Text key={index}>
           {char}
         </Text>
       );
@@ -214,12 +232,76 @@ const AddressName = ({ toAddressName, confusableCollection = [] }) => {
   );
 };
 
-AddressName.propTypes = {
-  toAddressName: PropTypes.string,
-  confusableCollection: PropTypes.array,
-};
+export interface AddressToProps {
+  /**
+   * Whether is a valid Ethereum address to send to
+   */
+  addressToReady?: boolean;
+  /**
+   * Whether the input is highlighted
+   */
+  highlighted?: boolean;
+  /**
+   * Object to use as reference for input
+   */
+  inputRef?: React.Ref<TextInput>;
+  /**
+   * Address of selected address as string
+   */
+  toSelectedAddress?: string;
+  /**
+   * Callback called when to selected address changes
+   */
+  onToSelectedAddressChange?: (address: string) => void;
+  /**
+   * Callback called when scan icon is pressed
+   */
+  onScan?: () => void;
+  /**
+   * Callback called when close icon is pressed
+   */
+  onClear?: () => void;
+  /**
+   * Callback called when input onFocus
+   */
+  onInputFocus?: () => void;
+  /**
+   * Callback called when input is submitted
+   */
+  onSubmit?: () => void;
+  /**
+   * Callback called when input onBlur
+   */
+  onInputBlur?: () => void;
+  /**
+   * Name of selected address as string
+   */
+  toAddressName?: string;
+  /**
+   * Input width to solve android paste bug
+   * https://github.com/facebook/react-native/issues/9958
+   */
+  inputWidth?: StyleProp<TextStyle>;
+  /**
+   * Array of confusables
+   */
+  confusableCollection?: string[];
+  /**
+   * Display Exclamation Icon
+   */
+  displayExclamation?: boolean;
+  /**
+   * Confirm screen confirmation
+   */
+  isConfirmScreen?: boolean;
+  /**
+   * Returns if it selected from address book
+   */
+  isFromAddressBook?: boolean;
+  layout?: AddressInputLayout;
+}
 
-export const AddressTo = (props) => {
+export const AddressTo = (props: AddressToProps) => {
   const {
     addressToReady,
     highlighted,
@@ -245,7 +327,7 @@ export const AddressTo = (props) => {
   const isInputFilled = toSelectedAddress?.length;
 
   if (isConfirmScreen) {
-    const wrapperStyles = [styles.wrapper];
+    const wrapperStyles: StyleProp<ViewStyle>[] = [styles.wrapper];
     if (layout === 'vertical') {
       wrapperStyles.push(styles.marginedWrapper);
     }
@@ -287,7 +369,7 @@ export const AddressTo = (props) => {
                       }
                       numberOfLines={1}
                     >
-                      {renderShortAddress(toSelectedAddress)}
+                      {renderShortAddress(toSelectedAddress ?? '')}
                     </Text>
                     <View
                       style={
@@ -410,7 +492,7 @@ export const AddressTo = (props) => {
                         }
                         numberOfLines={1}
                       >
-                        {renderShortAddress(toSelectedAddress)}
+                        {renderShortAddress(toSelectedAddress ?? '')}
                       </Text>
                       <View
                         style={
@@ -488,76 +570,31 @@ export const AddressTo = (props) => {
   );
 };
 
-AddressTo.propTypes = {
-  /**
-   * Whether is a valid Ethereum address to send to
-   */
-  addressToReady: PropTypes.bool,
+export interface AddressFromProps {
   /**
    * Whether the input is highlighted
    */
-  highlighted: PropTypes.bool,
+  highlighted?: boolean;
   /**
-   * Object to use as reference for input
+   * Callback to execute when icon is pressed
    */
-  inputRef: PropTypes.object,
+  onPressIcon?: () => void;
   /**
    * Address of selected address as string
    */
-  toSelectedAddress: PropTypes.string,
-  /**
-   * Callback called when to selected address changes
-   */
-  onToSelectedAddressChange: PropTypes.func,
-  /**
-   * Callback called when scan icon is pressed
-   */
-  onScan: PropTypes.func,
-  /**
-   * Callback called when close icon is pressed
-   */
-  onClear: PropTypes.func,
-  /**
-   * Callback called when input onFocus
-   */
-  onInputFocus: PropTypes.func,
-  /**
-   * Callback called when input is submitted
-   */
-  onSubmit: PropTypes.func,
-  /**
-   * Callback called when input onBlur
-   */
-  onInputBlur: PropTypes.func,
+  fromAccountAddress?: string | null;
   /**
    * Name of selected address as string
    */
-  toAddressName: PropTypes.string,
+  fromAccountName?: string | null;
   /**
-   * Input width to solve android paste bug
-   * https://github.com/facebook/react-native/issues/9958
+   * Account balance of selected address as string
    */
-  inputWidth: PropTypes.object,
-  /**
-   * Array of confusables
-   */
-  confusableCollection: PropTypes.array,
-  /**
-   * Display Exclamation Icon
-   */
-  displayExclamation: PropTypes.bool,
-  /**
-   * Confirm screen confirmation
-   */
-  isConfirmScreen: PropTypes.bool,
-  /**
-   * Returns if it selected from address book
-   */
-  isFromAddressBook: PropTypes.bool,
-  layout: PropTypes.string,
-};
+  fromAccountBalance?: string;
+  layout?: AddressInputLayout;
+}
 
-export const AddressFrom = (props) => {
+export const AddressFrom = (props: AddressFromProps) => {
   const {
     highlighted,
     onPressIcon,
@@ -581,7 +618,7 @@ export const AddressFrom = (props) => {
         ]}
       >
         <View style={styles.identiconWrapper}>
-          <Identicon address={fromAccountAddress} diameter={30} />
+          <Identicon address={fromAccountAddress ?? undefined} diameter={30} />
         </View>
         <View style={[baseStyles.flexGrow, styles.address]}>
           <View style={styles.accountNameLabel}>
@@ -609,28 +646,4 @@ export const AddressFrom = (props) => {
       </View>
     </View>
   );
-};
-
-AddressFrom.propTypes = {
-  /**
-   * Whether the input is highlighted
-   */
-  highlighted: PropTypes.bool,
-  /**
-   * Callback to execute when icon is pressed
-   */
-  onPressIcon: PropTypes.func,
-  /**
-   * Address of selected address as string
-   */
-  fromAccountAddress: PropTypes.string,
-  /**
-   * Name of selected address as string
-   */
-  fromAccountName: PropTypes.string,
-  /**
-   * Account balance of selected address as string
-   */
-  fromAccountBalance: PropTypes.string,
-  layout: PropTypes.string,
 };
