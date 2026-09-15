@@ -412,9 +412,15 @@ declare module '@sentry/react-native' {
 }
 
 declare module 'react-native/Libraries/Image/resolveAssetSource' {
-  import { ImageResolvedAssetSource, ImageSourcePropType } from 'react-native';
-
   export default function resolveAssetSource(
-    source: ImageSourcePropType,
-  ): ImageResolvedAssetSource & { __packager_asset?: boolean };
+    source?: import('react-native').ImageSourcePropType,
+  ): import('react-native').ImageResolvedAssetSource & {
+    __packager_asset?: boolean;
+  };
+}
+
+declare module 'human-standard-token-abi' {
+  import { JsonFragment } from '@ethersproject/abi';
+  const abi: readonly JsonFragment[];
+  export default abi;
 }

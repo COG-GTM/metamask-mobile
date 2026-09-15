@@ -303,9 +303,6 @@ class AdvancedSettings extends PureComponent<
       showHexData,
       showCustomNonce,
       showFiatOnTestnets,
-      setShowHexData,
-      setShowCustomNonce,
-      setShowFiatOnTestnets,
       smartTransactionsOptInStatus,
     } = this.props;
     const { resetModalVisible } = this.state;
@@ -394,7 +391,12 @@ class AdvancedSettings extends PureComponent<
                 {strings(
                   'app_settings.smart_transactions_opt_in_desc_supported_networks',
                 )}{' '}
-                <Text color={TextColor.Primary} onPress={this.openLinkAboutStx}>
+                <Text
+                  color={TextColor.Primary}
+                  // `link` is not a component-library Text prop; forwarded to the native Text as before
+                  {...{ link: true }}
+                  onPress={this.openLinkAboutStx}
+                >
                   {strings('app_settings.smart_transactions_learn_more')}
                 </Text>
               </Text>
@@ -408,7 +410,7 @@ class AdvancedSettings extends PureComponent<
                 <View style={styles.toggle}>
                   <Switch
                     value={showHexData}
-                    onValueChange={setShowHexData}
+                    onValueChange={this.props.setShowHexData}
                     trackColor={{
                       true: colors.primary.default,
                       false: colors.border.muted,
@@ -435,7 +437,7 @@ class AdvancedSettings extends PureComponent<
                 <View style={styles.toggle}>
                   <Switch
                     value={showCustomNonce}
-                    onValueChange={setShowCustomNonce}
+                    onValueChange={this.props.setShowCustomNonce}
                     trackColor={{
                       true: colors.primary.default,
                       false: colors.border.muted,
@@ -464,8 +466,8 @@ class AdvancedSettings extends PureComponent<
                   <Switch
                     testID={AdvancedViewSelectorsIDs.SHOW_FIAT_ON_TESTNETS}
                     value={showFiatOnTestnets}
-                    onValueChange={(showFiatOnTestnets: boolean) => {
-                      if (showFiatOnTestnets) {
+                    onValueChange={(enableFiatOnTestnets: boolean) => {
+                      if (enableFiatOnTestnets) {
                         this.props.navigation.navigate(
                           Routes.MODAL.ROOT_MODAL_FLOW,
                           {
@@ -473,7 +475,7 @@ class AdvancedSettings extends PureComponent<
                           },
                         );
                       } else {
-                        setShowFiatOnTestnets(false);
+                        this.props.setShowFiatOnTestnets(false);
                       }
                     }}
                     trackColor={{

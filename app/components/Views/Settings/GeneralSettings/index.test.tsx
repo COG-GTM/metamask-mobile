@@ -1,7 +1,6 @@
 import React from 'react';
-import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { shallow } from 'enzyme';
-import GeneralSettings, {
+import GeneralSettingsConnected, {
   updateUserTraitsWithCurrentCurrency,
   updateUserTraitsWithCurrencyType,
 } from './';
@@ -29,17 +28,15 @@ const initialState = {
   },
   user: { appTheme: AppThemeKey.light },
 };
+const GeneralSettings =
+  GeneralSettingsConnected as unknown as React.ComponentType;
 const store = mockStore(initialState);
-const mockNavigation = {
-  setOptions: jest.fn(),
-  navigate: jest.fn(),
-} as unknown as NavigationProp<ParamListBase>;
 
 describe('GeneralSettings', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <GeneralSettings navigation={mockNavigation} />
+        <GeneralSettings />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

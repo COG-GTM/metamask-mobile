@@ -2763,4 +2763,4 @@ export default compose(
   withMetricsAwareness(
     NetworkSettings as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
   ),
-);
+) as React.ComponentType;

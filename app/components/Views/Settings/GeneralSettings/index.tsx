@@ -349,7 +349,6 @@ class Settings extends PureComponent<SettingsProps, SettingsState> {
       currentCurrency,
       primaryCurrency,
       useBlockieIcon,
-      setUseBlockieIcon,
       selectedAddress,
       hideZeroBalanceTokens,
     } = this.props;
@@ -499,7 +498,7 @@ class Settings extends PureComponent<SettingsProps, SettingsState> {
             <View style={styles.accessory}>
               <View style={styles.identicon_container}>
                 <TouchableOpacity
-                  onPress={() => setUseBlockieIcon(false)}
+                  onPress={() => this.props.setUseBlockieIcon(false)}
                   style={styles.identicon_row}
                 >
                   <View
@@ -512,7 +511,7 @@ class Settings extends PureComponent<SettingsProps, SettingsState> {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => setUseBlockieIcon(true)}
+                  onPress={() => this.props.setUseBlockieIcon(true)}
                   style={styles.identicon_row}
                 >
                   <View

@@ -23,6 +23,7 @@ import AppConstants from '../../../../core/AppConstants';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import { Theme } from '../../../../util/theme/models';
 import { AboutMetaMaskSelectorsIDs } from '../../../../../e2e/selectors/Settings/AboutMetaMask.selectors';
+import foxImage from '../../../../images/branding/fox.png';
 
 const IS_QA = process.env['METAMASK_ENVIRONMENT'] === 'qa';
 
@@ -97,8 +98,6 @@ const createStyles = (colors: Theme['colors']) =>
       ...fontStyles.normal,
     },
   });
-
-const foxImage = require('../../../../images/branding/fox.png'); // eslint-disable-line import/no-commonjs
 
 /**
  * View that contains app information
