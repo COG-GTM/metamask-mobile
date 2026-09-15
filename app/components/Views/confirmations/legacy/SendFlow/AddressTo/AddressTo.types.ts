@@ -13,7 +13,7 @@ export interface SFAddressToProps {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   isFromAddressBook: any;
-  onSubmit: (address: string) => void;
+  onSubmit: () => void;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onToSelectedAddressChange: any;
