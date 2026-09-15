@@ -6,8 +6,7 @@ const selectSettings = (state: RootState) => state.settings;
 
 export const selectShowFiatInTestnets = createSelector(
   selectSettings,
-  (settingsState: SettingsState) =>
-    settingsState.showFiatOnTestnets as boolean,
+  (settingsState: SettingsState) => settingsState.showFiatOnTestnets as boolean,
 );
 
 export const selectPrimaryCurrency = createSelector(

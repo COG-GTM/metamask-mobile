@@ -1,5 +1,8 @@
 import { createSelector } from 'reselect';
-import { NotificationTypes, type NotificationTypesType } from '../../util/notifications';
+import {
+  NotificationTypes,
+  type NotificationTypesType,
+} from '../../util/notifications';
 import type {
   NotificationAction,
   NotificationTransaction,
@@ -43,10 +46,7 @@ export const ACTIONS = {
 const enqueue = (
   notifications: InAppNotification[],
   notification: InAppNotification,
-): InAppNotification[] => [
-  ...notifications,
-  notification,
-];
+): InAppNotification[] => [...notifications, notification];
 const dequeue = (notifications: InAppNotification[]): InAppNotification[] =>
   notifications.slice(1);
 
@@ -56,6 +56,7 @@ export const currentNotificationSelector = createSelector(
     notifications?.[0] || {},
 );
 
+/* eslint-disable @typescript-eslint/default-param-last */
 const notificationReducer = (
   state: NotificationState = initialState,
   action: NotificationAction | Record<'type', null>,
@@ -96,7 +97,7 @@ const notificationReducer = (
           ...state,
           notifications: [
             ...notifications.slice(0, index),
-            ({
+            {
               ...notifications[index],
               ...{
                 id: action.transaction.id,
@@ -106,7 +107,7 @@ const notificationReducer = (
                 status: action.status,
                 type: TRANSACTION,
               },
-            } as InAppNotification),
+            } as InAppNotification,
             ...notifications.slice(index + 1),
           ],
         };
@@ -130,7 +131,7 @@ const notificationReducer = (
           ...state,
           notifications: [
             ...notifications.slice(0, index),
-            ({
+            {
               ...notifications[index],
               ...{
                 id: action.id,
@@ -141,7 +142,7 @@ const notificationReducer = (
                 status: action.status,
                 type: SIMPLE,
               },
-            } as InAppNotification),
+            } as InAppNotification,
             ...notifications.slice(index + 1),
           ],
         };

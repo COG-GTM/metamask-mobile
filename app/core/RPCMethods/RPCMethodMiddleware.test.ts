@@ -63,7 +63,11 @@ import {
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
 import { CaveatTypes } from '../Permissions/constants';
-import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
+import {
+  getCaip25PermissionFromLegacyPermissions,
+  rejectOriginPendingApprovals,
+  requestPermittedChainsPermissionIncremental,
+} from '../../util/permissions';
 import { toHex } from '@metamask/controller-utils';
 
 jest.mock('../../util/permissions', () => ({
@@ -304,30 +308,33 @@ function setupGlobalState({
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .spyOn(store as Store<Partial<RootState>, any>, 'getState')
-    .mockImplementation(() => ({
-      browser: activeTab
-        ? {
-          activeTab,
-        }
-        : {},
-      engine: {
-        backgroundState: {
-          ...backgroundState,
-          NetworkController: {
-            selectedNetworkClientId: selectedNetworkClientId || '',
-            networksMetadata: networksMetadata || {},
-            networkConfigurationsByChainId:
-              networkConfigurationsByChainId || {},
+    .mockImplementation(
+      () =>
+        ({
+          browser: activeTab
+            ? {
+                activeTab,
+              }
+            : {},
+          engine: {
+            backgroundState: {
+              ...backgroundState,
+              NetworkController: {
+                selectedNetworkClientId: selectedNetworkClientId || '',
+                networksMetadata: networksMetadata || {},
+                networkConfigurationsByChainId:
+                  networkConfigurationsByChainId || {},
+              },
+              PreferencesController: selectedAddress ? { selectedAddress } : {},
+            },
+            // TODO: Replace "any" with type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          } as any,
+          originThrottling: originThrottling || {
+            origins: {},
           },
-          PreferencesController: selectedAddress ? { selectedAddress } : {},
-        },
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-      originThrottling: originThrottling || {
-        origins: {},
-      },
-    } as unknown as Partial<RootState>));
+        } as unknown as Partial<RootState>),
+    );
   mockStore.dispatch.mockImplementation((obj) => obj);
   if (addTransactionResult) {
     mockAddTransaction.mockImplementation(async () => ({
@@ -1859,7 +1866,8 @@ describe('getRpcMethodMiddlewareHooks', () => {
         autoApprove: true,
       };
 
-      const mockRequestPermittedChainsPermissionIncremental = requestPermittedChainsPermissionIncremental as jest.Mock;
+      const mockRequestPermittedChainsPermissionIncremental =
+        requestPermittedChainsPermissionIncremental as jest.Mock;
       hooks.requestPermittedChainsPermissionIncrementalForOrigin(options);
 
       expect(
@@ -1926,9 +1934,7 @@ describe('getRpcMethodMiddlewareHooks', () => {
     it('should call "rejectOriginPendingApprovals" with correct origin', () => {
       hooks.rejectApprovalRequestsForOrigin();
 
-      expect(rejectOriginPendingApprovals).toHaveBeenCalledWith(
-        testOrigin,
-      );
+      expect(rejectOriginPendingApprovals).toHaveBeenCalledWith(testOrigin);
     });
   });
 });

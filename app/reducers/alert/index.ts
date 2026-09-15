@@ -14,6 +14,8 @@ export const initialState: AlertState = {
   data: null,
 };
 
+/* eslint-disable @typescript-eslint/default-param-last */
+/* eslint-disable @typescript-eslint/default-param-last */
 const alertReducer = (
   state: AlertState = initialState,
   action: AlertAction | Record<'type', null>,

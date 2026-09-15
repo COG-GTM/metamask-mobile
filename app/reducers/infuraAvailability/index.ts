@@ -16,6 +16,7 @@ export const INFURA_AVAILABILITY_NOT_BLOCKED =
 export const getInfuraBlockedSelector = (state: RootState) =>
   state.infuraAvailability?.isBlocked;
 
+/* eslint-disable @typescript-eslint/default-param-last */
 const infuraAvailabilityReducer = (
   state: InfuraAvailabilityState = initialState,
   action: InfuraAvailabilityAction | Record<'type', null>,

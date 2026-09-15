@@ -227,7 +227,9 @@ export function setTransactionObject(
  *
  * @param {object} transactionId - Id of the current transaction.
  */
-export function setTransactionId(transactionId: string): SetTransactionIdAction {
+export function setTransactionId(
+  transactionId: string,
+): SetTransactionIdAction {
   return {
     type: 'SET_TRANSACTION_ID',
     transactionId,
@@ -269,7 +271,9 @@ export function setNonce(nonce: number): SetNonceAction {
   };
 }
 
-export function setProposedNonce(proposedNonce: number): SetProposedNonceAction {
+export function setProposedNonce(
+  proposedNonce: number,
+): SetProposedNonceAction {
   return {
     type: 'SET_PROPOSED_NONCE',
     proposedNonce,
@@ -283,7 +287,9 @@ export function setMaxValueMode(maxValueMode: boolean): SetMaxValueModeAction {
   };
 }
 
-export function setTransactionValue(value: TxMeta['value']): SetTransactionValueAction {
+export function setTransactionValue(
+  value: TxMeta['value'],
+): SetTransactionValueAction {
   return {
     type: 'SET_TRANSACTION_VALUE',
     value,

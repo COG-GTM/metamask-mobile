@@ -58,9 +58,7 @@ export interface SwapsSetHasOnboardedAction {
   payload: boolean;
 }
 
-export type SwapsAction =
-  | SwapsSetLivenessAction
-  | SwapsSetHasOnboardedAction;
+export type SwapsAction = SwapsSetLivenessAction | SwapsSetHasOnboardedAction;
 
 export const getFeatureFlagChainId = (chainId: `0x${string}`) =>
   __DEV__ && allowedTestnetChainIds.includes(chainId)
@@ -158,19 +156,14 @@ export const selectSwapsChainFeatureFlags = createSelector(
     (_state: RootState, transactionChainId?: `0x${string}`) =>
       transactionChainId || selectEvmChainId(_state),
   ],
-  (swapsState: SwapsState, chainId: `0x${string}`) => {
-    const chainState = swapsState[chainId];
-    if (!chainState) {
-      throw new Error(`No swaps state for chain ${chainId}`);
-    }
-    return ({
-    ...chainState.featureFlags,
-    smartTransactions: {
-      ...(chainState.featureFlags?.smartTransactions || {}),
-      ...(swapsState.featureFlags?.smartTransactions || {}),
-    },
-    } as SwapsFeatureFlags);
-  },
+  (swapsState: SwapsState, chainId: `0x${string}`) =>
+    ({
+      ...swapsState[chainId].featureFlags,
+      smartTransactions: {
+        ...(swapsState[chainId].featureFlags?.smartTransactions || {}),
+        ...(swapsState.featureFlags?.smartTransactions || {}),
+      },
+    } as SwapsFeatureFlags),
 );
 
 /**
@@ -182,9 +175,7 @@ export const swapsHasOnboardedSelector = createSelector(
   (swapsState) => swapsState.hasOnboarded,
 );
 
-const selectSwapsControllerState = (
-  state: RootState,
-): SwapsControllerState =>
+const selectSwapsControllerState = (state: RootState): SwapsControllerState =>
   state.engine.backgroundState.SwapsController;
 
 /**
@@ -253,9 +244,6 @@ const swapsControllerAndUserTokens = createSelector(
     const values = combinedTokens
       .filter(Boolean)
       .reduce((map, { hasBalanceError, image, ...token }) => {
-        if (!token.address) {
-          return map;
-        }
         const key = token.address.toLowerCase();
 
         if (!map.has(key)) {
@@ -387,7 +375,7 @@ export const swapsTokensWithBalanceSelector = createSelector(
     }
     const baseTokens = tokens;
     const tokensAddressesWithBalance = Object.entries(balances)
-      .filter(([, balance]) => Number(balance) !== 0)
+      .filter(([, balance]) => (balance as unknown) !== 0)
       .sort(([, balanceA], [, balanceB]) =>
         lte(Number(balanceB), Number(balanceA)) ? -1 : 1,
       )
@@ -453,6 +441,7 @@ export const initialState: SwapsState = {
   },
 };
 
+/* eslint-disable @typescript-eslint/default-param-last */
 function swapsReducer(
   state: SwapsState = initialState,
   action: SwapsAction | Record<'type', null>,

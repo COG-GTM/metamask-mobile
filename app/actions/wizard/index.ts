@@ -12,7 +12,9 @@ export interface RehydrateWizardAction {
   type: typeof REHYDRATE;
 }
 
-export type WizardAction = SetOnboardingWizardStepAction | RehydrateWizardAction;
+export type WizardAction =
+  | SetOnboardingWizardStepAction
+  | RehydrateWizardAction;
 
 export default function setOnboardingWizardStep(
   step: number,

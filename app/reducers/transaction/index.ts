@@ -82,6 +82,7 @@ const getAssetType = (selectedAsset: SelectedAsset): AssetType | undefined => {
   return assetType;
 };
 
+/* eslint-disable @typescript-eslint/default-param-last */
 const transactionReducer = (
   state: TransactionState = initialState,
   action: TransactionAction | Record<'type', null>,

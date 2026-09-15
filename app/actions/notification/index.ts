@@ -109,7 +109,10 @@ export function modifyOrShowTransactionNotificationById({
   autodismiss,
   transaction,
   status,
-}: Omit<ModifyOrShowTransactionNotificationAction, 'type'>): ModifyOrShowTransactionNotificationAction {
+}: Omit<
+  ModifyOrShowTransactionNotificationAction,
+  'type'
+>): ModifyOrShowTransactionNotificationAction {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION,
     autodismiss,
@@ -123,7 +126,10 @@ export function modifyOrShowSimpleNotificationById({
   title,
   description,
   status,
-}: Omit<ModifyOrShowSimpleNotificationAction, 'type'>): ModifyOrShowSimpleNotificationAction {
+}: Omit<
+  ModifyOrShowSimpleNotificationAction,
+  'type'
+>): ModifyOrShowSimpleNotificationAction {
   return {
     type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
     autodismiss,
@@ -143,7 +149,9 @@ export function replaceNotificationById(
   };
 }
 
-export function removeNotificationById(id: string): RemoveNotificationByIdAction {
+export function removeNotificationById(
+  id: string,
+): RemoveNotificationByIdAction {
   return {
     type: ACTIONS.REMOVE_NOTIFICATION_BY_ID,
     id,
@@ -177,7 +185,10 @@ export function showTransactionNotification({
   autodismiss,
   transaction,
   status,
-}: Omit<ShowTransactionNotificationAction, 'type'>): ShowTransactionNotificationAction {
+}: Omit<
+  ShowTransactionNotificationAction,
+  'type'
+>): ShowTransactionNotificationAction {
   return {
     type: ACTIONS.SHOW_TRANSACTION_NOTIFICATION,
     autodismiss,

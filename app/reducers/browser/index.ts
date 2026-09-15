@@ -36,6 +36,9 @@ export const initialState: BrowserState = {
   // Keep track of viewed Dapps, which is used for MetaMetricsEvents.DAPP_VIEWED event
   visitedDappsByHostname: {},
 };
+
+/* eslint-disable @typescript-eslint/default-param-last */
+/* eslint-disable @typescript-eslint/default-param-last */
 const browserReducer = (
   state: BrowserState = initialState,
   action: BrowserAction | Record<'type', null>,

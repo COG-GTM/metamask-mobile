@@ -1,12 +1,11 @@
-import type {
-  Bookmark,
-  BookmarksAction,
-} from '../../actions/bookmarks';
+import type { Bookmark, BookmarksAction } from '../../actions/bookmarks';
 
 export type BookmarksState = Bookmark[];
 
 export const initialState: BookmarksState = [];
 
+/* eslint-disable @typescript-eslint/default-param-last */
+/* eslint-disable @typescript-eslint/default-param-last */
 const bookmarksReducer = (
   state: BookmarksState = initialState,
   action: BookmarksAction | Record<'type', null>,

@@ -9,6 +9,7 @@ export const initialState: WizardState = {
   step: 0,
 };
 
+/* eslint-disable @typescript-eslint/default-param-last */
 const onboardingWizardReducer = (
   state: WizardState = initialState,
   action: WizardAction | Record<'type', null>,

@@ -17,6 +17,7 @@ export const initialState: ModalsState = {
   signMessageModalVisible: true,
 };
 
+/* eslint-disable @typescript-eslint/default-param-last */
 const modalsReducer = (
   state: ModalsState = initialState,
   action: ModalsAction | Record<'type', null>,

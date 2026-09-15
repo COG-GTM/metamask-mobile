@@ -23,6 +23,7 @@ export const initialState: SettingsState = {
   basicFunctionalityEnabled: true,
 };
 
+/* eslint-disable @typescript-eslint/default-param-last */
 const settingsReducer = (
   state: SettingsState = initialState,
   action: SettingsAction | Record<'type', null>,

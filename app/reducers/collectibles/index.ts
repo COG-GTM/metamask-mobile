@@ -67,7 +67,10 @@ export const favoritesCollectiblesSelector = createSelector(
 export const isCollectibleInFavoritesSelector = createSelector(
   favoritesCollectiblesSelector,
   (_state: RootState, collectible: FavoriteCollectible) => collectible,
-  (favoriteCollectibles: FavoriteCollectible[], collectible: FavoriteCollectible) =>
+  (
+    favoriteCollectibles: FavoriteCollectible[],
+    collectible: FavoriteCollectible,
+  ) =>
     Boolean(
       favoriteCollectibles.find(
         ({ tokenId, address }) =>
@@ -82,7 +85,8 @@ const getFavoritesCollectibles = (
   favoriteCollectibles: CollectiblesState['favorites'],
   selectedAddress: string,
   chainId: string,
-): FavoriteCollectible[] => favoriteCollectibles[selectedAddress]?.[chainId] || [];
+): FavoriteCollectible[] =>
+  favoriteCollectibles[selectedAddress]?.[chainId] || [];
 
 export const ADD_FAVORITE_COLLECTIBLE = 'ADD_FAVORITE_COLLECTIBLE';
 export const REMOVE_FAVORITE_COLLECTIBLE = 'REMOVE_FAVORITE_COLLECTIBLE';
@@ -94,6 +98,8 @@ export const initialState: CollectiblesState = {
   isNftFetchingProgress: false,
 };
 
+/* eslint-disable @typescript-eslint/default-param-last */
+/* eslint-disable @typescript-eslint/default-param-last */
 const collectiblesFavoritesReducer = (
   state: CollectiblesState = initialState,
   action: CollectiblesAction | Record<'type', null>,
@@ -192,12 +198,14 @@ export interface HideNftFetchingLoaderAction {
 
 export type { CollectiblesAction } from '../../actions/collectibles';
 
-export const showNftFetchingLoadingIndicator = (): ShowNftFetchingLoaderAction => ({
-  type: SHOW_NFT_FETCHING_LOADER,
-});
+export const showNftFetchingLoadingIndicator =
+  (): ShowNftFetchingLoaderAction => ({
+    type: SHOW_NFT_FETCHING_LOADER,
+  });
 
-export const hideNftFetchingLoadingIndicator = (): HideNftFetchingLoaderAction => ({
-  type: HIDE_NFT_FETCHING_LOADER,
-});
+export const hideNftFetchingLoadingIndicator =
+  (): HideNftFetchingLoaderAction => ({
+    type: HIDE_NFT_FETCHING_LOADER,
+  });
 
 export default collectiblesFavoritesReducer;

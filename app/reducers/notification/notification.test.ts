@@ -1,4 +1,8 @@
-import reducer, { ACTIONS, initialState, type NotificationState } from './index';
+import reducer, {
+  ACTIONS,
+  initialState,
+  type NotificationState,
+} from './index';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
@@ -108,7 +112,9 @@ describe('notifications reducer', () => {
     let stateWithNotifications: NotificationState;
 
     beforeEach(() => {
-      const reducers: ((state: NotificationState | undefined) => NotificationState)[] = [
+      const reducers: ((
+        state: NotificationState | undefined,
+      ) => NotificationState)[] = [
         (state) =>
           reducer(state, {
             type: ACTIONS.SHOW_SIMPLE_NOTIFICATION,
@@ -203,9 +209,9 @@ describe('notifications reducer', () => {
       const state = reducer(stateWithNotifications, {
         type: ACTIONS.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION,
         id: notificationId,
-        ...(({ ...simpleNotification(1), description } as unknown as {
+        ...({ ...simpleNotification(1), description } as unknown as {
           description: string;
-        })),
+        }),
       });
       expect(state.notifications.length).toBe(currentCount);
       expect(
@@ -245,7 +251,9 @@ describe('notifications reducer', () => {
         (item) => item.id === notificationId,
       );
       expect(state.notifications.length).toBe(currentCount);
-      expect(replacedNotification?.description).toEqual('Replaced notification');
+      expect(replacedNotification?.description).toEqual(
+        'Replaced notification',
+      );
     });
 
     it('should remove notification by id', () => {

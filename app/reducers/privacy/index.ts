@@ -10,6 +10,7 @@ export const initialState: PrivacyState = {
   revealSRPTimestamps: [],
 };
 
+/* eslint-disable @typescript-eslint/default-param-last */
 const privacyReducer = (
   state: PrivacyState = initialState,
   action: PrivacyAction | Record<'type', null>,
