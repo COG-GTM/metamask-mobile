@@ -1,4 +1,3 @@
-import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import {
   Dimensions,
@@ -19,6 +18,9 @@ import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import withMetricsAwareness from '../../hooks/useMetrics/withMetricsAwareness';
 import TabThumbnail from './TabThumbnail';
+import type { Theme } from '../../../util/theme/models';
+import type { IUseMetricsHook } from '../../hooks/useMetrics/useMetrics.types';
+import type { TabThumbnailProps } from './TabThumbnail/TabThumbnail.types';
 
 const THUMB_VERTICAL_MARGIN = 15;
 const NAVBAR_SIZE = Device.isIphoneX() ? 88 : 64;
@@ -31,7 +33,7 @@ const ROWS_VISIBLE = Math.floor(
 );
 const TABS_VISIBLE = ROWS_VISIBLE;
 
-const createStyles = (colors, shadows) =>
+const createStyles = (colors: Theme['colors'], shadows: Theme['shadows']) =>
   StyleSheet.create({
     noTabs: {
       flex: 1,
@@ -124,55 +126,38 @@ const createStyles = (colors, shadows) =>
  * PureComponent that wraps all the thumbnails
  * representing all the open tabs
  */
-class Tabs extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of tabs
-     */
-    tabs: PropTypes.array,
-    /**
-     * ID of the active tab
-     */
-    activeTab: PropTypes.number,
-    /**
-     * Opens a new tab
-     */
-    newTab: PropTypes.func,
-    /**
-     * Closes a tab
-     */
-    closeTab: PropTypes.func,
-    /**
-     * Closes all tabs
-     */
-    closeAllTabs: PropTypes.func,
-    /**
-     * Dismiss the entire view
-     */
-    closeTabsView: PropTypes.func,
-    /**
-     * Switches to a specific tab
-     */
-    switchToTab: PropTypes.func,
-    /**
-     * Sets the current tab used for the animation
-     */
-    animateCurrentTab: PropTypes.func, // eslint-disable-line react/no-unused-prop-types
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object
-  };
+type BrowserTab = TabThumbnailProps['tab'];
 
-  thumbnails = {};
+interface TabsProps {
+  tabs: BrowserTab[];
+  activeTab?: number;
+  newTab?: () => void;
+  closeTab?: (tab: BrowserTab) => void;
+  closeAllTabs?: () => void;
+  closeTabsView?: () => void;
+  switchToTab?: (tab: BrowserTab) => void;
+  animateCurrentTab?: () => void;
+  metrics?: IUseMetricsHook;
+}
 
-  state = {
+interface TabsState {
+  currentTab: number | null;
+}
+
+const TypedTabThumbnail = TabThumbnail as React.ComponentType<
+  TabThumbnailProps & { ref?: React.RefObject<unknown> }
+>;
+
+class Tabs extends PureComponent<TabsProps, TabsState> {
+  thumbnails: Record<number, React.RefObject<unknown>> = {};
+
+  state: TabsState = {
     currentTab: null,
   };
 
-  scrollview = React.createRef();
+  scrollview = React.createRef<ScrollView>();
 
-  constructor(props) {
+  constructor(props: TabsProps) {
     super(props);
     this.createTabsRef(props.tabs);
   }
@@ -201,25 +186,26 @@ class Tabs extends PureComponent {
     }
   }
 
-  createTabsRef(tabs) {
+  createTabsRef(tabs: BrowserTab[]) {
     tabs.forEach((tab) => {
       this.thumbnails[tab.id] = React.createRef();
     });
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps: TabsProps) {
     if (prevProps.tabs.length !== Object.keys(this.thumbnails).length) {
       this.createTabsRef(this.props.tabs);
     }
   }
 
-  onSwitch = async (tab) => {
-    this.props.switchToTab(tab);
+  onSwitch = async (tab: BrowserTab) => {
+    this.props.switchToTab?.(tab);
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const shadows = this.context.shadows || mockTheme.shadows;
+    const theme = this.context as { colors?: Theme['colors']; shadows?: Theme['shadows'] };
+    const colors = theme.colors || mockTheme.colors;
+    const shadows = theme.shadows || mockTheme.shadows;
     return createStyles(colors, shadows);
   };
 
@@ -238,7 +224,7 @@ class Tabs extends PureComponent {
       </View>
     );
   }
-  renderTabs(tabs, activeTab) {
+  renderTabs(tabs: BrowserTab[], activeTab?: number) {
     const styles = this.getStyles();
 
     return (
@@ -249,7 +235,7 @@ class Tabs extends PureComponent {
       >
         {tabs.map((tab) => (
           // eslint-disable-next-line react/jsx-key
-          <TabThumbnail
+          <TypedTabThumbnail
             ref={this.thumbnails[tab.id]}
             key={tab.id}
             tab={tab}
@@ -263,12 +249,15 @@ class Tabs extends PureComponent {
   }
 
   onNewTabPress = () => {
-    const { tabs, newTab } = this.props;
-    newTab();
+    const { tabs } = this.props;
+    this.props.newTab?.();
     this.trackNewTabEvent(tabs.length);
   };
 
-  trackNewTabEvent = (tabsNumber) => {
+  trackNewTabEvent = (tabsNumber: number) => {
+    if (!this.props.metrics) {
+      return;
+    }
     this.props.metrics.trackEvent(
       this.props.metrics
         .createEventBuilder(MetaMetricsEvents.BROWSER_NEW_TAB)
@@ -340,7 +329,7 @@ class Tabs extends PureComponent {
     return (
       <SafeAreaInsetsContext.Consumer>
         {(insets) => (
-          <View style={{ ...styles.tabsView, paddingTop: insets.top }}>
+          <View style={{ ...styles.tabsView, paddingTop: insets?.top ?? 0 }}>
             {tabs.length === 0
               ? this.renderNoTabs()
               : this.renderTabs(tabs, activeTab)}
@@ -354,4 +343,7 @@ class Tabs extends PureComponent {
 
 Tabs.contextType = ThemeContext;
 
-export default withMetricsAwareness(Tabs);
+export default withMetricsAwareness(
+  // The legacy HOC declaration only accepts its injected prop shape.
+  Tabs as unknown as React.ComponentType<{ metrics: IUseMetricsHook }>,
+);

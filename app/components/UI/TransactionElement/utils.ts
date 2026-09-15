@@ -22,7 +22,6 @@ import { sumHexWEIs } from '../../../util/conversions';
 import {
   decodeTransferData,
   isCollectibleAddress,
-  getTicker,
   getActionKey,
   TRANSACTION_TYPES,
   calculateEIP1559GasFeeHexes,
@@ -35,11 +34,147 @@ import Engine from '../../../core/Engine';
 import {
   isEIP1559Transaction,
   TransactionType,
+  type TransactionMeta,
 } from '@metamask/transaction-controller';
+import type {
+  NftContract,
+  Token,
+  TokenListState,
+} from '@metamask/assets-controllers';
+import type { SmartTransactionsControllerState } from '@metamask/smart-transactions-controller';
+import { selectNetworkConfigurations } from '../../../selectors/networkController';
+import type { Hex } from '@metamask/utils';
+import type BN4 from 'bnjs4';
+
+const isBNValue = (value: string | BN4): value is BN4 => isBN(value);
+
+type TransactionParams = TransactionMeta['txParams'] & {
+  from: string;
+  to: string;
+  data: string;
+  value: string | BN4;
+  gas: string;
+  gasPrice: string;
+  gasUsed: string;
+  estimatedBaseFee: string;
+  maxPriorityFeePerGas: string;
+  maxFeePerGas: string;
+  multiLayerL1FeeTotal: string;
+  nonce?: string;
+  estimatedGasLimit?: string;
+  status?: string;
+};
+
+interface TransferInformation {
+  symbol: string;
+  decimals: number;
+  contractAddress: string;
+}
+
+interface TransactionExecution {
+  from?: string;
+  to?: string;
+  nonce?: string | number;
+  gasPrice?: string;
+  maxFeePerGas?: string;
+  gas?: string;
+  value?: string;
+}
+
+export type Transaction = TransactionMeta & {
+  isTransfer?: boolean;
+  isSmartTransaction?: boolean;
+  transaction?: TransactionExecution;
+  transferInformation?: TransferInformation;
+};
+
+type DecodeTransaction = TransactionMeta & {
+  status?: string;
+  isTransfer?: boolean;
+  isSmartTransaction?: boolean;
+  txParams: TransactionParams;
+  transferInformation: TransferInformation;
+};
+
+interface ContractExchangeRate {
+  price: number;
+}
+
+interface SwapToken extends Token {
+  swaps?: boolean;
+}
+
+export interface SwapTransaction {
+  gasUsed?: string;
+  status?: string;
+  action?: string;
+  sourceAmount?: string;
+  destinationAmount?: string;
+  receivedDestinationAmount?: string | number;
+  upTo?: string;
+  sourceToken: SwapToken;
+  destinationToken: SwapToken;
+}
+
+export type SwapsTransactions = Record<string, SwapTransaction>;
+
+export interface DecodeTransactionArgs {
+  tx: DecodeTransaction;
+  selectedAddress: string;
+  chainId: string;
+  txChainId: string;
+  networkConfigurationsByChainId: ReturnType<typeof selectNetworkConfigurations>;
+  conversionRate: number;
+  currentCurrency: string;
+  primaryCurrency: string;
+  tokens: Record<string, Token>;
+  collectibleContracts: NftContract[];
+  contractExchangeRates: Record<string, ContractExchangeRate>;
+  swapsTransactions?: SwapsTransactions;
+  swapsTokens?: SwapToken[];
+  assetSymbol?: string;
+  actionKey?: string;
+  totalGas: BN4;
+}
+
+export interface TransactionElementData {
+  actionKey?: string;
+  notificationKey?: string;
+  renderFrom?: string;
+  renderTo?: string;
+  value?: string;
+  fiatValue?: string | number | boolean;
+  transactionType?: string;
+  isIncomingTransfer?: boolean;
+  contractDeployment?: boolean;
+  nonce?: string | number;
+}
+
+export interface TransactionDetailsData {
+  renderFrom?: string;
+  renderTo?: string;
+  renderValue?: string;
+  renderGas?: string | number;
+  renderGasPrice?: string | number;
+  renderTotalGas?: string;
+  summaryAmount?: string;
+  summaryFee?: string;
+  summaryTotalAmount?: string;
+  summarySecondaryTotalAmount?: string;
+  hash?: string;
+  transactionType?: string;
+  txChainId?: string;
+  [key: string]: unknown;
+}
+
+type DecodeResult = [
+  TransactionElementData | undefined,
+  TransactionDetailsData | undefined,
+];
 
 const { getSwapsContractAddress } = swapsUtils;
 
-function calculateTotalGas(transaction) {
+function calculateTotalGas(transaction: TransactionParams) {
   const {
     gas,
     gasPrice,
@@ -55,7 +190,7 @@ function calculateTotalGas(transaction) {
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
       suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas,
       suggestedMaxFeePerGasHex: maxFeePerGas,
-    });
+    } as Parameters<typeof calculateEIP1559GasFeeHexes>[0]);
     return hexToBN(eip1559GasHex.gasFeeMinHex);
   }
   const gasBN = hexToBN(gas);
@@ -74,7 +209,7 @@ function calculateTotalGas(transaction) {
   return totalGas;
 }
 
-function renderGwei(transaction) {
+function renderGwei(transaction: TransactionParams) {
   const {
     gasPrice,
     estimatedBaseFee,
@@ -89,16 +224,17 @@ function renderGwei(transaction) {
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
       suggestedMaxPriorityFeePerGasHex: maxPriorityFeePerGas,
       suggestedMaxFeePerGasHex: maxFeePerGas,
-    });
+    } as Parameters<typeof calculateEIP1559GasFeeHexes>[0]);
 
     return renderToGwei(
-      eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex,
+      eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex as
+        Parameters<typeof renderToGwei>[0],
     );
   }
   return renderToGwei(gasPrice);
 }
 
-function getTokenTransfer(args) {
+function getTokenTransfer(args: DecodeTransactionArgs): DecodeResult {
   const {
     tx: {
       txParams: { from, to, data, nonce },
@@ -117,8 +253,10 @@ function getTokenTransfer(args) {
 
   const [, , encodedAmount] = decodeTransferData('transfer', data);
   const amount = hexToBN(encodedAmount);
-  const userHasToken = safeToChecksumAddress(to) in tokens;
-  const token = userHasToken ? tokens[safeToChecksumAddress(to)] : null;
+  const userHasToken = safeToChecksumAddress(to) as string in tokens;
+  const token = userHasToken
+    ? tokens[safeToChecksumAddress(to) as string]
+    : null;
   const renderActionKey = token
     ? `${strings('transactions.sent')} ${token.symbol}`
     : actionKey;
@@ -132,13 +270,13 @@ function getTokenTransfer(args) {
   let renderTokenFiatAmount, renderTokenFiatNumber;
   if (exchangeRate) {
     renderTokenFiatAmount = balanceToFiat(
-      fromTokenMinimalUnit(amount, token.decimals) || 0,
+      fromTokenMinimalUnit(amount, token?.decimals as number) || 0,
       conversionRate,
       exchangeRate,
       currentCurrency,
     );
     renderTokenFiatNumber = balanceToFiatNumber(
-      fromTokenMinimalUnit(amount, token.decimals) || 0,
+      fromTokenMinimalUnit(amount, token?.decimals as number) || 0,
       conversionRate,
       exchangeRate,
     );
@@ -153,7 +291,7 @@ function getTokenTransfer(args) {
 
   const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
 
-  let transactionDetails = {
+  let transactionDetails: TransactionDetailsData = {
     renderTotalGas: `${renderFromWei(totalGas)} ${ticker}`,
     renderValue: renderToken,
   };
@@ -202,7 +340,7 @@ function getTokenTransfer(args) {
   return [transactionElement, transactionDetails];
 }
 
-function getCollectibleTransfer(args) {
+function getCollectibleTransfer(args: DecodeTransactionArgs): DecodeResult {
   const {
     tx: {
       txParams: { from, to, data },
@@ -219,8 +357,8 @@ function getCollectibleTransfer(args) {
   let actionKey;
   const [, tokenId] = decodeTransferData('transfer', data);
   const ticker = networkConfigurationsByChainId?.[txChainId]?.nativeCurrency;
-  const collectible = collectibleContracts.find((collectible) =>
-    toLowerCaseEquals(collectible.address, to),
+  const collectible = collectibleContracts.find((item) =>
+    toLowerCaseEquals(item.address, to),
   );
   if (collectible) {
     actionKey = `${strings('transactions.sent')} ${collectible.name}`;
@@ -232,7 +370,9 @@ function getCollectibleTransfer(args) {
     ? `${strings('unit.token_id')} ${tokenId} ${collectible.symbol}`
     : `${strings('unit.token_id')} ${tokenId}`;
 
-  let transactionDetails = { renderValue: renderCollectible };
+  let transactionDetails: TransactionDetailsData = {
+    renderValue: renderCollectible,
+  };
 
   if (primaryCurrency === 'ETH') {
     transactionDetails = {
@@ -277,7 +417,9 @@ function getCollectibleTransfer(args) {
   return [transactionElement, transactionDetails];
 }
 
-export function decodeIncomingTransfer(args) {
+export function decodeIncomingTransfer(
+  args: DecodeTransactionArgs,
+): DecodeResult {
   const {
     tx: {
       txParams: { to, from, value },
@@ -294,7 +436,6 @@ export function decodeIncomingTransfer(args) {
     primaryCurrency,
     selectedAddress,
   } = args;
-
   const amount = hexToBN(value);
   const token = { symbol, decimals, address: contractAddress };
 
@@ -335,7 +476,7 @@ export function decodeIncomingTransfer(args) {
   const transactionType =
     renderFullAddress(from) === selectedAddress ? SENT_TOKEN : RECEIVED_TOKEN;
 
-  let transactionDetails = {
+  let transactionDetails: TransactionDetailsData = {
     renderTotalGas: `${renderFromWei(totalGas)} ${ticker}`,
     renderValue: renderToken,
     renderFrom: renderFullAddress(from),
@@ -389,7 +530,9 @@ export function decodeIncomingTransfer(args) {
   return [transactionElement, transactionDetails];
 }
 
-async function decodeTransferTx(args) {
+async function decodeTransferTx(
+  args: DecodeTransactionArgs,
+): Promise<DecodeResult> {
   const {
     tx: {
       txParams,
@@ -429,7 +572,7 @@ async function decodeTransferTx(args) {
   return [transactionElement, transactionDetails];
 }
 
-function decodeTransferFromTx(args) {
+function decodeTransferFromTx(args: DecodeTransactionArgs): DecodeResult {
   const {
     tx: {
       txParams,
@@ -448,8 +591,8 @@ function decodeTransferFromTx(args) {
     'transferFrom',
     data,
   );
-  const collectible = collectibleContracts.find((collectible) =>
-    toLowerCaseEquals(collectible.address, to),
+  const collectible = collectibleContracts.find((item) =>
+    toLowerCaseEquals(item.address, to),
   );
   let actionKey = args.actionKey;
   if (collectible) {
@@ -469,7 +612,7 @@ function decodeTransferFromTx(args) {
   const transactionType =
     renderFrom === selectedAddress ? SENT_COLLECTIBLE : RECEIVED_COLLECTIBLE;
 
-  let transactionDetails = {
+  let transactionDetails: TransactionDetailsData = {
     renderFrom,
     renderTo,
     hash,
@@ -520,7 +663,7 @@ function decodeTransferFromTx(args) {
   return [transactionElement, transactionDetails];
 }
 
-function decodeDeploymentTx(args) {
+function decodeDeploymentTx(args: DecodeTransactionArgs): DecodeResult {
   const {
     tx: {
       txParams,
@@ -543,7 +686,9 @@ function decodeDeploymentTx(args) {
     conversionRate,
     currentCurrency,
   );
-  const totalEth = isBN(value) ? value.add(totalGas) : totalGas;
+  const totalEth = isBNValue(value)
+    ? value.add(totalGas)
+    : totalGas;
 
   const renderFrom = renderFullAddress(from);
   const renderTo = strings('transactions.to_contract');
@@ -557,7 +702,7 @@ function decodeDeploymentTx(args) {
     contractDeployment: true,
     transactionType: TRANSACTION_TYPES.SITE_INTERACTION,
   };
-  let transactionDetails = {
+  let transactionDetails: TransactionDetailsData = {
     renderFrom,
     renderTo,
     hash,
@@ -583,7 +728,7 @@ function decodeDeploymentTx(args) {
   } else {
     transactionDetails = {
       ...transactionDetails,
-      summaryAmount: weiToFiat(value, conversionRate, currentCurrency),
+      summaryAmount: weiToFiat(hexToBN(value), conversionRate, currentCurrency),
       summaryFee: weiToFiat(totalGas, conversionRate, currentCurrency),
       summarySecondaryTotalAmount: `${renderFromWei(totalEth)} ${ticker}`,
       summaryTotalAmount: weiToFiat(totalEth, conversionRate, currentCurrency),
@@ -593,7 +738,7 @@ function decodeDeploymentTx(args) {
   return [transactionElement, transactionDetails];
 }
 
-function decodeConfirmTx(args) {
+function decodeConfirmTx(args: DecodeTransactionArgs): DecodeResult {
   const {
     tx: {
       txParams,
@@ -625,9 +770,9 @@ function decodeConfirmTx(args) {
   const renderTo = renderFullAddress(to);
   const chainId = txChainId;
 
-  const tokenList =
-    Engine.context.TokenListController.state.tokensChainsCache?.[chainId]
-      ?.data || [];
+  const tokensChainsCache: TokenListState['tokensChainsCache'] =
+    Engine.context.TokenListController.state.tokensChainsCache;
+  const tokenList = tokensChainsCache?.[chainId as Hex]?.data || {};
   let symbol;
   if (renderTo in tokenList) {
     symbol = tokenList[renderTo].symbol;
@@ -645,8 +790,8 @@ function decodeConfirmTx(args) {
     transactionType = TRANSACTION_TYPES.BRIDGE_TRANSACTION;
   else if (
     actionKey === strings('transactions.smart_contract_interaction') ||
-    (!actionKey.includes(strings('transactions.sent')) &&
-      !actionKey.includes(strings('transactions.received')))
+    (!(actionKey as string).includes(strings('transactions.sent')) &&
+      !(actionKey as string).includes(strings('transactions.received')))
   )
     transactionType = TRANSACTION_TYPES.SITE_INTERACTION;
   else if (renderFrom === selectedAddress)
@@ -661,7 +806,7 @@ function decodeConfirmTx(args) {
     fiatValue: renderTotalEthFiat,
     transactionType,
   };
-  let transactionDetails = {
+  let transactionDetails: TransactionDetailsData = {
     renderFrom,
     renderTo,
     hash,
@@ -701,7 +846,7 @@ function decodeConfirmTx(args) {
   return [transactionElement, transactionDetails];
 }
 
-function decodeSwapsTx(args) {
+function decodeSwapsTx(args: DecodeTransactionArgs): DecodeResult {
   const {
     swapsTransactions,
     swapsTokens,
@@ -723,28 +868,32 @@ function decodeSwapsTx(args) {
   } = args;
   // If the tx was a swaps smart transaction, the swapsTransactions id is the stx.uuid, rather than tx.id
   // We need use the tx.hash and look up the stx with the same hash
-  const smartTransaction =
-    Engine.context.SmartTransactionsController.state.smartTransactionsState.smartTransactions[
-      chainId
-    ]?.find((stx) => stx.txHash === hash);
+  const smartTransactionsState: SmartTransactionsControllerState =
+    Engine.context.SmartTransactionsController.state;
+  const smartTransactions =
+    smartTransactionsState.smartTransactionsState.smartTransactions;
+  const smartTransaction = smartTransactions[chainId as Hex]?.find(
+    (stx) => stx.txHash === hash,
+  );
 
-  const swapTransaction =
-    swapsTransactions?.[id] ||
-    swapsTransactions?.[smartTransaction?.uuid] ||
-    {};
+  const swapTransaction = (swapsTransactions?.[id] ||
+    (smartTransaction?.uuid && swapsTransactions?.[smartTransaction.uuid]) ||
+    {}) as SwapTransaction;
 
   const totalGas = calculateTotalGas({
     ...txParams,
     gas: swapTransaction.gasUsed || gas,
   });
+  const sourceSwapToken = swapTransaction.sourceToken;
+  const destinationSwapToken = swapTransaction.destinationToken;
   const sourceToken = swapsTokens?.find(
-    ({ address }) => address === swapTransaction?.sourceToken?.address,
+    ({ address }) => address === sourceSwapToken.address,
   );
-  const destinationToken =
-    swapTransaction?.destinationToken?.swaps ||
-    swapsTokens?.find(
-      ({ address }) => address === swapTransaction?.destinationToken?.address,
-    );
+  const destinationToken = destinationSwapToken.swaps
+    ? destinationSwapToken
+    : swapsTokens?.find(
+        ({ address }) => address === destinationSwapToken.address,
+      );
   if (!sourceToken || !destinationToken) return [undefined, undefined];
 
   const renderFrom = renderFullAddress(from);
@@ -755,21 +904,24 @@ function decodeSwapsTx(args) {
     swapTransaction.sourceAmount &&
     renderFromTokenMinimalUnit(
       swapTransaction.sourceAmount,
-      swapTransaction.sourceToken.decimals,
+      sourceSwapToken.decimals,
     );
+  const destinationAmount =
+    !!swapTransaction.receivedDestinationAmount &&
+    (swapTransaction.receivedDestinationAmount as number) > 0
+      ? swapTransaction.receivedDestinationAmount
+      : swapTransaction.destinationAmount;
   const decimalDestinationAmount =
-    swapTransaction.destinationToken.decimals &&
-    renderFromTokenMinimalUnit(
-      !!swapTransaction?.receivedDestinationAmount &&
-        swapTransaction?.receivedDestinationAmount > 0
-        ? swapTransaction.receivedDestinationAmount
-        : swapTransaction.destinationAmount,
-      swapTransaction.destinationToken.decimals,
-    );
+    destinationSwapToken.decimals && destinationAmount
+      ? renderFromTokenMinimalUnit(
+          destinationAmount,
+          destinationSwapToken.decimals,
+        )
+      : undefined;
   let totalAmountForEthSourceTokenFormatted;
   if (sourceToken.symbol === 'ETH') {
     const totalAmountForEthSourceToken =
-      Number(!isNaN(totalEthGas) ? totalEthGas : 0) +
+      Number(!isNaN(Number(totalEthGas)) ? totalEthGas : 0) +
       Number(decimalSourceAmount);
     totalAmountForEthSourceTokenFormatted = `${limitToMaximumDecimalPlaces(
       totalAmountForEthSourceToken,
@@ -802,7 +954,7 @@ function decodeSwapsTx(args) {
     actionKey = strings('swaps.transaction_label.approve', {
       sourceToken: sourceToken.symbol,
       upTo: renderFromTokenMinimalUnit(
-        swapTransaction.upTo,
+        swapTransaction.upTo as string,
         sourceToken.decimals,
       ),
     });
@@ -816,20 +968,22 @@ function decodeSwapsTx(args) {
 
   const sourceExchangeRate = isSwapsNativeAsset(sourceToken)
     ? 1
-    : contractExchangeRates?.[safeToChecksumAddress(sourceToken.address)]
-        ?.price;
+    : contractExchangeRates?.[
+        safeToChecksumAddress(sourceToken.address) as string
+      ]?.price;
   const renderSourceTokenFiatNumber = balanceToFiatNumber(
-    decimalSourceAmount,
+    decimalSourceAmount as string,
     conversionRate,
     sourceExchangeRate,
   );
 
   const destinationExchangeRate = isSwapsNativeAsset(destinationToken)
     ? 1
-    : contractExchangeRates?.[safeToChecksumAddress(destinationToken.address)]
-        ?.price;
+    : contractExchangeRates?.[
+        safeToChecksumAddress(destinationToken.address) as string
+      ]?.price;
   const renderDestinationTokenFiatNumber = balanceToFiatNumber(
-    decimalDestinationAmount,
+    decimalDestinationAmount as string,
     conversionRate,
     destinationExchangeRate,
   );
@@ -861,7 +1015,7 @@ function decodeSwapsTx(args) {
       : TRANSACTION_TYPES.APPROVE,
   };
 
-  let transactionDetails = {
+  let transactionDetails: TransactionDetailsData = {
     renderFrom,
     renderTo,
     hash,
@@ -911,7 +1065,9 @@ function decodeSwapsTx(args) {
  * @param {*} args - Should contain tx, selectedAddress, ticker, conversionRate,
  * currentCurrency, exchangeRate, contractExchangeRates, collectibleContracts, tokens
  */
-export default async function decodeTransaction(args) {
+export default async function decodeTransaction(
+  args: DecodeTransactionArgs,
+): Promise<DecodeResult> {
   const {
     tx,
     selectedAddress,
@@ -933,16 +1089,17 @@ export default async function decodeTransaction(args) {
   let transactionElement, transactionDetails;
 
   if (
-    tx.txParams.to?.toLowerCase() === getSwapsContractAddress(chainIdToUse) ||
+    tx.txParams.to?.toLowerCase() ===
+      getSwapsContractAddress(chainIdToUse as `0x${string}`) ||
     swapsTransactions[tx.id]
   ) {
-    const [transactionElement, transactionDetails] = decodeSwapsTx({
+    const [swapsTransactionElement, swapsTransactionDetails] = decodeSwapsTx({
       ...args,
       actionKey,
     });
 
-    if (transactionElement && transactionDetails)
-      return [transactionElement, transactionDetails];
+    if (swapsTransactionElement && swapsTransactionDetails)
+      return [swapsTransactionElement, swapsTransactionDetails];
   }
   if (isTransfer) {
     [transactionElement, transactionDetails] = decodeIncomingTransfer({

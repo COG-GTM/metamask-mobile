@@ -1,26 +1,33 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import ProgressBar from 'react-native-progress/Bar';
 import FadeView from '../FadeView';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+
+interface WebviewProgressBarProps {
+  progress?: number;
+}
 
 /**
  * PureComponent that wraps the ProgressBar
  * and allows to fade it in / out
  * via the boolean prop visible
  */
-export default class WebviewProgressBar extends PureComponent {
-  state = {
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+interface WebviewProgressBar {
+  context: React.ContextType<typeof ThemeContext>;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-declaration-merging
+class WebviewProgressBar extends PureComponent<
+  WebviewProgressBarProps
+> {
+  static contextType = ThemeContext;
+
+  state: { visible: boolean } = {
     visible: true,
   };
 
-  static propTypes = {
-    /**
-     * Float that represents the progress complete
-     * between 0 and 1
-     */
-    progress: PropTypes.any,
-  };
+  mounted = false;
 
   componentDidMount() {
     this.mounted = true;
@@ -67,4 +74,4 @@ export default class WebviewProgressBar extends PureComponent {
   };
 }
 
-WebviewProgressBar.contextType = ThemeContext;
+export default WebviewProgressBar;

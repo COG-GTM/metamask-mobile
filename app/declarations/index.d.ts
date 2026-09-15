@@ -701,3 +701,53 @@ declare module '@metamask/ethjs-query' {
     constructor(provider: unknown);
   }
 }
+
+declare module 'react-native/Libraries/Utilities/dismissKeyboard' {
+  const dismissKeyboard: () => void;
+  export default dismissKeyboard;
+}
+
+declare module '@metamask/react-native-button/coalesceNonElementChildren' {
+  const coalesceNonElementChildren: (
+    children: React.ReactNode,
+    callback: (child: React.ReactNode, index: number) => React.ReactNode,
+  ) => React.ReactNode[];
+  export default coalesceNonElementChildren;
+}
+
+declare module '@metamask/react-native-button' {
+  import type {
+    StyleProp,
+    TextStyle,
+    TouchableOpacityProps,
+    ViewStyle,
+  } from 'react-native';
+
+  interface ButtonProps extends TouchableOpacityProps {
+    accessibilityLabel?: string;
+    allowFontScaling?: boolean;
+    containerStyle?: StyleProp<ViewStyle>;
+    disabledContainerStyle?: StyleProp<ViewStyle>;
+    style?: StyleProp<TextStyle>;
+    styleDisabled?: StyleProp<TextStyle>;
+    childGroupStyle?: StyleProp<ViewStyle>;
+  }
+
+  const Button: React.ComponentType<
+    React.PropsWithChildren<ButtonProps>
+  >;
+  export default Button;
+}
+
+declare module 'react-native-progress/Bar' {
+  const ProgressBar: React.ComponentType<{
+    progress?: number;
+    color?: string;
+    width?: number | null;
+    height?: number;
+    borderRadius?: number;
+    borderWidth?: number;
+    useNativeDriver?: boolean;
+  }>;
+  export default ProgressBar;
+}

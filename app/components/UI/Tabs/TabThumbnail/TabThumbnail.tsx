@@ -84,7 +84,7 @@ const TabThumbnail = ({
           <TouchableOpacity
             accessible
             accessibilityLabel={strings('browser.close_tab')}
-            onPress={() => onClose(tab)}
+            onPress={() => onClose!(tab)}
             hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
           >
             <Icon
