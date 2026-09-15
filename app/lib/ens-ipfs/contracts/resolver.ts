@@ -1,4 +1,6 @@
-export default [
+import type { JsonFragment } from '@ethersproject/abi';
+
+const resolverAbi: readonly JsonFragment[] = [
   {
     constant: false,
     inputs: [
@@ -233,3 +235,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default resolverAbi;

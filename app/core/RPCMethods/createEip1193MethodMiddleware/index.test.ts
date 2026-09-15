@@ -1,11 +1,26 @@
 import { JsonRpcEngine } from '@metamask/json-rpc-engine';
+import type { PermittedHandlerExport } from '@metamask/permission-controller';
 import {
   assertIsJsonRpcFailure,
   assertIsJsonRpcSuccess,
+  type Json,
+  type JsonRpcParams,
 } from '@metamask/utils';
 import { createEip1193MethodMiddleware } from '.';
 
-const getHandler = () => ({
+interface TestHooks {
+  hook1: () => Json;
+  hook2: () => Json;
+}
+
+const getErrorCause = (error: { data?: Json }): { message?: string } =>
+  (error.data as { cause: { message?: string } }).cause;
+
+const getHandler = (): PermittedHandlerExport<
+  TestHooks,
+  JsonRpcParams,
+  Json
+> => ({
   implementation: (req, res, _next, end, hooks) => {
     if (Array.isArray(req.params)) {
       switch (req.params[0]) {
@@ -144,7 +159,7 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(getErrorCause(response.error).message).toBe('test error');
   });
 
   it('should handle errors thrown by the implementation', async () => {
@@ -161,7 +176,7 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(getErrorCause(response.error).message).toBe('test error');
   });
 
   it('should handle non-errors thrown by the implementation', async () => {
