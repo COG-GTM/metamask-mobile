@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
+  Keyboard,
   ScrollView,
   StyleSheet,
   Text,
@@ -10,13 +10,13 @@ import {
 import { fontStyles, baseStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Modal from 'react-native-modal';
-import dismissKeyboard from 'react-native/Libraries/Utilities/dismissKeyboard';
 import IconCheck from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors, Theme } from '../../../util/theme/models';
 
 const ROW_HEIGHT = 35;
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     dropdown: {
       flexDirection: 'row',
@@ -90,38 +90,53 @@ const createStyles = (colors) =>
     },
   });
 
-export default class SelectComponent extends PureComponent {
-  static propTypes = {
-    /**
-     * Default value to show
-     */
-    defaultValue: PropTypes.string,
-    /**
-     * Label for the field
-     */
-    label: PropTypes.string,
-    /**
-     * Selected value
-     */
-    selectedValue: PropTypes.string,
-    /**
-     *  Available options
-     */
-    options: PropTypes.array,
-    /**
-     * Callback for value change
-     */
-    onValueChange: PropTypes.func,
-    testID: PropTypes.string,
-  };
+export interface SelectOption<T> {
+  key?: string | number;
+  value: T;
+  label?: string;
+}
 
-  state = {
+interface Props<T> {
+  /**
+   * Default value to show
+   */
+  defaultValue?: string;
+  /**
+   * Label for the field
+   */
+  label?: string;
+  /**
+   * Selected value
+   */
+  selectedValue?: T | string;
+  /**
+   * Available options
+   */
+  options: SelectOption<T>[];
+  /**
+   * Callback for value change
+   */
+  onValueChange: (val: T) => void;
+  testID?: string;
+}
+
+interface State {
+  pickerVisible: boolean;
+}
+
+export default class SelectComponent<T = string> extends PureComponent<
+  Props<T>,
+  State
+> {
+  static contextType = ThemeContext;
+
+  state: State = {
     pickerVisible: false,
   };
 
-  scrollView = Device.isIos() ? React.createRef() : null;
+  scrollView = Device.isIos() ? React.createRef<ScrollView>() : null;
 
-  onValueChange = (val) => {
+  onValueChange = (val: T) => {
     this.props.onValueChange(val);
     setTimeout(() => {
       this.hidePicker();
@@ -133,7 +148,7 @@ export default class SelectComponent extends PureComponent {
   };
 
   showPicker = () => {
-    dismissKeyboard();
+    Keyboard.dismiss();
     this.setState({ pickerVisible: true });
     Device.isIos() &&
       // If there are more options than 13 (number of items
@@ -143,13 +158,11 @@ export default class SelectComponent extends PureComponent {
       this.props.options.forEach((item, i) => {
         if (item.value === this.props.selectedValue) {
           setTimeout(() => {
-            this.scrollView &&
-              this.scrollView.current &&
-              this.scrollView.current.scrollTo({
-                x: 0,
-                y: i * ROW_HEIGHT,
-                animated: true,
-              });
+            this.scrollView?.current?.scrollTo({
+              x: 0,
+              y: i * ROW_HEIGHT,
+              animated: true,
+            });
           }, 100);
         }
       });
@@ -157,7 +170,7 @@ export default class SelectComponent extends PureComponent {
 
   getSelectedValue = () => {
     const { options, selectedValue, defaultValue } = this.props;
-    const el = options && options.filter((o) => o.value === selectedValue);
+    const el = options?.filter((o) => o.value === selectedValue);
     if (el.length && el[0].label) {
       return el[0].label;
     }
@@ -168,13 +181,13 @@ export default class SelectComponent extends PureComponent {
   };
 
   renderDropdownSelector = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
       <View style={baseStyles.flexGrow}>
-        <TouchableOpacity onPress={this.showPicker}
-        testID={this.props.testID}>
+        <TouchableOpacity onPress={this.showPicker} testID={this.props.testID}>
           <View style={styles.dropdown}>
             <Text style={styles.selectedOption} numberOfLines={1}>
               {this.getSelectedValue()}
@@ -234,5 +247,3 @@ export default class SelectComponent extends PureComponent {
     <View style={baseStyles.flexGrow}>{this.renderDropdownSelector()}</View>
   );
 }
-
-SelectComponent.contextType = ThemeContext;
