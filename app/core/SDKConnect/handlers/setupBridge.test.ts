@@ -1,6 +1,8 @@
 import { OriginatorInfo } from '@metamask/sdk-communication-layer';
 import { PROTOCOLS } from '../../../constants/deeplinks';
-import BackgroundBridge from '../../BackgroundBridge/BackgroundBridge';
+import BackgroundBridge, {
+  BackgroundBridgeParams,
+} from '../../BackgroundBridge/BackgroundBridge';
 import { Connection } from '../Connection';
 import DevLogger from '../utils/DevLogger';
 import setupBridge from './setupBridge';
@@ -32,7 +34,7 @@ describe('setupBridge', () => {
   });
 
   it('should returns existing backgroundBridge if it already exists', () => {
-    const existingBridge = new BackgroundBridge();
+    const existingBridge = new BackgroundBridge({} as BackgroundBridgeParams);
     connection.backgroundBridge = existingBridge;
 
     const result = setupBridge({ originatorInfo, connection });
