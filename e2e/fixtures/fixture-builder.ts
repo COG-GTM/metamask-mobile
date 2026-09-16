@@ -3,13 +3,19 @@
 import { getGanachePort } from './utils';
 import { merge } from 'lodash';
 import { CustomNetworks, PopularNetworksList } from '../resources/networks.e2e';
-import { CHAIN_IDS } from '@metamask/transaction-controller';
+import {
+  CHAIN_IDS,
+  type TransactionMeta,
+} from '@metamask/transaction-controller';
+import type { Token } from '@metamask/assets-controllers';
+import type { Hex } from '@metamask/utils';
 import { SolScope } from '@metamask/keyring-api';
 import {
   Caip25CaveatType,
   Caip25EndowmentPermissionName,
   setEthAccounts,
   setPermittedEthChainIds,
+  type Caip25CaveatValue,
 } from '@metamask/chain-agnostic-permission';
 
 export const DEFAULT_FIXTURE_ACCOUNT =
@@ -23,10 +29,77 @@ export const DEFAULT_IMPORTED_FIXTURE_ACCOUNT =
 
 const DAPP_URL = 'localhost';
 
+interface FixtureRpcEndpoint {
+  networkClientId: string;
+  url: string;
+  type: string;
+  name?: string;
+}
+
+interface FixtureNetworkConfiguration {
+  chainId: string;
+  rpcEndpoints: FixtureRpcEndpoint[];
+  defaultRpcEndpointIndex: number;
+  defaultBlockExplorerUrlIndex?: number;
+  blockExplorerUrls: string[];
+  name: string;
+  nativeCurrency: string;
+}
+
+interface FixtureNetworkController {
+  selectedNetworkClientId: string;
+  networksMetadata: Record<string, unknown>;
+  networkConfigurationsByChainId: Record<string, FixtureNetworkConfiguration>;
+}
+
+interface FixtureBackgroundState {
+  NetworkController: FixtureNetworkController;
+  PermissionController: Record<string, unknown>;
+  PreferencesController: Record<string, unknown>;
+  KeyringController: Record<string, unknown>;
+  TokensController: Record<string, unknown>;
+  TransactionController: Record<string, unknown>;
+  [controller: string]: unknown;
+}
+
+interface FixtureState {
+  engine: { backgroundState: FixtureBackgroundState };
+  fiatOrders: {
+    selectedRegionAgg: Record<string, unknown> | null;
+    selectedPaymentMethodAgg: string | null;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface Fixture {
+  state: FixtureState;
+  asyncState: Record<string, unknown>;
+}
+
+interface FixtureProviderConfigData {
+  providerConfig: {
+    chainId: string;
+    rpcUrl: string;
+    type: string;
+    nickname: string;
+    ticker: string;
+  };
+}
+
+interface FixturePermissions {
+  [Caip25EndowmentPermissionName]?: {
+    caveats?: { type: string; value: Caip25CaveatValue }[];
+  };
+  [permission: string]: unknown;
+}
+
 /**
  * FixtureBuilder class provides a fluent interface for building fixture data.
  */
 class FixtureBuilder {
+  fixture!: Fixture;
+
   /**
    * Create a new instance of FixtureBuilder.
    * @param {Object} options - Options for the fixture builder.
@@ -44,7 +117,7 @@ class FixtureBuilder {
    * @param {any} asyncState - The value to set for asyncState.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withAsyncState(asyncState) {
+  withAsyncState(asyncState: Fixture['asyncState']) {
     this.fixture.asyncState = asyncState;
     return this;
   }
@@ -54,7 +127,7 @@ class FixtureBuilder {
    * @param {any} state - The value to set for state.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withState(state) {
+  withState(state: FixtureState) {
     this.fixture.state = state;
     return this;
   }
@@ -657,7 +730,7 @@ class FixtureBuilder {
    * @param {object} data - Data to merge into the PermissionController's state.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withPermissionController(data) {
+  withPermissionController(data: Record<string, unknown>) {
     merge(this.fixture.state.engine.backgroundState.PermissionController, data);
     return this;
   }
@@ -667,7 +740,7 @@ class FixtureBuilder {
    * @param {object} data - Data to merge into the NetworkController's state.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withNetworkController(data) {
+  withNetworkController(data: FixtureProviderConfigData) {
     const networkController =
       this.fixture.state.engine.backgroundState.NetworkController;
 
@@ -712,7 +785,9 @@ class FixtureBuilder {
    * @param {Object} additionalPermissions - Additional permissions to merge with permission
    * @returns {Object} Permission controller configuration object
    */
-  createPermissionControllerConfig(additionalPermissions = {}) {
+  createPermissionControllerConfig(
+    additionalPermissions: FixturePermissions = {},
+  ) {
     const caip25CaveatValue = additionalPermissions?.[
       Caip25EndowmentPermissionName
     ]?.caveats?.find((caveat) => caveat.type === Caip25CaveatType)?.value ?? {
@@ -754,14 +829,16 @@ class FixtureBuilder {
    * @param {Object} additionalPermissions - Additional permissions to merge.
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withPermissionControllerConnectedToTestDapp(additionalPermissions = {}) {
+  withPermissionControllerConnectedToTestDapp(
+    additionalPermissions: FixturePermissions = {},
+  ) {
     this.withPermissionController(
       this.createPermissionControllerConfig(additionalPermissions),
     );
     return this;
   }
 
-  withRampsSelectedRegion(region = null) {
+  withRampsSelectedRegion(region: Record<string, unknown> | null = null) {
     const defaultRegion = {
       currencies: ['/currencies/fiat/xcd'],
       emoji: '🇱🇨',
@@ -790,12 +867,12 @@ class FixtureBuilder {
    * @param {string[]} chainIds - Array of chain IDs to permit (defaults to ['0x1']), other nexts like linea mainnet 0xe708
    * @returns {FixtureBuilder} - The FixtureBuilder instance for method chaining.
    */
-  withChainPermission(chainIds = ['0x1']) {
+  withChainPermission(chainIds: Hex[] = ['0x1']) {
     const optionalScopes = chainIds
       .map((id) => ({
         [`eip155:${parseInt(id)}`]: { accounts: [] },
       }))
-      .reduce(((acc, obj) => ({ ...acc, ...obj })));
+      .reduce((acc, obj) => ({ ...acc, ...obj }));
 
     const defaultCaip25CaveatValue = {
       optionalScopes,
@@ -832,7 +909,7 @@ class FixtureBuilder {
   withOnboardingFixture() {
     this.fixture = {
       asyncState: {},
-    };
+    } as Fixture;
     return this;
   }
 
@@ -921,7 +998,8 @@ class FixtureBuilder {
 
     // Loop through each network in PopularNetworksList
     for (const key in PopularNetworksList) {
-      const network = PopularNetworksList[key];
+      const network =
+        PopularNetworksList[key as keyof typeof PopularNetworksList];
       const {
         rpcUrl: rpcTarget,
         chainId,
@@ -964,7 +1042,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withPreferencesController(data) {
+  withPreferencesController(data: Record<string, unknown>) {
     merge(
       this.fixture.state.engine.backgroundState.PreferencesController,
       data,
@@ -1061,7 +1139,7 @@ class FixtureBuilder {
     return this;
   }
 
-  withTokens(tokens) {
+  withTokens(tokens: Token[]) {
     merge(this.fixture.state.engine.backgroundState.TokensController, {
       allTokens: {
         [CHAIN_IDS.MAINNET]: {
@@ -1072,14 +1150,16 @@ class FixtureBuilder {
     return this;
   }
 
-  withIncomingTransactionPreferences(incomingTransactionPreferences) {
+  withIncomingTransactionPreferences(
+    incomingTransactionPreferences: Record<string, boolean>,
+  ) {
     merge(this.fixture.state.engine.backgroundState.PreferencesController, {
       showIncomingTransactions: incomingTransactionPreferences,
     });
     return this;
   }
 
-  withTransactions(transactions) {
+  withTransactions(transactions: Partial<TransactionMeta>[]) {
     merge(this.fixture.state.engine.backgroundState.TransactionController, {
       transactions,
     });

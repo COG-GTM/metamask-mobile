@@ -8,15 +8,15 @@ import { DEFAULT_DAPP_SERVER_PORT } from './fixture-helper';
 
 export const DEFAULT_MOCKSERVER_PORT = 8000;
 
-function transformToValidPort(defaultPort, pid) {
+function transformToValidPort(defaultPort: number, pid: number) {
   // Improve uniqueness by using a simple transformation
-  const transformedPort = (parseInt(pid, 10) % 100000) + defaultPort;
+  const transformedPort = (parseInt(String(pid), 10) % 100000) + defaultPort;
 
   // Ensure the transformed port falls within the valid port range (0-65535)
   return transformedPort % 65536;
 }
 
-function getServerPort(defaultPort) {
+function getServerPort(defaultPort: number) {
   if (process.env.CI) {
     return transformToValidPort(defaultPort, process.pid);
   }
@@ -39,9 +39,11 @@ export function getMockServerPort() {
   return getServerPort(DEFAULT_MOCKSERVER_PORT);
 }
 
-export function buildPermissions(chainIds) {
+export function buildPermissions(chainIds: string[]) {
   // default mainnet
-  const optionalScopes = { 'eip155:1': { accounts: [] } };
+  const optionalScopes: Record<string, { accounts: string[] }> = {
+    'eip155:1': { accounts: [] },
+  };
 
   for (const chainId of chainIds) {
     optionalScopes[`eip155:${parseInt(chainId)}`] = {

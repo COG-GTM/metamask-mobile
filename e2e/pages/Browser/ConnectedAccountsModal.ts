@@ -56,7 +56,9 @@ class ConnectedAccountsModal {
   }
 
   get title() {
-    return Matchers.getElementByText(ConnectedAccountModalSelectorsText.TITLE);
+    return Matchers.getElementByText(
+      ConnectedAccountModalSelectorsText.TITLE,
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   get selectAllNetworksButton() {

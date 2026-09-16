@@ -1,7 +1,7 @@
 import { NetworkConnectMultiSelectorSelectorsIDs } from '../../selectors/Browser/NetworkConnectMultiSelector.selectors';
 import Matchers from '../../utils/Matchers';
 import Gestures from '../../utils/Gestures';
-import { waitFor } from 'detox';
+import { waitFor, expect as detoxExpect } from 'detox';
 class NetworkConnectMultiSelector {
   get updateButton() {
     return Matchers.getElementByID(
@@ -23,22 +23,26 @@ class NetworkConnectMultiSelector {
     await Gestures.waitAndTap(this.backButton);
   }
 
-  async isNetworkChainPermissionSelected(chainName) {
+  async isNetworkChainPermissionSelected(chainName: string) {
     const chainPermissionTestId = `${chainName}-selected`;
 
-    const element = await Matchers.getElementByID(chainPermissionTestId);
-    await waitFor(element).toBeVisible().withTimeout(10000);
+    const chainPermission = await Matchers.getElementByID(
+      chainPermissionTestId,
+    );
+    await waitFor(chainPermission).toBeVisible().withTimeout(10000);
 
-    return expect(element).toExist();
+    return detoxExpect(chainPermission).toExist();
   }
 
-  async isNetworkChainPermissionNotSelected(chainName) {
+  async isNetworkChainPermissionNotSelected(chainName: string) {
     const chainPermissionTestId = `${chainName}-not-selected`;
 
-    const element = await Matchers.getElementByID(chainPermissionTestId);
-    await waitFor(element).toBeVisible().withTimeout(10000);
+    const chainPermission = await Matchers.getElementByID(
+      chainPermissionTestId,
+    );
+    await waitFor(chainPermission).toBeVisible().withTimeout(10000);
 
-    return expect(element).toExist();
+    return detoxExpect(chainPermission).toExist();
   }
 }
 

@@ -41,7 +41,9 @@ class Browser {
     return Matchers.getElementByID(BrowserViewSelectorsIDs.URL_INPUT);
   }
   get urlInputBoxID() {
-    return Matchers.getElementByID(BrowserURLBarSelectorsIDs.URL_INPUT);
+    return Matchers.getElementByID(
+      BrowserURLBarSelectorsIDs.URL_INPUT,
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   get clearURLButton() {
@@ -60,7 +62,7 @@ class Browser {
 
   get addFavouritesButton() {
     return Matchers.getElementByText(
-      BrowserViewSelectorsText.ADD_FAVORITES_BUTTON,
+      (BrowserViewSelectorsText as Record<string, string>).ADD_FAVORITES_BUTTON,
     );
   }
 
@@ -68,19 +70,21 @@ class Browser {
     return Matchers.getElementByXPath(
       BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
       BrowserViewSelectorsXPaths.FAVORITE_TAB,
-    );
+    ) as Promise<Detox.IndexableWebElement>;
   }
 
   get testDappURLInFavouritesTab() {
-    return device.getPlatform() === 'ios'
-      ? Matchers.getElementByXPath(
-          BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
-          BrowserViewSelectorsXPaths.TEST_DAPP_LINK,
-        )
-      : Matchers.getElementByXPath(
-          BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
-          BrowserViewSelectorsXPaths.TEST_DAPP_TEXT,
-        );
+    return (
+      device.getPlatform() === 'ios'
+        ? Matchers.getElementByXPath(
+            BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
+            BrowserViewSelectorsXPaths.TEST_DAPP_LINK,
+          )
+        : Matchers.getElementByXPath(
+            BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
+            BrowserViewSelectorsXPaths.TEST_DAPP_TEXT,
+          )
+    ) as Promise<Detox.IndexableWebElement>;
   }
 
   get multiTabButton() {
@@ -118,7 +122,7 @@ class Browser {
     return Matchers.getElementByID(BrowserViewSelectorsIDs.NO_TABS_MESSAGE);
   }
 
-  async getFavoritesURL(url) {
+  async getFavoritesURL(url: string) {
     return Matchers.getElementByHref(
       BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
       url,
@@ -187,7 +191,7 @@ class Browser {
     }
   }
 
-  async navigateToURL(url) {
+  async navigateToURL(url: string) {
     await device.disableSynchronization(); // because animations makes typing into the browser slow
 
     await Gestures.typeTextAndHideKeyboard(this.urlInputBoxID, url);
