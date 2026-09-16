@@ -12,6 +12,7 @@ describe('ManualBackupStep3', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
+        {/* @ts-expect-error navigation and route props are intentionally omitted in this shallow render */}
         <ManualBackupStep3 />
       </Provider>,
     );

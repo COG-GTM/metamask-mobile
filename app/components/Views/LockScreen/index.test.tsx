@@ -24,6 +24,7 @@ const mockInitialState: DeepPartial<RootState> = {
 describe('LockScreen', () => {
   it('should render correctly', () => {
     const { toJSON } = renderScreen(
+      // @ts-expect-error navigation params are intentionally omitted; renderScreen supplies them via the navigator
       LockScreen,
       { name: Routes.LOCK_SCREEN },
       { state: mockInitialState },
