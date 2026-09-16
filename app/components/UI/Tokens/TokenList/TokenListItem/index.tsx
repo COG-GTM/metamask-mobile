@@ -71,7 +71,7 @@ import {
   selectMultichainAssetsRates,
 } from '../../../../../selectors/multichain/multichain';
 ///: END:ONLY_INCLUDE_IF(keyring-snaps)
-import useEarnTokens from '../../../Earn/hooks/useEarnTokens';
+import { getEarnTokenKey } from '../../../Earn/hooks/useEarnTokenKeys';
 import {
   selectPooledStakingEnabledFlag,
   selectStablecoinLendingEnabledFlag,
@@ -84,6 +84,7 @@ interface TokenListItemProps {
   setShowScamWarningModal: (arg: boolean) => void;
   privacyMode: boolean;
   showPercentageChange?: boolean;
+  earnTokenKeys: ReadonlySet<string>;
 }
 
 export const TokenListItem = React.memo(
@@ -93,6 +94,7 @@ export const TokenListItem = React.memo(
     setShowScamWarningModal,
     privacyMode,
     showPercentageChange = true,
+    earnTokenKeys,
   }: TokenListItemProps) => {
     const { trackEvent, createEventBuilder } = useMetrics();
     const navigation = useNavigation();
@@ -139,8 +141,6 @@ export const TokenListItem = React.memo(
     const multiChainTokenBalance = useSelector(selectTokensBalances);
     const multiChainMarketData = useSelector(selectTokenMarketData);
     const multiChainCurrencyRates = useSelector(selectCurrencyRates);
-
-    const earnTokens = useEarnTokens();
 
     // Earn feature flags
     const isPooledStakingEnabled = useSelector(selectPooledStakingEnabledFlag);
@@ -378,12 +378,8 @@ export const TokenListItem = React.memo(
       const shouldShowPooledStakingCta =
         isCurrentAssetEth && isStakingSupportedChain && isPooledStakingEnabled;
 
-      const isAssetSupportedStablecoin = earnTokens.find(
-        (token) =>
-          token.symbol === asset.symbol &&
-          asset.chainId === token?.chainId &&
-          !asset?.isStaked,
-      );
+      const isAssetSupportedStablecoin =
+        !asset?.isStaked && earnTokenKeys.has(getEarnTokenKey(asset));
       const shouldShowStablecoinLendingCta =
         isAssetSupportedStablecoin && isStablecoinLendingEnabled;
 
@@ -393,7 +389,7 @@ export const TokenListItem = React.memo(
       }
     }, [
       asset,
-      earnTokens,
+      earnTokenKeys,
       evmAsset?.isETH,
       evmAsset?.isStaked,
       isPooledStakingEnabled,
