@@ -13,6 +13,32 @@ declare module 'react-native-minimizer';
 declare module 'react-native-tcp-socket';
 
 declare module 'xhr2';
+declare module 'koa' {
+  // eslint-disable-next-line import/no-nodejs-modules
+  import type { Server } from 'http';
+  // eslint-disable-next-line import/no-nodejs-modules
+  import type { ListenOptions } from 'net';
+
+  namespace Koa {
+    interface Context {
+      method: string;
+      path: string;
+      body: unknown;
+      set(field: string, value: string): void;
+    }
+    type Middleware = (
+      context: Context,
+      next: () => Promise<unknown>,
+    ) => unknown;
+  }
+
+  class Koa {
+    use(middleware: Koa.Middleware): this;
+    listen(options: ListenOptions, listeningListener?: () => void): Server;
+  }
+
+  export = Koa;
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

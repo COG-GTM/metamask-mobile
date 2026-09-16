@@ -9,21 +9,21 @@ class PortfolioHomePage {
     return Matchers.getElementByXPath(
       BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
       PortfolioPageSelectorsXpath.CONNECT_WALLET_BUTTON,
-    );
+    ) as Promise<Detox.IndexableWebElement>;
   }
 
   get closeIconPrivacyModal() {
     return Matchers.getElementByXPath(
       BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
       PortfolioPageSelectorsXpath.CLOSE_PRIVACY_MODAL,
-    );
+    ) as Promise<Detox.IndexableWebElement>;
   }
 
   get accountButton() {
     return Matchers.getElementByXPath(
       BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID,
       PortfolioPageSelectorsXpath.ACCOUNT_ICON_HREF,
-    );
+    ) as Promise<Detox.IndexableWebElement>;
   }
 
   async tapConnectMetaMask() {

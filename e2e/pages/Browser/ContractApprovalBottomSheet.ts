@@ -7,7 +7,9 @@ import Gestures from '../../utils/Gestures';
 
 class ContractApprovalBottomSheet {
   get container() {
-    return Matchers.getElementByID(ContractApprovalBottomSheetSelectorsIDs.CONTAINER);
+    return Matchers.getElementByID(
+      ContractApprovalBottomSheetSelectorsIDs.CONTAINER,
+    );
   }
 
   get addNickName() {
@@ -23,7 +25,9 @@ class ContractApprovalBottomSheet {
   }
 
   get rejectButton() {
-    return Matchers.getElementByText(ContractApprovalBottomSheetSelectorsText.REJECT);
+    return Matchers.getElementByText(
+      ContractApprovalBottomSheetSelectorsText.REJECT,
+    );
   }
 
   get approveButton() {
@@ -39,17 +43,21 @@ class ContractApprovalBottomSheet {
   }
 
   get nextButton() {
-    return Matchers.getElementByText(ContractApprovalBottomSheetSelectorsText.NEXT);
+    return Matchers.getElementByText(
+      ContractApprovalBottomSheetSelectorsText.NEXT,
+    );
   }
 
   get approveTokenAmount() {
     return Matchers.getElementByID(
       ContractApprovalBottomSheetSelectorsIDs.APPROVE_TOKEN_AMOUNT,
-    );
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   get confirmButton() {
-    return Matchers.getElementByText(ContractApprovalBottomSheetSelectorsText.CONFIRM);
+    return Matchers.getElementByText(
+      ContractApprovalBottomSheetSelectorsText.CONFIRM,
+    );
   }
 
   async tapAddNickName() {
@@ -79,7 +87,7 @@ class ContractApprovalBottomSheet {
     await Gestures.waitAndTap(this.nextButton);
   }
 
-  async inputCustomAmount(amount) {
+  async inputCustomAmount(amount: string) {
     await Gestures.typeTextAndHideKeyboard(this.approveTokenAmount, amount);
   }
 

@@ -1,8 +1,8 @@
 'use strict';
 import Assertions from '../../../utils/Assertions.js';
-import Browser from '../../../pages/Browser/BrowserView.js';
+import Browser from '../../../pages/Browser/BrowserView';
 import FooterActions from '../../../pages/Browser/Confirmations/FooterActions.js';
-import FixtureBuilder from '../../../fixtures/fixture-builder.js';
+import FixtureBuilder from '../../../fixtures/fixture-builder';
 import PageSections from '../../../pages/Browser/Confirmations/PageSections.js';
 import RequestTypes from '../../../pages/Browser/Confirmations/RequestTypes.js';
 import TabBarComponent from '../../../pages/wallet/TabBarComponent.js';
@@ -12,10 +12,10 @@ import { loginToApp } from '../../../viewHelper.js';
 import {
   withFixtures,
   defaultGanacheOptions,
-} from '../../../fixtures/fixture-helper.js';
+} from '../../../fixtures/fixture-helper';
 import { SmokeConfirmationsRedesigned } from '../../../tags.js';
 import { mockEvents } from '../../../api-mocking/mock-config/mock-events.js';
-import { buildPermissions } from '../../../fixtures/utils.js';
+import { buildPermissions } from '../../../fixtures/utils';
 
 const SIGNATURE_LIST = [
   {

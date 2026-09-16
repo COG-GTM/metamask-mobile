@@ -10,7 +10,7 @@ class ConnectBottomSheet {
   get container() {
     return Matchers.getElementByID(
       ConnectAccountBottomSheetSelectorsIDs.CONTAINER,
-    );
+    ) as Promise<Detox.IndexableNativeElement>;
   }
   get connectButton() {
     return device.getPlatform() === 'android'

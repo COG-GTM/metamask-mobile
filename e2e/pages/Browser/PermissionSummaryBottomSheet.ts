@@ -9,7 +9,7 @@ class PermissionSummaryBottomSheet {
   get container() {
     return Matchers.getElementByID(
       PermissionSummaryBottomSheetSelectorsIDs.CONTAINER,
-    );
+    ) as Promise<Detox.IndexableNativeElement>;
   }
   get addNetworkPermissionContainer() {
     return Matchers.getElementByID(
