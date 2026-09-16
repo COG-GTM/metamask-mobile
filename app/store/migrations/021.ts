@@ -1,6 +1,17 @@
 import { IPFS_DEFAULT_GATEWAY_URL } from '../../../app/constants/network';
 
-export default function migrate(state) {
+interface Migration21State {
+  engine: {
+    backgroundState: {
+      PreferencesController: {
+        ipfsGateway: string;
+      };
+    };
+  };
+}
+
+export default function migrate(rawState: unknown) {
+  const state = rawState as Migration21State;
   const outdatedIpfsGateways = [
     'https://hardbin.com/ipfs/',
     'https://ipfs.greyh.at/ipfs/',

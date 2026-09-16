@@ -1,16 +1,30 @@
 import { captureException } from '@sentry/react-native';
 import { isObject } from '@metamask/utils';
 
+interface Migration26State {
+  engine: {
+    backgroundState: {
+      KeyringController: unknown;
+      PhishingController: {
+        listState?: unknown;
+        hotlistLastFetched?: number;
+        stalelistLastFetched?: number;
+      };
+    };
+  };
+}
+
 /**
  * This migration is to free space of unused data in the user devices
  * regarding the phishing list property listState, that is no longer used
  *
  **/
-export default function migrate(state) {
+export default function migrate(rawState: unknown) {
+  const state = rawState as Migration26State;
   const keyringControllerState = state.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
     captureException(
-      // @ts-expect-error We are not returning state not to stop the flow of Vault recovery
+      // We are not returning state not to stop the flow of Vault recovery
       new Error(
         `Migration 26: Invalid vault in KeyringController: '${typeof keyringControllerState}'`,
       ),
