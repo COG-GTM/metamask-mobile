@@ -335,7 +335,6 @@ describe('captureSentryFeedback', () => {
         whitelist: [],
       },
       modals: {
-        collectibleContractModalVisible: false,
         dappTransactionModalVisible: false,
         networkModalVisible: false,
         receiveAsset: undefined,

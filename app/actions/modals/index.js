@@ -5,12 +5,6 @@ export function toggleNetworkModal(shouldNetworkSwitchPopToWallet = true) {
   };
 }
 
-export function toggleCollectibleContractModal() {
-  return {
-    type: 'TOGGLE_COLLECTIBLE_CONTRACT_MODAL',
-  };
-}
-
 export function toggleDappTransactionModal(show) {
   return {
     type: 'TOGGLE_DAPP_TRANSACTION_MODAL',

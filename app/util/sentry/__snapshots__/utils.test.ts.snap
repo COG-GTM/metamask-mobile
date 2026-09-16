@@ -189,7 +189,6 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
     "newPrivacyPolicyToastShownDate": null,
   },
   "modals": {
-    "collectibleContractModalVisible": false,
     "dappTransactionModalVisible": false,
     "networkModalVisible": false,
     "receiveAsset": undefined,
