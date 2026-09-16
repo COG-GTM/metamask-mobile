@@ -1,12 +1,17 @@
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import { Hex, JsonRpcRequest, PendingJsonRpcResponse } from '@metamask/utils';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import {
   validateChainId,
   findExistingNetwork,
   switchToNetwork,
+  EthereumChainHooks,
+  RequestUserApproval,
+  SwitchEthereumChainParameter,
 } from './lib/ethereum-chain-utils';
+import { JsonMap } from '../Analytics/MetaMetrics.types';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
 /**
@@ -25,6 +30,12 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
+}: {
+  req: JsonRpcRequest<SwitchEthereumChainParameter[]> & { origin: string };
+  res: PendingJsonRpcResponse<null>;
+  requestUserApproval: RequestUserApproval;
+  analytics?: JsonMap;
+  hooks: EthereumChainHooks;
 }) => {
   const {
     CurrencyRateController,
@@ -42,7 +53,7 @@ export const wallet_switchEthereumChain = async ({
     });
   }
   const { chainId } = params;
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -65,7 +76,7 @@ export const wallet_switchEthereumChain = async ({
       configuration: { chainId: currentDomainSelectedChainId },
     } = NetworkController.getNetworkClientById(
       currentDomainSelectedNetworkClientId,
-    ) || { configuration: {} };
+    ) || { configuration: {} as { chainId?: Hex } };
 
     if (currentDomainSelectedChainId === _chainId) {
       res.result = null;

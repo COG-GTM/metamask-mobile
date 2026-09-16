@@ -15,20 +15,33 @@ import {
   validateAddEthereumChainParams,
   validateRpcEndpoint,
   switchToNetwork,
+  AddEthereumChainParameter,
+  EthereumChainHooks,
+  RequestUserApproval,
 } from './lib/ethereum-chain-utils';
 import { getDecimalChainId } from '../../util/networks';
-import { RpcEndpointType } from '@metamask/network-controller';
+import {
+  NetworkConfiguration,
+  RpcEndpointType,
+  UpdateNetworkFields,
+} from '@metamask/network-controller';
+import { Hex, JsonRpcRequest, PendingJsonRpcResponse } from '@metamask/utils';
+import { JsonMap } from '../Analytics/MetaMetrics.types';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
 const waitForInteraction = async () =>
-  new Promise((resolve) => {
+  new Promise<void>((resolve) => {
     InteractionManager.runAfterInteractions(() => {
       resolve();
     });
   });
 
 // Utility function to find or add an item in an array and return the updated array and index
-const addOrUpdateIndex = (array, value, comparator) => {
+const addOrUpdateIndex = <T>(
+  array: T[],
+  value: T,
+  comparator: (item: T) => boolean,
+) => {
   const index = array.findIndex(comparator);
   if (index === -1) {
     return {
@@ -55,6 +68,12 @@ export const wallet_addEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
+}: {
+  req: JsonRpcRequest<AddEthereumChainParameter[]> & { origin: string };
+  res: PendingJsonRpcResponse<null>;
+  requestUserApproval: RequestUserApproval;
+  analytics?: JsonMap;
+  hooks: EthereumChainHooks;
 }) => {
   const {
     NetworkController,
@@ -75,7 +94,10 @@ export const wallet_addEthereumChain = async ({
     ticker,
   } = params;
 
-  const switchToNetworkAndMetrics = async (network, isAddNetworkFlow) => {
+  const switchToNetworkAndMetrics = async (
+    network: UpdateNetworkFields,
+    isAddNetworkFlow: boolean,
+  ) => {
     const { networkClientId } =
       network.rpcEndpoints[network.defaultRpcEndpointIndex];
 
@@ -136,7 +158,9 @@ export const wallet_addEthereumChain = async ({
     existingNetworkConfiguration &&
     existingNetworkConfigurationHasRpcEndpoint
   ) {
-    const rpcResult = addOrUpdateIndex(
+    const rpcResult = addOrUpdateIndex<
+      UpdateNetworkFields['rpcEndpoints'][number]
+    >(
       existingNetworkConfiguration.rpcEndpoints,
       {
         url: firstValidRPCUrl,
@@ -160,7 +184,15 @@ export const wallet_addEthereumChain = async ({
   }
 
   await validateRpcEndpoint(firstValidRPCUrl, chainId);
-  const requestData = {
+  const requestData: {
+    chainId: Hex;
+    blockExplorerUrl: string | null | undefined;
+    chainName: string;
+    rpcUrl: string;
+    ticker: string;
+    isNetworkRpcUpdate: boolean;
+    alerts?: Awaited<ReturnType<typeof checkSafeNetwork>>;
+  } = {
     chainId,
     blockExplorerUrl: firstValidBlockExplorerUrl,
     chainName,
@@ -216,11 +248,13 @@ export const wallet_addEthereumChain = async ({
     throw providerErrors.userRejectedRequest();
   }
 
-  let newNetworkConfiguration;
+  let newNetworkConfiguration: NetworkConfiguration;
   if (existingNetworkConfiguration) {
     const currentChainId = selectEvmChainId(store.getState());
 
-    const rpcResult = addOrUpdateIndex(
+    const rpcResult = addOrUpdateIndex<
+      UpdateNetworkFields['rpcEndpoints'][number]
+    >(
       existingNetworkConfiguration.rpcEndpoints,
       {
         url: firstValidRPCUrl,
@@ -232,7 +266,7 @@ export const wallet_addEthereumChain = async ({
 
     const blockExplorerResult = addOrUpdateIndex(
       existingNetworkConfiguration.blockExplorerUrls,
-      firstValidBlockExplorerUrl,
+      firstValidBlockExplorerUrl as string,
       (url) => url === firstValidBlockExplorerUrl,
     );
 
@@ -257,7 +291,7 @@ export const wallet_addEthereumChain = async ({
   } else {
     newNetworkConfiguration = NetworkController.addNetwork({
       chainId,
-      blockExplorerUrls: [firstValidBlockExplorerUrl],
+      blockExplorerUrls: [firstValidBlockExplorerUrl as string],
       defaultRpcEndpointIndex: 0,
       defaultBlockExplorerUrlIndex: 0,
       name: chainName,
