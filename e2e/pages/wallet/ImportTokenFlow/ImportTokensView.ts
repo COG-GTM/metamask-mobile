@@ -9,7 +9,7 @@ class ImportTokensView {
   get searchTokenResult() {
     return Matchers.getElementByID(
       ImportTokenViewSelectorsIDs.SEARCH_TOKEN_RESULT,
-    );
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   get nextButton() {
@@ -23,7 +23,9 @@ class ImportTokensView {
   }
 
   get symbolInput() {
-    return Matchers.getElementByID(ImportTokenViewSelectorsIDs.SYMBOL_INPUT);
+    return Matchers.getElementByID(
+      ImportTokenViewSelectorsIDs.SYMBOL_INPUT,
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   get tokenSymbolText() {
@@ -31,7 +33,9 @@ class ImportTokensView {
   }
 
   get addressInput() {
-    return Matchers.getElementByID(ImportTokenViewSelectorsIDs.ADDRESS_INPUT);
+    return Matchers.getElementByID(
+      ImportTokenViewSelectorsIDs.ADDRESS_INPUT,
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   get customTokenTab() {
@@ -41,7 +45,9 @@ class ImportTokensView {
   }
 
   get searchTokenBar() {
-    return Matchers.getElementByID(ImportTokenViewSelectorsIDs.SEARCH_BAR);
+    return Matchers.getElementByID(
+      ImportTokenViewSelectorsIDs.SEARCH_BAR,
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   async tapSymbolInput() {
@@ -56,7 +62,7 @@ class ImportTokensView {
     await Gestures.swipe(this.symbolInput, 'up', 'slow', 0.6);
   }
 
-  async typeTokenAddress(address) {
+  async typeTokenAddress(address: string) {
     await Gestures.typeTextAndHideKeyboard(this.addressInput, address);
   }
 
@@ -64,7 +70,7 @@ class ImportTokensView {
     await Gestures.waitAndTap(this.customTokenTab);
   }
 
-  async searchToken(tokenName) {
+  async searchToken(tokenName: string) {
     await Gestures.typeTextAndHideKeyboard(this.searchTokenBar, tokenName);
   }
 
@@ -80,7 +86,7 @@ class ImportTokensView {
     await Gestures.waitAndTap(this.networkInput);
   }
 
-  async tapNetworkOption(networkName) {
+  async tapNetworkOption(networkName: string) {
     await Gestures.waitAndTap(Matchers.getElementByText(networkName));
   }
 }

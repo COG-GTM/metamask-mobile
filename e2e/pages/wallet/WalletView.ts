@@ -64,7 +64,9 @@ class WalletView {
   }
 
   get nftTabContainer() {
-    return Matchers.getElementByID(WalletViewSelectorsIDs.NFT_TAB_CONTAINER);
+    return Matchers.getElementByID(
+      WalletViewSelectorsIDs.NFT_TAB_CONTAINER,
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   get importNFTButton() {
@@ -174,19 +176,21 @@ class WalletView {
   }
 
   get carouselSlide() {
-    return Matchers.getElementByID(WalletViewSelectorsIDs.CAROUSEL_SLIDE);
+    return Matchers.getElementByID(
+      WalletViewSelectorsIDs.CAROUSEL_SLIDE,
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   async tapCurrentMainWalletAccountActions() {
     await Gestures.waitAndTap(this.currentMainWalletAccountActions);
   }
 
-  async tapOnToken(token, index = 0) {
-    const element = Matchers.getElementByText(
+  async tapOnToken(token?: string, index = 0) {
+    const tokenElement = Matchers.getElementByText(
       token || WalletViewSelectorsText.DEFAULT_TOKEN,
       index,
     );
-    await Gestures.waitAndTap(element);
+    await Gestures.waitAndTap(tokenElement);
   }
 
   async tapIdenticon() {
@@ -220,7 +224,7 @@ class WalletView {
   get testCollectible() {
     return device.getPlatform() === 'android'
       ? Matchers.getElementByID(WalletViewSelectorsIDs.COLLECTIBLE_FALLBACK, 1)
-      : Matchers.getElementByID(WalletViewSelectorsIDs.TEST_COLLECTIBLE,1);
+      : Matchers.getElementByID(WalletViewSelectorsIDs.TEST_COLLECTIBLE, 1);
   }
 
   async tapOnNftName() {
@@ -235,18 +239,20 @@ class WalletView {
     await Gestures.waitAndTap(this.importTokensFooterLink);
   }
 
-  async tapOnNFTInWallet(nftName) {
+  async tapOnNFTInWallet(nftName: string) {
     const elem = Matchers.getElementByText(nftName);
     await Gestures.waitAndTap(elem);
   }
 
-  async removeTokenFromWallet(token) {
-    const elem = Matchers.getElementByText(token);
+  async removeTokenFromWallet(token: string) {
+    const elem = Matchers.getElementByText(
+      token,
+    ) as Promise<Detox.IndexableNativeElement>;
     await Gestures.tapAndLongPress(elem);
     await Gestures.waitAndTap(this.hideTokensLabel);
   }
 
-  async tokenInWallet(tokenName) {
+  async tokenInWallet(tokenName: string) {
     return Matchers.getElementByText(tokenName);
   }
 
@@ -256,11 +262,11 @@ class WalletView {
     );
   }
 
-  async nftIDInWallet(nftId) {
+  async nftIDInWallet(nftId: string) {
     return Matchers.getElementByID(nftId);
   }
 
-  async nftInWallet(nftName) {
+  async nftInWallet(nftName: string) {
     return Matchers.getElementByText(nftName);
   }
 
@@ -302,10 +308,6 @@ class WalletView {
 
   async tapCancelButton() {
     await Gestures.waitAndTap(this.cancelButton);
-  }
-
-  async tapCarouselCloseButton() {
-    await Gestures.tap(this.carouselCloseButton);
   }
 
   async tapCarouselSlide() {
