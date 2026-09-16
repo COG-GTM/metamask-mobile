@@ -3,11 +3,6 @@ import { web } from 'detox';
 import detox from 'detox/internals';
 import rpcCoverageTool from '@open-rpc/test-coverage';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
-import type {
-  ExampleObject,
-  ExamplePairingObject,
-  MethodObject,
-} from '@open-rpc/meta-schema';
 import JsonSchemaFakerRule from '@open-rpc/test-coverage/build/rules/json-schema-faker-rule';
 import HtmlReporter from '@open-rpc/test-coverage/build/reporters/html-reporter';
 
@@ -22,7 +17,11 @@ import {
 import { loginToApp } from '../viewHelper';
 
 import ExamplesRule from '@open-rpc/test-coverage/build/rules/examples-rule';
-import ConfirmationsRejectRule from './ConfirmationsRejectionRule';
+import ConfirmationsRejectRule, {
+  ExampleObject,
+  ExamplePairingObject,
+  MethodObject,
+} from './ConfirmationsRejectionRule';
 import { createDriverTransport } from './helpers';
 import { BrowserViewSelectorsIDs } from '../selectors/Browser/BrowserView.selectors';
 import { getGanachePort } from '../fixtures/utils';

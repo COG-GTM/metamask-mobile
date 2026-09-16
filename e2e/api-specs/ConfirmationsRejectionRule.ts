@@ -1,10 +1,3 @@
-import type {
-  ContentDescriptorObject,
-  ExampleObject,
-  ExamplePairingObject,
-  MethodObject,
-  OpenrpcDocument,
-} from '@open-rpc/meta-schema';
 import Rule from '@open-rpc/test-coverage/build/rules/rule';
 import type {
   Attachment,
@@ -27,6 +20,22 @@ import fs from 'fs';
 
 import Assertions from '../utils/Assertions';
 import PermissionSummaryBottomSheet from '../pages/Browser/PermissionSummaryBottomSheet';
+
+type GetCallsParams = Parameters<Rule['getCalls']>;
+export type OpenrpcDocument = GetCallsParams[0];
+export type MethodObject = GetCallsParams[1];
+export type ContentDescriptorObject = Exclude<
+  MethodObject['result'],
+  { $ref: string }
+>;
+export type ExamplePairingObject = Exclude<
+  NonNullable<MethodObject['examples']>[number],
+  { $ref: string }
+>;
+export type ExampleObject = Exclude<
+  ExamplePairingObject['result'],
+  { $ref: string }
+>;
 
 const getBase64FromPath = async (path: string) => {
   const data = await fs.promises.readFile(path);
