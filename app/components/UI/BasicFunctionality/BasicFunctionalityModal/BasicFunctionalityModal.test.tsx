@@ -3,16 +3,12 @@ import React from 'react';
 
 // Internal dependencies.
 import BasicFunctionalityModal from './BasicFunctionalityModal';
-import renderWithProvider from '../../../../util/test/renderWithProvider';
-import { useNavigation } from '@react-navigation/native';
+import renderWithProvider, {
+  DeepPartial,
+} from '../../../../util/test/renderWithProvider';
+import { RootState } from '../../../../reducers';
 
-/**
- * @typedef {import('../../../../reducers').RootState} RootState
- * @typedef {import('redux').DeepPartial<RootState>} MockRootState
- */
-
-/** @type {MockRootState} */
-const mockInitialState = {
+const mockInitialState: DeepPartial<RootState> = {
   engine: {
     backgroundState: {
       UserStorageController: {
@@ -57,7 +53,7 @@ jest.mock('@react-navigation/native', () => {
 describe('BasicFunctionalityModal', () => {
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(
-      <BasicFunctionalityModal navigation={useNavigation()} />,
+      <BasicFunctionalityModal route={{ params: { caller: '' } }} />,
       { state: mockInitialState },
     );
     expect(toJSON()).toMatchSnapshot();
