@@ -208,9 +208,7 @@ import {
   AccountsControllerEvents,
   AccountsControllerState,
 } from '@metamask/accounts-controller';
-import {
-  getPermissionSpecifications,
-} from '../Permissions/specifications.js';
+import { getPermissionSpecifications } from '../Permissions/specifications';
 import { ComposableControllerEvents } from '@metamask/composable-controller';
 import { STATELESS_NON_CONTROLLER_NAMES } from './constants';
 import {

@@ -12,7 +12,7 @@ import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals,
 import { Hex } from '@metamask/utils';
 import { getPermissionsHandler, requestPermissionsHandler, revokePermissionsHandler } from '@metamask/eip1193-permission-middleware';
 import { Caip25CaveatType, Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
-import RPCMethods from './index.js';
+import RPCMethods from './index';
 import { RPC } from '../../constants/network';
 import { ChainId, NetworkType } from '@metamask/controller-utils';
 import {

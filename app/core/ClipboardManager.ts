@@ -3,15 +3,20 @@ import Device from '../util/device';
 
 const EXPIRE_TIME_MS = 60000;
 
-const ClipboardManager = {
+const ClipboardManager: {
+  getString(): Promise<string>;
+  setString(string: string | null): Promise<void>;
+  expireTime: ReturnType<typeof setTimeout> | null;
+  setStringExpire(string: string): Promise<void>;
+} = {
   async getString() {
     return await Clipboard.getString();
   },
-  async setString(string) {
-    await Clipboard.setString(string);
+  async setString(string: string | null) {
+    await Clipboard.setString(string ?? '');
   },
   expireTime: null,
-  async setStringExpire(string) {
+  async setStringExpire(string: string) {
     if (Device.isIos()) {
       await Clipboard.setStringExpire(string);
     } else {
@@ -20,9 +25,9 @@ const ClipboardManager = {
         clearTimeout(this.expireTime);
       }
       this.expireTime = setTimeout(async () => {
-        const string = await this.getString();
+        const currentString = await this.getString();
 
-        if (!string) return;
+        if (!currentString) return;
 
         await Clipboard.clearString();
       }, EXPIRE_TIME_MS);

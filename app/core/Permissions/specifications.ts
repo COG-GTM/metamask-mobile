@@ -4,8 +4,23 @@ import {
   endowmentCaveatSpecifications as snapsEndowmentCaveatSpecifications,
 } from '@metamask/snaps-rpc-methods';
 ///: END:ONLY_INCLUDE_IF
-import {  RestrictedMethods } from './constants';
-import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCaip25Caveat } from '@metamask/chain-agnostic-permission';
+import { RestrictedMethods } from './constants';
+import {
+  caip25CaveatBuilder,
+  Caip25CaveatType,
+  caip25EndowmentBuilder,
+  createCaip25Caveat,
+} from '@metamask/chain-agnostic-permission';
+import type { InternalAccount } from '@metamask/keyring-internal-api';
+import type { NetworkClientId } from '@metamask/network-controller';
+import type { Hex } from '@metamask/utils';
+
+type Caip25CaveatBuilderOptions = Parameters<typeof caip25CaveatBuilder>[0];
+
+export interface CaveatSpecificationsOptions {
+  listAccounts: () => InternalAccount[];
+  findNetworkClientIdByChainId: (chainId: Hex) => NetworkClientId;
+}
 
 /**
  * This file contains the specifications of the permissions and caveats
@@ -52,11 +67,11 @@ export const CaveatFactories = Object.freeze({
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: CaveatSpecificationsOptions) => ({
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+  } as unknown as Caip25CaveatBuilderOptions),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,
