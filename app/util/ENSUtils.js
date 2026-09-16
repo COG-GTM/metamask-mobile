@@ -70,17 +70,16 @@ export function getCachedENSName(address, chainId) {
 export async function doENSReverseLookup(address, chainId) {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
+  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
+  const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
   const { name: cachedName, timestamp } =
-    ENSCache.cache[chainId + address] || {};
+    ENSCache.cache[networkId + address] || {};
   const nowTimestamp = Date.now();
   if (timestamp && nowTimestamp - timestamp < CACHE_REFRESH_THRESHOLD) {
     return Promise.resolve(cachedName);
   }
 
-  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
-
   if (networkHasEnsSupport) {
-    const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
     this.ens = new ENS({ provider, network: networkId });
     try {
       const name = await this.ens.reverse(address);

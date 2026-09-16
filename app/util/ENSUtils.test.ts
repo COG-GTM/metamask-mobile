@@ -1,4 +1,29 @@
-import { isDefaultAccountName, getCachedENSName, ENSCache } from './ENSUtils';
+import {
+  isDefaultAccountName,
+  getCachedENSName,
+  doENSReverseLookup,
+  ENSCache,
+} from './ENSUtils';
+
+const mockReverse = jest.fn();
+const mockLookup = jest.fn();
+
+jest.mock(
+  'ethjs-ens',
+  () =>
+    class MockENS {
+      reverse = mockReverse;
+      lookup = mockLookup;
+    },
+);
+
+jest.mock('../core/Engine', () => ({
+  context: {
+    NetworkController: {
+      getProviderAndBlockTracker: () => ({ provider: {} }),
+    },
+  },
+}));
 
 const mockAddress = '0x0000000000000000000000000000000000000001';
 
@@ -43,6 +68,86 @@ describe('getCachedENSName', () => {
     expect(getCachedENSName(mockAddress, chainId)).toBe(
       'cachedname.metamask.eth',
     );
+  });
+});
+
+describe('doENSReverseLookup', () => {
+  const chainId = '0x1';
+  const networkId = '1';
+
+  beforeEach(() => {
+    originalCacheContents = ENSCache.cache;
+    ENSCache.cache = {};
+    mockReverse.mockReset();
+    mockLookup.mockReset();
+    jest.spyOn(Date, 'now').mockReturnValue(1_700_000_000_000);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    ENSCache.cache = originalCacheContents;
+  });
+
+  it('performs a network lookup and caches the result on a cache miss', async () => {
+    mockReverse.mockResolvedValue('name.eth');
+    mockLookup.mockResolvedValue(mockAddress);
+
+    const name = await doENSReverseLookup(mockAddress, chainId);
+
+    expect(name).toBe('name.eth');
+    expect(mockReverse).toHaveBeenCalledTimes(1);
+    expect(mockLookup).toHaveBeenCalledTimes(1);
+    expect(ENSCache.cache).toEqual({
+      [`${networkId}${mockAddress}`]: {
+        name: 'name.eth',
+        timestamp: 1_700_000_000_000,
+      },
+    });
+  });
+
+  it('returns the cached name without a network call on a repeat lookup', async () => {
+    mockReverse.mockResolvedValue('name.eth');
+    mockLookup.mockResolvedValue(mockAddress);
+
+    await doENSReverseLookup(mockAddress, chainId);
+    const name = await doENSReverseLookup(mockAddress, chainId);
+
+    expect(name).toBe('name.eth');
+    expect(mockReverse).toHaveBeenCalledTimes(1);
+    expect(mockLookup).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns undefined from cache after a "not defined" error without retrying', async () => {
+    mockReverse.mockRejectedValue(new Error('ENS name not defined'));
+
+    await doENSReverseLookup(mockAddress, chainId);
+    const name = await doENSReverseLookup(mockAddress, chainId);
+
+    expect(name).toBeUndefined();
+    expect(mockReverse).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-fetches once the cache entry is older than the refresh threshold', async () => {
+    ENSCache.cache = {
+      [`${networkId}${mockAddress}`]: {
+        name: 'stale.eth',
+        timestamp: Date.now() - 2 * 60 * 60 * 1000,
+      },
+    };
+    mockReverse.mockResolvedValue('fresh.eth');
+    mockLookup.mockResolvedValue(mockAddress);
+
+    const name = await doENSReverseLookup(mockAddress, chainId);
+
+    expect(name).toBe('fresh.eth');
+    expect(mockReverse).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not perform a lookup on unsupported chains', async () => {
+    const name = await doENSReverseLookup(mockAddress, '0x5');
+
+    expect(name).toBeUndefined();
+    expect(mockReverse).not.toHaveBeenCalled();
   });
 });
 
