@@ -27,10 +27,14 @@ class NetworkApprovalBottomSheet {
   }
 
   async tapApproveButton() {
-    await Gestures.tap(this.approvedButton);
+    await Gestures.tap(
+      this.approvedButton as Promise<Detox.IndexableNativeElement>,
+    );
   }
   async tapCancelButton() {
-    await Gestures.tap(this.cancelButton);
+    await Gestures.tap(
+      this.cancelButton as Promise<Detox.IndexableNativeElement>,
+    );
   }
 }
 

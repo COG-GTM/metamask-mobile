@@ -7,7 +7,7 @@ class SelectRegionView {
     return Matchers.getElementByText(SelectRegionSelectors.CONTINUE_BUTTON);
   }
 
-  async tapRegionOption(region) {
+  async tapRegionOption(region: string) {
     const regionOption = Matchers.getElementByText(region);
     await Gestures.waitAndTap(regionOption);
   }

@@ -23,8 +23,11 @@ class AddAddressModal {
     return Matchers.getElementByID(AddAddressModalSelectorsIDs.TITLE);
   }
 
-  async typeInAlias(name) {
-    await Gestures.typeTextAndHideKeyboard(this.aliasInput, name);
+  async typeInAlias(name: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.aliasInput as Promise<Detox.IndexableNativeElement>,
+      name,
+    );
   }
 
   async tapSaveButton() {

@@ -233,11 +233,15 @@ class TestDApp {
   }
 
   async tapConfirmButton() {
-    await Gestures.tap(this.confirmButtonText, 0);
+    await Gestures.tap(
+      this.confirmButtonText as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
   async tapApproveButton() {
-    await Gestures.tap(this.approveButtonText, 0);
+    await Gestures.tap(
+      this.approveButtonText as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
   async tapSendFailingTransactionButton() {
@@ -248,12 +252,22 @@ class TestDApp {
     await this.tapButton(this.erc1155BatchTransferButton);
   }
 
-  async tapButton(elementId) {
+  async tapButton(
+    elementId: Promise<
+      Detox.IndexableWebElement | Detox.SecuredWebElementFacade
+    >,
+  ) {
     await Gestures.scrollToWebViewPort(elementId);
-    await Gestures.tapWebElement(elementId);
+    await Gestures.tapWebElement(
+      elementId as Promise<Detox.IndexableWebElement>,
+    );
   }
 
-  async navigateToTestDappWithContract({ contractAddress }) {
+  async navigateToTestDappWithContract({
+    contractAddress,
+  }: {
+    contractAddress: string;
+  }) {
     await Browser.tapUrlInputBox();
     await Browser.navigateToURL(
       `${TEST_DAPP_LOCAL_URL}?scrollTo=''&contract=${contractAddress}`,

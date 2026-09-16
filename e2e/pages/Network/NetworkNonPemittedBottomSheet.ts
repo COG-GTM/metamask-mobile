@@ -1,14 +1,9 @@
-import {
-  NetworkListModalSelectorsIDs,
-  NetworkListModalSelectorsText,
-} from '../../selectors/Network/NetworkListModal.selectors';
 import Matchers from '../../utils/Matchers';
 import Gestures from '../../utils/Gestures';
 import {
   NetworkNonPemittedBottomSheetSelectorsIDs,
   NetworkNonPemittedBottomSheetSelectorsText,
 } from '../../selectors/Network/NetworkNonPemittedBottomSheet.selectors';
-import TestHelpers from '../../helpers';
 
 class NetworkNonPemittedBottomSheet {
   get addThisNetworkTitle() {

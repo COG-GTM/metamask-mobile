@@ -98,9 +98,16 @@ class TransactionConfirmationView {
   }
 
   async tapEstimatedGasLink(index = 0) {
-    await Gestures.swipe(this.transactionAmount, 'up', 'fast');
+    await Gestures.swipe(
+      this.transactionAmount as Promise<Detox.IndexableNativeElement>,
+      'up',
+      'fast',
+    );
     await TestHelpers.delay(1000);
-    await Gestures.TapAtIndex(this.estimatedGasLink, index);
+    await Gestures.TapAtIndex(
+      this.estimatedGasLink as Promise<Detox.IndexableNativeElement>,
+      index,
+    );
   }
 
   async tapLowPriorityGasOption() {

@@ -115,7 +115,7 @@ class AesCryptoTestForm {
 
   async scrollUpToGenerateSalt() {
     await Gestures.scrollToElement(
-      this.generateSaltBytesCountInput,
+      this.generateSaltBytesCountInput as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
       'up',
     );
@@ -123,7 +123,8 @@ class AesCryptoTestForm {
 
   async scrollUpToGenerateEncryptionKey() {
     await Gestures.scrollToElement(
-      this.generateEncryptionKeyPasswordInput,
+      this
+        .generateEncryptionKeyPasswordInput as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
       'up',
     );
@@ -131,36 +132,36 @@ class AesCryptoTestForm {
 
   async scrollToEncrypt() {
     await Gestures.scrollToElement(
-      this.encryptButton,
+      this.encryptButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToDecrypt() {
     await Gestures.scrollToElement(
-      this.decryptButton,
+      this.decryptButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToEncryptWithKey() {
     await Gestures.scrollToElement(
-      this.encryptWithKeyButton,
+      this.encryptWithKeyButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToDecryptWithKey() {
     await Gestures.scrollToElement(
-      this.decryptWithKeyButton,
+      this.decryptWithKeyButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
-  async generateSalt(saltBytesCount) {
+  async generateSalt(saltBytesCount: string) {
     await this.scrollUpToGenerateSalt();
     await Gestures.typeTextAndHideKeyboard(
-      this.generateSaltBytesCountInput,
+      this.generateSaltBytesCountInput as Promise<Detox.IndexableNativeElement>,
       saltBytesCount,
     );
     await Gestures.waitAndTap(this.generateSaltButton);
@@ -173,14 +174,16 @@ class AesCryptoTestForm {
     return responseFieldAtts.label;
   }
 
-  async generateEncryptionKey(password, salt) {
+  async generateEncryptionKey(password: string, salt: string) {
     await this.scrollUpToGenerateEncryptionKey();
     await Gestures.typeTextAndHideKeyboard(
-      this.generateEncryptionKeyPasswordInput,
+      this
+        .generateEncryptionKeyPasswordInput as Promise<Detox.IndexableNativeElement>,
       password,
     );
     await Gestures.typeTextAndHideKeyboard(
-      this.generateEncryptionKeySaltInput,
+      this
+        .generateEncryptionKeySaltInput as Promise<Detox.IndexableNativeElement>,
       salt,
     );
     await Gestures.waitAndTap(this.generateEncryptionKeyButton);
@@ -194,40 +197,48 @@ class AesCryptoTestForm {
     return responseFieldAtts.label;
   }
 
-  async encrypt(data, encryptionKey) {
+  async encrypt(data: string, encryptionKey: string) {
     await this.scrollToEncrypt();
-    await Gestures.typeTextAndHideKeyboard(this.encryptDataInput, data);
     await Gestures.typeTextAndHideKeyboard(
-      this.encryptPasswordInput,
+      this.encryptDataInput as Promise<Detox.IndexableNativeElement>,
+      data,
+    );
+    await Gestures.typeTextAndHideKeyboard(
+      this.encryptPasswordInput as Promise<Detox.IndexableNativeElement>,
       encryptionKey,
     );
     await Gestures.waitAndTap(this.encryptButton);
   }
 
-  async decrypt(encryptionKey) {
+  async decrypt(encryptionKey: string) {
     await this.scrollToDecrypt();
     await Gestures.typeTextAndHideKeyboard(
-      this.decryptPasswordInput,
+      this.decryptPasswordInput as Promise<Detox.IndexableNativeElement>,
       encryptionKey,
     );
     await this.scrollToDecrypt();
     await Gestures.waitAndTap(this.decryptButton);
   }
 
-  async encryptWithKey(encryptionKey, data) {
+  async encryptWithKey(encryptionKey: string, data: string) {
     await this.scrollToEncryptWithKey();
     await Gestures.typeTextAndHideKeyboard(
-      this.encryptWithKeyEncryptionKeyInput,
+      this
+        .encryptWithKeyEncryptionKeyInput as Promise<Detox.IndexableNativeElement>,
       encryptionKey,
     );
-    await Gestures.typeTextAndHideKeyboard(this.encryptWithKeyDataInput, data);
+    await Gestures.typeTextAndHideKeyboard(
+      this.encryptWithKeyDataInput as Promise<Detox.IndexableNativeElement>,
+      data,
+    );
     await Gestures.waitAndTap(this.encryptWithKeyButton);
   }
 
-  async decryptWithKey(encryptionKey) {
+  async decryptWithKey(encryptionKey: string) {
     await this.scrollToDecryptWithKey();
     await Gestures.typeTextAndHideKeyboard(
-      this.decryptWithKeyEncryptionKeyInput,
+      this
+        .decryptWithKeyEncryptionKeyInput as Promise<Detox.IndexableNativeElement>,
       encryptionKey,
     );
     await Gestures.waitAndTap(this.decryptWithKeyButton);

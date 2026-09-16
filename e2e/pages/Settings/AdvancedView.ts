@@ -16,9 +16,7 @@ class AdvancedSettingsView {
   }
 
   get smartTransactionsToggle() {
-    return Matchers.getElementByID(
-      AdvancedViewSelectorsIDs.STX_OPT_IN_SWITCH,
-    );
+    return Matchers.getElementByID(AdvancedViewSelectorsIDs.STX_OPT_IN_SWITCH);
   }
 
   async tapShowFiatOnTestnetsSwitch() {
@@ -31,7 +29,7 @@ class AdvancedSettingsView {
 
   async scrollToShowFiatOnTestnetsToggle() {
     await Gestures.scrollToElement(
-      this.showFiatOnTestnetsToggle,
+      this.showFiatOnTestnetsToggle as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }

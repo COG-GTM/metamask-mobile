@@ -2,10 +2,9 @@ import Matchers from '../../utils/Matchers';
 import Gestures from '../../utils/Gestures';
 import {
   AmountViewSelectorsIDs,
-  AmountViewSelectorsText
+  AmountViewSelectorsText,
 } from '../../selectors/SendFlow/AmountView.selectors';
 import TestHelpers from '../../helpers';
-
 
 class AmountView {
   get currencySwitch() {
@@ -39,13 +38,18 @@ class AmountView {
     await Gestures.waitAndTap(this.backButton);
   }
 
-  async typeInTransactionAmount(amount) {
+  async typeInTransactionAmount(amount: string) {
     await TestHelpers.delay(1000);
     device.getPlatform() === 'android'
-      ? await Gestures.typeTextAndHideKeyboard(this.amountInputField, amount)
-      : await Gestures.replaceTextInField(this.amountInputField, amount);
+      ? await Gestures.typeTextAndHideKeyboard(
+          this.amountInputField as Promise<Detox.IndexableNativeElement>,
+          amount,
+        )
+      : await Gestures.replaceTextInField(
+          this.amountInputField as Promise<Detox.IndexableNativeElement>,
+          amount,
+        );
     await TestHelpers.delay(1000);
-
   }
 
   async tapCurrencySwitch() {
