@@ -49,7 +49,10 @@ function performSubstitution(
       return new Date().getTime();
     } else if (partialState.includes(CONTRACT_KEY)) {
       const contract = partialState.split(CONTRACT_KEY).pop();
-      return contractRegistry?.getContractAddress(contract);
+      if (!contractRegistry) {
+        throw new Error('Contract registry not provided for substitution');
+      }
+      return contractRegistry.getContractAddress(contract);
     }
     throw new Error(`Unknown substitution command: ${substitutionCommand}`);
   }
