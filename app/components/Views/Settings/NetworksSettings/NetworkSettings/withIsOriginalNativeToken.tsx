@@ -1,13 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { SafeChain } from '../../../../hooks/useSafeChains';
 
 const CHAIN_ID_NETWORK_URL = 'https://chainid.network/chains.json';
 
-const withIsOriginalNativeToken = (WrappedComponent) => {
+interface MatchedChainNetwork {
+  safeChainsList: SafeChain[];
+}
+
+interface WithIsOriginalNativeTokenProps {
+  matchedChainNetwork: MatchedChainNetwork | null;
+}
+
+const withIsOriginalNativeToken = <P extends object>(
+  WrappedComponent: React.ComponentType<P & WithIsOriginalNativeTokenProps>,
+) => {
   // This is the functional component wrapper that can use hooks
-  const WithIsOriginalNativeTokenWrapper = (props) => {
+  const WithIsOriginalNativeTokenWrapper = (props: P) => {
     // Use the useSelector hook to access Redux state
-    const [matchedChainNetwork, setMatchedChainNetwork] = useState(null);
+    const [matchedChainNetwork, setMatchedChainNetwork] =
+      useState<MatchedChainNetwork | null>(null);
 
     useEffect(() => {
       axios.get(CHAIN_ID_NETWORK_URL).then(({ data: safeChainsList }) => {
