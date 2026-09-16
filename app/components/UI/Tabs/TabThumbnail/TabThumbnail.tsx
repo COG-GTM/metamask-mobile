@@ -28,7 +28,8 @@ import { TabThumbnailProps } from './TabThumbnail.types';
 import { useSelector } from 'react-redux';
 import { selectPermissionControllerState } from '../../../../selectors/snaps/permissionController';
 import { getPermittedAccountsByHostname } from '../../../../core/Permissions';
-import { useAccounts } from '../../../hooks/useAccounts';
+import { selectInternalAccounts } from '../../../../selectors/accountsController';
+import { getFormattedAddressFromInternalAccount } from '../../../../core/Multichain/utils';
 import { useFavicon } from '../../../hooks/useFavicon';
 
 /**
@@ -54,10 +55,26 @@ const TabThumbnail = ({
     tabTitle,
   );
   const activeAddress = permittedAccountsByHostname[0];
-  const { evmAccounts: accounts } = useAccounts({});
-  const selectedAccount = accounts.find(
-    (account) => account.address.toLowerCase() === activeAddress?.toLowerCase(),
-  );
+  const internalAccounts = useSelector(selectInternalAccounts);
+  const selectedAccount = useMemo(() => {
+    if (!activeAddress) {
+      return undefined;
+    }
+    const normalizedActiveAddress = activeAddress.toLowerCase();
+    const account = internalAccounts.find(
+      (internalAccount) =>
+        getFormattedAddressFromInternalAccount(
+          internalAccount,
+        ).toLowerCase() === normalizedActiveAddress,
+    );
+    if (!account) {
+      return undefined;
+    }
+    return {
+      address: getFormattedAddressFromInternalAccount(account),
+      name: account.metadata.name,
+    };
+  }, [internalAccounts, activeAddress]);
   const { networkName, networkImageSource } = useNetworkInfo(tabTitle);
   const faviconSource = useFavicon(tab.url);
 
