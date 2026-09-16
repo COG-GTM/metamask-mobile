@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import {
   render,
   fireEvent,
@@ -116,13 +116,13 @@ const mockNavigation = {
   setParams: jest.fn(),
   navigate: jest.fn(),
   goBack: jest.fn(),
-};
+} as unknown as ComponentProps<typeof PaymentRequest>['navigation'];
 
 const mockRoute = {
   params: {
     dispatch: jest.fn(),
   },
-};
+} as unknown as ComponentProps<typeof PaymentRequest>['route'];
 
 const renderComponent = (props = {}) =>
   render(
