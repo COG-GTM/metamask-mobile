@@ -3,7 +3,7 @@ import Matchers from '../../utils/Matchers';
 import Gestures from '../../utils/Gestures';
 import { EditAccountNameSelectorIDs } from '../../selectors/wallet/EditAccountName.selectors.js';
 import TestHelpers from '../../helpers.js';
-import EditAccountNameView from './EditAccountNameView.js';
+import EditAccountNameView from './EditAccountNameView';
 
 class AccountActionsBottomSheet {
   get editAccount() {
@@ -36,9 +36,11 @@ class AccountActionsBottomSheet {
     await Gestures.waitAndTap(this.showSrp);
   }
 
-  async renameActiveAccount(newName) {
+  async renameActiveAccount(newName: string) {
     await this.tapEditAccount();
-    await Gestures.clearField(EditAccountNameView.accountNameInput);
+    await Gestures.clearField(
+      EditAccountNameView.accountNameInput as Promise<Detox.IndexableNativeElement>,
+    );
     await TestHelpers.typeTextAndHideKeyboard(
       EditAccountNameSelectorIDs.ACCOUNT_NAME_INPUT,
       newName,

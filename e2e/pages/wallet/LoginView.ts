@@ -19,8 +19,11 @@ class LoginView {
     return Matchers.getElementByID(LoginViewSelectors.REMEMBER_ME_SWITCH);
   }
 
-  async enterPassword(password) {
-    await Gestures.typeTextAndHideKeyboard(this.passwordInput, password);
+  async enterPassword(password: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.passwordInput as Promise<Detox.IndexableNativeElement>,
+      password,
+    );
   }
 
   async tapResetWalletButton() {

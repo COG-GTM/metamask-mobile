@@ -51,9 +51,7 @@ class SettingsView {
   }
 
   get backupAndSyncSectionButton() {
-    return Matchers.getElementByID(
-      SettingsViewSelectorsIDs.BACKUP_AND_SYNC,
-    );
+    return Matchers.getElementByID(SettingsViewSelectorsIDs.BACKUP_AND_SYNC);
   }
 
   get alertButton() {
@@ -68,21 +66,21 @@ class SettingsView {
 
   async scrollToLockButton() {
     await Gestures.scrollToElement(
-      this.lockSettingsButton,
+      this.lockSettingsButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToContactSupportButton() {
     await Gestures.scrollToElement(
-      this.contactSupportButton,
+      this.contactSupportButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToAesCryptoButton() {
     await Gestures.scrollToElement(
-      this.aesCryptoTestForm,
+      this.aesCryptoTestForm as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
@@ -129,11 +127,15 @@ class SettingsView {
   }
 
   async tapYesAlertButton() {
-    await Gestures.tap(this.alertButton);
+    await Gestures.tap(
+      this.alertButton as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
   async tapBackupAndSync() {
-    await Gestures.tap(this.backupAndSyncSectionButton);
+    await Gestures.tap(
+      this.backupAndSyncSectionButton as Promise<Detox.IndexableNativeElement>,
+    );
   }
 }
 

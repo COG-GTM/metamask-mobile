@@ -30,10 +30,10 @@ class QuoteView {
     return Matchers.getElementByID(QuoteViewSelectorIDs.MAX_SLIPPAGE);
   }
 
-  async enterSwapAmount(amount) {
-    for (let idx = 0; idx < amount.length; idx++) {
-      const element = Matchers.getElementByText(amount[idx]);
-      await Gestures.waitAndTap(element);
+  async enterSwapAmount(amount: string) {
+    for (const digit of amount) {
+      const digitElement = Matchers.getElementByText(digit);
+      await Gestures.waitAndTap(digitElement);
     }
   }
 
@@ -49,13 +49,16 @@ class QuoteView {
     await Gestures.waitAndTap(this.searchToken);
   }
 
-  async typeSearchToken(symbol) {
-    await Gestures.typeTextAndHideKeyboard(this.searchToken, symbol);
+  async typeSearchToken(symbol: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.searchToken as Promise<Detox.IndexableNativeElement>,
+      symbol,
+    );
   }
 
-  async selectToken(symbol, index = 1) {
-    const element = Matchers.getElementByText(symbol, index);
-    await Gestures.waitAndTap(element);
+  async selectToken(symbol: string, index = 1) {
+    const tokenElement = Matchers.getElementByText(symbol, index);
+    await Gestures.waitAndTap(tokenElement);
   }
 
   async tapOnGetQuotes() {

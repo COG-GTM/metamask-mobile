@@ -18,9 +18,14 @@ class EditAccountNameView {
     await Gestures.waitAndTap(this.saveButton);
   }
 
-  async updateAccountName(accountName) {
-    await Gestures.clearField(this.accountNameInput);
-    await Gestures.typeTextAndHideKeyboard(this.accountNameInput, accountName);
+  async updateAccountName(accountName: string) {
+    await Gestures.clearField(
+      this.accountNameInput as Promise<Detox.IndexableNativeElement>,
+    );
+    await Gestures.typeTextAndHideKeyboard(
+      this.accountNameInput as Promise<Detox.IndexableNativeElement>,
+      accountName,
+    );
   }
 }
 

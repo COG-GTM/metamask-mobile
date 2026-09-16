@@ -139,7 +139,7 @@ class NetworkView {
     return Matchers.getElementByText(NetworkViewSelectorsText.SAVE_BUTTON);
   }
 
-  async getnetworkName(networkName) {
+  async getnetworkName(networkName: string) {
     return Matchers.getElementByText(networkName);
   }
   async tapAddNetworkButton() {
@@ -170,20 +170,22 @@ class NetworkView {
     await Gestures.waitAndTap(this.customNetworkTab);
   }
 
-  async tapNetworkByName(networkName) {
+  async tapNetworkByName(networkName: string) {
     const network = this.getnetworkName(networkName);
     await Gestures.waitAndTap(network);
   }
 
-  async SearchNetworkName(networkName) {
+  async SearchNetworkName(networkName: string) {
     await Gestures.typeTextAndHideKeyboard(
-      this.networkSearchInput,
+      this.networkSearchInput as Promise<Detox.IndexableNativeElement>,
       networkName,
     );
   }
-  async longPressToRemoveNetwork(networkName) {
+  async longPressToRemoveNetwork(networkName: string) {
     const network = this.getnetworkName(networkName);
-    await Gestures.tapAndLongPress(network);
+    await Gestures.tapAndLongPress(
+      network as Promise<Detox.IndexableNativeElement>,
+    );
     await Gestures.waitAndTap(this.removeNetwork);
   }
 
@@ -199,32 +201,43 @@ class NetworkView {
   }
 
   // CUSTOM NETWORK SCREEN
-  async typeInNetworkName(networkName) {
-    await Gestures.typeTextAndHideKeyboard(this.networkNameInput, networkName);
+  async typeInNetworkName(networkName: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.networkNameInput as Promise<Detox.IndexableNativeElement>,
+      networkName,
+    );
   }
-  async typeInRpcUrl(rPCUrl) {
-    await Gestures.typeTextAndHideKeyboard(this.rpcURLInput, rPCUrl);
+  async typeInRpcUrl(rPCUrl: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.rpcURLInput as Promise<Detox.IndexableNativeElement>,
+      rPCUrl,
+    );
   }
-  async typeInChainId(chainID) {
-    await Gestures.typeTextAndHideKeyboard(this.chainIDInput, chainID);
+  async typeInChainId(chainID: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.chainIDInput as Promise<Detox.IndexableNativeElement>,
+      chainID,
+    );
   }
 
-  async typeInNetworkSymbol(networkSymbol) {
+  async typeInNetworkSymbol(networkSymbol: string) {
     await Gestures.typeTextAndHideKeyboard(
-      this.networkSymbolInput,
+      this.networkSymbolInput as Promise<Detox.IndexableNativeElement>,
       networkSymbol,
     );
   }
 
-  async typeInNetworkBlockExplorer(networkBlockExplorer) {
+  async typeInNetworkBlockExplorer(networkBlockExplorer: string) {
     await Gestures.typeTextAndHideKeyboard(
-      this.networkBlockExplorerInput,
+      this.networkBlockExplorerInput as Promise<Detox.IndexableNativeElement>,
       networkBlockExplorer,
     );
   }
 
   async clearRpcInputBox() {
-    await Gestures.clearField(this.rpcURLInput);
+    await Gestures.clearField(
+      this.rpcURLInput as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
   async tapRpcNetworkAddButton() {
@@ -240,8 +253,15 @@ class NetworkView {
     device.getPlatform() === 'ios'
       ? await (async () => {
           //swipe to dismiss iOS keypad
-          await Gestures.swipe(this.chainIDInput, 'up', 'fast', 0.3);
-          await Gestures.doubleTap(this.saveButton);
+          await Gestures.swipe(
+            this.chainIDInput as Promise<Detox.IndexableNativeElement>,
+            'up',
+            'fast',
+            0.3,
+          );
+          await Gestures.doubleTap(
+            this.saveButton as Promise<Detox.IndexableNativeElement>,
+          );
         })()
       : await Gestures.waitAndTap(this.saveButton);
   }

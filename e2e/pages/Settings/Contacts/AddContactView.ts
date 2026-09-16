@@ -64,21 +64,32 @@ class AddContactView {
     await Gestures.waitAndTap(this.deleteButton);
   }
 
-  async typeInName(name) {
-    await Gestures.replaceTextInField(this.nameInput, name);
+  async typeInName(name: string) {
+    await Gestures.replaceTextInField(
+      this.nameInput as Promise<Detox.IndexableNativeElement>,
+      name,
+    );
   }
 
-  async typeInMemo(memo) {
-    await Gestures.replaceTextInField(this.memoInput, memo);
+  async typeInMemo(memo: string) {
+    await Gestures.replaceTextInField(
+      this.memoInput as Promise<Detox.IndexableNativeElement>,
+      memo,
+    );
     await Gestures.waitAndTap(this.memoLabel);
   }
 
-  async typeInAddress(address) {
-    await Gestures.replaceTextInField(this.addressInput, address);
+  async typeInAddress(address: string) {
+    await Gestures.replaceTextInField(
+      this.addressInput as Promise<Detox.IndexableNativeElement>,
+      address,
+    );
   }
 
   async clearAddressInputBox() {
-    await Gestures.clearField(this.addressInput);
+    await Gestures.clearField(
+      this.addressInput as Promise<Detox.IndexableNativeElement>,
+    );
   }
 }
 

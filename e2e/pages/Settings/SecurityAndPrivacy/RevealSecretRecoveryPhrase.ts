@@ -60,9 +60,10 @@ class RevealSecretRecoveryPhrase {
     );
   }
 
-  async enterPasswordToRevealSecretCredential(password) {
+  async enterPasswordToRevealSecretCredential(password: string) {
     await Gestures.typeTextAndHideKeyboard(
-      this.passwordInputToRevealCredential,
+      this
+        .passwordInputToRevealCredential as Promise<Detox.IndexableNativeElement>,
       password,
     );
   }
@@ -72,15 +73,23 @@ class RevealSecretRecoveryPhrase {
   }
 
   async tapToCopyCredentialToClipboard() {
-    await Gestures.tap(this.revealCredentialCopyToClipboardButton);
+    await Gestures.tap(
+      this
+        .revealCredentialCopyToClipboardButton as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
   async tapToRevealPrivateCredentialQRCode() {
-    await Gestures.tap(this.revealCredentialQRCodeTab);
+    await Gestures.tap(
+      this.revealCredentialQRCodeTab as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
   async scrollToDone() {
-    await Gestures.scrollToElement(this.doneButton, this.scrollViewIdentifier);
+    await Gestures.scrollToElement(
+      this.doneButton as Promise<Detox.IndexableNativeElement>,
+      this.scrollViewIdentifier,
+    );
   }
 
   async tapDoneButton() {
