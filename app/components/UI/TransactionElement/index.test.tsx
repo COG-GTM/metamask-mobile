@@ -1,4 +1,5 @@
 import React from 'react';
+import { TransactionMeta } from '@metamask/transaction-controller';
 import TransactionElement from './';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
@@ -56,19 +57,21 @@ describe('TransactionElement', () => {
     const component = renderWithProvider(
       <Provider store={store}>
         <TransactionElement
-          tx={{
-            transaction: {
-              to: '0x0',
-              from: '0x1',
-              nonce: 1,
-            },
-            chainId: '0x1',
-            txParams: {
-              to: '0x0',
-              from: '0x1',
-              status: 'CONFIRMED',
-            },
-          }}
+          tx={
+            {
+              transaction: {
+                to: '0x0',
+                from: '0x1',
+                nonce: 1,
+              },
+              chainId: '0x1',
+              txParams: {
+                to: '0x0',
+                from: '0x1',
+                status: 'CONFIRMED',
+              },
+            } as unknown as TransactionMeta
+          }
         />
       </Provider>,
     );
