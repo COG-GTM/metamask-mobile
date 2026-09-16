@@ -531,6 +531,33 @@ describe('WC2Manager', () => {
         JSON.stringify({}),
       );
     });
+
+    it('removes listeners of every local session even if a disconnect rejects', async () => {
+      const removeListenersA = jest.fn();
+      const removeListenersB = jest.fn();
+      const internals = manager as unknown as {
+        sessions: Record<string, { removeListeners: jest.Mock }>;
+        web3Wallet: IWalletKit;
+      };
+      internals.sessions = {
+        'topic-a': { removeListeners: removeListenersA },
+        'topic-b': { removeListeners: removeListenersB },
+      };
+      (
+        internals.web3Wallet.disconnectSession as jest.Mock
+      ).mockRejectedValueOnce(new Error('transport error'));
+      const warnSpy = jest
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+
+      await manager.removeAll();
+
+      expect(removeListenersA).toHaveBeenCalledTimes(1);
+      expect(removeListenersB).toHaveBeenCalledTimes(1);
+      expect(internals.sessions).toEqual({});
+
+      warnSpy.mockRestore();
+    });
   });
 
   describe('WC2Manager isWalletConnect', () => {
