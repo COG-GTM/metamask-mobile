@@ -191,4 +191,55 @@ describe('BackgroundBridge', () => {
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
     });
   });
+
+  describe('onDisconnect', () => {
+    it('unsubscribes every controllerMessenger subscription made in the constructor', () => {
+      const bridge = setupBackgroundBridge('https:www.mock.io');
+      const { subscribe, unsubscribe } = Engine.controllerMessenger;
+      const subscriptions = subscribe.mock.calls.map(([event, handler]) => [
+        event,
+        handler,
+      ]);
+      expect(subscriptions).toHaveLength(6);
+      bridge.port.emit = jest.fn();
+
+      bridge.onDisconnect();
+
+      expect(bridge.disconnected).toBe(true);
+      expect(bridge.port.emit).toHaveBeenCalledWith('disconnect', {
+        name: bridge.port.name,
+        data: null,
+      });
+      expect(unsubscribe).toHaveBeenCalledTimes(subscriptions.length);
+      subscriptions.forEach(([event, handler]) => {
+        expect(unsubscribe).toHaveBeenCalledWith(event, handler);
+      });
+    });
+
+    it('uses stable handler references for lock, unlock and permission events', () => {
+      const bridge = setupBackgroundBridge('https:www.mock.io');
+      const { subscribe } = Engine.controllerMessenger;
+      const handlerFor = (event) =>
+        subscribe.mock.calls.find(([e]) => e === event)[1];
+
+      expect(handlerFor('KeyringController:lock')).toBe(bridge.onLock);
+      expect(handlerFor('KeyringController:unlock')).toBe(bridge.onUnlock);
+      expect(handlerFor(bridge.permissionStateChangeEvent)).toBe(
+        bridge.onPermissionStateChange,
+      );
+    });
+
+    it('does not send unlock state notifications after disconnect', () => {
+      const bridge = setupBackgroundBridge('https:www.mock.io');
+      bridge.isRemoteConn = false;
+      bridge.sendNotification = jest.fn();
+      bridge.port.emit = jest.fn();
+
+      bridge.onDisconnect();
+      bridge.onLock();
+      bridge.onUnlock();
+
+      expect(bridge.sendNotification).not.toHaveBeenCalled();
+    });
+  });
 });
