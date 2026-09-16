@@ -26,22 +26,30 @@ class ImportWalletView {
     );
   }
 
-  async enterPassword(password) {
-    await Gestures.typeTextAndHideKeyboard(this.newPasswordInput, password);
-  }
-
-  async reEnterPassword(password) {
-    await Gestures.typeTextAndHideKeyboard(this.confirmPasswordInput, password);
-  }
-
-  async enterSecretRecoveryPhrase(secretRecoveryPhrase) {
+  async enterPassword(password: string) {
     await Gestures.typeTextAndHideKeyboard(
-      this.seedPhraseInput,
+      this.newPasswordInput as Promise<Detox.IndexableNativeElement>,
+      password,
+    );
+  }
+
+  async reEnterPassword(password: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.confirmPasswordInput as Promise<Detox.IndexableNativeElement>,
+      password,
+    );
+  }
+
+  async enterSecretRecoveryPhrase(secretRecoveryPhrase: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.seedPhraseInput as Promise<Detox.IndexableNativeElement>,
       secretRecoveryPhrase,
     );
   }
   async clearSecretRecoveryPhraseInputBox() {
-    await Gestures.clearField(this.seedPhraseInput);
+    await Gestures.clearField(
+      this.seedPhraseInput as Promise<Detox.IndexableNativeElement>,
+    );
   }
 }
 

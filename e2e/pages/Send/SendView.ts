@@ -2,9 +2,7 @@ import TestHelpers from '../../helpers';
 import Gestures from '../../utils/Gestures';
 import Matchers from '../../utils/Matchers';
 import { SendViewSelectorsIDs } from '../../selectors/SendFlow/SendView.selectors';
-import {AddAddressModalSelectorsIDs} from '../../selectors/SendFlow/AddAddressModal.selectors';
-import Assertions from '../../utils/Assertions';
-
+import { AddAddressModalSelectorsIDs } from '../../selectors/SendFlow/AddAddressModal.selectors';
 
 class SendView {
   get cancelButton() {
@@ -32,7 +30,9 @@ class SendView {
   }
 
   get sendAddressConfirmation() {
-    return Matchers.getElementByID(AddAddressModalSelectorsIDs.ADD_ADDRESS_BUTTON);
+    return Matchers.getElementByID(
+      AddAddressModalSelectorsIDs.ADD_ADDRESS_BUTTON,
+    );
   }
 
   get removeAddressButton() {
@@ -55,18 +55,24 @@ class SendView {
   }
 
   async tapBackButton() {
-    await Gestures.TapAtIndex(this.backButton, 0);
+    await Gestures.TapAtIndex(
+      this.backButton as Promise<Detox.IndexableNativeElement>,
+      0,
+    );
   }
 
   async scrollToSavedAccount() {
-    await Gestures.swipe(this.CurrentAccountElement, 'up');
+    await Gestures.swipe(
+      this.CurrentAccountElement as Promise<Detox.IndexableNativeElement>,
+      'up',
+    );
   }
 
   async tapAddressInputField() {
     await Gestures.waitAndTap(this.addressInputField);
   }
 
-  async tapAccountName(account) {
+  async tapAccountName(account: string) {
     const accountName = Matchers.getElementByText(account);
     await Gestures.waitAndTap(accountName);
   }
@@ -75,8 +81,11 @@ class SendView {
     await Gestures.waitAndTap(this.nextButton);
   }
 
-  async inputAddress(address) {
-    await Gestures.replaceTextInField(this.addressInputField, address);
+  async inputAddress(address: string) {
+    await Gestures.replaceTextInField(
+      this.addressInputField as Promise<Detox.IndexableNativeElement>,
+      address,
+    );
   }
 
   async tapAddAddressToAddressBook() {
@@ -88,8 +97,11 @@ class SendView {
     await TestHelpers.delay(1000);
   }
 
-  async splitAddressText(){
-    const attributes = await (await this.sendAddressConfirmation).getAttributes();
+  async splitAddressText() {
+    const attributes = await (
+      await this.sendAddressConfirmation
+    ).getAttributes();
+    // @ts-expect-error - the label property does exist in this object.
     return await attributes.label.split(' ');
   }
 }

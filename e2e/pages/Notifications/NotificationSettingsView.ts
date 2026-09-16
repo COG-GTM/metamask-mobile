@@ -27,10 +27,7 @@ class NotificationsSettingsView {
       NotificationSettingsViewSelectorsText.ACCOUNT_ACTIVITY_SECTION,
     );
   }
-  accountNotificationToggle(
-    /** @type {string} */
-    address,
-  ) {
+  accountNotificationToggle(address: string) {
     return Matchers.getElementByID(
       NotificationSettingsViewSelectorsIDs.ACCOUNT_NOTIFICATION_TOGGLE(address),
     );
@@ -45,10 +42,7 @@ class NotificationsSettingsView {
   async tapFeatureAnnouncementsToggle() {
     await Gestures.waitAndTap(this.featureAnnonucementsToggle);
   }
-  async tapAccountNotificationsToggle(
-    /** @type {string} */
-    address,
-  ) {
+  async tapAccountNotificationsToggle(address: string) {
     await Gestures.waitAndTap(this.accountNotificationToggle(address));
   }
 }

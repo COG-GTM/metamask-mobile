@@ -45,7 +45,10 @@ class OnboardingCarouselView {
   }
 
   async swipeCarousel() {
-    await Gestures.swipe(this.container, 'left');
+    await Gestures.swipe(
+      this.container as Promise<Detox.IndexableNativeElement>,
+      'left',
+    );
   }
 
   async tapOnGetStartedButton() {

@@ -1,9 +1,8 @@
 import Matchers from '../../utils/Matchers';
 import Gestures from '../../utils/Gestures';
 
-
 class SelectCurrencyView {
-  async tapCurrencyOption(currency) {
+  async tapCurrencyOption(currency: string) {
     const currencyOption = Matchers.getElementByText(currency);
     await Gestures.waitAndTap(currencyOption);
   }

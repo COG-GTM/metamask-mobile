@@ -16,7 +16,14 @@ class QuotesView {
   }
 
   async closeQuotesSection() {
-    await Gestures.swipe(this.selectAQuoteLabel, 'down', 'fast', 1, 0, 0);
+    await Gestures.swipe(
+      this.selectAQuoteLabel as Promise<Detox.IndexableNativeElement>,
+      'down',
+      'fast',
+      1,
+      0,
+      0,
+    );
   }
 }
 

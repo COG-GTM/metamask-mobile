@@ -35,12 +35,18 @@ class CreatePasswordView {
       : Matchers.getElementByLabel(ChoosePasswordSelectorsIDs.SUBMIT_BUTTON_ID);
   }
 
-  async enterPassword(password) {
-    await Gestures.typeTextAndHideKeyboard(this.newPasswordInput, password);
+  async enterPassword(password: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.newPasswordInput as Promise<Detox.IndexableNativeElement>,
+      password,
+    );
   }
 
-  async reEnterPassword(password) {
-    await Gestures.typeTextAndHideKeyboard(this.confirmPasswordInput, password);
+  async reEnterPassword(password: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.confirmPasswordInput as Promise<Detox.IndexableNativeElement>,
+      password,
+    );
   }
 
   async tapIUnderstandCheckBox() {
