@@ -805,7 +805,7 @@ class PaymentRequest extends PureComponent<Props, State> {
       internalPrimaryCurrency,
     } = this.state;
     const selectedAsset = this.state.selectedAsset as Asset;
-    const { chainId } = this.state as State & { chainId?: Hex };
+    const { chainId } = this.state as State & { chainId: Hex };
     const currencySymbol = (currencySymbols as Record<string, string>)[
       currentCurrency
     ];
