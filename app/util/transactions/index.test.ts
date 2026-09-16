@@ -16,6 +16,8 @@ import {
   decodeTransferData,
   getMethodData,
   getActionKey,
+  isSmartContractAddress,
+  clearSmartContractAddressCache,
   generateTxWithNewTokenAllowance,
   minimumTokenAllowance,
   TOKEN_METHOD_TRANSFER,
@@ -92,6 +94,104 @@ const spyOnQueryMethod = (returnValue: string | undefined) =>
         resolve(returnValue);
       }),
   );
+
+beforeEach(() => {
+  clearSmartContractAddressCache();
+});
+
+describe('Transactions utils :: isSmartContractAddress', () => {
+  const CONTRACT_CODE = '0x6080604052';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns false for an empty address without querying', async () => {
+    const querySpy = spyOnQueryMethod(CONTRACT_CODE);
+    expect(await isSmartContractAddress('', MOCK_CHAIN_ID)).toBe(false);
+    expect(querySpy).not.toHaveBeenCalled();
+  });
+
+  it('queries getCode once and caches the result per chainId and address', async () => {
+    const querySpy = spyOnQueryMethod(CONTRACT_CODE);
+
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      true,
+    );
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      true,
+    );
+    expect(
+      await isSmartContractAddress(
+        `0x${MOCK_ADDRESS3.slice(2).toUpperCase()}`,
+        MOCK_CHAIN_ID,
+      ),
+    ).toBe(true);
+
+    expect(querySpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('caches non-contract results', async () => {
+    const querySpy = spyOnQueryMethod('0x');
+
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      false,
+    );
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      false,
+    );
+
+    expect(querySpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not share cache entries across chains', async () => {
+    const querySpy = spyOnQueryMethod(CONTRACT_CODE);
+
+    await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID);
+    await isSmartContractAddress(MOCK_ADDRESS3, '0x89');
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('dedupes concurrent requests for the same address', async () => {
+    const querySpy = spyOnQueryMethod(CONTRACT_CODE);
+
+    const results = await Promise.all([
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ]);
+
+    expect(results).toEqual([true, true, true]);
+    expect(querySpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not cache failed lookups', async () => {
+    const querySpy = jest
+      .spyOn(controllerUtilsModule, 'query')
+      .mockRejectedValueOnce(new Error('rpc down'))
+      .mockResolvedValueOnce(CONTRACT_CODE);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).rejects.toThrow('rpc down');
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      true,
+    );
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('clearSmartContractAddressCache forces a fresh query', async () => {
+    const querySpy = spyOnQueryMethod(CONTRACT_CODE);
+
+    await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID);
+    clearSmartContractAddressCache();
+    await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID);
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+  });
+});
 
 describe('Transactions utils :: generateTransferData', () => {
   it('generateTransferData should throw if undefined values', () => {
@@ -1214,7 +1314,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1222,7 +1322,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx2', mockTransactionController);
-    
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1232,7 +1332,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1240,7 +1340,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('nonexistent', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1352,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 });

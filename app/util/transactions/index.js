@@ -112,6 +112,26 @@ class CollectibleAddresses {
 }
 
 /**
+ * Utility class caching whether an address holds contract code, keyed by
+ * `${chainId}:${checksumAddress}`. Values are either a resolved boolean or the
+ * in-flight promise so concurrent callers share a single eth_getCode request.
+ */
+class SmartContractAddresses {
+  static cache = {};
+
+  static clear() {
+    SmartContractAddresses.cache = {};
+  }
+}
+
+/**
+ * Clears the memoized isSmartContractAddress results. Intended for tests.
+ */
+export function clearSmartContractAddressCache() {
+  SmartContractAddresses.clear();
+}
+
+/**
  * Object containing all known action keys, to be used in transaction review
  */
 const reviewActionKeys = {
@@ -391,6 +411,12 @@ export async function isSmartContractAddress(
     return Promise.resolve(true);
   }
 
+  const cacheKey = `${chainId}:${address}`;
+  const cached = SmartContractAddresses.cache[cacheKey];
+  if (cached !== undefined) {
+    return cached;
+  }
+
   const { NetworkController } = Engine.context;
   const finalNetworkClientId =
     networkClientId ?? NetworkController.findNetworkClientIdByChainId(chainId);
@@ -398,11 +424,21 @@ export async function isSmartContractAddress(
     NetworkController.getNetworkClientById(finalNetworkClientId).provider,
   );
 
-  const code = address
-    ? await query(ethQuery, 'getCode', [address])
-    : undefined;
+  const pending = query(ethQuery, 'getCode', [address]).then((code) => {
+    const result = isSmartContractCode(code);
+    SmartContractAddresses.cache[cacheKey] = result;
+    return result;
+  });
+  SmartContractAddresses.cache[cacheKey] = pending;
 
-  return isSmartContractCode(code);
+  try {
+    return await pending;
+  } catch (error) {
+    if (SmartContractAddresses.cache[cacheKey] === pending) {
+      delete SmartContractAddresses.cache[cacheKey];
+    }
+    throw error;
+  }
 }
 
 /**
