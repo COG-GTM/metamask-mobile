@@ -1,5 +1,4 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import Networks, { getDecimalChainId } from '../../../util/networks';
@@ -8,18 +7,25 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { withNavigation } from '@react-navigation/compat';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import {
+  ProviderConfig,
   selectChainId,
   selectProviderConfig,
 } from '../../../selectors/networkController';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import Text, {
   TextVariant,
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 import { selectNetworkName } from '../../../selectors/networkInfos';
+import { Colors, Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+const TypedNetworks = Networks as unknown as Record<string, { name?: string }>;
+
+const createStyles = (_colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       justifyContent: 'center',
@@ -31,59 +37,57 @@ const createStyles = (colors) =>
     },
   });
 
+interface Props extends IWithMetricsAwarenessProps {
+  /**
+   * Object representing the configuration of the current selected network
+   */
+  providerConfig: ProviderConfig;
+  /**
+   * Name of the current view
+   */
+  title?: string;
+  /**
+   * Boolean that specifies if the title needs translation
+   */
+  translate?: boolean;
+  /**
+   * Boolean that specifies if the network can be changed
+   */
+  disableNetwork?: boolean;
+  /**
+   * Object that represents the navigator
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Boolean that specifies if the network selected is displayed
+   */
+  showSelectedNetwork?: boolean;
+  /**
+   * Name of the network to display
+   */
+  networkName?: string;
+  /**
+   * Content to display inside text element
+   */
+  children?: React.ReactNode;
+  /**
+   * Selected multichain chainId
+   */
+  chainId?: string;
+  /**
+   * Selected network name
+   */
+  selectedNetworkName?: string;
+}
+
 /**
  * UI PureComponent that renders inside the navbar
  * showing the view title and the selected network
  */
-class NavbarTitle extends PureComponent {
-  static propTypes = {
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object.isRequired,
-    /**
-     * Name of the current view
-     */
-    title: PropTypes.string,
-    /**
-     * Boolean that specifies if the title needs translation
-     */
-    translate: PropTypes.bool,
-    /**
-     * Boolean that specifies if the network can be changed
-     */
-    disableNetwork: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that specifies if the network selected is displayed
-     */
-    showSelectedNetwork: PropTypes.bool,
-    /**
-     * Name of the network to display
-     */
-    networkName: PropTypes.string,
-    /**
-     * Content to display inside text element
-     */
-    children: PropTypes.node,
-    /**
-     * Selected multichain chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Selected network name
-     */
-    selectedNetworkName: PropTypes.string,
-  };
+class NavbarTitle extends PureComponent<Props> {
+  static contextType = ThemeContext;
 
-  static defaultProps = {
+  static defaultProps: Partial<Props> = {
     translate: true,
     showSelectedNetwork: true,
   };
@@ -123,9 +127,10 @@ class NavbarTitle extends PureComponent {
       networkName,
       selectedNetworkName,
     } = this.props;
-    let name = null;
+    let name: string | null | undefined = null;
 
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (selectedNetworkName || networkName) {
@@ -135,7 +140,7 @@ class NavbarTitle extends PureComponent {
       name = providerConfig.nickname;
     } else {
       name =
-        (Networks[providerConfig.type] && Networks[providerConfig.type].name) ||
+        TypedNetworks[providerConfig.type]?.name ||
         { ...Networks.rpc, color: null }.name;
     }
 
@@ -172,14 +177,25 @@ class NavbarTitle extends PureComponent {
   };
 }
 
-NavbarTitle.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   chainId: selectChainId(state),
   selectedNetworkName: selectNetworkName(state),
 });
 
-export default withNavigation(
-  connect(mapStateToProps)(withMetricsAwareness(NavbarTitle)),
+// @react-navigation/compat's `withNavigation` types resolve the wrapped
+// component's props to `never`, so the HOC is re-typed here.
+const withNavigationTyped = withNavigation as unknown as <
+  P extends { navigation: NavigationProp<ParamListBase> },
+>(
+  Comp: React.ComponentType<P>,
+) => React.ComponentType<Omit<P, 'navigation'>>;
+
+const NavbarTitleWithMetrics: React.ComponentType<Omit<Props, 'metrics'>> =
+  withMetricsAwareness(
+    NavbarTitle as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+  );
+
+export default withNavigationTyped(
+  connect(mapStateToProps)(NavbarTitleWithMetrics),
 );
