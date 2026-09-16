@@ -1,4 +1,11 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
+import { debounce } from 'lodash';
 import {
   TextInput,
   View,
@@ -24,6 +31,9 @@ import ButtonIcon, {
   ButtonIconSizes,
 } from '../../../component-library/components/Buttons/ButtonIcon';
 import { selectChainId } from '../../../selectors/networkController';
+
+const SEARCH_DEBOUNCE_MS = 250;
+const HEX_ADDRESS_REGEX = /^0x[0-9a-f]{40}$/i;
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -157,22 +167,52 @@ const AssetSearch = ({
     }
   }, [tokenList]);
 
+  const runSearch = useCallback(
+    (searchText: string) => {
+      const fuseSearchResult = fuse.search(searchText);
+      const addressSearchResult = HEX_ADDRESS_REGEX.test(searchText)
+        ? tokenList.filter((token: TokenListToken) =>
+            toLowerCaseEquals(token.address, searchText),
+          )
+        : [];
+      onSearch({
+        searchQuery: searchText,
+        results: [...addressSearchResult, ...fuseSearchResult],
+      });
+    },
+    [onSearch, tokenList],
+  );
+
+  const runSearchRef = useRef(runSearch);
+  runSearchRef.current = runSearch;
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(
+        (searchText: string) => runSearchRef.current(searchText),
+        SEARCH_DEBOUNCE_MS,
+      ),
+    [],
+  );
+
+  useEffect(() => () => debouncedSearch.cancel(), [debouncedSearch]);
+
   const handleSearch = useCallback(
     (searchText: string) => {
       setSearchQuery(searchText);
-      const fuseSearchResult = fuse.search(searchText);
-      const addressSearchResult = tokenList?.filter((token: TokenListToken) =>
-        toLowerCaseEquals(token.address, searchText),
-      );
-      const results = [...addressSearchResult, ...fuseSearchResult];
-      onSearch({ searchQuery: searchText, results });
+      debouncedSearch(searchText);
     },
-    [setSearchQuery, onSearch, tokenList],
+    [debouncedSearch],
   );
 
-  useEffect(() => {
+  const clearSearch = useCallback(() => {
+    debouncedSearch.cancel();
     setSearchQuery('');
-    handleSearch('');
+    runSearch('');
+  }, [debouncedSearch, runSearch]);
+
+  useEffect(() => {
+    clearSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [allNetworksEnabled]);
 
@@ -212,10 +252,7 @@ const AssetSearch = ({
         <ButtonIcon
           size={ButtonIconSizes.Sm}
           iconName={IconName.Close}
-          onPress={() => {
-            setSearchQuery('');
-            handleSearch('');
-          }}
+          onPress={clearSearch}
           testID={ImportTokenViewSelectorsIDs.CLEAR_SEARCH_BAR}
         />
       </View>
