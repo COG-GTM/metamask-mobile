@@ -1,7 +1,6 @@
 import type { KeyDerivationOptions } from './types';
 
 export const SALT_BYTES_COUNT = 32;
-export const SHA256_DIGEST_LENGTH = 256;
 
 /**
  * We use "OWASP2023" to indicate the source and year of the recommendation.
