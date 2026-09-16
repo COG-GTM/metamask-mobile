@@ -55,8 +55,6 @@ import ConnectionDetails from '../../../components/Views/AccountPermissions/Conn
 import { SRPQuiz } from '../../Views/Quiz';
 import { TurnOffRememberMeModal } from '../../../components/UI/TurnOffRememberMeModal';
 import AssetHideConfirmation from '../../Views/AssetHideConfirmation';
-import DetectedTokens from '../../Views/DetectedTokens';
-import DetectedTokensConfirmation from '../../Views/DetectedTokensConfirmation';
 import AssetOptions from '../../Views/AssetOptions';
 import ImportPrivateKey from '../../Views/ImportPrivateKey';
 import ImportPrivateKeySuccess from '../../Views/ImportPrivateKeySuccess';
@@ -291,20 +289,6 @@ const AddNetworkFlow = () => {
   );
 };
 
-const DetectedTokensFlow = () => (
-  <Stack.Navigator
-    mode={'modal'}
-    screenOptions={clearStackNavigatorOptions}
-    initialRouteName={'DetectedTokens'}
-  >
-    <Stack.Screen name={'DetectedTokens'} component={DetectedTokens} />
-    <Stack.Screen
-      name={'DetectedTokensConfirmation'}
-      component={DetectedTokensConfirmation}
-    />
-  </Stack.Navigator>
-);
-
 ///: BEGIN:ONLY_INCLUDE_IF(multi-srp)
 interface RootModalFlowProps {
   route: {
@@ -421,7 +405,6 @@ const RootModalFlow = (
       name={'AssetHideConfirmation'}
       component={AssetHideConfirmation}
     />
-    <Stack.Screen name={'DetectedTokens'} component={DetectedTokensFlow} />
     <Stack.Screen name={'AssetOptions'} component={AssetOptions} />
     <Stack.Screen name={'NftOptions'} component={NftOptions} />
     <Stack.Screen name={Routes.MODAL.UPDATE_NEEDED} component={UpdateNeeded} />

@@ -2,7 +2,6 @@
 import { loginToApp } from '../../viewHelper';
 import { SmokeNetworkAbstractions } from '../../tags';
 import WalletView from '../../pages/wallet/WalletView';
-import DetectedTokensView from '../../pages/wallet/DetectedTokensView';
 import Assertions from '../../utils/Assertions';
 import TestHelpers from '../../helpers';
 import FixtureBuilder from '../../fixtures/fixture-builder';
