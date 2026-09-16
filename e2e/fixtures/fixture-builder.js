@@ -434,7 +434,6 @@ class FixtureBuilder {
         modals: {
           networkModalVisible: false,
           shouldNetworkSwitchPopToWallet: true,
-          collectibleContractModalVisible: false,
           receiveModalVisible: false,
           dappTransactionModalVisible: false,
           signMessageModalVisible: true,
