@@ -19,6 +19,10 @@ declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   const content: React.FC<any>;
   export default content;
 }
+declare module 'react-native-progress/Bar' {
+  import { Bar } from 'react-native-progress';
+  export default Bar;
+}
 
 declare module '*.svg' {
   import { SvgProps } from 'react-native-svg';
