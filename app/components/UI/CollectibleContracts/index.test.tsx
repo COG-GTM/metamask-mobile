@@ -12,6 +12,7 @@ import { PreferencesState } from '@metamask/preferences-controller';
 
 // eslint-disable-next-line import/no-namespace
 import * as allSelectors from '../../../../app/reducers/collectibles/index.js';
+import { showNftFetchingLoadingIndicator } from '../../../../app/reducers/collectibles/index.js';
 // eslint-disable-next-line import/no-namespace
 import * as networkSelectors from '../../../selectors/networkController';
 import { cleanup, waitFor } from '@testing-library/react-native';
@@ -231,6 +232,107 @@ describe('CollectibleContracts', () => {
         nftItemDataUpdated[0].image,
       );
     });
+
+    spyOnCollectibles.mockRestore();
+    spyOnContracts.mockRestore();
+    spyOnUpdateNftMetadata.mockRestore();
+  });
+
+  it('does not refetch NFT metadata on an unrelated re-render when the owned NFT set is unchanged', async () => {
+    const collectibleData = [
+      {
+        address: '0x72b1FDb6443338A158DeC2FbF411B71aeB157A42',
+        name: 'MyToken',
+        symbol: 'MTK',
+      },
+    ];
+    const nftItemData = [
+      {
+        address: '0x72b1FDb6443338A158DeC2FbF411B71aeB157A42',
+        description: 'Lil Pudgy #113',
+        favorite: false,
+        image: 'https://api.pudgypenguins.io/lil/image/11222',
+        isCurrentlyOwned: true,
+        name: 'Lil Pudgy #113',
+        standard: 'ERC721',
+        tokenId: '113',
+        tokenURI: 'https://api.pudgypenguins.io/lil/113',
+        chainId: 1,
+      },
+    ];
+    const mockState: DeepPartial<RootState> = {
+      collectibles: {
+        favorites: {},
+      },
+      engine: {
+        backgroundState: {
+          ...backgroundState,
+          NetworkController: {
+            ...mockNetworkState({
+              chainId: CHAIN_IDS.MAINNET,
+              id: 'mainnet',
+              nickname: 'Ethereum Mainnet',
+              ticker: 'ETH',
+            }),
+          },
+          AccountTrackerController: {
+            accountsByChainId: {
+              '0x1': {
+                [MOCK_ADDRESS]: { balance: '0' },
+              },
+            },
+          },
+          PreferencesController: {
+            displayNftMedia: true,
+          } as unknown as PreferencesState,
+          AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
+          NftController: {
+            allNfts: {
+              [MOCK_ADDRESS]: {
+                '0x1': [],
+              },
+            },
+            allNftContracts: {
+              [MOCK_ADDRESS]: {
+                '0x1': [],
+              },
+            },
+          },
+        },
+      },
+    };
+
+    // Same object references are returned on every call, mirroring the
+    // deep-equal selector output the component relies on.
+    const spyOnCollectibles = jest
+      .spyOn(allSelectors, 'multichainCollectiblesSelector')
+      .mockReturnValue({ '0x1': nftItemData });
+    const spyOnContracts = jest
+      .spyOn(allSelectors, 'multichainCollectibleContractsSelector')
+      .mockReturnValue({ '0x1': collectibleData });
+    const spyOnUpdateNftMetadata = jest
+      .spyOn(Engine.context.NftController, 'updateNftMetadata')
+      .mockImplementation(async () => undefined);
+
+    const { store: renderedStore } = renderWithProvider(
+      <CollectibleContracts />,
+      {
+        state: mockState,
+      },
+    );
+
+    await waitFor(() => {
+      expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(1);
+    });
+
+    // Force a re-render that leaves the owned NFT set untouched.
+    await act(async () => {
+      renderedStore.dispatch(showNftFetchingLoadingIndicator());
+    });
+
+    await TestHelpers.delay(500);
+
+    expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(1);
 
     spyOnCollectibles.mockRestore();
     spyOnContracts.mockRestore();
