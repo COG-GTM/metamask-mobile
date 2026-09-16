@@ -163,7 +163,8 @@ class WalletConnect {
 
         this.redirect();
       } catch (e) {
-        this.walletConnector?.rejectSession();
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.walletConnector!.rejectSession();
         this.redirect();
       }
     });
@@ -183,8 +184,8 @@ class WalletConnect {
       }
 
       if (payload.method) {
-        const payloadUrl = this.walletConnector?.session.peerMeta
-          ?.url as string;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const payloadUrl = this.walletConnector!.session.peerMeta!.url;
         const payloadHostname = new URLParse(payloadUrl).hostname;
         if (payloadHostname === this.backgroundBridge?.hostname) {
           if (METHODS_TO_REDIRECT[payload.method]) {
@@ -315,7 +316,8 @@ class WalletConnect {
   };
 
   approveRequest = ({ id, result }: { id: number; result: unknown }) => {
-    this.walletConnector?.approveRequest({
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.walletConnector!.approveRequest({
       id,
       result,
     });
@@ -329,7 +331,8 @@ class WalletConnect {
     id: number;
     error: WalletConnectRpcError;
   }) => {
-    this.walletConnector?.rejectRequest({
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.walletConnector!.rejectRequest({
       id,
       error,
     });
@@ -340,7 +343,8 @@ class WalletConnect {
     chainId,
     accounts,
   }: Parameters<RNWalletConnect['updateSession']>[0]) => {
-    this.walletConnector?.updateSession({
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.walletConnector!.updateSession({
       chainId,
       accounts,
     });
@@ -358,9 +362,11 @@ class WalletConnect {
       accounts: [selectedAddress],
     };
     if (existing) {
-      this.walletConnector?.updateSession(approveData);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.walletConnector!.updateSession(approveData);
     } else {
-      await this.walletConnector?.approveSession(approveData);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      await this.walletConnector!.approveSession(approveData);
       persistSessions();
     }
 
