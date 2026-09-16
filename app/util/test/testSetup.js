@@ -276,23 +276,6 @@ NativeModules.PlatformConstants = {
   forceTouchAvailable: false,
 };
 
-NativeModules.Aes = {
-  sha256: jest.fn().mockImplementation((address) => {
-    const uniqueAddressChar = address[2]; // Assuming 0x prefix is present, so actual third character is at index 2
-    const hashBase = '012345678987654';
-    return Promise.resolve(hashBase + uniqueAddressChar);
-  }),
-  pbkdf2: jest.fn().mockResolvedValue('mockedKey'),
-  randomKey: jest.fn().mockResolvedValue('mockedIV'),
-  encrypt: jest.fn().mockResolvedValue('mockedCipher'),
-  decrypt: jest.fn().mockResolvedValue('{"mockData": "mockedPlainText"}'),
-};
-
-NativeModules.AesForked = {
-  pbkdf2: jest.fn().mockResolvedValue('mockedKeyForked'),
-  decrypt: jest.fn().mockResolvedValue('{"mockData": "mockedPlainTextForked"}'),
-};
-
 NativeModules.RNTar = {
   unTar: jest.fn().mockResolvedValue('/document-dir/archive'),
 };
