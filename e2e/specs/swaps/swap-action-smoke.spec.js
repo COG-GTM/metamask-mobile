@@ -5,7 +5,7 @@ import QuoteView from '../../pages/swaps/QuoteView.js';
 import SwapView from '../../pages/swaps/SwapView.js';
 import TabBarComponent from '../../pages/wallet/TabBarComponent.js';
 import AccountListBottomSheet from '../../pages/wallet/AccountListBottomSheet.js';
-import WalletView from '../../pages/wallet/WalletView.js';
+import WalletView from '../../pages/wallet/WalletView';
 import WalletActionsBottomSheet from '../../pages/wallet/WalletActionsBottomSheet.js';
 import SettingsView from '../../pages/Settings/SettingsView';
 import FixtureBuilder from '../../fixtures/fixture-builder.js';
@@ -15,7 +15,7 @@ import {
   startFixtureServer,
   stopFixtureServer,
 } from '../../fixtures/fixture-helper.js';
-import { CustomNetworks } from '../../resources/networks.e2e.js';
+import { CustomNetworks } from '../../resources/networks.e2e';
 import NetworkListModal from '../../pages/Network/NetworkListModal.js';
 import NetworkEducationModal from '../../pages/Network/NetworkEducationModal.js';
 import TestHelpers from '../../helpers.js';

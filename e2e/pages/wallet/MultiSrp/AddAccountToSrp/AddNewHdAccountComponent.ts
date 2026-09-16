@@ -20,7 +20,9 @@ class AddNewHdAccountComponent {
   }
 
   get nameInput() {
-    return Matchers.getElementByID(AddNewAccountIds.NAME_INPUT);
+    return Matchers.getElementByID(
+      AddNewAccountIds.NAME_INPUT,
+    ) as Promise<Detox.IndexableNativeElement>;
   }
 
   async tapSrpSelector() {
@@ -35,7 +37,7 @@ class AddNewHdAccountComponent {
     await Gestures.waitAndTap(this.confirmButton);
   }
 
-  async enterName(accountName) {
+  async enterName(accountName: string) {
     await Gestures.clearField(this.nameInput);
     await Gestures.typeTextAndHideKeyboard(this.nameInput, accountName);
   }
