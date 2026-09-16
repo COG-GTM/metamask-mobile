@@ -1,5 +1,9 @@
 import { getGanachePort } from '../../../e2e/fixtures/utils';
-import ganache from 'ganache';
+import ganache, {
+  type EthereumProvider,
+  type Server,
+  type ServerOptions,
+} from 'ganache';
 
 export const DEFAULT_GANACHE_PORT = 8545;
 
@@ -12,15 +16,21 @@ const defaultOptions = {
   quiet: false,
 };
 
+export type GanacheOptions = Partial<typeof defaultOptions> & {
+  mnemonic?: string;
+};
+
 export default class Ganache {
-  async start(opts) {
+  _server?: Server;
+
+  async start(opts: GanacheOptions) {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
     const options = { ...defaultOptions, ...opts, port: getGanachePort() };
     const { port } = options;
     try {
-      this._server = ganache.server(options);
+      this._server = ganache.server(options as ServerOptions);
       await this._server.listen(port);
     } catch (error) {
       console.error(error);
@@ -33,7 +43,7 @@ export default class Ganache {
   }
 
   async getAccounts() {
-    return await this.getProvider().request({
+    return await (this.getProvider() as EthereumProvider).request({
       method: 'eth_accounts',
       params: [],
     });
@@ -41,7 +51,7 @@ export default class Ganache {
 
   async getBalance() {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
+    const balanceHex = await (this.getProvider() as EthereumProvider).request({
       method: 'eth_getBalance',
       params: [accounts[0], 'latest'],
     });
