@@ -106,12 +106,14 @@ export default class AddBookmark extends PureComponent<Props, State> {
   addBookmark = () => {
     const { title, url } = this.state;
     if (title === '' || url === '') return false;
-    this.props.route.params.onAddBookmark?.({ name: title, url });
-    this.props.navigation.pop?.();
+    const { onAddBookmark } = this.props.route
+      .params as Required<AddBookmarkParams>;
+    onAddBookmark({ name: title, url });
+    (this.props.navigation as StackNavigationProp<ParamListBase>).pop();
   };
 
   cancelAddBookmark = () => {
-    this.props.navigation.pop?.();
+    (this.props.navigation as StackNavigationProp<ParamListBase>).pop();
   };
 
   onTitleChange = (title: string) => {
