@@ -1,6 +1,9 @@
 import React from 'react';
 import Wallet from './';
-import { renderScreen } from '../../../util/test/renderWithProvider';
+import renderWithProvider, {
+  renderScreen,
+} from '../../../util/test/renderWithProvider';
+import { createStackNavigator } from '@react-navigation/stack';
 import { screen } from '@testing-library/react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import Routes from '../../../constants/navigation/Routes';
@@ -9,6 +12,7 @@ import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsContr
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 import Engine from '../../../core/Engine';
 import { useSelector } from 'react-redux';
+import NotificationsService from '../../../util/notifications/services/NotificationService';
 
 const MOCK_ADDRESS = '0xc4955c0d639d99699bfd7ec54d9fafee40e4d272';
 
@@ -19,6 +23,13 @@ jest.mock('../../../util/address', () => {
     getLabelTextByAddress: jest.fn(),
   };
 });
+
+jest.mock('../../../util/notifications/services/NotificationService', () => ({
+  __esModule: true,
+  default: {
+    isDeviceNotificationEnabled: jest.fn().mockResolvedValue(true),
+  },
+}));
 
 jest.mock('../../../util/notifications/constants/config', () => ({
   isNotificationsFeatureEnabled: jest.fn(() => true),
@@ -255,6 +266,34 @@ describe('Wallet', () => {
     render(Wallet);
 
     expect(mockedAddTokens.addTokens).toHaveBeenCalledTimes(1);
+  });
+
+  it('should check device notification permission only once on mount', () => {
+    const mockIsDeviceNotificationEnabled = jest.mocked(
+      NotificationsService.isDeviceNotificationEnabled,
+    );
+
+    const Stack = createStackNavigator();
+    const buildTree = (renderCount: number) => (
+      <Stack.Navigator>
+        <Stack.Screen name={Routes.WALLET_VIEW}>
+          {(props) => (
+            //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
+            <Wallet {...props} renderCount={renderCount} />
+          )}
+        </Stack.Screen>
+      </Stack.Navigator>
+    );
+
+    const wrapper = renderWithProvider(buildTree(1), {
+      state: mockInitialState,
+    });
+    expect(mockIsDeviceNotificationEnabled).toHaveBeenCalledTimes(1);
+
+    wrapper.rerender(buildTree(2));
+    wrapper.rerender(buildTree(3));
+
+    expect(mockIsDeviceNotificationEnabled).toHaveBeenCalledTimes(1);
   });
 
   it('should render correctly when Solana support is enabled', () => {

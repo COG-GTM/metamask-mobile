@@ -423,7 +423,7 @@ const Wallet = ({
       await NotificationsService.isDeviceNotificationEnabled();
     }
     checkIfNotificationsAreEnabled();
-  });
+  }, []);
 
   /**
    * Check to see if we need to show What's New modal
