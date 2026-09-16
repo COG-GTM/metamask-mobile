@@ -1,30 +1,39 @@
-const { inherits } = require('util');
-const { Duplex } = require('readable-stream');
+import { Duplex } from 'readable-stream';
 
 const noop = () => undefined;
 
-module.exports = PostMessageStream;
+class PostMessageStream extends Duplex {
+  _name: string;
+  _target: string;
+  _targetWindow: Window;
+  _origin: string;
+  _init: boolean;
+  _haveSyn: boolean;
 
-inherits(PostMessageStream, Duplex);
+  constructor(opts: { name: string; target: string; targetWindow?: Window }) {
+    super({
+      objectMode: true,
+    });
 
-function PostMessageStream(opts) {
-  Duplex.call(this, {
-    objectMode: true,
-  });
+    this._name = opts.name;
+    this._target = opts.target;
+    this._targetWindow = opts.targetWindow || window;
+    this._origin = opts.targetWindow ? '*' : location.origin;
 
-  this._name = opts.name;
-  this._target = opts.target;
-  this._targetWindow = opts.targetWindow || window;
-  this._origin = opts.targetWindow ? '*' : location.origin;
+    // initialization flags
+    this._init = false;
+    this._haveSyn = false;
 
-  // initialization flags
-  this._init = false;
-  this._haveSyn = false;
+    window.addEventListener('message', this._onMessage.bind(this), false);
+    // send syncorization message
+    this._write('SYN', null, noop);
+    this.cork();
+  }
+}
 
-  window.addEventListener('message', this._onMessage.bind(this), false);
-  // send syncorization message
-  this._write('SYN', null, noop);
-  this.cork();
+interface PostMessageStream {
+  _onMessage(event: MessageEvent<{ target?: string; data?: unknown }>): void;
+  _write(data: unknown, _encoding: BufferEncoding | null, cb: () => void): void;
 }
 
 // private
@@ -78,3 +87,5 @@ PostMessageStream.prototype._write = function (data, _encoding, cb) {
   this._targetWindow.postMessage(message, this._origin);
   cb();
 };
+
+export default PostMessageStream;

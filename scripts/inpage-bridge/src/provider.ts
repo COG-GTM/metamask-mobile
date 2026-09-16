@@ -1,9 +1,9 @@
-const { initializeProvider, shimWeb3 } = require('@metamask/providers');
-const ObjectMultiplex = require('@metamask/object-multiplex');
-const pump = require('pump');
-const { v4: uuid } = require('uuid');
-const MobilePortStream = require('./MobilePortStream');
-const ReactNativePostMessageStream = require('./ReactNativePostMessageStream');
+import { initializeProvider, shimWeb3 } from '@metamask/providers';
+import ObjectMultiplex from '@metamask/object-multiplex';
+import pump from 'pump';
+import { v4 as uuid } from 'uuid';
+import MobilePortStream from './MobilePortStream';
+import ReactNativePostMessageStream from './ReactNativePostMessageStream';
 
 const INPAGE = 'metamask-inpage';
 const CONTENT_SCRIPT = 'metamask-contentscript';
@@ -32,7 +32,8 @@ const init = () => {
   Object.defineProperty(window, '_metamaskSetupProvider', {
     value: () => {
       setupProviderStreams();
-      delete window._metamaskSetupProvider;
+      delete (window as { _metamaskSetupProvider?: () => void })
+        ._metamaskSetupProvider;
     },
     configurable: true,
     enumerable: false,
@@ -86,7 +87,11 @@ function setupProviderStreams() {
  * @param {ObjectMultiplex} muxA - The first mux.
  * @param {ObjectMultiplex} muxB - The second mux.
  */
-function forwardTrafficBetweenMuxes(channelName, muxA, muxB) {
+function forwardTrafficBetweenMuxes(
+  channelName: string,
+  muxA: ObjectMultiplex,
+  muxB: ObjectMultiplex,
+) {
   const channelA = muxA.createStream(channelName);
   const channelB = muxB.createStream(channelName);
   pump(channelA, channelB, channelA, (err) =>
@@ -103,7 +108,7 @@ function forwardTrafficBetweenMuxes(channelName, muxA, muxB) {
  * @param {string} remoteLabel - Remote stream name
  * @param {Error} err - Stream connection error
  */
-function logStreamDisconnectWarning(remoteLabel, err) {
+function logStreamDisconnectWarning(remoteLabel: string, err?: Error) {
   let warningMsg = `MetamaskContentscript - lost connection to ${remoteLabel}`;
   if (err) {
     warningMsg += `\n${err.stack}`;
