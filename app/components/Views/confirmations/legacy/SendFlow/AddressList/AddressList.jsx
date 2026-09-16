@@ -1,5 +1,11 @@
 /* eslint-disable react/prop-types */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import Fuse from 'fuse.js';
@@ -38,6 +44,7 @@ const AddressList = ({
   const styles = styleSheet(colors);
   const [contactElements, setContactElements] = useState([]);
   const [fuse, setFuse] = useState(undefined);
+  const smartContractCache = useRef(new Map());
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
@@ -48,6 +55,20 @@ const AddressList = ({
     () => addressBook[chainId] || {},
     [addressBook, chainId],
   );
+  const getIsSmartContract = useCallback((address, contactChainId) => {
+    const key = `${contactChainId}:${String(address).toLowerCase()}`;
+    const cache = smartContractCache.current;
+    const cached = cache.get(key);
+    if (cached) return cached;
+    const promise = isSmartContractAddress(address, contactChainId).catch(
+      (error) => {
+        cache.delete(key);
+        throw error;
+      },
+    );
+    cache.set(key, promise);
+    return promise;
+  }, []);
   const parseAddressBook = useCallback(
     (networkAddressBookList) => {
       const contacts = networkAddressBookList.map((contact) => {
@@ -63,7 +84,7 @@ const AddressList = ({
 
       Promise.all(
         contacts.map((contact) =>
-          isSmartContractAddress(contact.address, contact.chainId)
+          getIsSmartContract(contact.address, contact.chainId)
             .then((isSmartContract) => {
               if (isSmartContract) {
                 return { ...contact, isSmartContract: true };
@@ -103,7 +124,12 @@ const AddressList = ({
         setContactElements(newContactElements);
       });
     },
-    [onlyRenderAddressBook, ambiguousAddressEntries, chainId],
+    [
+      onlyRenderAddressBook,
+      ambiguousAddressEntries,
+      chainId,
+      getIsSmartContract,
+    ],
   );
 
   useEffect(() => {
