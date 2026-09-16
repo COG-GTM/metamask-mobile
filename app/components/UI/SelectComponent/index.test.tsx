@@ -13,11 +13,12 @@ describe('SelectComponent', () => {
     const { toJSON } = renderWithProvider(
       <SelectComponent
         options={[
-          { key: 'key 1', val: 'val 1', label: 'option 1' },
-          { key: 'key 2', val: 'val 2', label: 'option 2' },
+          { key: 'key 1', value: 'val 1', label: 'option 1' },
+          { key: 'key 2', value: 'val 2', label: 'option 2' },
         ]}
         selectedValue={'val 2'}
         label={'Choose an option'}
+        onValueChange={jest.fn()}
       />,
     );
     expect(toJSON()).toMatchSnapshot();

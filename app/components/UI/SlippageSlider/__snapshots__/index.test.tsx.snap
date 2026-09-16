@@ -110,7 +110,7 @@ exports[`SlippageSlider should render correctly 1`] = `
         "left": 11,
         "overflow": "hidden",
         "position": "absolute",
-        "width": -15,
+        "width": 15,
       }
     }
   >
@@ -130,7 +130,7 @@ exports[`SlippageSlider should render correctly 1`] = `
       {
         "alignItems": "center",
         "justifyContent": "center",
-        "left": -35,
+        "left": -5,
         "minHeight": 36,
         "minWidth": 40,
         "position": "absolute",
@@ -205,7 +205,7 @@ exports[`SlippageSlider should render correctly 1`] = `
         }
       }
     >
-      undefined%
+      1%
     </Text>
   </View>
   <View
@@ -230,7 +230,7 @@ exports[`SlippageSlider should render correctly 1`] = `
         "borderWidth": 1,
         "bottom": 0,
         "height": 30,
-        "left": -30,
+        "left": 0,
         "position": "absolute",
         "shadowColor": "#0000001a",
         "shadowOffset": {
