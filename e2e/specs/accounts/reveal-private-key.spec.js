@@ -16,7 +16,7 @@ import SettingsView from '../../pages/Settings/SettingsView.js';
 import SecurityAndPrivacy from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView.js';
 import Assertions from '../../utils/Assertions.js';
 import RevealPrivateKey from '../../pages/Settings/SecurityAndPrivacy/RevealPrivateKeyView.js';
-import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAndPrivacy/RevealSeedView.selectors.js';
+import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAndPrivacy/RevealSeedView.selectors';
 import WalletView from '../../pages/wallet/WalletView.js';
 import AccountActionsBottomSheet from '../../pages/wallet/AccountActionsBottomSheet.js';
 import AccountListBottomSheet from '../../pages/wallet/AccountListBottomSheet.js';
