@@ -142,29 +142,18 @@ export class BackgroundBridge extends EventEmitter {
       this.sendStateUpdate,
     );
 
-    Engine.controllerMessenger.subscribe(
-      'KeyringController:lock',
-      this.onLock.bind(this),
-    );
+    Engine.controllerMessenger.subscribe('KeyringController:lock', this.onLock);
     Engine.controllerMessenger.subscribe(
       'KeyringController:unlock',
-      this.onUnlock.bind(this),
+      this.onUnlock,
     );
 
     try {
       const pc = Engine.context.PermissionController;
-      const controllerMessenger = Engine.controllerMessenger;
-      controllerMessenger.subscribe(
-        `${pc.name}:stateChange`,
-        (subjectWithPermission) => {
-          DevLogger.log(
-            `PermissionController:stateChange event`,
-            subjectWithPermission,
-          );
-          // Inform dapp about updated permissions
-          const selectedAddress = this.getState().selectedAddress;
-          this.notifySelectedAddressChanged(selectedAddress);
-        },
+      this.permissionStateChangeEvent = `${pc.name}:stateChange`;
+      Engine.controllerMessenger.subscribe(
+        this.permissionStateChangeEvent,
+        this.onPermissionStateChange,
         (state) => state.subjects[this.channelId],
       );
     } catch (err) {
@@ -181,8 +170,17 @@ export class BackgroundBridge extends EventEmitter {
     }
   }
 
-  onUnlock() {
-    // TODO UNSUBSCRIBE EVENT INSTEAD
+  onPermissionStateChange = (subjectWithPermission) => {
+    DevLogger.log(
+      `PermissionController:stateChange event`,
+      subjectWithPermission,
+    );
+    // Inform dapp about updated permissions
+    const selectedAddress = this.getState().selectedAddress;
+    this.notifySelectedAddressChanged(selectedAddress);
+  };
+
+  onUnlock = () => {
     if (this.disconnected) return;
 
     if (this.isRemoteConn) {
@@ -205,10 +203,9 @@ export class BackgroundBridge extends EventEmitter {
       method: NOTIFICATION_NAMES.unlockStateChanged,
       params: true,
     });
-  }
+  };
 
-  onLock() {
-    // TODO UNSUBSCRIBE EVENT INSTEAD
+  onLock = () => {
     if (this.disconnected) return;
 
     if (this.isRemoteConn) {
@@ -227,7 +224,7 @@ export class BackgroundBridge extends EventEmitter {
       method: NOTIFICATION_NAMES.unlockStateChanged,
       params: false,
     });
-  }
+  };
 
   async getProviderNetworkState(origin = METAMASK_DOMAIN) {
     const networkClientId = Engine.controllerMessenger.call(
@@ -375,6 +372,28 @@ export class BackgroundBridge extends EventEmitter {
       'PreferencesController:stateChange',
       this.sendStateUpdate,
     );
+    Engine.controllerMessenger.unsubscribe(
+      'SelectedNetworkController:stateChange',
+      this.sendStateUpdate,
+    );
+    Engine.controllerMessenger.unsubscribe(
+      'KeyringController:lock',
+      this.onLock,
+    );
+    Engine.controllerMessenger.unsubscribe(
+      'KeyringController:unlock',
+      this.onUnlock,
+    );
+    if (this.permissionStateChangeEvent) {
+      try {
+        Engine.controllerMessenger.unsubscribe(
+          this.permissionStateChangeEvent,
+          this.onPermissionStateChange,
+        );
+      } catch (err) {
+        DevLogger.log(`Error unsubscribing in BackgroundBridge: ${err}`);
+      }
+    }
 
     this.port.emit('disconnect', { name: this.port.name, data: null });
   };
