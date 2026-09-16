@@ -11,6 +11,12 @@ import {
   selectStablecoinLendingEnabledFlag,
 } from '../selectors/featureFlags';
 
+/**
+ * Builds the lookup key used by `useEarnTokenKeys` to identify a token.
+ *
+ * @param token - Token with `chainId` and `symbol`.
+ * @returns `${chainId}:${symbol}`.
+ */
 export const getEarnTokenKey = (
   token: Pick<TokenI, 'chainId' | 'symbol'>,
 ): string => `${token.chainId}:${token.symbol}`;
