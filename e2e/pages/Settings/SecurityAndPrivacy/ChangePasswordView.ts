@@ -36,12 +36,18 @@ class ChangePasswordView {
     );
   }
 
-  async typeInConfirmPasswordInputBox(PASSWORD) {
-    await Gestures.typeTextAndHideKeyboard(this.passwordInput, PASSWORD);
+  async typeInConfirmPasswordInputBox(PASSWORD: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.passwordInput as Promise<Detox.IndexableNativeElement>,
+      PASSWORD,
+    );
   }
 
-  async reEnterPassword(PASSWORD) {
-    await Gestures.typeTextAndHideKeyboard(this.confirmPasswordInput, PASSWORD);
+  async reEnterPassword(PASSWORD: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.confirmPasswordInput as Promise<Detox.IndexableNativeElement>,
+      PASSWORD,
+    );
   }
 
   async tapIUnderstandCheckBox() {

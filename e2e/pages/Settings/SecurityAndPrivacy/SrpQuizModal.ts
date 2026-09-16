@@ -30,7 +30,7 @@ class SrpQuizModal {
   }
 
   // Mapping question number to selectors
-  getQuestionSelectors(questionNumber) {
+  getQuestionSelectors(questionNumber: number) {
     switch (questionNumber) {
       case 1:
         return {
@@ -48,57 +48,57 @@ class SrpQuizModal {
   }
 
   // Getters for question elements
-  getQuestionContainer(questionNumber) {
+  getQuestionContainer(questionNumber: number) {
     const { ids } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByID(ids.CONTAINER);
   }
 
-  getQuestionDismiss(questionNumber) {
+  getQuestionDismiss(questionNumber: number) {
     const { ids } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByID(ids.DISMISS);
   }
 
-  getQuizQuestion(questionNumber) {
+  getQuizQuestion(questionNumber: number) {
     const { text } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByText(text.QUESTION);
   }
 
-  getQuestionWrongAnswer(questionNumber) {
+  getQuestionWrongAnswer(questionNumber: number) {
     const { ids } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByID(ids.WRONG_ANSWER);
   }
 
-  getQuestionWrongAnswerResponseTitle(questionNumber) {
+  getQuestionWrongAnswerResponseTitle(questionNumber: number) {
     const { text } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByText(text.WRONG_ANSWER_RESPONSE_TITLE);
   }
 
-  getQuestionWrongAnswerResponseDescription(questionNumber) {
+  getQuestionWrongAnswerResponseDescription(questionNumber: number) {
     const { text } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByText(text.WRONG_ANSWER_RESPONSE_DESCRIPTION);
   }
 
-  getQuestionWrongAnswerTryAgainButton(questionNumber) {
+  getQuestionWrongAnswerTryAgainButton(questionNumber: number) {
     const { ids } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByID(ids.WRONG_ANSWER_TRY_AGAIN_BUTTON);
   }
 
-  getQuestionRightAnswerButton(questionNumber) {
+  getQuestionRightAnswerButton(questionNumber: number) {
     const { ids } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByID(ids.RIGHT_ANSWER);
   }
 
-  getQuestionRightAnswerResponseTitle(questionNumber) {
+  getQuestionRightAnswerResponseTitle(questionNumber: number) {
     const { text } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByText(text.RIGHT_ANSWER_RESPONSE_TITLE);
   }
 
-  getQuestionRightAnswerResponseDescription(questionNumber) {
+  getQuestionRightAnswerResponseDescription(questionNumber: number) {
     const { text } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByText(text.RIGHT_ANSWER_RESPONSE_DESCRIPTION);
   }
 
-  getQuestionRightContinueButton(questionNumber) {
+  getQuestionRightContinueButton(questionNumber: number) {
     const { ids } = this.getQuestionSelectors(questionNumber);
     return Matchers.getElementByID(ids.RIGHT_CONTINUE);
   }
@@ -113,27 +113,27 @@ class SrpQuizModal {
   }
 
   // Methods for question actions
-  async tapQuestionDismiss(questionNumber) {
+  async tapQuestionDismiss(questionNumber: number) {
     await Gestures.waitAndTap(this.getQuestionDismiss(questionNumber));
   }
 
-  async tapQuestionWrongAnswerButton(questionNumber) {
+  async tapQuestionWrongAnswerButton(questionNumber: number) {
     await Gestures.waitAndTap(this.getQuestionWrongAnswer(questionNumber));
   }
 
-  async tapQuestionWrongAnswerTryAgainButton(questionNumber) {
+  async tapQuestionWrongAnswerTryAgainButton(questionNumber: number) {
     await Gestures.waitAndTap(
       this.getQuestionWrongAnswerTryAgainButton(questionNumber),
     );
   }
 
-  async tapQuestionRightAnswerButton(questionNumber) {
+  async tapQuestionRightAnswerButton(questionNumber: number) {
     await Gestures.waitAndTap(
       this.getQuestionRightAnswerButton(questionNumber),
     );
   }
 
-  async tapQuestionContinueButton(questionNumber) {
+  async tapQuestionContinueButton(questionNumber: number) {
     await Gestures.waitAndTap(
       this.getQuestionRightContinueButton(questionNumber),
     );

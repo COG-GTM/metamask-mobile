@@ -82,7 +82,8 @@ class SecurityAndPrivacy {
 
   get showPrivateKeyButton() {
     return Matchers.getElementByText(
-      SecurityPrivacyViewSelectorsText.SHOW_PRIVATE_KEY,
+      (SecurityPrivacyViewSelectorsText as Record<string, string>)
+        .SHOW_PRIVATE_KEY,
     );
   }
 
@@ -124,48 +125,48 @@ class SecurityAndPrivacy {
 
   async scrollToRevealPrivateKey() {
     await Gestures.scrollToElement(
-      this.revealPrivateKeyButton,
+      this.revealPrivateKeyButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
   async scrollToChangePasswordView() {
     await Gestures.scrollToElement(
-      this.changePasswordButton,
+      this.changePasswordButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToDeleteWalletButton() {
     await Gestures.scrollToElement(
-      this.deleteWalletButton,
+      this.deleteWalletButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToTurnOnRememberMe() {
     await Gestures.scrollToElement(
-      this.rememberMeToggle,
+      this.rememberMeToggle as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToClearPrivacyData() {
     await Gestures.scrollToElement(
-      this.clearPrivacyDataButton,
+      this.clearPrivacyDataButton as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToMetaMetrics() {
     await Gestures.scrollToElement(
-      this.metaMetricsToggle,
+      this.metaMetricsToggle as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }
 
   async scrollToAutoLockSection() {
     await Gestures.scrollToElement(
-      this.autoLockSection,
+      this.autoLockSection as Promise<Detox.IndexableNativeElement>,
       this.scrollViewIdentifier,
     );
   }

@@ -5,7 +5,7 @@ import FooterActions from '../../../pages/Browser/Confirmations/FooterActions.js
 import FixtureBuilder from '../../../fixtures/fixture-builder.js';
 import PageSections from '../../../pages/Browser/Confirmations/PageSections.js';
 import RequestTypes from '../../../pages/Browser/Confirmations/RequestTypes.js';
-import TabBarComponent from '../../../pages/wallet/TabBarComponent.js';
+import TabBarComponent from '../../../pages/wallet/TabBarComponent';
 import TestDApp from '../../../pages/Browser/TestDApp.js';
 import TestHelpers from '../../../helpers.js';
 import { loginToApp } from '../../../viewHelper.js';

@@ -11,7 +11,9 @@ import TestHelpers from '../../helpers';
 
 class AccountListBottomSheet {
   get accountList() {
-    return Matchers.getElementByID(AccountListBottomSheetSelectorsIDs.ACCOUNT_LIST_ID);
+    return Matchers.getElementByID(
+      AccountListBottomSheetSelectorsIDs.ACCOUNT_LIST_ID,
+    );
   }
 
   get accountTypeLabel() {
@@ -48,56 +50,68 @@ class AccountListBottomSheet {
     );
   }
 
-  async getAccountElementByAccountName(accountName) {
+  async getAccountElementByAccountName(accountName: string) {
     return Matchers.getElementByIDAndLabel(
       CellComponentSelectorsIDs.BASE_TITLE,
       accountName,
     );
   }
 
-  getSelectElement(index) {
+  getSelectElement(index: number) {
     return Matchers.getElementByID(CellComponentSelectorsIDs.SELECT, index);
   }
 
-  getMultiselectElement(index) {
-    return Matchers.getElementByID(CellComponentSelectorsIDs.MULTISELECT, index);
+  getMultiselectElement(index: number) {
+    return Matchers.getElementByID(
+      CellComponentSelectorsIDs.MULTISELECT,
+      index,
+    );
   }
 
   /**
    * Retrieves the title/name of an element using the `cellbase-avatar-title` ID.
-   * Note: The `select-with-menu` ID element seems to never receive the tap event, 
+   * Note: The `select-with-menu` ID element seems to never receive the tap event,
    * so this method fetches the title/name instead.
    *
    * @param {number} index - The index of the element to retrieve.
    * @returns {Detox.IndexableNativeElement} The matcher for the element's title/name.
    */
-  getSelectWithMenuElementName(index) {
-    return Matchers.getElementByID(
-      CellComponentSelectorsIDs.BASE_TITLE,
-      index,
-    );
+  getSelectWithMenuElementName(index: number) {
+    return Matchers.getElementByID(CellComponentSelectorsIDs.BASE_TITLE, index);
   }
 
-  async tapEditAccountActionsAtIndex(index) {
+  async tapEditAccountActionsAtIndex(index: number) {
     const accountActionsButton = Matchers.getElementByID(
       `${WalletViewSelectorsIDs.ACCOUNT_ACTIONS}-${index}`,
     );
     await Gestures.waitAndTap(accountActionsButton);
   }
 
-  async accountNameInList(accountName) {
+  async accountNameInList(accountName: string) {
     return Matchers.getElementByText(accountName, 1);
   }
-  async tapAccountIndex(index) {
-    await Gestures.tap(this.getMultiselectElement(index));
+  async tapAccountIndex(index: number) {
+    await Gestures.tap(
+      this.getMultiselectElement(
+        index,
+      ) as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
-  async tapToSelectActiveAccountAtIndex(index) {
-    await Gestures.tap(this.getSelectWithMenuElementName(index));
+  async tapToSelectActiveAccountAtIndex(index: number) {
+    await Gestures.tap(
+      this.getSelectWithMenuElementName(
+        index,
+      ) as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
-  async longPressAccountAtIndex(index) {
-    await Gestures.tapAndLongPress(this.getSelectWithMenuElementName(index));
+  async longPressAccountAtIndex(index: number) {
+    await Gestures.tapAndLongPress(
+      this.getSelectWithMenuElementName(
+        index,
+      ) as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
   async tapAddAccountButton() {
@@ -105,11 +119,18 @@ class AccountListBottomSheet {
   }
 
   async longPressImportedAccount() {
-    await Gestures.tapAndLongPress(this.getSelectElement(1));
+    await Gestures.tapAndLongPress(
+      this.getSelectElement(1) as Promise<Detox.IndexableNativeElement>,
+    );
   }
 
   async swipeToDismissAccountsModal() {
-    await Gestures.swipe(this.title, 'down', 'fast', 0.6);
+    await Gestures.swipe(
+      this.title as Promise<Detox.IndexableNativeElement>,
+      'down',
+      'fast',
+      0.6,
+    );
     await TestHelpers.delay(2000);
   }
 

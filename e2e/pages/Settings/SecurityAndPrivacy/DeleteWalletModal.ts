@@ -33,7 +33,10 @@ class DeleteWalletModal {
   }
 
   async typeDeleteInInputBox() {
-    await Gestures.typeTextAndHideKeyboard(this.deleteInput, 'delete');
+    await Gestures.typeTextAndHideKeyboard(
+      this.deleteInput as Promise<Detox.IndexableNativeElement>,
+      'delete',
+    );
   }
 }
 

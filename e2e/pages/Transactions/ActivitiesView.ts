@@ -6,7 +6,6 @@ import Matchers from '../../utils/Matchers';
 import Gestures from '../../utils/Gestures';
 
 class ActivitiesView {
-
   get title() {
     return Matchers.getElementByText(ActivitiesViewSelectorsText.TITLE);
   }
@@ -24,7 +23,10 @@ class ActivitiesView {
   }
 
   get stakeMoreDepositedLabel() {
-    return Matchers.getElementByText(ActivitiesViewSelectorsText.STAKE_DEPOSIT, 0);
+    return Matchers.getElementByText(
+      ActivitiesViewSelectorsText.STAKE_DEPOSIT,
+      0,
+    );
   }
 
   get unstakeLabel() {
@@ -35,46 +37,50 @@ class ActivitiesView {
     return Matchers.getElementByText(ActivitiesViewSelectorsText.STAKING_CLAIM);
   }
 
-
-  transactionStatus(row) {
+  transactionStatus(row: number) {
     return Matchers.getElementByID(`transaction-status-${row}`);
   }
 
-  generateSwapActivityLabel(sourceToken, destinationToken) {
+  generateSwapActivityLabel(sourceToken: string, destinationToken: string) {
     let title = ActivitiesViewSelectorsText.SWAP;
     title = title.replace('{{sourceToken}}', sourceToken);
     title = title.replace('{{destinationToken}}', destinationToken);
     return title;
   }
 
-  generateApprovedTokenActivityLabel(sourceToken) {
+  generateApprovedTokenActivityLabel(sourceToken: string) {
     let title = ActivitiesViewSelectorsText.APPROVE;
     title = title.replace('{{sourceToken}}', sourceToken);
     title = title.replace('{{upTo}}', '.*');
     return new RegExp(`^${title}`);
   }
 
-  swapActivityTitle(sourceToken, destinationToken) {
+  swapActivityTitle(sourceToken: string, destinationToken: string) {
     return Matchers.getElementByText(
       this.generateSwapActivityLabel(sourceToken, destinationToken),
     );
   }
 
-  tokenApprovalActivity(sourceToken) {
+  tokenApprovalActivity(sourceToken: string) {
     return Matchers.getElementByText(
-      this.generateApprovedTokenActivityLabel(sourceToken),
+      this.generateApprovedTokenActivityLabel(sourceToken) as unknown as string,
     );
   }
 
-  async tapOnSwapActivity(sourceToken, destinationToken) {
-    const element = this.swapActivityTitle(sourceToken, destinationToken);
-    await Gestures.waitAndTap(element);
+  async tapOnSwapActivity(sourceToken: string, destinationToken: string) {
+    const swapActivity = this.swapActivityTitle(sourceToken, destinationToken);
+    await Gestures.waitAndTap(swapActivity);
   }
   async tapConfirmedTransaction() {
     await Gestures.waitAndTap(this.confirmedLabel);
   }
   async swipeDown() {
-    await Gestures.swipe(this.container, 'down', 'slow', 0.5);
+    await Gestures.swipe(
+      this.container as Promise<Detox.IndexableNativeElement>,
+      'down',
+      'slow',
+      0.5,
+    );
   }
 }
 

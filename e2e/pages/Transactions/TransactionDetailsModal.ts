@@ -19,12 +19,12 @@ class TransactionDetailsModal {
 
   get statusConfirmed() {
     return Matchers.getElementIDWithAncestor(
-      CommonSelectorsIDs.STATUS_CONFIRMED,
+      (CommonSelectorsIDs as Record<string, string>).STATUS_CONFIRMED,
       TransactionDetailsModalSelectorsIDs.BODY,
     );
   }
 
-  generateExpectedTitle(sourceToken, destinationToken) {
+  generateExpectedTitle(sourceToken: string, destinationToken: string) {
     let title = TransactionDetailsModalSelectorsText.TITLE;
     title = title.replace('{{sourceToken}}', sourceToken);
     title = title.replace('{{destinationToken}}', destinationToken);

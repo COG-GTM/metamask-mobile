@@ -14,14 +14,16 @@ class ImportSrpView {
   }
 
   get clearButton() {
-    return Matchers.getElementByID(ImportSRPIDs.CLEAR_BUTTON);
+    return Matchers.getElementByID(
+      (ImportSRPIDs as Record<string, string>).CLEAR_BUTTON,
+    );
   }
 
   get dropdown() {
     return Matchers.getElementByID(ImportSRPIDs.SRP_SELECTION_DROPDOWN);
   }
 
-  inputOfIndex(srpIndex) {
+  inputOfIndex(srpIndex: number) {
     return Matchers.getElementByID(
       ImportSRPIDs.SRP_INPUT_WORD_NUMBER + `-${srpIndex}`,
     );
@@ -31,11 +33,14 @@ class ImportSrpView {
     await Gestures.waitAndTap(this.importButton);
   }
 
-  async enterSrpWord(srpIndex, word) {
-    await Gestures.typeTextAndHideKeyboard(this.inputOfIndex(srpIndex), word);
+  async enterSrpWord(srpIndex: number, word: string) {
+    await Gestures.typeTextAndHideKeyboard(
+      this.inputOfIndex(srpIndex) as Promise<Detox.IndexableNativeElement>,
+      word,
+    );
   }
 
-  async selectNWordSrp(numberOfWords) {
+  async selectNWordSrp(numberOfWords: number) {
     await Gestures.waitAndTap(this.dropdown);
     await Gestures.waitAndTap(
       Matchers.getElementByLabel(`I have a ${numberOfWords} word phrase`),
