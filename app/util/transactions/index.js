@@ -3,6 +3,7 @@ import BN from 'bnjs4';
 import { rawEncode, rawDecode } from 'ethereumjs-abi';
 import BigNumber from 'bignumber.js';
 import humanizeDuration from 'humanize-duration';
+import { createSelector } from 'reselect';
 import {
   query,
   isSmartContractCode,
@@ -629,11 +630,11 @@ export function addAccountTimeFlagFilter(
 }
 
 //Leaving here a comment to re-visit this function since it's probably be possible to deprecate
-export function getNormalizedTxState(state) {
-  return state.transaction
-    ? { ...state.transaction, ...state.transaction.transaction }
-    : undefined;
-}
+export const getNormalizedTxState = createSelector(
+  (state) => state.transaction,
+  (transaction) =>
+    transaction ? { ...transaction, ...transaction.transaction } : undefined,
+);
 
 export const getActiveTabUrl = ({ browser = {} }) =>
   browser.tabs &&

@@ -290,6 +290,10 @@ class TransactionReview extends PureComponent {
     multiLayerL1FeeTotal: '0x0',
   };
 
+  styleColors = undefined;
+
+  cachedStyles = undefined;
+
   fetchEstimatedL1Fee = async () => {
     const { transaction, chainId, networkClientId } = this.props;
     if (!transaction?.transaction) {
@@ -453,7 +457,11 @@ class TransactionReview extends PureComponent {
 
   getStyles = () => {
     const colors = this.context.colors || mockTheme.colors;
-    return createStyles(colors);
+    if (this.styleColors !== colors || !this.cachedStyles) {
+      this.styleColors = colors;
+      this.cachedStyles = createStyles(colors);
+    }
+    return this.cachedStyles;
   };
 
   toggleDataView = () => {
