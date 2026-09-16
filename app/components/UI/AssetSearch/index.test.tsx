@@ -174,6 +174,45 @@ describe('AssetSearch', () => {
     expect(results[0].address).toBe(mockSnxAddress);
   });
 
+  it('runs pending search after token list update', () => {
+    jest.useFakeTimers();
+    const onSearch = jest.fn();
+    const { getByTestId, rerender } = renderWithProvider(
+      <AssetSearch
+        onSearch={onSearch}
+        onFocus={jest.fn}
+        onBlur={jest.fn}
+        allNetworksEnabled
+      />,
+      { state: initialState },
+    );
+    onSearch.mockClear();
+
+    fireEvent.changeText(
+      getByTestId(ImportTokenViewSelectorsIDs.SEARCH_BAR),
+      'SNX',
+    );
+
+    const updatedOnSearch = jest.fn();
+    rerender(
+      <AssetSearch
+        onSearch={updatedOnSearch}
+        onFocus={jest.fn}
+        onBlur={jest.fn}
+        allNetworksEnabled
+      />,
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(250);
+    });
+
+    expect(updatedOnSearch).toHaveBeenCalledTimes(1);
+    expect(updatedOnSearch).toHaveBeenCalledWith(
+      expect.objectContaining({ searchQuery: 'SNX' }),
+    );
+  });
+
   it('clear button cancels pending search and resets immediately', () => {
     jest.useFakeTimers();
     const onSearch = jest.fn();
@@ -192,9 +231,7 @@ describe('AssetSearch', () => {
       getByTestId(ImportTokenViewSelectorsIDs.SEARCH_BAR),
       'SNX',
     );
-    fireEvent.press(
-      getByTestId(ImportTokenViewSelectorsIDs.CLEAR_SEARCH_BAR),
-    );
+    fireEvent.press(getByTestId(ImportTokenViewSelectorsIDs.CLEAR_SEARCH_BAR));
 
     expect(onSearch).toHaveBeenCalledTimes(1);
     expect(onSearch).toHaveBeenCalledWith(

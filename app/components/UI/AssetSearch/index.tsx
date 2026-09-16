@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import { debounce } from 'lodash';
 import {
   TextInput,
@@ -177,15 +183,19 @@ const AssetSearch = ({
     [onSearch, tokenList],
   );
 
+  const runSearchRef = useRef(runSearch);
+  runSearchRef.current = runSearch;
+
   const debouncedSearch = useMemo(
-    () => debounce(runSearch, SEARCH_DEBOUNCE_MS),
-    [runSearch],
+    () =>
+      debounce(
+        (searchText: string) => runSearchRef.current(searchText),
+        SEARCH_DEBOUNCE_MS,
+      ),
+    [],
   );
 
-  useEffect(
-    () => () => debouncedSearch.cancel(),
-    [debouncedSearch],
-  );
+  useEffect(() => () => debouncedSearch.cancel(), [debouncedSearch]);
 
   const handleSearch = useCallback(
     (searchText: string) => {
