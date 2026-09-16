@@ -2,6 +2,14 @@ import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { NetworkStatus } from '@metamask/network-controller';
 
+interface Migration24State {
+  engine: {
+    backgroundState: {
+      NetworkController: unknown;
+    };
+  };
+}
+
 /**
  * Migrate NetworkController state, splitting old `network` property into
  * `networkId` and `networkStatus`. This is required to update to v8 of the
@@ -9,14 +17,9 @@ import { NetworkStatus } from '@metamask/network-controller';
  *
  * @see {@link https://github.com/MetaMask/core/blob/main/packages/network-controller/CHANGELOG.md#800}
  *
- * Note: the type is wrong here because it conflicts with `redux-persist`
- * types, due to a bug in that package.
- * See: https://github.com/rt2zz/redux-persist/issues/1065
- * TODO: Use `unknown` as the state type, and silence or work around the
- * redux-persist bug somehow.
- *
  **/
-export default function migrate(state) {
+export default function migrate(rawState: unknown) {
+  const state = rawState as Migration24State;
   const networkControllerState = state.engine.backgroundState.NetworkController;
 
   if (!isObject(networkControllerState)) {
