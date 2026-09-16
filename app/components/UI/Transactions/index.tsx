@@ -1,18 +1,42 @@
-import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
+import {
+  CANCEL_RATE,
+  SPEED_UP_RATE,
+  TransactionMeta,
+} from '@metamask/transaction-controller';
+import type {
+  AccountInformation,
+  MarketDataDetails,
+  NftContract,
+  Token,
+} from '@metamask/assets-controllers';
+import type { MultichainNetworkConfiguration } from '@metamask/multichain-network-controller';
+import type { Hex } from '@metamask/utils';
+import type { ThemeTypography } from '@metamask/design-tokens';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import React, {
+  ComponentType,
+  PureComponent,
+  ReactElement,
+  RefObject,
+} from 'react';
 import {
   ActivityIndicator,
   FlatList,
   InteractionManager,
+  ListRenderItemInfo,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   RefreshControl,
   StyleSheet,
   Text,
+  TextStyle,
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import { strings } from '../../../../locales/i18n';
 import { showAlert } from '../../../actions/alert';
 import Button, {
@@ -22,8 +46,10 @@ import Button, {
 import { NO_RPC_BLOCK_EXPLORER, RPC } from '../../../constants/network';
 import Engine from '../../../core/Engine';
 import NotificationManager from '../../../core/NotificationManager';
+import { RootState } from '../../../reducers';
 import { collectibleContractsSelector } from '../../../reducers/collectibles';
 import {
+  ProviderConfig,
   selectChainId,
   selectNetworkClientId,
   selectNetworkConfigurations,
@@ -35,7 +61,11 @@ import { selectTokensByAddress } from '../../../selectors/tokensController';
 import { selectGasFeeControllerEstimateType } from '../../../selectors/gasFeeController';
 import { baseStyles, fontStyles } from '../../../styles/common';
 import { isHardwareAccount } from '../../../util/address';
-import { createLedgerTransactionModalNavDetails } from '../../UI/LedgerModals/LedgerTransactionModal';
+import {
+  createLedgerTransactionModalNavDetails,
+  LedgerReplacementTxTypes,
+  ReplacementTxParams,
+} from '../../UI/LedgerModals/LedgerTransactionModal';
 import Device from '../../../util/device';
 import Logger from '../../../util/Logger';
 import {
@@ -47,10 +77,11 @@ import {
 } from '../../../util/networks';
 import { addHexPrefix, hexToBN, renderFromWei } from '../../../util/number';
 import { mockTheme, ThemeContext } from '../../../util/theme';
+import { Colors, Theme } from '../../../util/theme/models';
 import { validateTransactionActionBalance } from '../../../util/transactions';
 import withQRHardwareAwareness from '../QRHardware/withQRHardwareAwareness';
 import TransactionActionModal from '../TransactionActionModal';
-import TransactionElement from '../TransactionElement';
+import TransactionElementComponent from '../TransactionElement';
 import UpdateEIP1559Tx from '../../Views/confirmations/legacy/components/UpdateEIP1559Tx';
 import RetryModal from './RetryModal';
 import PriceChartContext, {
@@ -79,13 +110,71 @@ import { selectGasFeeEstimates } from '../../../selectors/confirmTransaction';
 import { decGWEIToHexWEI } from '../../../util/conversions';
 import { ActivitiesViewSelectorsIDs } from '../../../../e2e/selectors/Transactions/ActivitiesView.selectors';
 import { isNonEvmChainId } from '../../../core/Multichain/utils';
-import { isEqual } from 'lodash';
 import {
   getFontFamily,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (colors, typography) =>
+interface ExistingGas {
+  isEIP1559Transaction?: boolean;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+  gasPrice?: number;
+}
+
+interface TransactionObject {
+  error?: string;
+  suggestedMaxFeePerGasHex?: string;
+  suggestedMaxPriorityFeePerGasHex?: string;
+}
+
+interface LedgerSignTransaction {
+  id: string;
+  replacementParams?: ReplacementTxParams;
+  speedUpParams?: { type?: string };
+}
+
+interface TransactionElementProps {
+  tx: TransactionMeta;
+  i: number;
+  assetSymbol?: string;
+  onSpeedUpAction: (
+    speedUpAction: boolean,
+    existingGas: ExistingGas,
+    tx: TransactionMeta,
+  ) => void;
+  isQRHardwareAccount?: boolean;
+  isLedgerAccount?: boolean;
+  signQRTransaction: (tx: TransactionMeta) => Promise<void>;
+  signLedgerTransaction: (transaction: LedgerSignTransaction) => Promise<void>;
+  cancelUnsignedQRTransaction: (tx: TransactionMeta) => Promise<void>;
+  onCancelAction: (
+    cancelAction: boolean,
+    existingGas: ExistingGas,
+    tx: TransactionMeta,
+  ) => void;
+  onPressItem: (id: string, index: number) => void;
+  selectedAddress: string;
+  tokens?: { [address: string]: Token };
+  collectibleContracts?: NftContract[];
+  contractExchangeRates?: Record<Hex, MarketDataDetails>;
+  exchangeRate?: number;
+  conversionRate?: number;
+  currentCurrency?: string;
+  navigation: StackNavigationProp<ParamListBase>;
+  txChainId?: string;
+}
+
+const TransactionElement =
+  TransactionElementComponent as unknown as ComponentType<TransactionElementProps>;
+
+const validateActionBalance = validateTransactionActionBalance as unknown as (
+  transaction: TransactionMeta,
+  rate: number,
+  accounts: Record<string, AccountInformation>,
+) => boolean;
+
+const createStyles = (colors: Colors, typography: ThemeTypography) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -131,110 +220,129 @@ const createStyles = (colors, typography) =>
     },
     disclaimerText: {
       color: colors.text.default,
-      ...typography.sBodySM,
+      ...(typography.sBodySM as TextStyle),
       fontFamily: getFontFamily(TextVariant.BodySM),
     },
   });
 
 const ROW_HEIGHT = (Device.isIos() ? 95 : 100) + StyleSheet.hairlineWidth;
 
+interface TransactionsProps {
+  assetSymbol?: string;
+  /**
+   * Map of accounts to information objects including balances
+   */
+  accounts: Record<string, AccountInformation>;
+  /**
+   * Callback to close the view
+   */
+  close?: () => void;
+  /**
+   * Object containing token exchange rates in the format address => exchangeRate
+   */
+  contractExchangeRates?: Record<Hex, MarketDataDetails>;
+  /**
+   * Network configurations
+   */
+  networkConfigurations: Record<string, MultichainNetworkConfiguration>;
+  /**
+  /* navigation object required to push new views
+  */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+   * Object representing the configuration of the current selected network
+   */
+  providerConfig: ProviderConfig;
+  /**
+   * An array that represents the user collectible contracts
+   */
+  collectibleContracts?: NftContract[];
+  /**
+   * An array that represents the user tokens
+   */
+  tokens?: { [address: string]: Token };
+  /**
+   * An array of transactions objects
+   */
+  transactions: TransactionMeta[];
+  /**
+   * An array of transactions objects that have been submitted
+   */
+  submittedTransactions?: TransactionMeta[];
+  /**
+   * An array of transactions objects that have been confirmed
+   */
+  confirmedTransactions: TransactionMeta[];
+  /**
+   * A string that represents the selected address
+   */
+  selectedAddress: string;
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate?: number;
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency?: string;
+  /**
+   * Loading flag from an external call
+   */
+  loading?: boolean;
+  /**
+   * Pass the flatlist ref to the parent
+   */
+  onRefSet?: (ref: RefObject<FlatList<TransactionMeta>>) => void;
+  /**
+   * Optional header component
+   */
+  header?: ReactElement;
+  /**
+   * Optional header height
+   */
+  headerHeight: number;
+  exchangeRate?: number;
+  isSigningQRObject?: boolean;
+  chainId: string;
+  /**
+   * On scroll past navbar callback
+   */
+  onScrollThroughContent?: (offsetY: number) => void;
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  gasFeeEstimates: any;
+  /**
+   * Chain ID of the token
+   */
+  tokenChainId?: string;
+}
+
+interface TransactionsState {
+  selectedTx: Map<string, boolean>;
+  ready: boolean;
+  refreshing: boolean;
+  cancelIsOpen: boolean;
+  cancel1559IsOpen: boolean;
+  cancelConfirmDisabled: boolean;
+  speedUpIsOpen: boolean;
+  speedUp1559IsOpen: boolean;
+  retryIsOpen: boolean;
+  speedUpConfirmDisabled: boolean;
+  rpcBlockExplorer?: string;
+  errorMsg?: string;
+  isQRHardwareAccount?: boolean;
+  isLedgerAccount?: boolean;
+}
+
 /**
  * View that renders a list of transactions for a specific asset
  */
-class Transactions extends PureComponent {
-  static propTypes = {
-    assetSymbol: PropTypes.string,
-    /**
-     * Map of accounts to information objects including balances
-     */
-    accounts: PropTypes.object,
-    /**
-     * Callback to close the view
-     */
-    close: PropTypes.func,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object,
-    /**
-     * An array that represents the user collectible contracts
-     */
-    collectibleContracts: PropTypes.array,
-    /**
-     * An array that represents the user tokens
-     */
-    tokens: PropTypes.object,
-    /**
-     * An array of transactions objects
-     */
-    transactions: PropTypes.array,
-    /**
-     * An array of transactions objects that have been submitted
-     */
-    submittedTransactions: PropTypes.array,
-    /**
-     * An array of transactions objects that have been confirmed
-     */
-    confirmedTransactions: PropTypes.array,
-    /**
-     * A string that represents the selected address
-     */
-    selectedAddress: PropTypes.string,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Loading flag from an external call
-     */
-    loading: PropTypes.bool,
-    /**
-     * Pass the flatlist ref to the parent
-     */
-    onRefSet: PropTypes.func,
-    /**
-     * Optional header component
-     */
-    header: PropTypes.object,
-    /**
-     * Optional header height
-     */
-    headerHeight: PropTypes.number,
-    exchangeRate: PropTypes.number,
-    isSigningQRObject: PropTypes.bool,
-    chainId: PropTypes.string,
-    /**
-     * On scroll past navbar callback
-     */
-    onScrollThroughContent: PropTypes.func,
-    gasFeeEstimates: PropTypes.object,
-    /**
-     * Chain ID of the token
-     */
-    tokenChainId: PropTypes.string,
-  };
-
-  static defaultProps = {
+class Transactions extends PureComponent<TransactionsProps, TransactionsState> {
+  static defaultProps: Partial<TransactionsProps> = {
     headerHeight: 0,
   };
 
-  state = {
+  state: TransactionsState = {
     selectedTx: new Map(),
     ready: false,
     refreshing: false,
@@ -251,13 +359,15 @@ class Transactions extends PureComponent {
     isLedgerAccount: false,
   };
 
-  existingGas = null;
-  existingTx = null;
-  cancelTxId = null;
-  speedUpTxId = null;
-  selectedTx = null;
+  existingGas: ExistingGas | null = null;
+  existingTx: TransactionMeta | null = null;
+  cancelTxId: string | null = null;
+  speedUpTxId: string | null = null;
+  selectedTx: { id: string; index: number } | null = null;
+  mounted = false;
+  scrolling = false;
 
-  flatList = React.createRef();
+  flatList = React.createRef<FlatList<TransactionMeta>>();
 
   componentDidMount = () => {
     this.mounted = true;
@@ -281,7 +391,7 @@ class Transactions extends PureComponent {
       networkConfigurations,
       chainId,
     } = this.props;
-    let blockExplorer;
+    let blockExplorer: string | undefined;
     if (type === RPC) {
       blockExplorer =
         findBlockExplorerForRpc(rpcUrl, networkConfigurations) ||
@@ -329,7 +439,7 @@ class Transactions extends PureComponent {
     }
   }
 
-  scrollToIndex = (index) => {
+  scrollToIndex = (index: number) => {
     if (!this.scrolling && (this.props.headerHeight || index)) {
       this.scrolling = true;
       // eslint-disable-next-line no-unused-expressions
@@ -340,13 +450,13 @@ class Transactions extends PureComponent {
     }
   };
 
-  toggleDetailsView = (id, index) => {
-    const oldId = this.selectedTx && this.selectedTx.id;
-    const oldIndex = this.selectedTx && this.selectedTx.index;
+  toggleDetailsView = (id: string, index: number) => {
+    const oldId = this.selectedTx?.id;
+    const oldIndex = this.selectedTx?.index;
 
     if (this.selectedTx && oldId !== id && oldIndex !== index) {
       this.selectedTx = null;
-      this.toggleDetailsView(oldId, oldIndex);
+      this.toggleDetailsView(oldId as string, oldIndex as number);
       InteractionManager.runAfterInteractions(() => {
         this.toggleDetailsView(id, index);
       });
@@ -375,7 +485,7 @@ class Transactions extends PureComponent {
   };
 
   renderLoader = () => {
-    const { colors, typography } = this.context || mockTheme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     return (
@@ -386,7 +496,7 @@ class Transactions extends PureComponent {
   };
 
   renderEmpty = () => {
-    const { colors, typography } = this.context || mockTheme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
     if (this.props.tokenChainId !== this.props.chainId) {
       return (
@@ -427,7 +537,7 @@ class Transactions extends PureComponent {
       });
       close && close();
     } catch (e) {
-      Logger.error(e, {
+      Logger.error(e as Error, {
         message: `can't get a block explorer link for network `,
         type,
       });
@@ -435,7 +545,7 @@ class Transactions extends PureComponent {
   };
 
   renderViewMore = () => {
-    const { colors, typography } = this.context || mockTheme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     const {
@@ -450,7 +560,7 @@ class Transactions extends PureComponent {
       if (NO_RPC_BLOCK_EXPLORER !== this.state.rpcBlockExplorer) {
         return `${strings(
           'transactions.view_full_history_on',
-        )} ${getBlockExplorerName(this.state.rpcBlockExplorer)}`;
+        )} ${getBlockExplorerName(this.state.rpcBlockExplorer as string)}`;
       }
 
       return null;
@@ -469,22 +579,29 @@ class Transactions extends PureComponent {
     );
   };
 
-  getItemLayout = (data, index) => ({
+  getItemLayout = (
+    _data: ArrayLike<TransactionMeta> | null | undefined,
+    index: number,
+  ) => ({
     length: ROW_HEIGHT,
     offset: this.props.headerHeight + ROW_HEIGHT * index,
     index,
   });
 
-  keyExtractor = (item) => item.id.toString();
+  keyExtractor = (item: TransactionMeta) => item.id.toString();
 
-  onSpeedUpAction = (speedUpAction, existingGas, tx) => {
+  onSpeedUpAction = (
+    speedUpAction: boolean,
+    existingGas: ExistingGas,
+    tx: TransactionMeta,
+  ) => {
     this.existingGas = existingGas;
     this.speedUpTxId = tx.id;
     this.existingTx = tx;
     if (existingGas.isEIP1559Transaction) {
       this.setState({ speedUp1559IsOpen: speedUpAction });
     } else {
-      const speedUpConfirmDisabled = validateTransactionActionBalance(
+      const speedUpConfirmDisabled = validateActionBalance(
         tx,
         SPEED_UP_RATE,
         this.props.accounts,
@@ -500,7 +617,11 @@ class Transactions extends PureComponent {
     this.existingTx = null;
   };
 
-  onCancelAction = (cancelAction, existingGas, tx) => {
+  onCancelAction = (
+    cancelAction: boolean,
+    existingGas: ExistingGas,
+    tx: TransactionMeta,
+  ) => {
     this.existingGas = existingGas;
     this.cancelTxId = tx.id;
     this.existingTx = tx;
@@ -508,7 +629,7 @@ class Transactions extends PureComponent {
     if (existingGas.isEIP1559Transaction) {
       this.setState({ cancel1559IsOpen: cancelAction });
     } else {
-      const cancelConfirmDisabled = validateTransactionActionBalance(
+      const cancelConfirmDisabled = validateActionBalance(
         tx,
         CANCEL_RATE,
         this.props.accounts,
@@ -524,7 +645,7 @@ class Transactions extends PureComponent {
     this.existingTx = null;
   };
 
-  onScroll = (event) => {
+  onScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { nativeEvent } = event;
     const { contentOffset } = nativeEvent;
     // 16 is the top padding of the list
@@ -533,29 +654,35 @@ class Transactions extends PureComponent {
     }
   };
 
-  handleSpeedUpTransactionFailure = (e) => {
+  handleSpeedUpTransactionFailure = (e: unknown) => {
     const speedUpTxId = this.speedUpTxId;
     const message = e instanceof TransactionError ? e.message : undefined;
-    Logger.error(e, { message: `speedUpTransaction failed `, speedUpTxId });
-    InteractionManager.runAfterInteractions(this.toggleRetry(message));
+    Logger.error(e as Error, {
+      message: `speedUpTransaction failed `,
+      speedUpTxId,
+    });
+    this.toggleRetry(message);
     this.setState({
       speedUp1559IsOpen: false,
       speedUpIsOpen: false,
     });
   };
 
-  handleCancelTransactionFailure = (e) => {
+  handleCancelTransactionFailure = (e: unknown) => {
     const cancelTxId = this.cancelTxId;
     const message = e instanceof TransactionError ? e.message : undefined;
-    Logger.error(e, { message: `cancelTransaction failed `, cancelTxId });
-    InteractionManager.runAfterInteractions(this.toggleRetry(message));
+    Logger.error(e as Error, {
+      message: `cancelTransaction failed `,
+      cancelTxId,
+    });
+    this.toggleRetry(message);
     this.setState({
       cancel1559IsOpen: false,
       cancelIsOpen: false,
     });
   };
 
-  speedUpTransaction = async (transactionObject) => {
+  speedUpTransaction = async (transactionObject?: TransactionObject) => {
     try {
       if (transactionObject?.error) {
         throw new SpeedupTransactionError(transactionObject.error);
@@ -567,9 +694,9 @@ class Transactions extends PureComponent {
 
       if (isLedgerAccount) {
         await this.signLedgerTransaction({
-          id: this.speedUpTxId,
+          id: this.speedUpTxId as string,
           replacementParams: {
-            type: 'speedUp',
+            type: LedgerReplacementTxTypes.SPEED_UP,
             eip1559GasFee: {
               maxFeePerGas: `0x${transactionObject?.suggestedMaxFeePerGasHex}`,
               maxPriorityFeePerGas: `0x${transactionObject?.suggestedMaxPriorityFeePerGasHex}`,
@@ -578,7 +705,7 @@ class Transactions extends PureComponent {
         });
       } else {
         await speedUpTransaction(
-          this.speedUpTxId,
+          this.speedUpTxId as string,
           this.getCancelOrSpeedupValues(transactionObject),
         );
       }
@@ -588,16 +715,16 @@ class Transactions extends PureComponent {
     }
   };
 
-  signQRTransaction = async (tx) => {
+  signQRTransaction = async (tx: TransactionMeta) => {
     const { KeyringController, ApprovalController } = Engine.context;
     await KeyringController.resetQRKeyringState();
     await ApprovalController.accept(tx.id, undefined, { waitForResult: true });
   };
 
-  signLedgerTransaction = async (transaction) => {
+  signLedgerTransaction = async (transaction: LedgerSignTransaction) => {
     const deviceId = await getDeviceId();
 
-    const onConfirmation = (isComplete) => {
+    const onConfirmation = (isComplete: boolean) => {
       if (isComplete) {
         transaction.speedUpParams &&
         transaction.speedUpParams?.type === 'SpeedUp'
@@ -606,25 +733,26 @@ class Transactions extends PureComponent {
       }
     };
 
+    const params = {
+      transactionId: transaction.id,
+      deviceId,
+      onConfirmationComplete: onConfirmation,
+      type: 'signTransaction',
+      replacementParams: transaction?.replacementParams,
+    };
     this.props.navigation.navigate(
-      ...createLedgerTransactionModalNavDetails({
-        transactionId: transaction.id,
-        deviceId,
-        onConfirmationComplete: onConfirmation,
-        type: 'signTransaction',
-        replacementParams: transaction?.replacementParams,
-      }),
+      ...createLedgerTransactionModalNavDetails(params),
     );
   };
 
-  cancelUnsignedQRTransaction = async (tx) => {
+  cancelUnsignedQRTransaction = async (tx: TransactionMeta) => {
     await Engine.context.ApprovalController.reject(
       tx.id,
       providerErrors.userRejectedRequest(),
     );
   };
 
-  cancelTransaction = async (transactionObject) => {
+  cancelTransaction = async (transactionObject?: TransactionObject) => {
     try {
       if (transactionObject?.error) {
         throw new CancelTransactionError(transactionObject.error);
@@ -636,9 +764,9 @@ class Transactions extends PureComponent {
 
       if (isLedgerAccount) {
         await this.signLedgerTransaction({
-          id: this.cancelTxId,
+          id: this.cancelTxId as string,
           replacementParams: {
-            type: 'cancel',
+            type: LedgerReplacementTxTypes.CANCEL,
             eip1559GasFee: {
               maxFeePerGas: `0x${transactionObject?.suggestedMaxFeePerGasHex}`,
               maxPriorityFeePerGas: `0x${transactionObject?.suggestedMaxPriorityFeePerGasHex}`,
@@ -647,7 +775,7 @@ class Transactions extends PureComponent {
         });
       } else {
         await Engine.context.TransactionController.stopTransaction(
-          this.cancelTxId,
+          this.cancelTxId as string,
           this.getCancelOrSpeedupValues(transactionObject),
         );
       }
@@ -657,7 +785,7 @@ class Transactions extends PureComponent {
     }
   };
 
-  renderItem = ({ item, index }) => (
+  renderItem = ({ item, index }: ListRenderItemInfo<TransactionMeta>) => (
     <TransactionElement
       tx={item}
       i={index}
@@ -682,7 +810,7 @@ class Transactions extends PureComponent {
     />
   );
 
-  toggleRetry = (errorMsg) =>
+  toggleRetry = (errorMsg?: string) =>
     this.setState((state) => ({ retryIsOpen: !state.retryIsOpen, errorMsg }));
 
   retry = () => {
@@ -694,19 +822,27 @@ class Transactions extends PureComponent {
     //If the exitsing TX id true then it is a speed up retry
     if (this.speedUpTxId) {
       InteractionManager.runAfterInteractions(() => {
-        this.onSpeedUpAction(true, this.existingGas, this.existingTx);
+        this.onSpeedUpAction(
+          true,
+          this.existingGas as ExistingGas,
+          this.existingTx as TransactionMeta,
+        );
       });
     }
     if (this.cancelTxId) {
       InteractionManager.runAfterInteractions(() => {
-        this.onCancelAction(true, this.existingGas, this.existingTx);
+        this.onCancelAction(
+          true,
+          this.existingGas as ExistingGas,
+          this.existingTx as TransactionMeta,
+        );
       });
     }
   };
 
-  renderUpdateTxEIP1559Gas = (isCancel) => {
+  renderUpdateTxEIP1559Gas = (isCancel: boolean) => {
     const { isSigningQRObject } = this.props;
-    const { colors, typography } = this.context || mockTheme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     if (!this.existingGas) return null;
@@ -737,7 +873,7 @@ class Transactions extends PureComponent {
             contentContainerStyle={styles.keyboardAwareWrapper}
           >
             <UpdateEIP1559Tx
-              gas={this.existingTx.txParams.gas}
+              gas={(this.existingTx as TransactionMeta).txParams.gas}
               onSave={
                 isCancel ? this.cancelTransaction : this.speedUpTransaction
               }
@@ -754,7 +890,7 @@ class Transactions extends PureComponent {
   };
 
   renderDisclaimer = () => {
-    const { colors, typography } = this.context || mockTheme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
     return (
       <View style={styles.disclaimerWrapper}>
@@ -780,22 +916,21 @@ class Transactions extends PureComponent {
       isSigningQRObject,
     } = this.props;
     const { cancelConfirmDisabled, speedUpConfirmDisabled } = this.state;
-    const { colors, typography } = this.context || mockTheme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
-    const transactions =
-      submittedTransactions && submittedTransactions.length
-        ? submittedTransactions
-            .sort((a, b) => b.time - a.time)
-            .concat(confirmedTransactions)
-        : this.props.transactions;
+    const transactions = submittedTransactions?.length
+      ? submittedTransactions
+          .sort((a, b) => b.time - a.time)
+          .concat(confirmedTransactions)
+      : this.props.transactions;
 
-    const renderRetryGas = (rate) => {
+    const renderRetryGas = (rate: number) => {
       if (!this.existingGas) return null;
 
       if (this.existingGas.isEIP1559Transaction) return null;
 
-      const gasPrice = this.existingGas.gasPrice;
+      const gasPrice = this.existingGas.gasPrice as number;
 
       const increasedGasPrice =
         gasPrice === 0
@@ -878,7 +1013,7 @@ class Transactions extends PureComponent {
   };
 
   render = () => {
-    const { colors, typography } = this.context || mockTheme;
+    const { colors, typography } = (this.context as Theme) || mockTheme;
     const styles = createStyles(colors, typography);
 
     return (
@@ -900,7 +1035,7 @@ class Transactions extends PureComponent {
     );
   };
 
-  getCancelOrSpeedupValues(transactionObject) {
+  getCancelOrSpeedupValues(transactionObject?: TransactionObject) {
     const { suggestedMaxFeePerGasHex, suggestedMaxPriorityFeePerGasHex } =
       transactionObject ?? {};
 
@@ -911,7 +1046,7 @@ class Transactions extends PureComponent {
       };
     }
 
-    if (this.existingGas.gasPrice !== 0) {
+    if ((this.existingGas as ExistingGas).gasPrice !== 0) {
       // Transaction controller will multiply existing gas price by the rate.
       return undefined;
     }
@@ -928,11 +1063,11 @@ class Transactions extends PureComponent {
       gasFeeEstimates.gasPrice ??
       '0';
 
-    return addHexPrefix(decGWEIToHexWEI(estimateGweiDecimal));
+    return addHexPrefix(decGWEIToHexWEI(estimateGweiDecimal) as string);
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   accounts: selectAccounts(state),
   chainId: selectChainId(state),
   networkClientId: selectNetworkClientId(state),
@@ -952,11 +1087,16 @@ const mapStateToProps = (state) => ({
 
 Transactions.contextType = ThemeContext;
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  showAlert: (config: Parameters<typeof showAlert>[0]) =>
+    dispatch(showAlert(config)),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withQRHardwareAwareness(Transactions));
+)(
+  withQRHardwareAwareness(
+    Transactions as unknown as Parameters<typeof withQRHardwareAwareness>[0],
+  ),
+);
