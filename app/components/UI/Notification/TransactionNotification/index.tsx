@@ -1,12 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import { connect } from 'react-redux';
-import PropTypes from 'prop-types';
-import Animated, { useSharedValue } from 'react-native-reanimated';
+import Animated, { SharedValue, useSharedValue } from 'react-native-reanimated';
 import { strings } from '../../../../../locales/i18n';
 import Engine from '../../../../core/Engine';
 import { renderFromWei, fastSplit } from '../../../../util/number';
-import { validateTransactionActionBalance } from '../../../../util/transactions';
+import { validateTransactionActionBalance as validateTransactionActionBalanceUntyped } from '../../../../util/transactions';
 import {
   fontStyles,
   colors as importedColors,
@@ -19,7 +18,12 @@ import TransactionDetails from '../../TransactionElement/TransactionDetails';
 import BaseNotification from './../BaseNotification';
 import Device from '../../../../util/device';
 import ElevatedView from 'react-native-elevated-view';
-import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
+import {
+  CANCEL_RATE,
+  SPEED_UP_RATE,
+  TransactionMeta,
+} from '@metamask/transaction-controller';
+import { Hex } from '@metamask/utils';
 import BigNumber from 'bignumber.js';
 import { collectibleContractsSelector } from '../../../../reducers/collectibles';
 import { useTheme } from '../../../../util/theme';
@@ -36,12 +40,50 @@ import { selectContractExchangeRates } from '../../../../selectors/tokenRatesCon
 import { selectAccounts } from '../../../../selectors/accountTrackerController';
 import { speedUpTransaction } from '../../../../util/transaction-controller';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../../selectors/accountsController';
+import { Colors } from '../../../../util/theme/models';
+import { RootState } from '../../../../reducers';
 
 const WINDOW_WIDTH = Dimensions.get('window').width;
 const ACTION_CANCEL = 'cancel';
 const ACTION_SPEEDUP = 'speedup';
 
-const createStyles = (colors) =>
+interface TransactionElement {
+  notificationKey?: string;
+  actionKey?: string;
+  [key: string]: unknown;
+}
+
+interface OwnProps {
+  isInBrowserView?: boolean;
+  notificationAnimated: SharedValue<number>;
+  onClose: () => void;
+  animatedTimingStart: (
+    animatedRef: SharedValue<number>,
+    toValue: number,
+    callback?: () => void,
+  ) => void;
+  currentNotification: {
+    status: string;
+    transaction: { id: string; [key: string]: unknown };
+  };
+  /**
+   * Current exchange rate
+   */
+  exchangeRate?: number;
+}
+
+type Props = OwnProps & ReturnType<typeof mapStateToProps>;
+
+// The JSDoc on this util declares `rate: string` / `returns string`, but it
+// is called with a numeric rate and returns a boolean.
+const validateTransactionActionBalance =
+  validateTransactionActionBalanceUntyped as unknown as (
+    transaction: Partial<TransactionMeta>,
+    rate: number,
+    accounts: Props['accounts'],
+  ) => boolean;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     absoluteFill: {
       ...StyleSheet.absoluteFillObject,
@@ -101,7 +143,7 @@ const createStyles = (colors) =>
     },
   });
 
-function TransactionNotification(props) {
+function TransactionNotification(props: Props) {
   const {
     accounts,
     currentNotification,
@@ -113,12 +155,18 @@ function TransactionNotification(props) {
     smartTransactions,
   } = props;
 
-  const [transactionDetails, setTransactionDetails] = useState(undefined);
-  const [transactionElement, setTransactionElement] = useState(undefined);
-  const [tx, setTx] = useState({});
+  const [transactionDetails, setTransactionDetails] = useState<
+    Record<string, unknown> | undefined
+  >(undefined);
+  const [transactionElement, setTransactionElement] = useState<
+    TransactionElement | undefined
+  >(undefined);
+  const [tx, setTx] = useState<Partial<TransactionMeta>>({});
   const [transactionDetailsIsVisible, setTransactionDetailsIsVisible] =
     useState(false);
-  const [transactionAction, setTransactionAction] = useState(undefined);
+  const [transactionAction, setTransactionAction] = useState<
+    string | undefined
+  >(undefined);
   const [transactionActionDisabled, setTransactionActionDisabled] =
     useState(false);
   const [gasFee, setGasFee] = useState('0x0');
@@ -136,7 +184,7 @@ function TransactionNotification(props) {
   }, [setTransactionDetailsIsVisible, animatedTimingStart, detailsAnimated]);
 
   const animateActionTo = useCallback(
-    (position) => {
+    (position: number) => {
       animatedTimingStart(detailsYAnimated, position);
       animatedTimingStart(actionXAnimated, position);
     },
@@ -154,13 +202,13 @@ function TransactionNotification(props) {
   }, [onCloseDetails, onClose]);
 
   const onSpeedUpPress = useCallback(() => {
-    const transactionActionDisabled = validateTransactionActionBalance(
+    const isActionDisabled = validateTransactionActionBalance(
       tx,
       SPEED_UP_RATE,
       accounts,
     );
     setTransactionAction(ACTION_SPEEDUP);
-    setTransactionActionDisabled(transactionActionDisabled);
+    setTransactionActionDisabled(isActionDisabled);
     animateActionTo(-WINDOW_WIDTH);
   }, [
     setTransactionAction,
@@ -171,13 +219,13 @@ function TransactionNotification(props) {
   ]);
 
   const onCancelPress = useCallback(() => {
-    const transactionActionDisabled = validateTransactionActionBalance(
+    const isActionDisabled = validateTransactionActionBalance(
       tx,
       CANCEL_RATE,
       accounts,
     );
     setTransactionAction(ACTION_CANCEL);
-    setTransactionActionDisabled(transactionActionDisabled);
+    setTransactionActionDisabled(isActionDisabled);
     animateActionTo(-WINDOW_WIDTH);
   }, [
     setTransactionAction,
@@ -193,7 +241,7 @@ function TransactionNotification(props) {
   );
 
   const safelyExecute = useCallback(
-    (callback) => {
+    (callback: () => void) => {
       try {
         callback();
       } catch (e) {
@@ -205,21 +253,21 @@ function TransactionNotification(props) {
   );
 
   const speedUpTx = useCallback(() => {
-    safelyExecute(() => speedUpTransaction(tx?.id));
+    safelyExecute(() => speedUpTransaction(tx?.id as string));
   }, [safelyExecute, tx]);
 
   const stopTransaction = useCallback(() => {
     safelyExecute(() =>
-      Engine.context.TransactionController.stopTransaction(tx?.id),
+      Engine.context.TransactionController.stopTransaction(tx?.id as string),
     );
   }, [safelyExecute, tx]);
 
   useEffect(() => {
     async function getTransactionInfo() {
-      const tx = transactions.find(
+      const foundTx = transactions.find(
         ({ id }) => id === currentNotification.transaction.id,
       );
-      if (!tx) return;
+      if (!foundTx) return;
       const {
         selectedAddress,
         ticker,
@@ -234,9 +282,9 @@ function TransactionNotification(props) {
         swapsTransactions,
         swapsTokens,
       } = props;
-      const [transactionElement, transactionDetails] = await decodeTransaction({
+      const [decodedElement, decodedDetails] = await decodeTransaction({
         ...props,
-        tx,
+        tx: foundTx,
         selectedAddress,
         ticker,
         chainId,
@@ -250,7 +298,9 @@ function TransactionNotification(props) {
         swapsTransactions,
         swapsTokens,
       });
-      const existingGasPrice = new BigNumber(tx?.txParams?.gasPrice || '0x0');
+      const existingGasPrice = new BigNumber(
+        foundTx?.txParams?.gasPrice || '0x0',
+      );
       const gasFeeValue = fastSplit(
         existingGasPrice
           .times(
@@ -259,9 +309,9 @@ function TransactionNotification(props) {
           .toString(),
       ); // strips decimals if any, coming from the 'times' operation
       setGasFee(gasFeeValue);
-      setTx(tx);
-      setTransactionElement(transactionElement);
-      setTransactionDetails(transactionDetails);
+      setTx(foundTx);
+      setTransactionElement(decodedElement);
+      setTransactionDetails(decodedDetails);
     }
     getTransactionInfo();
   }, [
@@ -367,71 +417,7 @@ function TransactionNotification(props) {
   );
 }
 
-TransactionNotification.propTypes = {
-  isInBrowserView: PropTypes.bool,
-  notificationAnimated: PropTypes.object,
-  onClose: PropTypes.func,
-  animatedTimingStart: PropTypes.func,
-  currentNotification: PropTypes.object,
-  swapsTransactions: PropTypes.object,
-  swapsTokens: PropTypes.array,
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * An array that represents the user transactions on chain
-   */
-  transactions: PropTypes.array,
-  /**
-   * An array that represents the user smart transactions on chain
-   */
-  smartTransactions: PropTypes.array,
-
-  /**
-   * String of selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-  /**
-   * Current provider chainId
-   */
-  chainId: PropTypes.string,
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * Current exchange rate
-   */
-  exchangeRate: PropTypes.number,
-  /**
-   * Object containing token exchange rates in the format address => exchangeRate
-   */
-  contractExchangeRates: PropTypes.object,
-  /**
-   * An array that represents the user collectible contracts
-   */
-  collectibleContracts: PropTypes.array,
-  /**
-   * An array that represents the user tokens
-   */
-  tokens: PropTypes.object,
-
-  /**
-   * Primary currency, either ETH or Fiat
-   */
-  primaryCurrency: PropTypes.string,
-};
-
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const chainId = selectChainId(state);
 
   const {
@@ -442,7 +428,7 @@ const mapStateToProps = (state) => {
 
   const smartTransactions =
     SmartTransactionsController?.smartTransactionsState?.smartTransactions?.[
-      chainId
+      chainId as Hex
     ] || [];
 
   return {
@@ -457,6 +443,7 @@ const mapStateToProps = (state) => {
     conversionRate: selectConversionRate(state),
     currentCurrency: selectCurrentCurrency(state),
     primaryCurrency: state.settings.primaryCurrency,
+    //@ts-expect-error - This is populated at the app level, the TransactionController is not aware of this property
     swapsTransactions: TransactionController.swapsTransactions || {},
     swapsTokens: SwapsController.tokens,
     smartTransactions,
