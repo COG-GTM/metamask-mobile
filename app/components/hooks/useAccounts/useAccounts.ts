@@ -57,10 +57,10 @@ const useAccounts = ({
   );
   const fetchENSNames = useCallback(
     async ({
-      flattenedAccounts,
+      addresses,
       startingIndex,
     }: {
-      flattenedAccounts: Account[];
+      addresses: string[];
       startingIndex: number;
     }) => {
       // Ensure index exists in account list.
@@ -71,12 +71,12 @@ const useAccounts = ({
 
       if (startingIndex < 0) {
         safeStartingIndex = 0;
-      } else if (startingIndex > flattenedAccounts.length) {
-        safeStartingIndex = flattenedAccounts.length - 1;
+      } else if (startingIndex > addresses.length) {
+        safeStartingIndex = addresses.length - 1;
       }
 
       const fetchENSName = async (accountIndex: number) => {
-        const { address } = flattenedAccounts[accountIndex];
+        const address = addresses[accountIndex];
         try {
           const ens: string | undefined = await doENSReverseLookup(
             address,
@@ -92,9 +92,9 @@ const useAccounts = ({
       };
 
       // Iterate outwards in both directions starting at the starting index.
-      while (mirrorIndex >= 0 || safeStartingIndex < flattenedAccounts.length) {
+      while (mirrorIndex >= 0 || safeStartingIndex < addresses.length) {
         if (!isMountedRef.current) return;
-        if (safeStartingIndex < flattenedAccounts.length) {
+        if (safeStartingIndex < addresses.length) {
           await fetchENSName(safeStartingIndex);
         }
         if (mirrorIndex >= 0) {
@@ -144,20 +144,34 @@ const useAccounts = ({
     return balances;
   }, [internalAccounts, multichainBalancesForAllAccounts, checkBalanceError]);
 
+  const accountAddresses = useMemo(
+    () => internalAccounts.map(getFormattedAddressFromInternalAccount),
+    [internalAccounts],
+  );
+  // Stable key that only changes when the set/order of addresses changes,
+  // so ENS resolution is not re-triggered by balance polling.
+  const accountAddressesKey = accountAddresses.join(',');
+  const selectedIndex = Math.max(
+    0,
+    internalAccounts.findIndex(
+      (account) => account.address === selectedInternalAccount?.address,
+    ),
+  );
+  const ensSweepParamsRef = useRef({
+    addresses: accountAddresses,
+    selectedIndex,
+  });
+  ensSweepParamsRef.current = { addresses: accountAddresses, selectedIndex };
+
   const getAccounts = useCallback(() => {
     if (!isMountedRef.current) return;
     // Keep track of the Y position of account item. Used for scrolling purposes.
     let yOffset = 0;
-    let selectedIndex = 0;
     const flattenedAccounts: Account[] = internalAccounts.map(
       (internalAccount: InternalAccount, index: number) => {
-        const formattedAddress =
-          getFormattedAddressFromInternalAccount(internalAccount);
+        const formattedAddress = accountAddresses[index];
         const isSelected =
           selectedInternalAccount?.address === internalAccount.address;
-        if (isSelected) {
-          selectedIndex = index;
-        }
 
         const accountBalance = accountBalances[internalAccount.id] || {
           displayBalance: '',
@@ -197,10 +211,9 @@ const useAccounts = ({
     setEVMAccounts(
       flattenedAccounts.filter((account) => !isNonEvmAddress(account.address)),
     );
-    fetchENSNames({ flattenedAccounts, startingIndex: selectedIndex });
   }, [
     internalAccounts,
-    fetchENSNames,
+    accountAddresses,
     selectedInternalAccount?.address,
     accountBalances, // Use the memoized balances instead of multichainBalancesForAllAccounts
     isMultiAccountBalancesEnabled,
@@ -216,6 +229,15 @@ const useAccounts = ({
       isMountedRef.current = false;
     };
   }, [getAccounts, isLoading]);
+
+  useEffect(() => {
+    if (isLoading) return;
+    const { addresses, selectedIndex: startingIndex } =
+      ensSweepParamsRef.current;
+    fetchENSNames({ addresses, startingIndex });
+    // Only re-run when the address list or chain (via fetchENSNames) changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accountAddressesKey, fetchENSNames, isLoading]);
 
   return {
     accounts,
