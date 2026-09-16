@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import { Image, StyleSheet, Keyboard, Platform } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSelector } from 'react-redux';
@@ -69,7 +69,7 @@ import { SnapSettings } from '../../Views/Snaps/SnapSettings';
 import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { getActiveTabUrl } from '../../../util/transactions';
-import { getPermittedAccountsByHostname } from '../../../core/Permissions';
+import { makeSelectPermittedAccountsByHostname } from '../../../core/Permissions';
 import { TabBarIconKey } from '../../../component-library/components/Navigation/TabBar/TabBar.types';
 import { isEqual } from 'lodash';
 import { selectProviderConfig } from '../../../selectors/networkController';
@@ -85,7 +85,6 @@ import DeprecatedNetworkDetails from '../../UI/DeprecatedNetworkModal';
 import ConfirmAddAsset from '../../UI/ConfirmAddAsset';
 import { AesCryptoTestForm } from '../../Views/AesCryptoTestForm';
 import { isTest } from '../../../util/test/utils';
-import { selectPermissionControllerState } from '../../../selectors/snaps/permissionController';
 import NftDetails from '../../Views/NftDetails';
 import NftDetailsFullImage from '../../Views/NftDetails/NFtDetailsFullImage';
 import AccountPermissions from '../../../components/Views/AccountPermissions';
@@ -455,17 +454,16 @@ const HomeTabs = () => {
 
   /* tabs: state.browser.tabs, */
   /* activeTab: state.browser.activeTab, */
+  const selectPermittedAccountsByHostname = useMemo(
+    makeSelectPermittedAccountsByHostname,
+    [],
+  );
   const activeConnectedDapp = useSelector((state) => {
     const activeTabUrl = getActiveTabUrl(state);
     if (!isUrl(activeTabUrl)) return [];
     try {
-      const permissionsControllerState = selectPermissionControllerState(state);
       const hostname = new URL(activeTabUrl).hostname;
-      const permittedAcc = getPermittedAccountsByHostname(
-        permissionsControllerState,
-        hostname,
-      );
-      return permittedAcc;
+      return selectPermittedAccountsByHostname(state, hostname);
     } catch (error) {
       Logger.error(error, {
         message: 'ParseUrl::MainNavigator error while parsing URL',

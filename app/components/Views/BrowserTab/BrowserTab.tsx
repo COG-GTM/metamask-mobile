@@ -54,6 +54,7 @@ import sanitizeUrlInput from '../../../util/url/sanitizeUrlInput';
 import {
   getCaip25Caveat,
   getPermittedAccountsByHostname,
+  makeSelectPermittedAccountsByHostname,
 } from '../../../core/Permissions';
 import Routes from '../../../constants/navigation/Routes';
 import {
@@ -75,7 +76,6 @@ import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/Brows
 import { useMetrics } from '../../../components/hooks/useMetrics';
 import { trackDappViewedEvent } from '../../../util/metrics';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
-import { selectPermissionControllerState } from '../../../selectors/snaps/permissionController';
 import { isTest } from '../../../util/test/utils.js';
 import { EXTERNAL_LINK_TYPE } from '../../../constants/browser';
 import { AccountPermissionsScreens } from '../AccountPermissions/AccountPermissions.types';
@@ -191,15 +191,18 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
   const searchEngine = useSelector(selectSearchEngine);
-  const permittedAccountsList = useSelector((state: RootState) => {
-    const permissionsControllerState = selectPermissionControllerState(state);
-    const hostname = new URLParse(resolvedUrlRef.current).hostname;
-    const permittedAcc = getPermittedAccountsByHostname(
-      permissionsControllerState,
-      hostname,
-    );
-    return permittedAcc;
-  }, isEqual);
+  const selectPermittedAccountsByHostname = useMemo(
+    makeSelectPermittedAccountsByHostname,
+    [],
+  );
+  const permittedAccountsList = useSelector(
+    (state: RootState) =>
+      selectPermittedAccountsByHostname(
+        state,
+        new URLParse(resolvedUrlRef.current).hostname,
+      ),
+    isEqual,
+  );
 
   const favicon = useFavicon(resolvedUrlRef.current);
   const { trackEvent, isEnabled, getMetaMetricsId, createEventBuilder } =
