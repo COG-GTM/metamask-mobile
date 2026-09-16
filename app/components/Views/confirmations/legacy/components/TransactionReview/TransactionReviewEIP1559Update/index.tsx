@@ -19,6 +19,26 @@ import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
+import { TransactionEIP1559UpdateProps } from './types';
+
+interface GasTransactionData {
+  gasFeeMaxNative?: string;
+  renderableGasFeeMinNative?: string;
+  renderableGasFeeMinConversion?: string;
+  renderableGasFeeMaxNative?: string;
+  renderableTotalMinNative?: string;
+  renderableTotalMinConversion?: string;
+  renderableTotalMaxNative?: string;
+  renderableGasFeeMaxConversion?: string;
+  timeEstimateColor?: string;
+  timeEstimate?: string;
+  timeEstimateId?: string;
+  transactionFee?: string;
+  transactionFeeFiat?: string;
+  transactionTotalAmount?: string;
+  transactionTotalAmountFiat?: string;
+  suggestedGasLimit?: string;
+}
 
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
@@ -39,7 +59,7 @@ const TransactionReviewEIP1559Update = ({
   onlyGas,
   updateTransactionState,
   multiLayerL1FeeTotal,
-}) => {
+}: TransactionEIP1559UpdateProps) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -82,7 +102,7 @@ const TransactionReviewEIP1559Update = ({
     transactionTotalAmount,
     transactionTotalAmountFiat,
     suggestedGasLimit,
-  } = gasTransaction;
+  } = gasTransaction as GasTransactionData;
 
   useEffect(() => {
     if (gasEstimationReady) {
@@ -108,7 +128,10 @@ const TransactionReviewEIP1559Update = ({
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (
+    nativeValue?: string,
+    fiatValue?: string,
+  ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };

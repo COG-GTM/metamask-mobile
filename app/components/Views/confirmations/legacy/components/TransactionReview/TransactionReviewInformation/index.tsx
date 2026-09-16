@@ -1,6 +1,5 @@
-import React, { PureComponent } from 'react';
+import React, { ComponentType, PureComponent } from 'react';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   Text,
@@ -8,6 +7,9 @@ import {
   TouchableOpacity,
   InteractionManager,
 } from 'react-native';
+import { Dispatch } from 'redux';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import BN from 'bnjs4';
 import { fontStyles } from '../../../../../../../styles/common';
 import { connect } from 'react-redux';
 import {
@@ -45,6 +47,7 @@ import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import CustomNonce from '../../CustomNonce';
 import Logger from '../../../../../../../util/Logger';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
+import { Colors, Theme } from '../../../../../../../util/theme/models';
 import AppConstants from '../../../../../../../core/AppConstants';
 import WarningMessage from '../../../SendFlow/WarningMessage';
 import {
@@ -55,13 +58,18 @@ import { createBrowserNavDetails } from '../../../../../Browser';
 import { isNetworkRampNativeTokenSupported } from '../../../../../../../components/UI/Ramp/utils';
 import { getRampNetworks } from '../../../../../../../reducers/fiatOrders';
 import { createBuyNavigationDetails } from '../../../../../../UI/Ramp/routes/utils';
-import { withMetricsAwareness } from '../../../../../../../components/hooks/useMetrics';
+import {
+  withMetricsAwareness,
+  IUseMetricsHook,
+} from '../../../../../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { selectShouldUseSmartTransaction } from '../../../../../../../selectors/smartTransactionsController';
 import { getNetworkNonce } from '../../../../../../../util/transaction-controller';
 import { selectNativeCurrencyByChainId } from '../../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../../selectors/tokenRatesController';
+import { RootState } from '../../../../../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     overviewAlert: {
       alignItems: 'center',
@@ -128,123 +136,169 @@ const createStyles = (colors) =>
     },
   });
 
+interface SelectedAsset {
+  address: string;
+  decimals: number;
+  symbol: string;
+  name?: string;
+  tokenId?: string;
+}
+
+interface Transaction {
+  from: string;
+  chainId?: string;
+  networkClientId?: string;
+  value: BN;
+  gas: BN;
+  gasPrice: BN;
+  selectedAsset: SelectedAsset;
+  assetType: string;
+  nonce: number;
+  proposedNonce: number;
+  warningGasPriceHigh?: string;
+  type?: string;
+}
+
+interface EIP1559GasData {
+  gasFeeMinNative?: string;
+  gasFeeMinConversion?: string;
+  gasFeeMaxNative?: string;
+  gasFeeMaxConversion?: string;
+  renderableGasFeeMinNative?: string;
+  renderableGasFeeMinConversion?: string;
+  renderableGasFeeMaxNative?: string;
+  renderableGasFeeMaxConversion?: string;
+  timeEstimate?: string;
+  timeEstimateColor?: string;
+  timeEstimateId?: string;
+}
+
+type RenderableTotals = (string | undefined)[];
+
+interface Props {
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate: number;
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency: string;
+  /**
+   * Transaction object associated with this transaction
+   */
+  transaction: Transaction;
+  /**
+   * Object containing token exchange rates in the format address => exchangeRate
+   */
+  contractExchangeRates: Record<string, number>;
+  /**
+   * Callback for transaction edition
+   */
+  edit?: () => void;
+  /**
+   * Current provider ticker
+   */
+  ticker: string;
+  /**
+   * ETH or fiat, depending on user setting
+   */
+  primaryCurrency?: string;
+  /**
+   * Hides or shows transaction data
+   */
+  toggleDataView?: () => void;
+  /**
+   * Whether or not basic gas estimates have been fetched
+   */
+  ready?: boolean;
+  /**
+   * Transaction error
+   */
+  error?: string | boolean;
+  /**
+   * True if transaction is over the available funds
+   */
+  over?: boolean;
+  /**
+   * Object that represents the navigator
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Called when the cancel button is clicked
+   */
+  onCancelPress?: () => void;
+  /**
+   * The chain ID for the current selected network
+   */
+  chainId: string;
+  /**
+   * ID of the global network client
+   */
+  networkClientId: string;
+  /**
+   * Indicates whether custom nonce should be shown in transaction editor
+   */
+  showCustomNonce?: boolean;
+  /**
+   * Set transaction nonce
+   */
+  setNonce: (nonce: number) => void;
+  /**
+   * Set proposed nonce (from network)
+   */
+  setProposedNonce: (nonce: number) => void;
+  gasEstimateType?: string;
+  EIP1559GasData: EIP1559GasData;
+  origin?: string;
+  /**
+   * Function to call when update animation starts
+   */
+  onUpdatingValuesStart?: () => void;
+  /**
+   * Function to call when update animation ends
+   */
+  onUpdatingValuesEnd?: () => void;
+  /**
+   * If the values should animate upon update or not
+   */
+  animateOnChange?: boolean;
+  /**
+   * Boolean to determine if the animation is happening
+   */
+  isAnimating?: boolean;
+  /**
+   * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
+   */
+  originWarning?: boolean;
+  gasSelected?: string;
+  multiLayerL1FeeTotal?: string;
+  /**
+   * Boolean that indicates if the network supports buy
+   */
+  isNativeTokenBuySupported?: boolean;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  metrics: IUseMetricsHook;
+  /**
+   * Boolean that indicates if smart transaction should be used
+   */
+  shouldUseSmartTransaction?: boolean;
+}
+
+interface State {
+  toFocused: boolean;
+  amountError: string;
+  actionKey: string;
+  nonceModalVisible: boolean;
+}
+
 /**
  * PureComponent that supports reviewing a transaction information
  */
-class TransactionReviewInformation extends PureComponent {
-  static propTypes = {
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Callback for transaction edition
-     */
-    edit: PropTypes.func,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Whether or not basic gas estimates have been fetched
-     */
-    ready: PropTypes.bool,
-    /**
-     * Transaction error
-     */
-    error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    /**
-     * True if transaction is over the available funds
-     */
-    over: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Called when the cancel button is clicked
-     */
-    onCancelPress: PropTypes.func,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-    /**
-     * ID of the global network client
-     */
-    networkClientId: PropTypes.string,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-    /**
-     * Set transaction nonce
-     */
-    setNonce: PropTypes.func,
-    /**
-     * Set proposed nonce (from network)
-     */
-    setProposedNonce: PropTypes.func,
-    gasEstimateType: PropTypes.string,
-    EIP1559GasData: PropTypes.object,
-    origin: PropTypes.string,
-    /**
-     * Function to call when update animation starts
-     */
-    onUpdatingValuesStart: PropTypes.func,
-    /**
-     * Function to call when update animation ends
-     */
-    onUpdatingValuesEnd: PropTypes.func,
-    /**
-     * If the values should animate upon update or not
-     */
-    animateOnChange: PropTypes.bool,
-    /**
-     * Boolean to determine if the animation is happening
-     */
-    isAnimating: PropTypes.bool,
-    /**
-     * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
-     */
-    originWarning: PropTypes.bool,
-    gasSelected: PropTypes.string,
-    multiLayerL1FeeTotal: PropTypes.string,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNativeTokenBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
-
-  state = {
+class TransactionReviewInformation extends PureComponent<Props, State> {
+  state: State = {
     toFocused: false,
     amountError: '',
     actionKey: strings('transactions.tx_review_confirm'),
@@ -257,36 +311,40 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   setNetworkNonce = async () => {
-    const { networkClientId, setNonce, setProposedNonce, transaction } =
-      this.props;
+    const {
+      networkClientId,
+      setNonce: setNonceProp,
+      setProposedNonce: setProposedNonceProp,
+      transaction,
+    } = this.props;
     const proposedNonce = await getNetworkNonce(transaction, networkClientId);
-    setNonce(proposedNonce);
-    setProposedNonce(proposedNonce);
+    setNonceProp(proposedNonce);
+    setProposedNonceProp(proposedNonce);
   };
 
   toggleNonceModal = () =>
     this.setState((state) => ({ nonceModalVisible: !state.nonceModalVisible }));
 
   renderCustomNonceModal = () => {
-    const { setNonce } = this.props;
+    const { setNonce: setNonceProp } = this.props;
     const { proposedNonce, nonce } = this.props.transaction;
     return (
       <CustomNonceModal
         proposedNonce={proposedNonce}
         nonceValue={nonce}
         close={this.toggleNonceModal}
-        save={setNonce}
+        save={setNonceProp}
       />
     );
   };
 
   getTotalFiat = (
-    asset,
-    totalGas,
-    conversionRate,
-    exchangeRate,
-    currentCurrency,
-    amountToken,
+    _asset: SelectedAsset,
+    totalGas: BN,
+    conversionRate: number,
+    exchangeRate: number,
+    currentCurrency: string,
+    amountToken: string,
   ) => {
     let total = 0;
     const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate);
@@ -296,7 +354,10 @@ class TransactionReviewInformation extends PureComponent {
       exchangeRate,
     );
     const base = Math.pow(10, 5);
-    total = ((parseFloat(gasFeeFiat) + parseFloat(balanceFiat)) * base) / base;
+    total =
+      ((parseFloat(String(gasFeeFiat)) + parseFloat(String(balanceFiat))) *
+        base) /
+      base;
     return `${total} ${currentCurrency}`;
   };
 
@@ -307,7 +368,10 @@ class TransactionReviewInformation extends PureComponent {
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
-      Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
+      Logger.error(
+        error as Error,
+        'Navigation: Error when navigating to buy ETH.',
+      );
     }
 
     this.props.metrics.trackEvent(
@@ -322,7 +386,7 @@ class TransactionReviewInformation extends PureComponent {
     edit && edit();
   };
 
-  getRenderTotals = (totalGas, totalGasFiat) => {
+  getRenderTotals = (totalGas: BN, totalGasFiat: string) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -331,7 +395,7 @@ class TransactionReviewInformation extends PureComponent {
       ticker,
     } = this.props;
 
-    const totals = {
+    const totals: Record<string, () => RenderableTotals> = {
       ETH: () => {
         const totalEth = isBN(value) ? value.add(totalGas) : totalGas;
         const totalFiat = `${weiToFiat(
@@ -386,7 +450,7 @@ class TransactionReviewInformation extends PureComponent {
     gasFeeMinConversion,
     gasFeeMaxNative,
     gasFeeMaxConversion,
-  }) => {
+  }: EIP1559GasData) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -395,12 +459,12 @@ class TransactionReviewInformation extends PureComponent {
       ticker,
     } = this.props;
 
-    let renderableTotalMinNative,
-      renderableTotalMinConversion,
-      renderableTotalMaxNative,
-      renderableTotalMaxConversion;
+    let renderableTotalMinNative: string | undefined,
+      renderableTotalMinConversion: string | undefined,
+      renderableTotalMaxNative: string | undefined,
+      renderableTotalMaxConversion: string | undefined;
 
-    const totals = {
+    const totals: Record<string, () => RenderableTotals> = {
       ETH: () => {
         const {
           totalMinNative,
@@ -416,6 +480,8 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
+          gasFeeMaxHex: undefined,
+          gasFeeMinHex: undefined,
         });
 
         [
@@ -454,6 +520,8 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
+          gasFeeMaxHex: undefined,
+          gasFeeMinHex: undefined,
         });
 
         const tokenAmount = renderFromTokenMinimalUnit(
@@ -502,6 +570,8 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
+          gasFeeMaxHex: undefined,
+          gasFeeMinHex: undefined,
         });
 
         [
@@ -549,7 +619,7 @@ class TransactionReviewInformation extends PureComponent {
       this.onCancelPress();
       this.props.navigation.navigate(
         ...createBrowserNavDetails({
-          newTabUrl: TESTNET_FAUCETS[chainId],
+          newTabUrl: TESTNET_FAUCETS[chainId as keyof typeof TESTNET_FAUCETS],
           timestamp: Date.now(),
         }),
       );
@@ -668,7 +738,7 @@ class TransactionReviewInformation extends PureComponent {
       shouldUseSmartTransaction,
     } = this.props;
     const { nonce } = this.props.transaction;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const errorPress = this.isTestNetwork() ? this.goToFaucet : this.buyEth;
@@ -747,7 +817,7 @@ class TransactionReviewInformation extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkClientId;
@@ -770,9 +840,9 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  setNonce: (nonce) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
+  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
 });
 
 TransactionReviewInformation.contextType = ThemeContext;
@@ -780,4 +850,8 @@ TransactionReviewInformation.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(TransactionReviewInformation));
+)(
+  withMetricsAwareness(
+    TransactionReviewInformation as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);
