@@ -112,6 +112,51 @@ class CollectibleAddresses {
 }
 
 /**
+ * Utility class caching whether an address holds contract code, keyed by
+ * `${chainId}:${checksumAddress}`. Each entry is either the in-flight promise
+ * (so concurrent callers share a single eth_getCode request) or
+ * `{ value, expiresAt }`. Positive results never expire because deployed code
+ * is immutable; negative results expire after NEGATIVE_TTL_MS so an address
+ * that later receives code is re-queried.
+ */
+class SmartContractAddresses {
+  static NEGATIVE_TTL_MS = 60 * 1000;
+
+  static cache = {};
+
+  static get(key) {
+    const entry = SmartContractAddresses.cache[key];
+    if (entry === undefined) return undefined;
+    if (entry instanceof Promise) return entry;
+    if (entry.expiresAt !== undefined && Date.now() >= entry.expiresAt) {
+      delete SmartContractAddresses.cache[key];
+      return undefined;
+    }
+    return entry.value;
+  }
+
+  static set(key, value) {
+    SmartContractAddresses.cache[key] = {
+      value,
+      expiresAt: value
+        ? undefined
+        : Date.now() + SmartContractAddresses.NEGATIVE_TTL_MS,
+    };
+  }
+
+  static clear() {
+    SmartContractAddresses.cache = {};
+  }
+}
+
+/**
+ * Clears the memoized isSmartContractAddress results. Intended for tests.
+ */
+export function clearSmartContractAddressCache() {
+  SmartContractAddresses.clear();
+}
+
+/**
  * Object containing all known action keys, to be used in transaction review
  */
 const reviewActionKeys = {
@@ -391,6 +436,12 @@ export async function isSmartContractAddress(
     return Promise.resolve(true);
   }
 
+  const cacheKey = `${chainId}:${address}`;
+  const cached = SmartContractAddresses.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
+
   const { NetworkController } = Engine.context;
   const finalNetworkClientId =
     networkClientId ?? NetworkController.findNetworkClientIdByChainId(chainId);
@@ -398,11 +449,21 @@ export async function isSmartContractAddress(
     NetworkController.getNetworkClientById(finalNetworkClientId).provider,
   );
 
-  const code = address
-    ? await query(ethQuery, 'getCode', [address])
-    : undefined;
+  const pending = query(ethQuery, 'getCode', [address]).then((code) => {
+    const result = isSmartContractCode(code);
+    SmartContractAddresses.set(cacheKey, result);
+    return result;
+  });
+  SmartContractAddresses.cache[cacheKey] = pending;
 
-  return isSmartContractCode(code);
+  try {
+    return await pending;
+  } catch (error) {
+    if (SmartContractAddresses.cache[cacheKey] === pending) {
+      delete SmartContractAddresses.cache[cacheKey];
+    }
+    throw error;
+  }
 }
 
 /**
