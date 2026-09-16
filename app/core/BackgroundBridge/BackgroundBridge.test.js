@@ -108,7 +108,10 @@ function setupBackgroundBridge(url) {
 }
 
 describe('BackgroundBridge', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    Engine.controllerMessenger.unsubscribe = jest.fn();
+  });
   describe('constructor', () => {
     const { KeyringController, PermissionController } = Engine.context;
 
@@ -189,6 +192,53 @@ describe('BackgroundBridge', () => {
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+    });
+  });
+
+  describe('onDisconnect', () => {
+    it('unsubscribes every controller-messenger subscription registered in the constructor', () => {
+      const bridge = setupBackgroundBridge('https:www.mock.io');
+      const subscribeCalls = Engine.controllerMessenger.subscribe.mock.calls;
+      bridge.engine.destroy = jest.fn();
+
+      expect(subscribeCalls).toHaveLength(6);
+
+      bridge.onDisconnect();
+
+      subscribeCalls.forEach(([event, handler]) => {
+        expect(Engine.controllerMessenger.unsubscribe).toHaveBeenCalledWith(
+          event,
+          handler,
+        );
+      });
+      expect(Engine.controllerMessenger.unsubscribe).toHaveBeenCalledTimes(6);
+      expect(bridge.disconnected).toBe(true);
+    });
+
+    it('does not send unlockStateChanged after disconnect', () => {
+      const bridge = setupBackgroundBridge('https:www.mock.io');
+      bridge.isRemoteConn = false;
+      bridge.engine.destroy = jest.fn();
+      bridge.sendNotification = jest.fn();
+
+      bridge.onDisconnect();
+      bridge.onLock();
+      bridge.onUnlock();
+
+      expect(bridge.sendNotification).not.toHaveBeenCalled();
+    });
+
+    it('subscribes with the lock and unlock handler references', () => {
+      const bridge = setupBackgroundBridge('https:www.mock.io');
+
+      expect(Engine.controllerMessenger.subscribe).toHaveBeenCalledWith(
+        'KeyringController:lock',
+        bridge.onLock,
+      );
+      expect(Engine.controllerMessenger.subscribe).toHaveBeenCalledWith(
+        'KeyringController:unlock',
+        bridge.onUnlock,
+      );
     });
   });
 });
