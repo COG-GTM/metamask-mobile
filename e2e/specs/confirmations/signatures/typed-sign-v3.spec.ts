@@ -15,7 +15,7 @@ import Assertions from '../../../utils/Assertions';
 import { mockEvents } from '../../../api-mocking/mock-config/mock-events';
 import { buildPermissions } from '../../../fixtures/utils';
 
-describe(SmokeConfirmations('Typed Sign'), () => {
+describe(SmokeConfirmations('Typed Sign V3'), () => {
   const testSpecificMock = {
     GET: [mockEvents.GET.remoteFeatureFlagsOldConfirmations],
   };
@@ -25,35 +25,44 @@ describe(SmokeConfirmations('Typed Sign'), () => {
     await TestHelpers.reverseServerPort();
   });
 
-  it('should sign typed message', async () => {
+  it('should sign typed V3 message', async () => {
     await withFixtures(
       {
         dapp: true,
         fixture: new FixtureBuilder()
           .withGanacheNetwork()
-          .withPermissionControllerConnectedToTestDapp(buildPermissions(['0x539']))
+          .withPermissionControllerConnectedToTestDapp(
+            buildPermissions(['0x539']),
+          )
           .build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         testSpecificMock,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 
         await TabBarComponent.tapBrowser();
         await Browser.navigateToTestDApp();
 
-        await TestDApp.tapTypedSignButton();
+        await TestDApp.tapTypedV3SignButton();
         await Assertions.checkIfVisible(SigningBottomSheet.typedRequest);
         await SigningBottomSheet.tapCancelButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.typedRequest);
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.typedRequest as Promise<Detox.IndexableNativeElement>,
+        );
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.personalRequest as Promise<Detox.IndexableNativeElement>,
+        );
+        await TestDApp.tapTypedV3SignButton();
 
-        await TestDApp.tapTypedSignButton();
-        await Assertions.checkIfVisible(SigningBottomSheet.typedRequest);
         await SigningBottomSheet.tapSignButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.typedRequest);
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.typedRequest as Promise<Detox.IndexableNativeElement>,
+        );
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.personalRequest as Promise<Detox.IndexableNativeElement>,
+        );
       },
     );
   });

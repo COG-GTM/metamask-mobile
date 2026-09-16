@@ -29,7 +29,7 @@ describe(SmokeNetworkExpansion('Account Permission Management'), () => {
           .withPermissionControllerConnectedToTestDapp()
           .build(),
         restartDevice: true,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         //should navigate to browser
         await loginToApp();
@@ -43,7 +43,9 @@ describe(SmokeNetworkExpansion('Account Permission Management'), () => {
         await Assertions.checkIfVisible(ConnectedAccountsModal.title);
         await TestHelpers.delay(2000);
 
-        await Assertions.checkIfNotVisible(ToastModal.notificationTitle);
+        await Assertions.checkIfNotVisible(
+          ToastModal.notificationTitle as Promise<Detox.IndexableNativeElement>,
+        );
         await ConnectedAccountsModal.tapConnectMoreAccountsButton();
         await AccountListBottomSheet.tapAddAccountButton();
         await AddAccountBottomSheet.tapCreateAccount();
@@ -62,10 +64,14 @@ describe(SmokeNetworkExpansion('Account Permission Management'), () => {
         await ConnectedAccountsModal.tapConfirmDisconnectNetworksButton();
 
         await Browser.tapNetworkAvatarButtonOnBrowser();
-        await Assertions.checkIfNotVisible(ConnectedAccountsModal.title);
+        await Assertions.checkIfNotVisible(
+          ConnectedAccountsModal.title as Promise<Detox.IndexableNativeElement>,
+        );
         await Assertions.checkIfVisible(NetworkListModal.networkScroll);
         await NetworkListModal.swipeToDismissModal();
-        await Assertions.checkIfNotVisible(NetworkListModal.networkScroll);
+        await Assertions.checkIfNotVisible(
+          NetworkListModal.networkScroll as Promise<Detox.IndexableNativeElement>,
+        );
       },
     );
   });

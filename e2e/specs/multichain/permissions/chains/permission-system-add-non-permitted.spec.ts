@@ -6,9 +6,7 @@ import NetworkEducationModal from '../../../../pages/Network/NetworkEducationMod
 import Assertions from '../../../../utils/Assertions';
 import TestHelpers from '../../../../helpers';
 import FixtureBuilder from '../../../../fixtures/fixture-builder';
-import {
-  withFixtures,
-} from '../../../../fixtures/fixture-helper';
+import { withFixtures } from '../../../../fixtures/fixture-helper';
 import { CustomNetworks } from '../../../../resources/networks.e2e';
 import Browser from '../../../../pages/Browser/BrowserView';
 import TabBarComponent from '../../../../pages/wallet/TabBarComponent';
@@ -29,7 +27,6 @@ describe(
       jest.setTimeout(150000);
     });
 
-
     it('should show bottom sheet when switching to non-permitted chain', async () => {
       await withFixtures(
         {
@@ -39,7 +36,7 @@ describe(
             .withChainPermission()
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -74,7 +71,7 @@ describe(
             ])
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -91,7 +88,7 @@ describe(
           await TestHelpers.delay(3000);
           await Browser.navigateToTestDApp();
           await Assertions.checkIfNotVisible(
-            NetworkNonPemittedBottomSheet.addThisNetworkTitle,
+            NetworkNonPemittedBottomSheet.addThisNetworkTitle as Promise<Detox.IndexableNativeElement>,
           );
         },
       );
@@ -106,7 +103,7 @@ describe(
             .withChainPermission()
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -150,7 +147,7 @@ describe(
             ]) // Initialize with Ethereum mainnet and Sepolia
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -181,7 +178,10 @@ describe(
           await TabBarComponent.tapWallet();
           await Assertions.checkIfVisible(WalletView.container);
           const networkPicker = await WalletView.getNavbarNetworkPicker();
-          await Assertions.checkIfElementHasLabel(networkPicker, SEPOLIA);
+          await Assertions.checkIfElementHasLabel(
+            networkPicker as unknown as Promise<Detox.IndexableNativeElement>,
+            SEPOLIA,
+          );
         },
       );
     });
@@ -195,7 +195,7 @@ describe(
             .withChainPermission() // Initialize with only Ethereum mainnet
             .build(),
           restartDevice: true,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
 
@@ -235,7 +235,7 @@ describe(
           await Assertions.checkIfVisible(WalletView.container);
           const networkPicker = await WalletView.getNavbarNetworkPicker();
           await Assertions.checkIfElementHasLabel(
-            networkPicker,
+            networkPicker as unknown as Promise<Detox.IndexableNativeElement>,
             'Linea Sepolia',
           );
         },

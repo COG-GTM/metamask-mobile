@@ -15,43 +15,55 @@ import Assertions from '../../../utils/Assertions';
 import { mockEvents } from '../../../api-mocking/mock-config/mock-events';
 import { buildPermissions } from '../../../fixtures/utils';
 
-describe(SmokeConfirmations('Ethereum Sign'), () => {
+describe(SmokeConfirmations('Personal Sign'), () => {
+  const testSpecificMock = {
+    GET: [mockEvents.GET.remoteFeatureFlagsOldConfirmations],
+  };
+
   beforeAll(async () => {
     jest.setTimeout(2500000);
     await TestHelpers.reverseServerPort();
   });
 
-  it('Sign in with Ethereum', async () => {
-    const testSpecificMock = {
-      GET: [mockEvents.GET.remoteFeatureFlagsOldConfirmations],
-    };
-
+  it('should sign personal message', async () => {
     await withFixtures(
       {
         dapp: true,
         fixture: new FixtureBuilder()
           .withGanacheNetwork()
-          .withPermissionControllerConnectedToTestDapp(buildPermissions(['0x539']))
+          .withPermissionControllerConnectedToTestDapp(
+            buildPermissions(['0x539']),
+          )
           .build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         testSpecificMock,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 
         await TabBarComponent.tapBrowser();
         await Browser.navigateToTestDApp();
 
-        await TestDApp.tapEthereumSignButton();
+        await TestDApp.tapPersonalSignButton();
         await Assertions.checkIfVisible(SigningBottomSheet.personalRequest);
         await SigningBottomSheet.tapCancelButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.typedRequest as Promise<Detox.IndexableNativeElement>,
+        );
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.personalRequest as Promise<Detox.IndexableNativeElement>,
+        );
 
-        await TestDApp.tapEthereumSignButton();
+        await TestDApp.tapPersonalSignButton();
         await Assertions.checkIfVisible(SigningBottomSheet.personalRequest);
         await SigningBottomSheet.tapSignButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.typedRequest as Promise<Detox.IndexableNativeElement>,
+        );
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.personalRequest as Promise<Detox.IndexableNativeElement>,
+        );
       },
     );
   });

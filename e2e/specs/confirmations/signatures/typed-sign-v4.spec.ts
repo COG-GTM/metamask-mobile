@@ -31,12 +31,14 @@ describe(SmokeConfirmations('Typed Sign V4'), () => {
         dapp: true,
         fixture: new FixtureBuilder()
           .withGanacheNetwork()
-          .withPermissionControllerConnectedToTestDapp(buildPermissions(['0x539']))
+          .withPermissionControllerConnectedToTestDapp(
+            buildPermissions(['0x539']),
+          )
           .build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         testSpecificMock,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await loginToApp();
 
@@ -45,13 +47,21 @@ describe(SmokeConfirmations('Typed Sign V4'), () => {
         await TestDApp.tapTypedV4SignButton();
         await Assertions.checkIfVisible(SigningBottomSheet.typedRequest);
         await SigningBottomSheet.tapCancelButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.typedRequest);
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.typedRequest as Promise<Detox.IndexableNativeElement>,
+        );
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.personalRequest as Promise<Detox.IndexableNativeElement>,
+        );
         await TestDApp.tapTypedV4SignButton();
 
         await SigningBottomSheet.tapSignButton();
-        await Assertions.checkIfNotVisible(SigningBottomSheet.typedRequest);
-        await Assertions.checkIfNotVisible(SigningBottomSheet.personalRequest);
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.typedRequest as Promise<Detox.IndexableNativeElement>,
+        );
+        await Assertions.checkIfNotVisible(
+          SigningBottomSheet.personalRequest as Promise<Detox.IndexableNativeElement>,
+        );
       },
     );
   });
