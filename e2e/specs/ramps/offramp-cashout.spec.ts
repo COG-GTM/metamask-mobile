@@ -8,9 +8,14 @@ import BuildQuoteView from '../../pages/Ramps/BuildQuoteView';
 import Assertions from '../../utils/Assertions';
 import TabBarComponent from '../../pages/wallet/TabBarComponent';
 import WalletActionsBottomSheet from '../../pages/wallet/WalletActionsBottomSheet';
-import BuyGetStartedView from '../../pages/Ramps/BuyGetStartedView';
+import SelectPaymentMethodView from '../../pages/Ramps/SelectPaymentMethodView';
+import SellGetStartedView from '../../pages/Ramps/SellGetStartedView';
 
-describe(SmokeTrade('On-Ramp Limits'), () => {
+const PaymentMethods = {
+  SEPA_BANK_TRANSFER: 'SEPA Bank Transfer',
+};
+
+describe(SmokeTrade('Off-Ramp Cashout destination'), () => {
   beforeAll(async () => {
     await TestHelpers.reverseServerPort();
   });
@@ -19,7 +24,7 @@ describe(SmokeTrade('On-Ramp Limits'), () => {
     jest.setTimeout(150000);
   });
 
-  it('should check order min and maxlimits', async () => {
+  it('should change cashout destination', async () => {
     const franceRegion = {
       currencies: ['/currencies/fiat/eur'],
       emoji: '🇫🇷',
@@ -33,7 +38,9 @@ describe(SmokeTrade('On-Ramp Limits'), () => {
     await withFixtures(
       {
         fixture: new FixtureBuilder()
-          .withRampsSelectedRegion(franceRegion)
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .withRampsSelectedRegion(franceRegion as any)
           .withRampsSelectedPaymentMethod()
           .build(),
         restartDevice: true,
@@ -41,14 +48,14 @@ describe(SmokeTrade('On-Ramp Limits'), () => {
       async () => {
         await loginToApp();
         await TabBarComponent.tapActions();
-        await WalletActionsBottomSheet.tapBuyButton();
-        await BuyGetStartedView.tapGetStartedButton();
-        await BuildQuoteView.enterAmount('1');
-        await Assertions.checkIfVisible(BuildQuoteView.minLimitErrorMessage);
-        await BuildQuoteView.tapKeypadDeleteButton(1);
-        await BuildQuoteView.enterAmount('55555');
-        await Assertions.checkIfVisible(BuildQuoteView.maxLimitErrorMessage);
-        await BuildQuoteView.tapCancelButton();
+        await WalletActionsBottomSheet.tapSellButton();
+        await SellGetStartedView.tapGetStartedButton();
+        await Assertions.checkIfTextIsNotDisplayed('SEPA Bank Transfer');
+        await BuildQuoteView.tapPaymentMethodDropdown('Debit or Credit');
+        await SelectPaymentMethodView.tapPaymentMethodOption(
+          PaymentMethods.SEPA_BANK_TRANSFER,
+        );
+        await Assertions.checkIfTextIsDisplayed('SEPA Bank Transfer');
       },
     );
   });

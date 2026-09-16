@@ -1,4 +1,4 @@
-// @ts-check
+import type { Mockttp } from 'mockttp';
 import { startMockServer, stopMockServer } from '../../api-mocking/mock-server';
 import TestHelpers from '../../helpers';
 import EnableNotificationsModal from '../../pages/Notifications/EnableNotificationsModal';
@@ -18,11 +18,7 @@ import {
   mockNotificationServices,
 } from './utils/mocks';
 
-/**
- * @param {number} port
- * @returns {import('detox/detox').DeviceLaunchAppConfig}
- */
-const launchAppSettings = (port) => ({
+const launchAppSettings = (port: number): Detox.DeviceLaunchAppConfig => ({
   newInstance: true,
   delete: true,
   permissions: {
@@ -32,8 +28,7 @@ const launchAppSettings = (port) => ({
 });
 
 describe(SmokeNotifications('Notification Onboarding'), () => {
-  /** @type {import('mockttp').Mockttp} */
-  let mockServer;
+  let mockServer: Mockttp;
 
   beforeAll(async () => {
     jest.setTimeout(200000);
@@ -53,12 +48,10 @@ describe(SmokeNotifications('Notification Onboarding'), () => {
 
   it('enables notifications through bell icon', async () => {
     // Onboard - Import SRP
-    await importWalletWithRecoveryPhrase(
-      {
-        seedPhrase: NOTIFICATIONS_TEAM_SEED_PHRASE,
-        password: NOTIFICATIONS_TEAM_PASSWORD,
-      }
-    );
+    await importWalletWithRecoveryPhrase({
+      seedPhrase: NOTIFICATIONS_TEAM_SEED_PHRASE,
+      password: NOTIFICATIONS_TEAM_PASSWORD,
+    });
 
     // Bell Icon
     await WalletView.tapBellIcon();

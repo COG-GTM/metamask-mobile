@@ -78,7 +78,9 @@ describe(
     it('should dismiss the network education modal', async () => {
       await Assertions.checkIfVisible(NetworkEducationModal.container);
       await NetworkEducationModal.tapGotItButton();
-      await Assertions.checkIfNotVisible(NetworkEducationModal.container);
+      await Assertions.checkIfNotVisible(
+        NetworkEducationModal.container as Promise<Detox.IndexableNativeElement>,
+      );
     });
 
     it('should set the imported account as primary account', async () => {
@@ -110,7 +112,9 @@ describe(
 
     it('imported account is not visible', async () => {
       await Browser.tapNetworkAvatarButtonOnBrowser();
-      await Assertions.checkIfNotVisible(ConnectedAccountsModal.title);
+      await Assertions.checkIfNotVisible(
+        ConnectedAccountsModal.title as Promise<Detox.IndexableNativeElement>,
+      );
       //await AccountListView.accountNameNotVisible('Account 2');
     });
   },

@@ -29,7 +29,10 @@ describe(SmokeConfirmations('Send ETH'), () => {
 
   beforeEach(async () => {
     await TestHelpers.reverseServerPort();
-    const fixture = new FixtureBuilder()
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fixtureBuilder: any = new FixtureBuilder();
+    const fixture = fixtureBuilder
       .withNetworkController(CustomNetworks.Tenderly)
       .withAddressBookController({
         addressBook: {

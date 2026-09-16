@@ -94,7 +94,7 @@ describe(SmokeWalletPlatform('Addressbook Tests'), () => {
     await AddContactView.typeInAddress(INVALID_ADDRESS);
     await Assertions.checkIfVisible(CommonView.errorMessage);
     await Assertions.checkIfElementToHaveText(
-      CommonView.errorMessage,
+      CommonView.errorMessage as Promise<Detox.IndexableNativeElement>,
       enContent.transaction.invalid_address,
     );
     await AddContactView.clearAddressInputBox();
@@ -112,9 +112,8 @@ describe(SmokeWalletPlatform('Addressbook Tests'), () => {
     await TestHelpers.delay(1500);
 
     await AddContactView.tapEditContactCTA();
-    if (device.getPlatform() === 'ios'){
+    if (device.getPlatform() === 'ios') {
       await AddContactView.tapEditContactCTA(); // Because on CI, tapping the edit contact button requires a double tap for iOS
-
     }
     await ContactsView.isContactAliasVisible('Moon'); // Check that Ibrahim address is saved in the address book
     await ContactsView.isContactAliasNotVisible('Myth'); // Ensure Myth is not visible

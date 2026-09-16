@@ -43,20 +43,25 @@ describe(Regression('Connect to a Test Network'), () => {
     await WalletView.tapNetworksButtonOnNavBar();
     await NetworkListModal.scrollToBottomOfNetworkList();
     await Assertions.checkIfVisible(NetworkListModal.networkScroll);
-    await Assertions.checkIfToggleIsOn(NetworkListModal.testNetToggle);
+    await Assertions.checkIfToggleIsOn(
+      NetworkListModal.testNetToggle as Promise<Detox.IndexableNativeElement>,
+    );
     await NetworkListModal.changeNetworkTo(
       CustomNetworks.Sepolia.providerConfig.nickname,
     );
     await Assertions.checkIfVisible(NetworkEducationModal.container);
     await Assertions.checkIfElementToHaveText(
-      NetworkEducationModal.networkName,
+      NetworkEducationModal.networkName as Promise<Detox.IndexableNativeElement>,
       CustomNetworks.Sepolia.providerConfig.nickname,
     );
     await NetworkEducationModal.tapGotItButton();
-    await Assertions.checkIfNotVisible(NetworkEducationModal.container);
+    await Assertions.checkIfNotVisible(
+      NetworkEducationModal.container as Promise<Detox.IndexableNativeElement>,
+    );
     await Assertions.checkIfVisible(WalletView.container);
 
-    const networkPicker = await WalletView.getNavbarNetworkPicker();
+    const networkPicker =
+      WalletView.getNavbarNetworkPicker() as Promise<Detox.IndexableNativeElement>;
     await Assertions.checkIfElementHasLabel(
       networkPicker,
       CustomNetworks.Sepolia.providerConfig.nickname,
@@ -68,7 +73,9 @@ describe(Regression('Connect to a Test Network'), () => {
     await NetworkListModal.scrollToBottomOfNetworkList();
     await Assertions.checkIfVisible(NetworkListModal.networkScroll);
     await NetworkListModal.tapTestNetworkSwitch();
-    await Assertions.checkIfToggleIsOn(NetworkListModal.testNetToggle);
+    await Assertions.checkIfToggleIsOn(
+      NetworkListModal.testNetToggle as Promise<Detox.IndexableNativeElement>,
+    );
   });
 
   it('should disconnect to Test Network', async () => {
@@ -76,14 +83,17 @@ describe(Regression('Connect to a Test Network'), () => {
     await NetworkListModal.changeNetworkTo(ETHEREUM);
     await Assertions.checkIfVisible(NetworkEducationModal.container);
     await Assertions.checkIfElementToHaveText(
-      NetworkEducationModal.networkName,
+      NetworkEducationModal.networkName as Promise<Detox.IndexableNativeElement>,
       ETHEREUM,
     );
     await NetworkEducationModal.tapGotItButton();
-    await Assertions.checkIfNotVisible(NetworkEducationModal.container);
+    await Assertions.checkIfNotVisible(
+      NetworkEducationModal.container as Promise<Detox.IndexableNativeElement>,
+    );
     await Assertions.checkIfVisible(WalletView.container);
 
-    const networkPicker = await WalletView.getNavbarNetworkPicker();
+    const networkPicker =
+      WalletView.getNavbarNetworkPicker() as Promise<Detox.IndexableNativeElement>;
     await Assertions.checkIfElementHasLabel(networkPicker, ETHEREUM);
   });
 
@@ -94,9 +104,13 @@ describe(Regression('Connect to a Test Network'), () => {
     await Assertions.checkIfTextIsDisplayed(
       CustomNetworks.Sepolia.providerConfig.nickname,
     );
-    await Assertions.checkIfToggleIsOn(NetworkListModal.testNetToggle);
+    await Assertions.checkIfToggleIsOn(
+      NetworkListModal.testNetToggle as Promise<Detox.IndexableNativeElement>,
+    );
     await NetworkListModal.tapTestNetworkSwitch();
-    await Assertions.checkIfToggleIsOff(NetworkListModal.testNetToggle);
+    await Assertions.checkIfToggleIsOff(
+      NetworkListModal.testNetToggle as Promise<Detox.IndexableNativeElement>,
+    );
     await Assertions.checkIfTextIsNotDisplayed(
       CustomNetworks.Sepolia.providerConfig.nickname,
     );

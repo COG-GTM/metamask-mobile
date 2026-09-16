@@ -11,10 +11,8 @@ import Assertions from '../../utils/Assertions';
 import TabBarComponent from '../../pages/wallet/TabBarComponent';
 import {
   defaultGanacheOptions,
-  stopFixtureServer,
   withFixtures,
 } from '../../fixtures/fixture-helper';
-import FixtureServer from '../../fixtures/fixture-server';
 import FixtureBuilder from '../../fixtures/fixture-builder';
 
 import ActivitiesView from '../../pages/Transactions/ActivitiesView';
@@ -22,7 +20,6 @@ import ActivitiesView from '../../pages/Transactions/ActivitiesView';
 const INCORRECT_SEND_ADDRESS = '0xebe6CcB6B55e1d094d9c58980Bc10Fed69932cAb';
 const CORRECT_SEND_ADDRESS = '0x37cc5ef6bfe753aeaf81f945efe88134b238face';
 const SHORTHAND_ADDRESS = '0x37Cc...FACE';
-const fixtureServer = new FixtureServer();
 
 describe(
   SmokeCore('Send ETH to the correct address after editing the recipient'),
@@ -37,7 +34,7 @@ describe(
           fixture: new FixtureBuilder().withGanacheNetwork().build(),
           restartDevice: true,
           ganacheOptions: defaultGanacheOptions,
-        },
+        } as Parameters<typeof withFixtures>[0],
         async () => {
           await loginToApp();
           await Assertions.checkIfVisible(WalletView.container);
