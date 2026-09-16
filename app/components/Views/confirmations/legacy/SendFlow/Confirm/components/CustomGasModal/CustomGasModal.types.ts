@@ -15,7 +15,7 @@ export interface CustomGasModalProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     transaction: any;
     total: string;
-  }) => void;
+  }) => string | undefined;
   legacy: boolean;
   legacyGasData?: {
     legacyGasLimit: string;
