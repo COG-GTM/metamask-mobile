@@ -18,7 +18,6 @@ import {
 } from '../../../../../../selectors/networkController';
 import AvatarNetwork from '../../../../../../component-library/components/Avatars/Avatar/variants/AvatarNetwork';
 import { AvatarSize } from '../../../../../../component-library/components/Avatars/Avatar';
-import { isNetworkUiRedesignEnabled } from '../../../../../../util/networks/isNetworkUiRedesignEnabled';
 import { useSafeChains } from '../../../../../../components/hooks/useSafeChains';
 import { isNonEvmChainId } from '../../../../../../core/Multichain/utils';
 import { NetworkConfiguration } from '@metamask/network-controller';
@@ -116,9 +115,7 @@ const CustomNetwork = ({
                 }
               />
             </View>
-            <CustomText bold={!isNetworkUiRedesignEnabled()}>
-              {networkConfiguration.nickname}
-            </CustomText>
+            <CustomText>{networkConfiguration.nickname}</CustomText>
           </View>
           <View style={styles.popularWrapper}>
             {!hideWarningIcons &&

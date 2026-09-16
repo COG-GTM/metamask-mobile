@@ -3,7 +3,6 @@ import Device from '../../../util/device';
 import { StyleSheet } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { Colors } from '../../../util/theme/models';
-import { isNetworkUiRedesignEnabled } from '../../../util/networks/isNetworkUiRedesignEnabled';
 
 /**
  * Style sheet function for NetworkSelector screen.
@@ -13,11 +12,7 @@ const createStyles = (colors: Colors) =>
   StyleSheet.create({
     addNetworkButton: {
       marginHorizontal: 16,
-      marginBottom: Device.isAndroid()
-        ? 16
-        : isNetworkUiRedesignEnabled()
-        ? 12
-        : 0,
+      marginBottom: Device.isAndroid() ? 16 : 12,
     },
     networkMenu: {
       alignItems: 'center',
@@ -106,7 +101,7 @@ const createStyles = (colors: Colors) =>
       marginTop: 1,
     },
     networkListContainer: {
-      height: isNetworkUiRedesignEnabled() ? '100%' : undefined,
+      height: '100%',
     },
     networkIcon: {
       width: 20,

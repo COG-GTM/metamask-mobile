@@ -58,7 +58,6 @@ export const BridgeSourceTokenSelector: React.FC = () => {
 
   const {
     chainId: selectedEvmChainId, // Will be the most recently selected EVM chain if you are on Solana
-    domainIsConnectedDapp,
     networkName: selectedNetworkName,
   } = useNetworkInfo();
   const {
@@ -67,7 +66,6 @@ export const BridgeSourceTokenSelector: React.FC = () => {
     onNonEvmNetworkChange,
     ///: END:ONLY_INCLUDE_IF
   } = useSwitchNetworks({
-    domainIsConnectedDapp,
     selectedChainId: selectedEvmChainId,
     selectedNetworkName,
   });
