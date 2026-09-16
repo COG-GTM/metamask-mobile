@@ -2,6 +2,7 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import RemoteImage from './';
 import { getFormattedIpfsUrl } from '@metamask/assets-controllers';
+import { Image } from 'react-native';
 import { act, render } from '@testing-library/react-native';
 import { useSelector } from 'react-redux';
 import { backgroundState } from '../../../util/test/initial-root-state';
@@ -92,5 +93,45 @@ describe('RemoteImage', () => {
     // eslint-disable-next-line no-empty-function
     await act(async () => {});
     expect(wrapper).toMatchSnapshot();
+  });
+
+  describe('Image.getSize', () => {
+    const getSizeSpy = jest.fn();
+
+    beforeEach(() => {
+      getSizeSpy.mockReset();
+      Image.getSize = getSizeSpy;
+    });
+
+    it('does not measure image dimensions when isFullRatio is not set', async () => {
+      render(
+        <RemoteImage
+          fadeIn
+          isTokenImage
+          source={{ uri: 'https://example.com/token.png' }}
+        />,
+      );
+      // eslint-disable-next-line no-empty-function
+      await act(async () => {});
+      expect(getSizeSpy).not.toHaveBeenCalled();
+    });
+
+    it('measures image dimensions when isFullRatio is set', async () => {
+      render(
+        <RemoteImage
+          fadeIn
+          isTokenImage
+          isFullRatio
+          source={{ uri: 'https://example.com/token.png' }}
+        />,
+      );
+      // eslint-disable-next-line no-empty-function
+      await act(async () => {});
+      expect(getSizeSpy).toHaveBeenCalledWith(
+        'https://example.com/token.png',
+        expect.any(Function),
+        expect.any(Function),
+      );
+    });
   });
 });
