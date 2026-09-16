@@ -39,6 +39,7 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  getNormalizedTxState,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
@@ -66,6 +67,66 @@ const UNI_ADDRESS = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984';
 
 const MOCK_CHAIN_ID = '1';
 const MOCK_NETWORK_CLIENT_ID = 'testNetworkClientId';
+
+describe('getNormalizedTxState', () => {
+  it('returns undefined when state.transaction is undefined', () => {
+    expect(getNormalizedTxState({ transaction: undefined })).toBeUndefined();
+  });
+
+  it('merges top-level and nested transaction state', () => {
+    const transaction = {
+      id: 'transaction-id',
+      value: '0x1',
+      transaction: {
+        value: '0x2',
+        from: MOCK_ADDRESS1,
+      },
+    };
+
+    expect(getNormalizedTxState({ transaction })).toEqual({
+      id: 'transaction-id',
+      value: '0x2',
+      from: MOCK_ADDRESS1,
+      transaction: {
+        value: '0x2',
+        from: MOCK_ADDRESS1,
+      },
+    });
+  });
+
+  it('returns the same reference when state objects share a transaction', () => {
+    const transaction = {
+      value: '0x1',
+      transaction: { from: MOCK_ADDRESS1 },
+    };
+
+    const firstResult = getNormalizedTxState({ transaction });
+    const secondResult = getNormalizedTxState({ transaction });
+
+    expect(secondResult).toBe(firstResult);
+  });
+
+  it('returns a new reference when state.transaction changes', () => {
+    const firstTransaction = {
+      value: '0x1',
+      transaction: { from: MOCK_ADDRESS1 },
+    };
+    const secondTransaction = {
+      value: '0x2',
+      transaction: { from: MOCK_ADDRESS1 },
+    };
+
+    const firstResult = getNormalizedTxState({
+      transaction: firstTransaction,
+    });
+    const secondResult = getNormalizedTxState({
+      transaction: secondTransaction,
+    });
+
+    expect(secondResult).not.toBe(firstResult);
+    expect(secondResult?.value).toBe('0x2');
+  });
+});
 
 ENGINE_MOCK.context = {
   NetworkController: {
