@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "devDependencies": {
     "@babel/preset-env": "^7.22.6",
+    "@babel/preset-typescript": "^7.24.7",
     "@blockaid/ppom_release": "^1.5.3",
     "babel-loader": "^9.1.2",
     "binary-base64-loader": "^1.0.0",
@@ -13,11 +14,13 @@
     "raw-loader": "^4.0.2",
     "react-native-webview-invoke": "^0.6.2",
     "terser-webpack-plugin": "^5.3.9",
+    "typescript": "~5.4.5",
     "webpack": "^5.88.1",
     "webpack-cli": "^5.1.4"
   },
   "scripts": {
     "lint": "eslint '**/*.{js,ts,tsx}'",
+    "lint:tsc": "tsc --noEmit",
     "build-html": "webpack --config ./webpack.config.html.js",
     "build-html-js": "webpack --config ./webpack.config.html-js.js",
     "build-version": "webpack --config ./webpack.config.version.js",
