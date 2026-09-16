@@ -18,7 +18,6 @@ export const useSwitchTokens = () => {
 
   const {
     chainId: selectedEvmChainId, // Will be the most recently selected EVM chain if you are on Solana
-    domainIsConnectedDapp,
     networkName: selectedNetworkName,
   } = useNetworkInfo();
   const {
@@ -27,7 +26,6 @@ export const useSwitchTokens = () => {
     onNonEvmNetworkChange,
     ///: END:ONLY_INCLUDE_IF
   } = useSwitchNetworks({
-    domainIsConnectedDapp,
     selectedChainId: selectedEvmChainId,
     selectedNetworkName,
   });

@@ -1,10 +1,7 @@
 import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import Engine from '../../../core/Engine';
-import {
-  isMultichainV1Enabled,
-  getDecimalChainId,
-} from '../../../util/networks';
+import { getDecimalChainId } from '../../../util/networks';
 import { NetworkConfiguration } from '@metamask/network-controller';
 import {
   InfuraNetworkType,
@@ -41,8 +38,6 @@ import { useNavigation } from '@react-navigation/native';
 ///: END:ONLY_INCLUDE_IF
 
 interface UseSwitchNetworksProps {
-  domainIsConnectedDapp?: boolean;
-  origin?: string;
   selectedChainId?: Hex;
   selectedNetworkName?: string;
   dismissModal?: () => void;
@@ -66,8 +61,6 @@ interface UseSwitchNetworksReturn {
  * @returns Object containing network switching functions
  */
 export function useSwitchNetworks({
-  domainIsConnectedDapp = false,
-  origin = '',
   selectedChainId,
   selectedNetworkName,
   dismissModal,
@@ -113,8 +106,7 @@ export function useSwitchNetworks({
     async (networkConfiguration: NetworkConfiguration) => {
       if (!networkConfiguration) return;
 
-      const { MultichainNetworkController, SelectedNetworkController } =
-        Engine.context;
+      const { MultichainNetworkController } = Engine.context;
       const {
         name: nickname,
         chainId,
@@ -122,30 +114,20 @@ export function useSwitchNetworks({
         defaultRpcEndpointIndex,
       } = networkConfiguration;
 
-      const networkConfigurationId =
-        rpcEndpoints[defaultRpcEndpointIndex].networkClientId;
-
-      if (domainIsConnectedDapp && isMultichainV1Enabled()) {
-        SelectedNetworkController.setNetworkClientIdForDomain(
-          origin,
-          networkConfigurationId,
-        );
-      } else {
-        trace({
-          name: TraceName.SwitchCustomNetwork,
-          parentContext: parentSpan,
-          op: TraceOperation.SwitchCustomNetwork,
-        });
-        const { networkClientId } = rpcEndpoints[defaultRpcEndpointIndex];
-        try {
-          await MultichainNetworkController.setActiveNetwork(networkClientId);
-        } catch (error) {
-          Logger.error(new Error(`Error in setActiveNetwork: ${error}`));
-        }
+      trace({
+        name: TraceName.SwitchCustomNetwork,
+        parentContext: parentSpan,
+        op: TraceOperation.SwitchCustomNetwork,
+      });
+      const { networkClientId } = rpcEndpoints[defaultRpcEndpointIndex];
+      try {
+        await MultichainNetworkController.setActiveNetwork(networkClientId);
+      } catch (error) {
+        Logger.error(new Error(`Error in setActiveNetwork: ${error}`));
       }
 
       setTokenNetworkFilter(chainId);
-      if (!(domainIsConnectedDapp && isMultichainV1Enabled())) dismissModal?.();
+      dismissModal?.();
       endTrace({ name: TraceName.SwitchCustomNetwork });
       endTrace({ name: TraceName.NetworkSwitch });
       trackEvent(
@@ -159,8 +141,6 @@ export function useSwitchNetworks({
       );
     },
     [
-      domainIsConnectedDapp,
-      origin,
       setTokenNetworkFilter,
       selectedNetworkName,
       trackEvent,
@@ -182,34 +162,27 @@ export function useSwitchNetworks({
         op: TraceOperation.SwitchBuiltInNetwork,
       });
 
-      const {
-        MultichainNetworkController,
-        AccountTrackerController,
-        SelectedNetworkController,
-      } = Engine.context;
+      const { MultichainNetworkController, AccountTrackerController } =
+        Engine.context;
 
-      if (domainIsConnectedDapp && isMultichainV1Enabled()) {
-        SelectedNetworkController.setNetworkClientIdForDomain(origin, type);
-      } else {
-        const networkConfiguration =
-          networkConfigurations[BUILT_IN_NETWORKS[type].chainId];
+      const networkConfiguration =
+        networkConfigurations[BUILT_IN_NETWORKS[type].chainId];
 
-        const clientId =
-          networkConfiguration?.rpcEndpoints[
-            networkConfiguration.defaultRpcEndpointIndex
-          ].networkClientId ?? type;
+      const clientId =
+        networkConfiguration?.rpcEndpoints[
+          networkConfiguration.defaultRpcEndpointIndex
+        ].networkClientId ?? type;
 
-        setTokenNetworkFilter(networkConfiguration.chainId);
-        await MultichainNetworkController.setActiveNetwork(clientId);
+      setTokenNetworkFilter(networkConfiguration.chainId);
+      await MultichainNetworkController.setActiveNetwork(clientId);
 
-        closeRpcModal?.();
-        AccountTrackerController.refresh([clientId]);
+      closeRpcModal?.();
+      AccountTrackerController.refresh([clientId]);
 
-        // Update incoming transactions after a delay
-        setTimeout(async () => {
-          await updateIncomingTransactions();
-        }, 1000);
-      }
+      // Update incoming transactions after a delay
+      setTimeout(async () => {
+        await updateIncomingTransactions();
+      }, 1000);
 
       dismissModal?.();
       endTrace({ name: TraceName.SwitchBuiltInNetwork });
@@ -226,8 +199,6 @@ export function useSwitchNetworks({
       );
     },
     [
-      domainIsConnectedDapp,
-      origin,
       networkConfigurations,
       setTokenNetworkFilter,
       selectedChainId,

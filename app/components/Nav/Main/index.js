@@ -85,7 +85,6 @@ import {
   startIncomingTransactionPolling,
   stopIncomingTransactionPolling,
 } from '../../../util/transaction-controller';
-import isNetworkUiRedesignEnabled from '../../../util/networks/isNetworkUiRedesignEnabled';
 import { useConnectionHandler } from '../../../util/navigation/useConnectionHandler';
 import { getGlobalEthQuery } from '../../../util/networks/global-network';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
@@ -303,8 +302,6 @@ const Main = (props) => {
 
   // Show add network confirmation.
   useEffect(() => {
-    if (!isNetworkUiRedesignEnabled()) return;
-
     // Memoized values to avoid recalculations
     const currentNetworkValues = Object.values(networkConfigurations);
     const previousNetworkValues = Object.values(

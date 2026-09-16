@@ -74,7 +74,6 @@ import { ButtonsAlignment } from '../../../component-library/components/BottomSh
 import { ButtonProps } from '../../../component-library/components/Buttons/Button/Button.types';
 import BottomSheetFooter from '../../../component-library/components/BottomSheets/BottomSheetFooter/BottomSheetFooter';
 import { ExtendedNetwork } from '../Settings/NetworksSettings/NetworkSettings/CustomNetworkView/CustomNetwork.types';
-import { isNetworkUiRedesignEnabled } from '../../../util/networks/isNetworkUiRedesignEnabled';
 import { CaipChainId, Hex } from '@metamask/utils';
 import hideProtocolFromUrl from '../../../util/hideProtocolFromUrl';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
@@ -159,23 +158,12 @@ const NetworkSelector = () => {
     tags: getTraceTags(store.getState()),
     op: TraceOperation.NetworkSwitch,
   });
-  const {
-    chainId: selectedChainId,
-    rpcUrl: selectedRpcUrl,
-    domainIsConnectedDapp,
-    networkName: selectedNetworkName,
-  } = useNetworkInfo(origin);
+  const { chainId: selectedChainId, networkName: selectedNetworkName } =
+    useNetworkInfo(origin);
 
-  const avatarSize = isNetworkUiRedesignEnabled() ? AvatarSize.Sm : undefined;
-  const modalTitle = isNetworkUiRedesignEnabled()
-    ? 'networks.additional_network_information_title'
-    : 'networks.network_warning_title';
-  const modalDescription = isNetworkUiRedesignEnabled()
-    ? 'networks.additonial_network_information_desc'
-    : 'networks.network_warning_desc';
-  const buttonLabelAddNetwork = isNetworkUiRedesignEnabled()
-    ? 'app_settings.network_add_custom_network'
-    : 'app_settings.network_add_network';
+  const modalTitle = 'networks.additional_network_information_title';
+  const modalDescription = 'networks.additonial_network_information_desc';
+  const buttonLabelAddNetwork = 'app_settings.network_add_custom_network';
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] =
     useState<ShowConfirmDeleteModalState>({
       isVisible: false,
@@ -353,8 +341,6 @@ const NetworkSelector = () => {
     onNonEvmNetworkChange,
     ///: END:ONLY_INCLUDE_IF
   } = useSwitchNetworks({
-    domainIsConnectedDapp,
-    origin,
     selectedChainId,
     selectedNetworkName,
     dismissModal: () => sheetRef.current?.dismissModal(),
@@ -370,60 +356,42 @@ const NetworkSelector = () => {
       ].url;
     const name = networkConfigurations?.[chainId]?.name ?? mainnetName;
 
-    if (isNetworkUiRedesignEnabled() && isNoSearchResults(MAINNET)) return null;
-
-    if (isNetworkUiRedesignEnabled()) {
-      return (
-        <Cell
-          key={chainId}
-          variant={CellVariant.SelectWithMenu}
-          title={name}
-          secondaryText={
-            showRpcSelector
-              ? hideProtocolFromUrl(hideKeyFromUrl(rpcUrl))
-              : undefined
-          }
-          avatarProps={{
-            variant: AvatarVariant.Network,
-            name: mainnetName,
-            imageSource: images.ETHEREUM,
-            size: AvatarSize.Sm,
-          }}
-          isSelected={isNetworkSelected(chainId)}
-          onPress={() => onNetworkChange(MAINNET)}
-          style={styles.networkCell}
-          buttonIcon={IconName.MoreVertical}
-          buttonProps={{
-            onButtonClick: () => {
-              openModal(chainId, false, MAINNET, true);
-            },
-          }}
-          onTextClick={() =>
-            openRpcModal({
-              chainId,
-              networkName: mainnetName,
-            })
-          }
-          onLongPress={() => {
-            openModal(chainId, false, MAINNET, true);
-          }}
-        />
-      );
-    }
+    if (isNoSearchResults(MAINNET)) return null;
 
     return (
       <Cell
-        variant={CellVariant.Select}
+        key={chainId}
+        variant={CellVariant.SelectWithMenu}
         title={name}
+        secondaryText={
+          showRpcSelector
+            ? hideProtocolFromUrl(hideKeyFromUrl(rpcUrl))
+            : undefined
+        }
         avatarProps={{
           variant: AvatarVariant.Network,
           name: mainnetName,
           imageSource: images.ETHEREUM,
-          size: avatarSize,
+          size: AvatarSize.Sm,
         }}
         isSelected={isNetworkSelected(chainId)}
         onPress={() => onNetworkChange(MAINNET)}
         style={styles.networkCell}
+        buttonIcon={IconName.MoreVertical}
+        buttonProps={{
+          onButtonClick: () => {
+            openModal(chainId, false, MAINNET, true);
+          },
+        }}
+        onTextClick={() =>
+          openRpcModal({
+            chainId,
+            networkName: mainnetName,
+          })
+        }
+        onLongPress={() => {
+          openModal(chainId, false, MAINNET, true);
+        }}
       />
     );
   };
@@ -436,60 +404,42 @@ const NetworkSelector = () => {
         networkConfigurations?.[chainId]?.defaultRpcEndpointIndex
       ].url;
 
-    if (isNetworkUiRedesignEnabled() && isNoSearchResults('linea-mainnet'))
-      return null;
-
-    if (isNetworkUiRedesignEnabled()) {
-      return (
-        <Cell
-          key={chainId}
-          variant={CellVariant.SelectWithMenu}
-          title={name}
-          avatarProps={{
-            variant: AvatarVariant.Network,
-            name: lineaMainnetName,
-            imageSource: images['LINEA-MAINNET'],
-            size: AvatarSize.Sm,
-          }}
-          isSelected={isNetworkSelected(chainId)}
-          onPress={() => onNetworkChange(LINEA_MAINNET)}
-          style={styles.networkCell}
-          buttonIcon={IconName.MoreVertical}
-          secondaryText={
-            showRpcSelector
-              ? hideProtocolFromUrl(hideKeyFromUrl(rpcUrl))
-              : undefined
-          }
-          buttonProps={{
-            onButtonClick: () => {
-              openModal(chainId, false, LINEA_MAINNET, true);
-            },
-          }}
-          onTextClick={() =>
-            openRpcModal({
-              chainId,
-              networkName: lineaMainnetName,
-            })
-          }
-          onLongPress={() => {
-            openModal(chainId, false, LINEA_MAINNET, true);
-          }}
-        />
-      );
-    }
+    if (isNoSearchResults('linea-mainnet')) return null;
 
     return (
       <Cell
-        variant={CellVariant.Select}
+        key={chainId}
+        variant={CellVariant.SelectWithMenu}
         title={name}
         avatarProps={{
           variant: AvatarVariant.Network,
           name: lineaMainnetName,
           imageSource: images['LINEA-MAINNET'],
-          size: avatarSize,
+          size: AvatarSize.Sm,
         }}
         isSelected={isNetworkSelected(chainId)}
         onPress={() => onNetworkChange(LINEA_MAINNET)}
+        style={styles.networkCell}
+        buttonIcon={IconName.MoreVertical}
+        secondaryText={
+          showRpcSelector
+            ? hideProtocolFromUrl(hideKeyFromUrl(rpcUrl))
+            : undefined
+        }
+        buttonProps={{
+          onButtonClick: () => {
+            openModal(chainId, false, LINEA_MAINNET, true);
+          },
+        }}
+        onTextClick={() =>
+          openRpcModal({
+            chainId,
+            networkName: lineaMainnetName,
+          })
+        }
+        onLongPress={() => {
+          openModal(chainId, false, LINEA_MAINNET, true);
+        }}
       />
     );
   };
@@ -518,73 +468,47 @@ const NetworkSelector = () => {
 
       const name = nickname || rpcName;
 
-      if (isNetworkUiRedesignEnabled() && isNoSearchResults(name)) return null;
+      if (isNoSearchResults(name)) return null;
 
       const image = getNetworkImageSource({ chainId: chainId?.toString() });
 
-      if (isNetworkUiRedesignEnabled()) {
-        return (
-          <Cell
-            key={chainId}
-            variant={CellVariant.SelectWithMenu}
-            title={name}
-            avatarProps={{
-              variant: AvatarVariant.Network,
-              name,
-              imageSource: image,
-              size: AvatarSize.Sm,
-            }}
-            isSelected={
-              !isEvmSelected ? false : Boolean(chainId === selectedChainId)
-            }
-            onPress={() => onSetRpcTarget(networkConfiguration)}
-            style={styles.networkCell}
-            buttonIcon={IconName.MoreVertical}
-            secondaryText={
-              showRpcSelector
-                ? hideProtocolFromUrl(hideKeyFromUrl(rpcUrl))
-                : undefined
-            }
-            buttonProps={{
-              onButtonClick: () => {
-                openModal(chainId, true, rpcUrl, false);
-              },
-            }}
-            onTextClick={() =>
-              openRpcModal({
-                chainId,
-                networkName: name,
-              })
-            }
-            onLongPress={() => {
-              openModal(chainId, true, rpcUrl, false);
-            }}
-          />
-        );
-      }
-
       return (
         <Cell
-          key={`${chainId}-${rpcUrl}`}
-          testID={NetworkListModalSelectorsIDs.CUSTOM_NETWORK_CELL(name)}
-          variant={CellVariant.Select}
+          key={chainId}
+          variant={CellVariant.SelectWithMenu}
           title={name}
           avatarProps={{
             variant: AvatarVariant.Network,
             name,
             imageSource: image,
-            size: avatarSize,
+            size: AvatarSize.Sm,
           }}
           isSelected={
             !isEvmSelected ? false : Boolean(chainId === selectedChainId)
           }
           onPress={() => onSetRpcTarget(networkConfiguration)}
           style={styles.networkCell}
-        >
-          {Boolean(
-            chainId === selectedChainId && selectedRpcUrl === rpcUrl,
-          ) && <View testID={`${name}-selected`} />}
-        </Cell>
+          buttonIcon={IconName.MoreVertical}
+          secondaryText={
+            showRpcSelector
+              ? hideProtocolFromUrl(hideKeyFromUrl(rpcUrl))
+              : undefined
+          }
+          buttonProps={{
+            onButtonClick: () => {
+              openModal(chainId, true, rpcUrl, false);
+            },
+          }}
+          onTextClick={() =>
+            openRpcModal({
+              chainId,
+              networkName: name,
+            })
+          }
+          onLongPress={() => {
+            openModal(chainId, true, rpcUrl, false);
+          }}
+        />
       );
     });
 
@@ -606,61 +530,42 @@ const NetworkSelector = () => {
       const rpcUrl =
         rpcEndpoints?.[networkConfiguration?.defaultRpcEndpointIndex].url;
 
-      if (isNetworkUiRedesignEnabled() && isNoSearchResults(name)) return null;
-
-      if (isNetworkUiRedesignEnabled()) {
-        return (
-          <Cell
-            key={chainId}
-            variant={CellVariant.SelectWithMenu}
-            secondaryText={
-              showRpcSelector
-                ? hideProtocolFromUrl(hideKeyFromUrl(rpcUrl))
-                : undefined
-            }
-            title={name}
-            avatarProps={{
-              variant: AvatarVariant.Network,
-              name,
-              imageSource,
-              size: AvatarSize.Sm,
-            }}
-            isSelected={isNetworkSelected(chainId)}
-            onPress={() => onNetworkChange(networkType)}
-            style={styles.networkCell}
-            buttonIcon={IconName.MoreVertical}
-            buttonProps={{
-              onButtonClick: () => {
-                openModal(chainId, false, networkType, true);
-              },
-            }}
-            onTextClick={() =>
-              openRpcModal({
-                chainId,
-                networkName: name,
-              })
-            }
-            onLongPress={() => {
-              openModal(chainId, false, networkType, true);
-            }}
-          />
-        );
-      }
+      if (isNoSearchResults(name)) return null;
 
       return (
         <Cell
           key={chainId}
-          variant={CellVariant.Select}
+          variant={CellVariant.SelectWithMenu}
+          secondaryText={
+            showRpcSelector
+              ? hideProtocolFromUrl(hideKeyFromUrl(rpcUrl))
+              : undefined
+          }
           title={name}
           avatarProps={{
             variant: AvatarVariant.Network,
             name,
             imageSource,
-            size: avatarSize,
+            size: AvatarSize.Sm,
           }}
           isSelected={isNetworkSelected(chainId)}
           onPress={() => onNetworkChange(networkType)}
           style={styles.networkCell}
+          buttonIcon={IconName.MoreVertical}
+          buttonProps={{
+            onButtonClick: () => {
+              openModal(chainId, false, networkType, true);
+            },
+          }}
+          onTextClick={() =>
+            openRpcModal({
+              chainId,
+              networkName: name,
+            })
+          }
+          onLongPress={() => {
+            openModal(chainId, false, networkType, true);
+          }}
         />
       );
     });
@@ -689,7 +594,7 @@ const NetworkSelector = () => {
             variant: AvatarVariant.Network,
             name: 'Solana',
             imageSource: images.SOLANA,
-            size: avatarSize,
+            size: AvatarSize.Sm,
           }}
           isSelected={!isEvmSelected && !browserEvmChainId}
           onPress={() => onNonEvmNetworkChange(SolScope.Mainnet)}
@@ -726,7 +631,7 @@ const NetworkSelector = () => {
   const renderAdditonalNetworks = () => {
     let filteredNetworks;
 
-    if (isNetworkUiRedesignEnabled() && searchString.length > 0)
+    if (searchString.length > 0)
       filteredNetworks = PopularList.filter(({ nickname }) =>
         nickname.toLowerCase().includes(searchString.toLowerCase()),
       );
@@ -853,9 +758,7 @@ const NetworkSelector = () => {
 
   const renderBottomSheetContent = () => (
     <>
-      {isNetworkUiRedesignEnabled() &&
-        searchString.length === 0 &&
-        renderEnabledNetworksTitle()}
+      {searchString.length === 0 && renderEnabledNetworksTitle()}
       {renderMainnet()}
       {renderLineaMainnet()}
       {renderRpcNetworks()}
@@ -864,10 +767,8 @@ const NetworkSelector = () => {
         renderNonEvmNetworks()
         ///: END:ONLY_INCLUDE_IF
       }
-      {isNetworkUiRedesignEnabled() &&
-        searchString.length === 0 &&
-        renderPopularNetworksTitle()}
-      {isNetworkUiRedesignEnabled() && renderAdditonalNetworks()}
+      {searchString.length === 0 && renderPopularNetworksTitle()}
+      {renderAdditonalNetworks()}
       {searchString.length === 0 && renderTestNetworksSwitch()}
       {showTestNetworks && renderOtherNetworks()}
     </>

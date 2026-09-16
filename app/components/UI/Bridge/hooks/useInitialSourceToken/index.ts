@@ -36,7 +36,6 @@ export const useInitialSourceToken = (initialSourceToken?: BridgeToken) => {
 
   const {
     chainId: selectedChainId,
-    domainIsConnectedDapp,
     networkName: selectedNetworkName,
   } = useNetworkInfo();
   const {
@@ -45,7 +44,6 @@ export const useInitialSourceToken = (initialSourceToken?: BridgeToken) => {
     onNonEvmNetworkChange,
     ///: END:ONLY_INCLUDE_IF
   } = useSwitchNetworks({
-    domainIsConnectedDapp,
     selectedChainId,
     selectedNetworkName,
   });

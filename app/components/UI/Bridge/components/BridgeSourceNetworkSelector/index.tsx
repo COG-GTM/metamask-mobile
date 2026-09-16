@@ -63,7 +63,6 @@ export const BridgeSourceNetworkSelector: React.FC = () => {
 
   const {
     chainId: selectedEvmChainId,
-    domainIsConnectedDapp,
     networkName: selectedNetworkName,
   } = useNetworkInfo();
   const {
@@ -72,7 +71,6 @@ export const BridgeSourceNetworkSelector: React.FC = () => {
     onNonEvmNetworkChange,
     ///: END:ONLY_INCLUDE_IF
   } = useSwitchNetworks({
-    domainIsConnectedDapp,
     selectedChainId: selectedEvmChainId,
     selectedNetworkName,
   });

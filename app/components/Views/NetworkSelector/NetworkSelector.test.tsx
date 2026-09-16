@@ -12,13 +12,10 @@ import { backgroundState } from '../../../util/test/initial-root-state';
 import NetworkSelector from './NetworkSelector';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { NetworkListModalSelectorsIDs } from '../../../../e2e/selectors/Network/NetworkListModal.selectors';
-import { isNetworkUiRedesignEnabled } from '../../../util/networks/isNetworkUiRedesignEnabled';
 import { mockNetworkState } from '../../../util/test/network';
 
 // eslint-disable-next-line import/no-namespace
 import * as selectedNetworkControllerFcts from '../../../selectors/selectedNetworkController';
-// eslint-disable-next-line import/no-namespace
-import * as networks from '../../../util/networks';
 
 const mockEngine = Engine;
 
@@ -26,11 +23,6 @@ const setShowTestNetworksSpy = jest.spyOn(
   Engine.context.PreferencesController,
   'setShowTestNetworks',
 );
-
-// Mock the entire module
-jest.mock('../../../util/networks/isNetworkUiRedesignEnabled', () => ({
-  isNetworkUiRedesignEnabled: jest.fn(),
-}));
 
 jest.mock('../../../util/transaction-controller', () => ({
   updateIncomingTransactions: jest.fn(),
@@ -277,52 +269,11 @@ const renderComponent = (state: any = {}) =>
 
 describe('Network Selector', () => {
   it('renders correctly', () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => false);
     const { toJSON } = renderComponent(initialState);
     expect(toJSON()).toMatchSnapshot();
-  });
-
-  it('renders correctly when network UI redesign is enabled', () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
-    const { toJSON } = renderComponent(initialState);
-    expect(toJSON()).toMatchSnapshot();
-  });
-
-  it('renders correctly when network UI redesign is enabled and calls setNetworkClientIdForDomain', async () => {
-    const testMock = {
-      networkName: '',
-      networkImageSource: '',
-      domainNetworkClientId: '',
-      chainId: CHAIN_IDS.MAINNET,
-      rpcUrl: '',
-      domainIsConnectedDapp: true,
-    };
-    jest.spyOn(networks, 'isMultichainV1Enabled').mockReturnValue(true);
-    jest
-      .spyOn(selectedNetworkControllerFcts, 'useNetworkInfo')
-      .mockImplementation(() => testMock);
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
-    const { getByText } = renderComponent(initialState);
-    const mainnetCell = getByText('Ethereum Mainnet');
-    fireEvent.press(mainnetCell);
-    await waitFor(() => {
-      expect(
-        mockEngine.context.SelectedNetworkController
-          .setNetworkClientIdForDomain,
-      ).toBeCalled();
-    });
-  });
-
-  it('shows popular networks when UI redesign is enabled', () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
-    const { getByText } = renderComponent(initialState);
-
-    const popularNetworksTitle = getByText('Additional networks');
-    expect(popularNetworksTitle).toBeTruthy();
   });
 
   it('changes network when another network cell is pressed', async () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => false);
     const { getByText } = renderComponent(initialState);
     const polygonCell = getByText('Polygon Mainnet');
 
@@ -334,7 +285,6 @@ describe('Network Selector', () => {
   });
 
   it('toggles the test networks switch correctly', () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => false);
     const { getByTestId } = renderComponent(initialState);
     const testNetworksSwitch = getByTestId(
       NetworkListModalSelectorsIDs.TEST_NET_TOGGLE,
@@ -346,7 +296,6 @@ describe('Network Selector', () => {
   });
 
   it('toggle test network is disabled and is on when a testnet is selected', () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => false);
     const { getByTestId } = renderComponent({
       user: {
         userLoggedIn: true,
@@ -490,7 +439,6 @@ describe('Network Selector', () => {
   });
 
   it('renders correctly with no network configurations', async () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
     const stateWithNoNetworkConfigurations = {
       ...initialState,
       engine: {
@@ -517,7 +465,6 @@ describe('Network Selector', () => {
   });
 
   it('renders the multi-RPC selection modal correctly', async () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
     const { getByText } = renderComponent(initialState);
     const polygonCell = getByText('Polygon Mainnet');
 
@@ -531,7 +478,6 @@ describe('Network Selector', () => {
   });
 
   it('switches RPC URL when a different RPC URL is selected', async () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
     const { getByText } = renderComponent(initialState);
     const polygonCell = getByText('Polygon Mainnet');
 
@@ -544,7 +490,6 @@ describe('Network Selector', () => {
   });
 
   it('filters networks correctly when searching', () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
     const { getByPlaceholderText, queryByText } = renderComponent(initialState);
 
     const searchInput = getByPlaceholderText('Search');
@@ -563,7 +508,6 @@ describe('Network Selector', () => {
   });
 
   it('shows popular networks when network UI redesign is enabled', () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
     const { getByText } = renderComponent(initialState);
 
     // Check that the additional networks section is rendered
@@ -572,7 +516,6 @@ describe('Network Selector', () => {
   });
 
   it('opens the multi-RPC selection modal correctly', async () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
     const { getByText } = renderComponent(initialState);
 
     const polygonCell = getByText('Polygon Mainnet');
@@ -586,7 +529,6 @@ describe('Network Selector', () => {
   });
 
   it('toggles test networks visibility when switch is used', () => {
-    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
     const { getByTestId } = renderComponent(initialState);
     const testNetworksSwitch = getByTestId(
       NetworkListModalSelectorsIDs.TEST_NET_TOGGLE,
@@ -603,7 +545,6 @@ describe('Network Selector', () => {
 
   describe('renderLineaMainnet', () => {
     it('renders the linea mainnet cell correctly', () => {
-      (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
       const { getByText } = renderComponent(initialState);
       const lineaRpcUrl = getByText('linea-rpc.publicnode.com');
       const lineaCell = getByText('Linea');
@@ -614,7 +555,6 @@ describe('Network Selector', () => {
 
   describe('renderRpcUrl', () => {
     it('renders the RPC URL correctly for avalanche', () => {
-      (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
       const { getByText } = renderComponent(initialState);
       const avalancheRpcUrl = getByText('api.avax.network/ext/bc/C');
       const avalancheCell = getByText('Avalanche Mainnet C-Chain');
@@ -623,7 +563,6 @@ describe('Network Selector', () => {
     });
 
     it('renders the RPC URL correctly for optimism single RPC endpoint', () => {
-      (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
       const { getByText } = renderComponent(initialState);
       const optimismCell = getByText('Optimism');
       expect(optimismCell).toBeTruthy();
@@ -635,7 +574,6 @@ describe('Network Selector', () => {
 
   describe('renderMainnet', () => {
     it('renders the  mainnet cell correctly', () => {
-      (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
       const { getByText } = renderComponent(initialState);
       const mainnetRpcUrl = getByText('mainnet-rpc.publicnode.com');
       const mainnetCell = getByText('Ethereum Mainnet');
@@ -646,7 +584,6 @@ describe('Network Selector', () => {
 
   describe('network switching with connected dapp', () => {
     beforeEach(() => {
-      jest.spyOn(networks, 'isMultichainV1Enabled').mockReturnValue(true);
       // Reset the mock before each test
       jest.clearAllMocks();
     });

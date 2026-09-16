@@ -10,7 +10,6 @@ import { mockTheme, useTheme } from '../../../../util/theme';
 import Icon from 'react-native-vector-icons/Ionicons';
 import createStyles from './NetworkSearchTextInput.styles';
 import { NetworksViewSelectorsIDs } from '../../../../../e2e/selectors/Settings/NetworksView.selectors';
-import { isNetworkUiRedesignEnabled } from '../../../../util/networks/isNetworkUiRedesignEnabled';
 
 interface NetworkSearchTextInputProps {
   searchString: string;
@@ -28,45 +27,26 @@ function NetworkSearchTextInput({
   const { colors } = theme;
   const styles = createStyles(colors || mockTheme.colors);
   const [isSearchFieldFocused, setIsSearchFieldFocused] = useState(false);
-  const searchPlaceHolder = isNetworkUiRedesignEnabled()
-    ? 'search-short'
-    : 'search';
-
-  const propsWhichAreFeatureFlagged = isNetworkUiRedesignEnabled()
-    ? {
-        onFocus: () => {
-          isNetworkUiRedesignEnabled() && setIsSearchFieldFocused(true);
-        },
-        onBlur: () => {
-          isNetworkUiRedesignEnabled() && setIsSearchFieldFocused(false);
-        },
-      }
-    : {};
-
-  const inputStylesWhichAreFeatureFlagged = !isNetworkUiRedesignEnabled()
-    ? styles.input
-    : isSearchFieldFocused
+  const inputStyle = isSearchFieldFocused
     ? styles.input
     : styles.unfocusedInput;
 
-  const containerInputStylesWhichAreFeatureFlagged =
-    !isNetworkUiRedesignEnabled()
-      ? styles.inputWrapper
-      : isSearchFieldFocused
-      ? styles.focusedInputWrapper
-      : styles.inputWrapper;
+  const containerInputStyle = isSearchFieldFocused
+    ? styles.focusedInputWrapper
+    : styles.inputWrapper;
 
   return (
-    <View style={containerInputStylesWhichAreFeatureFlagged}>
+    <View style={containerInputStyle}>
       <Icon name="search" size={20} color={colors.icon.default} />
       <TextInput
-        style={inputStylesWhichAreFeatureFlagged}
-        placeholder={strings(`networks.${searchPlaceHolder}`)}
+        style={inputStyle}
+        placeholder={strings('networks.search-short')}
         placeholderTextColor={colors.text.default}
         value={searchString}
         onChangeText={handleSearchTextChange}
         testID={NetworksViewSelectorsIDs.SEARCH_NETWORK_INPUT_BOX_ID}
-        {...propsWhichAreFeatureFlagged}
+        onFocus={() => setIsSearchFieldFocused(true)}
+        onBlur={() => setIsSearchFieldFocused(false)}
       />
       {searchString.length > 0 && (
         <Icon

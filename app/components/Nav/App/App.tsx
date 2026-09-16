@@ -109,7 +109,6 @@ import NftOptions from '../../../components/Views/NftOptions';
 import ShowTokenIdSheet from '../../../components/Views/ShowTokenIdSheet';
 import OriginSpamModal from '../../Views/OriginSpamModal/OriginSpamModal';
 import MaxBrowserTabsModal from '../../Views/Browser/MaxBrowserTabsModal';
-import { isNetworkUiRedesignEnabled } from '../../../util/networks/isNetworkUiRedesignEnabled';
 import ChangeInSimulationModal from '../../Views/ChangeInSimulationModal/ChangeInSimulationModal';
 import TooltipModal from '../../../components/Views/TooltipModal';
 import OptionsSheet from '../../UI/SelectOptionSheet/OptionsSheet';
@@ -464,12 +463,10 @@ const RootModalFlow = (
       name={Routes.MODAL.NFT_AUTO_DETECTION_MODAL}
       component={NFTAutoDetectionModal}
     />
-    {isNetworkUiRedesignEnabled() ? (
-      <Stack.Screen
-        name={Routes.MODAL.MULTI_RPC_MIGRATION_MODAL}
-        component={MultiRpcModal}
-      />
-    ) : null}
+    <Stack.Screen
+      name={Routes.MODAL.MULTI_RPC_MIGRATION_MODAL}
+      component={MultiRpcModal}
+    />
     <Stack.Screen
       name={Routes.SHEET.SHOW_TOKEN_ID}
       component={ShowTokenIdSheet}
@@ -699,13 +696,11 @@ const AppFlow = () => {
         component={AddNetworkFlow}
         options={{ animationEnabled: true }}
       />
-      {isNetworkUiRedesignEnabled() ? (
-        <Stack.Screen
-          name={Routes.EDIT_NETWORK}
-          component={AddNetworkFlow}
-          options={{ animationEnabled: true }}
-        />
-      ) : null}
+      <Stack.Screen
+        name={Routes.EDIT_NETWORK}
+        component={AddNetworkFlow}
+        options={{ animationEnabled: true }}
+      />
       <Stack.Screen
         name={Routes.LOCK_SCREEN}
         component={LockScreen}
