@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "types": ["node", "webdriverio/async", "@wdio/cucumber-framework"]
+  },
+  "include": ["../app/declarations/index.d.ts", "./**/*", "../wdio.conf.js"],
+  "exclude": ["../node_modules"]
+}
