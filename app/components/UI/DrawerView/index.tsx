@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { ComponentType, PureComponent } from 'react';
 import {
   Alert,
   TouchableOpacity,
@@ -8,10 +8,17 @@ import {
   Text,
   InteractionManager,
   Platform,
+  ImageSourcePropType,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import Share from 'react-native-share';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { ParamListBase } from '@react-navigation/native';
+import { Nft, Token } from '@metamask/assets-controllers';
+import { KeyringObject } from '@metamask/keyring-controller';
+import { Hex } from '@metamask/utils';
+import { InternalAccount } from '@metamask/keyring-internal-api';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -41,7 +48,7 @@ import Logger from '../../../util/Logger';
 import Device from '../../../util/device';
 import AppConstants from '../../../core/AppConstants';
 import { MetaMetricsEvents } from '../../../core/Analytics';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import EthereumAddress from '../EthereumAddress';
 import { getEther } from '../../../util/transactions';
 import { newAssetTransaction } from '../../../actions/transaction';
@@ -57,10 +64,12 @@ import {
 import ClipboardManager from '../../../core/ClipboardManager';
 import { collectiblesSelector } from '../../../reducers/collectibles';
 import { getCurrentRoute } from '../../../reducers/navigation';
+import { RootState } from '../../../reducers';
 import { ScrollView } from 'react-native-gesture-handler';
 import { isZero } from '../../../util/lodash';
 import { Authentication } from '../../../core/';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors, Theme } from '../../../util/theme/models';
 import { getLabelTextByAddress } from '../../../util/address';
 import {
   onboardNetworkAction,
@@ -75,6 +84,7 @@ import {
   selectNetworkConfigurations,
   selectProviderConfig,
   selectEvmTicker,
+  ProviderConfig,
 } from '../../../selectors/networkController';
 import { selectCurrentCurrency } from '../../../selectors/currencyRateController';
 import { selectTokens } from '../../../selectors/tokensController';
@@ -86,10 +96,11 @@ import { QRTabSwitcherScreens } from '../../../components/Views/QRTabSwitcher';
 import { createAccountSelectorNavDetails } from '../../Views/AccountSelector';
 import NetworkInfo from '../NetworkInfo';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import safePromiseHandler from './utils';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       flex: 1,
@@ -322,133 +333,164 @@ const createStyles = (colors) =>
 
 const metamask_name = require('../../../images/branding/metamask-name.png'); // eslint-disable-line
 const metamask_fox = require('../../../images/branding/fox.png'); // eslint-disable-line
-const ICON_IMAGES = {
+const ICON_IMAGES: Record<string, ImageSourcePropType> = {
   wallet: require('../../../images/wallet-icon.png'), // eslint-disable-line
   'selected-wallet': require('../../../images/selected-wallet-icon.png'), // eslint-disable-line
 };
+
+interface DrawerSection {
+  name: string;
+  icon?: React.ReactNode;
+  selectedIcon?: React.ReactNode;
+  action: () => void;
+  routeNames?: string[];
+  warning?: string;
+  testID?: string;
+}
+
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface Props extends IWithMetricsAwarenessProps {
+  /**
+  /* navigation object required to push new views
+  */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+   * Object representing the configuration of the current selected network
+   */
+  providerConfig: ProviderConfig;
+  /**
+   * List of accounts from the AccountTrackerController
+   */
+  accounts: ReturnType<typeof selectAccounts>;
+  /**
+   * Currently selected account
+   */
+  selectedInternalAccount: InternalAccount;
+  /**
+  /* Selected currency
+  */
+  currentCurrency: string;
+  /**
+   * List of keyrings
+   */
+  keyrings: KeyringObject[];
+  /**
+   * Action that toggles the network modal
+   */
+  toggleNetworkModal: () => void;
+  /**
+   * Action that shows the global alert
+   */
+  showAlert: (config: AlertConfig) => void;
+  /**
+   * Boolean that determines the status of the networks modal
+   */
+  networkModalVisible: boolean;
+  /**
+   * Start transaction with asset
+   */
+  newAssetTransaction: (
+    selectedAsset: Parameters<typeof newAssetTransaction>[0],
+  ) => void;
+  /**
+   * Boolean that determines if the user has set a password before
+   */
+  passwordSet: boolean;
+  /**
+   * Wizard onboarding state
+   */
+  wizard: RootState['wizard'];
+  /**
+   * Current provider ticker
+   */
+  ticker?: string;
+  /**
+   * Network configurations
+   */
+  networkConfigurations: ReturnType<typeof selectNetworkConfigurations>;
+  /**
+   * Array of ERC20 assets
+   */
+  tokens: Token[];
+  /**
+   * Array of ERC721 assets
+   */
+  collectibles: Nft[];
+  /**
+   * redux flag that indicates if the user
+   * completed the seed phrase backup flow
+   */
+  seedphraseBackedUp: boolean;
+  /**
+   * An object containing token balances for current account and network in the format address => balance
+   */
+  tokenBalances: ReturnType<typeof selectContractBalances>;
+  /**
+   * Prompts protect wallet modal
+   */
+  protectWalletModalVisible: () => void;
+  /**
+   * Callback to close drawer
+   */
+  onCloseDrawer: () => void;
+  /**
+   * Latest navigation route
+   */
+  currentRoute: string;
+  /**
+   * handles action for onboarding to a network
+   */
+  onboardNetworkAction: (chainId: string) => void;
+  /**
+   * returns switched network state
+   */
+  switchedNetwork: RootState['networkOnboarded']['switchedNetwork'];
+  /**
+   * updates when network is switched
+   */
+  networkSwitched: (params: {
+    networkUrl: string;
+    networkStatus: boolean;
+  }) => void;
+  /**
+   * Boolean that determines the state of network info modal
+   */
+  infoNetworkModalVisible: boolean;
+  /**
+   * Redux action to close info network modal
+   */
+  toggleInfoNetworkModal: () => void;
+  /**
+   * Selected multichain chainId
+   */
+  chainId: string;
+}
+
+interface State {
+  showProtectWalletModal?: boolean;
+  account: {
+    ens?: string;
+    name?: string;
+    address?: string;
+    currentChainId?: string;
+  };
+  networkType?: string;
+  showModal: boolean;
+  networkUrl?: string;
+}
 
 /**
  * View component that displays the MetaMask fox
  * in the middle of the screen
  */
-class DrawerView extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push new views
-    */
-    navigation: PropTypes.object,
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object.isRequired,
-    /**
-     * List of accounts from the AccountTrackerController
-     */
-    accounts: PropTypes.object,
-    /**
-     * Currently selected account
-     */
-    selectedInternalAccount: PropTypes.object,
-    /**
-    /* Selected currency
-    */
-    currentCurrency: PropTypes.string,
-    /**
-     * List of keyrings
-     */
-    keyrings: PropTypes.array,
-    /**
-     * Action that toggles the network modal
-     */
-    toggleNetworkModal: PropTypes.func,
-    /**
-     * Action that shows the global alert
-     */
-    showAlert: PropTypes.func.isRequired,
-    /**
-     * Boolean that determines the status of the networks modal
-     */
-    networkModalVisible: PropTypes.bool.isRequired,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func.isRequired,
-    /**
-     * Boolean that determines if the user has set a password before
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * Wizard onboarding state
-     */
-    wizard: PropTypes.object,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Network configurations
-     */
-    networkConfigurations: PropTypes.object,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Array of ERC721 assets
-     */
-    collectibles: PropTypes.array,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-    /**
-     * An object containing token balances for current account and network in the format address => balance
-     */
-    tokenBalances: PropTypes.object,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * Callback to close drawer
-     */
-    onCloseDrawer: PropTypes.func,
-    /**
-     * Latest navigation route
-     */
-    currentRoute: PropTypes.string,
-    /**
-     * handles action for onboarding to a network
-     */
-    onboardNetworkAction: PropTypes.func,
-    /**
-     * returns switched network state
-     */
-    switchedNetwork: PropTypes.object,
-    /**
-     * updates when network is switched
-     */
-    networkSwitched: PropTypes.func,
-    /**
-     *  Boolean that determines the state of network info modal
-     */
-    infoNetworkModalVisible: PropTypes.bool,
-    /**
-     * Redux action to close info network modal
-     */
-    toggleInfoNetworkModal: PropTypes.func,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Selected multichain chainId
-     */
-    chainId: PropTypes.string,
-  };
-
-  state = {
+class DrawerView extends PureComponent<Props, State> {
+  state: State = {
     showProtectWalletModal: undefined,
     account: {
       ens: undefined,
@@ -461,10 +503,10 @@ class DrawerView extends PureComponent {
     networkUrl: undefined,
   };
 
-  browserSectionRef = React.createRef();
+  browserSectionRef = React.createRef<View>();
 
-  currentBalance = null;
-  previousBalance = null;
+  currentBalance: number | null = null;
+  previousBalance: number | null = null;
   processedNewBalance = false;
   animatingNetworksModal = false;
   selectedChecksummedAddress = toChecksumHexAddress(
@@ -474,10 +516,9 @@ class DrawerView extends PureComponent {
   isCurrentAccountImported() {
     let ret = false;
     const { keyrings } = this.props;
-    const allKeyrings =
-      keyrings && keyrings.length
-        ? keyrings
-        : Engine.context.KeyringController.state.keyrings;
+    const allKeyrings = keyrings?.length
+      ? keyrings
+      : Engine.context.KeyringController.state.keyrings;
     for (const keyring of allKeyrings) {
       if (keyring.accounts.includes(this.selectedChecksummedAddress)) {
         ret = keyring.type !== 'HD Key Tree';
@@ -489,7 +530,8 @@ class DrawerView extends PureComponent {
   }
 
   renderTag() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const label = getLabelTextByAddress(this.selectedChecksummedAddress);
 
@@ -527,17 +569,17 @@ class DrawerView extends PureComponent {
       }
       let tokenFound = false;
 
-      this.props.tokens.forEach((token) => {
+      this.props.tokens.forEach((token: Token) => {
         if (
-          this.props.tokenBalances[token.address] &&
-          !isZero(this.props.tokenBalances[token.address])
+          this.props.tokenBalances[token.address as Hex] &&
+          !isZero(this.props.tokenBalances[token.address as Hex])
         ) {
           tokenFound = true;
         }
       });
       if (
         !this.props.passwordSet ||
-        this.currentBalance > 0 ||
+        (this.currentBalance ?? 0) > 0 ||
         tokenFound ||
         this.props.collectibles.length > 0
       ) {
@@ -579,7 +621,7 @@ class DrawerView extends PureComponent {
   }
 
   updateAccountInfo = async () => {
-    const { providerConfig, selectedInternalAccount, chainId } = this.props;
+    const { selectedInternalAccount, chainId } = this.props;
     const { currentChainId, address, name } = this.state.account;
     const accountName = selectedInternalAccount.metadata.name;
     if (
@@ -591,7 +633,7 @@ class DrawerView extends PureComponent {
         this.selectedChecksummedAddress,
         chainId,
       );
-      this.setState((state) => ({
+      this.setState(() => ({
         account: {
           ens,
           name: accountName,
@@ -646,7 +688,7 @@ class DrawerView extends PureComponent {
   };
 
   onSend = async () => {
-    this.props.newAssetTransaction(getEther(this.props.ticker));
+    this.props.newAssetTransaction(getEther(this.props.ticker as string));
     this.props.navigation.navigate('SendFlowView');
     this.hideDrawer();
     this.props.metrics.trackEvent(
@@ -723,7 +765,7 @@ class DrawerView extends PureComponent {
         networkConfigurations,
       );
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
-      const title = new URL(blockExplorer).hostname;
+      const title = new URLParse(blockExplorer).hostname;
       this.goToBrowserUrl(url, title);
     } else {
       const url = getEtherscanAddressUrl(
@@ -771,7 +813,7 @@ class DrawerView extends PureComponent {
     this.hideDrawer();
   };
 
-  goToBrowserUrl(url, title) {
+  goToBrowserUrl(url: string, title: string) {
     this.props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
       params: {
@@ -786,7 +828,7 @@ class DrawerView extends PureComponent {
     this.props.onCloseDrawer();
   };
 
-  hasBlockExplorer = (providerType) => {
+  hasBlockExplorer = (providerType: string) => {
     const { networkConfigurations } = this.props;
     if (providerType === RPC) {
       const {
@@ -803,16 +845,18 @@ class DrawerView extends PureComponent {
     return hasBlockExplorer(providerType);
   };
 
-  getIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getIcon(name: string, size?: number) {
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
 
     return (
       <Icon name={name} size={size || 24} color={colors.icon.alternative} />
     );
   }
 
-  getFeatherIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getFeatherIcon(name: string, size?: number) {
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
 
     return (
       <FeatherIcon
@@ -823,8 +867,9 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getMaterialIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getMaterialIcon(name: string, size?: number) {
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
 
     return (
       <MaterialIcon
@@ -835,8 +880,9 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getImageIcon(name) {
-    const colors = this.context.colors || mockTheme.colors;
+  getImageIcon(name: string) {
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -844,16 +890,18 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getSelectedIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getSelectedIcon(name: string, size?: number) {
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
 
     return (
       <Icon name={name} size={size || 24} color={colors.primary.default} />
     );
   }
 
-  getSelectedMaterialIcon(name, size) {
-    const colors = this.context.colors || mockTheme.colors;
+  getSelectedMaterialIcon(name: string, size?: number) {
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
 
     return (
       <MaterialIcon
@@ -864,8 +912,9 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getSelectedImageIcon(name) {
-    const colors = this.context.colors || mockTheme.colors;
+  getSelectedImageIcon(name: string) {
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -876,7 +925,7 @@ class DrawerView extends PureComponent {
     );
   }
 
-  getSections = () => {
+  getSections = (): DrawerSection[][] => {
     const {
       providerConfig: { type, rpcUrl },
       networkConfigurations,
@@ -926,7 +975,6 @@ class DrawerView extends PureComponent {
 
   copyAccountToClipboard = async () => {
     await ClipboardManager.setString(this.selectedChecksummedAddress);
-    this.toggleReceiveModal();
     InteractionManager.runAfterInteractions(() => {
       this.props.showAlert({
         isVisible: true,
@@ -944,7 +992,7 @@ class DrawerView extends PureComponent {
       .then(() => {
         this.props.protectWalletModalVisible();
       })
-      .catch((err) => {
+      .catch((err: Error) => {
         Logger.log('Error while trying to share address', err);
       });
     this.props.metrics.trackEvent(
@@ -978,20 +1026,21 @@ class DrawerView extends PureComponent {
   onInfoNetworksModalClose = () => {
     const {
       chainId,
-      onboardNetworkAction,
-      networkSwitched,
-      toggleInfoNetworkModal,
+      onboardNetworkAction: onboardNetwork,
+      networkSwitched: switchNetwork,
+      toggleInfoNetworkModal: toggleInfoModal,
     } = this.props;
 
-    onboardNetworkAction(chainId);
-    networkSwitched({ networkUrl: '', networkStatus: false });
+    onboardNetwork(chainId);
+    switchNetwork({ networkUrl: '', networkStatus: false });
 
     // Wrap the toggle call in a setTimeout to avoid awaiting a non-promise function.
-    safePromiseHandler(toggleInfoNetworkModal(), 100);
+    safePromiseHandler(toggleInfoModal() as unknown as () => void, 100);
   };
 
   renderProtectModal = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -1045,14 +1094,19 @@ class DrawerView extends PureComponent {
       navigation,
       infoNetworkModalVisible,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
     const {
       account: { name: nameFromState, ens: ensFromState },
     } = this.state;
 
-    const account = {
-      address: this.selectedChecksummedAddress,
+    const account: {
+      name?: string;
+      ens?: string;
+      address: string;
+      balance?: string | number;
+    } = {
       name: nameFromState,
       ens: ensFromState,
       ...selectedInternalAccount,
@@ -1104,7 +1158,6 @@ class DrawerView extends PureComponent {
                 </View>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.accountInfo}
                 onPress={this.openAccountSelector}
                 testID={'navbar-account-button'}
               >
@@ -1176,10 +1229,10 @@ class DrawerView extends PureComponent {
                     {section
                       .filter((item) => {
                         if (!item) return undefined;
-                        const { name = undefined } = item;
+                        const { name: itemName = undefined } = item;
                         if (
-                          name &&
-                          name.toLowerCase().indexOf('etherscan') !== -1
+                          itemName &&
+                          itemName.toLowerCase().indexOf('etherscan') !== -1
                         ) {
                           const type = providerConfig?.type;
                           return (
@@ -1193,20 +1246,19 @@ class DrawerView extends PureComponent {
                           key={`item_${i}_${j}`}
                           style={[
                             styles.menuItem,
-                            item.routeNames &&
-                            item.routeNames.includes(currentRoute)
+                            item.routeNames?.includes(currentRoute)
                               ? styles.selectedRoute
                               : null,
                           ]}
                           ref={
-                            item.name === strings('drawer.browser') &&
-                            this.browserSectionRef
+                            item.name === strings('drawer.browser')
+                              ? this.browserSectionRef
+                              : undefined
                           }
                           onPress={() => item.action()} // eslint-disable-line
                         >
                           {item.icon
-                            ? item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                            ? item.routeNames?.includes(currentRoute)
                               ? item.selectedIcon
                               : item.icon
                             : null}
@@ -1214,8 +1266,7 @@ class DrawerView extends PureComponent {
                             style={[
                               styles.menuItemName,
                               !item.icon ? styles.noIcon : null,
-                              item.routeNames &&
-                              item.routeNames.includes(currentRoute)
+                              item.routeNames?.includes(currentRoute)
                                 ? styles.selectedName
                                 : null,
                             ]}
@@ -1258,7 +1309,7 @@ class DrawerView extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   providerConfig: selectProviderConfig(state),
   chainId: selectChainId(state),
   accounts: selectAccounts(state),
@@ -1279,15 +1330,22 @@ const mapStateToProps = (state) => ({
   switchedNetwork: state.networkOnboarded.switchedNetwork,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   toggleNetworkModal: () => dispatch(toggleNetworkModal()),
-  showAlert: (config) => dispatch(showAlert(config)),
-  newAssetTransaction: (selectedAsset) =>
-    dispatch(newAssetTransaction(selectedAsset)),
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
+  newAssetTransaction: (
+    selectedAsset: Parameters<typeof newAssetTransaction>[0],
+  ) => dispatch(newAssetTransaction(selectedAsset)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
-  onboardNetworkAction: (chainId) => dispatch(onboardNetworkAction(chainId)),
-  networkSwitched: ({ networkUrl, networkStatus }) =>
-    dispatch(networkSwitched({ networkUrl, networkStatus })),
+  onboardNetworkAction: (chainId: string) =>
+    dispatch(onboardNetworkAction(chainId)),
+  networkSwitched: ({
+    networkUrl,
+    networkStatus,
+  }: {
+    networkUrl: string;
+    networkStatus: boolean;
+  }) => dispatch(networkSwitched({ networkUrl, networkStatus })),
   toggleInfoNetworkModal: () => dispatch(toggleInfoNetworkModal(false)),
 });
 
@@ -1296,4 +1354,8 @@ DrawerView.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(DrawerView));
+)(
+  withMetricsAwareness(
+    DrawerView as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);
