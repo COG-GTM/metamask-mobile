@@ -16,7 +16,6 @@ import { SmokeTrade } from '../../tags';
 import Assertions from '../../utils/Assertions';
 import SellGetStartedView from '../../pages/Ramps/SellGetStartedView';
 import SelectRegionView from '../../pages/Ramps/SelectRegionView';
-import SelectPaymentMethodView from '../../pages/Ramps/SelectPaymentMethodView';
 import BuildQuoteView from '../../pages/Ramps/BuildQuoteView';
 import QuotesView from '../../pages/Ramps/QuotesView';
 const fixtureServer = new FixtureServer();
@@ -26,12 +25,6 @@ const Regions = {
   CALIFORNIA: 'California',
   FRANCE: 'France',
   UK: 'United Kingdom',
-};
-
-const PaymentMethods = {
-  DEBIT_OR_CREDIT: 'Debit or Credit',
-  INSTANT_ACH_BANK_TRANSFER: 'Insant ACH Bank Transfer',
-  ACH_BANK_TRANSFER: 'ACH Bank Transfer',
 };
 
 describe(SmokeTrade('Off-Ramp'), () => {

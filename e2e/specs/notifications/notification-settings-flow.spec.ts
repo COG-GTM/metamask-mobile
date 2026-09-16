@@ -1,4 +1,4 @@
-// @ts-check
+import type { Mockttp } from 'mockttp';
 import { startMockServer, stopMockServer } from '../../api-mocking/mock-server';
 import TestHelpers from '../../helpers';
 import NotificationSettingsView from '../../pages/Notifications/NotificationSettingsView';
@@ -14,11 +14,7 @@ import {
 } from './utils/constants';
 import { mockNotificationServices } from './utils/mocks';
 
-/**
- * @param {number} port
- * @returns {import('detox/detox').DeviceLaunchAppConfig}
- */
-const launchAppSettings = (port) => ({
+const launchAppSettings = (port: number): Detox.DeviceLaunchAppConfig => ({
   newInstance: true,
   delete: true,
   permissions: {
@@ -28,8 +24,7 @@ const launchAppSettings = (port) => ({
 });
 
 describe(SmokeNetworkAbstractions('Notification Settings Flow'), () => {
-  /** @type {import('mockttp').Mockttp} */
-  let mockServer;
+  let mockServer: Mockttp;
 
   beforeAll(async () => {
     jest.setTimeout(200000);
@@ -49,12 +44,10 @@ describe(SmokeNetworkAbstractions('Notification Settings Flow'), () => {
 
   it('navigates to notification settings page', async () => {
     // Onboard - Import SRP
-    await importWalletWithRecoveryPhrase(
-      {
-        seedPhrase: NOTIFICATIONS_TEAM_SEED_PHRASE,
-        password: NOTIFICATIONS_TEAM_PASSWORD,
-      }
-    );
+    await importWalletWithRecoveryPhrase({
+      seedPhrase: NOTIFICATIONS_TEAM_SEED_PHRASE,
+      password: NOTIFICATIONS_TEAM_PASSWORD,
+    });
 
     // navigate to notification settings
     await TabBarComponent.tapSettings();
@@ -104,19 +97,13 @@ describe(SmokeNetworkAbstractions('Notification Settings Flow'), () => {
     await NotificationSettingsView.tapNotificationToggle();
     TestHelpers.delay(2000);
     await Assertions.checkIfNotVisible(
-      /** @type {Promise<import('detox/detox').IndexableNativeElement>} */ (
-        NotificationSettingsView.pushNotificationsToggle
-      ),
+      NotificationSettingsView.pushNotificationsToggle as Promise<Detox.IndexableNativeElement>,
     );
     await Assertions.checkIfNotVisible(
-      /** @type {Promise<import('detox/detox').IndexableNativeElement>} */ (
-        NotificationSettingsView.featureAnnonucementsToggle
-      ),
+      NotificationSettingsView.featureAnnonucementsToggle as Promise<Detox.IndexableNativeElement>,
     );
     await Assertions.checkIfNotVisible(
-      /** @type {Promise<import('detox/detox').IndexableNativeElement>} */ (
-        NotificationSettingsView.accountActivitySection
-      ),
+      NotificationSettingsView.accountActivitySection as Promise<Detox.IndexableNativeElement>,
     );
   });
 });

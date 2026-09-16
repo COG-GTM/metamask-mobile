@@ -40,9 +40,7 @@ describe(SmokeRamps('Buy Crypto Deeplinks'), () => {
           url: BuyDeepLink,
         });
 
-        await Assertions.checkIfVisible(
-          await SellGetStartedView.getStartedButton,
-        );
+        await Assertions.checkIfVisible(SellGetStartedView.getStartedButton);
 
         await BuyGetStartedView.tapGetStartedButton();
 

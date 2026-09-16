@@ -1,6 +1,6 @@
 'use strict';
 import TestHelpers from '../../helpers';
-import { Regression, SmokeCore } from '../../tags';
+import { Regression } from '../../tags';
 import NetworkView from '../../pages/Settings/NetworksView';
 import WalletView from '../../pages/wallet/WalletView';
 import ToastModal from '../../pages/wallet/ToastModal';
@@ -96,13 +96,16 @@ describe(Regression('Custom RPC Tests'), () => {
   it('should dismiss network education modal', async () => {
     await Assertions.checkIfVisible(NetworkEducationModal.container);
     await Assertions.checkIfElementToHaveText(
-      NetworkEducationModal.networkName,
+      NetworkEducationModal.networkName as Promise<Detox.IndexableNativeElement>,
       CustomNetworks.Gnosis.providerConfig.nickname,
     );
     await NetworkEducationModal.tapGotItButton();
-    await Assertions.checkIfNotVisible(NetworkEducationModal.container);
+    await Assertions.checkIfNotVisible(
+      NetworkEducationModal.container as Promise<Detox.IndexableNativeElement>,
+    );
     await Assertions.checkIfVisible(WalletView.container);
-    const networkPicker = await WalletView.getNavbarNetworkPicker();
+    const networkPicker =
+      WalletView.getNavbarNetworkPicker() as Promise<Detox.IndexableNativeElement>;
     await Assertions.checkIfElementHasLabel(
       networkPicker,
       CustomNetworks.Gnosis.providerConfig.nickname,
@@ -114,7 +117,8 @@ describe(Regression('Custom RPC Tests'), () => {
     await WalletView.tapNetworksButtonOnNavBar();
     await Assertions.checkIfVisible(NetworkListModal.networkScroll);
 
-    const networkPicker = await WalletView.getNavbarNetworkPicker();
+    const networkPicker =
+      WalletView.getNavbarNetworkPicker() as Promise<Detox.IndexableNativeElement>;
     await Assertions.checkIfElementHasLabel(
       networkPicker,
       CustomNetworks.Gnosis.providerConfig.nickname,
@@ -123,16 +127,21 @@ describe(Regression('Custom RPC Tests'), () => {
 
   it('should switch to Sepolia then dismiss the network education modal', async () => {
     await NetworkListModal.scrollToBottomOfNetworkList();
-    await Assertions.checkIfToggleIsOn(NetworkListModal.testNetToggle);
+    await Assertions.checkIfToggleIsOn(
+      NetworkListModal.testNetToggle as Promise<Detox.IndexableNativeElement>,
+    );
     await NetworkListModal.changeNetworkTo(
       CustomNetworks.Sepolia.providerConfig.nickname,
     );
     await Assertions.checkIfVisible(NetworkEducationModal.container);
 
     await NetworkEducationModal.tapGotItButton();
-    await Assertions.checkIfNotVisible(NetworkEducationModal.container);
+    await Assertions.checkIfNotVisible(
+      NetworkEducationModal.container as Promise<Detox.IndexableNativeElement>,
+    );
     await Assertions.checkIfVisible(WalletView.container);
-    const networkPicker = await WalletView.getNavbarNetworkPicker();
+    const networkPicker =
+      WalletView.getNavbarNetworkPicker() as Promise<Detox.IndexableNativeElement>;
 
     await Assertions.checkIfElementHasLabel(
       networkPicker,
@@ -144,7 +153,8 @@ describe(Regression('Custom RPC Tests'), () => {
     await WalletView.tapNetworksButtonOnNavBar();
     await NetworkListModal.scrollToBottomOfNetworkList();
 
-    const networkPicker = await WalletView.getNavbarNetworkPicker();
+    const networkPicker =
+      WalletView.getNavbarNetworkPicker() as Promise<Detox.IndexableNativeElement>;
     await Assertions.checkIfElementHasLabel(
       networkPicker,
       CustomNetworks.Sepolia.providerConfig.nickname,
@@ -161,10 +171,14 @@ describe(Regression('Custom RPC Tests'), () => {
       networkPicker,
       CustomNetworks.Gnosis.providerConfig.nickname,
     );
-    await Assertions.checkIfNotVisible(NetworkEducationModal.container);
+    await Assertions.checkIfNotVisible(
+      NetworkEducationModal.container as Promise<Detox.IndexableNativeElement>,
+    );
     try {
       await Assertions.checkIfVisible(ToastModal.container);
-      await Assertions.checkIfNotVisible(ToastModal.container);
+      await Assertions.checkIfNotVisible(
+        ToastModal.container as Promise<Detox.IndexableNativeElement>,
+      );
     } catch {
       // eslint-disable-next-line no-console
       console.log('Toast is not visible');
@@ -174,7 +188,9 @@ describe(Regression('Custom RPC Tests'), () => {
   it('should go to settings networks and remove xDai network', async () => {
     await WalletView.tapNetworksButtonOnNavBar();
     await NetworkListModal.scrollToBottomOfNetworkList();
-    await Assertions.checkIfToggleIsOn(NetworkListModal.testNetToggle);
+    await Assertions.checkIfToggleIsOn(
+      NetworkListModal.testNetToggle as Promise<Detox.IndexableNativeElement>,
+    );
     await NetworkListModal.changeNetworkTo(
       CustomNetworks.Sepolia.providerConfig.nickname,
     );
@@ -198,7 +214,9 @@ describe(Regression('Custom RPC Tests'), () => {
 
     try {
       await Assertions.checkIfVisible(ToastModal.container);
-      await Assertions.checkIfNotVisible(ToastModal.container);
+      await Assertions.checkIfNotVisible(
+        ToastModal.container as Promise<Detox.IndexableNativeElement>,
+      );
     } catch {
       // eslint-disable-next-line no-console
       console.log('Toast is not visible');
@@ -206,7 +224,9 @@ describe(Regression('Custom RPC Tests'), () => {
 
     try {
       await Assertions.checkIfVisible(ToastModal.container);
-      await Assertions.checkIfNotVisible(ToastModal.container);
+      await Assertions.checkIfNotVisible(
+        ToastModal.container as Promise<Detox.IndexableNativeElement>,
+      );
     } catch {
       // eslint-disable-next-line no-console
       console.log('Toast is not visible');

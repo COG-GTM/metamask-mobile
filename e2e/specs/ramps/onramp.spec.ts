@@ -70,10 +70,14 @@ describe(SmokeTrade('Buy Crypto'), () => {
 
     let paymentMethod;
     if (platform === 'ios') {
-      const applePayVisible = await Assertions.checkIfTextIsDisplayed('Apple Pay');
+      const applePayVisible = await Assertions.checkIfTextIsDisplayed(
+        'Apple Pay',
+      );
       paymentMethod = applePayVisible ? 'Apple Pay' : 'PayPal';
     } else if (platform === 'android') {
-      const googlePayVisible = await Assertions.checkIfTextIsDisplayed('Google Pay');
+      const googlePayVisible = await Assertions.checkIfTextIsDisplayed(
+        'Google Pay',
+      );
       paymentMethod = googlePayVisible ? 'Google Pay' : 'PayPal';
     } else {
       paymentMethod = 'PayPal';

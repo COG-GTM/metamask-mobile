@@ -36,7 +36,9 @@ describe(SmokeRamps('Off-ramp token amounts'), () => {
       {
         fixture: new FixtureBuilder()
           .withNetworkController(CustomNetworks.Tenderly.Mainnet)
-          .withRampsSelectedRegion(franceRegion)
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .withRampsSelectedRegion(franceRegion as any)
           .withRampsSelectedPaymentMethod()
           .build(),
         restartDevice: true,

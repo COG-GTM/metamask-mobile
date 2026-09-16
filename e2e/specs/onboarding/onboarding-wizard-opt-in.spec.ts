@@ -58,7 +58,9 @@ describe(
 
     it('Should dismiss Automatic Security checks screen', async () => {
       await TestHelpers.delay(3500);
-      await Assertions.checkIfVisible(EnableAutomaticSecurityChecksView.container);
+      await Assertions.checkIfVisible(
+        EnableAutomaticSecurityChecksView.container,
+      );
       await EnableAutomaticSecurityChecksView.tapNoThanks();
     });
 
@@ -69,7 +71,7 @@ describe(
         await Assertions.checkIfVisible(OnboardingWizardModal.stepOneContainer);
         await OnboardingWizardModal.tapNoThanksButton();
         await Assertions.checkIfNotVisible(
-          OnboardingWizardModal.stepOneContainer,
+          OnboardingWizardModal.stepOneContainer as Promise<Detox.IndexableNativeElement>,
         );
       } catch {
         //
@@ -80,7 +82,9 @@ describe(
       // dealing with flakiness on bitrise.
       await TestHelpers.delay(1000);
       try {
-        await Assertions.checkIfVisible(ExperienceEnhancerBottomSheet.container);
+        await Assertions.checkIfVisible(
+          ExperienceEnhancerBottomSheet.container,
+        );
         await ExperienceEnhancerBottomSheet.tapIAgree();
       } catch {
         /* eslint-disable no-console */
@@ -105,14 +109,18 @@ describe(
       await SettingsView.tapSecurityAndPrivacy();
       await SecurityAndPrivacy.scrollToMetaMetrics();
       await TestHelpers.delay(2000);
-      await Assertions.checkIfToggleIsOn(SecurityAndPrivacy.metaMetricsToggle);
+      await Assertions.checkIfToggleIsOn(
+        SecurityAndPrivacy.metaMetricsToggle as Promise<Detox.IndexableNativeElement>,
+      );
     });
 
     it('should disable metametrics', async () => {
       await SecurityAndPrivacy.tapMetaMetricsToggle();
       await TestHelpers.delay(1500);
       await CommonView.tapOkAlert();
-      await Assertions.checkIfToggleIsOff(SecurityAndPrivacy.metaMetricsToggle);
+      await Assertions.checkIfToggleIsOff(
+        SecurityAndPrivacy.metaMetricsToggle as Promise<Detox.IndexableNativeElement>,
+      );
     });
 
     it('should relaunch the app and log in', async () => {
@@ -130,7 +138,7 @@ describe(
         await Assertions.checkIfVisible(OnboardingWizardModal.stepOneContainer);
         await OnboardingWizardModal.tapNoThanksButton();
         await Assertions.checkIfNotVisible(
-          OnboardingWizardModal.stepOneContainer,
+          OnboardingWizardModal.stepOneContainer as Promise<Detox.IndexableNativeElement>,
         );
       } catch {
         /* eslint-disable no-console */
@@ -143,7 +151,9 @@ describe(
       await TabBarComponent.tapSettings();
       await SettingsView.tapSecurityAndPrivacy();
       await SecurityAndPrivacy.scrollToMetaMetrics();
-      await Assertions.checkIfToggleIsOff(SecurityAndPrivacy.metaMetricsToggle);
+      await Assertions.checkIfToggleIsOff(
+        SecurityAndPrivacy.metaMetricsToggle as Promise<Detox.IndexableNativeElement>,
+      );
     });
   },
 );
