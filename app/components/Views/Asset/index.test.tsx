@@ -1,11 +1,13 @@
 import React from 'react';
 import { TransactionType } from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller/';
-import renderWithProvider from '../../../util/test/renderWithProvider';
+import renderWithProvider, {
+  DeepPartial,
+} from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
+import { RootState } from '../../../reducers';
 import Asset from './';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
-import { isPortfolioViewEnabled } from '../../../util/networks';
 
 const mockInitialState = {
   swaps: { '0x1': { isLive: true }, hasOnboarded: false, isLive: true },
@@ -87,6 +89,7 @@ jest.mock('../../../util/networks', () => ({
 jest.mock('../../../core/Engine', () => {
   const {
     MOCK_ADDRESS_1,
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
   } = require('../../../util/test/accountsControllerTestUtils');
 
   return {
@@ -123,7 +126,7 @@ describe('Asset', () => {
         }}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as DeepPartial<RootState>,
       },
     );
     expect(toJSON()).toMatchSnapshot();
@@ -145,7 +148,7 @@ describe('Asset', () => {
         transactions={[]}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as DeepPartial<RootState>,
       },
     );
 
@@ -166,7 +169,7 @@ describe('Asset', () => {
         }}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as DeepPartial<RootState>,
       },
     );
 
@@ -188,7 +191,7 @@ describe('Asset', () => {
         }}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as DeepPartial<RootState>,
       },
     );
 
