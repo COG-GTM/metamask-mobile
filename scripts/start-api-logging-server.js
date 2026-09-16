@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import 'ts-node/register/transpile-only';
 import { startApiMonitor, stopApiMonitor } from '../e2e/api-mocking/api-monitor';
 import { defaultMockPort } from '../e2e/api-mocking/mock-config/mockUrlCollection.json';
 
