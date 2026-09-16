@@ -1,6 +1,12 @@
 /* eslint-disable import/no-nodejs-modules */
 /* eslint-disable no-console */
-import { getLocal } from 'mockttp';
+import {
+  CompletedBody,
+  CompletedRequest,
+  getLocal,
+  Mockttp,
+  RawHeaders,
+} from 'mockttp';
 import portfinder from 'portfinder';
 import { readFile, writeFile, access, mkdir } from 'fs/promises';
 import path from 'path';
@@ -19,7 +25,7 @@ const CONSOLE_LOG_CONFIG = {
  * @param {string} dir - The path of the directory to check.
  * @returns {Promise<boolean>} A promise that resolves to `true` if the directory exists, or `false` otherwise.
  */
-const dirExists = async (dir) => {
+const dirExists = async (dir: string) => {
   try {
     await access(dir);
     return true;
@@ -50,14 +56,14 @@ const createLogFile = async () => {
 };
 
 // For locking files during write operations
-const fileLocks = new Map();
+const fileLocks = new Map<string, boolean>();
 
 /**
  * Acquire a lock for a file
  * @param {string} filePath - The path to the file
  * @returns {Promise<void>}
  */
-const acquireLock = async (filePath) => {
+const acquireLock = async (filePath: string) => {
   while (fileLocks.get(filePath)) {
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
@@ -68,7 +74,7 @@ const acquireLock = async (filePath) => {
  * Release a lock for a file
  * @param {string} filePath - The path to the file
  */
-const releaseLock = (filePath) => {
+const releaseLock = (filePath: string) => {
   fileLocks.delete(filePath);
 };
 
@@ -78,14 +84,18 @@ const releaseLock = (filePath) => {
  * @param {Object} logEntry - The log entry to write
  * @param {number} retries - Number of retries for file operations
  */
-const writeToLogFile = async (logFile, logEntry, retries = 3) => {
+const writeToLogFile = async (
+  logFile: string,
+  logEntry: object,
+  retries = 3,
+) => {
   await acquireLock(logFile);
 
   try {
     for (let i = 0; i < retries; i++) {
       try {
         const fileContent = await readFile(logFile, 'utf8');
-        let logs;
+        let logs: unknown[];
 
         try {
           logs = JSON.parse(fileContent);
@@ -127,7 +137,7 @@ const writeToLogFile = async (logFile, logEntry, retries = 3) => {
  * @param {number} [port] - Optional port number. If not provided, a free port will be used.
  * @returns {Promise} Resolves to the running mock server.
  */
-export const startApiMonitor = async (port) => {
+export const startApiMonitor = async (port?: number) => {
   const mockServer = getLocal();
   port = port || (await portfinder.getPortPromise());
 
@@ -142,10 +152,19 @@ export const startApiMonitor = async (port) => {
     .thenReply(200, 'API Monitor is running');
 
   await mockServer.forUnmatchedRequest().thenPassThrough({
-    beforeRequest: async ({ url, method, rawHeaders, requestBody }) => {
+    beforeRequest: async (request) => {
+      const { url, method, rawHeaders, requestBody } =
+        request as CompletedRequest & { requestBody?: CompletedBody };
       const returnUrl = new URL(url).searchParams.get('url') || url;
 
-      const requestLog = {
+      const requestLog: {
+        timestamp: string;
+        type: string;
+        method: string;
+        url: string;
+        headers: RawHeaders;
+        body?: unknown;
+      } = {
         timestamp: new Date().toISOString(),
         type: 'request',
         method,
@@ -158,7 +177,7 @@ export const startApiMonitor = async (port) => {
           const bodyText = await requestBody.getText();
           console.log('bodyText:', bodyText);
           try {
-            requestLog.body = JSON.parse(bodyText);
+            requestLog.body = JSON.parse(bodyText as string);
           } catch (e) {
             requestLog.body = bodyText;
           }
@@ -201,10 +220,10 @@ export const startApiMonitor = async (port) => {
     beforeResponse: async ({ statusCode, headers, body, statusMessage }) => {
       try {
         const responseBody = await body.getText();
-        let parsedBody = responseBody;
+        let parsedBody: unknown = responseBody;
 
         try {
-          parsedBody = JSON.parse(responseBody);
+          parsedBody = JSON.parse(responseBody as string);
         } catch (e) {
           // Keep as raw text if not JSON
         }
@@ -245,7 +264,7 @@ export const startApiMonitor = async (port) => {
  * Stops the API monitoring server.
  *
  */
-export const stopApiMonitor = async (mockServer) => {
+export const stopApiMonitor = async (mockServer: Mockttp) => {
   await mockServer.stop();
   console.log('🛑 API Monitor shutting down');
 };

@@ -7,14 +7,14 @@ import PageSections from '../../../pages/Browser/Confirmations/PageSections.js';
 import RequestTypes from '../../../pages/Browser/Confirmations/RequestTypes.js';
 import TabBarComponent from '../../../pages/wallet/TabBarComponent.js';
 import TestDApp from '../../../pages/Browser/TestDApp.js';
-import TestHelpers from '../../../helpers.js';
-import { loginToApp } from '../../../viewHelper.js';
+import TestHelpers from '../../../helpers';
+import { loginToApp } from '../../../viewHelper';
 import {
   withFixtures,
   defaultGanacheOptions,
 } from '../../../fixtures/fixture-helper.js';
-import { SmokeConfirmationsRedesigned } from '../../../tags.js';
-import { mockEvents } from '../../../api-mocking/mock-config/mock-events.js';
+import { SmokeConfirmationsRedesigned } from '../../../tags';
+import { mockEvents } from '../../../api-mocking/mock-config/mock-events';
 import { buildPermissions } from '../../../fixtures/utils.js';
 
 const SIGNATURE_LIST = [
@@ -70,7 +70,9 @@ describe(SmokeConfirmationsRedesigned('Signature Requests'), () => {
           dapp: true,
           fixture: new FixtureBuilder()
             .withGanacheNetwork()
-            .withPermissionControllerConnectedToTestDapp(buildPermissions(['0x539']))
+            .withPermissionControllerConnectedToTestDapp(
+              buildPermissions(['0x539']),
+            )
             .build(),
           restartDevice: true,
           ganacheOptions: defaultGanacheOptions,

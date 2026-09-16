@@ -1,8 +1,16 @@
 /* eslint-disable no-console */
-import { getLocal } from 'mockttp';
+import { getLocal, Headers as MockttpHeaders, Mockttp } from 'mockttp';
 import portfinder from 'portfinder';
 import _ from 'lodash';
-import { device } from 'detox';
+
+export interface MockEvent {
+  urlEndpoint: string;
+  response?: unknown;
+  responseCode?: number;
+  requestBody?: object;
+}
+
+export type MockEvents = Record<string, MockEvent[] | undefined>;
 
 /**
  * Utility function to handle direct fetch requests
@@ -12,11 +20,16 @@ import { device } from 'detox';
  * @param {Object} requestBody - The request body object
  * @returns {Promise<{statusCode: number, body: string}>} Response object
  */
-const handleDirectFetch = async (url, method, headers, requestBody) => {
+const handleDirectFetch = async (
+  url: string,
+  method: string,
+  headers: MockttpHeaders,
+  requestBody?: string,
+) => {
   try {
     const response = await global.fetch(url, {
       method,
-      headers,
+      headers: headers as Record<string, string>,
       body: ['POST', 'PUT', 'PATCH'].includes(method) ? requestBody : undefined,
     });
 
@@ -41,7 +54,7 @@ const handleDirectFetch = async (url, method, headers, requestBody) => {
  * @param {number} [port] - Optional port number. If not provided, a free port will be used.
  * @returns {Promise} Resolves to the running mock server.
  */
-export const startMockServer = async (events, port) => {
+export const startMockServer = async (events: MockEvents, port?: number) => {
   const mockServer = getLocal();
   port = port || (await portfinder.getPortPromise());
 
@@ -57,7 +70,9 @@ export const startMockServer = async (events, port) => {
     .forAnyRequest()
     .matching((request) => request.path.startsWith('/proxy'))
     .thenCallback(async (request) => {
-      const urlEndpoint = new URL(request.url).searchParams.get('url');
+      const urlEndpoint = new URL(request.url).searchParams.get(
+        'url',
+      ) as string;
       const method = request.method;
 
       // Find matching mock event
@@ -134,17 +149,21 @@ export const startMockServer = async (events, port) => {
         updatedUrl,
         method,
         request.headers,
-        method === 'POST' ? await request.body.getText() : undefined
+        method === 'POST' ? await request.body.getText() : undefined,
       );
     });
 
   // In case any other requests are made, pass them through to the actual endpoint
-  await mockServer.forUnmatchedRequest().thenCallback(async (request) => handleDirectFetch(
-      request.url,
-      request.method,
-      request.headers,
-      await request.body.getText()
-    ));
+  await mockServer
+    .forUnmatchedRequest()
+    .thenCallback(async (request) =>
+      handleDirectFetch(
+        request.url,
+        request.method,
+        request.headers,
+        await request.body.getText(),
+      ),
+    );
 
   return mockServer;
 };
@@ -153,7 +172,7 @@ export const startMockServer = async (events, port) => {
  * Stops the mock server.
  * @param {import('mockttp').Mockttp} mockServer
  */
-export const stopMockServer = async (mockServer) => {
+export const stopMockServer = async (mockServer: Mockttp) => {
   await mockServer.stop();
   console.log('Mock server shutting down');
 };

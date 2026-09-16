@@ -3,9 +3,9 @@ import http from 'http';
 import path from 'path';
 import serveHandler from 'serve-handler';
 
-const createStaticServer = function (rootDirectory) {
+const createStaticServer = function (rootDirectory: string) {
   return http.createServer((request, response) => {
-    if (request.url.startsWith('/node_modules/')) {
+    if (request.url?.startsWith('/node_modules/')) {
       request.url = request.url.substr(14);
       return serveHandler(request, response, {
         directoryListing: false,

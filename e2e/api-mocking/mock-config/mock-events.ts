@@ -95,7 +95,7 @@ export const mockEvents = {
      */
     suggestedGasApiPostResponse: {
       urlEndpoint: 'https://gas.api.cx.metamask.io/networks/1/suggestedGasFees',
-      response: suggestedGasApiResponses.success,
+      response: (suggestedGasApiResponses as Record<string, unknown>).success,
       requestBody: {
         priorityFee: '2',
         maxFee: '2.000855333',

@@ -1,6 +1,6 @@
 'use strict';
 import { ethers } from 'ethers';
-import { loginToApp } from '../../viewHelper.js';
+import { loginToApp } from '../../viewHelper';
 import QuoteView from '../../pages/swaps/QuoteView.js';
 import SwapView from '../../pages/swaps/SwapView.js';
 import TabBarComponent from '../../pages/wallet/TabBarComponent.js';
@@ -9,7 +9,7 @@ import WalletView from '../../pages/wallet/WalletView.js';
 import WalletActionsBottomSheet from '../../pages/wallet/WalletActionsBottomSheet.js';
 import SettingsView from '../../pages/Settings/SettingsView';
 import FixtureBuilder from '../../fixtures/fixture-builder.js';
-import Tenderly from '../../tenderly.js';
+import Tenderly from '../../tenderly';
 import {
   loadFixture,
   startFixtureServer,
@@ -18,10 +18,10 @@ import {
 import { CustomNetworks } from '../../resources/networks.e2e.js';
 import NetworkListModal from '../../pages/Network/NetworkListModal.js';
 import NetworkEducationModal from '../../pages/Network/NetworkEducationModal.js';
-import TestHelpers from '../../helpers.js';
+import TestHelpers from '../../helpers';
 import FixtureServer from '../../fixtures/fixture-server.js';
 import { getFixturesServerPort } from '../../fixtures/utils.js';
-import { SmokeTrade } from '../../tags.js';
+import { SmokeTrade } from '../../tags';
 import ImportAccountView from '../../pages/importAccount/ImportAccountView.js';
 import SuccessImportAccountView from '../../pages/importAccount/SuccessImportAccountView.js';
 import Assertions from '../../utils/Assertions.js';
@@ -168,14 +168,22 @@ describe(SmokeTrade('Swap from Actions'), () => {
       await Assertions.checkIfVisible(
         ActivitiesView.swapActivityTitle(sourceTokenSymbol, destTokenSymbol),
       );
-      await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(FIRST_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+      await Assertions.checkIfElementToHaveText(
+        ActivitiesView.transactionStatus(FIRST_ROW),
+        ActivitiesViewSelectorsText.CONFIRM_TEXT,
+        120000,
+      );
 
       // Check the token approval completed
       if (type === 'unapproved') {
         await Assertions.checkIfVisible(
           ActivitiesView.tokenApprovalActivity(sourceTokenSymbol),
         );
-        await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(SECOND_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+        await Assertions.checkIfElementToHaveText(
+          ActivitiesView.transactionStatus(SECOND_ROW),
+          ActivitiesViewSelectorsText.CONFIRM_TEXT,
+          120000,
+        );
       }
     },
   );

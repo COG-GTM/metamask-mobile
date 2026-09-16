@@ -3,12 +3,16 @@ import { web } from 'detox';
 import detox from 'detox/internals';
 import rpcCoverageTool from '@open-rpc/test-coverage';
 import { parseOpenRPCDocument } from '@open-rpc/schema-utils-js';
+import type {
+  ExampleObject,
+  ExamplePairingObject,
+  MethodObject,
+} from '@open-rpc/meta-schema';
 import JsonSchemaFakerRule from '@open-rpc/test-coverage/build/rules/json-schema-faker-rule';
 import HtmlReporter from '@open-rpc/test-coverage/build/reporters/html-reporter';
 
 import Browser from '../pages/Browser/BrowserView';
-// eslint-disable-next-line import/no-commonjs
-const mockServer = require('@open-rpc/mock-server/build/index').default;
+import mockServer from '@open-rpc/mock-server/build/index';
 import TabBarComponent from '../pages/wallet/TabBarComponent';
 import FixtureBuilder from '../fixtures/fixture-builder';
 import {
@@ -24,7 +28,7 @@ import { BrowserViewSelectorsIDs } from '../selectors/Browser/BrowserView.select
 import { getGanachePort } from '../fixtures/utils';
 import { mockEvents } from '../api-mocking/mock-config/mock-events';
 
-const port = getGanachePort(8545, process.pid);
+const port = getGanachePort();
 const chainId = 1337;
 
 const main = async () => {
@@ -32,12 +36,14 @@ const main = async () => {
     'https://metamask.github.io/api-specs/0.10.8/openrpc.json',
   );
 
-  const signTypedData4 = openrpcDocument.methods.find(
+  const methods = openrpcDocument.methods as MethodObject[];
+
+  const signTypedData4 = methods.find(
     (m) => m.name === 'eth_signTypedData_v4',
-  );
-  const switchEthereumChain = openrpcDocument.methods.find(
+  ) as MethodObject;
+  const switchEthereumChain = methods.find(
     (m) => m.name === 'wallet_switchEthereumChain',
-  );
+  ) as MethodObject;
   switchEthereumChain.examples = [
     {
       name: 'wallet_switchEthereumChain',
@@ -57,9 +63,9 @@ const main = async () => {
     },
   ];
 
-  const chainIdMethod = openrpcDocument.methods.find(
+  const chainIdMethod = methods.find(
     (m) => m.name === 'eth_chainId',
-  );
+  ) as MethodObject;
 
   chainIdMethod.examples = [
     {
@@ -73,9 +79,9 @@ const main = async () => {
     },
   ];
 
-  const blockNumber = openrpcDocument.methods.find(
+  const blockNumber = methods.find(
     (m) => m.name === 'eth_blockNumber',
-  );
+  ) as MethodObject;
 
   blockNumber.examples = [
     {
@@ -90,14 +96,16 @@ const main = async () => {
   ];
 
   // just update address for signTypedData
-  signTypedData4.examples[0].params[0].value =
-    '0x76cf1CdD1fcC252442b50D6e97207228aA4aefC3';
+  const signTypedData4Params = (
+    signTypedData4.examples?.[0] as ExamplePairingObject
+  ).params as ExampleObject[];
+  signTypedData4Params[0].value = '0x76cf1CdD1fcC252442b50D6e97207228aA4aefC3';
 
-  signTypedData4.examples[0].params[1].value.domain.chainId = chainId;
+  signTypedData4Params[1].value.domain.chainId = chainId;
 
-  const personalSign = openrpcDocument.methods.find(
+  const personalSign = methods.find(
     (m) => m.name === 'personal_sign',
-  );
+  ) as MethodObject;
 
   personalSign.examples = [
     {
@@ -152,7 +160,7 @@ const main = async () => {
     ],
   };
   // add net_version
-  openrpcDocument.methods.push(netVersion);
+  methods.push(netVersion);
 
   const server = mockServer(port, openrpcDocument);
   server.start();
@@ -169,7 +177,7 @@ const main = async () => {
       disableGanache: true,
       restartDevice: true,
       testSpecificMock,
-    },
+    } as Parameters<typeof withFixtures>[0],
     async () => {
       await loginToApp();
       await TabBarComponent.tapBrowser();
@@ -192,7 +200,7 @@ const main = async () => {
 
       // replace this with pulling tags out of the api-spec
       // tag: Confirmations
-      const filteredMethods = openrpcDocument.methods
+      const filteredMethods = methods
         .filter(
           (m) =>
             m.name.includes('snap') ||
@@ -245,7 +253,7 @@ const main = async () => {
       await detox.cleanup();
 
       // wait 1s to allow for cleanup
-      await new Promise((resolve, reject) => {
+      await new Promise<void>((resolve) => {
         setTimeout(() => {
           resolve();
         }, 1000);
@@ -258,7 +266,6 @@ const main = async () => {
 const start = async () => {
   await detox.init({ workerId: null });
   await detox.installWorker({
-    global: this.global,
     workerId: `w1`,
   });
   await main();

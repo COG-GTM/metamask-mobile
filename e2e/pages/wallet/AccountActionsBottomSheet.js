@@ -2,7 +2,7 @@ import { AccountActionsBottomSheetSelectorsIDs } from '../../selectors/wallet/Ac
 import Matchers from '../../utils/Matchers';
 import Gestures from '../../utils/Gestures';
 import { EditAccountNameSelectorIDs } from '../../selectors/wallet/EditAccountName.selectors.js';
-import TestHelpers from '../../helpers.js';
+import TestHelpers from '../../helpers';
 import EditAccountNameView from './EditAccountNameView.js';
 
 class AccountActionsBottomSheet {

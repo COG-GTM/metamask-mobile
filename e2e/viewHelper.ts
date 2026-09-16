@@ -39,7 +39,9 @@ export const acceptTermOfUse = async () => {
   await TermsOfUseModal.tapScrollEndButton();
   await TermsOfUseModal.tapAgreeCheckBox();
   await TermsOfUseModal.tapAcceptButton();
-  await Assertions.checkIfNotVisible(TermsOfUseModal.container);
+  await Assertions.checkIfNotVisible(
+    TermsOfUseModal.container as Promise<Detox.IndexableNativeElement>,
+  );
 };
 export const closeOnboardingModals = async () => {
   /*
@@ -52,7 +54,9 @@ have to have all these workarounds in the tests
   try {
     await Assertions.checkIfVisible(OnboardingWizardModal.stepOneContainer);
     await OnboardingWizardModal.tapNoThanksButton();
-    await Assertions.checkIfNotVisible(OnboardingWizardModal.stepOneContainer);
+    await Assertions.checkIfNotVisible(
+      OnboardingWizardModal.stepOneContainer as Promise<Detox.IndexableNativeElement>,
+    );
   } catch {
     /* eslint-disable no-console */
 
@@ -62,7 +66,9 @@ have to have all these workarounds in the tests
   try {
     await Assertions.checkIfVisible(ToastModal.container);
     await ToastModal.tapToastCloseButton();
-    await Assertions.checkIfNotVisible(ToastModal.container);
+    await Assertions.checkIfNotVisible(
+      ToastModal.container as Promise<Detox.IndexableNativeElement>,
+    );
   } catch {
     /* eslint-disable no-undef */
 
@@ -103,6 +109,10 @@ export const importWalletWithRecoveryPhrase = async ({
   seedPhrase,
   password,
   optInToMetrics = true,
+}: {
+  seedPhrase?: string;
+  password?: string;
+  optInToMetrics?: boolean;
 } = {}) => {
   // tap on import seed phrase button
   await Assertions.checkIfVisible(OnboardingCarouselView.container);
@@ -165,14 +175,14 @@ export const CreateNewWallet = async () => {
   await TestHelpers.delay(3500);
   await OnboardingSuccessView.tapDone();
   //'Should dismiss Enable device Notifications checks alert'
-  await this.skipNotificationsDeviceSettings();
+  await skipNotificationsDeviceSettings();
   //'Should dismiss Automatic Security checks screen'
   await Assertions.checkIfVisible(EnableAutomaticSecurityChecksView.container);
   await EnableAutomaticSecurityChecksView.tapNoThanks();
 
   // 'should dismiss the onboarding wizard'
   // dealing with flakiness on bitrise.
-  await this.closeOnboardingModals();
+  await closeOnboardingModals();
 
   // Dismissing to protect your wallet modal
   await Assertions.checkIfVisible(ProtectYourWalletModal.collapseWalletModal);
@@ -203,11 +213,13 @@ export const addLocalhostNetwork = async () => {
 
   await Assertions.checkIfVisible(NetworkEducationModal.container);
   await Assertions.checkIfElementToHaveText(
-    NetworkEducationModal.networkName,
+    NetworkEducationModal.networkName as Promise<Detox.IndexableNativeElement>,
     'Localhost',
   );
   await NetworkEducationModal.tapGotItButton();
-  await Assertions.checkIfNotVisible(NetworkEducationModal.container);
+  await Assertions.checkIfNotVisible(
+    NetworkEducationModal.container as Promise<Detox.IndexableNativeElement>,
+  );
 };
 
 export const switchToSepoliaNetwork = async () => {
@@ -215,20 +227,26 @@ export const switchToSepoliaNetwork = async () => {
   await NetworkListModal.scrollToBottomOfNetworkList();
   await NetworkListModal.tapTestNetworkSwitch();
   await NetworkListModal.scrollToBottomOfNetworkList();
-  await Assertions.checkIfToggleIsOn(NetworkListModal.testNetToggle);
+  await Assertions.checkIfToggleIsOn(
+    NetworkListModal.testNetToggle as Promise<Detox.IndexableNativeElement>,
+  );
   await NetworkListModal.changeNetworkTo(
     CustomNetworks.Sepolia.providerConfig.nickname,
   );
   await Assertions.checkIfVisible(NetworkEducationModal.container);
   await Assertions.checkIfElementToHaveText(
-    NetworkEducationModal.networkName,
+    NetworkEducationModal.networkName as Promise<Detox.IndexableNativeElement>,
     CustomNetworks.Sepolia.providerConfig.nickname,
   );
   await NetworkEducationModal.tapGotItButton();
-  await Assertions.checkIfNotVisible(NetworkEducationModal.container);
+  await Assertions.checkIfNotVisible(
+    NetworkEducationModal.container as Promise<Detox.IndexableNativeElement>,
+  );
   try {
     await Assertions.checkIfVisible(ToastModal.container);
-    await Assertions.checkIfNotVisible(ToastModal.container);
+    await Assertions.checkIfNotVisible(
+      ToastModal.container as Promise<Detox.IndexableNativeElement>,
+    );
   } catch {
     // eslint-disable-next-line no-console
     console.log('Toast is not visible');
@@ -248,15 +266,24 @@ export const waitForTestDappToLoad = async () => {
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      await Assertions.webViewElementExists(TestDApp.testDappFoxLogo);
-      await Assertions.webViewElementExists(TestDApp.testDappPageTitle);
+      await Assertions.webViewElementExists(
+        TestDApp.testDappFoxLogo as unknown as Promise<Detox.IndexableNativeElement>,
+      );
+      await Assertions.webViewElementExists(
+        TestDApp.testDappPageTitle as unknown as Promise<Detox.IndexableNativeElement>,
+      );
 
-      await Assertions.webViewElementExists(TestDApp.DappConnectButton);
+      await Assertions.webViewElementExists(
+        TestDApp.DappConnectButton as unknown as Promise<Detox.IndexableNativeElement>,
+      );
       return; // Success - page is fully loaded and interactive
-
     } catch (error) {
       if (attempt === MAX_RETRIES) {
-        throw new Error(`Test dapp failed to load after ${MAX_RETRIES} attempts: ${error.message}`);
+        throw new Error(
+          `Test dapp failed to load after ${MAX_RETRIES} attempts: ${
+            (error as Error).message
+          }`,
+        );
       }
       await TestHelpers.delay(RETRY_DELAY);
     }
