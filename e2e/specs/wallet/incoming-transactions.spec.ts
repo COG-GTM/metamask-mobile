@@ -4,7 +4,6 @@ import { SmokeWalletPlatform } from '../../tags';
 import TestHelpers from '../../helpers';
 import { loginToApp } from '../../viewHelper';
 import Assertions from '../../utils/Assertions';
-import { startMockServer, stopMockServer } from '../../api-mocking/mock-server';
 import { withFixtures } from '../../fixtures/fixture-helper';
 import FixtureBuilder, {
   DEFAULT_FIXTURE_ACCOUNT,
@@ -15,6 +14,39 @@ import ToastModal from '../../pages/wallet/ToastModal';
 
 const TOKEN_SYMBOL_MOCK = 'ABC';
 const TOKEN_ADDRESS_MOCK = '0x123';
+
+interface AccountsApiValueTransferMock {
+  contractAddress: string;
+  decimal: number;
+  symbol: string;
+  from: string;
+  to: string;
+  amount: string;
+}
+
+interface AccountsApiTransactionMock {
+  hash: string;
+  timestamp: string;
+  chainId: number;
+  blockNumber: number;
+  blockHash: string;
+  gas: number;
+  gasUsed: number;
+  gasPrice: string;
+  effectiveGasPrice: string;
+  nonce: number;
+  cumulativeGasUsed: number;
+  methodId: string | null;
+  value: string;
+  to: string;
+  from: string;
+  isError: boolean;
+  valueTransfers: AccountsApiValueTransferMock[];
+}
+
+type WithFixturesOptions = Parameters<typeof withFixtures>[0] & {
+  testSpecificMock: { GET: ReturnType<typeof mockAccountsApi>[] };
+};
 
 const RESPONSE_STANDARD_MOCK = {
   hash: '0x123456',
@@ -64,7 +96,7 @@ const RESPONSE_OUTGOING_TRANSACTION_MOCK = {
   from: DEFAULT_FIXTURE_ACCOUNT.toLowerCase(),
 };
 
-function mockAccountsApi(transactions) {
+function mockAccountsApi(transactions?: AccountsApiTransactionMock[]) {
   return {
     urlEndpoint: `https://accounts.api.cx.metamask.io/v1/accounts/${DEFAULT_FIXTURE_ACCOUNT}/transactions?networks=0x1,0x89,0x38,0xe708,0x2105,0xa,0xa4b1,0x82750&sortDirection=ASC`,
     response: {
@@ -92,7 +124,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         testSpecificMock: {
           GET: [mockAccountsApi()],
         },
-      },
+      } as WithFixturesOptions,
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
@@ -120,7 +152,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         testSpecificMock: {
           GET: [mockAccountsApi([RESPONSE_TOKEN_TRANSFER_MOCK])],
         },
-      },
+      } as WithFixturesOptions,
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
@@ -139,7 +171,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         testSpecificMock: {
           GET: [mockAccountsApi([RESPONSE_OUTGOING_TRANSACTION_MOCK])],
         },
-      },
+      } as WithFixturesOptions,
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
@@ -160,7 +192,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
           .build(),
         restartDevice: true,
         testSpecificMock: { GET: [mockAccountsApi()] },
-      },
+      } as WithFixturesOptions,
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
@@ -187,7 +219,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
           .build(),
         restartDevice: true,
         testSpecificMock: { GET: [mockAccountsApi([RESPONSE_STANDARD_MOCK])] },
-      },
+      } as WithFixturesOptions,
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();
@@ -204,7 +236,7 @@ describe(SmokeWalletPlatform('Incoming Transactions'), () => {
         fixture: new FixtureBuilder().build(),
         restartDevice: true,
         testSpecificMock: { GET: [mockAccountsApi()] },
-      },
+      } as WithFixturesOptions,
       async () => {
         await loginToApp();
         await TabBarComponent.tapActivity();

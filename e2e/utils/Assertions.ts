@@ -1,8 +1,24 @@
-import { waitFor } from 'detox';
+import { waitFor, expect as detoxExpect } from 'detox';
 import Matchers from './Matchers';
 
 // Global timeout variable
 const TIMEOUT = 15000;
+
+type MaybePromise<T> = T | Promise<T>;
+
+type NativeElementInput = MaybePromise<
+  Detox.IndexableNativeElement | Detox.NativeElement
+>;
+
+type VisibilityElementInput = MaybePromise<
+  | Detox.IndexableNativeElement
+  | Detox.IndexableSystemElement
+  | Detox.NativeElement
+>;
+
+type WebElementInput = MaybePromise<
+  Detox.IndexableWebElement | Detox.WebElement
+>;
 
 /**
  * Class representing a set of assertions for Detox testing.
@@ -13,9 +29,12 @@ class Assertions {
    * @param {Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement | Detox.NativeElement>} elementId - The ID of the element to check.
    * @param timeout
    */
-  static async checkIfVisible(elementId, timeout = TIMEOUT) {
+  static async checkIfVisible(
+    elementId: VisibilityElementInput,
+    timeout = TIMEOUT,
+  ) {
     try {
-      await waitFor(await elementId)
+      await waitFor((await elementId) as Detox.NativeElement)
         .toBeVisible()
         .withTimeout(timeout);
       return true;
@@ -24,14 +43,13 @@ class Assertions {
     }
   }
 
-
   /**
    * Check if an element with the specified web selector exists.
    * @param {Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement | Detox.NativeElement>} elementId - The ID of the element to check.
    */
-  static async webViewElementExists(elementId) {
+  static async webViewElementExists(elementId: WebElementInput) {
     // rename this. We are checking if element is visible.
-    return await expect(await elementId).toExist();
+    return await detoxExpect(await elementId).toExist();
   }
 
   /**
@@ -39,10 +57,13 @@ class Assertions {
    * @param {Promise<Detox.IndexableNativeElement | Detox.IndexableSystemElement>} elementId - The ID of the element to check.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
-  static async checkIfNotVisible(elementId, timeout = TIMEOUT) {
+  static async checkIfNotVisible(
+    elementId: VisibilityElementInput,
+    timeout = TIMEOUT,
+  ) {
     // rename this. We are checking if element is not visible.
 
-    return await waitFor(await elementId)
+    return await waitFor((await elementId) as Detox.NativeElement)
       .not.toBeVisible()
       .withTimeout(timeout);
   }
@@ -53,7 +74,11 @@ class Assertions {
    * @param {string} text - The text content to check.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
-  static async checkIfElementToHaveText(elementId, text, timeout = TIMEOUT) {
+  static async checkIfElementToHaveText(
+    elementId: NativeElementInput,
+    text: string,
+    timeout = TIMEOUT,
+  ) {
     // Rename me. The naming convention here is terrible.
 
     return await waitFor(await elementId)
@@ -67,7 +92,11 @@ class Assertions {
    * @param {string} label - The label content to check.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
-  static async checkIfElementHasLabel(elementId, label, timeout = TIMEOUT) {
+  static async checkIfElementHasLabel(
+    elementId: NativeElementInput,
+    label: string,
+    timeout = TIMEOUT,
+  ) {
     return await waitFor(await elementId)
       .toHaveLabel(label)
       .withTimeout(timeout);
@@ -78,9 +107,12 @@ class Assertions {
    * @param {string} text - The text to check if displayed.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
-  static async checkIfTextIsDisplayed(text, timeout = TIMEOUT) {
-    const element = Matchers.getElementByText(text);
-    return this.checkIfVisible(element, timeout);
+  static async checkIfTextIsDisplayed(
+    text: string | RegExp,
+    timeout = TIMEOUT,
+  ) {
+    const elem = Matchers.getElementByText(text);
+    return this.checkIfVisible(elem, timeout);
   }
 
   /**
@@ -88,9 +120,12 @@ class Assertions {
    * @param {string} text - The text to check if not displayed.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
-  static async checkIfTextIsNotDisplayed(text, timeout = TIMEOUT) {
-    const element = Matchers.getElementByText(text);
-    return this.checkIfNotVisible(element, timeout);
+  static async checkIfTextIsNotDisplayed(
+    text: string | RegExp,
+    timeout = TIMEOUT,
+  ) {
+    const elem = Matchers.getElementByText(text);
+    return this.checkIfNotVisible(elem, timeout);
   }
 
   /**
@@ -99,7 +134,11 @@ class Assertions {
    * @param {string} text - The text content to check.
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
-  static async checkIfElementNotToHaveText(elementId, text, timeout = TIMEOUT) {
+  static async checkIfElementNotToHaveText(
+    elementId: NativeElementInput,
+    text: string,
+    timeout = TIMEOUT,
+  ) {
     // Rename me. The naming convention here is terrible.
 
     return await waitFor(await elementId)
@@ -114,8 +153,8 @@ class Assertions {
    * @param {number} [timeout=TIMEOUT] - Timeout in milliseconds.
    */
   static async checkIfElementDoesNotHaveLabel(
-    elementId,
-    label,
+    elementId: NativeElementInput,
+    label: string,
     timeout = TIMEOUT,
   ) {
     // Rename me. The naming convention here is terrible.
@@ -129,16 +168,16 @@ class Assertions {
    * Check if the toggle with the specified ID is in the "on" state.
    * @param {Promise<Detox.IndexableNativeElement>} elementID - The ID of the toggle element.
    */
-  static async checkIfToggleIsOn(elementID) {
-    return expect(await elementID).toHaveToggleValue(true);
+  static async checkIfToggleIsOn(elementID: NativeElementInput) {
+    return detoxExpect(await elementID).toHaveToggleValue(true);
   }
 
   /**
    * Check if the toggle with the specified ID is in the "off" state.
    * @param {Promise<Detox.IndexableNativeElement>} elementID - The ID of the toggle element.
    */
-  static async checkIfToggleIsOff(elementID) {
-    return expect(await elementID).toHaveToggleValue(false);
+  static async checkIfToggleIsOff(elementID: NativeElementInput) {
+    return detoxExpect(await elementID).toHaveToggleValue(false);
   }
 
   /**
@@ -146,7 +185,7 @@ class Assertions {
    * @param {string} actualText - The actual text value to check.
    * @param {string} expectedText - The expected text value to match against.
    */
-  static async checkIfTextMatches(actualText, expectedText) {
+  static async checkIfTextMatches(actualText: string, expectedText: string) {
     try {
       if (!actualText || !expectedText) {
         throw new Error('Both actual and expected text must be provided');
@@ -168,7 +207,10 @@ class Assertions {
    * @param {Object} actualObject - The actual object to check.
    * @param {Object} expectedObject - The expected object to match against.
    */
-  static async checkIfObjectsMatch(actualObject, expectedObject) {
+  static async checkIfObjectsMatch(
+    actualObject: object,
+    expectedObject: object,
+  ) {
     try {
       if (!actualObject || !expectedObject) {
         throw new Error('Both actual and expected objects must be provided');
@@ -194,7 +236,7 @@ class Assertions {
    * @param {Array} array - The array to check.
    * @param {number} expectedLength - The expected length of the array.
    */
-  static async checkIfArrayHasLength(array, expectedLength) {
+  static async checkIfArrayHasLength(array: unknown[], expectedLength: number) {
     try {
       if (!Array.isArray(array)) {
         throw new Error('The provided value is not an array');
@@ -219,9 +261,11 @@ class Assertions {
    * Note: This assertion does not test UI elements. It is intended for testing values such as events from the mock server or other non-UI data.
    * @param {*} value - The value to check.
    */
-  static async checkIfValueIsPresent(value) {
+  static async checkIfValueIsPresent(value: unknown) {
     if (value === null || value === undefined || value === '') {
-      throw new Error('Value is not present (null, undefined, or empty string)');
+      throw new Error(
+        'Value is not present (null, undefined, or empty string)',
+      );
     }
     return true;
   }

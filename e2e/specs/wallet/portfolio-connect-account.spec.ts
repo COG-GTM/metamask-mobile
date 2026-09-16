@@ -21,7 +21,9 @@ const fixtureServer = new FixtureServer();
 describe(SmokeNetworkAbstractions('Connect account to Portfolio'), () => {
   beforeAll(async () => {
     await TestHelpers.reverseServerPort();
-    const fixture = new FixtureBuilder().withKeyringController().build();
+    const fixture = new FixtureBuilder().withKeyringController().build() as {
+      state: { user: { seedphraseBackedUp: boolean } };
+    };
     fixture.state.user.seedphraseBackedUp = false;
     await startFixtureServer(fixtureServer);
     await loadFixture(fixtureServer, { fixture });

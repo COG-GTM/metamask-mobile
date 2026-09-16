@@ -1,5 +1,17 @@
 import { waitFor } from 'detox';
 
+type MaybePromise<T> = T | Promise<T>;
+
+type NativeElementInput = MaybePromise<
+  Detox.IndexableNativeElement | Detox.NativeElement
+>;
+
+type IndexableNativeElementInput = MaybePromise<Detox.IndexableNativeElement>;
+
+type WebElementInput = MaybePromise<
+  Detox.IndexableWebElement | Detox.WebElement
+>;
+
 /**
  * Class for handling user actions (Gestures)
  */
@@ -10,10 +22,10 @@ class Gestures {
    * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to tap
    * @param {number} timeout - Timeout for waiting (default: 2000ms)
    */
-  static async tapAndLongPress(elementID, timeout = 2000) {
-    const element = await elementID;
+  static async tapAndLongPress(elementID: NativeElementInput, timeout = 2000) {
+    const elem = await elementID;
 
-    await element.longPress(timeout);
+    await elem.longPress(timeout);
   }
 
   /**
@@ -22,9 +34,9 @@ class Gestures {
    * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to tap
    * @param {Object} point - Coordinates { x, y } where the element will be tapped
    */
-  static async tapAtPoint(elementID, point) {
-    const element = await elementID;
-    await element.tap(point);
+  static async tapAtPoint(elementID: NativeElementInput, point: Detox.Point2D) {
+    const elem = await elementID;
+    await elem.tap(point);
   }
 
   /**
@@ -33,9 +45,9 @@ class Gestures {
    * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to tap
 
    */
-  static async tap(elementID) {
-    const element = await elementID;
-    await element.tap();
+  static async tap(elementID: NativeElementInput) {
+    const elem = await elementID;
+    await elem.tap();
   }
 
   /**
@@ -43,7 +55,7 @@ class Gestures {
    *
    * @param {string} textPattern - Regular expression pattern to match the text
    */
-  static async tapTextBeginingWith(textPattern) {
+  static async tapTextBeginingWith(textPattern: string) {
     await element(by.text(new RegExp(`^/${textPattern} .*$/`))).tap();
   }
 
@@ -53,10 +65,15 @@ class Gestures {
    * @param {Promise<Detox.IndexableNativeElement | Detox.SystemElement>} elementID - ID of the element to tap
    * @param {number} timeout - Timeout for waiting (default: 8000ms)
    */
-  static async waitAndTap(elementID, timeout = 15000) {
-    const element = await elementID;
-    await waitFor(element).toBeVisible().withTimeout(timeout);
-    await element.tap();
+  static async waitAndTap(
+    elementID: MaybePromise<
+      Detox.IndexableNativeElement | Detox.NativeElement | Detox.SystemElement
+    >,
+    timeout = 15000,
+  ) {
+    const elem = (await elementID) as Detox.NativeElement;
+    await waitFor(elem).toBeVisible().withTimeout(timeout);
+    await elem.tap();
   }
 
   /**
@@ -66,10 +83,14 @@ class Gestures {
    * @param {number} index - Index of the element to tap
    * @param {number} timeout - Timeout for waiting (default: 15000ms)
    */
-  static async TapAtIndex(elementID, index, timeout = 15000) {
-    const element = (await elementID).atIndex(index);
-    await waitFor(element).toBeVisible().withTimeout(timeout);
-    await element.tap();
+  static async TapAtIndex(
+    elementID: IndexableNativeElementInput,
+    index: number,
+    timeout = 15000,
+  ) {
+    const elem = (await elementID).atIndex(index);
+    await waitFor(elem).toBeVisible().withTimeout(timeout);
+    await elem.tap();
   }
 
   /**
@@ -77,9 +98,9 @@ class Gestures {
    *
    * @param {Promise<Detox.IndexableWebElement>} elementID - ID of the element to tap
    */
-  static async tapWebElement(elementID) {
-    const element = await elementID;
-    await element.tap();
+  static async tapWebElement(elementID: WebElementInput) {
+    const elem = await elementID;
+    await elem.tap();
   }
 
   /**
@@ -87,10 +108,10 @@ class Gestures {
    *
    * @param {Promise<Detox.IndexableNativeElement>} elementID - Text of the element to double tap
    */
-  static async doubleTap(elementID) {
-    const element = await elementID;
+  static async doubleTap(elementID: NativeElementInput) {
+    const elem = await elementID;
 
-    await element.multiTap(2);
+    await elem.multiTap(2);
   }
 
   /**
@@ -100,11 +121,11 @@ class Gestures {
    * @param {number} timeout - Timeout for waiting (default: 8000ms)
 
   */
-  static async clearField(elementID, timeout = 2500) {
-    const element = await elementID;
-    await waitFor(element).toBeVisible().withTimeout(timeout);
+  static async clearField(elementID: NativeElementInput, timeout = 2500) {
+    const elem = await elementID;
+    await waitFor(elem).toBeVisible().withTimeout(timeout);
 
-    await element.replaceText('');
+    await elem.replaceText('');
   }
 
   /**
@@ -113,11 +134,14 @@ class Gestures {
    * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to type into
    * @param {string} text - Text to be typed into the element
    */
-  static async typeTextAndHideKeyboard(elementID, text) {
-    const element = await elementID;
+  static async typeTextAndHideKeyboard(
+    elementID: NativeElementInput,
+    text: string,
+  ) {
+    const elem = await elementID;
     await this.clearField(elementID);
 
-    await element.typeText(text + '\n');
+    await elem.typeText(text + '\n');
   }
 
   /**
@@ -126,11 +150,15 @@ class Gestures {
    * @param {Promise<Detox.IndexableNativeElement>} elementID - ID of the element to replace the text in
    * @param {string} text - Text to replace the existing text in the element
    */
-  static async replaceTextInField(elementID, text, timeout = 10000) {
-    const element = await elementID;
-    await waitFor(element).toBeVisible().withTimeout(timeout);
+  static async replaceTextInField(
+    elementID: NativeElementInput,
+    text: string,
+    timeout = 10000,
+  ) {
+    const elem = await elementID;
+    await waitFor(elem).toBeVisible().withTimeout(timeout);
 
-    await element.replaceText(text);
+    await elem.replaceText(text);
   }
 
   /**
@@ -143,10 +171,17 @@ class Gestures {
    * @param {number} [xStart] - X-coordinate to start the swipe
    * @param {number} [yStart] - Y-coordinate to start the swipe
    */
-  static async swipe(elementID, direction, speed, percentage, xStart, yStart) {
-    const element = await elementID;
+  static async swipe(
+    elementID: NativeElementInput,
+    direction: Detox.Direction,
+    speed?: Detox.Speed,
+    percentage?: number,
+    xStart?: number,
+    yStart?: number,
+  ) {
+    const elem = await elementID;
 
-    await element.swipe(direction, speed, percentage, xStart, yStart);
+    await elem.swipe(direction, speed, percentage, xStart, yStart);
   }
 
   /**
@@ -161,17 +196,17 @@ class Gestures {
    * @param {number} index - Index of the element (default 0)
    */
   static async swipeAtIndex(
-    elementID,
-    direction,
-    speed,
-    percentage,
-    xStart,
-    yStart,
+    elementID: IndexableNativeElementInput,
+    direction: Detox.Direction,
+    speed?: Detox.Speed,
+    percentage?: number,
+    xStart?: number,
+    yStart?: number,
     index = 0,
   ) {
-    const element = await elementID;
+    const elem = await elementID;
 
-    await element
+    await elem
       .atIndex(index)
       .swipe(direction, speed, percentage, xStart, yStart);
   }
@@ -180,9 +215,9 @@ class Gestures {
    * Scrolls the web element until its top is at the top of the viewport.
    * @param {Promise<Element>} elementID - A promise resolving to the target element.
    */
-  static async scrollToWebViewPort(elem) {
-    const element = await elem;
-    await element.scrollToView();
+  static async scrollToWebViewPort(elementID: WebElementInput) {
+    const elem = await elementID;
+    await elem.scrollToView();
   }
 
   /**
@@ -193,9 +228,9 @@ class Gestures {
    * @param {Detox.Direction} direction - Direction of the scroll (up, down, left, right). The default is down.
    * @param {number} [scrollAmount=350] - The amount to scroll (default is 350). Optional parameter.   */
   static async scrollToElement(
-    destinationElementID,
-    scrollIdentifier,
-    direction = 'down',
+    destinationElementID: NativeElementInput,
+    scrollIdentifier: MaybePromise<Detox.NativeMatcher>,
+    direction: Detox.Direction = 'down',
     scrollAmount = 350,
   ) {
     const destinationElement = await destinationElementID;

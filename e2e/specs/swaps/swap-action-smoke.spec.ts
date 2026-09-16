@@ -1,47 +1,45 @@
 'use strict';
 import { ethers } from 'ethers';
-import { loginToApp } from '../../viewHelper';
-import QuoteView from '../../pages/swaps/QuoteView';
-import SwapView from '../../pages/swaps/SwapView';
-import TabBarComponent from '../../pages/wallet/TabBarComponent';
-import ActivitiesView from '../../pages/Transactions/ActivitiesView';
-import WalletActionsBottomSheet from '../../pages/wallet/WalletActionsBottomSheet';
-import WalletView from '../../pages/wallet/WalletView';
+import { loginToApp } from '../../viewHelper.js';
+import QuoteView from '../../pages/swaps/QuoteView.js';
+import SwapView from '../../pages/swaps/SwapView.js';
+import TabBarComponent from '../../pages/wallet/TabBarComponent.js';
+import AccountListBottomSheet from '../../pages/wallet/AccountListBottomSheet.js';
+import WalletView from '../../pages/wallet/WalletView.js';
+import WalletActionsBottomSheet from '../../pages/wallet/WalletActionsBottomSheet.js';
 import SettingsView from '../../pages/Settings/SettingsView';
-import FixtureBuilder from '../../fixtures/fixture-builder';
+import FixtureBuilder from '../../fixtures/fixture-builder.js';
+import Tenderly from '../../tenderly.js';
 import {
   loadFixture,
   startFixtureServer,
   stopFixtureServer,
-} from '../../fixtures/fixture-helper';
-import { CustomNetworks } from '../../resources/networks.e2e';
-import NetworkListModal from '../../pages/Network/NetworkListModal';
-import NetworkEducationModal from '../../pages/Network/NetworkEducationModal';
-import TestHelpers from '../../helpers';
-import FixtureServer from '../../fixtures/fixture-server';
-import { getFixturesServerPort } from '../../fixtures/utils';
-import { Regression } from '../../tags';
-import AccountListBottomSheet from '../../pages/wallet/AccountListBottomSheet.js';
-import ImportAccountView from '../../pages/importAccount/ImportAccountView';
-import SuccessImportAccountView from '../../pages/importAccount/SuccessImportAccountView';
+} from '../../fixtures/fixture-helper.js';
+import { CustomNetworks } from '../../resources/networks.e2e.js';
+import NetworkListModal from '../../pages/Network/NetworkListModal.js';
+import NetworkEducationModal from '../../pages/Network/NetworkEducationModal.js';
+import TestHelpers from '../../helpers.js';
+import FixtureServer from '../../fixtures/fixture-server.js';
+import { getFixturesServerPort } from '../../fixtures/utils.js';
+import { SmokeTrade } from '../../tags.js';
+import ImportAccountView from '../../pages/importAccount/ImportAccountView.js';
+import SuccessImportAccountView from '../../pages/importAccount/SuccessImportAccountView.js';
 import Assertions from '../../utils/Assertions';
-import AddAccountBottomSheet from '../../pages/wallet/AddAccountBottomSheet';
+import AddAccountBottomSheet from '../../pages/wallet/AddAccountBottomSheet.js';
+import ActivitiesView from '../../pages/Transactions/ActivitiesView.js';
 import { ActivitiesViewSelectorsText } from '../../selectors/Transactions/ActivitiesView.selectors';
 import AdvancedSettingsView from '../../pages/Settings/AdvancedView';
-
-import Tenderly from '../../tenderly';
 
 const fixtureServer = new FixtureServer();
 const firstElement = 0;
 
-describe(Regression('Multiple Swaps from Actions'), () => {
+describe(SmokeTrade('Swap from Actions'), () => {
   const FIRST_ROW = 0;
   const SECOND_ROW = 1;
   let currentNetwork = CustomNetworks.Tenderly.Mainnet.providerConfig.nickname;
   const wallet = ethers.Wallet.createRandom();
 
   beforeAll(async () => {
-    jest.setTimeout(2500000);
     await Tenderly.addFunds(
       CustomNetworks.Tenderly.Mainnet.providerConfig.rpcUrl,
       wallet.address,
@@ -62,6 +60,10 @@ describe(Regression('Multiple Swaps from Actions'), () => {
 
   afterAll(async () => {
     await stopFixtureServer(fixtureServer);
+  });
+
+  beforeEach(async () => {
+    jest.setTimeout(120000);
   });
 
   it('should turn off stx', async () => {
@@ -85,10 +87,9 @@ describe(Regression('Multiple Swaps from Actions'), () => {
   });
 
   it.each`
-    type            | quantity | sourceTokenSymbol | destTokenSymbol | network
-    ${'native'}     | ${'.03'} | ${'ETH'}          | ${'DAI'}        | ${CustomNetworks.Tenderly.Mainnet}
-    ${'unapproved'} | ${'3'}   | ${'DAI'}          | ${'USDC'}       | ${CustomNetworks.Tenderly.Mainnet}
-    ${'erc20'}      | ${'10'}  | ${'DAI'}          | ${'ETH'}        | ${CustomNetworks.Tenderly.Mainnet}
+    type        | quantity | sourceTokenSymbol | destTokenSymbol | network
+    ${'wrap'}   | ${'.03'} | ${'ETH'}          | ${'WETH'}       | ${CustomNetworks.Tenderly.Mainnet}
+    ${'unwrap'} | ${'.01'} | ${'WETH'}         | ${'ETH'}        | ${CustomNetworks.Tenderly.Mainnet}
   `(
     "should swap $type token '$sourceTokenSymbol' to '$destTokenSymbol' on '$network.providerConfig.nickname'",
     async ({ type, quantity, sourceTokenSymbol, destTokenSymbol, network }) => {
@@ -109,16 +110,15 @@ describe(Regression('Multiple Swaps from Actions'), () => {
       await Assertions.checkIfVisible(WalletView.container);
       await TabBarComponent.tapActions();
       await WalletActionsBottomSheet.tapSwapButton();
-
       await Assertions.checkIfVisible(QuoteView.getQuotes);
 
-      //Select source token, if native token can skip because already selected
+      //Select source token, if native tiken can skip because already selected
       if (type !== 'native' && type !== 'wrap') {
         await QuoteView.tapOnSelectSourceToken();
         await QuoteView.tapSearchToken();
         await QuoteView.typeSearchToken(sourceTokenSymbol);
         await TestHelpers.delay(2000);
-        await QuoteView.selectToken(sourceTokenSymbol);
+        await QuoteView.selectToken(sourceTokenSymbol, 1);
       }
       await QuoteView.enterSwapAmount(quantity);
 
@@ -128,7 +128,7 @@ describe(Regression('Multiple Swaps from Actions'), () => {
         await QuoteView.tapSearchToken();
         await QuoteView.typeSearchToken(destTokenSymbol);
         await TestHelpers.delay(2000);
-        await QuoteView.selectToken(destTokenSymbol);
+        await QuoteView.selectToken(destTokenSymbol, 1);
       } else await QuoteView.selectToken(destTokenSymbol, firstElement);
 
       //Make sure slippage is zero for wrapped tokens
@@ -139,9 +139,12 @@ describe(Regression('Multiple Swaps from Actions'), () => {
         );
       }
       await QuoteView.tapOnGetQuotes();
+      await Assertions.checkIfVisible(SwapView.fetchingQuotes);
       await Assertions.checkIfVisible(SwapView.quoteSummary);
       await Assertions.checkIfVisible(SwapView.gasFee);
       await SwapView.tapIUnderstandPriceWarning();
+      await Assertions.checkIfVisible(SwapView.swapButton);
+      await TestHelpers.delay(2000);
       await SwapView.tapSwapButton();
       //Wait for Swap to complete
       try {
@@ -165,14 +168,22 @@ describe(Regression('Multiple Swaps from Actions'), () => {
       await Assertions.checkIfVisible(
         ActivitiesView.swapActivityTitle(sourceTokenSymbol, destTokenSymbol),
       );
-      await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(FIRST_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+      await Assertions.checkIfElementToHaveText(
+        ActivitiesView.transactionStatus(FIRST_ROW),
+        ActivitiesViewSelectorsText.CONFIRM_TEXT,
+        120000,
+      );
 
       // Check the token approval completed
       if (type === 'unapproved') {
         await Assertions.checkIfVisible(
           ActivitiesView.tokenApprovalActivity(sourceTokenSymbol),
         );
-        await Assertions.checkIfElementToHaveText(ActivitiesView.transactionStatus(SECOND_ROW), ActivitiesViewSelectorsText.CONFIRM_TEXT, 120000);
+        await Assertions.checkIfElementToHaveText(
+          ActivitiesView.transactionStatus(SECOND_ROW),
+          ActivitiesViewSelectorsText.CONFIRM_TEXT,
+          120000,
+        );
       }
     },
   );

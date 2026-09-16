@@ -11,7 +11,10 @@ class Matchers {
    * @param {number} [index] - Index of the element (default: 0)
    * @return {Promise<Detox.IndexableNativeElement | Detox.NativeElement>} - Resolves to the located element
    */
-  static async getElementByID(elementId, index) {
+  static async getElementByID(
+    elementId: string | RegExp,
+    index?: number,
+  ): Promise<Detox.IndexableNativeElement | Detox.NativeElement> {
     if (index) {
       return element(by.id(elementId)).atIndex(index);
     }
@@ -25,7 +28,10 @@ class Matchers {
    * @param {number} index - Index of the element (default: 0)
    * @return {Promise<Detox.NativeElement>} - Resolves to the located element
    */
-  static async getElementByText(text, index = 0) {
+  static async getElementByText(
+    text: string | RegExp,
+    index = 0,
+  ): Promise<Detox.NativeElement> {
     return element(by.text(text)).atIndex(index);
   }
 
@@ -41,7 +47,11 @@ class Matchers {
    * @param {number} index - Index of the element (default: 0)
    * @return {Promise<Detox.NativeElement>} - Resolves to the located element
    */
-  static async getElementByIDAndLabel(id, label, index = 0) {
+  static async getElementByIDAndLabel(
+    id: string | RegExp,
+    label: string | RegExp,
+    index = 0,
+  ): Promise<Detox.NativeElement> {
     return element(by.id(id).and(by.label(label))).atIndex(index);
   }
 
@@ -52,7 +62,10 @@ class Matchers {
    * @param {number} index - Index of the element (default: 0)
    * @return {Promise<Detox.NativeElement>} - Resolves to the located element
    */
-  static async getElementByLabel(label, index = 0) {
+  static async getElementByLabel(
+    label: string | RegExp,
+    index = 0,
+  ): Promise<Detox.NativeElement> {
     return element(by.label(label)).atIndex(index);
   }
 
@@ -63,7 +76,10 @@ class Matchers {
    * @param {string} childElement - The ID of the child element to locate within the parent element.
    * @return {Promise<Detox.IndexableNativeElement>} - Resolves to the located element
    */
-  static async getElementByDescendant(parentElement, childElement) {
+  static async getElementByDescendant(
+    parentElement: string | RegExp,
+    childElement: string | RegExp,
+  ): Promise<Detox.IndexableNativeElement> {
     return element(by.id(parentElement).withDescendant(by.id(childElement)));
   }
 
@@ -74,7 +90,10 @@ class Matchers {
    * @param {string} parentElement - Matches elements with at least one descendant that matches the specified matcher.
    * @return {Promise<Detox.IndexableNativeElement>} - Resolves to the located element
    */
-  static async getElementIDWithAncestor(childElement, parentElement) {
+  static async getElementIDWithAncestor(
+    childElement: string | RegExp,
+    parentElement: string | RegExp,
+  ): Promise<Detox.IndexableNativeElement> {
     return element(by.id(childElement).withAncestor(by.id(parentElement)));
   }
 
@@ -86,7 +105,7 @@ class Matchers {
    * @param {string} elementId The web ID of the browser webview
    * @returns {Detox.WebViewElement} WebView element
    */
-  static getWebViewByID(elementId) {
+  static getWebViewByID(elementId: string | RegExp): Detox.WebViewElement {
     return device.getPlatform() === 'ios'
       ? web(by.id(elementId))
       : web(by.type('android.webkit.WebView').withAncestor(by.id(elementId)));
@@ -99,7 +118,7 @@ class Matchers {
    * @param {string} innerID - The web ID of the browser webview
    * @return {Promise<Detox.IndexableWebElement | Detox.SecuredWebElementFacade>} Resolves to the located element
    */
-  static async getElementByWebID(webviewID, innerID) {
+  static async getElementByWebID(webviewID: string, innerID: string) {
     const myWebView = this.getWebViewByID(webviewID);
     return myWebView.element(by.web.id(innerID));
   }
@@ -111,7 +130,10 @@ class Matchers {
    * @return {Promise<Detox.WebElement>} - Resolves to the located element
    */
 
-  static async getElementByCSS(webviewID, selector) {
+  static async getElementByCSS(
+    webviewID: string | RegExp,
+    selector: string,
+  ): Promise<Detox.WebElement> {
     const myWebView = web(by.id(webviewID));
     return myWebView.element(by.web.cssSelector(selector)).atIndex(0);
   }
@@ -122,7 +144,7 @@ class Matchers {
    * @param {string} xpath - XPath expression to locate the element
    * @return {Promise<Detox.IndexableWebElement | Detox.SecuredWebElementFacade>} - Resolves to the located element
    */
-  static async getElementByXPath(webviewID, xpath) {
+  static async getElementByXPath(webviewID: string, xpath: string) {
     const myWebView = this.getWebViewByID(webviewID);
     return myWebView.element(by.web.xpath(xpath));
   }
@@ -132,7 +154,10 @@ class Matchers {
    * @param {string} url - URL string to locate the element
    * @return {Promise<Detox.WebElement>} - Resolves to the located element
    */
-  static async getElementByHref(webviewID, url) {
+  static async getElementByHref(
+    webviewID: string | RegExp,
+    url: string,
+  ): Promise<Detox.WebElement> {
     const myWebView = web(by.id(webviewID));
     return myWebView.element(by.web.href(url)).atIndex(0);
   }
@@ -150,10 +175,11 @@ class Matchers {
  *
 
  */
-  static async getIdentifier(selectorString) {
+  static async getIdentifier(
+    selectorString: string | RegExp,
+  ): Promise<Detox.NativeMatcher> {
     return by.id(selectorString);
   }
-
 
   /**
    * Get system dialogs in the system-level (e.g. permissions, alerts, etc.), by text.
@@ -161,7 +187,9 @@ class Matchers {
    * @param {string} text - Match elements with the specified text
    * @return {Promise<Detox.IndexableSystemElement>} - Resolves to the located element
    */
-  static async getSystemElementByText(text) {
+  static async getSystemElementByText(
+    text: string,
+  ): Promise<Detox.IndexableSystemElement> {
     return system.element(by.system.label(text));
   }
 }
