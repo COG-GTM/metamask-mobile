@@ -11,7 +11,7 @@ import WalletView from '../../pages/wallet/WalletView';
 import NetworkEducationModal from '../../pages/Network/NetworkEducationModal';
 import AdvancedSettingsView from '../../pages/Settings/AdvancedView';
 import FiatOnTestnetsBottomSheet from '../../pages/Settings/Advanced/FiatOnTestnetsBottomSheet.js';
-import Assertions from '../../utils/Assertions.js';
+import Assertions from '../../utils/Assertions';
 import TestHelpers from '../../helpers.js';
 
 const SEPOLIA = CustomNetworks.Sepolia.providerConfig.nickname;

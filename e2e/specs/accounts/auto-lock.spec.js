@@ -15,7 +15,7 @@ import TabBarComponent from '../../pages/wallet/TabBarComponent';
 import SettingsView from '../../pages/Settings/SettingsView';
 import SecurityAndPrivacy from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView';
 import AutoLockModal from '../../pages/Settings/SecurityAndPrivacy/AutoLockModal';
-import Assertions from '../../utils/Assertions.js';
+import Assertions from '../../utils/Assertions';
 import WalletView from '../../pages/wallet/WalletView.js';
 import LoginView from '../../pages/wallet/LoginView.js';
 

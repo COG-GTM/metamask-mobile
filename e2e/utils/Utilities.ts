@@ -9,12 +9,12 @@ export default class Utilities {
    *
    * @param {string[]} regexstrings - An array of strings to be formatted for exact matching in a regex pattern.
    * @returns {string} A string formatted for exact matching within a regex pattern,
-   *                    encapsulating the input strings in a way that they can be matched as literals.
+   * encapsulating the input strings in a way that they can be matched as literals.
    * @example
    * // returns '\\("apple","banana","cherry"\\)'
    * formatForExactMatchGroup(['apple', 'banana', 'cherry']);
    */
-  static formatForExactMatchGroup(regexstrings) {
+  static formatForExactMatchGroup(regexstrings: string[]) {
     return `\\("${regexstrings.join('","')}"\\)`;
   }
 

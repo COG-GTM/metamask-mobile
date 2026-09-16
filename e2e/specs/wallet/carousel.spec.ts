@@ -87,7 +87,6 @@ describe(Regression('Carousel Tests'), () => {
   it('should handle slide interactions', async () => {
     await device.disableSynchronization();
     const carouselSecondSlide = await WalletView.carouselSecondSlide;
-    const container = await WalletView.container;
     await Assertions.checkIfVisible(carouselSecondSlide, 5000);
     await Gestures.waitAndTap(carouselSecondSlide);
     // await Assertions.checkIfVisible(container, 5000);
