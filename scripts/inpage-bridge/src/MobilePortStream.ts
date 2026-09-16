@@ -1,11 +1,16 @@
-const { inherits } = require('util');
-const { Duplex } = require('readable-stream');
+import { Duplex } from 'readable-stream';
 
 const noop = () => undefined;
 
-module.exports = MobilePortStream;
+interface Port {
+  name: string;
+}
 
-inherits(MobilePortStream, Duplex);
+interface PortMessage {
+  target?: string;
+  data?: { toNative?: boolean; data?: { toNative?: boolean } };
+  _isBuffer?: boolean;
+}
 
 /**
  * Creates a stream that's both readable and writable.
@@ -14,15 +19,32 @@ inherits(MobilePortStream, Duplex);
  * @class
  * @param {Object} port Remote Port object
  */
-function MobilePortStream(port) {
-  Duplex.call(this, {
-    objectMode: true,
-  });
-  this._name = port.name;
-  this._targetWindow = window;
-  this._port = port;
-  this._origin = location.origin;
-  window.addEventListener('message', this._onMessage.bind(this), false);
+class MobilePortStream extends Duplex {
+  _name: string;
+  _targetWindow: Window;
+  _port: Port;
+  _origin: string;
+
+  constructor(port: Port) {
+    super({
+      objectMode: true,
+    });
+    this._name = port.name;
+    this._targetWindow = window;
+    this._port = port;
+    this._origin = location.origin;
+    window.addEventListener('message', this._onMessage.bind(this), false);
+  }
+}
+
+interface MobilePortStream {
+  _onMessage(event: MessageEvent<PortMessage>): void;
+  _onDisconnect(): void;
+  _write(
+    msg: PortMessage | Buffer,
+    _encoding: BufferEncoding,
+    cb: (error?: Error) => void,
+  ): void;
 }
 
 /**
@@ -89,7 +111,8 @@ MobilePortStream.prototype._read = noop;
 MobilePortStream.prototype._write = function (msg, _encoding, cb) {
   try {
     if (Buffer.isBuffer(msg)) {
-      const data = msg.toJSON();
+      const data: { type: 'Buffer'; data: number[]; _isBuffer?: boolean } =
+        msg.toJSON();
       data._isBuffer = true;
       window.ReactNativeWebView.postMessage(
         JSON.stringify({ ...data, origin: window.location.href }),
@@ -107,3 +130,5 @@ MobilePortStream.prototype._write = function (msg, _encoding, cb) {
   }
   return cb();
 };
+
+export default MobilePortStream;

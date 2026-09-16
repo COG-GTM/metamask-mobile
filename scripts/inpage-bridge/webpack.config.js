@@ -14,7 +14,7 @@ const isBuildTypeFlask = process.env.METAMASK_BUILD_TYPE === 'flask';
 const appId = isBuildTypeFlask ? 'io.metamask.mobile.flask' : 'io.metamask.mobile';
 
 const config = {
-  entry: './src/index.js',
+  entry: './src/index.ts',
 
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -25,17 +25,23 @@ const config = {
   module: {
     rules: [
       {
-        test: /\.(js|jsx|mjs)$/u,
+        test: /\.(js|jsx|mjs|ts)$/u,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env'],
+            presets: ['@babel/preset-env', '@babel/preset-typescript'],
           },
         },
       },
     ],
   },
   resolve: {
+    extensions: ['.ts', '...'],
+    alias: {
+      // Pin the CommonJS build: the ESM entry uses JSON import attributes,
+      // which this webpack version cannot parse.
+      '@metamask/providers': require.resolve('@metamask/providers'),
+    },
     fallback: {
       buffer: require.resolve('buffer'),
       stream: require.resolve('stream-browserify'),

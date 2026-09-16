@@ -94,7 +94,7 @@ function blockedDomainCheck() {
   const { hostname: currentHostname, pathname: currentPathname } =
     window.location;
 
-  const trimTrailingSlash = (str) =>
+  const trimTrailingSlash = (str: string) =>
     str.endsWith('/') ? str.slice(0, -1) : str;
 
   return (
