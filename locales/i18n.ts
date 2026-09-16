@@ -10,21 +10,21 @@ import { LANGUAGE } from '../app/constants/storage';
 // import 'intl/locale-data/jsonp/en.js';
 
 // Import all locales
-import de from './languages/de';
-import el from './languages/el';
-import en from './languages/en';
-import es from './languages/es';
-import fr from './languages/fr';
-import hi from './languages/hi';
-import id from './languages/id';
-import ja from './languages/ja';
-import ko from './languages/ko';
-import pt from './languages/pt';
-import ru from './languages/ru';
-import tl from './languages/tl';
-import tr from './languages/tr';
-import vi from './languages/vi';
-import zh from './languages/zh';
+import de from './languages/de.json';
+import el from './languages/el.json';
+import en from './languages/en.json';
+import es from './languages/es.json';
+import fr from './languages/fr.json';
+import hi from './languages/hi.json';
+import id from './languages/id.json';
+import ja from './languages/ja.json';
+import ko from './languages/ko.json';
+import pt from './languages/pt.json';
+import ru from './languages/ru.json';
+import tl from './languages/tl.json';
+import tr from './languages/tr.json';
+import vi from './languages/vi.json';
+import zh from './languages/zh.json';
 
 export const supportedTranslations = {
   de,
@@ -95,7 +95,7 @@ getUserPreferableLocale();
 export const isRTL = false; // currentLocale.indexOf('jaJp') === 0;
 
 // Set locale
-export async function setLocale(locale) {
+export async function setLocale(locale: string) {
   I18n.locale = locale;
   // Platform.OS === 'ios' && getLocaleData(locale);
   await StorageWrapper.setItem(LANGUAGE, locale);
@@ -127,7 +127,7 @@ export function getLanguages() {
 ReactNative.I18nManager.allowRTL(isRTL);
 
 // The method we'll use instead of a regular string
-export function strings(name, params = {}) {
+export function strings(name: string, params = {}) {
   return I18n.t(name, params);
 }
 
