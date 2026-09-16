@@ -9,13 +9,26 @@ import { strings } from '../../../../../locales/i18n';
 import { getEtherscanBaseUrl } from '../../../../util/etherscan';
 import { useSelector } from 'react-redux';
 import {
+  ProviderConfig,
   selectEvmChainId,
   selectProviderConfig,
 } from '../../../../selectors/networkController';
 import { selectNetworkName } from '../../../../selectors/networkInfos';
+import { NetworkConfiguration } from '@metamask/network-controller';
 
-function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
-  const [explorer, setExplorer] = useState({
+interface Explorer {
+  name: string;
+  value: string | null;
+  isValid: boolean;
+  isRPC: boolean;
+  baseUrl: string;
+}
+
+function useBlockExplorer(
+  networkConfigurations: Record<string, NetworkConfiguration>,
+  providerConfigTokenExplorer?: ProviderConfig,
+) {
+  const [explorer, setExplorer] = useState<Explorer>({
     name: '',
     value: null,
     isValid: false,
@@ -80,7 +93,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
   ]);
 
   const tx = useCallback(
-    (hash) => {
+    (hash?: string) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -88,12 +101,12 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
       const create = explorer.isRPC
         ? etherscanLink.createCustomExplorerLink
         : etherscanLink.createExplorerLink;
-      return create(hash, explorer.value);
+      return create(hash as string, explorer.value as string);
     },
     [explorer],
   );
   const account = useCallback(
-    (address) => {
+    (address: string) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -101,12 +114,12 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
       const create = explorer.isRPC
         ? etherscanLink.createCustomAccountLink
         : etherscanLink.createAccountLink;
-      return create(address, explorer.value);
+      return create(address, explorer.value as string);
     },
     [explorer],
   );
   const token = useCallback(
-    (address) => {
+    (address: string) => {
       if (!explorer.isValid) {
         return '';
       }
@@ -114,7 +127,7 @@ function useBlockExplorer(networkConfigurations, providerConfigTokenExplorer) {
       const create = explorer.isRPC
         ? etherscanLink.createCustomTokenTrackerLink
         : etherscanLink.createTokenTrackerLink;
-      return create(address, explorer.value);
+      return create(address, explorer.value as string);
     },
     [explorer],
   );
