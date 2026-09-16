@@ -2,25 +2,15 @@
 /* eslint-disable arrow-body-style */
 import { MULTICHAIN_ACCOUNT_TYPE_TO_MAINNET } from '../../core/Multichain/constants';
 import { RootState } from '../../reducers';
-import {
-  selectChainId,
-  selectEvmChainId,
-  selectProviderConfig as selectEvmProviderConfig,
-} from '../networkController';
-import {
-  selectInternalAccounts,
-  selectSelectedInternalAccount,
-} from '../accountsController';
+import { selectChainId, selectEvmChainId } from '../networkController';
+import { selectSelectedInternalAccount } from '../accountsController';
 import { createDeepEqualSelector } from '../util';
 import { Balance, BtcScope, SolScope } from '@metamask/keyring-api';
-import { selectConversionRate } from '../currencyRateController';
 import { isMainNet } from '../../util/networks';
-import { selectAccountBalanceByChainId } from '../accountTrackerController';
 import { selectShowFiatInTestnets } from '../settings';
 import {
   selectIsEvmNetworkSelected,
   selectSelectedNonEvmNetworkChainId,
-  selectSelectedNonEvmNetworkSymbol,
 } from '../multichainNetworkController';
 import {
   CaipAssetId,
@@ -65,16 +55,6 @@ export const MULTICHAIN_NETWORK_TO_ASSET_TYPES: Record<
   [BtcScope.Mainnet]: [MultichainNativeAssets.Bitcoin],
   [BtcScope.Testnet]: [MultichainNativeAssets.BitcoinTestnet],
 };
-
-export const selectMultichainDefaultToken = createDeepEqualSelector(
-  selectIsEvmNetworkSelected,
-  selectEvmProviderConfig,
-  selectSelectedNonEvmNetworkSymbol,
-  (isEvmSelected, evmProviderConfig, nonEvmTicker) => {
-    const symbol = isEvmSelected ? evmProviderConfig.ticker : nonEvmTicker;
-    return { symbol };
-  },
-);
 
 export const selectMultichainIsMainnet = createDeepEqualSelector(
   selectIsEvmNetworkSelected,
@@ -123,66 +103,6 @@ export const selectMultichainShouldShowFiat = createDeepEqualSelector(
     return (
       multichainIsMainnet || (isTestnet && Boolean(shouldShowFiatOnTestnets))
     );
-  },
-);
-
-const getNonEvmCachedBalance = (
-  internalAccount: InternalAccount,
-  multichainBalances: MultichainBalancesControllerState['balances'],
-  nonEvmChainId: SupportedCaipChainId,
-) => {
-  // We assume that there's at least one asset type in and that is the native
-  // token for that network.
-  const asset = MULTICHAIN_NETWORK_TO_ASSET_TYPES[nonEvmChainId]?.[0];
-  const balancesForAccount = multichainBalances?.[internalAccount.id];
-  const balanceOfAsset = balancesForAccount?.[asset];
-  return balanceOfAsset?.amount ?? undefined;
-};
-
-const selectNonEvmCachedBalance = createDeepEqualSelector(
-  selectSelectedInternalAccount,
-  selectMultichainBalances,
-  selectSelectedNonEvmNetworkChainId,
-  (selectedInternalAccount, multichainBalances, nonEvmChainId) => {
-    if (!selectedInternalAccount) {
-      return undefined;
-    }
-    return getNonEvmCachedBalance(
-      selectedInternalAccount,
-      multichainBalances,
-      nonEvmChainId,
-    );
-  },
-);
-
-export const selectMultichainSelectedAccountCachedBalance =
-  createDeepEqualSelector(
-    selectIsEvmNetworkSelected,
-    selectAccountBalanceByChainId,
-    selectNonEvmCachedBalance,
-    (isEvmSelected, accountBalanceByChainId, nonEvmCachedBalance) =>
-      isEvmSelected
-        ? accountBalanceByChainId?.balance ?? '0x0'
-        : nonEvmCachedBalance,
-  );
-
-export function selectMultichainCoinRates(state: RootState) {
-  return state.engine.backgroundState.RatesController.rates;
-}
-
-export const selectMultichainConversionRate = createDeepEqualSelector(
-  selectIsEvmNetworkSelected,
-  selectConversionRate,
-  selectMultichainCoinRates,
-  selectSelectedNonEvmNetworkSymbol,
-  (isEvmSelected, evmConversionRate, multichaincCoinRates, nonEvmTicker) => {
-    if (isEvmSelected) {
-      return evmConversionRate;
-    }
-    // TODO: [SOLANA] - This should be mapping a caip-19 not a ticker
-    return nonEvmTicker
-      ? multichaincCoinRates?.[nonEvmTicker.toLowerCase()]?.conversionRate
-      : undefined;
   },
 );
 
@@ -359,72 +279,6 @@ export const getMultichainNetworkAggregatedBalance = (
     fiatBalances,
   };
 };
-
-export const selectSelectedAccountMultichainNetworkAggregatedBalance =
-  createDeepEqualSelector(
-    selectSelectedInternalAccount,
-    selectMultichainBalances,
-    selectMultichainAssets,
-    selectMultichainAssetsRates,
-    selectSelectedNonEvmNetworkChainId,
-    (
-      selectedAccount,
-      multichainBalances,
-      assets,
-      assetsRates,
-      nonEvmNetworkChainId,
-    ): MultichainNetworkAggregatedBalance => {
-      if (!selectedAccount) {
-        return {
-          totalNativeTokenBalance: undefined,
-          totalBalanceFiat: undefined,
-          tokenBalances: {},
-          fiatBalances: {},
-        };
-      }
-      return getMultichainNetworkAggregatedBalance(
-        selectedAccount,
-        multichainBalances,
-        assets,
-        assetsRates,
-        nonEvmNetworkChainId,
-      );
-    },
-  );
-
-interface MultichainNetworkAggregatedBalanceForAllAccounts {
-  [accountId: InternalAccount['id']]: MultichainNetworkAggregatedBalance;
-}
-
-export const selectMultichainNetworkAggregatedBalanceForAllAccounts =
-  createDeepEqualSelector(
-    selectInternalAccounts,
-    selectMultichainBalances,
-    selectMultichainAssets,
-    selectMultichainAssetsRates,
-    selectSelectedNonEvmNetworkChainId,
-    (
-      internalAccounts,
-      multichainBalances,
-      assets,
-      assetsRates,
-      nonEvmNetworkChainId,
-    ): MultichainNetworkAggregatedBalanceForAllAccounts => {
-      return internalAccounts.reduce(
-        (acc, account) => ({
-          ...acc,
-          [account.id]: getMultichainNetworkAggregatedBalance(
-            account,
-            multichainBalances,
-            assets,
-            assetsRates,
-            nonEvmNetworkChainId,
-          ),
-        }),
-        {},
-      );
-    },
-  );
 
 const DEFAULT_TRANSACTION_STATE_ENTRY = {
   transactions: [],
