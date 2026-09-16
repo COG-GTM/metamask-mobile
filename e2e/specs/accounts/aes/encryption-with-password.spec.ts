@@ -19,14 +19,12 @@ import FixtureServer from '../../../fixtures/fixture-server';
 const fixtureServer = new FixtureServer();
 
 describe(
-  SmokeNetworkExpansion('AES Crypto - Encryption and decryption with encryption key'),
+  SmokeNetworkExpansion('AES Crypto - Encryption and decryption with password'),
   () => {
     const PASSWORD_ONE = '123123123';
-    // const PASSWORD_TWO = '456456456';
-    const SALT_ONE = 'ZDuWAyf5kcDxVvMgVaoyzJNB9kP3Ykdq8DSx8rR/+ro=';
-    // const SALT_TWO = 'avJ8b37znYTLyeCL0sNxkYxctQrfUdFKoK7SeqC3JSU=';
+    const PASSWORD_TWO = '456456456';
     const DATA_TO_ENCRYPT_ONE = 'random data to encrypt';
-    // const DATA_TO_ENCRYPT_TWO = 'more random data to encrypt';
+    const DATA_TO_ENCRYPT_TWO = 'more random data to encrypt';
 
     beforeAll(async () => {
       jest.setTimeout(150000);
@@ -44,46 +42,25 @@ describe(
       await stopFixtureServer(fixtureServer);
     });
 
-    it('encrypts and decrypts using encryption key', async () => {
+    it('encrypts and decrypts using password', async () => {
       await TabBarComponent.tapSettings();
       await SettingsView.scrollToAesCryptoButton();
       await SettingsView.tapAesCryptoTestForm();
 
-      // Assert the address derived from SRP
-      await Assertions.checkIfElementToHaveText(
-        AesCryptoTestForm.accountAddress,
-        '0x76cf1CdD1fcC252442b50D6e97207228aA4aefC3',
-      );
-
-      const encryptionKey = await AesCryptoTestForm.generateEncryptionKey(
-        PASSWORD_ONE,
-        SALT_ONE,
-      );
-      await AesCryptoTestForm.encryptWithKey(
-        encryptionKey,
-        DATA_TO_ENCRYPT_ONE,
-      );
-      await AesCryptoTestForm.decryptWithKey(encryptionKey);
-
+      await AesCryptoTestForm.encrypt(DATA_TO_ENCRYPT_ONE, PASSWORD_ONE);
+      await AesCryptoTestForm.decrypt(PASSWORD_ONE);
       await Assertions.checkIfElementHasLabel(
-        AesCryptoTestForm.decryptWithKeyResponse,
+        AesCryptoTestForm.decryptResponse as Promise<Detox.IndexableNativeElement>,
         DATA_TO_ENCRYPT_ONE,
       );
 
-      // await AesCryptoTestForm.scrollUpToGenerateEncryptionKey();
-      // encryptionKey = await AesCryptoTestForm.generateEncryptionKey(
-      //   PASSWORD_TWO,
-      //   SALT_TWO,
-      // );
-      // await AesCryptoTestForm.encryptWithKey(
-      //   encryptionKey,
-      //   DATA_TO_ENCRYPT_TWO,
-      // );
-      // await AesCryptoTestForm.decryptWithKey(encryptionKey);
-      // await Assertions.checkIfElementHasLabel(
-      //   AesCryptoTestForm.decryptWithKeyResponse,
-      //   DATA_TO_ENCRYPT_TWO,
-      // );
+      // encrypt and decrypt with password second piece of data
+      await AesCryptoTestForm.encrypt(DATA_TO_ENCRYPT_TWO, PASSWORD_TWO);
+      await AesCryptoTestForm.decrypt(PASSWORD_TWO);
+      await Assertions.checkIfElementHasLabel(
+        AesCryptoTestForm.decryptResponse as Promise<Detox.IndexableNativeElement>,
+        DATA_TO_ENCRYPT_TWO,
+      );
     });
   },
 );

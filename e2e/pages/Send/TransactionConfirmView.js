@@ -3,11 +3,11 @@ import Matchers from '../../utils/Matchers';
 import {
   EditGasViewSelectorsText,
   EditGasViewSelectorsIDs,
-} from '../../selectors/SendFlow/EditGasView.selectors.js';
+} from '../../selectors/SendFlow/EditGasView.selectors';
 import {
   TransactionConfirmViewSelectorsText,
   TransactionConfirmViewSelectorsIDs,
-} from '../../selectors/SendFlow/TransactionConfirmView.selectors.js';
+} from '../../selectors/SendFlow/TransactionConfirmView.selectors';
 import { ConfirmationTopSheetSelectorsIDs } from '../../selectors/Confirmation/ConfirmationView.selectors.js';
 import TestHelpers from '../../helpers';
 
