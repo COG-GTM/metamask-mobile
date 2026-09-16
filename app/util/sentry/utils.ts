@@ -1,7 +1,7 @@
 /* eslint-disable import/no-namespace */
 import * as Sentry from '@sentry/react-native';
 import { dedupeIntegration, extraErrorDataIntegration } from '@sentry/browser';
-import { Breadcrumb, Event as SentryEvent } from '@sentry/core';
+import { Breadcrumb, Contexts, Event as SentryEvent } from '@sentry/core';
 import extractEthJsErrorMessage from '../extractEthJsErrorMessage';
 import StorageWrapper from '../../store/storage-wrapper';
 import { regex } from '../regex';
@@ -470,10 +470,7 @@ function rewriteReport<T extends SentryEvent>(report: T) {
       appState as unknown as Record<string, unknown>,
       sentryStateMask,
     );
-    if (!report.contexts) {
-      report.contexts = {};
-    }
-    report.contexts.appState = maskedState;
+    (report.contexts as Contexts).appState = maskedState;
   } catch (err) {
     console.error('ENTER ERROR OF REPORT ', err);
     throw err;
