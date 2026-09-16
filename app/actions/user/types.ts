@@ -20,7 +20,6 @@ export enum UserActionType {
   PROTECT_MODAL_NOT_VISIBLE = 'PROTECT_MODAL_NOT_VISIBLE',
   LOADING_SET = 'LOADING_SET',
   LOADING_UNSET = 'LOADING_UNSET',
-  SET_GAS_EDUCATION_CAROUSEL_SEEN = 'SET_GAS_EDUCATION_CAROUSEL_SEEN',
   SET_APP_THEME = 'SET_APP_THEME',
   CHECKED_AUTH = 'CHECKED_AUTH',
   SET_APP_SERVICES_READY = 'SET_APP_SERVICES_READY',
@@ -75,9 +74,6 @@ export type LoadingSetAction = Action<UserActionType.LOADING_SET> & {
 
 export type LoadingUnsetAction = Action<UserActionType.LOADING_UNSET>;
 
-export type SetGasEducationCarouselSeenAction =
-  Action<UserActionType.SET_GAS_EDUCATION_CAROUSEL_SEEN>;
-
 export type SetAppThemeAction = Action<UserActionType.SET_APP_THEME> & {
   payload: { theme: AppThemeKey };
 };
@@ -110,7 +106,6 @@ export type UserAction =
   | ProtectModalNotVisibleAction
   | LoadingSetAction
   | LoadingUnsetAction
-  | SetGasEducationCarouselSeenAction
   | SetAppThemeAction
   | CheckedAuthAction
   | SetAppServicesReadyAction;

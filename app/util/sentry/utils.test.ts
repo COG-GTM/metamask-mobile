@@ -387,7 +387,6 @@ describe('captureSentryFeedback', () => {
       user: {
         ambiguousAddressEntries: {},
         backUpSeedphraseVisible: false,
-        gasEducationCarouselSeen: false,
         initialScreen: '',
         isAuthChecked: false,
         loadingMsg: '',

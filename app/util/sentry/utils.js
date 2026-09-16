@@ -244,7 +244,6 @@ export const sentryStateMask = {
   user: {
     appTheme: true,
     backUpSeedphraseVisible: true,
-    gasEducationCarouselSeen: true,
     initialScreen: true,
     isAuthChecked: true,
     loadingMsg: true,

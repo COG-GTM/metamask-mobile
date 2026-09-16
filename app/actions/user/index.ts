@@ -14,7 +14,6 @@ import {
   type ProtectModalNotVisibleAction,
   type LoadingSetAction,
   type LoadingUnsetAction,
-  type SetGasEducationCarouselSeenAction,
   type LoginAction,
   type LogoutAction,
   type SetAppThemeAction,
@@ -110,12 +109,6 @@ export function loadingSet(loadingMsg: string): LoadingSetAction {
 export function loadingUnset(): LoadingUnsetAction {
   return {
     type: UserActionType.LOADING_UNSET,
-  };
-}
-
-export function setGasEducationCarouselSeen(): SetGasEducationCarouselSeenAction {
-  return {
-    type: UserActionType.SET_GAS_EDUCATION_CAROUSEL_SEEN,
   };
 }
 

@@ -16,7 +16,6 @@ export const userInitialState: UserState = {
   seedphraseBackedUp: false,
   backUpSeedphraseVisible: false,
   protectWalletModalVisible: false,
-  gasEducationCarouselSeen: false,
   userLoggedIn: false,
   isAuthChecked: false,
   initialScreen: '',
@@ -99,11 +98,6 @@ const userReducer = (
       return {
         ...state,
         protectWalletModalVisible: false,
-      };
-    case UserActionType.SET_GAS_EDUCATION_CAROUSEL_SEEN:
-      return {
-        ...state,
-        gasEducationCarouselSeen: true,
       };
     case UserActionType.SET_APP_THEME:
       return {
