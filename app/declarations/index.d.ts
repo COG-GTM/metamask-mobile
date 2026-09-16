@@ -12,6 +12,8 @@ declare module 'react-native-minimizer';
 
 declare module 'react-native-tcp-socket';
 
+declare module 'zxcvbn';
+
 declare module 'xhr2';
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
