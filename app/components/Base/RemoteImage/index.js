@@ -105,6 +105,9 @@ const RemoteImage = (props) => {
   }, [props.source.uri, ipfsGateway]);
 
   useEffect(() => {
+    // Dimensions are only rendered on the full-ratio branch.
+    if (!props.isFullRatio) return;
+
     const calculateImageDimensions = (imageWidth, imageHeight) => {
       const deviceWidth = Dimensions.get('window').width;
       const maxWidth = deviceWidth - 32;
@@ -136,7 +139,7 @@ const RemoteImage = (props) => {
         Logger.log('Failed to get image dimensions');
       },
     );
-  }, [uri]);
+  }, [uri, props.isFullRatio]);
 
   const NetworkBadgeSource = useCallback(() => {
     if (isTestNet(chainId)) return getTestNetImageByChainId(chainId);
