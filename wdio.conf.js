@@ -193,6 +193,15 @@ export const config = {
   // before running any tests.
   framework: 'cucumber',
   //
+  // Compile TypeScript step definitions / screen objects on the fly
+  autoCompileOpts: {
+    autoCompile: true,
+    tsNodeOpts: {
+      transpileOnly: true,
+      project: 'wdio/tsconfig.json',
+    },
+  },
+  //
   // The number of times to retry the entire specfile when it fails as a whole
   // specFileRetries: 1,
   //
@@ -230,7 +239,7 @@ export const config = {
   // If you are using Cucumber you need to specify the location of your step definitions.
   cucumberOpts: {
     // <string[]> (file/dir) require files before executing features
-    require: ['./wdio/step-definitions/*.js'],
+    require: ['./wdio/step-definitions/*.ts'],
     // <boolean> show full backtrace for errors
     backtrace: false,
     // <string[]> ("extension:module") require files with the given EXTENSION after requiring MODULE (repeatable)
