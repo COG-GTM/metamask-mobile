@@ -357,6 +357,12 @@ describe('Permission Utility Functions', () => {
         engine: {
           backgroundState: {
             PermissionController: mockPermissionControllerState,
+            AccountsController: {
+              internalAccounts: {
+                accounts: {},
+                selectedAccount: '',
+              },
+            },
           },
         },
       } as unknown as RootState;
@@ -405,6 +411,26 @@ describe('Permission Utility Functions', () => {
 
       selectPermittedAccountsByHostname(changedState, 'https://example.com');
       expect(getEthAccounts).toHaveBeenCalledTimes(3);
+
+      const changedAccountsState = {
+        ...changedState,
+        engine: {
+          ...changedState.engine,
+          backgroundState: {
+            ...changedState.engine.backgroundState,
+            AccountsController: {
+              ...changedState.engine.backgroundState.AccountsController,
+              internalAccounts: {
+                accounts: {},
+                selectedAccount: '0x1',
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      selectPermittedAccountsByHostname(changedAccountsState, 'https://example.com');
+      expect(getEthAccounts).toHaveBeenCalledTimes(4);
     });
   });
 

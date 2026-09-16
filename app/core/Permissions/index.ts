@@ -158,13 +158,23 @@ export const getPermittedChainIdsByHostname = (
   return subject ? getPermittedChainIdsFromSubject(subject) : [];
 };
 
+/**
+ * Creates a per-component memoized selector with the signature
+ * `(state: RootState, hostname: string) => string[]`.
+ *
+ * The selector recomputes when PermissionController state,
+ * AccountsController.internalAccounts, or the hostname changes. Create one
+ * instance per component with useMemo because the cache size is one.
+ */
 export const makeSelectPermittedAccountsByHostname = () =>
   createSelector(
     [
       selectPermissionControllerState,
       (_state: RootState, hostname: string) => hostname,
+      (state: RootState) =>
+        state.engine.backgroundState.AccountsController.internalAccounts,
     ],
-    (permissionControllerState, hostname) =>
+    (permissionControllerState, hostname, _internalAccounts) =>
       getPermittedAccountsByHostname(permissionControllerState, hostname),
   );
 
