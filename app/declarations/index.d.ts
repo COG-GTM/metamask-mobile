@@ -13,6 +13,21 @@ declare module 'react-native-minimizer';
 declare module 'react-native-tcp-socket';
 
 declare module 'xhr2';
+
+declare module 'unicode-confusables' {
+  export interface ConfusablePoint {
+    point: string;
+    similarTo?: string;
+  }
+  export const isConfusing: (input: string) => boolean;
+  export const confusables: (input: string) => ConfusablePoint[];
+  export const rectifyConfusion: (input: string) => string;
+}
+
+interface String {
+  replaceAll(searchValue: string | RegExp, replaceValue: string): string;
+}
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
