@@ -7,6 +7,9 @@ import { Caip25CaveatType, Caip25CaveatValue, Caip25EndowmentPermissionName, get
 import { CaveatConstraint, PermissionDoesNotExistError } from '@metamask/permission-controller';
 import { captureException } from '@sentry/react-native';
 import { toHex } from '@metamask/controller-utils';
+import { createSelector } from 'reselect';
+import { selectPermissionControllerState } from '../../selectors/snaps/permissionController';
+import { type RootState } from '../../reducers';
 
 const INTERNAL_ORIGINS = [process.env.MM_FOX_CODE, TransactionTypes.MMM];
 
@@ -122,21 +125,8 @@ export const getPermittedAccountsByHostname = (
   state: any,
   hostname: string,
 ): string[] => {
-  const { subjects } = state;
-  const accountsByHostname = Object.keys(subjects).reduce(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc: any, subjectKey) => {
-      const accounts = getAccountsFromSubject(subjects[subjectKey]);
-      if (accounts.length > 0) {
-        acc[subjectKey] = accounts;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return accountsByHostname?.[hostname] || [];
+  const subject = state.subjects?.[hostname];
+  return subject ? getAccountsFromSubject(subject) : [];
 };
 
 // TODO: Replace "any" with type
@@ -164,22 +154,29 @@ export const getPermittedChainIdsByHostname = (
   state: any,
   hostname: string,
 ): string[] => {
-  const { subjects } = state;
-  const chainIdsByHostname = Object.keys(subjects).reduce(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc: any, subjectKey) => {
-      const chainIds = getPermittedChainIdsFromSubject(subjects[subjectKey]);
-      if (chainIds.length > 0) {
-        acc[subjectKey] = chainIds;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return chainIdsByHostname?.[hostname] || [];
+  const subject = state.subjects?.[hostname];
+  return subject ? getPermittedChainIdsFromSubject(subject) : [];
 };
+
+/**
+ * Creates a per-component memoized selector with the signature
+ * `(state: RootState, hostname: string) => string[]`.
+ *
+ * The selector recomputes when PermissionController state,
+ * AccountsController.internalAccounts, or the hostname changes. Create one
+ * instance per component with useMemo because the cache size is one.
+ */
+export const makeSelectPermittedAccountsByHostname = () =>
+  createSelector(
+    [
+      selectPermissionControllerState,
+      (_state: RootState, hostname: string) => hostname,
+      (state: RootState) =>
+        state.engine.backgroundState.AccountsController.internalAccounts,
+    ],
+    (permissionControllerState, hostname, _internalAccounts) =>
+      getPermittedAccountsByHostname(permissionControllerState, hostname),
+  );
 
 /**
  * Returns a default CAIP-25 caveat value.

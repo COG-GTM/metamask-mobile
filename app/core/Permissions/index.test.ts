@@ -20,6 +20,7 @@ import {
 import {
   getPermittedAccountsByHostname,
   getPermittedChainIdsByHostname,
+  makeSelectPermittedAccountsByHostname,
   getDefaultCaip25CaveatValue,
   getCaip25Caveat,
   addPermittedAccounts,
@@ -30,6 +31,7 @@ import {
   getPermittedAccounts,
 } from '.';
 import { Hex, Json } from '@metamask/utils';
+import { type RootState } from '../../reducers';
 
 jest.mock('@sentry/react-native', () => ({
   captureException: jest.fn(),
@@ -126,6 +128,7 @@ describe('Permission Utility Functions', () => {
         'https://example.com',
       );
       expect(result).toEqual(mockAccounts1);
+      expect(getEthAccounts).toHaveBeenCalledTimes(1);
     });
 
     it('should return empty array if hostname has no accounts', () => {
@@ -171,6 +174,12 @@ describe('Permission Utility Functions', () => {
         'https://example.com',
       );
       expect(result).toEqual([]);
+    });
+
+    it('should return empty array when subjects are missing', () => {
+      expect(
+        getPermittedAccountsByHostname({}, 'https://example.com'),
+      ).toEqual([]);
     });
   });
 
@@ -239,6 +248,7 @@ describe('Permission Utility Functions', () => {
         'https://example.com',
       );
       expect(result).toEqual(['0x1', '0x2']);
+      expect(getPermittedEthChainIds).toHaveBeenCalledTimes(1);
     });
 
     it('should return empty array if hostname has no eth chainIds', () => {
@@ -297,6 +307,130 @@ describe('Permission Utility Functions', () => {
         'https://example.com',
       );
       expect(result).toEqual([]);
+    });
+
+    it('should return empty array when subjects are missing', () => {
+      expect(
+        getPermittedChainIdsByHostname({}, 'https://example.com'),
+      ).toEqual([]);
+    });
+  });
+
+  describe('makeSelectPermittedAccountsByHostname', () => {
+    it('should memoize results for the same state and hostname', () => {
+      const mockAccounts: Hex[] = ['0x1'];
+      const mockPermissionControllerState = {
+        subjects: {
+          'https://example.com': {
+            permissions: {
+              [Caip25EndowmentPermissionName]: {
+                caveats: [
+                  {
+                    type: Caip25CaveatType,
+                    value: {
+                      optionalScopes: {},
+                      requiredScopes: {},
+                    },
+                  },
+                ],
+              },
+            },
+          },
+          'https://another.com': {
+            permissions: {
+              [Caip25EndowmentPermissionName]: {
+                caveats: [
+                  {
+                    type: Caip25CaveatType,
+                    value: {
+                      optionalScopes: {},
+                      requiredScopes: {},
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      };
+      const mockState = {
+        engine: {
+          backgroundState: {
+            PermissionController: mockPermissionControllerState,
+            AccountsController: {
+              internalAccounts: {
+                accounts: {},
+                selectedAccount: '',
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      mockListAccounts.mockReturnValue([
+        {
+          address: '0x1',
+          metadata: { lastSelected: 1 },
+        },
+      ]);
+      (getEthAccounts as jest.Mock).mockReturnValue(mockAccounts);
+
+      const selectPermittedAccountsByHostname =
+        makeSelectPermittedAccountsByHostname();
+      const result = selectPermittedAccountsByHostname(
+        mockState,
+        'https://example.com',
+      );
+      const memoizedResult = selectPermittedAccountsByHostname(
+        mockState,
+        'https://example.com',
+      );
+
+      expect(memoizedResult).toBe(result);
+      expect(getEthAccounts).toHaveBeenCalledTimes(1);
+
+      selectPermittedAccountsByHostname(mockState, 'https://another.com');
+      expect(getEthAccounts).toHaveBeenCalledTimes(2);
+
+      const changedPermissionControllerState = {
+        ...mockPermissionControllerState,
+        subjects: {
+          ...mockPermissionControllerState.subjects,
+        },
+      };
+      const changedState = {
+        ...mockState,
+        engine: {
+          ...mockState.engine,
+          backgroundState: {
+            ...mockState.engine.backgroundState,
+            PermissionController: changedPermissionControllerState,
+          },
+        },
+      } as unknown as RootState;
+
+      selectPermittedAccountsByHostname(changedState, 'https://example.com');
+      expect(getEthAccounts).toHaveBeenCalledTimes(3);
+
+      const changedAccountsState = {
+        ...changedState,
+        engine: {
+          ...changedState.engine,
+          backgroundState: {
+            ...changedState.engine.backgroundState,
+            AccountsController: {
+              ...changedState.engine.backgroundState.AccountsController,
+              internalAccounts: {
+                accounts: {},
+                selectedAccount: '0x1',
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      selectPermittedAccountsByHostname(changedAccountsState, 'https://example.com');
+      expect(getEthAccounts).toHaveBeenCalledTimes(4);
     });
   });
 
