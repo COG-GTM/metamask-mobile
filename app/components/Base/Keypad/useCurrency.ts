@@ -2,23 +2,29 @@ import { useMemo } from 'react';
 import { CURRENCIES } from './constants';
 import createKeypadRule from './createKeypadRule';
 
-function useCurrency(currency, decimals) {
+const createRule = createKeypadRule as unknown as (options: {
+  decimalSeparator: string;
+  decimals: number;
+}) => ReturnType<typeof createKeypadRule>;
+
+function useCurrency(currency?: string, decimals?: number) {
   const currencyData = useMemo(() => {
     if (!currency) {
       return CURRENCIES.default;
     }
 
     const existingCurrency =
-      CURRENCIES[currency] || CURRENCIES[currency.toUpperCase()];
+      CURRENCIES[currency as keyof typeof CURRENCIES] ||
+      CURRENCIES[currency.toUpperCase() as keyof typeof CURRENCIES];
 
     if (existingCurrency) {
       return existingCurrency;
     }
 
-    if (decimals > 0) {
+    if (decimals && decimals > 0) {
       return {
         decimalSeparator: '.',
-        handler: createKeypadRule({ decimalSeparator: '.', decimals }),
+        handler: createRule({ decimalSeparator: '.', decimals }),
         symbol: null,
       };
     }
