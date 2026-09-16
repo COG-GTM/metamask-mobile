@@ -113,11 +113,36 @@ class CollectibleAddresses {
 
 /**
  * Utility class caching whether an address holds contract code, keyed by
- * `${chainId}:${checksumAddress}`. Values are either a resolved boolean or the
- * in-flight promise so concurrent callers share a single eth_getCode request.
+ * `${chainId}:${checksumAddress}`. Each entry is either the in-flight promise
+ * (so concurrent callers share a single eth_getCode request) or
+ * `{ value, expiresAt }`. Positive results never expire because deployed code
+ * is immutable; negative results expire after NEGATIVE_TTL_MS so an address
+ * that later receives code is re-queried.
  */
 class SmartContractAddresses {
+  static NEGATIVE_TTL_MS = 60 * 1000;
+
   static cache = {};
+
+  static get(key) {
+    const entry = SmartContractAddresses.cache[key];
+    if (entry === undefined) return undefined;
+    if (entry instanceof Promise) return entry;
+    if (entry.expiresAt !== undefined && Date.now() >= entry.expiresAt) {
+      delete SmartContractAddresses.cache[key];
+      return undefined;
+    }
+    return entry.value;
+  }
+
+  static set(key, value) {
+    SmartContractAddresses.cache[key] = {
+      value,
+      expiresAt: value
+        ? undefined
+        : Date.now() + SmartContractAddresses.NEGATIVE_TTL_MS,
+    };
+  }
 
   static clear() {
     SmartContractAddresses.cache = {};
@@ -412,7 +437,7 @@ export async function isSmartContractAddress(
   }
 
   const cacheKey = `${chainId}:${address}`;
-  const cached = SmartContractAddresses.cache[cacheKey];
+  const cached = SmartContractAddresses.get(cacheKey);
   if (cached !== undefined) {
     return cached;
   }
@@ -426,7 +451,7 @@ export async function isSmartContractAddress(
 
   const pending = query(ethQuery, 'getCode', [address]).then((code) => {
     const result = isSmartContractCode(code);
-    SmartContractAddresses.cache[cacheKey] = result;
+    SmartContractAddresses.set(cacheKey, result);
     return result;
   });
   SmartContractAddresses.cache[cacheKey] = pending;

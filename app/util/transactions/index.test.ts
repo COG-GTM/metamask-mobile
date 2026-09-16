@@ -144,6 +144,34 @@ describe('Transactions utils :: isSmartContractAddress', () => {
     expect(querySpy).toHaveBeenCalledTimes(1);
   });
 
+  it('re-queries a non-contract address once the negative entry expires', async () => {
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_000_000);
+    const querySpy = jest
+      .spyOn(controllerUtilsModule, 'query')
+      .mockResolvedValueOnce('0x')
+      .mockResolvedValueOnce(CONTRACT_CODE);
+
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      false,
+    );
+    nowSpy.mockReturnValue(1_000_000 + 59_000);
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      false,
+    );
+    nowSpy.mockReturnValue(1_000_000 + 60_000);
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      true,
+    );
+    // positive results never expire
+    nowSpy.mockReturnValue(1_000_000 + 60 * 60 * 1000);
+    expect(await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID)).toBe(
+      true,
+    );
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+    nowSpy.mockRestore();
+  });
+
   it('does not share cache entries across chains', async () => {
     const querySpy = spyOnQueryMethod(CONTRACT_CODE);
 
