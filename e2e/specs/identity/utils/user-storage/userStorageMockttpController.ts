@@ -1,4 +1,8 @@
-import { USER_STORAGE_FEATURE_NAMES } from '@metamask/profile-sync-controller/sdk';
+import {
+  USER_STORAGE_FEATURE_NAMES,
+  GetUserStorageAllFeatureEntriesResponse,
+} from '@metamask/profile-sync-controller/sdk';
+import { CompletedRequest, Mockttp } from 'mockttp';
 import {
   determineIfFeatureEntryFromURL,
   getDecodedProxiedURL,
@@ -24,12 +28,30 @@ export const pathRegexps = {
   ),
 };
 
+export type UserStorageMockttpControllerPath = keyof typeof pathRegexps;
+
+type UserStorageResponseData = GetUserStorageAllFeatureEntriesResponse[number];
+
+interface UserStorageMockttpControllerOverrides {
+  getResponse?: GetUserStorageAllFeatureEntriesResponse;
+  getStatusCode?: number;
+  putStatusCode?: number;
+  deleteStatusCode?: number;
+}
+
 export class UserStorageMockttpController {
-  paths = new Map();
+  paths: Map<
+    UserStorageMockttpControllerPath,
+    { response: UserStorageResponseData[] }
+  > = new Map();
 
   eventEmitter = new EventEmitter();
 
-  async onGet(path, request, statusCode = 200) {
+  async onGet(
+    path: UserStorageMockttpControllerPath,
+    request: Pick<CompletedRequest, 'url'>,
+    statusCode = 200,
+  ) {
     const internalPathData = this.paths.get(path);
 
     if (!internalPathData) {
@@ -79,10 +101,19 @@ export class UserStorageMockttpController {
     };
   }
 
-  async onPut(path, request, statusCode = 204) {
+  async onPut(
+    path: UserStorageMockttpControllerPath,
+    request: Pick<CompletedRequest, 'url' | 'body'>,
+    statusCode = 204,
+  ) {
     const isFeatureEntry = determineIfFeatureEntryFromURL(request.url);
 
-    const data = await request.body.getJson();
+    const data = (await request.body.getJson()) as
+      | {
+          batch_delete?: string[];
+          data?: string | Record<string, string>;
+        }
+      | undefined;
 
     // We're handling batch delete inside the PUT method due to API limitations
     if (data?.batch_delete) {
@@ -118,13 +149,15 @@ export class UserStorageMockttpController {
         isFeatureEntry && typeof data?.data === 'string'
           ? [
               {
-                HashedKey: getDecodedProxiedURL(request.url).split('/').pop(),
+                HashedKey: getDecodedProxiedURL(request.url)
+                  .split('/')
+                  .pop() as string,
                 Data: data?.data,
               },
             ]
           : Object.entries(data?.data).map(([key, value]) => ({
               HashedKey: key,
-              Data: value,
+              Data: value as string,
             }));
 
       newOrUpdatedSingleOrBatchEntries.forEach((entry) => {
@@ -173,7 +206,11 @@ export class UserStorageMockttpController {
     };
   }
 
-  async onDelete(path, request, statusCode = 204) {
+  async onDelete(
+    path: UserStorageMockttpControllerPath,
+    request: Pick<CompletedRequest, 'url'>,
+    statusCode = 204,
+  ) {
     const internalPathData = this.paths.get(path);
 
     if (!internalPathData) {
@@ -221,14 +258,15 @@ export class UserStorageMockttpController {
   }
 
   /**
-   * @param {string} path - path for feature
-   * @param {import('mockttp').Mockttp} server
-   * @param {{
-   *   getResponse?: import('@metamask/profile-sync-controller/sdk').GetUserStorageAllFeatureEntriesResponse
-   *   getStatusCode?: number
-   * }} overrides - initial state of this mock user storage
+   * @param path - path for feature
+   * @param server
+   * @param overrides - initial state of this mock user storage
    */
-  async setupPath(path, server, overrides) {
+  async setupPath(
+    path: UserStorageMockttpControllerPath,
+    server: Mockttp,
+    overrides?: UserStorageMockttpControllerOverrides,
+  ) {
     const previouslySetupPath = this.paths.get(path);
 
     this.paths.set(path, {

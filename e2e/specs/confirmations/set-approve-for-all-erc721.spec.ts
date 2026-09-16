@@ -12,6 +12,7 @@ import {
   defaultGanacheOptions,
 } from '../../fixtures/fixture-helper';
 import { SMART_CONTRACTS } from '../../../app/util/test/smart-contracts';
+import ContractAddressRegistry from '../../../app/util/test/contract-address-registry';
 import { ActivitiesViewSelectorsText } from '../../selectors/Transactions/ActivitiesView.selectors';
 import Assertions from '../../utils/Assertions';
 import { ContractApprovalBottomSheetSelectorsText } from '../../selectors/Browser/ContractApprovalBottomSheet.selectors';
@@ -27,10 +28,8 @@ describe(SmokeConfirmations('ERC721 token'), () => {
   });
 
   it('approve all ERC721 tokens', async () => {
-    const testSpecificMock  = {
-      GET: [
-        mockEvents.GET.suggestedGasFeesApiGanache
-      ],
+    const testSpecificMock = {
+      GET: [mockEvents.GET.suggestedGasFeesApiGanache],
     };
 
     await withFixtures(
@@ -38,14 +37,20 @@ describe(SmokeConfirmations('ERC721 token'), () => {
         dapp: true,
         fixture: new FixtureBuilder()
           .withGanacheNetwork()
-          .withPermissionControllerConnectedToTestDapp(buildPermissions(['0x539']))
+          .withPermissionControllerConnectedToTestDapp(
+            buildPermissions(['0x539']),
+          )
           .build(),
         restartDevice: true,
         ganacheOptions: defaultGanacheOptions,
         smartContract: NFT_CONTRACT,
         testSpecificMock,
-      },
-      async ({ contractRegistry }) => {
+      } as Parameters<typeof withFixtures>[0],
+      async ({
+        contractRegistry,
+      }: {
+        contractRegistry: ContractAddressRegistry;
+      }) => {
         const nftsAddress = await contractRegistry.getContractAddress(
           NFT_CONTRACT,
         );

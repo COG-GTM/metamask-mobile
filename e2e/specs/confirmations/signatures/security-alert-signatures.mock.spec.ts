@@ -13,6 +13,11 @@ import ConfirmationView from '../../../pages/Confirmation/ConfirmationView';
 import { SmokeConfirmations } from '../../../tags';
 import { buildPermissions } from '../../../fixtures/utils';
 
+interface TestSpecificMock {
+  GET?: object[];
+  POST?: object[];
+}
+
 describe(SmokeConfirmations('Security Alert API - Signature'), () => {
   beforeAll(async () => {
     jest.setTimeout(2500000);
@@ -32,14 +37,17 @@ describe(SmokeConfirmations('Security Alert API - Signature'), () => {
     await Assertions.checkIfVisible(SigningBottomSheet.typedRequest);
   };
 
-  const runTest = async (testSpecificMock, alertAssertion) => {
+  const runTest = async (
+    testSpecificMock: TestSpecificMock,
+    alertAssertion: () => Promise<void>,
+  ) => {
     await withFixtures(
       {
         dapp: true,
         fixture: defaultFixture,
         restartDevice: true,
         testSpecificMock,
-      },
+      } as Parameters<typeof withFixtures>[0],
       async () => {
         await navigateToTestDApp();
         await alertAssertion();
@@ -73,7 +81,7 @@ describe(SmokeConfirmations('Security Alert API - Signature'), () => {
     await runTest(testSpecificMock, async () => {
       try {
         await Assertions.checkIfNotVisible(
-          ConfirmationView.securityAlertBanner,
+          ConfirmationView.securityAlertBanner as Promise<Detox.IndexableNativeElement>,
         );
       } catch (e) {
         // eslint-disable-next-line no-console

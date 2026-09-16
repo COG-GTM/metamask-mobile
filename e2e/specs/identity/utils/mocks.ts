@@ -1,9 +1,16 @@
 import { AuthenticationController } from '@metamask/profile-sync-controller';
+import { Mockttp, RequestRuleBuilder } from 'mockttp';
 import { UserStorageMockttpController } from './user-storage/userStorageMockttpController';
 import { getDecodedProxiedURL } from './helpers';
 import { USER_STORAGE_FEATURE_NAMES } from '@metamask/profile-sync-controller/sdk';
 
 const AuthMocks = AuthenticationController.Mocks;
+
+interface MockResponse {
+  url: string | URL;
+  requestMethod: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  response: unknown;
+}
 
 /**
  * E2E mock setup for identity APIs (Auth, UserStorage, Backup and sync)
@@ -11,7 +18,7 @@ const AuthMocks = AuthenticationController.Mocks;
  * @param server - server obj used to mock our endpoints
  * @param userStorageMockttpController - optional controller to mock user storage endpoints
  */
-export async function mockIdentityServices(server) {
+export async function mockIdentityServices(server: Mockttp) {
   // Auth
   mockAPICall(server, AuthMocks.getMockAuthNonceResponse());
   mockAPICall(server, AuthMocks.getMockAuthLoginResponse());
@@ -35,8 +42,8 @@ export async function mockIdentityServices(server) {
   };
 }
 
-function mockAPICall(server, response) {
-  let requestRuleBuilder;
+function mockAPICall(server: Mockttp, response: MockResponse) {
+  let requestRuleBuilder: RequestRuleBuilder | undefined;
 
   if (response.requestMethod === 'GET') {
     requestRuleBuilder = server.forGet('/proxy');
@@ -74,7 +81,10 @@ const INFURA_URL = 'https://mainnet.infura.io/v3/';
  * @param {Object} mockServer - The server object to set up the mock responses on
  * @param {Array<String>} accounts - List of account addresses to mock balances for
  */
-export const setupAccountMockedBalances = async (mockServer, accounts) => {
+export const setupAccountMockedBalances = async (
+  mockServer: Mockttp,
+  accounts: string[],
+) => {
   if (!accounts.length) {
     return;
   }

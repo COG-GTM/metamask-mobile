@@ -1,3 +1,4 @@
+import { Mockttp } from 'mockttp';
 import {
   IDENTITY_TEAM_PASSWORD,
   IDENTITY_TEAM_SEED_PHRASE,
@@ -16,7 +17,6 @@ import WalletView from '../../../pages/wallet/WalletView';
 import AccountListBottomSheet from '../../../pages/wallet/AccountListBottomSheet';
 import Assertions from '../../../utils/Assertions';
 import AddAccountBottomSheet from '../../../pages/wallet/AddAccountBottomSheet';
-import AccountActionsBottomSheet from '../../../pages/wallet/AccountActionsBottomSheet';
 import {
   mockIdentityServices,
   setupAccountMockedBalances,
@@ -62,7 +62,7 @@ describe(
     };
 
     let accountsToMockBalances = [...INITIAL_ACCOUNTS];
-    let mockServer;
+    let mockServer: Mockttp;
 
     /**
      * This test verifies the complete account syncing flow in three phases:
@@ -107,12 +107,10 @@ describe(
 
       // PHASE 1: Initial setup and account creation
       // Complete initial setup with provided seed phrase
-      await importWalletWithRecoveryPhrase(
-        {
-          seedPhrase: IDENTITY_TEAM_SEED_PHRASE,
-          password: IDENTITY_TEAM_PASSWORD,
-        }
-      );
+      await importWalletWithRecoveryPhrase({
+        seedPhrase: IDENTITY_TEAM_SEED_PHRASE,
+        password: IDENTITY_TEAM_PASSWORD,
+      });
 
       // Verify initial state and balance
       // Adding a delay here to make sure that importAdditionalAccounts has completed
@@ -144,12 +142,10 @@ describe(
         launchArgs: { mockServerPort: String(TEST_SPECIFIC_MOCK_SERVER_PORT) },
       });
 
-      await importWalletWithRecoveryPhrase(
-        {
-          seedPhrase: IDENTITY_TEAM_SEED_PHRASE,
-          password: IDENTITY_TEAM_PASSWORD,
-        }
-      );
+      await importWalletWithRecoveryPhrase({
+        seedPhrase: IDENTITY_TEAM_SEED_PHRASE,
+        password: IDENTITY_TEAM_PASSWORD,
+      });
 
       // Verify initial state and balance
       // Adding a delay here to make sure that importAdditionalAccounts has completed
@@ -165,7 +161,7 @@ describe(
         await Assertions.checkIfVisible(
           AccountListBottomSheet.getAccountElementByAccountName(accountName),
         );
-      await device.enableSynchronization();
+        await device.enableSynchronization();
       }
     });
   },
