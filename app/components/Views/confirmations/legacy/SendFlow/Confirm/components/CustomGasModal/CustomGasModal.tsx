@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Modal from 'react-native-modal';
 import { useSelector } from 'react-redux';
+import { Eip1559GasFee } from '@metamask/gas-fee-controller';
+import { RootState } from '../../../../../../../../reducers';
 import { selectGasFeeEstimates } from '../../../../../../../../selectors/confirmTransaction';
 import { selectGasFeeControllerEstimateType } from '../../../../../../../../selectors/gasFeeController';
 import { selectPrimaryCurrency } from '../../../../../../../../selectors/settings';
@@ -9,6 +11,21 @@ import { useAppThemeFromContext } from '../../../../../../../../util/theme';
 import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
 import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
+import { CustomGasModalProps } from './CustomGasModal.types';
+
+type LegacyGasData = NonNullable<CustomGasModalProps['legacyGasData']>;
+type EIP1559GasData = NonNullable<CustomGasModalProps['EIP1559GasData']>;
+type EIP1559GasTxn = NonNullable<CustomGasModalProps['EIP1559GasTxn']>;
+type GasFeesByLevel = Record<string, Partial<Eip1559GasFee> | undefined>;
+
+interface LegacyGasTransaction {
+  totalHex: string;
+  error?: string;
+}
+
+interface EIP1559GasTransaction extends EIP1559GasTxn {
+  error?: string;
+}
 
 const CustomGasModal = ({
   gasSelected,
@@ -23,16 +40,16 @@ const CustomGasModal = ({
   onGasChanged,
   onGasCanceled,
   updateGasState,
-}) => {
+}: CustomGasModalProps) => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  const transaction = useSelector((state) => state.transaction);
+  const transaction = useSelector((state: RootState) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
   const chainId = transaction?.chainId;
   const selectedAsset = useSelector(
-    (state) => state.transaction.selectedAsset,
+    (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
@@ -41,7 +58,7 @@ const CustomGasModal = ({
   const [legacyGasObj, setLegacyGasObj] = useState(legacyGasData);
   const [eip1559GasObj, setEIP1559GasObj] = useState(EIP1559GasData);
   const [isViewAnimating, setIsViewAnimating] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | undefined>('');
 
   useEffect(() => {
     setIsViewAnimating(isAnimating);
@@ -55,7 +72,7 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
+  const onChangeGas = (gasValue: string) => {
     setSelectedGas(gasValue);
     onGasChanged(selectedGas);
   };
@@ -74,7 +91,7 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: LegacyGasTransaction, gasObj: LegacyGasData) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -87,7 +104,7 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: EIP1559GasTransaction, gasObj: EIP1559GasData) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalMaxHex,
@@ -120,10 +137,12 @@ const CustomGasModal = ({
   const eip1559GasObject = {
     suggestedMaxFeePerGas:
       eip1559GasObj?.suggestedMaxFeePerGas ||
-      eip1559GasObj?.[selectedGas]?.suggestedMaxFeePerGas,
+      (eip1559GasObj as GasFeesByLevel | undefined)?.[selectedGas]
+        ?.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
-      gasFeeEstimate[selectedGas]?.suggestedMaxPriorityFeePerGas,
+      (gasFeeEstimate as GasFeesByLevel)[selectedGas]
+        ?.suggestedMaxPriorityFeePerGas,
     suggestedGasLimit:
       eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit,
   };
@@ -148,6 +167,7 @@ const CustomGasModal = ({
         contentContainerStyle={styles.keyboardAwareWrapper}
       >
         {legacy ? (
+          // @ts-expect-error proptypes components requires ts-expect-error
           <EditGasFeeLegacy
             onCancel={onCancelGas}
             onSave={onSaveLegacyGasOption}
@@ -174,6 +194,7 @@ const CustomGasModal = ({
             animateOnChange={animateOnChange}
             isAnimating={isAnimating}
             analyticsParams={getGasAnalyticsParams()}
+            // @ts-expect-error proptypes components requires ts-expect-error
             view={'SendTo (Confirm)'}
             selectedGasObject={eip1559GasObject}
             onlyGas={onlyGas}
