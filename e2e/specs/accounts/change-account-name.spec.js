@@ -9,7 +9,7 @@ import {
 } from '../../fixtures/fixture-helper';
 import FixtureServer from '../../fixtures/fixture-server';
 import { getFixturesServerPort } from '../../fixtures/utils';
-import { Regression } from '../../tags.js';
+import { Regression } from '../../tags';
 import WalletView from '../../pages/wallet/WalletView';
 import AccountActionsBottomSheet from '../../pages/wallet/AccountActionsBottomSheet';
 import EditAccountNameView from '../../pages/wallet/EditAccountNameView';

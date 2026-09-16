@@ -1,5 +1,10 @@
-import { device } from 'detox';
-import { addToQueue } from './helpers';
+import Rule from '@open-rpc/test-coverage/build/rules/rule';
+import type {
+  Attachment,
+  Call,
+  IOptions,
+} from '@open-rpc/test-coverage/build/coverage';
+import { addToQueue, WebDriver } from './helpers';
 import paramsToObj from '@open-rpc/test-coverage/build/utils/params-to-obj';
 import TestHelpers from '../helpers';
 import Matchers from '../utils/Matchers';
@@ -16,13 +21,40 @@ import fs from 'fs';
 import Assertions from '../utils/Assertions';
 import PermissionSummaryBottomSheet from '../pages/Browser/PermissionSummaryBottomSheet';
 
-const getBase64FromPath = async (path) => {
+type GetCallsParams = Parameters<Rule['getCalls']>;
+export type OpenrpcDocument = GetCallsParams[0];
+export type MethodObject = GetCallsParams[1];
+export type ContentDescriptorObject = Exclude<
+  MethodObject['result'],
+  { $ref: string }
+>;
+export type ExamplePairingObject = Exclude<
+  NonNullable<MethodObject['examples']>[number],
+  { $ref: string }
+>;
+export type ExampleObject = Exclude<
+  ExamplePairingObject['result'],
+  { $ref: string }
+>;
+
+const getBase64FromPath = async (path: string) => {
   const data = await fs.promises.readFile(path);
   return data.toString('base64');
 };
 
-export default class ConfirmationsRejectRule {
-  constructor(options) {
+interface ConfirmationsRejectRuleOptions {
+  driver: WebDriver;
+  only?: string[];
+}
+
+export default class ConfirmationsRejectRule implements Rule {
+  driver: WebDriver;
+  only?: string[];
+  allCapsCancel: string[];
+  permissionConnectionSheet: string[];
+  requiresEthAccountsPermission: string[];
+
+  constructor(options: ConfirmationsRejectRuleOptions) {
     this.driver = options.driver; // Pass element for detox instead of all the driver
     this.only = options.only;
     this.allCapsCancel = ['wallet_watchAsset'];
@@ -39,7 +71,7 @@ export default class ConfirmationsRejectRule {
     return 'Confirmations Rejection Rule';
   }
 
-  async beforeRequest(_, call) {
+  async beforeRequest(_: IOptions, call: Call) {
     await new Promise((resolve, reject) => {
       addToQueue({
         name: 'beforeRequest',
@@ -69,14 +101,16 @@ export default class ConfirmationsRejectRule {
             );
             await ConnectBottomSheet.tapConnectButton();
             await Assertions.checkIfNotVisible(
-              PermissionSummaryBottomSheet.container,
+              PermissionSummaryBottomSheet.container as Promise<Detox.IndexableNativeElement>,
             );
             await TestHelpers.delay(3000);
 
             try {
               await Assertions.checkIfVisible(SpamFilterModal.title);
               await SpamFilterModal.tapCloseButton();
-              await Assertions.checkIfNotVisible(SpamFilterModal.title);
+              await Assertions.checkIfNotVisible(
+                SpamFilterModal.title as Promise<Detox.IndexableNativeElement>,
+              );
             } catch {
               /* eslint-disable no-console */
 
@@ -96,30 +130,30 @@ export default class ConfirmationsRejectRule {
 
   // get all the confirmation calls to make and expect to pass
   // Need this now?
-  getCalls(_, method) {
-    const calls = [];
+  getCalls(_: OpenrpcDocument, method: MethodObject) {
+    const calls: Call[] = [];
     const isMethodAllowed = this.only ? this.only.includes(method.name) : true;
     if (isMethodAllowed) {
       if (method.examples) {
         // pull the first example
         const e = method.examples[0];
-        const ex = e;
+        const ex = e as ExamplePairingObject;
 
         if (!ex.result) {
           return calls;
         }
-        const p = ex.params.map((e) => e.value);
+        const p = ex.params.map((param) => (param as ExampleObject).value);
         const params =
           method.paramStructure === 'by-name'
-            ? paramsToObj(p, method.params)
+            ? paramsToObj(p, method.params as ContentDescriptorObject[])
             : p;
         calls.push({
           title: `${this.getTitle()} - with example ${ex.name}`,
           methodName: method.name,
           params,
           url: '',
-          resultSchema: method.result.schema,
-          expectedResult: ex.result.value,
+          resultSchema: (method.result as ContentDescriptorObject).schema,
+          expectedResult: (ex.result as ExampleObject).value,
         });
       } else {
         // naively call the method with no params
@@ -128,14 +162,14 @@ export default class ConfirmationsRejectRule {
           methodName: method.name,
           params: [],
           url: '',
-          resultSchema: method.result.schema,
+          resultSchema: (method.result as ContentDescriptorObject).schema,
         });
       }
     }
     return calls;
   }
 
-  async afterRequest(_, call) {
+  async afterRequest(_: IOptions, call: Call) {
     await new Promise((resolve, reject) => {
       addToQueue({
         name: 'afterRequest',
@@ -152,17 +186,21 @@ export default class ConfirmationsRejectRule {
             data: `data:image/png;base64,${image}`,
             image,
             type: 'image',
-          });
+          } as Attachment);
           let cancelButton;
           await TestHelpers.delay(3000);
           if (this.allCapsCancel.includes(call.methodName)) {
             await AssetWatchBottomSheet.tapCancelButton();
           } else if (call.methodName === 'wallet_revokePermissions') {
             await BrowserView.tapLocalHostDefaultAvatar();
-            await Assertions.checkIfNotVisible(ConnectedAccountsModal.title);
+            await Assertions.checkIfNotVisible(
+              ConnectedAccountsModal.title as Promise<Detox.IndexableNativeElement>,
+            );
           } else {
             cancelButton = await Matchers.getElementByText('Cancel');
-            await Gestures.waitAndTap(cancelButton);
+            await Gestures.waitAndTap(
+              cancelButton as unknown as Promise<Detox.IndexableNativeElement>,
+            );
           }
         },
       });
@@ -174,7 +212,7 @@ export default class ConfirmationsRejectRule {
      */
   }
 
-  async afterResponse(_, call) {
+  async afterResponse(_: IOptions, call: Call) {
     await new Promise((resolve, reject) => {
       addToQueue({
         name: 'afterResponse',
@@ -198,7 +236,7 @@ export default class ConfirmationsRejectRule {
     });
   }
 
-  validateCall(call) {
+  validateCall(call: Call) {
     if (call.error) {
       call.valid = call.error.code === 4001;
       if (!call.valid) {
