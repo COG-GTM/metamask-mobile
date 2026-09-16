@@ -188,5 +188,38 @@ describe('CollectibleContractElement', () => {
       );
       expect(queryByTestId('collectible-Collectible11-1')).toBeNull();
     });
+
+    it('renders the grid on first render without mutating the contractCollectibles prop', () => {
+      const contractCollectibles = [
+        { address: '0xdef', tokenId: '1', name: 'Collectible1' },
+        { address: '0xdef', tokenId: '2', name: 'Collectible2' },
+        { address: '0xdef', tokenId: '3', name: 'Collectible3' },
+        { address: '0xdef', tokenId: '4', name: 'Collectible4' },
+      ];
+      const props = {
+        asset: {
+          favorites: false,
+          name: 'AssetName',
+          logo: 'asset-logo.png',
+          address: '0xdef',
+        },
+        contractCollectibles,
+        collectiblesVisible: true,
+        onPress: jest.fn(),
+        removeFavoriteCollectible: jest.fn(),
+      };
+
+      const { toJSON, getAllByTestId } = render(
+        <Provider store={store}>
+          <ThemeContext.Provider value={mockTheme}>
+            <CollectibleContractElement {...props} />
+          </ThemeContext.Provider>
+        </Provider>,
+      );
+
+      expect(JSON.stringify(toJSON())).toContain('collectible-Collectible4-4');
+      expect(getAllByTestId('collectible-Collectible4-4')).toBeTruthy();
+      expect(contractCollectibles).toHaveLength(4);
+    });
   });
 });

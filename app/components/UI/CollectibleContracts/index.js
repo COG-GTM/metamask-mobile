@@ -24,7 +24,6 @@ import {
 } from '../../../reducers/collectibles';
 import { removeFavoriteCollectible } from '../../../actions/collectibles';
 import AppConstants from '../../../core/AppConstants';
-import { toLowerCaseEquals } from '../../../util/general';
 import { compareTokenIds } from '../../../util/tokens';
 import CollectibleDetectionModal from '../CollectibleDetectionModal';
 import { useTheme } from '../../../util/theme';
@@ -147,6 +146,8 @@ const createStyles = (colors) =>
     },
   });
 
+const EMPTY_COLLECTIBLES = [];
+
 const debouncedNavigation = debounce((navigation, collectible) => {
   navigation.navigate('NftDetails', { collectible });
 }, 200);
@@ -187,9 +188,28 @@ const CollectibleContracts = ({
     [allCollectibles, chainId, isAllNetworks],
   );
 
-  const collectibles = filteredCollectibles.filter(
-    (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+  const collectibles = useMemo(
+    () =>
+      filteredCollectibles.filter(
+        (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+      ),
+    [filteredCollectibles],
   );
+
+  const collectiblesByContractAddress = useMemo(() => {
+    const grouped = new Map();
+    collectibles.forEach((collectible) => {
+      if (!collectible.address) return;
+      const key = String(collectible.address).toLowerCase();
+      const group = grouped.get(key);
+      if (group) {
+        group.push(collectible);
+      } else {
+        grouped.set(key, [collectible]);
+      }
+    });
+    return grouped;
+  }, [collectibles]);
 
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -338,9 +358,12 @@ const CollectibleContracts = ({
 
   const renderCollectibleContract = useCallback(
     (item, index) => {
-      const contractCollectibles = collectibles?.filter((collectible) =>
-        toLowerCaseEquals(collectible.address, item.address),
-      );
+      const contractCollectibles =
+        (item.address &&
+          collectiblesByContractAddress.get(
+            String(item.address).toLowerCase(),
+          )) ||
+        EMPTY_COLLECTIBLES;
       return (
         <CollectibleContractElement
           onPress={onItemPress}
@@ -351,7 +374,12 @@ const CollectibleContracts = ({
         />
       );
     },
-    [collectibles, onItemPress],
+    [collectiblesByContractAddress, onItemPress],
+  );
+
+  const renderItem = useCallback(
+    ({ item, index }) => renderCollectibleContract(item, index),
+    [renderCollectibleContract],
   );
 
   const renderFavoriteCollectibles = useCallback(() => {
@@ -475,7 +503,7 @@ const CollectibleContracts = ({
           </>
         }
         data={filteredCollectibleContracts}
-        renderItem={({ item, index }) => renderCollectibleContract(item, index)}
+        renderItem={renderItem}
         keyExtractor={(_, index) => index.toString()}
         testID={RefreshTestId}
         refreshControl={
@@ -497,7 +525,7 @@ const CollectibleContracts = ({
       colors.icon.default,
       refreshing,
       onRefresh,
-      renderCollectibleContract,
+      renderItem,
       renderFooter,
       renderEmpty,
       isCollectionDetectionBannerVisible,
