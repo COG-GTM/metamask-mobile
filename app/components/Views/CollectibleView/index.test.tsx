@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 import CollectibleView from '.';
@@ -30,7 +30,7 @@ describe('CollectibleView Snapshot', () => {
         },
       },
       newAssetTransaction: jest.fn(),
-    };
+    } as unknown as ComponentProps<typeof CollectibleView>;
 
     const { toJSON } = render(
       <Provider store={store}>
@@ -55,7 +55,7 @@ describe('CollectibleView Snapshot', () => {
         },
       },
       newAssetTransaction: jest.fn(),
-    };
+    } as unknown as ComponentProps<typeof CollectibleView>;
 
     const wrapper = render(
       <Provider store={store}>
