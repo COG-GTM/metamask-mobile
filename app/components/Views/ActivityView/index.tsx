@@ -1,7 +1,9 @@
-import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import React, { useEffect, useCallback, useRef, ComponentType } from 'react';
+import { View, StyleSheet, Text, TextStyle } from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import { useSelector } from 'react-redux';
+import { Theme, typography } from '@metamask/design-tokens';
+import { RootState } from '../../../reducers';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { isNonEvmAddress } from '../../../core/Multichain/utils';
 import { getHasOrders } from '../../../reducers/fiatOrders';
@@ -32,15 +34,21 @@ import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetwork
 import { selectNetworkName } from '../../../selectors/networkInfos';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DEFAULT_HEADERBASE_TITLE_TEXTVARIANT } from '../../../component-library/components/HeaderBase/HeaderBase.constants';
-import { typography } from '@metamask/design-tokens';
 import { useStyles } from '../../hooks/useStyles';
 import {
   getFontFamily,
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (params) => {
+interface TabProps {
+  tabLabel: string;
+}
+
+const MultichainTransactionsTab =
+  MultichainTransactionsView as ComponentType<TabProps>;
+const RampOrdersTab = RampOrdersList as ComponentType<TabProps>;
+
+const createStyles = (params: { theme: Theme }) => {
   const { theme } = params;
   const { colors } = theme;
   return StyleSheet.create({
@@ -82,11 +90,10 @@ const createStyles = (params) => {
     },
     title: {
       marginTop: 20,
-      fontSize: 20,
       color: colors.text.default,
       ...typography.sHeadingMD,
       fontFamily: getFontFamily(TextVariant.HeadingMD),
-    },
+    } as TextStyle,
     titleText: {
       color: colors.text.default,
     },
@@ -111,10 +118,14 @@ const ActivityView = () => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
   const networkName = useSelector(selectNetworkName);
-  const hasOrders = useSelector((state) => getHasOrders(state) || false);
+  const hasOrders = useSelector(
+    (state: RootState) => getHasOrders(state) || false,
+  );
   const accountsByChainId = useSelector(selectAccountsByChainId);
-  const tabViewRef = useRef();
-  const params = useParams();
+  const tabViewRef = useRef<
+    ScrollableTabView & { goToPage: (pageNumber: number) => void }
+  >(null);
+  const params = useParams<{ redirectToOrders?: boolean }>();
 
   const isTestnetOrNotPopularNetwork =
     isTestNet(currentChainId) || !isPopularNetwork;
@@ -128,7 +139,7 @@ const ActivityView = () => {
       createEventBuilder(MetaMetricsEvents.BROWSER_OPEN_ACCOUNT_SWITCH)
         .addProperties({
           number_of_accounts: Object.keys(
-            accountsByChainId[selectedAddress] ?? {},
+            accountsByChainId[selectedAddress ?? ''] ?? {},
           ).length,
         })
         .build(),
@@ -177,12 +188,7 @@ const ActivityView = () => {
   return (
     <ErrorBoundary navigation={navigation} view="ActivityView">
       <View style={[styles.header, { marginTop: insets.top }]}>
-        <Text
-          style={styles.title}
-          variant={DEFAULT_HEADERBASE_TITLE_TEXTVARIANT}
-        >
-          {strings('transactions_view.title')}
-        </Text>
+        <Text style={styles.title}>{strings('transactions_view.title')}</Text>
       </View>
       <View style={styles.wrapper}>
         <View style={styles.controlButtonOuterWrapper}>
@@ -212,14 +218,15 @@ const ActivityView = () => {
           locked={!hasOrders}
         >
           {selectedAddress && isNonEvmAddress(selectedAddress) ? (
-            <MultichainTransactionsView
+            <MultichainTransactionsTab
               tabLabel={strings('transactions_view.title')}
             />
           ) : (
+            // @ts-expect-error proptypes components requires ts-expect-error
             <TransactionsView tabLabel={strings('transactions_view.title')} />
           )}
           {hasOrders && (
-            <RampOrdersList
+            <RampOrdersTab
               tabLabel={strings('fiat_on_ramp_aggregator.orders')}
             />
           )}
