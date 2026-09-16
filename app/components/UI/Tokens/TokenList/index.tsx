@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { View, RefreshControl, Dimensions } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useSelector } from 'react-redux';
@@ -18,6 +18,8 @@ import { TokenListItem } from './TokenListItem';
 import { WalletViewSelectorsIDs } from '../../../../../e2e/selectors/wallet/WalletView.selectors';
 import { useNavigation } from '@react-navigation/native';
 import Routes from '../../../../constants/navigation/Routes';
+import useEarnTokens from '../../Earn/hooks/useEarnTokens';
+import { buildEarnTokenKeys } from '../util/earnTokenKeys';
 
 export interface FlashListAssetKey {
   address: string;
@@ -54,6 +56,13 @@ export const TokenList = ({
 
   const listRef = useRef<FlashList<FlashListAssetKey>>(null);
 
+  // Account-global list; computed once here instead of once per row.
+  const earnTokens = useEarnTokens();
+  const earnTokenKeys = useMemo(
+    () => buildEarnTokenKeys(earnTokens),
+    [earnTokens],
+  );
+
   const styles = createStyles(colors);
   const navigation = useNavigation();
 
@@ -82,6 +91,7 @@ export const TokenList = ({
         setShowScamWarningModal={setShowScamWarningModal}
         privacyMode={privacyMode}
         showPercentageChange={showPercentageChange}
+        earnTokenKeys={earnTokenKeys}
       />
     ),
     [
@@ -89,6 +99,7 @@ export const TokenList = ({
       setShowScamWarningModal,
       privacyMode,
       showPercentageChange,
+      earnTokenKeys,
     ],
   );
 
