@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useMemo, useState, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 import { connect } from 'react-redux';
@@ -78,8 +78,8 @@ const createStyles = (colors, brandColors) =>
 
 const splitIntoSubArrays = (array, count) => {
   const newArray = [];
-  while (array.length > 0) {
-    newArray.push(array.splice(0, count));
+  for (let i = 0; i < array.length; i += count) {
+    newArray.push(array.slice(i, i + count));
   }
   return newArray;
 };
@@ -96,7 +96,10 @@ function CollectibleContractElement({
   selectedAddress,
   removeFavoriteCollectible,
 }) {
-  const [collectiblesGrid, setCollectiblesGrid] = useState([]);
+  const collectiblesGrid = useMemo(
+    () => splitIntoSubArrays(contractCollectibles ?? [], 3),
+    [contractCollectibles],
+  );
   const [collectiblesVisible, setCollectiblesVisible] = useState(
     propsCollectiblesVisible,
   );
@@ -195,11 +198,6 @@ function CollectibleContractElement({
     [asset.favorites, onPressCollectible, onLongPressCollectible, styles],
   );
 
-  useEffect(() => {
-    const temp = splitIntoSubArrays(contractCollectibles, 3);
-
-    setCollectiblesGrid(temp);
-  }, [contractCollectibles, setCollectiblesGrid]);
   return (
     <View style={styles.itemWrapper}>
       <TouchableOpacity
