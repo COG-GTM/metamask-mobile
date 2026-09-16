@@ -161,10 +161,7 @@ describe('AssetSearch', () => {
     onSearch.mockClear();
 
     const searchBar = getByTestId(ImportTokenViewSelectorsIDs.SEARCH_BAR);
-    fireEvent.changeText(
-      searchBar,
-      `0x${mockSnxAddress.slice(2).toUpperCase()}`,
-    );
+    fireEvent.changeText(searchBar, mockSnxAddress.toUpperCase());
 
     act(() => {
       jest.advanceTimersByTime(250);

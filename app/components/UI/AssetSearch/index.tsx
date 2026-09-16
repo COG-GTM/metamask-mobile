@@ -33,7 +33,7 @@ import ButtonIcon, {
 import { selectChainId } from '../../../selectors/networkController';
 
 const SEARCH_DEBOUNCE_MS = 250;
-const HEX_ADDRESS_REGEX = /^0x[0-9a-fA-F]{40}$/;
+const HEX_ADDRESS_REGEX = /^0x[0-9a-f]{40}$/i;
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
