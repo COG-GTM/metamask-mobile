@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { FC } from 'react';
 import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import PropTypes from 'prop-types';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
@@ -18,7 +18,39 @@ import Text, {
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 
-const createStyles = (colors, titleColor) =>
+interface SettingsDrawerProps {
+  title?: string;
+  /**
+   * Additional descriptive text about this option
+   */
+  description?: string;
+  /**
+   * Disable bottom border
+   */
+  noBorder?: boolean;
+  /**
+   * Handler called when this drawer is pressed
+   */
+  onPress?: () => void;
+  /**
+   * Display SettingsNotification
+   */
+  warning?: string;
+  /**
+   * Display arrow right
+   */
+  renderArrowRight?: boolean;
+  /**
+   * Test id for testing purposes
+   */
+  testID?: string;
+  /**
+   * Title color
+   */
+  titleColor?: string;
+}
+
+const createStyles = (colors: Theme['colors'], _titleColor?: string) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -47,43 +79,11 @@ const createStyles = (colors, titleColor) =>
     },
   });
 
-const propTypes = {
-  title: PropTypes.string,
-  /**
-   * Additional descriptive text about this option
-   */
-  description: PropTypes.string,
-  /**
-   * Disable bottom border
-   */
-  noBorder: PropTypes.bool,
-  /**
-   * Handler called when this drawer is pressed
-   */
-  onPress: PropTypes.func,
-  /**
-   * Display SettingsNotification
-   */
-  warning: PropTypes.string,
-  /**
-   * Display arrow right
-   */
-  renderArrowRight: PropTypes.bool,
-  /**
-   * Test id for testing purposes
-   */
-  testID: PropTypes.string,
-  /**
-   * Title color
-   */
-  titleColor: PropTypes.string,
-};
-
 const defaultProps = {
   onPress: undefined,
 };
 
-const SettingsDrawer = ({
+const SettingsDrawer: FC<SettingsDrawerProps> = ({
   title,
   description,
   onPress,
@@ -137,7 +137,6 @@ const SettingsDrawer = ({
   );
 };
 
-SettingsDrawer.propTypes = propTypes;
 SettingsDrawer.defaultProps = defaultProps;
 
 export default SettingsDrawer;
