@@ -32,6 +32,8 @@ describe('setupBridge', () => {
   });
 
   it('should returns existing backgroundBridge if it already exists', () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - mocked constructor, options are not needed here
     const existingBridge = new BackgroundBridge();
     connection.backgroundBridge = existingBridge;
 
