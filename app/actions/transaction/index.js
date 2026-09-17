@@ -121,18 +121,6 @@ export function setTransactionId(transactionId) {
 }
 
 /**
- * Enable selectable tokens (ERC20 and Ether) to send in a transaction
- *
- * @param {object} asset - Asset to start the transaction with
- */
-export function setTokensTransaction(asset) {
-  return {
-    type: 'SET_TOKENS_TRANSACTION',
-    asset,
-  };
-}
-
-/**
  * Enable Ether only to send in a transaction
  *
  * @param {object} transaction - Transaction additional object

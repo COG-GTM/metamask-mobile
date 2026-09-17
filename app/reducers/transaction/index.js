@@ -114,15 +114,6 @@ const transactionReducer = (state = initialState, action) => {
         securityAlertResponses: state.securityAlertResponses,
       };
     }
-    case 'SET_TOKENS_TRANSACTION': {
-      const selectedAsset = action.asset;
-      const assetType = getAssetType(selectedAsset);
-      return {
-        ...state,
-        selectedAsset: action.asset,
-        assetType,
-      };
-    }
     case 'SET_ETHER_TRANSACTION':
       return {
         ...state,

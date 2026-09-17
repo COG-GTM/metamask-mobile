@@ -1,11 +1,6 @@
-import { KeyringTypes } from '@metamask/keyring-controller';
 import ExtendedKeyringTypes from '../../constants/keyringTypes';
 import Engine from '../../core/Engine';
-import {
-  importNewSecretRecoveryPhrase,
-  createNewSecretRecoveryPhrase,
-  addNewHdAccount,
-} from './';
+import { importNewSecretRecoveryPhrase, addNewHdAccount } from './';
 import { wordlist } from '@metamask/scure-bip39/dist/wordlists/english';
 
 const mockSetSelectedAddress = jest.fn();
@@ -98,33 +93,6 @@ describe('MultiSRP Actions', () => {
       ).rejects.toThrow('This mnemonic has already been imported.');
 
       expect(mockAddNewKeyring).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('createNewSecretRecoveryPhrase', () => {
-    it('creates new SRP', async () => {
-      mockAddNewKeyring.mockResolvedValue({
-        getAccounts: () => Promise.resolve([testAddress]),
-      });
-
-      await createNewSecretRecoveryPhrase();
-
-      expect(mockAddNewKeyring).toHaveBeenCalledWith(
-        KeyringTypes.hd,
-        undefined,
-      );
-      expect(mockSetSelectedAddress).toHaveBeenCalledWith(testAddress);
-    });
-
-    it('Does not set selected address or gets accounts on errors', async () => {
-      mockAddNewKeyring.mockRejectedValue(new Error('Test error'));
-
-      await expect(
-        async () => await createNewSecretRecoveryPhrase(),
-      ).rejects.toThrow('Test error');
-
-      expect(mockGetAccounts).not.toHaveBeenCalled();
-      expect(mockSetSelectedAddress).not.toHaveBeenCalled();
     });
   });
 

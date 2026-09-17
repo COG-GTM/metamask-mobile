@@ -32,14 +32,6 @@ const sdkReducer = (
           {},
         ),
       };
-    case ActionType.UPDATE_CONNECTION:
-      return {
-        ...state,
-        connections: {
-          ...state.connections,
-          [action.channelId]: action.connection,
-        },
-      };
     case ActionType.REMOVE_CONNECTION: {
       const { [action.channelId]: _, ...connections } = state.connections;
       return {
@@ -47,32 +39,10 @@ const sdkReducer = (
         connections,
       };
     }
-    case ActionType.ADD_CONNECTION:
-      return {
-        ...state,
-        connections: {
-          ...state.connections,
-          [action.channelId]: action.connection,
-        },
-      };
     case ActionType.RESET_CONNECTIONS:
       return {
         ...state,
         connections: action.connections,
-      };
-    case ActionType.SET_CONNECTED:
-      if (!state.connections[action.channelId]) {
-        return state;
-      }
-      return {
-        ...state,
-        connections: {
-          ...state.connections,
-          [action.channelId]: {
-            ...state.connections[action.channelId],
-            connected: action.connected,
-          },
-        },
       };
     case ActionType.REMOVE_APPROVED_HOST: {
       const { [action.channelId]: _, ...approvedHosts } = state.approvedHosts;
@@ -81,14 +51,6 @@ const sdkReducer = (
         approvedHosts,
       };
     }
-    case ActionType.SET_APPROVED_HOST:
-      return {
-        ...state,
-        approvedHosts: {
-          ...state.approvedHosts,
-          [action.channelId]: action.validUntil,
-        },
-      };
     case ActionType.UPDATE_DAPP_CONNECTION:
       return {
         ...state,
@@ -97,14 +59,6 @@ const sdkReducer = (
           [action.channelId]: action.connection,
         },
       };
-    case ActionType.REMOVE_DAPP_CONNECTION: {
-      const { [action.channelId]: _, ...dappConnections } =
-        state.dappConnections;
-      return {
-        ...state,
-        dappConnections,
-      };
-    }
     case ActionType.RESET_DAPP_CONNECTIONS:
       return {
         ...state,

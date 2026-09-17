@@ -24,17 +24,12 @@ export const getFeatureFlagChainId = (chainId) =>
 
 // * Constants
 export const SWAPS_SET_LIVENESS = 'SWAPS_SET_LIVENESS';
-export const SWAPS_SET_HAS_ONBOARDED = 'SWAPS_SET_HAS_ONBOARDED';
 const MAX_TOKENS_WITH_BALANCE = 5;
 
 // * Action Creator
 export const setSwapsLiveness = (chainId, featureFlags) => ({
   type: SWAPS_SET_LIVENESS,
   payload: { chainId, featureFlags },
-});
-export const setSwapsHasOnboarded = (hasOnboarded) => ({
-  type: SWAPS_SET_HAS_ONBOARDED,
-  payload: hasOnboarded,
 });
 
 // * Functions
@@ -97,15 +92,6 @@ export const selectSwapsChainFeatureFlags = createSelector(
       ...(swapsState.featureFlags?.smartTransactions || {}),
     },
   }),
-);
-
-/**
- * Returns the swaps onboarded state
- */
-
-export const swapsHasOnboardedSelector = createSelector(
-  swapsStateSelector,
-  (swapsState) => swapsState.hasOnboarded,
 );
 
 const selectSwapsControllerState = (state) =>
@@ -355,7 +341,6 @@ export const swapsTopAssetsSelector = createSelector(
 // * Reducer
 export const initialState = {
   isLive: true, // TODO: should we remove it?
-  hasOnboarded: true, // TODO: Once we have updated UI / content for the modal, we should enable it again.
 
   featureFlags: undefined,
   '0x1': {
@@ -404,12 +389,6 @@ function swapsReducer(state = initialState, action) {
           smart_transactions: featureFlags.smart_transactions,
           smartTransactions: featureFlags.smartTransactions,
         },
-      };
-    }
-    case SWAPS_SET_HAS_ONBOARDED: {
-      return {
-        ...state,
-        hasOnboarded: Boolean(action.payload),
       };
     }
     default: {

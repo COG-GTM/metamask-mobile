@@ -16,7 +16,6 @@ export const userInitialState: UserState = {
   seedphraseBackedUp: false,
   backUpSeedphraseVisible: false,
   protectWalletModalVisible: false,
-  gasEducationCarouselSeen: false,
   userLoggedIn: false,
   isAuthChecked: false,
   initialScreen: '',
@@ -77,11 +76,6 @@ const userReducer = (
         seedphraseBackedUp: true,
         backUpSeedphraseVisible: false,
       };
-    case UserActionType.BACK_UP_SEEDPHRASE_VISIBLE:
-      return {
-        ...state,
-        backUpSeedphraseVisible: true,
-      };
     case UserActionType.BACK_UP_SEEDPHRASE_NOT_VISIBLE:
       return {
         ...state,
@@ -99,11 +93,6 @@ const userReducer = (
       return {
         ...state,
         protectWalletModalVisible: false,
-      };
-    case UserActionType.SET_GAS_EDUCATION_CAROUSEL_SEEN:
-      return {
-        ...state,
-        gasEducationCarouselSeen: true,
       };
     case UserActionType.SET_APP_THEME:
       return {
