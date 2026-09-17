@@ -1,3 +1,15 @@
+// Jest loads transformer modules (e.g. the asset transformer) with a plain
+// require, outside its Babel pipeline, so TypeScript transformers need a runtime
+// compiler. Register ts-node for this process and propagate it to worker
+// processes via NODE_OPTIONS so `.ts` transformers resolve everywhere.
+require('ts-node/register/transpile-only');
+process.env.NODE_OPTIONS = [
+  process.env.NODE_OPTIONS,
+  '--require ts-node/register/transpile-only',
+]
+  .filter(Boolean)
+  .join(' ');
+
 process.env.TZ = 'America/Toronto';
 
 process.env.SEGMENT_DELETE_API_SOURCE_ID = 'testSourceId';
@@ -16,7 +28,7 @@ process.env.MM_SMART_ACCOUNT_UI_ENABLED = 'true';
 
 const config = {
   preset: 'react-native',
-  setupFilesAfterEnv: ['<rootDir>/app/util/test/testSetup.js'],
+  setupFilesAfterEnv: ['<rootDir>/app/util/test/testSetup.tsx'],
   testEnvironment: 'jest-environment-node',
   transformIgnorePatterns: [
     'node_modules/(?!((@metamask/)?(@react-native|react-native|redux-persist-filesystem|@react-navigation|@react-native-community|@react-native-masked-view|react-navigation|react-navigation-redux-helpers|@sentry|d3-color|@notifee)))',
@@ -24,7 +36,7 @@ const config = {
   transform: {
     '^.+\\.[jt]sx?$': ['babel-jest', { configFile: './babel.config.tests.js' }],
     '^.+\\.(png|jpg|jpeg|gif|webp|svg|mp4)$':
-      '<rootDir>/app/util/test/assetFileTransformer.js',
+      '<rootDir>/app/util/test/assetFileTransformer.ts',
   },
   snapshotSerializers: ['enzyme-to-json/serializer'],
   // This is an environment variable that can be used to execute logic only in development
