@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, Text, Image, TouchableOpacity } from 'react-native';
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import ActionModal from '../ActionModal';
 import { fontStyles } from '../../../styles/common';
-import { connect } from 'react-redux';
 import { protectWalletModalNotVisible } from '../../../actions/user';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { strings } from '../../../../locales/i18n';
@@ -11,12 +11,15 @@ import scaling from '../../../util/scaling';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme, Colors } from '../../../util/theme/models';
 import { ProtectWalletModalSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ProtectWalletModal.selectors';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
+import { RootState } from '../../../reducers';
 
 const protectWalletImage = require('../../../images/explain-backup-seedphrase.png'); // eslint-disable-line
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     wrapper: {
       marginTop: 24,
@@ -71,30 +74,42 @@ const createStyles = (colors) =>
     },
   });
 
+interface Navigation {
+  navigate: (routeName: string, params?: object) => void;
+}
+
+interface OwnProps {
+  navigation: Navigation;
+}
+
+interface StateProps {
+  /**
+   * Whether this modal is visible
+   */
+  protectWalletModalVisible: boolean;
+  /**
+   * Boolean that determines if the user has set a password before
+   */
+  passwordSet: boolean;
+}
+
+interface DispatchProps {
+  /**
+   * Hide this modal
+   */
+  protectWalletModalNotVisible: () => void;
+}
+
+interface Props
+  extends OwnProps,
+    StateProps,
+    DispatchProps,
+    IWithMetricsAwarenessProps {}
+
 /**
  * View that renders an action modal
  */
-class ProtectYourWalletModal extends PureComponent {
-  static propTypes = {
-    navigation: PropTypes.object,
-    /**
-     * Hide this modal
-     */
-    protectWalletModalNotVisible: PropTypes.func,
-    /**
-     * Whether this modal is visible
-     */
-    protectWalletModalVisible: PropTypes.bool,
-    /**
-     * Boolean that determines if the user has set a password before
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
-
+class ProtectYourWalletModal extends PureComponent<Props> {
   goToBackupFlow = () => {
     this.props.protectWalletModalNotVisible();
     this.props.navigation.navigate(
@@ -137,7 +152,8 @@ class ProtectYourWalletModal extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -191,14 +207,13 @@ class ProtectYourWalletModal extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   protectWalletModalVisible: state.user.protectWalletModalVisible,
   passwordSet: state.user.passwordSet,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  protectWalletModalNotVisible: (enable) =>
-    dispatch(protectWalletModalNotVisible()),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  protectWalletModalNotVisible: () => dispatch(protectWalletModalNotVisible()),
 });
 
 ProtectYourWalletModal.contextType = ThemeContext;
@@ -206,4 +221,8 @@ ProtectYourWalletModal.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(ProtectYourWalletModal));
+)(
+  withMetricsAwareness(
+    ProtectYourWalletModal as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);
