@@ -18,8 +18,6 @@ export const ALLOWED_BRIDGE_CHAIN_IDS = [
 
 export type AllowedBridgeChainIds = (typeof ALLOWED_BRIDGE_CHAIN_IDS)[number];
 
-export const ETH_USDT_ADDRESS = '0xdac17f958d2ee523a2206206994597c13d831ec7';
-
 export const NETWORK_TO_SHORT_NETWORK_NAME_MAP: Record<
   Hex | CaipChainId,
   string

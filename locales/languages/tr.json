@@ -3897,7 +3897,6 @@
     "time": "Zaman",
     "quote_info_content": "Aramamıza göre bu teklif en iyi getiriyi sunmaktadır. Swap oranına dayanır ve köprüleme ücretleri ve %0,875 MetaMask ücreti dahildir ancak gaz ücretleri dahil değildir. Gaz ücretleri ağ faaliyetine ve işlemin karmaşıklığına göre değişiklik gösterebilir.",
     "quote_info_title": "Neden bu teklifi öneriyoruz",
-    "see_other_quotes": "Diğer teklifleri gör",
     "receive_at": "Alınacak",
     "error_banner_description": "Bu işlem rotası şu anda kullanılamıyor. Tutarı, ağı veya token'ı değiştirmeyi deneyin ve en iyi seçeneği bulalım.",
     "insufficient_funds": "Para yetersiz",
@@ -3924,7 +3923,6 @@
     "view_on_block_explorer": "Blok Gezgininde Görüntüle",
     "block_explorer_description": "Bu işlem iki ağda da bulunuyor. Birinci bağlantı kaynağı gösterir, ikincisi onaylandıktan sonra hedefi gösterir.",
     "transaction_details": "İşlem Bilgileri",
-    "bridge_to_chain": "{{chainName}} için köprü",
-    "recipient": "Alıcı"
+    "bridge_to_chain": "{{chainName}} için köprü"
   }
 }

@@ -3897,7 +3897,6 @@
     "time": "Temps",
     "quote_info_content": "D’après nos recherches, cette cotation offre le meilleur rendement. Elle prend en compte le taux de change, les frais d’établissement d’une passerelle et les frais de MetaMask de 0,875 %, mais pas les frais de gaz. Les frais de gaz varient en fonction de l’activité du réseau et de la complexité de la transaction.",
     "quote_info_title": "Pourquoi nous recommandons cette cotation",
-    "see_other_quotes": "Voir d’autres cotations",
     "receive_at": "Recevoir à",
     "error_banner_description": "Cette voie d’échange n’est pas disponible pour le moment. Essayez de modifier le montant, le réseau ou le jeton, et nous trouverons la meilleure option.",
     "insufficient_funds": "Fonds insuffisants",
@@ -3924,7 +3923,6 @@
     "view_on_block_explorer": "Afficher sur l’explorateur de blocs",
     "block_explorer_description": "Cette transaction se déroule sur deux réseaux. Le premier lien indique la source ; le second indique la destination une fois qu’elle est confirmée.",
     "transaction_details": "Détails de la transaction",
-    "bridge_to_chain": "Établir une passerelle vers {{chainName}}",
-    "recipient": "Destinataire"
+    "bridge_to_chain": "Établir une passerelle vers {{chainName}}"
   }
 }

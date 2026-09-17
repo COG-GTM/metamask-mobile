@@ -233,7 +233,7 @@ describe('useSubmitBridgeTx', () => {
     ).rejects.toThrow('Bridge transaction failed');
   });
 
-  it('should handle errors from serializeQuoteMetadata', async () => {
+  it('should handle serialization errors from the bridge status controller submit', async () => {
     const { result } = renderHook(() => useSubmitBridgeTx(), {
       wrapper: createWrapper(),
     });

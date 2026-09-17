@@ -146,11 +146,6 @@ export const selectSourceAmount = createSelector(
   (bridgeState) => bridgeState.sourceAmount,
 );
 
-export const selectDestAmount = createSelector(
-  selectBridgeState,
-  (bridgeState) => bridgeState.destAmount,
-);
-
 /**
  * Only includes networks user has added.
  * Will include them regardless of feature flag enabled or not.
@@ -188,19 +183,6 @@ export const selectIsBridgeEnabledSource = createSelector(
     return (
       bridgeFeatureFlags.support &&
       bridgeFeatureFlags.chains[caipChainId]?.isActiveSrc
-    );
-  },
-);
-
-export const selectIsBridgeEnabledDest = createSelector(
-  selectBridgeFeatureFlags,
-  (_: RootState, chainId: Hex | CaipChainId) => chainId,
-  (bridgeFeatureFlags, chainId) => {
-    const caipChainId = formatChainIdToCaip(chainId);
-
-    return (
-      bridgeFeatureFlags.support &&
-      bridgeFeatureFlags.chains[caipChainId]?.isActiveDest
     );
   },
 );

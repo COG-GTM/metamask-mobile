@@ -46,15 +46,4 @@ describe('QuoteInfoModal', () => {
     expect(getByText(strings('bridge.quote_info_title'))).toBeDefined();
     expect(getByText(strings('bridge.quote_info_content'))).toBeDefined();
   });
-
-  //TODO: Add tests when footer button for more quotes is added later
-
-  // it('closes modal when footer button is pressed', () => {
-  //   const { getByText } = renderQuoteInfoModal();
-
-  //   const closeButton = getByText(strings('bridge.see_other_quotes'));
-  //   fireEvent.press(closeButton);
-
-  //   expect(mockGoBack).toHaveBeenCalled();
-  // });
 });

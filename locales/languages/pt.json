@@ -3897,7 +3897,6 @@
     "time": "Horário",
     "quote_info_content": "Esta cotação oferece o melhor retorno segundo nossa pesquisa. Ela se baseia na taxa de troca, incluindo taxas de ponte e uma taxa de 0,875% da MetaMask, mas não as taxas de gás. Estas variam conforme a atividade da rede e a complexidade da transação.",
     "quote_info_title": "Por que recomendamos essa cotação",
-    "see_other_quotes": "Ver outras cotações",
     "receive_at": "Receber em",
     "error_banner_description": "Esta rota comercial não está disponível no momento. Experimente mudar o valor, a rede ou o token e encontraremos a melhor opção.",
     "insufficient_funds": "Fundos insuficientes",
@@ -3924,7 +3923,6 @@
     "view_on_block_explorer": "Ver no Explorador de Blocos",
     "block_explorer_description": "Esta transação está ativa em duas redes. O primeiro link mostra a origem; o segundo, mostra o destino após sua confirmação.",
     "transaction_details": "Detalhes da transação",
-    "bridge_to_chain": "Fazer ponte para {{chainName}}",
-    "recipient": "Destinatário"
+    "bridge_to_chain": "Fazer ponte para {{chainName}}"
   }
 }

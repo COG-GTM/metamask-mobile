@@ -3897,7 +3897,6 @@
     "time": "Waktu",
     "quote_info_content": "Kuotasi ini menawarkan hasil terbaik dari pencarian kami. Kuotasi ini didasarkan pada nilai tukar, termasuk biaya bridge dan biaya MetaMask 0,875%, tetapi tidak termasuk biaya gas. Biaya gas bervariasi tergantung aktivitas jaringan dan kompleksitas transaksi.",
     "quote_info_title": "Alasan kami merekomendasikan kuotasi ini",
-    "see_other_quotes": "Lihat kuotasi lainnya",
     "receive_at": "Terima di",
     "error_banner_description": "Rute perdagangan ini tidak tersedia untuk saat ini. Coba ubah jumlah, jaringan, atau token, dan kami akan mencari opsi terbaik.",
     "insufficient_funds": "Dana tidak cukup",
@@ -3924,7 +3923,6 @@
     "view_on_block_explorer": "Lihat di Block Explorer",
     "block_explorer_description": "Transaksi ini berlangsung di dua jaringan. Tautan pertama menampilkan sumbernya; tautan kedua menampilkan tujuannya setelah dikonfirmasi.",
     "transaction_details": "Detail Transaksi",
-    "bridge_to_chain": "Bridge ke {{chainName}}",
-    "recipient": "Penerima"
+    "bridge_to_chain": "Bridge ke {{chainName}}"
   }
 }
