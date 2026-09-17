@@ -54,5 +54,4 @@ const styleSheet = (params: { theme: Theme }) => {
   });
 };
 
-export type TooltipStylesType = ReturnType<typeof styleSheet>;
 export default styleSheet;
