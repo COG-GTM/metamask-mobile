@@ -204,14 +204,18 @@ class MetaMetrics implements IMetaMetrics {
    * @private
    */
   #getDeleteRegulationDateFromPrefs = async (): Promise<string> =>
-    await StorageWrapper.getItem(ANALYTICS_DATA_DELETION_DATE);
+    // `StorageWrapper.getItem` resolves to `string | null` for a missing key.
+    (await StorageWrapper.getItem(ANALYTICS_DATA_DELETION_DATE)) as string;
 
   /**
    * Retrieve the analytics deletion regulation ID from the preference
    * @private
    */
   #getDeleteRegulationIdFromPrefs = async (): Promise<string> =>
-    await StorageWrapper.getItem(METAMETRICS_DELETION_REGULATION_ID);
+    // `StorageWrapper.getItem` resolves to `string | null` for a missing key.
+    (await StorageWrapper.getItem(
+      METAMETRICS_DELETION_REGULATION_ID,
+    )) as string;
 
   /**
    * Persist the analytics recording status
@@ -281,7 +285,7 @@ class MetaMetrics implements IMetaMetrics {
     }
 
     // look for a new Metametics ID and use it or generate a new one
-    const metametricsId: string | undefined = await StorageWrapper.getItem(
+    const metametricsId: string | null = await StorageWrapper.getItem(
       METAMETRICS_ID,
     );
     if (!metametricsId) {

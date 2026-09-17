@@ -151,7 +151,7 @@ export const OnboardingCarousel: React.FC<OnboardingCarouselProps> = ({
   saveOnboardingEvent,
 }) => {
   const [currentTab, setCurrentTab] = useState(1);
-  const [appStartTime, setAppStartTime] = useState<string | undefined>(
+  const [appStartTime, setAppStartTime] = useState<string | null | undefined>(
     undefined,
   );
   const themeContext = useContext(ThemeContext);
