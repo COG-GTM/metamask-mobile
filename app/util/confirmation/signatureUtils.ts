@@ -4,7 +4,7 @@ import { getAddressAccountType } from '../address';
 import NotificationManager from '../../core/NotificationManager';
 import { WALLET_CONNECT_ORIGIN } from '../walletconnect';
 import AppConstants from '../../core/AppConstants';
-import { InteractionManager } from 'react-native';
+import { InteractionManager, LayoutChangeEvent } from 'react-native';
 import { strings } from '../../../locales/i18n';
 import { selectEvmChainId } from '../../selectors/networkController';
 import { store } from '../../store';
@@ -13,6 +13,17 @@ import Device from '../device';
 import { getDecimalChainId } from '../networks';
 import Logger from '../Logger';
 import { MetricsEventBuilder } from '../../core/Analytics/MetricsEventBuilder';
+import type { SecurityAlertResponse } from '@metamask/transaction-controller';
+import type { JsonMap } from '../../core/Analytics/MetaMetrics.types';
+
+interface SignatureMessageParams {
+  from?: string;
+  origin?: string;
+  version?: string;
+  currentPageInformation?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+  [key: string]: unknown;
+}
 
 export const typedSign = {
   V1: 'eth_signTypedData',
@@ -21,24 +32,27 @@ export const typedSign = {
 };
 
 export const getAnalyticsParams = (
-  messageParams,
-  signType,
-  securityAlertResponse,
-) => {
+  messageParams: SignatureMessageParams,
+  signType?: string,
+  securityAlertResponse?: SecurityAlertResponse,
+): JsonMap => {
   if (!messageParams || typeof messageParams !== 'object') {
     throw new Error('Invalid messageParams provided');
   }
 
   const { currentPageInformation = {}, meta = {} } = messageParams;
-  const pageInfo = { ...currentPageInformation, ...meta };
+  const pageInfo: Record<string, unknown> = {
+    ...currentPageInformation,
+    ...meta,
+  };
 
-  const analyticsParams = {
-    account_type: getAddressAccountType(messageParams.from),
+  const analyticsParams: JsonMap = {
+    account_type: getAddressAccountType(messageParams.from as string),
     dapp_host_name: 'N/A',
     chain_id: null,
     signature_type: signType,
-    version: messageParams?.version || 'N/A',
-    ...pageInfo.analytics,
+    version: (messageParams?.version as string) || 'N/A',
+    ...(pageInfo.analytics as JsonMap | undefined),
   };
 
   try {
@@ -46,7 +60,7 @@ export const getAnalyticsParams = (
     analyticsParams.chain_id = getDecimalChainId(chainId);
 
     if (pageInfo.url) {
-      const url = new URL(pageInfo.url);
+      const url = new URL(pageInfo.url as string);
       analyticsParams.dapp_host_name = url.host;
     }
 
@@ -55,13 +69,16 @@ export const getAnalyticsParams = (
       Object.assign(analyticsParams, blockaidParams);
     }
   } catch (error) {
-    Logger.error(error, 'Error processing analytics parameters:');
+    Logger.error(error as Error, 'Error processing analytics parameters:');
   }
 
   return analyticsParams;
 };
 
-export const walletConnectNotificationTitle = (confirmation, isError) => {
+export const walletConnectNotificationTitle = (
+  confirmation: boolean,
+  isError: boolean,
+): string => {
   if (isError) return strings('notifications.wc_signed_failed_title');
   return confirmation
     ? strings('notifications.wc_signed_title')
@@ -69,20 +86,22 @@ export const walletConnectNotificationTitle = (confirmation, isError) => {
 };
 
 export const showWalletConnectNotification = (
-  messageParams = {},
+  messageParams: SignatureMessageParams = {},
   confirmation = false,
   isError = false,
-) => {
+): void => {
   InteractionManager.runAfterInteractions(() => {
     /**
      * FIXME: need to rewrite the way BackgroundBridge sets the origin.
      */
-    const origin = messageParams.origin.toLowerCase().replaceAll(':', '');
+    const origin = (messageParams.origin as string)
+      .toLowerCase()
+      .replace(/:/g, '');
     const isWCOrigin = origin.startsWith(
-      WALLET_CONNECT_ORIGIN.replaceAll(':', '').toLowerCase(),
+      WALLET_CONNECT_ORIGIN.replace(/:/g, '').toLowerCase(),
     );
     const isSDKOrigin = origin.startsWith(
-      AppConstants.MM_SDK.SDK_REMOTE_ORIGIN.replaceAll(':', '').toLowerCase(),
+      AppConstants.MM_SDK.SDK_REMOTE_ORIGIN.replace(/:/g, '').toLowerCase(),
     );
 
     if (isWCOrigin || isSDKOrigin) {
@@ -97,12 +116,12 @@ export const showWalletConnectNotification = (
 };
 
 export const handleSignatureAction = async (
-  onAction,
-  messageParams,
-  signType,
-  securityAlertResponse,
-  confirmation,
-) => {
+  onAction: () => Promise<void> | void,
+  messageParams: SignatureMessageParams,
+  signType?: string,
+  securityAlertResponse?: SecurityAlertResponse | boolean,
+  confirmation?: boolean,
+): Promise<void> => {
   await onAction();
   showWalletConnectNotification(messageParams, confirmation);
   MetaMetrics.getInstance().trackEvent(
@@ -112,27 +131,37 @@ export const handleSignatureAction = async (
         : MetaMetricsEvents.SIGNATURE_REJECTED,
     )
       .addProperties(
-        getAnalyticsParams(messageParams, signType, securityAlertResponse),
+        getAnalyticsParams(
+          messageParams,
+          signType,
+          securityAlertResponse as SecurityAlertResponse | undefined,
+        ),
       )
       .build(),
   );
 };
 
-export const addSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const addSignatureErrorListener = (
+  metamaskId: string,
+  onSignatureError: (...args: unknown[]) => void,
+): void => {
   Engine.context.SignatureController.hub.on(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const removeSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const removeSignatureErrorListener = (
+  metamaskId: string,
+  onSignatureError: (...args: unknown[]) => void,
+): void => {
   Engine.context.SignatureController.hub.removeListener(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const shouldTruncateMessage = (e) => {
+export const shouldTruncateMessage = (e: LayoutChangeEvent): boolean => {
   if (
     (Device.isIos() && e.nativeEvent.layout.height > 70) ||
     (Device.isAndroid() && e.nativeEvent.layout.height > 100)
