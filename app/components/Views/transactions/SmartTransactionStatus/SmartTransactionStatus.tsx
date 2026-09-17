@@ -44,9 +44,6 @@ interface Props {
   onConfirm: () => void;
 }
 
-export const FALLBACK_STX_ESTIMATED_DEADLINE_SEC = 45;
-export const FALLBACK_STX_MAX_DEADLINE_SEC = 150;
-
 export const showRemainingTimeInMinAndSec = (
   remainingTimeInSec: number,
 ): string => {
