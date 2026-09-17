@@ -17,8 +17,6 @@ jest.mock('../utils/wait.util', () => {
     waitForCondition: jest.fn(),
     waitForKeychainUnlocked: jest.fn().mockResolvedValue(true),
     waitForConnectionReadiness: jest.fn(),
-    waitForEmptyRPCQueue: jest.fn(),
-    waitForUserLoggedIn: jest.fn(),
     waitForAndroidServiceBinding: jest.fn(),
   };
 });
