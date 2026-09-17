@@ -11,7 +11,7 @@ const initialState = {
 describe('NetworksSettings', () => {
   it('should render correctly', () => {
     const { toJSON } = renderScreen(
-      NetworksSettings,
+      NetworksSettings as unknown as Parameters<typeof renderScreen>[0],
       { name: 'Network Settings' },
       {
         state: initialState,

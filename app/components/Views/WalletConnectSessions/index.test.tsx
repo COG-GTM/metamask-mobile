@@ -12,9 +12,12 @@ jest.mock('../../../core/WalletConnect/WalletConnectV2', () => ({
   }),
 }));
 
+const WalletConnectSessionsComponent =
+  WalletConnectSessions as unknown as Parameters<typeof renderScreen>[0];
+
 describe('WalletConnectSessions', () => {
   it('does not render when not ready', () => {
-    const { toJSON } = renderScreen(WalletConnectSessions, {
+    const { toJSON } = renderScreen(WalletConnectSessionsComponent, {
       name: Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW,
     });
     expect(toJSON()).toMatchSnapshot();
@@ -23,7 +26,7 @@ describe('WalletConnectSessions', () => {
   it('renders empty component with no active sessions', async () => {
     jest.spyOn(StorageWrapper, 'getItem').mockResolvedValue(null);
 
-    const { getByTestId, toJSON } = renderScreen(WalletConnectSessions, {
+    const { getByTestId, toJSON } = renderScreen(WalletConnectSessionsComponent, {
       name: Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW,
     });
 
@@ -51,7 +54,7 @@ describe('WalletConnectSessions', () => {
       .spyOn(StorageWrapper, 'getItem')
       .mockResolvedValue(JSON.stringify(sessions));
 
-    const { getByTestId, toJSON } = renderScreen(WalletConnectSessions, {
+    const { getByTestId, toJSON } = renderScreen(WalletConnectSessionsComponent, {
       name: Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW,
     });
 
