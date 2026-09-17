@@ -61,7 +61,9 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      engine: { backgroundState: { NetworkController: unknown } };
+    };
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: null,
@@ -80,7 +82,9 @@ describe('Migration #24', () => {
       },
     };
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      engine: { backgroundState: { NetworkController: unknown } };
+    };
 
     expect(newState.engine.backgroundState.NetworkController).toStrictEqual({
       networkId: '1',

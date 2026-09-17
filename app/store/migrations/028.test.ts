@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 import migrate, { controllerList } from './028';
 
 jest.mock('@metamask/utils', () => ({

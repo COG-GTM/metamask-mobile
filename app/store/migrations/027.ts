@@ -1,23 +1,56 @@
 import { NetworkType } from '@metamask/controller-utils';
 
+interface Transaction {
+  chainId?: string;
+  transactionHash?: string;
+  transaction?: unknown;
+  origin?: string;
+  time?: number;
+  rawTransaction?: string;
+}
+
+interface ProviderConfig { chainId?: string; type?: string }
+type NetworkConfigurations = Record<
+  string,
+  { chainId?: string; rpcUrl?: string }
+>;
+
 /**
  * Populate the submitHistory in the TransactionController using any
  * transaction metadata entries that have a rawTransaction value.
- * @param {any} state - Redux state
+ * @param state - Redux state
  * @returns
  */
-export default function migrate(state) {
-  const backgroundState = state.engine.backgroundState;
+export default function migrate(state: unknown): Record<string, unknown> {
+  const typedState = state as {
+    engine: {
+      backgroundState: {
+        TransactionController?: {
+          transactions?: Transaction[];
+          submitHistory?: unknown;
+        };
+        NetworkController?: {
+          providerConfig?: ProviderConfig;
+          networkConfigurations?: NetworkConfigurations;
+        };
+      };
+    };
+  };
+  const backgroundState = typedState.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
 
-  if (!transactionControllerState) return state;
+  if (!transactionControllerState) return typedState;
 
   const transactions = transactionControllerState.transactions || [];
-  const networkControllerState = backgroundState.NetworkController || {};
-  const providerConfig = networkControllerState.providerConfig || {};
+  const networkControllerState: {
+    providerConfig?: ProviderConfig;
+    networkConfigurations?: NetworkConfigurations;
+  } = backgroundState.NetworkController || {};
+  const providerConfig: ProviderConfig =
+    networkControllerState.providerConfig || {};
 
-  const networkConfigurations =
+  const networkConfigurations: NetworkConfigurations =
     networkControllerState.networkConfigurations || {};
 
   const submitHistory = transactions
@@ -51,8 +84,7 @@ export default function migrate(state) {
       };
     });
 
-  state.engine.backgroundState.TransactionController.submitHistory =
-    submitHistory;
+  transactionControllerState.submitHistory = submitHistory;
 
-  return state;
+  return typedState;
 }
