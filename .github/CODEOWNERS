@@ -140,7 +140,6 @@ app/reducers/collectibles @MetaMask/metamask-assets
 # UX Team
 app/components/Views/AccountActions @MetaMask/wallet-ux
 app/components/Views/AccountSelector @MetaMask/wallet-ux
-app/components/Views/AddressQRCode @MetaMask/wallet-ux
 app/components/Views/EditAccountName @MetaMask/wallet-ux
 app/components/Views/LockScreen @MetaMask/wallet-ux
 app/components/Views/Login @MetaMask/wallet-ux

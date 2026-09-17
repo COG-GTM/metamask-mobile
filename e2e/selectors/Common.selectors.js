@@ -11,7 +11,6 @@ export const CommonSelectorsIDs = {
   SEND_BACK_BUTTON: 'send-back-button',
   FOX_ICON: 'fox-icon',
   NAV_IOS_BACK: 'nav-ios-back',
-  FOX_SCREEN: 'fox-screen',
   NAVBAR_TITLE_NETWORKS_TEXT: 'navbar-title-networks',
   TRANSACTION_STATUS: 'transaction-status',
   ANDROID_PROGRESS_BAR: 'android.widget.ProgressBar',
