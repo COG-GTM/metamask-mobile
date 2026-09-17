@@ -13,15 +13,10 @@ import {
   timeToDescription,
   TimeDescriptions,
   formatAmount,
-  formatId,
   isNetworkRampSupported,
   isNetworkRampNativeTokenSupported,
   getOrderAmount,
-  isBuyQuotes,
-  isSellQuotes,
   isBuyQuote,
-  isSellQuote,
-  isSellOrder,
   isSellFiatOrder,
   getNotificationDetails,
   stateHasOrder,
@@ -93,16 +88,6 @@ describe('formatAmount', () => {
     global.Intl = undefined as unknown as typeof Intl;
     expect(formatAmount(123123)).toBe('123123');
     global.Intl = globalIntl;
-  });
-});
-
-describe('formatId', () => {
-  it('should return id with leading slash', () => {
-    expect(formatId('id')).toBe('/id');
-    expect(formatId('/id')).toBe('/id');
-  });
-  it('should empty string if passed an empty string', () => {
-    expect(formatId('')).toBe('');
   });
 });
 
@@ -433,26 +418,6 @@ describe('getOrderAmount', () => {
 });
 
 describe('Type assertion functions', () => {
-  describe('isBuyQuotes', () => {
-    it('should return true if rampType is BUY', () => {
-      expect(isBuyQuotes([], RampType.BUY)).toBe(true);
-    });
-
-    it('should return false if rampType is SELL', () => {
-      expect(isBuyQuotes([], RampType.SELL)).toBe(false);
-    });
-  });
-
-  describe('isSellQuotes', () => {
-    it('should return true if rampType is SELL', () => {
-      expect(isSellQuotes([], RampType.SELL)).toBe(true);
-    });
-
-    it('should return false if rampType is BUY', () => {
-      expect(isSellQuotes([], RampType.BUY)).toBe(false);
-    });
-  });
-
   describe('isBuyQuote', () => {
     it('should return true if rampType is BUY', () => {
       expect(
@@ -464,30 +429,6 @@ describe('Type assertion functions', () => {
       expect(
         isBuyQuote({} as QuoteResponse | SellQuoteResponse, RampType.SELL),
       ).toBe(false);
-    });
-  });
-
-  describe('isSellQuote', () => {
-    it('should return true if rampType is SELL', () => {
-      expect(
-        isSellQuote({} as QuoteResponse | SellQuoteResponse, RampType.SELL),
-      ).toBe(true);
-    });
-
-    it('should return false if rampType is BUY', () => {
-      expect(
-        isSellQuote({} as QuoteResponse | SellQuoteResponse, RampType.BUY),
-      ).toBe(false);
-    });
-  });
-
-  describe('isSellOrder', () => {
-    it('should return true if orderType is SELL', () => {
-      expect(isSellOrder({ orderType: 'SELL' } as Order)).toBe(true);
-    });
-
-    it('should return false if orderType is BUY', () => {
-      expect(isSellOrder({ orderType: 'BUY' } as Order)).toBe(false);
     });
   });
 

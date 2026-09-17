@@ -9,7 +9,6 @@ import EvilIconsIcon from 'react-native-vector-icons/EvilIcons';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5Icon from 'react-native-vector-icons/FontAwesome5';
-// import FontistoIcon from 'react-native-vector-icons/Fontisto';
 import FoundationIcon from 'react-native-vector-icons/Foundation';
 import IoniconsIcon from 'react-native-vector-icons/Ionicons';
 import MaterialsIconsIcon from 'react-native-vector-icons/MaterialIcons';

@@ -8,7 +8,6 @@ import {
   AggregatorNetwork,
   OrderOrderTypeEnum,
   QuoteSortMetadata,
-  SellOrder,
 } from '@consensys/on-ramp-sdk/dist/API';
 import {
   renderFromTokenMinimalUnit,
@@ -109,14 +108,6 @@ export const timeToDescription = (timeArr: number[]) => {
   ];
 };
 
-export const formatId = (id: string) => {
-  if (!id) {
-    return id;
-  }
-
-  return id.startsWith('/') ? id : '/' + id;
-};
-
 export function formatAmount(amount: number, useParts = false) {
   try {
     if (Intl?.NumberFormat) {
@@ -178,40 +169,11 @@ export function stateHasOrder(state: RootState, order: FiatOrder) {
   return orders.some((o) => o.id === order.id);
 }
 
-export function isBuyQuotes(
-  buyOrSellQuotes:
-    | (QuoteResponse | QuoteError)[]
-    | (QuoteError | SellQuoteResponse)[],
-  rampType: RampType,
-): buyOrSellQuotes is QuoteResponse[] {
-  return rampType === RampType.BUY;
-}
-
-export function isSellQuotes(
-  buyOrSellQuotes:
-    | (QuoteResponse | QuoteError)[]
-    | (QuoteError | SellQuoteResponse)[],
-  rampType: RampType,
-): buyOrSellQuotes is SellQuoteResponse[] {
-  return rampType === RampType.SELL;
-}
-
 export function isBuyQuote(
   quote: QuoteResponse | SellQuoteResponse,
   rampType: RampType,
 ): quote is QuoteResponse {
   return rampType === RampType.BUY;
-}
-
-export function isSellQuote(
-  quote: QuoteResponse | SellQuoteResponse,
-  rampType: RampType,
-): quote is SellQuoteResponse {
-  return rampType === RampType.SELL;
-}
-
-export function isSellOrder(order: Order): order is SellOrder {
-  return order.orderType === OrderOrderTypeEnum.Sell;
 }
 
 export function isSellFiatOrder(order: FiatOrder): order is FiatOrder {
