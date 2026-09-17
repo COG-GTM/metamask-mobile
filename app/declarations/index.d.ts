@@ -410,3 +410,6 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 5 ---
+declare module '@metamask/ethjs-query';
