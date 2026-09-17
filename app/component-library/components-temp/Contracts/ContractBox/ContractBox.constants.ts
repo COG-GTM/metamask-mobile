@@ -21,6 +21,3 @@ export const CONTRACT_EXPORT_ADDRESS = () => {
 export const CONTRACT_ON_PRESS = () => {
   console.log('contract pressed');
 };
-
-export const HAS_BLOCK_EXPLORER = true;
-export const TOKEN_SYMBOL = 'D';

@@ -2,8 +2,6 @@ import { shallow } from 'enzyme';
 // Third party dependencies.
 import React from 'react';
 
-// External dependencies.
-import { TICKER } from '../CustomSpendCap.constants';
 // Internal dependencies.
 import CustomInput from './CustomInput';
 import {
@@ -11,6 +9,8 @@ import {
   CUSTOM_SPEND_CAP_MAX_TEST_ID,
 } from './CustomInput.constants';
 import { CustomInputProps } from './CustomInput.types';
+
+const TICKER = 'DAI';
 
 describe('CustomInput', () => {
   let props: CustomInputProps;

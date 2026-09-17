@@ -1,4 +1,4 @@
-export { KeyValueRowStubs, default } from './KeyValueRow';
+export { default } from './KeyValueRow';
 export {
   KeyValueRowSectionAlignments,
   KeyValueRowFieldIconSides,
