@@ -4,7 +4,6 @@ import { Linking } from 'react-native';
 // Internal dependencies.
 import ManageNetworks from './ManageNetworks';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { selectNetworkName } from '../../../selectors/networkInfos';
 import AppConstants from '../../../core/AppConstants';
@@ -33,14 +32,18 @@ jest.mock('react-redux', () => ({
 
 const mockNetworkName = 'Ethereum Main Network';
 
+const mockUseSelector = jest.mocked(useSelector);
+
+const mockNetworkNameSelector = () => {
+  mockUseSelector.mockImplementation((selector) => {
+    if (selector === selectNetworkName) return mockNetworkName;
+  });
+};
+
 describe('ManageNetworks', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
-      if (selector === selectNetworkName) return mockNetworkName;
-    });
-    const { toJSON } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
-    );
+    mockNetworkNameSelector();
+    const { toJSON } = renderWithProvider(<ManageNetworks />);
     expect(toJSON()).toMatchSnapshot();
   });
 
@@ -56,12 +59,8 @@ describe('ManageNetworks', () => {
       },
     ],
   ])('opens link %link', ({ link, testId }) => {
-    useSelector.mockImplementation((selector) => {
-      if (selector === selectNetworkName) return mockNetworkName;
-    });
-    const { getByTestId } = renderWithProvider(
-      <ManageNetworks navigation={useNavigation()} />,
-    );
+    mockNetworkNameSelector();
+    const { getByTestId } = renderWithProvider(<ManageNetworks />);
     const button = getByTestId(testId);
     fireEvent.press(button);
     expect(Linking.openURL).toHaveBeenCalledWith(link);
