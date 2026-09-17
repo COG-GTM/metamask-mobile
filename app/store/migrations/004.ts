@@ -1,15 +1,41 @@
+// `NetworksChainId` was removed from `@metamask/controller-utils` after this
+// migration was written. The import is left untouched so this historical
+// migration keeps its current runtime behaviour.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error - `NetworksChainId` is no longer exported by @metamask/controller-utils
 import { NetworksChainId } from '@metamask/controller-utils';
 
-export default function migrate(state) {
-  const { allTokens } = state.engine.backgroundState.TokensController;
-  const { allCollectibleContracts, allCollectibles } =
-    state.engine.backgroundState.CollectiblesController;
-  const { frequentRpcList } =
-    state.engine.backgroundState.PreferencesController;
+type ByNetwork = Record<string, unknown>;
+type ByAddress = Record<string, ByNetwork>;
 
-  const newAllCollectibleContracts = {};
-  const newAllCollectibles = {};
-  const newAllTokens = {};
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      TokensController: {
+        allTokens: ByAddress;
+      };
+      CollectiblesController: {
+        allCollectibleContracts: ByAddress;
+        allCollectibles: ByAddress;
+      };
+      PreferencesController: {
+        frequentRpcList: { chainId: string }[];
+      };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const migrationState = state as MigrationState;
+  const { allTokens } = migrationState.engine.backgroundState.TokensController;
+  const { allCollectibleContracts, allCollectibles } =
+    migrationState.engine.backgroundState.CollectiblesController;
+  const { frequentRpcList } =
+    migrationState.engine.backgroundState.PreferencesController;
+
+  const newAllCollectibleContracts: ByAddress = {};
+  const newAllCollectibles: ByAddress = {};
+  const newAllTokens: ByAddress = {};
 
   Object.keys(allTokens).forEach((address) => {
     newAllTokens[address] = {};
@@ -55,12 +81,12 @@ export default function migrate(state) {
     });
   });
 
-  state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
+  migrationState.engine.backgroundState.TokensController = {
+    ...migrationState.engine.backgroundState.TokensController,
     allTokens: newAllTokens,
   };
-  state.engine.backgroundState.CollectiblesController = {
-    ...state.engine.backgroundState.CollectiblesController,
+  migrationState.engine.backgroundState.CollectiblesController = {
+    ...migrationState.engine.backgroundState.CollectiblesController,
     allCollectibles: newAllCollectibles,
     allCollectibleContracts: newAllCollectibleContracts,
   };
