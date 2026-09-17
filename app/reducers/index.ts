@@ -28,7 +28,6 @@ import sdkReducer from './sdk';
 import inpageProviderReducer from '../core/redux/slices/inpageProvider';
 import confirmationMetricsReducer from '../core/redux/slices/confirmationMetrics';
 import originThrottlingReducer from '../core/redux/slices/originThrottling';
-import notificationsAccountsProvider from '../core/redux/slices/notifications';
 import bannersReducer, { BannersState } from './banners';
 import bridgeReducer from '../core/redux/slices/bridge';
 import performanceReducer, {
@@ -120,7 +119,6 @@ export interface RootState {
   inpageProvider: StateFromReducer<typeof inpageProviderReducer>;
   confirmationMetrics: StateFromReducer<typeof confirmationMetricsReducer>;
   originThrottling: StateFromReducer<typeof originThrottlingReducer>;
-  notifications: StateFromReducer<typeof notificationsAccountsProvider>;
   bridge: StateFromReducer<typeof bridgeReducer>;
   banners: BannersState;
   performance?: PerformanceState;
@@ -156,7 +154,6 @@ const baseReducers = {
   accounts: accountsReducer,
   inpageProvider: inpageProviderReducer,
   originThrottling: originThrottlingReducer,
-  notifications: notificationsAccountsProvider,
   bridge: bridgeReducer,
   banners: bannersReducer,
   confirmationMetrics: confirmationMetricsReducer,

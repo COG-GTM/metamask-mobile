@@ -1,18 +1,13 @@
-import { TRIGGER_TYPES } from '@metamask/notification-services-controller/notification-services';
 import {
   selectIsMetamaskNotificationsEnabled,
   selectIsMetaMaskPushNotificationsEnabled,
-  selectIsMetamaskNotificationsFeatureSeen,
   selectIsUpdatingMetamaskNotifications,
   selectIsFetchingMetamaskNotifications,
   selectIsFeatureAnnouncementsEnabled,
   selectIsUpdatingMetamaskNotificationsAccount,
-  selectIsCheckingAccountsPresence,
-  getmetamaskNotificationsReadList,
   getNotificationsList,
   getMetamaskNotificationsUnreadCount,
   getMetamaskNotificationsReadCount,
-  getOnChainMetamaskNotificationsUnreadCount,
   selectIsMetaMaskPushNotificationsLoading,
   getValidNotificationAccounts,
 } from './index';
@@ -51,12 +46,6 @@ describe('Notification Selectors', () => {
     );
   });
 
-  it('selectIsMetamaskNotificationsFeatureSeen returns correct value', () => {
-    expect(selectIsMetamaskNotificationsFeatureSeen(mockState)).toEqual(
-      MOCK_NOTIFICATION_SERVICES_CONTROLLER.isMetamaskNotificationsFeatureSeen,
-    );
-  });
-
   it('selectIsUpdatingMetamaskNotifications returns correct value', () => {
     expect(selectIsUpdatingMetamaskNotifications(mockState)).toEqual(
       MOCK_NOTIFICATION_SERVICES_CONTROLLER.isUpdatingMetamaskNotifications,
@@ -81,18 +70,6 @@ describe('Notification Selectors', () => {
     );
   });
 
-  it('selectIsCheckingAccountsPresence returns correct value', () => {
-    expect(selectIsCheckingAccountsPresence(mockState)).toEqual(
-      MOCK_NOTIFICATION_SERVICES_CONTROLLER.isCheckingAccountsPresence,
-    );
-  });
-
-  it('getmetamaskNotificationsReadList returns correct value', () => {
-    expect(getmetamaskNotificationsReadList(mockState)).toEqual(
-      MOCK_NOTIFICATION_SERVICES_CONTROLLER.metamaskNotificationsReadList,
-    );
-  });
-
   it('getNotificationsList returns correct value', () => {
     expect(getNotificationsList(mockState)).toEqual(
       MOCK_NOTIFICATION_SERVICES_CONTROLLER.metamaskNotificationsList,
@@ -113,18 +90,6 @@ describe('Notification Selectors', () => {
         (notification) => notification.isRead,
       ).length;
     expect(getMetamaskNotificationsReadCount(mockState)).toEqual(readCount);
-  });
-
-  it('getOnChainMetamaskNotificationsUnreadCount returns correct value', () => {
-    const unreadOnChainCount =
-      MOCK_NOTIFICATION_SERVICES_CONTROLLER.metamaskNotificationsList.filter(
-        (notification) =>
-          !notification.isRead &&
-          notification.type !== TRIGGER_TYPES.FEATURES_ANNOUNCEMENT,
-      ).length;
-    expect(getOnChainMetamaskNotificationsUnreadCount(mockState)).toEqual(
-      unreadOnChainCount,
-    );
   });
 
   it('getValidNotificationAccounts selects the valid accounts that can enable notifications', () => {

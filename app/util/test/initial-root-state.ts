@@ -50,7 +50,6 @@ const initialRootState: RootState = {
   inpageProvider: initialInpageProvider,
   confirmationMetrics,
   originThrottling,
-  notifications: {},
   bridge: initialBridgeState,
   banners: {
     dismissedBanners: [],

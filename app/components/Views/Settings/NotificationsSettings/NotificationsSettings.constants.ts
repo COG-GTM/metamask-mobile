@@ -9,15 +9,3 @@ export const NotificationsViewSelectorsIDs = {
   [strings('app_settings.notifications_opts.products_announcements_title')]:
     'ProductsAnnouncements',
 };
-
-export enum NotificationsKinds {
-  SENT = 'sent',
-  RECEIVED = 'received',
-  STAKED = 'staked',
-  SWAPED = 'swaped',
-  DEFI = 'defi',
-  SNAPS = 'snaps',
-  BRIDGED = 'bridged',
-  BOUGHT = 'bought',
-  PRODUCTS_ANNOUNCEMENTS = 'product-announcements',
-}
