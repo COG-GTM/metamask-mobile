@@ -1,11 +1,3 @@
-export class FetchError extends Error {
-  url?: string;
-  constructor(message?: string, url?: string) {
-    super(message);
-    this.url = url;
-  }
-}
-
 interface Loading<T> {
   type: 'Loading';
   data?: T;
@@ -17,7 +9,7 @@ interface Success<T> {
 interface Error<T> {
   type: 'Error';
   data?: T;
-  error?: FetchError;
+  error?: globalThis.Error;
   message?: string;
 }
 

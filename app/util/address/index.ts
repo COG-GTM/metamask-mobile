@@ -736,22 +736,6 @@ export const getTokenDetails = async (
   };
 };
 
-export const getTokenDecimal = async (
-  address: string,
-  networkClientId?: NetworkClientId,
-) => {
-  const { AssetsContractController } = Engine.context;
-  try {
-    const tokenDecimal = await AssetsContractController.getERC20TokenDecimals(
-      address,
-      networkClientId,
-    );
-    return tokenDecimal;
-  } catch (err) {
-    await Logger.log('Error getting token decimal: ', err);
-  }
-};
-
 export const shouldShowBlockExplorer = (
   providerType: NetworkType,
   providerRpcTarget: string,
