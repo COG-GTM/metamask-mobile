@@ -5,10 +5,9 @@ import images from 'images/image-icons';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import NetworkCell from './NetworkCell';
 import Networks from '../../../util/networks';
-import {
-  MAINNET_SECONDARY_TEXT,
-  INCOMING_MAINNET_TOGGLE,
-} from '../../Views/Settings/IncomingTransactionsSettings/index.constants';
+import { INCOMING_MAINNET_TOGGLE } from '../../Views/Settings/IncomingTransactionsSettings/index.constants';
+
+const MAINNET_SECONDARY_TEXT = 'etherscan.io';
 
 describe('NetworkCell', () => {
   const { name: mainnetName, chainId } = Networks.mainnet;

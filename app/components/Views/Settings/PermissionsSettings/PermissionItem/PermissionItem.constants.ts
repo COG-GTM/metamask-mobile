@@ -48,40 +48,4 @@ const mockedPermissions: PermissionListItemViewModel[] = [
   },
 ];
 
-export const mockSdkSessionItems = [
-  {
-    id: '1',
-    originatorInfo: {
-      title: 'Test App',
-      url: 'http://test.com',
-      icon: 'http://icon-url.com',
-      platform: 'test',
-      connected: true,
-      dappId: 'some-dapp-id1',
-    },
-  },
-  {
-    id: '2',
-    originatorInfo: {
-      title: 'Test App 2',
-      url: 'http://test.com',
-      icon: 'http://icon-url.com',
-      platform: 'test',
-      connected: true,
-      dappId: 'some-dapp-id2',
-    },
-  },
-  {
-    id: '3',
-    originatorInfo: {
-      title: 'Test App 3',
-      url: 'http://test.com',
-      icon: 'http://icon-url.com',
-      platform: 'test',
-      connected: true,
-      dappId: 'some-dapp-id3',
-    },
-  },
-];
-
 export default mockedPermissions;
