@@ -410,3 +410,7 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 7 ---
+
+declare module 'zxcvbn';
