@@ -2,10 +2,12 @@ import React from 'react';
 import TransactionReviewEIP1559 from '.';
 import { backgroundState } from '../../../../../../../util/test/initial-root-state';
 import renderWithProvider, {
+  DeepPartial,
   renderHookWithProvider,
 } from '../../../../../../../util/test/renderWithProvider';
+import { RootState } from '../../../../../../../reducers';
 
-const initialState = {
+const initialState: DeepPartial<RootState> = {
   settings: {},
   engine: {
     backgroundState: {
@@ -26,13 +28,17 @@ const initialState = {
           high: '0x0',
         },
         gasEstimateType: 'low',
-      },
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
       TokenRatesController: {
         marketData: {
           '0x1': {
             '0x326836cc6cd09B5aa59B81A7F72F25FcC0136b95': 1,
           },
-        },
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any,
       },
       TokenBalancesController: {
         tokenBalances: {},
@@ -71,6 +77,7 @@ const transactionReview = {
   gasObjectLegacy: {},
   updateTransactionState: undefined,
   onlyGas: false,
+  multiLayerL1FeeTotal: undefined,
 };
 
 describe('TransactionReviewEIP1559', () => {
