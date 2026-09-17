@@ -5,40 +5,7 @@ import {
   SolAccountType,
   SolScope,
 } from '@metamask/keyring-api';
-import BTC from '../../images/bitcoin-logo.png';
-import SOL from '../../images/solana-logo.png';
 import { MultichainBlockExplorerFormatUrls } from './networks';
-
-// Image imports for React Native rendering
-export const MULTICHAIN_TOKEN_IMAGES = {
-  [BtcScope.Mainnet]: BTC,
-  [SolScope.Mainnet]: SOL,
-  [BtcScope.Testnet]: BTC,
-  [SolScope.Devnet]: SOL,
-  [SolScope.Testnet]: SOL,
-} as const;
-
-export interface ProviderConfigWithImageUrl {
-  rpcUrl?: string;
-  type: string;
-  ticker: string;
-  decimal: number;
-  nickname?: string;
-  rpcPrefs?: { blockExplorerUrl?: string };
-  id?: string;
-}
-
-export type MultichainNetworkIds = CaipChainId;
-
-export type MultichainProviderConfig = ProviderConfigWithImageUrl & {
-  nickname: string;
-  chainId: CaipChainId;
-  // Variant of block explorer URLs for non-EVM.
-  blockExplorerFormatUrls?: MultichainBlockExplorerFormatUrls;
-  // NOTE: For now we use a callback to check if the address is compatible with
-  // the given network or not
-  isAddressCompatible: (address: string) => boolean;
-};
 
 export const MULTICHAIN_NETWORK_BLOCK_EXPLORER_FORMAT_URLS_MAP: Record<
   CaipChainId,

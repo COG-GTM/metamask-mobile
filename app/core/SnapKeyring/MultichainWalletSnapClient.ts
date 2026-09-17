@@ -25,17 +25,6 @@ export enum WalletClientType {
 }
 import { getMultichainAccountName } from './utils/getMultichainAccountName';
 
-export const WALLET_SNAP_MAP = {
-  [WalletClientType.Bitcoin]: {
-    id: BITCOIN_WALLET_SNAP_ID,
-    name: BITCOIN_WALLET_NAME,
-  },
-  [WalletClientType.Solana]: {
-    id: SOLANA_WALLET_SNAP_ID,
-    name: SOLANA_WALLET_NAME,
-  },
-};
-
 export interface MultichainWalletSnapOptions {
   scope: CaipChainId;
   ///: BEGIN:ONLY_INCLUDE_IF(multi-srp)

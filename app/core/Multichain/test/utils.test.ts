@@ -19,26 +19,16 @@ import {
   getFormattedAddressFromInternalAccount,
   isSolanaAccount,
   nonEvmNetworkChainIdByAccountAddress,
-  lastSelectedAccountAddressInEvmNetwork,
-  lastSelectedAccountAddressByNonEvmNetworkChainId,
-  shortenTransactionId,
   getAddressUrl,
   getTransactionUrl,
 } from '../utils';
 import { KeyringTypes } from '@metamask/keyring-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
-import Engine from '../../Engine';
 import { MULTICHAIN_NETWORK_BLOCK_EXPLORER_FORMAT_URLS_MAP } from '../constants';
-import { formatAddress } from '../../../util/address';
 import {
   formatBlockExplorerAddressUrl,
   formatBlockExplorerTransactionUrl,
 } from '../networks';
-
-// Mock these functions
-jest.mock('../../../util/address', () => ({
-  formatAddress: jest.fn(),
-}));
 
 jest.mock('../networks', () => ({
   formatBlockExplorerAddressUrl: jest.fn(),
@@ -140,16 +130,6 @@ const mockSolAccount: InternalAccount = {
   },
   scopes: [SolScope.Mainnet, SolScope.Testnet, SolScope.Devnet],
 };
-
-// Add this at the top of the file with other imports
-jest.mock('../../Engine', () => ({
-  context: {
-    AccountsController: {
-      getSelectedAccount: jest.fn(),
-      getSelectedMultichainAccount: jest.fn(),
-    },
-  },
-}));
 
 describe('MultiChain utils', () => {
   describe('isEthAccount', () => {
@@ -265,73 +245,6 @@ describe('MultiChain utils', () => {
     });
   });
 
-  describe('lastSelectedAccountAddressInEvmNetwork', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
-    it('returns the selected EVM account address', () => {
-      // @ts-expect-error - getSelectedAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedAccount.mockReturnValue({
-        address: MOCK_ETH_ADDRESS,
-      });
-
-      expect(lastSelectedAccountAddressInEvmNetwork()).toBe(MOCK_ETH_ADDRESS);
-    });
-
-    it('returns undefined when no account is selected', () => {
-      // @ts-expect-error - getSelectedAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedAccount.mockReturnValue(
-        undefined,
-      );
-
-      expect(lastSelectedAccountAddressInEvmNetwork()).toBeUndefined();
-    });
-  });
-
-  describe('lastSelectedAccountAddressByNonEvmNetworkChainId', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
-    it('returns the selected non-EVM account address for Solana', () => {
-      // @ts-expect-error - getSelectedMultichainAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedMultichainAccount.mockImplementation(
-        (chainId: string) =>
-          chainId === SolScope.Mainnet ? { address: SOL_ADDRESS } : undefined,
-      );
-
-      expect(
-        lastSelectedAccountAddressByNonEvmNetworkChainId(SolScope.Mainnet),
-      ).toBe(SOL_ADDRESS);
-    });
-
-    it('returns the selected non-EVM account address for Bitcoin', () => {
-      // @ts-expect-error - getSelectedMultichainAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedMultichainAccount.mockImplementation(
-        (chainId: string) =>
-          chainId === BtcScope.Mainnet
-            ? { address: MOCK_BTC_MAINNET_ADDRESS }
-            : undefined,
-      );
-
-      expect(
-        lastSelectedAccountAddressByNonEvmNetworkChainId(BtcScope.Mainnet),
-      ).toBe(MOCK_BTC_MAINNET_ADDRESS);
-    });
-
-    it('returns undefined when no account is selected for the chain', () => {
-      // @ts-expect-error - getSelectedMultichainAccount is mocked in the top of the file
-      Engine.context.AccountsController.getSelectedMultichainAccount.mockReturnValue(
-        undefined,
-      );
-
-      expect(
-        lastSelectedAccountAddressByNonEvmNetworkChainId(SolScope.Mainnet),
-      ).toBeUndefined();
-    });
-  });
-
   describe('Block Explorer URL utilities', () => {
     const MOCK_SOL_TX_ID =
       '4uQeVj5tqViQh7yWWGStvkEG1Zmhx6uasJtWCJziofM7cvkMPXTz5NAGvXUqaJyPmAB3Wyaq7FZggeuTEpjZM2r';
@@ -426,28 +339,6 @@ describe('MultiChain utils', () => {
 
         expect(formatBlockExplorerAddressUrl).not.toHaveBeenCalled();
         expect(result).toBe('');
-      });
-    });
-
-    describe('shortenTransactionId', () => {
-      it('formats Solana transaction ID to a shortened version', () => {
-        const shortenedSolTxId = '4uQeVj...pjZM2r';
-        (formatAddress as jest.Mock).mockReturnValue(shortenedSolTxId);
-
-        const result = shortenTransactionId(MOCK_SOL_TX_ID);
-
-        expect(formatAddress).toHaveBeenCalledWith(MOCK_SOL_TX_ID, 'short');
-        expect(result).toBe(shortenedSolTxId);
-      });
-
-      it('formats Bitcoin transaction ID to a shortened version', () => {
-        const shortenedBtcTxId = '6a7d5d...4c5d6';
-        (formatAddress as jest.Mock).mockReturnValue(shortenedBtcTxId);
-
-        const result = shortenTransactionId(MOCK_BTC_TX_ID);
-
-        expect(formatAddress).toHaveBeenCalledWith(MOCK_BTC_TX_ID, 'short');
-        expect(result).toBe(shortenedBtcTxId);
       });
     });
   });
