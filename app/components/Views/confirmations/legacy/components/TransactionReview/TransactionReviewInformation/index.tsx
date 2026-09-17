@@ -1,6 +1,5 @@
-import React, { PureComponent } from 'react';
+import React, { ComponentType, PureComponent } from 'react';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   Text,
@@ -8,6 +7,9 @@ import {
   TouchableOpacity,
   InteractionManager,
 } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
+import { Hex } from '@metamask/utils';
+import BN from 'bnjs4';
 import { fontStyles } from '../../../../../../../styles/common';
 import { connect } from 'react-redux';
 import {
@@ -40,7 +42,7 @@ import {
   setNonce,
   setProposedNonce,
 } from '../../../../../../../actions/transaction';
-import TransactionReviewEIP1559 from '../TransactionReviewEIP1559';
+import TransactionReviewEIP1559Component from '../TransactionReviewEIP1559';
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import CustomNonce from '../../CustomNonce';
 import Logger from '../../../../../../../util/Logger';
@@ -55,13 +57,63 @@ import { createBrowserNavDetails } from '../../../../../Browser';
 import { isNetworkRampNativeTokenSupported } from '../../../../../../../components/UI/Ramp/utils';
 import { getRampNetworks } from '../../../../../../../reducers/fiatOrders';
 import { createBuyNavigationDetails } from '../../../../../../UI/Ramp/routes/utils';
-import { withMetricsAwareness } from '../../../../../../../components/hooks/useMetrics';
+import {
+  IUseMetricsHook,
+  withMetricsAwareness,
+} from '../../../../../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { selectShouldUseSmartTransaction } from '../../../../../../../selectors/smartTransactionsController';
 import { getNetworkNonce } from '../../../../../../../util/transaction-controller';
 import { selectNativeCurrencyByChainId } from '../../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../../selectors/tokenRatesController';
+import { Colors } from '../../../../../../../util/theme/models';
+import { RootState } from '../../../../../../../reducers';
 
-const createStyles = (colors) =>
+interface EIP1559GasData {
+  gasFeeMinNative?: string;
+  gasFeeMinConversion?: string;
+  gasFeeMaxNative?: string;
+  gasFeeMaxConversion?: string;
+  renderableGasFeeMinNative?: string;
+  renderableGasFeeMinConversion?: string;
+  renderableGasFeeMaxNative?: string;
+  renderableGasFeeMaxConversion?: string;
+  timeEstimate?: string;
+  timeEstimateColor?: string;
+  timeEstimateId?: string;
+}
+
+/**
+ * The totals below are passed by this screen but not declared by the child; the
+ * façade keeps the existing call sites unchanged.
+ */
+const TransactionReviewEIP1559 =
+  TransactionReviewEIP1559Component as unknown as ComponentType<{
+    totalNative?: string;
+    totalConversion?: string;
+    totalMaxNative?: string;
+    over?: boolean;
+    gasFeeNative?: string;
+    gasFeeConversion?: string;
+    gasFeeMaxNative?: string;
+    gasFeeMaxConversion?: string;
+    primaryCurrency?: string;
+    timeEstimate?: string;
+    timeEstimateColor?: string;
+    timeEstimateId?: string;
+    onEdit?: () => void;
+    origin?: string;
+    originWarning?: boolean;
+    onUpdatingValuesStart?: () => void;
+    onUpdatingValuesEnd?: () => void;
+    animateOnChange?: boolean;
+    isAnimating?: boolean;
+    gasEstimationReady?: boolean;
+    legacy?: boolean;
+    chainId?: string;
+  }>;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     overviewAlert: {
       alignItems: 'center',
@@ -128,123 +180,161 @@ const createStyles = (colors) =>
     },
   });
 
+interface SelectedAsset {
+  address: string;
+  decimals: number;
+  symbol: string;
+  tokenId?: string;
+  name?: string;
+}
+
+/**
+ * Flattened transaction state, as returned by `getNormalizedTxState`
+ */
+interface TransactionState {
+  from?: string;
+  value?: BN;
+  selectedAsset: SelectedAsset;
+  assetType?: string;
+  gas?: BN;
+  gasPrice?: BN;
+  warningGasPriceHigh?: string;
+  type?: string;
+  nonce?: number;
+  proposedNonce?: number;
+}
+
+interface TransactionReviewInformationProps {
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate?: number;
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  /**
+   * Transaction object associated with this transaction
+   */
+  transaction: TransactionState;
+  /**
+   * Object containing token exchange rates in the format address => exchangeRate
+   */
+  contractExchangeRates: ReturnType<
+    typeof selectContractExchangeRatesByChainId
+  >;
+  /**
+   * Callback for transaction edition
+   */
+  edit?: () => void;
+  /**
+   * Current provider ticker
+   */
+  ticker?: string;
+  /**
+   * ETH or fiat, depending on user setting
+   */
+  primaryCurrency?: string;
+  /**
+   * Hides or shows transaction data
+   */
+  toggleDataView?: () => void;
+  /**
+   * Whether or not basic gas estimates have been fetched
+   */
+  ready?: boolean;
+  /**
+   * Transaction error
+   */
+  error?: string | boolean;
+  /**
+   * True if transaction is over the available funds
+   */
+  over?: boolean;
+  /**
+   * Object that represents the navigator
+   */
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  navigation: { navigate: (...args: any[]) => void };
+  /**
+   * Called when the cancel button is clicked
+   */
+  onCancelPress?: () => void;
+  /**
+   * The chain ID for the current selected network
+   */
+  chainId?: string;
+  /**
+   * ID of the global network client
+   */
+  networkClientId?: string;
+  /**
+   * Indicates whether custom nonce should be shown in transaction editor
+   */
+  showCustomNonce?: boolean;
+  /**
+   * Set transaction nonce
+   */
+  setNonce: (nonce: number) => void;
+  /**
+   * Set proposed nonce (from network)
+   */
+  setProposedNonce: (nonce: number) => void;
+  gasEstimateType?: string;
+  EIP1559GasData: EIP1559GasData;
+  origin?: string;
+  /**
+   * Function to call when update animation starts
+   */
+  onUpdatingValuesStart?: () => void;
+  /**
+   * Function to call when update animation ends
+   */
+  onUpdatingValuesEnd?: () => void;
+  /**
+   * If the values should animate upon update or not
+   */
+  animateOnChange?: boolean;
+  /**
+   * Boolean to determine if the animation is happening
+   */
+  isAnimating?: boolean;
+  /**
+   * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
+   */
+  originWarning?: boolean;
+  gasSelected?: string;
+  multiLayerL1FeeTotal?: string;
+  /**
+   * Boolean that indicates if the network supports buy
+   */
+  isNativeTokenBuySupported?: boolean;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  metrics: IUseMetricsHook;
+  /**
+   * Boolean that indicates if smart transaction should be used
+   */
+  shouldUseSmartTransaction?: boolean;
+}
+
+interface TransactionReviewInformationState {
+  toFocused: boolean;
+  amountError: string;
+  actionKey: string;
+  nonceModalVisible: boolean;
+}
+
 /**
  * PureComponent that supports reviewing a transaction information
  */
-class TransactionReviewInformation extends PureComponent {
-  static propTypes = {
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Callback for transaction edition
-     */
-    edit: PropTypes.func,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Whether or not basic gas estimates have been fetched
-     */
-    ready: PropTypes.bool,
-    /**
-     * Transaction error
-     */
-    error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    /**
-     * True if transaction is over the available funds
-     */
-    over: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Called when the cancel button is clicked
-     */
-    onCancelPress: PropTypes.func,
-    /**
-     * The chain ID for the current selected network
-     */
-    chainId: PropTypes.string,
-    /**
-     * ID of the global network client
-     */
-    networkClientId: PropTypes.string,
-    /**
-     * Indicates whether custom nonce should be shown in transaction editor
-     */
-    showCustomNonce: PropTypes.bool,
-    /**
-     * Set transaction nonce
-     */
-    setNonce: PropTypes.func,
-    /**
-     * Set proposed nonce (from network)
-     */
-    setProposedNonce: PropTypes.func,
-    gasEstimateType: PropTypes.string,
-    EIP1559GasData: PropTypes.object,
-    origin: PropTypes.string,
-    /**
-     * Function to call when update animation starts
-     */
-    onUpdatingValuesStart: PropTypes.func,
-    /**
-     * Function to call when update animation ends
-     */
-    onUpdatingValuesEnd: PropTypes.func,
-    /**
-     * If the values should animate upon update or not
-     */
-    animateOnChange: PropTypes.bool,
-    /**
-     * Boolean to determine if the animation is happening
-     */
-    isAnimating: PropTypes.bool,
-    /**
-     * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
-     */
-    originWarning: PropTypes.bool,
-    gasSelected: PropTypes.string,
-    multiLayerL1FeeTotal: PropTypes.string,
-    /**
-     * Boolean that indicates if the network supports buy
-     */
-    isNativeTokenBuySupported: PropTypes.bool,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-  };
-
-  state = {
+class TransactionReviewInformation extends PureComponent<
+  TransactionReviewInformationProps,
+  TransactionReviewInformationState
+> {
+  state: TransactionReviewInformationState = {
     toFocused: false,
     amountError: '',
     actionKey: strings('transactions.tx_review_confirm'),
@@ -257,9 +347,13 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   setNetworkNonce = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { networkClientId, setNonce, setProposedNonce, transaction } =
       this.props;
-    const proposedNonce = await getNetworkNonce(transaction, networkClientId);
+    const proposedNonce = await getNetworkNonce(
+      transaction as Parameters<typeof getNetworkNonce>[0],
+      networkClientId as string,
+    );
     setNonce(proposedNonce);
     setProposedNonce(proposedNonce);
   };
@@ -268,12 +362,13 @@ class TransactionReviewInformation extends PureComponent {
     this.setState((state) => ({ nonceModalVisible: !state.nonceModalVisible }));
 
   renderCustomNonceModal = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const { setNonce } = this.props;
     const { proposedNonce, nonce } = this.props.transaction;
     return (
       <CustomNonceModal
-        proposedNonce={proposedNonce}
-        nonceValue={nonce}
+        proposedNonce={proposedNonce as number}
+        nonceValue={nonce as number}
         close={this.toggleNonceModal}
         save={setNonce}
       />
@@ -281,22 +376,27 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   getTotalFiat = (
-    asset,
-    totalGas,
-    conversionRate,
-    exchangeRate,
-    currentCurrency,
-    amountToken,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    asset: SelectedAsset,
+    totalGas: BN,
+    conversionRate: number | undefined,
+    exchangeRate: { price: number } | undefined,
+    currentCurrency: string,
+    amountToken: string,
   ) => {
     let total = 0;
-    const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate);
+    const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate as number);
     const balanceFiat = balanceToFiatNumber(
       parseFloat(amountToken),
-      conversionRate,
-      exchangeRate,
+      conversionRate as number,
+      exchangeRate as unknown as number,
     );
     const base = Math.pow(10, 5);
-    total = ((parseFloat(gasFeeFiat) + parseFloat(balanceFiat)) * base) / base;
+    total =
+      ((parseFloat(gasFeeFiat as unknown as string) +
+        parseFloat(balanceFiat as unknown as string)) *
+        base) /
+      base;
     return `${total} ${currentCurrency}`;
   };
 
@@ -307,7 +407,10 @@ class TransactionReviewInformation extends PureComponent {
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
-      Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
+      Logger.error(
+        error as Error,
+        'Navigation: Error when navigating to buy ETH.',
+      );
     }
 
     this.props.metrics.trackEvent(
@@ -322,7 +425,7 @@ class TransactionReviewInformation extends PureComponent {
     edit && edit();
   };
 
-  getRenderTotals = (totalGas, totalGasFiat) => {
+  getRenderTotals = (totalGas: BN, totalGasFiat: string) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -333,7 +436,9 @@ class TransactionReviewInformation extends PureComponent {
 
     const totals = {
       ETH: () => {
-        const totalEth = isBN(value) ? value.add(totalGas) : totalGas;
+        const totalEth = isBN(value as BN)
+          ? (value as BN).add(totalGas)
+          : totalGas;
         const totalFiat = `${weiToFiat(
           totalEth,
           conversionRate,
@@ -346,11 +451,11 @@ class TransactionReviewInformation extends PureComponent {
       },
       ERC20: () => {
         const amountToken = renderFromTokenMinimalUnit(
-          value,
+          value as BN,
           selectedAsset.decimals,
         );
         const conversionRateAsset =
-          contractExchangeRates[selectedAsset.address];
+          contractExchangeRates[selectedAsset.address as Hex];
         const totalFiat = this.getTotalFiat(
           selectedAsset,
           totalGas,
@@ -373,12 +478,12 @@ class TransactionReviewInformation extends PureComponent {
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType] || totals.default;
+    return totals[assetType as keyof typeof totals] || totals.default;
   };
 
   isTestNetwork = () => {
     const { chainId } = this.props;
-    return isTestNet(chainId);
+    return isTestNet(chainId as string);
   };
 
   getRenderTotalsEIP1559 = ({
@@ -386,7 +491,7 @@ class TransactionReviewInformation extends PureComponent {
     gasFeeMinConversion,
     gasFeeMaxNative,
     gasFeeMaxConversion,
-  }) => {
+  }: EIP1559GasData) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -395,10 +500,10 @@ class TransactionReviewInformation extends PureComponent {
       ticker,
     } = this.props;
 
-    let renderableTotalMinNative,
-      renderableTotalMinConversion,
-      renderableTotalMaxNative,
-      renderableTotalMaxConversion;
+    let renderableTotalMinNative: string | undefined,
+      renderableTotalMinConversion: string | undefined,
+      renderableTotalMaxNative: string | undefined,
+      renderableTotalMaxConversion: string | undefined;
 
     const totals = {
       ETH: () => {
@@ -416,7 +521,7 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-        });
+        } as Parameters<typeof calculateAmountsEIP1559>[0]);
 
         [
           renderableTotalMinNative,
@@ -454,13 +559,14 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-        });
+        } as Parameters<typeof calculateAmountsEIP1559>[0]);
 
         const tokenAmount = renderFromTokenMinimalUnit(
-          value,
+          value as BN,
           selectedAsset.decimals,
         );
-        const exchangeRate = contractExchangeRates[selectedAsset.address];
+        const exchangeRate =
+          contractExchangeRates[selectedAsset.address as Hex];
         const symbol = selectedAsset.symbol;
 
         [
@@ -502,7 +608,7 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-        });
+        } as Parameters<typeof calculateAmountsEIP1559>[0]);
 
         [
           renderableTotalMinNative,
@@ -535,7 +641,7 @@ class TransactionReviewInformation extends PureComponent {
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType] || totals.default;
+    return totals[assetType as keyof typeof totals] || totals.default;
   };
 
   onCancelPress = () => {
@@ -549,7 +655,7 @@ class TransactionReviewInformation extends PureComponent {
       this.onCancelPress();
       this.props.navigation.navigate(
         ...createBrowserNavDetails({
-          newTabUrl: TESTNET_FAUCETS[chainId],
+          newTabUrl: TESTNET_FAUCETS[chainId as keyof typeof TESTNET_FAUCETS],
           timestamp: Date.now(),
         }),
       );
@@ -569,7 +675,7 @@ class TransactionReviewInformation extends PureComponent {
       ready,
       chainId,
     } = this.props;
-    let host;
+    let host: string | undefined;
     if (origin) {
       host = new URL(origin).hostname;
     }
@@ -622,7 +728,9 @@ class TransactionReviewInformation extends PureComponent {
     } = this.props;
 
     let totalGas =
-      isBN(gas) && isBN(gasPrice) ? gas.mul(gasPrice) : hexToBN('0x0');
+      isBN(gas as BN) && isBN(gasPrice as BN)
+        ? (gas as BN).mul(gasPrice as BN)
+        : hexToBN('0x0');
     if (multiLayerL1FeeTotal) {
       totalGas = hexToBN(sumHexWEIs([BNToHex(totalGas), multiLayerL1FeeTotal]));
     }
@@ -668,7 +776,8 @@ class TransactionReviewInformation extends PureComponent {
       shouldUseSmartTransaction,
     } = this.props;
     const { nonce } = this.props.transaction;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const errorPress = this.isTestNetwork() ? this.goToFaucet : this.buyEth;
@@ -747,7 +856,7 @@ class TransactionReviewInformation extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkClientId;
@@ -770,9 +879,11 @@ const mapStateToProps = (state) => {
   };
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  setNonce: (nonce) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
+  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
+  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
 });
 
 TransactionReviewInformation.contextType = ThemeContext;
@@ -780,4 +891,9 @@ TransactionReviewInformation.contextType = ThemeContext;
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(TransactionReviewInformation));
+  // `withMetricsAwareness` only knows about the `metrics` prop it injects
+)(
+  withMetricsAwareness(
+    TransactionReviewInformation as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);
