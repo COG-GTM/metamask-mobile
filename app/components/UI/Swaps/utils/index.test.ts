@@ -4,7 +4,6 @@ import {
   isSwapsAllowed,
 } from './index';
 import { swapsUtils } from '@metamask/swaps-controller';
-import { SolScope } from '@metamask/keyring-api';
 
 // Mock AppConstants
 const mockSwapsConstantsGetter = jest.fn(() => ({
@@ -16,6 +15,8 @@ jest.mock('../../../../core/AppConstants', () => ({
     return mockSwapsConstantsGetter();
   },
 }));
+
+const globalWithDev = global as typeof global & { __DEV__: boolean };
 
 const {
   ETH_CHAIN_ID,
@@ -227,7 +228,7 @@ describe('isSwapsAllowed', () => {
 
   describe('testnet chain IDs', () => {
     it('should return true for testnet chain IDs in development when ONLY_MAINNET is true', () => {
-      global.__DEV__ = true;
+      globalWithDev.__DEV__ = true;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),
         ONLY_MAINNET: true,
@@ -236,7 +237,7 @@ describe('isSwapsAllowed', () => {
     });
 
     it('should return true for testnet chain IDs when ONLY_MAINNET is false', () => {
-      global.__DEV__ = false;
+      globalWithDev.__DEV__ = false;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),
         ONLY_MAINNET: false,
