@@ -5,7 +5,7 @@ import { useTheme } from '../../util/theme';
 import { Theme } from '@metamask/design-tokens';
 
 interface SelectorButtonProps {
-  onPress: (event: GestureResponderEvent) => void;
+  onPress?: (event: GestureResponderEvent) => void;
   disabled?: boolean;
   children: React.ReactNode;
 }
