@@ -6,7 +6,6 @@ import {
   selectProviderType,
   selectNickname,
   selectRpcUrl,
-  selectNetworkStatus,
   selectNetworkConfigurations,
   selectNetworkClientId,
   selectIsAllNetworks,
@@ -100,10 +99,6 @@ describe('networkSelectors', () => {
 
   it('selectRpcUrl should return the rpcUrl of the provider config', () => {
     expect(selectRpcUrl(mockState)).toBe('https://polygon-rpc.com');
-  });
-
-  it('selectNetworkStatus should return the network status for the selected network', () => {
-    expect(selectNetworkStatus(mockState)).toBe('active');
   });
 
   it('selectNetworkConfigurations should return the network configurations by chainId', () => {

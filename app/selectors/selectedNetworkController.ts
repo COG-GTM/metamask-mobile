@@ -267,14 +267,3 @@ export const useNetworkInfo = (hostname?: string) => {
     domainIsConnectedDapp,
   };
 };
-
-export const useDomainNetworkClientId = (hostname: string) => {
-  const selectDomainNetworkClientId = useMemo(
-    () => makeSelectDomainNetworkClientId(),
-    [],
-  );
-
-  return useSelector((state: RootState) =>
-    selectDomainNetworkClientId(state, hostname),
-  );
-};

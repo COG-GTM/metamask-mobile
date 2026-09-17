@@ -4,12 +4,10 @@ import {
   selectTokens,
   selectTokensByAddress,
   selectTokensLength,
-  selectIgnoreTokens,
   selectDetectedTokens,
   selectAllTokensFlat,
   selectAllDetectedTokensForSelectedAddress,
   selectAllDetectedTokensFlat,
-  selectTokensByChainIdAndAddress,
   getChainIdsToPoll,
 } from './tokensController';
 // eslint-disable-next-line import/no-namespace
@@ -177,38 +175,6 @@ describe('TokensController Selectors', () => {
     });
   });
 
-  describe('selectIgnoreTokens', () => {
-    it('returns ignored tokens', () => {
-      expect(selectIgnoreTokens(mockRootState)).toStrictEqual(['0xToken2']);
-    });
-
-    it('returns undefined if ignored tokens are not set', () => {
-      const stateWithoutIgnoredTokens = {
-        ...mockRootState,
-        engine: {
-          backgroundState: {
-            TokensController: {
-              ...mockTokensControllerState,
-              allIgnoredTokens: undefined,
-            },
-            AccountsController: {
-              internalAccounts: {
-                selectedAccount: '0xAddress1',
-                accounts: {
-                  '0xAddress1': {
-                    address: '0xAddress1',
-                  },
-                },
-              },
-            },
-          },
-        },
-      } as unknown as RootState;
-
-      expect(selectIgnoreTokens(stateWithoutIgnoredTokens)).toBeUndefined();
-    });
-  });
-
   describe('selectDetectedTokens', () => {
     it('returns detected tokens', () => {
       expect(selectDetectedTokens(mockRootState)).toStrictEqual([mockToken]);
@@ -316,18 +282,6 @@ describe('TokensController Selectors', () => {
     it('handles empty detected tokens gracefully', () => {
       const detectedTokens = selectAllDetectedTokensFlat.resultFunc({});
       expect(detectedTokens).toStrictEqual([]);
-    });
-  });
-
-  describe('selectTokensByChainIdAndAddress', () => {
-    it('returns undefined if no tokens exist for chain ID and address', () => {
-      const tokensByChainAndAddress =
-        selectTokensByChainIdAndAddress.resultFunc(
-          mockTokensControllerState as unknown as TokensControllerState,
-          '0x1',
-          '0xNonExistentAddress',
-        );
-      expect(tokensByChainAndAddress).toBeUndefined();
     });
   });
 

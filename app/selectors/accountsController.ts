@@ -212,19 +212,4 @@ export function hasCreatedBtcTestnetAccount(state: RootState): boolean {
   );
 }
 
-/**
- * A selector that returns the solana account address
- * @param state - Root redux state
- * @returns - The solana account address
- */
-export const selectSolanaAccountAddress = createSelector(
-  selectInternalAccounts,
-  (accounts) => accounts.find((account) => isSolanaAccount(account))?.address,
-);
-
-export const selectSolanaAccount = createSelector(
-  selectInternalAccounts,
-  (accounts) => accounts.find((account) => isSolanaAccount(account)),
-);
-
 ///: END:ONLY_INCLUDE_IF

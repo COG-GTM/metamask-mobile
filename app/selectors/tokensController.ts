@@ -29,17 +29,6 @@ export const selectTokens = createDeepEqualSelector(
     tokensControllerState?.allTokens[chainId]?.[selectedAddress as Hex] || [],
 );
 
-export const selectTokensByChainIdAndAddress = createDeepEqualSelector(
-  selectTokensControllerState,
-  selectEvmChainId,
-  selectSelectedInternalAccountAddress,
-  (
-    tokensControllerState: TokensControllerState,
-    chainId: Hex,
-    selectedAddress: string | undefined,
-  ) => tokensControllerState?.allTokens[chainId]?.[selectedAddress as Hex],
-);
-
 export const selectTokensByAddress = createSelector(
   selectTokens,
   (tokens: Token[]) =>
@@ -52,20 +41,6 @@ export const selectTokensByAddress = createSelector(
 export const selectTokensLength = createSelector(
   selectTokens,
   (tokens: Token[]) => tokens.length,
-);
-
-export const selectIgnoreTokens = createSelector(
-  selectTokensControllerState,
-  selectEvmChainId,
-  selectSelectedInternalAccountAddress,
-  (
-    tokensControllerState: TokensControllerState,
-    chainId: Hex,
-    selectedAddress: string | undefined,
-  ) =>
-    tokensControllerState?.allIgnoredTokens?.[chainId]?.[
-      selectedAddress as Hex
-    ],
 );
 
 export const selectDetectedTokens = createSelector(

@@ -92,7 +92,6 @@ module.exports = {
               'selectContractExchangeRates',
               'selectConversionRate',
               'selectNetworkClientId',
-              'selectNetworkStatus',
               'selectNickname',
               'selectProviderConfig',
               'selectProviderType',

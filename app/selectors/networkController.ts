@@ -168,14 +168,6 @@ export const selectRpcUrl = createSelector(
   (providerConfig) => providerConfig.rpcUrl,
 );
 
-export const selectNetworkStatus = createSelector(
-  selectNetworkControllerState,
-  (networkControllerState: NetworkState) =>
-    networkControllerState?.networksMetadata[
-      networkControllerState.selectedNetworkClientId
-    ].status,
-);
-
 export const selectEvmNetworkConfigurationsByChainId = createSelector(
   selectNetworkControllerState,
   (networkControllerState: NetworkState) =>

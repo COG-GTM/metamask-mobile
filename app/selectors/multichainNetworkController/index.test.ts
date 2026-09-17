@@ -4,7 +4,6 @@ import {
   selectSelectedNonEvmNetworkChainId,
   selectNonEvmNetworkConfigurationsByChainId,
   selectSelectedNonEvmNetworkName,
-  selectSelectedNonEvmNativeCurrency,
   selectSelectedNonEvmNetworkSymbol,
 } from './index';
 import { RootState } from '../../reducers';
@@ -82,29 +81,6 @@ describe('Multichain Network Controller Selectors', () => {
         },
       } as unknown as RootState;
       const result = selectSelectedNonEvmNetworkName(modifiedState);
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe('selectSelectedNonEvmNativeCurrency', () => {
-    it('should return the selected network native currency', () => {
-      const result = selectSelectedNonEvmNativeCurrency(mockState);
-      expect(result).toBe('solana:sol/token:sol');
-    });
-
-    it('should return undefined when network is not found', () => {
-      const modifiedState = {
-        ...mockState,
-        engine: {
-          backgroundState: {
-            MultichainNetworkController: {
-              ...mockState.engine.backgroundState.MultichainNetworkController,
-              selectedMultichainNetworkChainId: 'unknown:chain-id',
-            },
-          },
-        },
-      } as unknown as RootState;
-      const result = selectSelectedNonEvmNativeCurrency(modifiedState);
       expect(result).toBeUndefined();
     });
   });

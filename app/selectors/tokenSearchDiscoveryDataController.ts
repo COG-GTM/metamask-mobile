@@ -24,11 +24,6 @@ export const selectTokenDisplayData = createDeepEqualSelector(
   (state, currentCurrency, chainId, address) => state?.tokenDisplayData.find(d => d.chainId === chainId && d.address === address && d.currency === currentCurrency)
 );
 
-export const selectSupportedSwapTokenAddressesByChainId = createDeepEqualSelector(
-  selectTokenSearchDiscoveryDataControllerState,
-  (state) => state?.swapsTokenAddressesByChainId,
-);
-
 export const selectSupportedSwapTokenAddressesForChainId = createDeepEqualSelector(
   selectTokenSearchDiscoveryDataControllerState,
   (_state: RootState, chainId: Hex) => chainId,

@@ -93,21 +93,6 @@ export const selectedAccountNativeTokenCachedBalanceByChainIdForAddress =
   );
 
 /**
- * Get the cached native token balance for the selected account by chainId.
- *
- * @param {RootState} state - The root state.
- * @returns {ChainBalances} The cached native token balance for the selected account by chainId.
- */
-export const selectedAccountNativeTokenCachedBalanceByChainId = createSelector(
-  [(state: RootState) => state, selectSelectedInternalAccountFormattedAddress],
-  (state, selectedAddress): ChainBalances =>
-    selectedAccountNativeTokenCachedBalanceByChainIdForAddress(
-      state,
-      selectedAddress,
-    ),
-);
-
-/**
  * Selector to get native tokens for the selected account across all chains.
  */
 export const selectNativeTokensAcrossChainsForAddress = createSelector(
@@ -225,15 +210,6 @@ export const selectNativeTokensAcrossChainsForAddress = createSelector(
   },
 );
 
-/**
- * Selector to get native tokens for the selected account across all chains.
- */
-export const selectNativeTokensAcrossChains = createSelector(
-  [(state: RootState) => state, selectSelectedInternalAccountFormattedAddress],
-  (state, selectedAddress) =>
-    selectNativeTokensAcrossChainsForAddress(state, selectedAddress),
-);
-
 export const selectAccountTokensAcrossChainsForAddress =
   createDeepEqualSelector(
     selectAllTokens,
@@ -296,68 +272,6 @@ export const selectAccountTokensAcrossChains = createSelector(
   (state, selectedAccount) => {
     const selectedAddress = selectedAccount?.address;
     return selectAccountTokensAcrossChainsForAddress(state, selectedAddress);
-  },
-);
-
-export const selectNativeEvmAsset = createDeepEqualSelector(
-  selectAccountBalanceByChainId,
-  selectEvmTicker,
-  selectConversionRate,
-  selectCurrentCurrency,
-  (accountBalanceByChainId, ticker, conversionRate, currentCurrency) => {
-    if (!accountBalanceByChainId) {
-      return;
-    }
-    return {
-      decimals: 18,
-      name: getTicker(ticker) === 'ETH' ? 'Ethereum' : ticker,
-      symbol: getTicker(ticker),
-      isETH: true,
-      balance: renderFromWei(accountBalanceByChainId.balance),
-      balanceFiat: weiToFiat(
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        hexToBN(accountBalanceByChainId.balance) as any,
-        conversionRate,
-        currentCurrency,
-      ),
-      logo: '../images/eth-logo-new.png',
-      address: zeroAddress(),
-    };
-  },
-);
-
-export const selectStakedEvmAsset = createDeepEqualSelector(
-  selectAccountBalanceByChainId,
-  selectConversionRate,
-  selectCurrentCurrency,
-  selectNativeEvmAsset,
-  (accountBalanceByChainId, conversionRate, currentCurrency, nativeAsset) => {
-    if (!accountBalanceByChainId) {
-      return;
-    }
-    if (!accountBalanceByChainId.stakedBalance) {
-      return;
-    }
-    if (hexToBN(accountBalanceByChainId.stakedBalance).isZero()) {
-      return;
-    }
-    if (!nativeAsset) {
-      return;
-    }
-    return {
-      ...nativeAsset,
-      name: 'Staked Ethereum',
-      isStaked: true,
-      balance: renderFromWei(accountBalanceByChainId.stakedBalance),
-      balanceFiat: weiToFiat(
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        hexToBN(accountBalanceByChainId.stakedBalance) as any,
-        conversionRate,
-        currentCurrency,
-      ),
-    };
   },
 );
 
