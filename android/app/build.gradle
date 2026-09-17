@@ -194,6 +194,11 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders.MM_BRANCH_KEY_TEST = "$System.env.MM_BRANCH_KEY_TEST"
         manifestPlaceholders.MM_BRANCH_KEY_LIVE = "$System.env.MM_BRANCH_KEY_LIVE"
+        // react-native-auth0 RedirectActivity. The scheme is fixed rather than
+        // derived from the application id so the qa/flask flavours share one
+        // Auth0 callback URL.
+        manifestPlaceholders.auth0Domain = "$System.env.MM_AUTH0_DOMAIN"
+        manifestPlaceholders.auth0Scheme = "metamaskauth0"
     }
 
 	  packagingOptions {

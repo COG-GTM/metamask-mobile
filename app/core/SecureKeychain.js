@@ -17,6 +17,8 @@ const privates = new WeakMap();
 const encryptor = new Encryptor({
   keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
 });
+const AUTH0_SERVICE = 'com.metamask.auth0';
+const AUTH0_USERNAME = 'metamask-auth0-user';
 const defaultOptions = {
   service: 'com.metamask',
   authenticationPromptTitle: strings('authentication.auth_prompt_title'),
@@ -201,6 +203,35 @@ export default {
       //Don't need to add any parameter
     }
   },
+  /**
+   * Stores Auth0 credentials in a keychain entry that is separate from the
+   * vault password entry. Never used by the local vault unlock flow.
+   */
+  async setAuth0Credentials(credentials) {
+    if (!instance) return;
+    const encryptedCredentials = await instance.encryptPassword(
+      JSON.stringify(credentials),
+    );
+    await Keychain.setGenericPassword(AUTH0_USERNAME, encryptedCredentials, {
+      service: AUTH0_SERVICE,
+      accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+    });
+  },
+
+  async getAuth0Credentials() {
+    if (!instance) return null;
+    const keychainObject = await Keychain.getGenericPassword({
+      service: AUTH0_SERVICE,
+    });
+    if (!keychainObject || !keychainObject.password) return null;
+    const decrypted = await instance.decryptPassword(keychainObject.password);
+    return JSON.parse(decrypted.password);
+  },
+
+  async resetAuth0Credentials() {
+    return Keychain.resetGenericPassword({ service: AUTH0_SERVICE });
+  },
+
   ACCESS_CONTROL: Keychain.ACCESS_CONTROL,
   ACCESSIBLE: Keychain.ACCESSIBLE,
   AUTHENTICATION_TYPE: Keychain.AUTHENTICATION_TYPE,

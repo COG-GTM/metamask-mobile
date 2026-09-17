@@ -1,6 +1,7 @@
 import { getErrorMessage } from '@metamask/utils';
 import Engine from '../../core/Engine';
 import { BACKUPANDSYNC_FEATURES } from '@metamask/profile-sync-controller/user-storage';
+import { Auth0 } from '../../core/Authentication/Auth0Service';
 
 export const performSignIn = async () => {
   try {
@@ -15,6 +16,23 @@ export const performSignOut = () => {
     Engine.context.AuthenticationController.performSignOut();
   } catch (error) {
     return getErrorMessage(error);
+  }
+};
+
+/**
+ * Bearer token for backend identity services. Prefers the optional Auth0 cloud
+ * identity when the user is signed in to it, and otherwise falls back to the
+ * SRP-derived identity of the AuthenticationController.
+ */
+export const getIdentityBearerToken = async (): Promise<string | undefined> => {
+  const auth0AccessToken = await Auth0.getAccessToken();
+  if (auth0AccessToken) {
+    return auth0AccessToken;
+  }
+  try {
+    return await Engine.context.AuthenticationController.getBearerToken();
+  } catch {
+    return undefined;
   }
 };
 
