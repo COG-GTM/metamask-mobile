@@ -3,6 +3,19 @@ import ganache from 'ganache';
 
 export const DEFAULT_GANACHE_PORT = 8545;
 
+type GanacheServer = ReturnType<typeof ganache.server>;
+type GanacheServerOptions = NonNullable<Parameters<typeof ganache.server>[0]>;
+
+export interface GanacheOptions {
+  mnemonic: string;
+  blockTime?: number;
+  network_id?: number;
+  port?: number;
+  vmErrorsOnRPCResponse?: boolean;
+  hardfork?: string;
+  quiet?: boolean;
+}
+
 const defaultOptions = {
   blockTime: 2,
   network_id: 1337,
@@ -13,14 +26,16 @@ const defaultOptions = {
 };
 
 export default class Ganache {
-  async start(opts) {
+  private _server?: GanacheServer;
+
+  async start(opts: GanacheOptions) {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
     const options = { ...defaultOptions, ...opts, port: getGanachePort() };
     const { port } = options;
     try {
-      this._server = ganache.server(options);
+      this._server = ganache.server(options as GanacheServerOptions);
       await this._server.listen(port);
     } catch (error) {
       console.error(error);
@@ -33,7 +48,9 @@ export default class Ganache {
   }
 
   async getAccounts() {
-    return await this.getProvider().request({
+    // The provider only exists once `start` has been awaited.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return await this.getProvider()!.request({
       method: 'eth_accounts',
       params: [],
     });
@@ -41,7 +58,8 @@ export default class Ganache {
 
   async getBalance() {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const balanceHex = await this.getProvider()!.request({
       method: 'eth_getBalance',
       params: [accounts[0], 'latest'],
     });
