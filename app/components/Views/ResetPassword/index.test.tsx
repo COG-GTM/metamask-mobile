@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { shallow } from 'enzyme';
 import ChoosePassword from './';
 import configureMockStore from 'redux-mock-store';
@@ -17,11 +17,13 @@ const initialState = {
 };
 const store = mockStore(initialState);
 
+const ResetPasswordComponent = ChoosePassword as unknown as ComponentType;
+
 describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ChoosePassword />
+        <ResetPasswordComponent />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

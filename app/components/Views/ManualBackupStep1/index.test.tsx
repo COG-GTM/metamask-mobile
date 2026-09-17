@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ComponentType } from 'react';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
@@ -11,11 +11,15 @@ const initialState = {
 };
 const store = mockStore(initialState);
 
+const ManualBackupStep1Component = ManualBackupStep1 as unknown as ComponentType<{
+  route: { params: { words: string[] } };
+}>;
+
 describe('ManualBackupStep1', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ManualBackupStep1
+        <ManualBackupStep1Component
           route={{
             params: {
               words: [

@@ -1,5 +1,5 @@
 // Third party dependencies.
-import React from 'react';
+import React, { ComponentType } from 'react';
 
 // Internal dependencies.
 import OnboardingSuccess from './';
@@ -44,26 +44,36 @@ const mockProviderConfig = {
   chainId: '1',
 };
 
+const OnboardingSuccessComponent = OnboardingSuccess as unknown as ComponentType<{
+  navigation?: unknown;
+  onDone?: () => void;
+}>;
+
 describe('OnboardingSuccess', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as unknown as jest.Mock).mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const { toJSON } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} />,
+      <OnboardingSuccessComponent navigation={useNavigation()} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('imports additional accounts and sets completedOnboarding to true when onDone is called', () => {
-    useSelector.mockImplementation((selector) => {
+    (useSelector as unknown as jest.Mock).mockImplementation((selector) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const mockDispatch = jest.fn();
-    useDispatch.mockImplementation(() => mockDispatch);
+    (useDispatch as unknown as jest.Mock).mockImplementation(
+      () => mockDispatch,
+    );
 
     const { getByTestId } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} onDone={jest.fn()} />,
+      <OnboardingSuccessComponent
+        navigation={useNavigation()}
+        onDone={jest.fn()}
+      />,
     );
     const button = getByTestId(OnboardingSuccessSelectorIDs.DONE_BUTTON);
     button.props.onPress();

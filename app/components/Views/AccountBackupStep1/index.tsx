@@ -9,7 +9,12 @@ import {
   BackHandler,
   Image,
 } from 'react-native';
-import PropTypes from 'prop-types';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import {
+  StackNavigationProp,
+  StackNavigationOptions,
+} from '@react-navigation/stack';
+import { Dispatch } from 'redux';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -33,9 +38,35 @@ import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboard
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import Routes from '../../../../app/constants/navigation/Routes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import {
+  IMetaMetricsEvent,
+  JsonMap,
+} from '../../../core/Analytics/MetaMetrics.types';
+import { Colors } from '../../../util/theme/models';
 import SRPDesign from '../../../images/srp-lock-design.png';
 
-const createStyles = (colors) =>
+interface AccountBackupStep1OwnProps {
+  /**
+   * navigation object required to push and pop other views
+   */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<ParamListBase, string>;
+}
+
+interface AccountBackupStep1DispatchProps {
+  /**
+   * Action to set onboarding wizard step
+   */
+  setOnboardingWizardStep: (step: number) => void;
+}
+
+type AccountBackupStep1Props = AccountBackupStep1OwnProps &
+  AccountBackupStep1DispatchProps;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -127,7 +158,7 @@ const createStyles = (colors) =>
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1 = (props) => {
+const AccountBackupStep1 = (props: AccountBackupStep1Props) => {
   const { navigation, route } = props;
   const [showRemindLaterModal, setRemindLaterModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -136,7 +167,7 @@ const AccountBackupStep1 = (props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const track = (event, properties) => {
+  const track = (event: IMetaMetricsEvent, properties: JsonMap = {}) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
     eventBuilder.addProperties(properties);
     trackOnboarding(eventBuilder.build());
@@ -151,7 +182,7 @@ const AccountBackupStep1 = (props) => {
         colors,
       ),
       gesturesEnabled: false,
-    });
+    } as StackNavigationOptions);
   }, [navigation, route, colors]);
 
   useEffect(
@@ -265,11 +296,7 @@ const AccountBackupStep1 = (props) => {
               </View>
             )}
             <View style={styles.ctaContainer}>
-              <StyledButton
-                containerStyle={styles.button}
-                type={'confirm'}
-                onPress={goNext}
-              >
+              <StyledButton type={'confirm'} onPress={goNext}>
                 {strings('account_backup_step_1.cta_text')}
               </StyledButton>
               <Text style={styles.startSubText}>
@@ -298,23 +325,9 @@ const AccountBackupStep1 = (props) => {
   );
 };
 
-AccountBackupStep1.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-};
-
-const mapDispatchToProps = (dispatch) => ({
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  setOnboardingWizardStep: (step: number) =>
+    dispatch(setOnboardingWizardStep(step)),
 });
 
 export default connect(null, mapDispatchToProps)(AccountBackupStep1);
