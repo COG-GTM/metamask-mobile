@@ -5,13 +5,6 @@ export function approveHost(hostname) {
   };
 }
 
-export function rejectHost(hostname) {
-  return {
-    type: 'REJECT_HOST',
-    hostname,
-  };
-}
-
 export function recordSRPRevealTimestamp(timestamp) {
   return {
     type: 'RECORD_SRP_REVEAL_TIMESTAMP',

@@ -61,13 +61,6 @@ export function toggleBasicFunctionality(basicFunctionalityEnabled) {
   };
 }
 
-export function toggleDeviceNotification(deviceNotificationEnabled) {
-  return {
-    type: 'TOGGLE_DEVICE_NOTIFICATIONS',
-    deviceNotificationEnabled,
-  };
-}
-
 export function setTokenSortConfig(tokenSortConfig) {
   return {
     type: 'SET_TOKEN_SORT_CONFIG',

@@ -8,17 +8,14 @@ import {
   type PasswordUnsetAction,
   type SeedphraseBackedUpAction,
   type SeedphraseNotBackedUpAction,
-  type BackUpSeedphraseVisibleAction,
   type BackUpSeedphraseNotVisibleAction,
   type ProtectModalVisibleAction,
   type ProtectModalNotVisibleAction,
   type LoadingSetAction,
   type LoadingUnsetAction,
-  type SetGasEducationCarouselSeenAction,
   type LoginAction,
   type LogoutAction,
   type SetAppThemeAction,
-  type CheckedAuthAction,
   type PersistedDataLoadedAction,
   type SetAppServicesReadyAction,
   UserActionType,
@@ -76,12 +73,6 @@ export function seedphraseNotBackedUp(): SeedphraseNotBackedUpAction {
   };
 }
 
-export function backUpSeedphraseAlertVisible(): BackUpSeedphraseVisibleAction {
-  return {
-    type: UserActionType.BACK_UP_SEEDPHRASE_VISIBLE,
-  };
-}
-
 export function backUpSeedphraseAlertNotVisible(): BackUpSeedphraseNotVisibleAction {
   return {
     type: UserActionType.BACK_UP_SEEDPHRASE_NOT_VISIBLE,
@@ -113,12 +104,6 @@ export function loadingUnset(): LoadingUnsetAction {
   };
 }
 
-export function setGasEducationCarouselSeen(): SetGasEducationCarouselSeenAction {
-  return {
-    type: UserActionType.SET_GAS_EDUCATION_CAROUSEL_SEEN,
-  };
-}
-
 export function logIn(): LoginAction {
   return {
     type: UserActionType.LOGIN,
@@ -135,20 +120,6 @@ export function setAppTheme(theme: AppThemeKey): SetAppThemeAction {
   return {
     type: UserActionType.SET_APP_THEME,
     payload: { theme },
-  };
-}
-
-/**
- * Temporary action to control auth flow
- *
- * @param initialScreen - "login" or "onboarding"
- */
-export function checkedAuth(initialScreen: string): CheckedAuthAction {
-  return {
-    type: UserActionType.CHECKED_AUTH,
-    payload: {
-      initialScreen,
-    },
   };
 }
 

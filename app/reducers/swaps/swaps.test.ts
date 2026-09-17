@@ -4,7 +4,6 @@ import Device from '../../util/device';
 import reducer, {
   initialState,
   SWAPS_SET_LIVENESS,
-  SWAPS_SET_HAS_ONBOARDED,
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
   selectSwapsChainFeatureFlags,
@@ -523,22 +522,6 @@ describe('swaps reducer', () => {
       };
       expect(swapsTokensObjectSelector(state)).toStrictEqual({});
     });
-  });
-
-  it('should set has onboarded', () => {
-    const initalState = reducer(undefined, emptyAction);
-    // @ts-ignore
-    const notOnboardedState = reducer(initalState, {
-      type: SWAPS_SET_HAS_ONBOARDED,
-      payload: false,
-    });
-    expect(notOnboardedState.hasOnboarded).toBe(false);
-    // @ts-ignore
-    const liveState = reducer(initalState, {
-      type: SWAPS_SET_HAS_ONBOARDED,
-      payload: true,
-    });
-    expect(liveState.hasOnboarded).toBe(true);
   });
 });
 

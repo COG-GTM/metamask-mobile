@@ -4,7 +4,6 @@ const initialState = {
 };
 
 const privacyReducer = (state = initialState, action) => {
-  const newHosts = { ...state.approvedHosts };
   switch (action.type) {
     case 'APPROVE_HOST':
       return {
@@ -13,17 +12,6 @@ const privacyReducer = (state = initialState, action) => {
           ...state.approvedHosts,
           [action.hostname]: true,
         },
-      };
-    case 'REJECT_HOST':
-      delete newHosts[action.hostname];
-      return {
-        ...state,
-        approvedHosts: newHosts,
-      };
-    case 'CLEAR_HOSTS':
-      return {
-        ...state,
-        approvedHosts: {},
       };
     case 'RECORD_SRP_REVEAL_TIMESTAMP':
       return {

@@ -75,22 +75,6 @@ export async function importNewSecretRecoveryPhrase(mnemonic: string) {
   return Engine.setSelectedAddress(newAccountAddress);
 }
 
-export async function createNewSecretRecoveryPhrase() {
-  const { KeyringController } = Engine.context;
-  const newHdkeyring = await KeyringController.addNewKeyring(
-    ExtendedKeyringTypes.hd,
-  );
-
-  const [newAccountAddress] = await KeyringController.withKeyring(
-    {
-      id: newHdkeyring.id,
-    },
-    async ({ keyring }) => keyring.getAccounts(),
-  );
-
-  return Engine.setSelectedAddress(newAccountAddress);
-}
-
 export async function addNewHdAccount(
   keyringId?: string,
   name?: string,

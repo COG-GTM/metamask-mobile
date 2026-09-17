@@ -464,7 +464,6 @@ class FixtureBuilder {
           seedphraseBackedUp: true,
           backUpSeedphraseVisible: false,
           protectWalletModalVisible: false,
-          gasEducationCarouselSeen: false,
           userLoggedIn: true,
           isAuthChecked: false,
           initialScreen: '',
