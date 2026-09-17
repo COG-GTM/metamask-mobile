@@ -1,6 +1,9 @@
 import React, { PureComponent } from 'react';
 import { RefreshControl, ScrollView, View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
+import type { ThemeColors } from '@metamask/design-tokens';
+import type { Nft, NftContract } from '@metamask/assets-controllers';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { type Dispatch } from 'redux';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import { connect } from 'react-redux';
 import Collectibles from '../../UI/Collectibles';
@@ -12,9 +15,11 @@ import { toggleCollectibleContractModal } from '../../../actions/modals';
 import { toLowerCaseEquals } from '../../../util/general';
 import { collectiblesSelector } from '../../../reducers/collectibles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 
-const createStyles = (colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -22,44 +27,49 @@ const createStyles = (colors) =>
     },
   });
 
+interface CollectibleProps {
+  /**
+   * Array of assets (in this case Collectibles)
+   */
+  collectibles: Nft[];
+  /**
+  /* navigation object required to access the props
+  /* passed by the parent component
+  */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Called to toggle collectible contract information modal
+   */
+  toggleCollectibleContractModal: () => void;
+  /**
+   * Whether collectible contract information is visible
+   */
+  collectibleContractModalVisible: boolean;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: { params: NftContract };
+}
+
+interface CollectibleState {
+  refreshing: boolean;
+  collectibles: Nft[];
+}
+
 /**
  * View that displays a specific collectible
  * including the overview (name, address, symbol, logo, description, total supply)
  * and also individual collectibles list
  */
-class Collectible extends PureComponent {
-  static propTypes = {
-    /**
-     * Array of assets (in this case Collectibles)
-     */
-    collectibles: PropTypes.array,
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Called to toggle collectible contract information modal
-     */
-    toggleCollectibleContractModal: PropTypes.func,
-    /**
-     * Whether collectible contract information is visible
-     */
-    collectibleContractModalVisible: PropTypes.bool,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
-
-  state = {
+class Collectible extends PureComponent<CollectibleProps, CollectibleState> {
+  state: CollectibleState = {
     refreshing: false,
     collectibles: [],
   };
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.name ?? '',
       false,
@@ -100,13 +110,14 @@ class Collectible extends PureComponent {
     const collectibleContract = params;
     const address = params.address;
     const { collectibles } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
     const filteredCollectibles = collectibles.filter((collectible) =>
       toLowerCaseEquals(collectible.address, address),
     );
     filteredCollectibles.map((collectible) => {
       if (!collectible.name || collectible.name === '') {
+        // @ts-expect-error - `NftContract['name']` is optional while `Nft['name']` is `string | null`; assigning `undefined` here is pre-existing behaviour
         collectible.name = collectibleContract.name;
       }
       if (!collectible.image && collectibleContract.logo) {
@@ -132,6 +143,7 @@ class Collectible extends PureComponent {
           style={styles.wrapper}
         >
           <View>
+            {/* @ts-expect-error - `assetOverviewWrapper` is not a key of the stylesheet, so this resolves to `undefined` */}
             <View style={styles.assetOverviewWrapper}>
               <CollectibleContractOverview
                 navigation={navigation}
@@ -168,12 +180,12 @@ class Collectible extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   collectibles: collectiblesSelector(state),
   collectibleContractModalVisible: state.modals.collectibleContractModalVisible,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   toggleCollectibleContractModal: () =>
     dispatch(toggleCollectibleContractModal()),
 });
