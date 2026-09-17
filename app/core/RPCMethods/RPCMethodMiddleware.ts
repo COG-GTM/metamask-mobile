@@ -6,7 +6,6 @@ import {
   mergeMiddleware,
 } from '@metamask/json-rpc-engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
-import { SetFlowLoadingTextOptions } from '@metamask/approval-controller';
 import { recoverPersonalSignature } from '@metamask/eth-sig-util';
 import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
 import { Hex } from '@metamask/utils';
@@ -424,11 +423,6 @@ export const getRpcMethodMiddleware = ({
           return AppConstants.REQUEST_SOURCES.SDK_REMOTE_CONN;
         if (isWalletConnect) return AppConstants.REQUEST_SOURCES.WC;
         return AppConstants.REQUEST_SOURCES.IN_APP_BROWSER;
-      };
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const setApprovalFlowLoadingText = (opts: SetFlowLoadingTextOptions) => {
-        Engine.context.ApprovalController.setFlowLoadingText(opts);
       };
 
       const requestUserApproval = async ({ type = '', requestData = {} }) => {

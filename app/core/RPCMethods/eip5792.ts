@@ -1,4 +1,3 @@
-import { AccountsControllerGetSelectedAccountAction } from '@metamask/accounts-controller';
 import {
   GetCallsStatusCode,
   GetCallsStatusResult,
@@ -10,13 +9,10 @@ import { JsonRpcError, rpcErrors } from '@metamask/rpc-errors';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Log,
-  TransactionControllerGetStateAction,
   TransactionMeta,
   TransactionReceipt,
   TransactionStatus,
 } from '@metamask/transaction-controller';
-import { Messenger } from '@metamask/base-controller';
-import { NetworkControllerGetNetworkClientByIdAction } from '@metamask/network-controller';
 
 import ppomUtil from '../../lib/ppom/ppom-util';
 import Engine from '../Engine';
@@ -172,13 +168,6 @@ function getStatusCode(transactionMeta: TransactionMeta) {
 
   return GetCallsStatusCode.PENDING;
 }
-
-type Actions =
-  | AccountsControllerGetSelectedAccountAction
-  | NetworkControllerGetNetworkClientByIdAction
-  | TransactionControllerGetStateAction;
-
-export type EIP5792Messenger = Messenger<Actions, never>;
 
 export async function getCallsStatus(id: Hex): Promise<GetCallsStatusResult> {
   const transactions = Engine.controllerMessenger

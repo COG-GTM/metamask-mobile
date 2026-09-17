@@ -11,8 +11,6 @@ export const SHA256_DIGEST_LENGTH = 256;
 export enum KeyDerivationIteration {
   // Legacy, kept for backward compatibility
   Legacy5000 = 5_000,
-  // OWASP's 2023 recommendation for minimum iterations
-  OWASP2023Minimum = 600_000,
   // Default suggested iterations based on OWASP's 2023 recommendation
   OWASP2023Default = 900_000,
 }
@@ -40,13 +38,6 @@ export const LEGACY_DERIVATION_OPTIONS: KeyDerivationOptions = {
   algorithm: KDF_ALGORITHM,
   params: {
     iterations: KeyDerivationIteration.Legacy5000,
-  },
-};
-
-export const DERIVATION_OPTIONS_MINIMUM_OWASP2023: KeyDerivationOptions = {
-  algorithm: KDF_ALGORITHM,
-  params: {
-    iterations: KeyDerivationIteration.OWASP2023Minimum,
   },
 };
 

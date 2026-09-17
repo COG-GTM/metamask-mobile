@@ -7,7 +7,7 @@ import {
 import {
   ENCRYPTION_LIBRARY,
   LEGACY_DERIVATION_OPTIONS,
-  DERIVATION_OPTIONS_MINIMUM_OWASP2023,
+  DERIVATION_OPTIONS_DEFAULT_OWASP2023,
 } from '../constants';
 
 const mockPassword = 'mockPassword';
@@ -66,7 +66,7 @@ describe('lib', () => {
         lib.deriveKey(
           mockPassword,
           mockSalt,
-          DERIVATION_OPTIONS_MINIMUM_OWASP2023,
+          DERIVATION_OPTIONS_DEFAULT_OWASP2023,
         ),
       ).rejects.toThrow(
         `Invalid number of iterations, should be: ${LEGACY_DERIVATION_OPTIONS.params.iterations}`,
