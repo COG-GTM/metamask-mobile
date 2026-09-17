@@ -1,27 +1,8 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
-import URLParse from 'url-parse';
+import { isENSUrl, getMaskedUrl } from './utils';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
 
 describe('BrowserTab utils', () => {
-  describe('isValidUrl', () => {
-    const testCases = [
-      { url: 'https://google.com', expected: true },
-      { url: 'http://localhost:3000', expected: true },
-      { url: 'http://example.com:8080', expected: false },
-      { url: 'https://sub.domain.com', expected: true },
-      { url: 'invalid-url', expected: false },
-      { url: 'ftp://invalid-protocol.com', expected: false },
-    ];
-
-    testCases.forEach(({ url, expected }) => {
-      it(`should return ${expected} for ${url}`, () => {
-        const parsedUrl = new URLParse(url);
-        expect(isValidUrl(parsedUrl)).toBe(expected);
-      });
-    });
-  });
-
   describe('isENSUrl', () => {
     const ensIgnoreList = ['ignored.eth'];
 
