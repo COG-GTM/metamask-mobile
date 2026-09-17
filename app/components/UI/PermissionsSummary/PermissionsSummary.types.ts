@@ -3,8 +3,8 @@ import { Account } from '../../hooks/useAccounts';
 
 export interface PermissionsSummaryProps {
   currentPageInformation: {
-    currentEnsName: string;
-    icon: string | { uri: string };
+    currentEnsName?: string;
+    icon?: string | { uri: string };
     url: string;
   };
   onEdit?: () => void;
