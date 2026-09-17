@@ -1,6 +1,25 @@
-import React from 'react';
+import React, { ComponentType, ReactNode } from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
 import { shallow } from 'enzyme';
-import Keypad from './components';
+import BaseKeypad from './components';
+
+interface KeypadContainerProps {
+  style?: StyleProp<ViewStyle>;
+  children?: ReactNode;
+}
+
+interface KeypadButtonProps {
+  onPress: () => void;
+  children?: ReactNode;
+}
+
+// `./components` is still JavaScript, so the statics attached to its default
+// export are not visible to the compiler.
+const Keypad = BaseKeypad as unknown as ComponentType<KeypadContainerProps> & {
+  Row: ComponentType<{ children?: ReactNode }>;
+  Button: ComponentType<KeypadButtonProps>;
+  DeleteButton: ComponentType<{ onPress: () => void }>;
+};
 
 describe('Keypad component', () => {
   test('components should render correctly', () => {
