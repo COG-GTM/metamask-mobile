@@ -69,7 +69,7 @@ ignores:
   - 'punycode'
   - 'randomfill'
   - 'react-native-aes-crypto'
-  - 'react-native-aes-crypto-forked'
+  - '@metamask/react-native-aes-crypto-forked'
   - 'react-native-crypto'
   - 'react-native-level-fs'
   - 'react-native-os'
