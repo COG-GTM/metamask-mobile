@@ -211,9 +211,6 @@ export const getDecimalChainId = (chainId) => {
 export const isMainnetByChainId = (chainId) =>
   getDecimalChainId(String(chainId)) === String(1);
 
-export const isLineaMainnetByChainId = (chainId) =>
-  getDecimalChainId(String(chainId)) === String(59144);
-
 export const isMultiLayerFeeNetwork = (chainId) =>
   chainId === NETWORKS_CHAIN_ID.OPTIMISM;
 
@@ -399,22 +396,6 @@ export function findBlockExplorerForNonEvmAccount(internalAccount) {
     blockExplorerFormatUrls,
     internalAccount.address,
   );
-}
-
-/**
- * Returns a boolean indicating if both URLs have the same host
- *
- * @param {string} rpcOne
- * @param {string} rpcTwo
- */
-export function compareRpcUrls(rpcOne, rpcTwo) {
-  // First check that both objects are of the type string
-  if (typeof rpcOne === 'string' && typeof rpcTwo === 'string') {
-    const rpcUrlOne = new URL(rpcOne);
-    const rpcUrlTwo = new URL(rpcTwo);
-    return rpcUrlOne.host === rpcUrlTwo.host;
-  }
-  return false;
 }
 
 /**

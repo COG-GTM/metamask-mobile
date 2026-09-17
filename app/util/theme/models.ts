@@ -15,4 +15,3 @@ export interface Theme extends DesignTokenTheme {
 
 export type Colors = Theme['colors'];
 export type Shadows = Theme['shadows'];
-export type BrandColors = BrandColor;

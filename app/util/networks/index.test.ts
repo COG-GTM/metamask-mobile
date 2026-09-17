@@ -6,7 +6,6 @@ import NetworkList, {
   getAllNetworks,
   getNetworkTypeById,
   findBlockExplorerForRpc,
-  compareRpcUrls,
   getBlockExplorerAddressUrl,
   getBlockExplorerTxUrl,
   isPrivateConnection,
@@ -237,19 +236,6 @@ describe('network-utils', () => {
       expect(
         findBlockExplorerForRpc(mockRpcUrl, networkConfigurationsMock),
       ).toBe(undefined);
-    });
-  });
-
-  describe('compareRpcUrls', () => {
-    it('should return true if both URLs have the same host', () => {
-      const mockRpcOne = 'https://mainnet.optimism.io/';
-      const mockRpcTwo = 'https://mainnet.optimism.io/d03910331458';
-      expect(compareRpcUrls(mockRpcOne, mockRpcTwo)).toBe(true);
-    });
-    it('should return false if both URLs have the same host', () => {
-      const mockRpcOne = 'https://bsc-dataseed.binance.org/';
-      const mockRpcTwo = 'https://mainnet.optimism.io/d03910331458';
-      expect(compareRpcUrls(mockRpcOne, mockRpcTwo)).toBe(false);
     });
   });
 

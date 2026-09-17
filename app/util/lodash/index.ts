@@ -37,26 +37,6 @@ export const gte = (value: number, other: number): boolean =>
   Number(value) >= Number(other);
 
 /**
- * Function that checks if value is less than other
- *
- * @param value number
- * @param other number
- * @returns
- */
-export const lt = (value: number, other: number): boolean =>
-  Number(value) < Number(other);
-
-/**
- * Function that checks if value is greater than other
- *
- * @param value number
- * @param other number
- * @returns
- */
-export const gt = (value: number, other: number): boolean =>
-  Number(value) > Number(other);
-
-/**
  * Gets the `toStringTag` of `value`.
  *
  * @param {*} value The value to query.
