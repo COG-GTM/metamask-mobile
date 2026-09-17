@@ -12,14 +12,8 @@ interface MockRootState {
 }
 
 // Mock selectors that work with MockRootState
-const mockSelectPerformanceData = (state: MockRootState) => state.performance;
 const mockSelectPerformanceMetrics = (state: MockRootState) =>
   state.performance.metrics;
-const mockSelectPerformanceSession = (state: MockRootState) => ({
-  sessionId: state.performance.sessionId,
-  startTime: state.performance.startTime,
-  environment: state.performance.environment,
-});
 
 describe('Performance Slice', () => {
   let store: ReturnType<typeof configureStore<MockRootState>>;
@@ -184,11 +178,6 @@ describe('Performance Slice', () => {
   });
 
   describe('Selectors', () => {
-    it('selectPerformanceData return the entire performance state', () => {
-      const state = store.getState();
-      expect(mockSelectPerformanceData(state)).toEqual(state.performance);
-    });
-
     it('selectPerformanceMetrics return only metrics', () => {
       const startTime = Date.now();
       jest.setSystemTime(startTime);
@@ -211,28 +200,6 @@ describe('Performance Slice', () => {
       expect(mockSelectPerformanceMetrics(state)).toEqual(
         state.performance.metrics,
       );
-    });
-
-    it('selectPerformanceSession return session information', () => {
-      const environment = {
-        branch: 'main',
-        commitHash: 'abc123',
-        platform: 'ios',
-        appVersion: '1.0.0',
-      };
-
-      store.dispatch(
-        startPerformanceTrace({
-          eventName: 'test_trace',
-          environment,
-        }),
-      );
-
-      const state = store.getState();
-      const session = mockSelectPerformanceSession(state);
-      expect(session.sessionId).toBe(state.performance.sessionId);
-      expect(session.startTime).toBe(state.performance.startTime);
-      expect(session.environment).toEqual(environment);
     });
   });
 });

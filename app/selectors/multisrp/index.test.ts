@@ -1,8 +1,4 @@
-import {
-  selectHdKeyringIndexByIdOrDefault,
-  getHdKeyringOfSelectedAccountOrPrimaryKeyring,
-  getSnapAccountsByKeyringId,
-} from './index';
+import { getHdKeyringOfSelectedAccountOrPrimaryKeyring } from './index';
 import { RootState } from '../../reducers';
 import { createMockInternalAccount } from '../../util/test/accountsControllerTestUtils';
 import {
@@ -177,29 +173,6 @@ const expectedKeyringWithMetadata = (
 });
 
 describe('multisrp selectors', () => {
-  describe('selectHdKeyringIndexByIdOrDefault', () => {
-    it('returns 0 when no keyringId is provided', () => {
-      const result = selectHdKeyringIndexByIdOrDefault(mockState());
-      expect(result).toBe(0);
-    });
-
-    it('returns 0 when keyring is not found', () => {
-      const result = selectHdKeyringIndexByIdOrDefault(
-        mockState(),
-        'non-existent',
-      );
-      expect(result).toBe(0);
-    });
-
-    it('returns correct index when keyring is found', () => {
-      const result = selectHdKeyringIndexByIdOrDefault(
-        mockState(),
-        mockHDKeyringMetadata.id,
-      );
-      expect(result).toBe(0);
-    });
-  });
-
   describe('getHdKeyringOfSelectedAccountOrPrimaryKeyring', () => {
     it('returns first HD keyring when no account is selected', () => {
       expect(() =>
@@ -232,27 +205,6 @@ describe('multisrp selectors', () => {
       expect(result).toStrictEqual(
         expectedKeyringWithMetadata(mockHDKeyring, mockHDKeyringMetadata),
       );
-    });
-  });
-
-  describe('getSnapAccountsByKeyringId', () => {
-    it('returns snap accounts along with hd accounts', () => {
-      const result = getSnapAccountsByKeyringId(
-        mockState(),
-        mockHDKeyringMetadata.id,
-      );
-      expect(result).toEqual([mockSnapAccount]);
-    });
-
-    it('returns empty array when no keyringId is provided', () => {
-      // @ts-expect-error - This is a test for the null case
-      const result = getSnapAccountsByKeyringId(mockState(), null);
-      expect(result).toEqual([]);
-    });
-
-    it('returns empty array when keyringId is not found', () => {
-      const result = getSnapAccountsByKeyringId(mockState(), 'non-existent');
-      expect(result).toEqual([]);
     });
   });
 });

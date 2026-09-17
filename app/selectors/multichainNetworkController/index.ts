@@ -77,14 +77,6 @@ export const selectNonEvmNetworkConfigurationsByChainId = createSelector(
   },
 );
 
-export const selectSelectedNonEvmNetworkDecimals = createSelector(
-  selectNonEvmNetworkConfigurationsByChainId,
-  selectSelectedNonEvmNetworkChainId,
-  (nonEvmNetworkConfigurationsByChainId, selectedMultichainNetworkChainId) =>
-    nonEvmNetworkConfigurationsByChainId[selectedMultichainNetworkChainId]
-      ?.decimals,
-);
-
 export const selectSelectedNonEvmNetworkName = createSelector(
   selectNonEvmNetworkConfigurationsByChainId,
   selectSelectedNonEvmNetworkChainId,
@@ -92,16 +84,6 @@ export const selectSelectedNonEvmNetworkName = createSelector(
     const network =
       nonEvmNetworkConfigurationsByChainId[selectedMultichainNetworkChainId];
     return network?.name;
-  },
-);
-
-export const selectSelectedNonEvmNativeCurrency = createSelector(
-  selectNonEvmNetworkConfigurationsByChainId,
-  selectSelectedNonEvmNetworkChainId,
-  (nonEvmNetworkConfigurationsByChainId, selectedMultichainNetworkChainId) => {
-    const network =
-      nonEvmNetworkConfigurationsByChainId[selectedMultichainNetworkChainId];
-    return network?.nativeCurrency;
   },
 );
 

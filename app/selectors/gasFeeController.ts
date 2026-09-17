@@ -13,19 +13,6 @@ import { createDeepEqualSelector } from './util';
 import { selectPendingApprovals } from './approvalController';
 import { selectTransactionMetadataById } from './transactionController';
 
-export enum GasEstimateTypes {
-  feeMarket = 'fee-market',
-  legacy = 'legacy',
-  ethGasPrice = 'eth_gasPrice',
-  none = 'none',
-}
-
-export enum NetworkCongestionThresholds {
-  notBusy = 0,
-  stable = 0.33,
-  busy = 0.9,
-}
-
 function getGasFeeControllerEstimatesByChainId(
   state: RootState,
   chainId: string,

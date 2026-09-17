@@ -127,23 +127,9 @@ const { actions, reducer } = slice;
 const selectPerformanceState = (state: RootState) => state.performance;
 
 // Selectors using createSelector
-export const selectPerformanceData = createSelector(
-  [selectPerformanceState],
-  (performanceState) => performanceState,
-);
-
 export const selectPerformanceMetrics = createSelector(
   [selectPerformanceState],
   (performanceState) => performanceState?.metrics,
-);
-
-export const selectPerformanceSession = createSelector(
-  [selectPerformanceState],
-  (performanceState) => ({
-    sessionId: performanceState?.sessionId,
-    startTime: performanceState?.startTime,
-    environment: performanceState?.environment,
-  }),
 );
 
 // Actions
