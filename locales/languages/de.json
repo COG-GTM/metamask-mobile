@@ -3897,7 +3897,6 @@
     "time": "Zeit",
     "quote_info_content": "Dieses Angebot bietet die beste Rendite aus unserer Suche. Es basiert auf dem Swap-Satz, einschließlich Bridging-Gebühren und einer MetaMask-Gebühr von 0,875 %, aber ohne Gas-Gebühren. Die Gas-Gebühren variieren je nach Netzwerkaktivität und Transaktionskomplexität.",
     "quote_info_title": "Warum wir dieses Angebot empfehlen",
-    "see_other_quotes": "Andere Angebote sehen",
     "receive_at": "Empfangen bei",
     "error_banner_description": "Diese Handelsroute ist derzeit nicht verfügbar. Versuchen Sie, den Betrag, das Netzwerk oder das Token zu ändern, und wir finden die beste Option.",
     "insufficient_funds": "Unzureichende Gelder",
@@ -3924,7 +3923,6 @@
     "view_on_block_explorer": "Im Block-Explorer anzeigen",
     "block_explorer_description": "Diese Transaktion findet in zwei Netzwerken statt. Der erste Link zeigt die Quelle; der zweite zeigt das Ziel an, sobald sie bestätigt wurde.",
     "transaction_details": "Transaktionsdetails",
-    "bridge_to_chain": "Bridge zu {{chainName}}",
-    "recipient": "Empfänger"
+    "bridge_to_chain": "Bridge zu {{chainName}}"
   }
 }

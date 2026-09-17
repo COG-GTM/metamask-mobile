@@ -3897,7 +3897,6 @@
     "time": "时间",
     "quote_info_content": "此报价是我们搜索中能为您提供的最优回报。其基于当前兑换汇率计算，包含桥接费用及 0.875% 的 MetaMask 手续费，但不含燃料费。燃料费根据网络活动及交易复杂度动态变化。",
     "quote_info_title": "我们推荐此报价的原因",
-    "see_other_quotes": "查看其他报价",
     "receive_at": "接收地址：",
     "error_banner_description": "目前该交易路线不可用。请调整交易金额、切换网络或更换代币类型，我们将为您自动匹配最优通道。",
     "insufficient_funds": "资金不足",
@@ -3924,7 +3923,6 @@
     "view_on_block_explorer": "在区块浏览器上查看",
     "block_explorer_description": "此交易跨两个网络。第一个链接显示源地址；第二个链接在交易确认后显示目标地址。",
     "transaction_details": "交易详情",
-    "bridge_to_chain": "桥接至 {{chainName}}",
-    "recipient": "接收者"
+    "bridge_to_chain": "桥接至 {{chainName}}"
   }
 }

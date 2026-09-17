@@ -3927,7 +3927,6 @@
     "time": "Time",
     "quote_info_content": "This quote offers the best return from our search. It’s based on the swap rate, including bridging fees and a 0.875% MetaMask fee, but not gas fees. Gas fees vary with network activity and transaction complexity.",
     "quote_info_title": "Why we recommend this quote",
-    "see_other_quotes": "See other quotes",
     "receive_at": "Receive at",
     "error_banner_description": "This trade route isn't available right now. Try changing the amount, network, or token and we'll find the best option.",
     "insufficient_funds": "Insufficient funds",
@@ -3954,8 +3953,7 @@
     "view_on_block_explorer": "View on Block Explorer",
     "block_explorer_description": "This transaction lives on two networks. The first link shows the source; the second shows the destination once it’s confirmed.",
     "transaction_details": "Transaction Details",
-    "bridge_to_chain": "Bridge to {{chainName}}",
-    "recipient": "Recipient"
+    "bridge_to_chain": "Bridge to {{chainName}}"
   },
   "backupAndSync": {
     "title": "Backup and sync",

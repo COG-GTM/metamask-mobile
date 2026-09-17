@@ -3897,7 +3897,6 @@
     "time": "Hora",
     "quote_info_content": "Esta cotización ofrece el mejor rendimiento según nuestra búsqueda. Se basa en la tarifa de intercambio, incluidas las tarifas de puente y una tarifa MetaMask del 0,875 %, pero no las tarifas de gas. Las tarifas de gas varían según la actividad de la red y la complejidad de la transacción.",
     "quote_info_title": "Por qué recomendamos esta cotización",
-    "see_other_quotes": "Ver otras cotizaciones",
     "receive_at": "Recibir en",
     "error_banner_description": "Esta ruta de operación no está disponible en este momento. Intente cambiar el monto, la red o el token y encontraremos la mejor opción.",
     "insufficient_funds": "Fondos insuficientes",
@@ -3924,7 +3923,6 @@
     "view_on_block_explorer": "Ver en explorador de bloques",
     "block_explorer_description": "Esta transacción se realiza en dos redes. El primer enlace muestra el origen; el segundo, el destino una vez confirmado.",
     "transaction_details": "Detalles de la transacción",
-    "bridge_to_chain": "Puentear a {{chainName}}",
-    "recipient": "Destinatario"
+    "bridge_to_chain": "Puentear a {{chainName}}"
   }
 }

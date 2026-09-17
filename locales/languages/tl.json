@@ -3897,7 +3897,6 @@
     "time": "Oras",
     "quote_info_content": "Nag-aalok ang quote na ito ng pinakamainam na return mula sa aming paghahanap. Nakabatay ito sa rate ng pag-swap, kabilang ang mga bayad sa pag-bridge at 0.875% na bayad sa MetaMask, ngunit hindi ito mga bayad sa gas. Iba-iba ang mga bayad sa gas depende sa aktibidad ng network at pagiging kumplikado ng transaksyon.",
     "quote_info_title": "Bakit namin inirerekomenda ang quote na ito",
-    "see_other_quotes": "Tingnan ang ibang mga quote",
     "receive_at": "Receive at",
     "error_banner_description": "This trade route isn't available right now. Try changing the amount, network, or token and we'll find the best option.",
     "insufficient_funds": "Insufficient funds",
@@ -3924,7 +3923,6 @@
     "view_on_block_explorer": "View on Block Explorer",
     "block_explorer_description": "This transaction lives on two networks. The first link shows the source; the second shows the destination once it’s confirmed.",
     "transaction_details": "Transaction Details",
-    "bridge_to_chain": "Bridge to {{chainName}}",
-    "recipient": "Recipient"
+    "bridge_to_chain": "Bridge to {{chainName}}"
   }
 }
