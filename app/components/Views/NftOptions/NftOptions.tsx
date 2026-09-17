@@ -102,7 +102,9 @@ const NftOptions = (props: Props) => {
     const nftNetworkClientId =
       nftChainNetwork?.rpcEndpoints?.[nftChainNetwork?.defaultRpcEndpointIndex]
         .networkClientId;
-    removeFavoriteCollectible(selectedAddress, chainId, collectible);
+    if (selectedAddress) {
+      removeFavoriteCollectible(selectedAddress, chainId, collectible);
+    }
     NftController.removeAndIgnoreNft(
       collectible.address,
       collectible.tokenId.toString(),
