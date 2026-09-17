@@ -1,10 +1,8 @@
-/* eslint-disable react/prop-types */
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { getNetworkNavbarOptions } from '.';
-import { SolScope } from '@metamask/keyring-api';
 
 describe('getNetworkNavbarOptions', () => {
   const Stack = createStackNavigator();
@@ -13,7 +11,11 @@ describe('getNetworkNavbarOptions', () => {
     pop: jest.fn(),
   };
 
-  const TestNavigator = ({ options }) => (
+  const TestNavigator = ({
+    options,
+  }: {
+    options: ReturnType<typeof getNetworkNavbarOptions>;
+  }) => (
     <Stack.Navigator>
       <Stack.Screen name="TestScreen" component={() => options.header()} />
     </Stack.Navigator>
@@ -27,10 +29,10 @@ describe('getNetworkNavbarOptions', () => {
     const options = getNetworkNavbarOptions(
       'Test Title',
       false,
-      mockNavigation,
+      mockNavigation as unknown as Parameters<typeof getNetworkNavbarOptions>[2],
     );
 
-    const { getByText, getByRole } = renderWithProvider(
+    const { getByText } = renderWithProvider(
       <TestNavigator options={options} />,
       {
         state: {

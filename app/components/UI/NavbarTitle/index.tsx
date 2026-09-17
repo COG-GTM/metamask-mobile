@@ -1,7 +1,8 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { ComponentType, PureComponent, ReactNode } from 'react';
 import { connect } from 'react-redux';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import Networks, { getDecimalChainId } from '../../../util/networks';
 import { strings } from '../../../../locales/i18n';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -9,17 +10,23 @@ import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { withNavigation } from '@react-navigation/compat';
 import {
+  ProviderConfig,
   selectChainId,
   selectProviderConfig,
 } from '../../../selectors/networkController';
-import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
+import {
+  withMetricsAwareness,
+  IUseMetricsHook,
+} from '../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import Text, {
   TextVariant,
   TextColor,
 } from '../../../component-library/components/Texts/Text';
 import { selectNetworkName } from '../../../selectors/networkInfos';
+import { RootState } from '../../../reducers';
 
-const createStyles = (colors) =>
+const createStyles = (_colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       justifyContent: 'center',
@@ -31,58 +38,63 @@ const createStyles = (colors) =>
     },
   });
 
+interface OwnProps {
+  /**
+   * Name of the current view
+   */
+  title?: string;
+  /**
+   * Boolean that specifies if the title needs translation
+   */
+  translate?: boolean;
+  /**
+   * Boolean that specifies if the network can be changed
+   */
+  disableNetwork?: boolean;
+  /**
+   * Object that represents the navigator
+   */
+  navigation?: NavigationProp<ParamListBase>;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  metrics?: IUseMetricsHook;
+  /**
+   * Boolean that specifies if the network selected is displayed
+   */
+  showSelectedNetwork?: boolean;
+  /**
+   * Name of the network to display
+   */
+  networkName?: string;
+  /**
+   * Content to display inside text element
+   */
+  children?: ReactNode;
+}
+
+interface StateProps {
+  /**
+   * Object representing the configuration of the current selected network
+   */
+  providerConfig: ProviderConfig;
+  /**
+   * Selected multichain chainId
+   */
+  chainId?: string;
+  /**
+   * Selected network name
+   */
+  selectedNetworkName?: string;
+}
+
+type NavbarTitleProps = OwnProps & StateProps;
+
 /**
  * UI PureComponent that renders inside the navbar
  * showing the view title and the selected network
  */
-class NavbarTitle extends PureComponent {
-  static propTypes = {
-    /**
-     * Object representing the configuration of the current selected network
-     */
-    providerConfig: PropTypes.object.isRequired,
-    /**
-     * Name of the current view
-     */
-    title: PropTypes.string,
-    /**
-     * Boolean that specifies if the title needs translation
-     */
-    translate: PropTypes.bool,
-    /**
-     * Boolean that specifies if the network can be changed
-     */
-    disableNetwork: PropTypes.bool,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that specifies if the network selected is displayed
-     */
-    showSelectedNetwork: PropTypes.bool,
-    /**
-     * Name of the network to display
-     */
-    networkName: PropTypes.string,
-    /**
-     * Content to display inside text element
-     */
-    children: PropTypes.node,
-    /**
-     * Selected multichain chainId
-     */
-    chainId: PropTypes.string,
-    /**
-     * Selected network name
-     */
-    selectedNetworkName: PropTypes.string,
-  };
-
+class NavbarTitle extends PureComponent<NavbarTitleProps> {
   static defaultProps = {
     translate: true,
     showSelectedNetwork: true,
@@ -91,21 +103,24 @@ class NavbarTitle extends PureComponent {
   animating = false;
 
   openNetworkList = () => {
+    const { navigation, metrics } = this.props;
     if (!this.props.disableNetwork) {
       if (!this.animating) {
         this.animating = true;
-        this.props.navigation.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
+        navigation?.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
           screen: Routes.SHEET.NETWORK_SELECTOR,
         });
 
-        this.props.metrics.trackEvent(
-          this.props.metrics
-            .createEventBuilder(MetaMetricsEvents.NETWORK_SELECTOR_PRESSED)
-            .addProperties({
-              chain_id: getDecimalChainId(this.props.chainId),
-            })
-            .build(),
-        );
+        if (metrics) {
+          metrics.trackEvent(
+            metrics
+              .createEventBuilder(MetaMetricsEvents.NETWORK_SELECTOR_PRESSED)
+              .addProperties({
+                chain_id: getDecimalChainId(this.props.chainId),
+              })
+              .build(),
+          );
+        }
         setTimeout(() => {
           this.animating = false;
         }, 500);
@@ -123,23 +138,23 @@ class NavbarTitle extends PureComponent {
       networkName,
       selectedNetworkName,
     } = this.props;
-    let name = null;
+    let name: string | null = null;
 
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     if (selectedNetworkName || networkName) {
-      name = networkName || selectedNetworkName;
+      name = networkName || selectedNetworkName || null;
       // TODO: [SOLANA] Revisit this before shipping, some screens do not pass a network name as a prop, consider using the selector instead
     } else if (providerConfig.nickname) {
       name = providerConfig.nickname;
     } else {
-      name =
-        (Networks[providerConfig.type] && Networks[providerConfig.type].name) ||
-        { ...Networks.rpc, color: null }.name;
+      const network = Networks[providerConfig.type as keyof typeof Networks];
+      name = network?.name || { ...Networks.rpc, color: null }.name;
     }
 
-    const realTitle = translate ? strings(title) : title;
+    const realTitle = translate ? strings(title as string) : title;
     return (
       <TouchableOpacity
         onPress={this.openNetworkList}
@@ -174,12 +189,16 @@ class NavbarTitle extends PureComponent {
 
 NavbarTitle.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   providerConfig: selectProviderConfig(state),
   chainId: selectChainId(state),
   selectedNetworkName: selectNetworkName(state),
 });
 
 export default withNavigation(
-  connect(mapStateToProps)(withMetricsAwareness(NavbarTitle)),
-);
+  connect(mapStateToProps)(
+    withMetricsAwareness(
+      NavbarTitle as unknown as ComponentType<IWithMetricsAwarenessProps>,
+    ),
+  ) as unknown as Parameters<typeof withNavigation>[0],
+) as unknown as ComponentType<OwnProps>;

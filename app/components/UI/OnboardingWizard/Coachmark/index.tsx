@@ -1,6 +1,13 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import React, { PureComponent, ReactNode } from 'react';
+import {
+  Animated,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
+import { Theme, typography } from '@metamask/design-tokens';
 import {
   colors as importedColors,
   fontStyles,
@@ -15,7 +22,6 @@ import {
   IconName,
   IconColor,
 } from '../../../../component-library/components/Icons/Icon';
-import { typography } from '@metamask/design-tokens';
 import {
   ButtonSize,
   ButtonVariants,
@@ -27,8 +33,9 @@ import {
   getFontFamily,
   TextVariant,
 } from '../../../../component-library/components/Texts/Text';
+import { Colors } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     coachmark: {
       backgroundColor: colors.primary.default,
@@ -164,7 +171,7 @@ const createStyles = (colors) =>
       alignSelf: 'center',
     },
     stepCounter: {
-      ...typography.BodyMD,
+      ...(typography as unknown as Record<string, object | undefined>).BodyMD,
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.info.inverse,
     },
@@ -175,68 +182,77 @@ const createStyles = (colors) =>
     },
   });
 
-export default class Coachmark extends PureComponent {
-  static propTypes = {
-    /**
-     * Custom coachmark style to apply
-     */
-    coachmarkStyle: PropTypes.object,
-    /**
-     * Custom animated view style to apply
-     */
-    style: PropTypes.object,
-    /**
-     * Content object
-     */
-    content: PropTypes.object,
-    /**
-     * Title text
-     */
-    title: PropTypes.string,
-    /**
-     * Current onboarding wizard step
-     */
-    currentStep: PropTypes.number,
-    /**
-     * Callback to be called when next is pressed
-     */
-    onNext: PropTypes.func,
-    /**
-     * Callback to be called when back is pressed
-     */
-    onBack: PropTypes.func,
-    /**
-     * Whether action buttons have to be rendered
-     */
-    action: PropTypes.bool,
-    /**
-     * Top indicator position
-     */
-    topIndicatorPosition: PropTypes.oneOf([
-      false,
-      'topCenter',
-      'topLeft',
-      'topLeftCorner',
-      'topRight',
-      'topRightCorner',
-    ]),
-    /**
-     * Bottom indicator position
-     */
-    bottomIndicatorPosition: PropTypes.oneOf([
-      false,
-      'bottomCenter',
-      'bottomLeft',
-      'bottomLeftCorner',
-      'bottomRight',
-    ]),
-    /**
-     * Callback called when closing on boarding wizard
-     */
-    onClose: PropTypes.func,
-  };
+type TopIndicatorPosition =
+  | false
+  | 'topCenter'
+  | 'topLeft'
+  | 'topLeftCorner'
+  | 'topRight'
+  | 'topRightCorner';
 
-  state = {
+type BottomIndicatorPosition =
+  | false
+  | 'bottomCenter'
+  | 'bottomLeft'
+  | 'bottomLeftCorner'
+  | 'bottomRight';
+
+interface CoachmarkProps {
+  /**
+   * Custom coachmark style to apply
+   */
+  coachmarkStyle?: StyleProp<ViewStyle>;
+  /**
+   * Custom animated view style to apply
+   */
+  style?: StyleProp<ViewStyle>;
+  /**
+   * Content object
+   */
+  content?: ReactNode;
+  /**
+   * Title text
+   */
+  title?: string;
+  /**
+   * Current onboarding wizard step
+   */
+  currentStep?: number;
+  /**
+   * Callback to be called when next is pressed
+   */
+  onNext?: () => void;
+  /**
+   * Callback to be called when back is pressed
+   */
+  onBack?: () => void;
+  /**
+   * Whether action buttons have to be rendered
+   */
+  action?: boolean;
+  /**
+   * Top indicator position
+   */
+  topIndicatorPosition?: TopIndicatorPosition;
+  /**
+   * Bottom indicator position
+   */
+  bottomIndicatorPosition?: BottomIndicatorPosition;
+  /**
+   * Callback called when closing on boarding wizard
+   */
+  onClose?: () => void;
+}
+
+interface CoachmarkState {
+  ready: boolean;
+}
+
+export default class Coachmark extends PureComponent<
+  CoachmarkProps,
+  CoachmarkState
+> {
+  state: CoachmarkState = {
     ready: false,
   };
 
@@ -277,7 +293,8 @@ export default class Coachmark extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -287,18 +304,20 @@ export default class Coachmark extends PureComponent {
    * @param {string} topIndicatorPosition - Indicator position
    * @returns {Object} - Corresponding style object
    */
-  getIndicatorStyle = (topIndicatorPosition) => {
+  getIndicatorStyle = (
+    topIndicatorPosition?: TopIndicatorPosition,
+  ): StyleProp<ViewStyle> => {
     const styles = this.getStyles();
 
-    const positions = {
+    const positions: Record<string, StyleProp<ViewStyle>> = {
       topCenter: styles.topCenter,
       topLeft: styles.topLeft,
       topRight: styles.topRight,
       topLeftCorner: styles.topLeftCorner,
       topRightCorner: styles.topRightCorner,
-      [undefined]: styles.topCenter,
+      undefined: styles.topCenter,
     };
-    return positions[topIndicatorPosition];
+    return positions[String(topIndicatorPosition)];
   };
 
   /**
@@ -307,17 +326,19 @@ export default class Coachmark extends PureComponent {
    * @param {string} bottomIndicatorPosition - Indicator position
    * @returns {Object} - Corresponding style object
    */
-  getBotttomIndicatorStyle = (bottomIndicatorPosition) => {
+  getBotttomIndicatorStyle = (
+    bottomIndicatorPosition?: BottomIndicatorPosition,
+  ): StyleProp<ViewStyle> => {
     const styles = this.getStyles();
 
-    const positions = {
+    const positions: Record<string, StyleProp<ViewStyle>> = {
       bottomCenter: styles.bottomCenter,
       bottomLeft: styles.bottomLeft,
       bottomLeftCorner: styles.bottomLeftCorner,
       bottomRight: styles.bottomRight,
-      [undefined]: styles.bottomCenter,
+      undefined: styles.bottomCenter,
     };
-    return positions[bottomIndicatorPosition];
+    return positions[String(bottomIndicatorPosition)];
   };
 
   /**
