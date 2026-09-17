@@ -13,7 +13,9 @@ import CollectibleMedia from '../CollectibleMedia';
 import { baseStyles } from '../../../styles/common';
 import ReusableModal, { ReusableModalRef } from '../ReusableModal';
 import Routes from '../../../constants/navigation/Routes';
-import CollectibleOverview from '../../UI/CollectibleOverview';
+import CollectibleOverview, {
+  CollectibleOverviewAsset,
+} from '../../UI/CollectibleOverview';
 import { collectiblesSelector } from '../../../reducers/collectibles';
 import {
   selectDisplayNftMedia,
@@ -142,8 +144,9 @@ const CollectibleModal = () => {
           ]}
         >
           <CollectibleOverview
-            navigation={navigation}
-            collectible={collectibleData}
+            collectible={
+              collectibleData as unknown as CollectibleOverviewAsset
+            }
             tradable={isTradable()}
             onSend={onSend}
             openLink={openLink}

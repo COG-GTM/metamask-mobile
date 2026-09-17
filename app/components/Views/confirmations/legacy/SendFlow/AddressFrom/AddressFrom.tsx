@@ -138,7 +138,7 @@ const SendFlowAddressFrom = ({
   return (
     <AddressFrom
       onPressIcon={openAccountSelector}
-      fromAccountAddress={accountAddress}
+      fromAccountAddress={accountAddress ?? undefined}
       fromAccountName={accountName}
       fromAccountBalance={accountBalance}
     />

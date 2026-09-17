@@ -95,7 +95,7 @@ const SendFlowAddressTo = ({
       onClear={onClear}
       onInputFocus={onToInputFocus}
       onInputBlur={onToInputFocus}
-      onSubmit={onSubmit}
+      onSubmit={onSubmit as () => void}
       inputWidth={inputWidth}
       confusableCollection={confusableCollectionArray}
       isFromAddressBook={isFromAddressBook}

@@ -7,6 +7,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { mockNetworkState } from '../../../util/test/network';
+import { Nft } from '@metamask/assets-controllers';
 
 const mockStore = configureStore([]);
 const initialState = {
@@ -103,7 +104,7 @@ describe('CollectibleContractElement', () => {
         { address: '0xdef', tokenId: '2', name: 'Collectible2' },
         { address: '0xdef', tokenId: '3', name: 'Collectible3' },
         { address: '0xdef', tokenId: '4', name: 'Collectible4' },
-      ],
+      ] as unknown as Nft[],
       collectiblesVisible: true,
       onPress: onPressMock,
       removeFavoriteCollectible: removeFavoriteMock,
@@ -133,7 +134,7 @@ describe('CollectibleContractElement', () => {
           { address: '0xdef', tokenId: '2', name: 'Collectible2' },
           { address: '0xdef', tokenId: '3', name: 'Collectible3' },
           { address: '0xdef', tokenId: '4', name: 'Collectible4' },
-        ],
+        ] as unknown as Nft[],
         collectiblesVisible: true,
         onPress: onPressMock,
         removeFavoriteCollectible: removeFavoriteMock,
@@ -170,7 +171,7 @@ describe('CollectibleContractElement', () => {
         },
         contractCollectibles: [
           { address: '0xdef', tokenId: '1', name: 'Collectible11' },
-        ],
+        ] as unknown as Nft[],
         collectiblesVisible: true,
         onPress: onPressMock,
         removeFavoriteCollectible: removeFavoriteMock,
