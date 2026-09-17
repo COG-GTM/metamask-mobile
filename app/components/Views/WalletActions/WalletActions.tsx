@@ -17,7 +17,10 @@ import { swapsLivenessSelector } from '../../../reducers/swaps';
 import { isSwapsAllowed } from '../../../components/UI/Swaps/utils';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { getEther } from '../../../util/transactions';
-import { newAssetTransaction } from '../../../actions/transaction';
+import {
+  newAssetTransaction,
+  TransactionAsset,
+} from '../../../actions/transaction';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import WalletAction from '../../../components/UI/WalletAction';
 import { useStyles } from '../../../component-library/hooks';
@@ -242,7 +245,8 @@ const WalletActions = () => {
     // Native send flow
     closeBottomSheetAndNavigate(() => {
       navigate('SendFlowView');
-      ticker && dispatch(newAssetTransaction(getEther(ticker)));
+      ticker &&
+        dispatch(newAssetTransaction(getEther(ticker) as TransactionAsset));
     });
   }, [
     closeBottomSheetAndNavigate,
