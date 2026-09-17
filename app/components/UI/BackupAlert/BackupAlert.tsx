@@ -64,8 +64,9 @@ const BackupAlert = ({ navigation, onDismiss }: BackupAlertI) => {
   useEffect(() => {
     const isInBrowserView = currentRouteName === BROWSER_ROUTE;
     const blockedView =
-      BLOCKED_LIST.find((path) => currentRouteName.includes(path)) ||
-      currentRouteName === 'SetPasswordFlow';
+      BLOCKED_LIST.find((path) =>
+        (currentRouteName as string).includes(path),
+      ) || currentRouteName === 'SetPasswordFlow';
 
     setInBrowserView(isInBrowserView);
     setInBlockedView(!!blockedView);
