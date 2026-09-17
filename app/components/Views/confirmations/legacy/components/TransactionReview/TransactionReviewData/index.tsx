@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { Theme } from '@metamask/design-tokens';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import { fontStyles } from '../../../../../../../styles/common';
@@ -15,8 +15,10 @@ import {
   selectConversionRateByChainId,
   selectCurrentCurrency,
 } from '../../../../../../../selectors/currencyRateController';
+import { RootState } from '../../../../../../../reducers';
+import { Colors } from '../../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     root: {
       paddingHorizontal: 24,
@@ -75,32 +77,48 @@ const createStyles = (colors) =>
     },
   });
 
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+interface TransactionReviewDataProps {
+  /**
+   * Transaction object associated with this transaction
+   */
+  transaction: { transaction: { data: string } };
+  /**
+   * Transaction corresponding action key
+   */
+  actionKey?: string;
+  /**
+   * Hides or shows transaction data
+   */
+  toggleDataView?: () => void;
+  /**
+   * Height of custom gas and data modal
+   */
+  customGasHeight?: number;
+  /**
+   * Triggers global alert
+   */
+  showAlert: (config: AlertConfig) => void;
+  /**
+   * Injected by `mapStateToProps`, unused by the component itself
+   */
+  conversionRate: ReturnType<typeof selectConversionRateByChainId>;
+  /**
+   * Injected by `mapStateToProps`, unused by the component itself
+   */
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+}
+
 /**
  * PureComponent that supports reviewing transaction data
  */
-class TransactionReviewData extends PureComponent {
-  static propTypes = {
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Transaction corresponding action key
-     */
-    actionKey: PropTypes.string,
-    /**
-     * Hides or shows transaction data
-     */
-    toggleDataView: PropTypes.func,
-    /**
-     * Height of custom gas and data modal
-     */
-    customGasHeight: PropTypes.number,
-    /**
-     * Triggers global alert
-     */
-    showAlert: PropTypes.func,
-  };
+class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
 
   applyRootHeight = () => ({ height: this.props.customGasHeight });
 
@@ -127,7 +145,8 @@ class TransactionReviewData extends PureComponent {
       actionKey,
       toggleDataView,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -182,14 +201,16 @@ class TransactionReviewData extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRateByChainId(state, state.transaction.chainId),
   currentCurrency: selectCurrentCurrency(state),
   transaction: state.transaction,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapDispatchToProps = (dispatch: any) => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
 });
 
 TransactionReviewData.contextType = ThemeContext;
