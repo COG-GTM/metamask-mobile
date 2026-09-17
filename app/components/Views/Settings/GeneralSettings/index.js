@@ -209,10 +209,6 @@ class Settings extends PureComponent {
      */
     setHideZeroBalanceTokens: PropTypes.func,
     /**
-     * App theme
-     */
-    // appTheme: PropTypes.string,
-    /**
      * Metrics injected by withMetricsAwareness HOC
      */
     metrics: PropTypes.object,
@@ -293,34 +289,6 @@ class Settings extends PureComponent {
   componentDidUpdate = () => {
     this.updateNavBar();
   };
-
-  // TODO - Reintroduce once we enable manual theme settings
-  // goToThemeSettings = () => {
-  //   const { navigation } = this.props;
-  //   navigation.navigate('ThemeSettings');
-  // };
-
-  // renderThemeSettingsSection = () => {
-  //   const { appTheme } = this.props;
-  //   const colors = this.context.colors || mockTheme.colors;
-  //   const styles = createStyles(colors);
-
-  //   return (
-  //     <View style={styles.setting}>
-  //       <View>
-  //         <Text variant={TextVariant.BodyMD} color={TextColor.Alternative}>
-  //           {strings('app_settings.theme_title', {
-  //             theme: strings(`app_settings.theme_${AppThemeKey[appTheme]}`),
-  //           })}
-  //         </Text>
-  //         <Text style={styles.desc}>{strings('app_settings.theme_description')}</Text>
-  //         <StyledButton type="normal" onPress={this.goToThemeSettings} containerStyle={styles.marginTop}>
-  //           {strings('app_settings.theme_button_text')}
-  //         </StyledButton>
-  //       </View>
-  //     </View>
-  //   );
-  // };
 
   render() {
     const {
@@ -508,7 +476,6 @@ class Settings extends PureComponent {
               </View>
             </View>
           </View>
-          {/* {this.renderThemeSettingsSection()} */}
         </View>
       </ScrollView>
     );
@@ -524,7 +491,6 @@ const mapStateToProps = (state) => ({
   useBlockieIcon: state.settings.useBlockieIcon,
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   hideZeroBalanceTokens: state.settings.hideZeroBalanceTokens,
-  // appTheme: state.user.appTheme,
 });
 
 const mapDispatchToProps = (dispatch) => ({

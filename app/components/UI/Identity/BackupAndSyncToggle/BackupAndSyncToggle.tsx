@@ -1,14 +1,12 @@
 import React, { useCallback, useEffect } from 'react';
 
 import { View, Switch, Linking, InteractionManager } from 'react-native';
-// import { useNavigation } from '@react-navigation/native';
 
 import Text, {
   TextVariant,
   TextColor,
 } from '../../../../component-library/components/Texts/Text';
 import { useTheme } from '../../../../util/theme';
-// import { strings } from '../../../../../locales/i18n';
 import styles from './BackupAndSyncToggle.styles';
 import AppConstants from '../../../../core/AppConstants';
 import { useBackupAndSync } from '../../../../util/identity/hooks/useBackupAndSync';
@@ -18,7 +16,6 @@ import {
   selectIsBackupAndSyncEnabled,
   selectIsBackupAndSyncUpdateLoading,
 } from '../../../../selectors/identity';
-// import Routes from '../../../../constants/navigation/Routes';
 import SwitchLoadingModal from '../../Notification/SwitchLoadingModal';
 import { BACKUPANDSYNC_FEATURES } from '@metamask/profile-sync-controller/user-storage';
 import { MetaMetricsEvents, useMetrics } from '../../../hooks/useMetrics';

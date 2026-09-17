@@ -5,9 +5,6 @@ import I18n from 'react-native-i18n';
 import { EventEmitter } from 'events';
 
 import { LANGUAGE } from '../app/constants/storage';
-// Polyfill Intl & include fallback locale (en) for Hermes iOS
-// import 'intl';
-// import 'intl/locale-data/jsonp/en.js';
 
 // Import all locales
 import de from './languages/de';
@@ -54,50 +51,12 @@ I18n.translations = supportedTranslations;
 // If language selected get locale
 getUserPreferableLocale();
 
-// Uncomment this for using RTL
-//const currentLocale = I18n.currentLocale();
-
-// /**
-//  * Dynamically require locale data based on whatever language is selected.
-//  * Required as part of Intl polyfill implementation. Only applies to Hermes iOS.
-//  *
-//  * @param {string} locale locale based on I18n.locale type
-//  */
-// export function getLocaleData(locale) {
-//   switch (locale) {
-//     case 'es':
-//       return require(`intl/locale-data/jsonp/es.js`);
-//     case 'hi':
-//       return require(`intl/locale-data/jsonp/hi.js`);
-//     case 'id':
-//       return require(`intl/locale-data/jsonp/id.js`);
-//     case 'ja':
-//       return require(`intl/locale-data/jsonp/ja.js`);
-//     case 'ko':
-//       return require(`intl/locale-data/jsonp/ko.js`);
-//     case 'pt':
-//       return require(`intl/locale-data/jsonp/pt.js`);
-//     case 'ru':
-//       return require(`intl/locale-data/jsonp/ru.js`);
-//     case 'tl':
-//       // intl polyfill doesn't support tl at the moment, fallback to en
-//       // This is consistent between pre and post polyfill behavior
-//       return require(`intl/locale-data/jsonp/en.js`);
-//     case 'vi':
-//       return require(`intl/locale-data/jsonp/vi.js`);
-//     case 'zh':
-//       return require(`intl/locale-data/jsonp/zh.js`);
-//     default:
-//   }
-// }
-
 // Is it a RTL language?
 export const isRTL = false; // currentLocale.indexOf('jaJp') === 0;
 
 // Set locale
 export async function setLocale(locale) {
   I18n.locale = locale;
-  // Platform.OS === 'ios' && getLocaleData(locale);
   await StorageWrapper.setItem(LANGUAGE, locale);
   I18nEvents.emit('localeChanged', locale);
 }
