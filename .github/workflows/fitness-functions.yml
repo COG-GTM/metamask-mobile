@@ -34,3 +34,12 @@ jobs:
           git diff "$(git merge-base "origin/$BASE_REF" HEAD)" HEAD -- . > ./diff
           yarn run fitness-functions -- "ci" "./diff"
         working-directory: '.github/scripts'
+
+      # Reports remaining JavaScript source files in app/ during the JS->TS
+      # migration. Kept non-blocking (continue-on-error) until the backlog
+      # reaches zero; flip to blocking by removing continue-on-error once all
+      # conversion PRs are merged.
+      - name: Check no JavaScript source files remain in app/
+        continue-on-error: true
+        run: yarn run check-ts-app-gate
+        working-directory: '.github/scripts'
