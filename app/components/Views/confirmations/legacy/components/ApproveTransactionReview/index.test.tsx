@@ -1,6 +1,7 @@
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { cloneDeep } from 'lodash';
-import ApproveTransactionModal from '.';
+import type { ComponentType } from 'react';
+import ApproveTransactionModalComponent from '.';
 import { getTokenDetails } from '../../../../../../util/address';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import { renderScreen } from '../../../../../../util/test/renderWithProvider';
@@ -44,6 +45,19 @@ jest.mock('../../../../../../core/Engine', () => {
   };
 });
 
+// `ApproveTransactionReview` is still untyped JS, so `connect()` infers `never`
+// props for it. Describe the props this test actually passes.
+const ApproveTransactionModal =
+  ApproveTransactionModalComponent as unknown as ComponentType<{
+    onConfirm?: () => void;
+  }>;
+
+// The fixture below deliberately diverges from `RootState` (extra
+// `AccountTrackerController.accounts`, array-shaped `tokensChainsCache` data).
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type MockState = Record<string, any>;
+
 const data = `0x${SET_APPROVAL_FOR_ALL_SIGNATURE}00000000000000000000000056ced0d816c668d7c0bcc3fbf0ab2c6896f589a00000000000000000000000000000000000000000000000000000000000000001`;
 const transaction = {
   to: '0x',
@@ -58,7 +72,7 @@ const transaction = {
   data,
 };
 
-const initialState = {
+const initialState: MockState = {
   engine: {
     backgroundState: {
       ...backgroundState,
@@ -114,7 +128,7 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is enabled when standard is defined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = jest.mocked(getTokenDetails) as jest.Mock;
     mockGetTokenDetails.mockReturnValue({
       standard: 'ERC20',
     });
@@ -178,7 +192,7 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is disabled when standard is undefined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = jest.mocked(getTokenDetails) as jest.Mock;
     mockGetTokenDetails.mockReturnValue({});
     const state = cloneDeep(initialState);
     state.engine.backgroundState.AccountTrackerController.accounts = [];
