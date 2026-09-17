@@ -22,10 +22,6 @@ interface ExpandableProps {
   isCompact?: boolean;
 }
 
-export enum IconVerticalPosition {
-  Top = 'top',
-}
-
 const Expandable = ({
   collapsedContent,
   expandedContent,
