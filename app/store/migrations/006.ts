@@ -7,8 +7,15 @@ import {
   EXPLORED,
 } from '../../constants/storage';
 
-export default function migrate(state) {
-  state.analytics?.enabled
+interface MigrationState {
+  analytics?: {
+    enabled?: boolean;
+  };
+}
+
+export default function migrate(state: unknown) {
+  const migrationState = state as MigrationState;
+  migrationState.analytics?.enabled
     ? DefaultPreference.set(METRICS_OPT_IN, AGREED)
     : DefaultPreference.set(METRICS_OPT_IN, DENIED);
   DefaultPreference.set(ONBOARDING_WIZARD, EXPLORED);
