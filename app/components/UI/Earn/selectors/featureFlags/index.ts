@@ -60,13 +60,3 @@ export const selectStablecoinLendingEnabledFlag = createSelector(
     return prioritizeFlagsByEnv(localFlag, remoteFlag);
   },
 );
-
-export const selectStablecoinLendingServiceInterruptionBannerEnabledFlag =
-  createSelector(selectRemoteFeatureFlags, (remoteFeatureFlags) => {
-    const localFlag =
-      process.env.MM_STABLE_COIN_SERVICE_INTERRUPTION_BANNER_ENABLED === 'true';
-    const remoteFlag =
-      remoteFeatureFlags?.earnStablecoinLendingServiceInterruptionBannerEnabled as unknown as EarnLaunchDarklyFlag;
-
-    return prioritizeFlagsByEnv(localFlag, remoteFlag);
-  });
