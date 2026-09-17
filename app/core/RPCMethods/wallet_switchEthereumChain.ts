@@ -1,3 +1,8 @@
+import type {
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';
@@ -25,6 +30,18 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
+}: {
+  req: JsonRpcRequest<JsonRpcParams> & { origin: string };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  res: PendingJsonRpcResponse<any>;
+  requestUserApproval: (args: {
+    type: string;
+    requestData: Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) => Promise<any>;
+  analytics: Record<string, string | boolean | undefined>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  hooks: Record<string, any>;
 }) => {
   const {
     CurrencyRateController,
@@ -32,7 +49,9 @@ export const wallet_switchEthereumChain = async ({
     MultichainNetworkController,
     SelectedNetworkController,
   } = Engine.context;
-  const params = req.params?.[0];
+  const params = (req.params as unknown as unknown[] | undefined)?.[0] as
+    | { chainId?: unknown }
+    | undefined;
   const { origin } = req;
   if (!params || typeof params !== 'object') {
     throw rpcErrors.invalidParams({
@@ -42,7 +61,7 @@ export const wallet_switchEthereumChain = async ({
     });
   }
   const { chainId } = params;
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -98,7 +117,7 @@ export const wallet_switchEthereumChain = async ({
         fromNetworkConfiguration,
         ...hooks,
       },
-    });
+    } as Parameters<typeof switchToNetwork>[0]);
 
     res.result = null;
     return;

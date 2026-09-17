@@ -1,18 +1,23 @@
 import Device from '../util/device';
 import RNFS from 'react-native-fs';
 
-const EntryScriptWeb3 = {
+interface EntryScriptWeb3Interface {
+  entryScriptWeb3: string | null;
+  init(): Promise<string>;
+  get(): Promise<string>;
+}
+
+const EntryScriptWeb3: EntryScriptWeb3Interface = {
   entryScriptWeb3: null,
   // Cache InpageBridgeWeb3 so that it is immediately available
   async init() {
-    this.entryScriptWeb3 = Device.isIos()
-      ? await RNFS.readFile(
-          `${RNFS.MainBundlePath}/InpageBridgeWeb3.js`,
-          'utf8',
-        )
+    const entryScriptWeb3 = Device.isIos()
+      ? await RNFS.readFile(`${RNFS.MainBundlePath}/InpageBridgeWeb3.js`, 'utf8')
       : await RNFS.readFileAssets(`InpageBridgeWeb3.js`);
 
-    return this.entryScriptWeb3;
+    this.entryScriptWeb3 = entryScriptWeb3;
+
+    return entryScriptWeb3;
   },
   async get() {
     // Return from cache
