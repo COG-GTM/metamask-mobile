@@ -5,10 +5,7 @@ import { lightTheme } from '@metamask/design-tokens';
 
 // Internal dependencies.
 import ButtonPrimary from './ButtonPrimary';
-import {
-  SAMPLE_BUTTONPRIMARY_PROPS,
-  BUTTONPRIMARY_TESTID,
-} from './ButtonPrimary.constants';
+import { SAMPLE_BUTTONPRIMARY_PROPS } from './ButtonPrimary.constants';
 
 describe('ButtonPrimary', () => {
   it('render matches latest snapshot', () => {
@@ -51,11 +48,11 @@ describe('ButtonPrimary', () => {
         {...SAMPLE_BUTTONPRIMARY_PROPS}
         label="Danger Button"
         isDanger
-        testID={BUTTONPRIMARY_TESTID}
+        testID="buttonprimary"
       />,
     );
 
-    const buttonElement = getByTestId(BUTTONPRIMARY_TESTID);
+    const buttonElement = getByTestId('buttonprimary');
 
     expect(buttonElement.props.style.backgroundColor).toBe(
       lightTheme.colors.error.default,
