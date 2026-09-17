@@ -1,11 +1,16 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-var-requires */
 import React from 'react';
-import { TransactionType } from '@metamask/transaction-controller';
+import { Hex } from '@metamask/utils';
+import {
+  TransactionStatus,
+  TransactionType,
+} from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller/';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import Asset from './';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
-import { isPortfolioViewEnabled } from '../../../util/networks';
 
 const mockInitialState = {
   swaps: { '0x1': { isLive: true }, hasOnboarded: false, isLive: true },
@@ -37,7 +42,7 @@ const mockInitialState = {
         selectedNetworkClientId: 'selectedNetworkClientId',
         networkConfigurationsByChainId: {
           '0x1': {
-            chainId: '0x1',
+            chainId: '0x1' as Hex,
             rpcEndpoints: [
               {
                 networkClientId: 'selectedNetworkClientId',
@@ -48,7 +53,7 @@ const mockInitialState = {
             blockExplorerUrls: ['https://block.com'],
           },
           '0x89': {
-            chainId: '0x89',
+            chainId: '0x89' as Hex,
             rpcEndpoints: [
               {
                 networkClientId: 'otherNetworkClientId',
@@ -66,8 +71,8 @@ const mockInitialState = {
               to: '0x0000000000000000000000000000000000000000',
             },
             hash: '0x3148',
-            status: 'confirmed',
-            chainId: '0x1',
+            status: 'confirmed' as TransactionStatus,
+            chainId: '0x1' as Hex,
             networkID: '0x1',
             type: TransactionType.simpleSend,
           },
