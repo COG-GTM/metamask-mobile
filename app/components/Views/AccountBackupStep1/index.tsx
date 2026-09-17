@@ -8,8 +8,12 @@ import {
   StyleSheet,
   BackHandler,
   Image,
+  ViewStyle,
 } from 'react-native';
-import PropTypes from 'prop-types';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Theme } from '@metamask/design-tokens';
+import { Dispatch } from 'redux';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
 import OnboardingProgress from '../../UI/OnboardingProgress';
@@ -35,7 +39,7 @@ import Routes from '../../../../app/constants/navigation/Routes';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 import SRPDesign from '../../../images/srp-lock-design.png';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -123,11 +127,28 @@ const createStyles = (colors) =>
     },
   });
 
+interface AccountBackupStep1Props {
+  /**
+   * navigation object required to push and pop other views
+   */
+  navigation?: StackNavigationProp<ParamListBase>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: RouteProp<ParamListBase, string>;
+  /**
+   * Action to set onboarding wizard step
+   */
+  setOnboardingWizardStep: (step: number) => void;
+}
+
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1 = (props) => {
+const AccountBackupStep1 = (screenProps: AccountBackupStep1Props) => {
+  // Always rendered as a stack screen, so navigation and route are injected.
+  const props = screenProps as Required<AccountBackupStep1Props>;
   const { navigation, route } = props;
   const [showRemindLaterModal, setRemindLaterModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -136,9 +157,16 @@ const AccountBackupStep1 = (props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const track = (event, properties) => {
+  const track = (
+    event: Parameters<typeof MetricsEventBuilder.createEventBuilder>[0],
+    properties?: Parameters<
+      ReturnType<typeof MetricsEventBuilder.createEventBuilder>['addProperties']
+    >[0],
+  ) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
-    eventBuilder.addProperties(properties);
+    eventBuilder.addProperties(
+      properties as Parameters<typeof eventBuilder.addProperties>[0],
+    );
     trackOnboarding(eventBuilder.build());
   };
 
@@ -147,11 +175,14 @@ const AccountBackupStep1 = (props) => {
       ...getOnboardingNavbarOptions(
         route,
         // eslint-disable-next-line react/display-name
-        { headerLeft: () => <View /> },
+        { headerLeft: () => <View /> } as Parameters<
+          typeof getOnboardingNavbarOptions
+        >[1],
         colors,
       ),
+      // Legacy option the stack navigator no longer declares; kept as-is.
       gesturesEnabled: false,
-    });
+    } as Parameters<typeof navigation.setOptions>[0]);
   }, [navigation, route, colors]);
 
   useEffect(
@@ -266,7 +297,7 @@ const AccountBackupStep1 = (props) => {
             )}
             <View style={styles.ctaContainer}>
               <StyledButton
-                containerStyle={styles.button}
+                containerStyle={(styles as Record<string, ViewStyle>).button}
                 type={'confirm'}
                 onPress={goNext}
               >
@@ -298,23 +329,9 @@ const AccountBackupStep1 = (props) => {
   );
 };
 
-AccountBackupStep1.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-};
-
-const mapDispatchToProps = (dispatch) => ({
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  setOnboardingWizardStep: (step: number) =>
+    dispatch(setOnboardingWizardStep(step)),
 });
 
 export default connect(null, mapDispatchToProps)(AccountBackupStep1);
