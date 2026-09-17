@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Hex } from '@metamask/utils';
 import { isSwapsNativeAsset } from '.';
 import {
   renderFromTokenMinimalUnit,
@@ -6,13 +7,20 @@ import {
   safeNumberToBN,
 } from '../../../../util/number';
 import { safeToChecksumAddress } from '../../../../util/address';
+import { selectAccounts } from '../../../../selectors/accountTrackerController';
+import { selectContractBalances } from '../../../../selectors/tokenBalancesController';
+
+interface UseBalanceToken {
+  address: string;
+  decimals: number;
+}
 
 function useBalance(
-  accounts,
-  balances,
-  selectedAddress,
-  sourceToken,
-  { asUnits = false } = {},
+  accounts: ReturnType<typeof selectAccounts>,
+  balances: ReturnType<typeof selectContractBalances>,
+  selectedAddress: string,
+  sourceToken: UseBalanceToken | undefined,
+  { asUnits = false }: { asUnits?: boolean } = {},
 ) {
   // TODO: This doesn't always return type BN. Objects down the line may attempt to call functions on the BN object.
   const balance = useMemo(() => {
@@ -22,15 +30,11 @@ function useBalance(
     if (isSwapsNativeAsset(sourceToken)) {
       if (asUnits) {
         // Controller stores balances in hex for ETH
-        return safeNumberToBN(
-          (accounts[selectedAddress] && accounts[selectedAddress].balance) || 0,
-        );
+        return safeNumberToBN(accounts[selectedAddress]?.balance || 0);
       }
-      return renderFromWei(
-        accounts[selectedAddress] && accounts[selectedAddress].balance,
-      );
+      return renderFromWei(accounts[selectedAddress]?.balance);
     }
-    const tokenAddress = safeToChecksumAddress(sourceToken.address);
+    const tokenAddress = safeToChecksumAddress(sourceToken.address) as Hex;
 
     if (tokenAddress in balances) {
       if (asUnits) {
