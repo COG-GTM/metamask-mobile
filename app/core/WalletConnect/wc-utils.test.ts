@@ -22,7 +22,6 @@ import {
 } from '../RPCMethods/lib/ethereum-chain-utils';
 
 import Engine from '../Engine';
-import DevLogger from '../SDKConnect/utils/DevLogger';
 
 // Mock dependencies
 jest.mock('../Engine', () => ({
@@ -295,7 +294,7 @@ describe('WalletConnect Utils', () => {
 
       // Test with allowSwitchingToNewChain set to true
       const result = await checkWCPermissions({
-        origin: 'test-dapp.com',
+        origin: 'https://test-dapp.com',
         caip2ChainId: 'eip155:3',
         allowSwitchingToNewChain: true,
       });
@@ -388,27 +387,6 @@ describe('WalletConnect Utils', () => {
       expect(getHostname('metamask:pay')).toBe('metamask');
     });
 
-    it('handles errors gracefully and returns original URI', () => {
-      // Mock a scenario where uri.substring throws an error
-      const expectedError = new Error('Substring failed');
-      const maliciousUri = {
-        includes: () => false,
-        indexOf: () => 1,
-        substring: () => {
-          throw expectedError;
-        },
-        toString: () => 'malicious-uri',
-      };
-
-      expect(getHostname(maliciousUri as unknown as string)).toBe(maliciousUri);
-
-      // Verify that DevLogger.log was called with the error
-      expect(DevLogger.log).toHaveBeenCalledWith(
-        'Error in getHostname:',
-        expectedError,
-      );
-    });
-
     it('handles standard URLs with hostname extraction', () => {
       expect(getHostname('https://example.com/path')).toBe('example.com');
       expect(
@@ -416,15 +394,25 @@ describe('WalletConnect Utils', () => {
       ).toBe('subdomain.example.org');
     });
 
-    it('falls back to manual parsing when URL parsing fails', () => {
-      // Create a URL with invalid characters that will fail URL parsing
+    it('returns the scheme for protocol-only URIs', () => {
       const invalidUrl = 'wc:topic@1';
       expect(getHostname(invalidUrl)).toBe('wc');
     });
 
-    it('returns original URI when no protocol separator is found', () => {
+    it('returns empty string when no protocol separator is found', () => {
       const noProtocolUri = 'example-with-no-protocol';
-      expect(getHostname(noProtocolUri)).toBe(noProtocolUri);
+      expect(getHostname(noProtocolUri)).toBe('');
+    });
+
+    it('does not return internal-origin values for attacker-controlled input', () => {
+      // A malicious dapp can set its WalletConnect peer metadata.url to a bare
+      // string equal to an INTERNAL_ORIGINS entry. getHostname must never echo
+      // such input back, otherwise it would be treated as a trusted origin.
+      expect(getHostname('MetaMask Mobile')).toBe('');
+      // Prefixing with a colon does not make it a valid scheme (spaces are not
+      // allowed), so it must not be extracted verbatim either.
+      expect(getHostname('MetaMask Mobile:payload')).toBe('');
+      expect(getHostname('EXAMPLE_FOX_CODE')).toBe('');
     });
   });
 });

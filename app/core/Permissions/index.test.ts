@@ -866,7 +866,7 @@ describe('Permission Utility Functions', () => {
   });
 
   describe('getPermittedAccounts', () => {
-    it('should return selected account for internal origins', () => {
+    it('should return selected account for internal origins when isInternalOrigin is set', () => {
       const selectedAccount = {
         address: '0x123',
       };
@@ -874,8 +874,25 @@ describe('Permission Utility Functions', () => {
         Engine.context.AccountsController.getSelectedAccount as jest.Mock
       ).mockReturnValue(selectedAccount);
 
-      const result = getPermittedAccounts(TransactionTypes.MMM);
+      const result = getPermittedAccounts(TransactionTypes.MMM, {
+        isInternalOrigin: true,
+      });
       expect(result).toEqual(['0x123']);
+    });
+
+    it('should NOT apply the internal-origin bypass for externally-supplied origins', () => {
+      // An attacker-controlled subject that happens to equal an INTERNAL_ORIGINS
+      // value must not short-circuit to the selected account when the caller did
+      // not explicitly opt in as an internal origin.
+      mockGetCaveat.mockImplementation(() => {
+        throw new PermissionDoesNotExistError(
+          'Permission does not exist',
+          Caip25EndowmentPermissionName,
+        );
+      });
+
+      const result = getPermittedAccounts(TransactionTypes.MMM);
+      expect(result).toEqual([]);
     });
 
     it('should return permitted accounts for external origins when wallet is unlocked', () => {
