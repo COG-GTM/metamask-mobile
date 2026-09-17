@@ -261,7 +261,9 @@ export const checkWCPermissions = async ({
 
   const existingNetwork = findExistingNetwork(
     hexChainIdString,
-    networkConfigurations,
+    networkConfigurations as unknown as Parameters<
+      typeof findExistingNetwork
+    >[1],
   );
 
   if (!existingNetwork) {

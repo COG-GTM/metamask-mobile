@@ -6,7 +6,13 @@ import {
 import { createEip1193MethodMiddleware } from '.';
 
 const getHandler = () => ({
-  implementation: (req, res, _next, end, hooks) => {
+  implementation: (
+    req: { params?: unknown },
+    res: { result?: unknown },
+    _next: unknown,
+    end: (error?: unknown) => unknown,
+    hooks: { hook1: () => unknown; hook2: () => unknown },
+  ) => {
     if (Array.isArray(req.params)) {
       switch (req.params[0]) {
         case 1:
@@ -144,7 +150,9 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as { cause: { message: string } }).cause.message,
+    ).toBe('test error');
   });
 
   it('should handle errors thrown by the implementation', async () => {
@@ -161,7 +169,9 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as { cause: { message: string } }).cause.message,
+    ).toBe('test error');
   });
 
   it('should handle non-errors thrown by the implementation', async () => {
