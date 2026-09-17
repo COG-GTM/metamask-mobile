@@ -3,14 +3,18 @@ import { shallow } from 'enzyme';
 import React from 'react';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import CustomSpendCap from './CustomSpendCap';
-import {
-  ACCOUNT_BALANCE,
-  CUSTOM_SPEND_CAP_TEST_ID,
-  DAPP_PROPOSED_VALUE,
-  INPUT_VALUE_CHANGED,
-  TICKER,
-} from './CustomSpendCap.constants';
+import { CUSTOM_SPEND_CAP_TEST_ID } from './CustomSpendCap.constants';
 import { CustomSpendCapProps } from './CustomSpendCap.types';
+
+const TICKER = 'DAI';
+const DAPP_PROPOSED_VALUE =
+  '115792089237316195423570985008687907853269984665640564039457.584007913129639936';
+const ACCOUNT_BALANCE = '200.12';
+const INPUT_VALUE_CHANGED = (value: string) => {
+  /* eslint-disable no-console */
+  // do something with value
+  console.log(value);
+};
 
 function RenderCustomSpendCap(
   tokenSpendValue = '',

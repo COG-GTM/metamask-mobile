@@ -70,13 +70,4 @@ const KeyValueRow = React.memo(({ field, value, style }: KeyValueRowProps) => {
   );
 });
 
-/**
- * Exported sub-components to provide a base for new KeyValueRow variants.
- */
-export const KeyValueRowStubs = {
-  Root: KeyValueRowRoot,
-  Section: KeyValueSection,
-  Label: KeyValueRowLabel,
-};
-
 export default KeyValueRow;

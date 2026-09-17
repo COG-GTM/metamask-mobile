@@ -13,7 +13,11 @@ import Banner from './Banner';
 import { TESTID_BANNER_CLOSE_BUTTON_ICON } from './foundation/BannerBase/BannerBase.constants';
 import { BannerAlertSeverity } from './variants/BannerAlert/BannerAlert.types';
 import { BannerVariant } from './Banner.types';
-import { SAMPLE_BANNER_PROPS } from './Banner.constants';
+
+const SAMPLE_BANNER_PROPS = {
+  title: 'Sample Banner Title',
+  description: 'Sample Banner Description',
+};
 
 describe('Banner', () => {
   it('should render correctly', () => {
