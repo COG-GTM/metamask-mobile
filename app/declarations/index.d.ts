@@ -410,3 +410,6 @@ declare module '@sentry/react-native' {
   ) => string;
   export { captureException };
 }
+
+// --- workstream 6 ---
+declare module 'react-native-progress/Bar';
