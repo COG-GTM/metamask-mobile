@@ -2,7 +2,6 @@ import {
   selectPooledStakingEnabledFlag,
   selectPooledStakingServiceInterruptionBannerEnabledFlag,
   selectStablecoinLendingEnabledFlag,
-  selectStablecoinLendingServiceInterruptionBannerEnabledFlag,
 } from '.';
 import mockedEngine from '../../../../../core/__mocks__/MockedEngine';
 import { mockedState } from '../../../../../selectors/featureFlagController/mocks';
@@ -39,17 +38,6 @@ describe('earnFeatureFlag selectors', () => {
     it('returns boolean feature flag', () => {
       process.env.MM_STABLECOIN_LENDING_UI_ENABLED = 'true';
       const result = selectStablecoinLendingEnabledFlag(mockedState);
-      expect(result).toBe(true);
-    });
-  });
-
-  describe('selectStablecoinLendingServiceInterruptionBannerEnabledFlag', () => {
-    it('returns boolean feature flag', () => {
-      process.env.MM_STABLE_COIN_SERVICE_INTERRUPTION_BANNER_ENABLED = 'true';
-      const result =
-        selectStablecoinLendingServiceInterruptionBannerEnabledFlag(
-          mockedState,
-        );
       expect(result).toBe(true);
     });
   });

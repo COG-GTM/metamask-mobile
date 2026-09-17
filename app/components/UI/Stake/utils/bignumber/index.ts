@@ -1,13 +1,5 @@
 import BigNumber from 'bignumber.js';
 
-export enum BigNumberUtilsReturnFormat {
-  NUMBER = 'NUMBER',
-  BN = 'BN',
-  STRING = 'STRING',
-}
-
-export type BigNumberUtilsReturnType = BigNumber | number | string;
-
 export const bnZero = new BigNumber(0);
 export const bnOne = new BigNumber(1);
 export const bnTen = new BigNumber(10);

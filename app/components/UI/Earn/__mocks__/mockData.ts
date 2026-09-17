@@ -18,7 +18,6 @@ const mockedStablecoinLendingFeatureFlagState: Record<
   EarnLaunchDarklyFlag
 > = {
   earnStablecoinLendingEnabled: mockEnabledEarnLDFlag,
-  earnStablecoinLendingServiceInterruptionBannerEnabled: mockEnabledEarnLDFlag,
 };
 
 export const mockedEarnFeatureFlagsEnabledState = {

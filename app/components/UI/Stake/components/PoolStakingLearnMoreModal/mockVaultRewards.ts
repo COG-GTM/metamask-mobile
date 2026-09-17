@@ -1954,12 +1954,6 @@ export const MOCK_VAULT_DAILY_APYS = [
   },
 ].reverse();
 
-export const MOCK_VAULT_APYS_ONE_WEEK = MOCK_VAULT_DAILY_APYS.slice(-7);
-
-export const MOCK_VAULT_APYS_ONE_MONTH = MOCK_VAULT_DAILY_APYS.slice(-30);
-
-export const MOCK_VAULT_APYS_SIX_MONTHS = MOCK_VAULT_DAILY_APYS.slice(-90);
-
 export const MOCK_VAULT_APYS_ONE_YEAR = MOCK_VAULT_DAILY_APYS.slice(-365);
 
 export const MOCK_VAULT_APY_AVERAGES = {
