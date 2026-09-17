@@ -11,9 +11,6 @@ import {
 // Internal dependencies.
 import { ButtonPrimaryProps } from './ButtonPrimary.types';
 
-// Test IDs
-export const BUTTONPRIMARY_TESTID = 'buttonprimary';
-
 // Defaults
 export const DEFAULT_BUTTONPRIMARY_LABEL_TEXTVARIANT =
   DEFAULT_BUTTONBASE_LABEL_TEXTVARIANT;
