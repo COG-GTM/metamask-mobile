@@ -1,6 +1,15 @@
 import { IPFS_DEFAULT_GATEWAY_URL } from '../../../app/constants/network';
 
-export default function migrate(state) {
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      PreferencesController: { ipfsGateway: string };
+    };
+  };
+}
+
+export default function migrate(state: unknown) {
+  const migrationState = state as MigrationState;
   const outdatedIpfsGateways = [
     'https://hardbin.com/ipfs/',
     'https://ipfs.greyh.at/ipfs/',
@@ -9,11 +18,11 @@ export default function migrate(state) {
   ];
 
   const isUsingOutdatedGateway = outdatedIpfsGateways.includes(
-    state.engine.backgroundState?.PreferencesController?.ipfsGateway,
+    migrationState.engine.backgroundState?.PreferencesController?.ipfsGateway,
   );
 
   if (isUsingOutdatedGateway) {
-    state.engine.backgroundState.PreferencesController.ipfsGateway =
+    migrationState.engine.backgroundState.PreferencesController.ipfsGateway =
       IPFS_DEFAULT_GATEWAY_URL;
   }
   return state;
