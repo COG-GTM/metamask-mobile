@@ -1,4 +1,7 @@
+import { Hex } from '@metamask/utils';
+
 export interface AddressListProps {
+  chainId: Hex;
   inputSearch?: string;
   onAccountPress: (address: string) => void;
   onAccountLongPress: (address: string) => void;
