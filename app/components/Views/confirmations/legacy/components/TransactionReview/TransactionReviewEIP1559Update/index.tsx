@@ -1,10 +1,18 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Linking, TouchableOpacity, View } from 'react-native';
+import {
+  Insets,
+  Linking,
+  TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import { EditGasViewSelectorsIDs } from '../../../../../../../../e2e/selectors/SendFlow/EditGasView.selectors';
 import { strings } from '../../../../../../../../locales/i18n';
 import AppConstants from '../../../../../../../core/AppConstants';
 import { useGasTransaction } from '../../../../../../../core/GasPolling/GasPolling';
+import { UseGasTransactionProps } from '../../../../../../../core/GasPolling/types';
 import Device from '../../../../../../../util/device';
 import { isMainnetByChainId } from '../../../../../../../util/networks';
 import {
@@ -19,6 +27,48 @@ import InfoModal from '../../../../../../UI/Swaps/components/InfoModal';
 import TimeEstimateInfoModal from '../../../../../../UI/TimeEstimateInfoModal';
 import SkeletonComponent from './skeletonComponent';
 import createStyles from './styles';
+import { TransactionEIP1559UpdateProps } from './types';
+
+/**
+ * `overview` and `gasInfoIcon` are parameterised style factories, which the
+ * inferred `StyleSheet.create` type cannot describe.
+ */
+interface Styles {
+  overview: (noMargin?: boolean) => ViewStyle;
+  valuesContainer: ViewStyle;
+  gasInfoContainer: ViewStyle;
+  gasInfoIcon: (hasOrigin?: boolean | string) => TextStyle;
+  amountContainer: ViewStyle;
+  gasRowContainer: ViewStyle;
+  gasBottomRowContainer: ViewStyle;
+  hitSlop: Insets;
+  redInfo: TextStyle;
+  timeEstimateContainer: ViewStyle;
+  flex: ViewStyle;
+}
+
+/**
+ * Fields read from the gas polling hook, which returns either EIP-1559 or
+ * legacy transaction data.
+ */
+interface GasTransactionData {
+  gasFeeMaxNative?: string;
+  renderableGasFeeMinNative?: string;
+  renderableGasFeeMinConversion?: string;
+  renderableGasFeeMaxNative?: string;
+  renderableTotalMinNative?: string;
+  renderableTotalMinConversion?: string;
+  renderableTotalMaxNative?: string;
+  renderableGasFeeMaxConversion?: string;
+  timeEstimateColor?: string;
+  timeEstimate?: string;
+  timeEstimateId?: string;
+  transactionFee?: string;
+  transactionFeeFiat?: string;
+  transactionTotalAmount?: string;
+  transactionTotalAmountFiat?: string;
+  suggestedGasLimit?: string;
+}
 
 const TransactionReviewEIP1559Update = ({
   primaryCurrency,
@@ -39,7 +89,7 @@ const TransactionReviewEIP1559Update = ({
   onlyGas,
   updateTransactionState,
   multiLayerL1FeeTotal,
-}) => {
+}: TransactionEIP1559UpdateProps) => {
   const [showLearnMoreModal, setShowLearnMoreModal] = useState(false);
   const [
     isVisibleTimeEstimateInfoModal,
@@ -54,16 +104,16 @@ const TransactionReviewEIP1559Update = ({
     setShowLearnMoreModal(!showLearnMoreModal);
   }, [showLearnMoreModal]);
   const { colors } = useAppThemeFromContext() || mockTheme;
-  const styles = createStyles(colors);
+  const styles = createStyles(colors) as unknown as Styles;
 
   const gasTransaction = useGasTransaction({
     onlyGas: !!onlyGas,
     gasSelected,
     legacy: !!legacy,
-    gasObject,
+    gasObject: gasObject as UseGasTransactionProps['gasObject'],
     gasObjectLegacy,
     multiLayerL1FeeTotal,
-  });
+  }) as GasTransactionData;
 
   const {
     gasFeeMaxNative,
@@ -108,7 +158,10 @@ const TransactionReviewEIP1559Update = ({
   const isMainnet = isMainnetByChainId(chainId);
   const nativeCurrencySelected = primaryCurrency === 'ETH' || !isMainnet;
 
-  const switchNativeCurrencyDisplayOptions = (nativeValue, fiatValue) => {
+  const switchNativeCurrencyDisplayOptions = (
+    nativeValue?: string,
+    fiatValue?: string,
+  ) => {
     if (nativeCurrencySelected) return nativeValue;
     return fiatValue;
   };
