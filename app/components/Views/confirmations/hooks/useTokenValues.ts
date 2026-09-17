@@ -19,7 +19,7 @@ export const useTokenValues = ({ amountWei }: { amountWei?: string } = {}) => {
   if (amountWei) {
     ethAmountInWei = toBigNumber.dec(amountWei);
   } else {
-    ethAmountInWei = hexToBN(transactionMetadata?.txParams?.value);
+    ethAmountInWei = hexToBN(transactionMetadata?.txParams?.value as string);
   }
 
   const ethAmountInBN = new BigNumber(fromWei(ethAmountInWei, 'ether'));

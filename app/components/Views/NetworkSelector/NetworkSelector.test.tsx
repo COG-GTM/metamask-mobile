@@ -291,7 +291,7 @@ describe('Network Selector', () => {
   it('renders correctly when network UI redesign is enabled and calls setNetworkClientIdForDomain', async () => {
     const testMock = {
       networkName: '',
-      networkImageSource: '',
+      networkImageSource: { uri: '' },
       domainNetworkClientId: '',
       chainId: CHAIN_IDS.MAINNET,
       rpcUrl: '',
@@ -655,7 +655,7 @@ describe('Network Selector', () => {
       // Mock non-connected dapp state
       const nonConnectedDappMock = {
         networkName: 'Test Network',
-        networkImageSource: '',
+        networkImageSource: { uri: '' },
         domainNetworkClientId: 'test-network-id',
         chainId: CHAIN_IDS.MAINNET,
         rpcUrl: 'https://test.network',
