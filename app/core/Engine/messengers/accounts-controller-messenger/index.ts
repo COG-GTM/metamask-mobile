@@ -7,9 +7,6 @@ import {
   SnapKeyringAccountTransactionsUpdatedEvent,
 } from '../../../SnapKeyring/constants';
 
-// Export the types
-export * from './types';
-
 /**
  * Get the AccountsControllerMessenger for the AccountsController.
  *

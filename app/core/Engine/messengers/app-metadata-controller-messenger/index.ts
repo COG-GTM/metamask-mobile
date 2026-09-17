@@ -1,9 +1,6 @@
 import { AppMetadataControllerMessenger } from '../../controllers/app-metadata-controller';
 import { BaseControllerMessenger } from '../../types';
 
-// Export the types
-export * from './types';
-
 /**
  * Get the AppMetadataControllerMessenger for the AppMetadataController.
  *
