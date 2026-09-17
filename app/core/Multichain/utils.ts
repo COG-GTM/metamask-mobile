@@ -7,11 +7,9 @@ import {
   BtcScope,
 } from '@metamask/keyring-api';
 import { isAddress as isSolanaAddress } from '@solana/addresses';
-import Engine from '../Engine';
 import { CaipChainId, Hex } from '@metamask/utils';
 import { validate, Network } from 'bitcoin-address-validation';
 import { MULTICHAIN_NETWORK_BLOCK_EXPLORER_FORMAT_URLS_MAP } from './constants';
-import { formatAddress } from '../../util/address';
 import {
   formatBlockExplorerAddressUrl,
   formatBlockExplorerTransactionUrl,
@@ -78,20 +76,6 @@ export function nonEvmNetworkChainIdByAccountAddress(address: string): string {
     return SolScope.Mainnet;
   }
   return BtcScope.Mainnet;
-}
-
-export function lastSelectedAccountAddressByNonEvmNetworkChainId(
-  chainId: CaipChainId,
-): string | undefined {
-  const { AccountsController } = Engine.context;
-  // TODO: Add teh logic if there is none last selected account what to do
-  return AccountsController.getSelectedMultichainAccount(chainId)?.address;
-}
-
-export function lastSelectedAccountAddressInEvmNetwork(): string | undefined {
-  const { AccountsController } = Engine.context;
-  // TODO: Add teh logic if there is none last selected account what to do
-  return AccountsController.getSelectedAccount()?.address;
 }
 
 /**
@@ -191,14 +175,3 @@ export const getAddressUrl = (
 
   return formatBlockExplorerAddressUrl(explorerUrls, address);
 };
-
-/**
- * Formats a shorten version of a transaction ID.
- *
- * @param txId - Transaction ID.
- * @returns Formatted transaction ID.
- */
-export function shortenTransactionId(txId: string) {
-  // For transactions we use a similar output for now, but shortenTransactionId will be added later.
-  return formatAddress(txId, 'short');
-}
