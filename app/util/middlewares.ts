@@ -1,5 +1,22 @@
+import type { JsonRpcEngineNextCallback } from '@metamask/json-rpc-engine';
 import Logger from './Logger';
 import trackErrorAsAnalytics from './metrics/TrackError/trackErrorAsAnalytics';
+
+/**
+ * A JSON-RPC request as seen by these middlewares. The extra fields are the
+ * ones added elsewhere in the app rather than by the JSON-RPC spec.
+ */
+interface MiddlewareRequest {
+  origin?: string;
+  params?: unknown;
+  isMetamaskInternal?: boolean;
+  [key: string]: unknown;
+}
+
+interface MiddlewareResponse {
+  error?: Error & { code?: number; data?: unknown };
+  [key: string]: unknown;
+}
 
 /**
  * List of rpc errors caused by the user rejecting a certain action.
@@ -20,11 +37,11 @@ const USER_REJECTED_ERROR_CODE = 4001;
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createOriginMiddleware(opts) {
+export function createOriginMiddleware(opts: { origin: string }) {
   return function originMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ _,
-    /** @type {Function} */ next,
+    req: MiddlewareRequest,
+    _: MiddlewareResponse,
+    next: JsonRpcEngineNextCallback,
   ) {
     req.origin = opts.origin;
 
@@ -43,7 +60,10 @@ export function createOriginMiddleware(opts) {
  * @param {String} errorMessage
  * @returns {boolean}
  */
-export function containsUserRejectedError(errorMessage, errorCode) {
+export function containsUserRejectedError(
+  errorMessage: unknown,
+  errorCode?: number,
+) {
   try {
     if (!errorMessage || !(typeof errorMessage === 'string')) return false;
 
@@ -67,13 +87,13 @@ export function containsUserRejectedError(errorMessage, errorCode) {
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createLoggerMiddleware(opts) {
+export function createLoggerMiddleware(opts: { origin: string }) {
   return function loggerMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ res,
-    /** @type {Function} */ next,
+    req: MiddlewareRequest,
+    res: MiddlewareResponse,
+    next: JsonRpcEngineNextCallback,
   ) {
-    next((/** @type {Function} */ cb) => {
+    next((cb) => {
       if (res.error) {
         const { error, ...resWithoutError } = res;
         if (error) {
@@ -83,6 +103,7 @@ export function createLoggerMiddleware(opts) {
               error.message,
             );
           } else {
+            /* eslint-disable jsdoc/check-indentation */
             /**
              * Example of a rpc error:
              * { "code":-32603,
@@ -92,7 +113,14 @@ export function createLoggerMiddleware(opts) {
              * This will make the error log to sentry with the title "gas required exceeds allowance (59956966) or always failing transaction"
              * making it easier to differentiate each error.
              */
-            const errorParams = {
+            /* eslint-enable jsdoc/check-indentation */
+            const errorParams: {
+              message: string;
+              orginalError: Error;
+              res: Omit<MiddlewareResponse, 'error'>;
+              req: MiddlewareRequest;
+              data?: unknown;
+            } = {
               message: 'Error in RPC response',
               orginalError: error,
               res: resWithoutError,
