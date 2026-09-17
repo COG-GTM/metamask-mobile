@@ -1,8 +1,8 @@
 import React from 'react';
 import SmartTransactionStatus, {
-  FALLBACK_STX_ESTIMATED_DEADLINE_SEC,
   showRemainingTimeInMinAndSec,
 } from './SmartTransactionStatus';
+import { FALLBACK_STX_ESTIMATED_DEADLINE_SEC } from './useRemainingTime';
 import renderWithProvider from '../../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../../util/test/initial-root-state';
 import { strings } from '../../../../../locales/i18n';
