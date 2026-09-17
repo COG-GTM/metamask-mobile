@@ -17,18 +17,26 @@ import {
   switchToNetwork,
 } from './lib/ethereum-chain-utils';
 import { getDecimalChainId } from '../../util/networks';
-import { RpcEndpointType } from '@metamask/network-controller';
+import {
+  NetworkConfiguration,
+  RpcEndpointType,
+} from '@metamask/network-controller';
+import { Hex, Json, PendingJsonRpcResponse } from '@metamask/utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
 const waitForInteraction = async () =>
-  new Promise((resolve) => {
+  new Promise<void>((resolve) => {
     InteractionManager.runAfterInteractions(() => {
       resolve();
     });
   });
 
 // Utility function to find or add an item in an array and return the updated array and index
-const addOrUpdateIndex = (array, value, comparator) => {
+const addOrUpdateIndex = <T>(
+  array: T[],
+  value: T,
+  comparator: (item: T, index: number, items: T[]) => boolean,
+) => {
   const index = array.findIndex(comparator);
   if (index === -1) {
     return {
@@ -38,6 +46,38 @@ const addOrUpdateIndex = (array, value, comparator) => {
   }
   return { updatedArray: array, index };
 };
+
+type RpcEndpoint = NetworkConfiguration['rpcEndpoints'][number];
+
+interface AddEthereumChainHooks {
+  getNetworkConfigurationByChainId: (
+    chainId: Hex,
+  ) => NetworkConfiguration | undefined;
+}
+
+interface AddEthereumChainRequestData {
+  chainId: Hex;
+  blockExplorerUrl?: string;
+  chainName: string;
+  rpcUrl: string;
+  ticker: string;
+  isNetworkRpcUpdate: boolean;
+  alerts?: unknown;
+}
+
+interface AddEthereumChainOptions {
+  req: {
+    origin: string;
+    params?: unknown;
+  };
+  res: PendingJsonRpcResponse<Json>;
+  requestUserApproval: (args: {
+    type: string;
+    requestData: AddEthereumChainRequestData;
+  }) => Promise<unknown>;
+  analytics?: Record<string, string | boolean | undefined>;
+  hooks: AddEthereumChainHooks;
+}
 
 /**
  * Add chain implementation to be used in JsonRpcEngine middleware.
@@ -55,7 +95,7 @@ export const wallet_addEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: AddEthereumChainOptions) => {
   const {
     NetworkController,
     MultichainNetworkController,
@@ -73,9 +113,18 @@ export const wallet_addEthereumChain = async ({
     firstValidRPCUrl,
     firstValidBlockExplorerUrl,
     ticker,
-  } = params;
+  } = params as {
+    chainId: Hex;
+    chainName: string;
+    firstValidRPCUrl: string;
+    firstValidBlockExplorerUrl?: string;
+    ticker: string;
+  };
 
-  const switchToNetworkAndMetrics = async (network, isAddNetworkFlow) => {
+  const switchToNetworkAndMetrics = async (
+    network: NetworkConfiguration,
+    isAddNetworkFlow: boolean,
+  ) => {
     const { networkClientId } =
       network.rpcEndpoints[network.defaultRpcEndpointIndex];
 
@@ -110,7 +159,7 @@ export const wallet_addEthereumChain = async ({
       isAddNetworkFlow,
       autoApprove: shouldAddOrUpdateNetwork,
       hooks,
-    });
+    } as Parameters<typeof switchToNetwork>[0]);
   };
 
   //TODO: Remove aurora from default chains in @metamask/controller-utils
@@ -142,7 +191,7 @@ export const wallet_addEthereumChain = async ({
         url: firstValidRPCUrl,
         type: RpcEndpointType.Custom,
         name: chainName,
-      },
+      } as RpcEndpoint,
       (endpoint) => endpoint.url === firstValidRPCUrl,
     );
 
@@ -160,7 +209,7 @@ export const wallet_addEthereumChain = async ({
   }
 
   await validateRpcEndpoint(firstValidRPCUrl, chainId);
-  const requestData = {
+  const requestData: AddEthereumChainRequestData = {
     chainId,
     blockExplorerUrl: firstValidBlockExplorerUrl,
     chainName,
@@ -226,7 +275,7 @@ export const wallet_addEthereumChain = async ({
         url: firstValidRPCUrl,
         type: RpcEndpointType.Custom,
         name: chainName,
-      },
+      } as RpcEndpoint,
       (endpoint) => endpoint.url === firstValidRPCUrl,
     );
 
@@ -240,7 +289,7 @@ export const wallet_addEthereumChain = async ({
       ...existingNetworkConfiguration,
       rpcEndpoints: rpcResult.updatedArray,
       defaultRpcEndpointIndex: rpcResult.index,
-      blockExplorerUrls: blockExplorerResult.updatedArray,
+      blockExplorerUrls: blockExplorerResult.updatedArray as string[],
       defaultBlockExplorerUrlIndex: blockExplorerResult.index,
     };
 
@@ -257,7 +306,7 @@ export const wallet_addEthereumChain = async ({
   } else {
     newNetworkConfiguration = NetworkController.addNetwork({
       chainId,
-      blockExplorerUrls: [firstValidBlockExplorerUrl],
+      blockExplorerUrls: [firstValidBlockExplorerUrl] as string[],
       defaultRpcEndpointIndex: 0,
       defaultBlockExplorerUrlIndex: 0,
       name: chainName,
