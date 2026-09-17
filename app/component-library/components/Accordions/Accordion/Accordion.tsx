@@ -14,7 +14,6 @@ import { AccordionProps } from './Accordion.types';
 import {
   TESTID_ACCORDION,
   TESTID_ACCORDION_CONTENT,
-  // DEFAULT_ACCORDION_EXPANDDURATION,
 } from './Accordion.constants';
 
 const Accordion: React.FC<AccordionProps> = ({
@@ -27,23 +26,7 @@ const Accordion: React.FC<AccordionProps> = ({
 }) => {
   const { styles } = useStyles(styleSheet, { style });
   const [expanded, setExpanded] = useState(isExpanded);
-  // const ref = useRef<TransitioningView>(null);
-  // const transition = (
-  //   <Transition.Together>
-  //     <Transition.In
-  //       type="fade"
-  //       durationMs={DEFAULT_ACCORDION_EXPANDDURATION}
-  //     />
-  //     <Transition.Out
-  //       type="fade"
-  //       durationMs={DEFAULT_ACCORDION_EXPANDDURATION}
-  //     />
-  //   </Transition.Together>
-  // );
   const onHeaderPressed = () => {
-    // if (ref.current) {
-    //   ref.current.animateNextTransition();
-    // }
     setExpanded(!expanded);
     onPress?.();
   };
