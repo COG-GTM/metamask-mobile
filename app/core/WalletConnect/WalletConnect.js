@@ -177,7 +177,7 @@ class WalletConnect {
 
               const chainId = payload.params[0].chainId;
 
-              checkActiveAccountAndChainId({
+              await checkActiveAccountAndChainId({
                 address: payload.params[0].from,
                 chainId,
                 isWalletConnect: true,
