@@ -614,7 +614,6 @@ class FixtureBuilder {
         },
         navigation: {
           currentRoute: 'AdvancedSettings',
-          currentBottomNavRoute: 'Wallet',
         },
         networkOnboarded: {
           networkOnboardedState: {},

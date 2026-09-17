@@ -1,7 +1,6 @@
 /* eslint-disable react/display-name */
 import React from 'react';
 import NavbarTitle from '../NavbarTitle';
-import ModalNavbarTitle from '../ModalNavbarTitle';
 import AccountRightButton from '../AccountRightButton';
 import {
   Alert,
@@ -617,19 +616,6 @@ export function getSendFlowTitle(
         <View />
       ),
     headerStyle: innerStyles.headerStyle,
-  };
-}
-
-/**
- * Function that returns the navigation options
- * for our modals
- *
- * @param {string} title - Title in string format
- * @returns {Object} - Corresponding navbar options containing headerTitle
- */
-export function getModalNavbarOptions(title) {
-  return {
-    headerTitle: () => <ModalNavbarTitle title={title} />,
   };
 }
 

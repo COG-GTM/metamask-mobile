@@ -198,7 +198,6 @@ exports[`captureSentryFeedback maskObject masks initial root state fixture 1`] =
     "signMessageModalVisible": true,
   },
   "navigation": {
-    "currentBottomNavRoute": "Wallet",
     "currentRoute": "Login",
   },
   "networkOnboarded": {

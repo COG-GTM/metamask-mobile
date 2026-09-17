@@ -103,7 +103,7 @@ const initialState = {
   user: {
     userLoggedIn: true,
   },
-  navigation: { currentBottomNavRoute: 'Wallet' },
+  navigation: { currentRoute: 'WalletView' },
   settings: {
     primaryCurrency: 'usd',
   },
@@ -351,7 +351,7 @@ describe('Network Selector', () => {
       user: {
         userLoggedIn: true,
       },
-      navigation: { currentBottomNavRoute: 'Wallet' },
+      navigation: { currentRoute: 'WalletView' },
       settings: {
         primaryCurrency: 'usd',
       },
@@ -421,7 +421,7 @@ describe('Network Selector', () => {
       user: {
         userLoggedIn: true,
       },
-      navigation: { currentBottomNavRoute: 'Wallet' },
+      navigation: { currentRoute: 'WalletView' },
       settings: {
         primaryCurrency: 'usd',
       },
