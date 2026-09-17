@@ -8,11 +8,22 @@ import multihash from 'multihashes';
 import Engine from '../../core/Engine';
 import { IPFS_GATEWAY_DISABLED_ERROR } from '../../components/Views/BrowserTab/constants';
 
+interface ResolveEnsToIpfsContentIdArgs {
+  provider: unknown;
+  name: string;
+  chainId: string;
+}
+
+interface EnsIpfsContentId {
+  type: string;
+  hash: string;
+}
+
 export default async function resolveEnsToIpfsContentId({
   provider,
   name,
   chainId,
-}) {
+}: ResolveEnsToIpfsContentIdArgs): Promise<EnsIpfsContentId> {
   const eth = new Eth(provider);
   const hash = namehash.hash(name);
   const contract = new EthContract(eth);
@@ -26,7 +37,7 @@ export default async function resolveEnsToIpfsContentId({
   const Registry = contract(registryAbi).at(registryAddress);
   // lookup resolver
   const resolverLookupResult = await Registry.resolver(hash);
-  const resolverAddress = resolverLookupResult[0];
+  const resolverAddress = resolverLookupResult[0] as string;
   if (hexValueIsEmpty(resolverAddress)) {
     throw new Error(`EnsIpfsResolver - no resolver found for name "${name}"`);
   }
@@ -35,7 +46,7 @@ export default async function resolveEnsToIpfsContentId({
   const isLegacyResolver = await Resolver.supportsInterface('0xd8389dc5');
   if (isEIP1577Compliant[0]) {
     const contentLookupResult = await Resolver.contenthash(hash);
-    const rawContentHash = contentLookupResult[0];
+    const rawContentHash = contentLookupResult[0] as string;
     const decodedContentHash = contentHash.decode(rawContentHash);
     const type = contentHash.getCodec(rawContentHash);
     if (!Engine.context.PreferencesController.state.isIpfsGatewayEnabled) {
@@ -46,7 +57,7 @@ export default async function resolveEnsToIpfsContentId({
   if (isLegacyResolver[0]) {
     // lookup content id
     const contentLookupResult = await Resolver.content(hash);
-    const content = contentLookupResult[0];
+    const content = contentLookupResult[0] as string;
     if (hexValueIsEmpty(content)) {
       throw new Error(
         `EnsIpfsResolver - no content ID found for name "${name}"`,
@@ -70,17 +81,19 @@ export default async function resolveEnsToIpfsContentId({
   );
 }
 
-function hexValueIsEmpty(value) {
-  return [
-    undefined,
-    null,
-    '0x',
-    '0x0',
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
-  ].includes(value);
+function hexValueIsEmpty(value: unknown): boolean {
+  return (
+    [
+      undefined,
+      null,
+      '0x',
+      '0x0',
+      '0x0000000000000000000000000000000000000000000000000000000000000000',
+    ] as unknown[]
+  ).includes(value);
 }
 
-function getRegistryForChainId(chainId) {
+function getRegistryForChainId(chainId: string): string | null {
   switch (chainId) {
     // mainnet
     case '0x1':
@@ -93,7 +106,7 @@ function getRegistryForChainId(chainId) {
   }
 }
 
-export function isGatewayUrl(urlObj) {
+export function isGatewayUrl(urlObj: { pathname: string }): boolean {
   // All IPFS gateway urls start with the path /ipfs/
   if (urlObj.pathname.substr(0, 6) === '/ipfs/') return true;
   // All Swarm gateway urls start with the path /bzz:/
