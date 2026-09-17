@@ -615,8 +615,8 @@ export function getTransactionToName({
  * Return a boolen if the transaction should be flagged to add the account added label
  *
  * @param {object} transaction - Transaction object get time
- * @param {object} addedAccountTime - Time the account was added to the wallet
- * @param {object} accountAddedTimeInsertPointFound - Flag to see if the import time was already found
+ * @param {number} [addedAccountTime] - Time the account was added to the wallet
+ * @param {boolean} [accountAddedTimeInsertPointFound] - Flag to see if the import time was already found
  */
 export function addAccountTimeFlagFilter(
   transaction,

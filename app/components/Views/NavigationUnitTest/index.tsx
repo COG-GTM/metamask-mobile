@@ -16,7 +16,11 @@ import { Text } from 'react-native';
 
 const Stack = createStackNavigator();
 
-const TestScreen = ({ route }) => {
+interface TestScreenProps {
+  route: { params: { screenName: string } };
+}
+
+const TestScreen = ({ route }: TestScreenProps) => {
   const routes = useNavigationState((state) => state.routes);
 
   const name = findRouteNameFromNavigatorState(routes);
@@ -29,6 +33,15 @@ const TestScreen = ({ route }) => {
   return <Text>{name} THIS SHOULD NOT HAVE CHANGED, take a deeper look</Text>;
 };
 
+interface TestStackProps {
+  secondRoute?: string;
+}
+
+interface NavigationUnitTestProps {
+  firstRoute?: string;
+  secondRoute?: string;
+}
+
 const TestSubStack = () => (
   <Stack.Navigator initialRouteName="TestScreen">
     <Stack.Screen
@@ -39,7 +52,7 @@ const TestSubStack = () => (
   </Stack.Navigator>
 );
 
-const TestStack = ({ secondRoute }) => (
+const TestStack = ({ secondRoute }: TestStackProps) => (
   <Stack.Navigator initialRouteName={secondRoute || 'TestSubStack'}>
     <Stack.Screen name="TestSubStack" component={TestSubStack} />
     <Stack.Screen
@@ -50,7 +63,7 @@ const TestStack = ({ secondRoute }) => (
   </Stack.Navigator>
 );
 
-const NavigationUnitTest = ({ firstRoute, secondRoute }) => (
+const NavigationUnitTest = ({ firstRoute }: NavigationUnitTestProps) => (
   <NavigationContainer>
     <Stack.Navigator initialRouteName={firstRoute || 'TestStack'}>
       <Stack.Screen name="TestStack" component={TestStack} />
@@ -63,7 +76,10 @@ const NavigationUnitTest = ({ firstRoute, secondRoute }) => (
   </NavigationContainer>
 );
 
-const NavigationUnitTestFactory = ({ firstRoute, secondRoute }) => (
+const NavigationUnitTestFactory = ({
+  firstRoute,
+  secondRoute,
+}: NavigationUnitTestProps) => (
   <NavigationUnitTest firstRoute={firstRoute} secondRoute={secondRoute} />
 );
 

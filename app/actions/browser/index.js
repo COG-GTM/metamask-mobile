@@ -69,8 +69,8 @@ export function closeAllTabs() {
 /**
  * Creates a new tab
  *
- * @param {string} url - The website's url
- * @param {string} linkType - optional link type
+ * @param {string} [url] - The website's url
+ * @param {string} [linkType] - optional link type
  */
 export function createNewTab(url, linkType) {
   return {

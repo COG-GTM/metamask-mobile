@@ -92,12 +92,14 @@ const routeMock = {
   params: {},
 };
 
+type BrowserComponentProps = React.ComponentProps<typeof Browser>;
+
 const mockNavigation = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
   navigate: jest.fn(),
   goBack: jest.fn(),
-};
+} as unknown as BrowserComponentProps['navigation'];
 
 describe('Browser', () => {
   it('should render correctly', () => {
@@ -168,9 +170,11 @@ describe('Browser', () => {
             <Stack.Screen name={Routes.BROWSER.VIEW}>
               {() => (
                 <Browser
-                  route={{
-                    params: { newTabUrl: 'about:blank', timestamp: '987' },
-                  }}
+                  route={
+                    {
+                      params: { newTabUrl: 'about:blank', timestamp: '987' },
+                    } as unknown as BrowserComponentProps['route']
+                  }
                   tabs={mockTabs}
                   activeTab={1}
                   navigation={mockNavigation}
