@@ -432,7 +432,6 @@ describe('captureSentryFeedback', () => {
         isBlocked: false,
       },
       navigation: {
-        currentBottomNavRoute: 'Wallet',
         currentRoute: 'Login',
       },
       networkOnboarded: {
