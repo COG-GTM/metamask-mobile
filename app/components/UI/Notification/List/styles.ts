@@ -6,8 +6,6 @@ import {
   TextVariant,
 } from '../../../../component-library/components/Texts/Text';
 
-export type NotificationListStyles = ReturnType<typeof createStyles>;
-
 export const createStyles = ({ colors, typography }: Theme) =>
   StyleSheet.create({
     container: {

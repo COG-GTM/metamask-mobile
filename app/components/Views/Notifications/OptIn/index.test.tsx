@@ -65,10 +65,6 @@ const arrangeMockOptInHooks = () => {
     .spyOn(OptInHooksModule, 'useHandleOptInClick')
     .mockReturnValue(mockClick);
 
-  const mockUseOptimisticNavigationEffect = jest
-    .spyOn(OptInHooksModule, 'useOptimisticNavigationEffect')
-    .mockReturnValue(false);
-
   const mockUseEnableNotificationReturnVal = {
     data: false,
     enableNotifications: jest.fn(),
@@ -86,7 +82,6 @@ const arrangeMockOptInHooks = () => {
     mockUseHandleOptInCancel,
     mockClick,
     mockUseHadleOptInClick,
-    mockUseOptimisticNavigationEffect,
     mockUseEnableNotifications,
     mockUseEnableNotificationReturnVal,
   };

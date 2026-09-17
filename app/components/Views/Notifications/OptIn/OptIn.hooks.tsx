@@ -1,49 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../../reducers';
 import Routes from '../../../../constants/navigation/Routes';
 import { IUseMetricsHook, MetaMetricsEvents } from '../../../hooks/useMetrics';
 import { selectIsBackupAndSyncEnabled } from '../../../../selectors/identity';
-
-/**
- * Creating wallet notifications can take time, so we will use optimistic loader
- * to navigate to the notification list page if it takes too long
- * @param props - props to determine if effect should run
- */
-export function useOptimisticNavigationEffect(props: {
-  isCreatingNotifications: boolean;
-  navigation: NavigationProp<ParamListBase>;
-}) {
-  const { isCreatingNotifications, navigation } = props;
-  const [optimisticLoading, setOptimisticLoading] = useState(false);
-
-  useEffect(() => {
-    let timeOut: NodeJS.Timeout | undefined;
-
-    if (isCreatingNotifications) {
-      setOptimisticLoading(true);
-      timeOut = setTimeout(() => {
-        setOptimisticLoading(false);
-        navigation.navigate(Routes.NOTIFICATIONS.VIEW);
-      }, 5000);
-    } else {
-      setOptimisticLoading(false);
-      if (timeOut) {
-        clearTimeout(timeOut);
-      }
-    }
-
-    // Cleanup function to clear the timeout if the component unmounts or if isCreatingNotifications changes
-    return () => {
-      if (timeOut) {
-        clearTimeout(timeOut);
-      }
-    };
-  }, [isCreatingNotifications, navigation]);
-
-  return optimisticLoading;
-}
 
 export function useHandleOptInClick(props: {
   navigation: NavigationProp<ParamListBase>;
