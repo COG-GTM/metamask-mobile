@@ -6,6 +6,8 @@ import {
 ///: END:ONLY_INCLUDE_IF
 import {  RestrictedMethods } from './constants';
 import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCaip25Caveat } from '@metamask/chain-agnostic-permission';
+import { InternalAccount } from '@metamask/keyring-internal-api';
+import { Hex } from '@metamask/utils';
 
 /**
  * This file contains the specifications of the permissions and caveats
@@ -52,11 +54,14 @@ export const CaveatFactories = Object.freeze({
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
+}: {
+  listAccounts?: () => InternalAccount[];
+  findNetworkClientIdByChainId?: (chainId: Hex) => string;
 }) => ({
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+  } as unknown as Parameters<typeof caip25CaveatBuilder>[0]),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,
@@ -68,7 +73,7 @@ export const getCaveatSpecifications = ({
  * PermissionController.
  *
  */
-export const getPermissionSpecifications = () => ({
+export const getPermissionSpecifications = (_options?: unknown) => ({
   [caip25EndowmentBuilder.targetName]:
     caip25EndowmentBuilder.specificationBuilder({}),
 });
