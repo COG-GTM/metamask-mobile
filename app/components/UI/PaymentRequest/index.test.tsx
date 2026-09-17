@@ -5,7 +5,7 @@ import {
   act,
   userEvent,
 } from '@testing-library/react-native';
-import PaymentRequest from './index';
+import PaymentRequest, { PaymentRequestNavigation } from './index';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -129,7 +129,7 @@ const renderComponent = (props = {}) =>
     <Provider store={store}>
       <ThemeContext.Provider value={mockTheme}>
         <PaymentRequest
-          navigation={mockNavigation}
+          navigation={mockNavigation as unknown as PaymentRequestNavigation}
           route={mockRoute}
           {...props}
         />
