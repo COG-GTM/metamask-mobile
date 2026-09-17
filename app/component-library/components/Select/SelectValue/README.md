@@ -1,6 +1,6 @@
 # SelectValue
 
-SelectValue is a content component, used inside the SelectButton or SelectOption.
+SelectValue is a content component, used inside the SelectButton.
 
 ## Props
 
