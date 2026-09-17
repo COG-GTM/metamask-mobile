@@ -1,6 +1,7 @@
 import { toHex } from '@metamask/controller-utils';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { CaipChainId, KnownCaipNamespace } from '@metamask/utils';
+import type { NetworkConfiguration } from '@metamask/network-controller';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { RelayerTypes } from '@walletconnect/types';
 import { parseRelayParams } from '@walletconnect/utils';
@@ -261,7 +262,9 @@ export const checkWCPermissions = async ({
 
   const existingNetwork = findExistingNetwork(
     hexChainIdString,
-    networkConfigurations,
+    // EVM entries in the multichain map are full `NetworkConfiguration`s at
+    // runtime; `findExistingNetwork` only matches hex EVM chain ids.
+    networkConfigurations as unknown as Record<string, NetworkConfiguration>,
   );
 
   if (!existingNetwork) {

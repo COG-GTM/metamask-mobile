@@ -13,7 +13,9 @@ import Device from '../../util/device';
 import Logger from '../../util/Logger';
 import { getGlobalNetworkClientId } from '../../util/networks/global-network';
 import { addTransaction } from '../../util/transaction-controller';
-import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
+import BackgroundBridge, {
+  BackgroundBridgeOptions,
+} from '../BackgroundBridge/BackgroundBridge';
 import { Minimizer } from '../NativeModules';
 import { getPermittedAccounts } from '../Permissions';
 import getRpcMethodMiddleware from '../RPCMethods/RPCMethodMiddleware';
@@ -35,8 +37,7 @@ const RPC_WALLET_SWITCHETHEREUMCHAIN = 'wallet_switchEthereumChain';
 const RPC_WALLET_ADDETHEREUMCHAIN = 'wallet_addEthereumChain';
 
 interface BackgroundBridgeFactory {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  create: (options: any) => BackgroundBridge;
+  create: (options: BackgroundBridgeOptions) => BackgroundBridge;
 }
 
 class WalletConnect2Session {
@@ -65,8 +66,8 @@ class WalletConnect2Session {
     channelId,
     deeplink,
     backgroundBridgeFactory = {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      create: (options: any) => new BackgroundBridge(options),
+      create: (options: BackgroundBridgeOptions) =>
+        new BackgroundBridge(options),
     },
   }: {
     web3Wallet: IWalletKit;
