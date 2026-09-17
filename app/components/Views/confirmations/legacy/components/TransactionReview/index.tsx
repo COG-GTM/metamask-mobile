@@ -1,11 +1,22 @@
 import Eth from '@metamask/ethjs-query';
 import { withNavigation } from '@react-navigation/compat';
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
-import { Animated, ScrollView, StyleSheet, View } from 'react-native';
+import React, { ComponentClass, ComponentType, PureComponent } from 'react';
+import {
+  Animated,
+  ScrollView,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from 'react-native';
+import { Theme } from '@metamask/design-tokens';
+import { Hex } from '@metamask/utils';
 import { connect } from 'react-redux';
 import { strings } from '../../../../../../../locales/i18n';
-import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
+import {
+  IUseMetricsHook,
+  withMetricsAwareness,
+} from '../../../../../../components/hooks/useMetrics';
+import { IWithMetricsAwarenessProps } from '../../../../../../components/hooks/useMetrics/withMetricsAwareness.types';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 import Engine from '../../../../../../core/Engine';
 import { SDKConnect } from '../../../../../../core/SDKConnect/SDKConnect';
@@ -37,6 +48,8 @@ import {
   weiToFiat,
 } from '../../../../../../util/number';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
+import { Colors } from '../../../../../../util/theme/models';
+import { RootState } from '../../../../../../reducers';
 import {
   decodeTransferData,
   getNormalizedTxState,
@@ -44,16 +57,17 @@ import {
   getTransactionReviewActionKey,
   isApprovalTransaction,
 } from '../../../../../../util/transactions';
-import AccountFromToInfoCard from '../../../../../UI/AccountFromToInfoCard';
+import AccountFromToInfoCardComponent from '../../../../../UI/AccountFromToInfoCard';
 import ApprovalTagUrl from '../../../../../UI/ApprovalTagUrl';
 import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
 import QRSigningDetails from '../../../../../UI/QRHardware/QRSigningDetails';
 import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardwareAwareness';
+import { IQRState } from '../../../../../UI/QRHardware/types';
 import SimulationDetails from '../../../../../UI/SimulationDetails/SimulationDetails';
 import TransactionHeader from '../../../../../UI/TransactionHeader';
 import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
 import TransactionBlockaidBanner from '../TransactionBlockaidBanner/TransactionBlockaidBanner';
-import TransactionReviewData from './TransactionReviewData';
+import TransactionReviewDataComponent from './TransactionReviewData';
 import TransactionReviewInformation from './TransactionReviewInformation';
 import TransactionReviewSummary from './TransactionReviewSummary';
 import DevLogger from '../../../../../../core/SDKConnect/utils/DevLogger';
@@ -62,9 +76,27 @@ import { selectContractExchangeRatesByChainId } from '../../../../../../selector
 import SmartTransactionsMigrationBanner from '../SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
 const POLLING_INTERVAL_ESTIMATED_L1_FEE = 30000;
 
-let intervalIdForEstimatedL1Fee;
+/**
+ * Both components declare props this screen has never passed; the façades keep
+ * the existing call sites unchanged.
+ */
+const AccountFromToInfoCard =
+  AccountFromToInfoCardComponent as unknown as ComponentType<{
+    transactionState: TransactionState;
+    layout?: string;
+  }>;
 
-const createStyles = (colors) =>
+const TransactionReviewData =
+  TransactionReviewDataComponent as unknown as ComponentType<{
+    actionKey?: string;
+    toggleDataView?: () => void;
+    saveTransactionReviewDataHeight?: (height: number) => void;
+    customGasHeight?: number;
+  }>;
+
+let intervalIdForEstimatedL1Fee: ReturnType<typeof setInterval>;
+
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     tabUnderlineStyle: {
       height: 2,
@@ -122,164 +154,211 @@ const createStyles = (colors) =>
     },
   });
 
+interface SelectedAsset {
+  address: string;
+  decimals: number;
+  symbol: string;
+  tokenId?: string;
+  name?: string;
+}
+
+/**
+ * Flattened transaction state, as returned by `getNormalizedTxState`
+ */
+interface TransactionState {
+  transaction?: { data?: string; to?: string; value?: string };
+  data?: string;
+  to?: string;
+  value?: string;
+  from?: string;
+  origin?: string;
+  ensRecipient?: string;
+  id?: string;
+  chainId?: string;
+  assetType?: string;
+  selectedAsset: SelectedAsset;
+}
+
+interface TransactionReviewProps {
+  /**
+   * Callback triggered when this transaction is cancelled
+   */
+  onCancel?: () => void;
+  /**
+   * Called when a user changes modes
+   */
+  onModeChange?: (mode: string) => void;
+  /**
+   * Callback triggered when this transaction is cancelled
+   */
+  onConfirm?: () => void;
+  /**
+   * Indicates whether hex data should be shown in transaction editor
+   */
+  showHexData?: boolean;
+  /**
+   * Whether the transaction was confirmed or not
+   */
+  transactionConfirmed?: boolean;
+  /**
+   * Transaction object associated with this transaction
+   */
+  transaction: TransactionState;
+  /**
+   * Browser/tab information
+   */
+  browser: { tabs: { id: number; url: string }[]; activeTab: number };
+  /**
+   * ETH to current currency conversion rate
+   */
+  conversionRate?: number;
+  /**
+   * Currency code of the currently-active currency
+   */
+  currentCurrency: ReturnType<typeof selectCurrentCurrency>;
+  /**
+   * Object containing token exchange rates in the format address => exchangeRate
+   */
+  contractExchangeRates: ReturnType<
+    typeof selectContractExchangeRatesByChainId
+  >;
+  /**
+   * Array of ERC20 assets
+   */
+  tokens: ReturnType<typeof selectTokens>;
+  /**
+   * Current provider ticker
+   */
+  ticker?: string;
+  /**
+   * Chain id
+   */
+  chainId?: string;
+  /**
+   * ETH or fiat, depending on user setting
+   */
+  primaryCurrency?: string;
+  /**
+   * Error blockaid transaction execution, undefined value signifies no error.
+   */
+  error?: string | boolean;
+  /**
+   * Whether or not basic gas estimates have been fetched
+   */
+  ready?: boolean;
+  /**
+   * Height of custom gas and data modal
+   */
+  customGasHeight?: number;
+  /**
+   * Drives animated values
+   */
+  animate?: (config: {
+    modalEndValue: number;
+    xTranslationName: string;
+    xTranslationEndValue: number;
+  }) => void;
+  /**
+   * Generates a transform style unique to the component
+   */
+  generateTransform?: (valueType: string, outputRange: number[]) => ViewStyle;
+  /**
+   * Saves the height of TransactionReviewData
+   */
+  saveTransactionReviewDataHeight?: (height: number) => void;
+  /**
+   * Hides or shows TransactionReviewData
+   */
+  hideData?: boolean;
+  /**
+   * True if transaction is over the available funds
+   */
+  over?: boolean;
+  gasEstimateType?: string;
+  EIP1559GasData?: object;
+  /**
+   * Function to call when update animation starts
+   */
+  onUpdatingValuesStart?: () => void;
+  /**
+   * Function to call when update animation ends
+   */
+  onUpdatingValuesEnd?: () => void;
+  /**
+   * If the values should animate upon update or not
+   */
+  animateOnChange?: boolean;
+  /**
+   * Boolean to determine if the animation is happening
+   */
+  isAnimating?: boolean;
+  dappSuggestedGas?: boolean;
+  /**
+   * List of tokens from TokenListController
+   */
+  tokenList: ReturnType<typeof selectTokenList>;
+  /**
+   * Object that represents the navigator
+   */
+  navigation?: object;
+  /**
+   * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
+   */
+  dappSuggestedGasWarning?: boolean;
+  isSigningQRObject?: boolean;
+  QRState?: IQRState;
+  /**
+   * Returns the selected gas type
+   */
+  gasSelected?: string;
+  /**
+   * Metrics injected by withMetricsAwareness HOC
+   */
+  metrics: IUseMetricsHook;
+  /**
+   * Boolean that indicates if smart transaction should be used
+   */
+  shouldUseSmartTransaction?: boolean;
+  /**
+   * Boolean that indicates if transaction simulations should be enabled
+   */
+  useTransactionSimulations?: boolean;
+  /**
+   * Object containing blockaid validation response for confirmation
+   */
+  securityAlertResponse: ReturnType<
+    typeof selectCurrentTransactionSecurityAlertResponse
+  >;
+  /**
+   * Object containing the current transaction metadata
+   */
+  transactionMetadata: ReturnType<typeof selectCurrentTransactionMetadata>;
+  /**
+   * Network client id
+   */
+  networkClientId?: string;
+}
+
+interface TransactionReviewComponentState {
+  toFocused: boolean;
+  actionKey?: string;
+  showHexData: boolean | string;
+  dataVisible: boolean;
+  assetAmount?: string;
+  conversionRate?: number;
+  fiatValue?: string;
+  approveTransaction?: boolean;
+  multiLayerL1FeeTotal?: string;
+}
+
 /**
  * PureComponent that supports reviewing a transaction
  */
-class TransactionReview extends PureComponent {
-  static propTypes = {
-    /**
-     * Callback triggered when this transaction is cancelled
-     */
-    onCancel: PropTypes.func,
-    /**
-     * Called when a user changes modes
-     */
-    onModeChange: PropTypes.func,
-    /**
-     * Callback triggered when this transaction is cancelled
-     */
-    onConfirm: PropTypes.func,
-    /**
-     * Indicates whether hex data should be shown in transaction editor
-     */
-    showHexData: PropTypes.bool,
-    /**
-     * Whether the transaction was confirmed or not
-     */
-    transactionConfirmed: PropTypes.bool,
-    /**
-     * Transaction object associated with this transaction
-     */
-    transaction: PropTypes.object,
-    /**
-     * Browser/tab information
-     */
-    browser: PropTypes.object,
-    /**
-     * ETH to current currency conversion rate
-     */
-    conversionRate: PropTypes.number,
-    /**
-     * Currency code of the currently-active currency
-     */
-    currentCurrency: PropTypes.string,
-    /**
-     * Object containing token exchange rates in the format address => exchangeRate
-     */
-    contractExchangeRates: PropTypes.object,
-    /**
-     * Array of ERC20 assets
-     */
-    tokens: PropTypes.array,
-    /**
-     * Current provider ticker
-     */
-    ticker: PropTypes.string,
-    /**
-     * Chain id
-     */
-    chainId: PropTypes.string,
-    /**
-     * ETH or fiat, depending on user setting
-     */
-    primaryCurrency: PropTypes.string,
-    /**
-     * Error blockaid transaction execution, undefined value signifies no error.
-     */
-    error: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
-    /**
-     * Whether or not basic gas estimates have been fetched
-     */
-    ready: PropTypes.bool,
-    /**
-     * Height of custom gas and data modal
-     */
-    customGasHeight: PropTypes.number,
-    /**
-     * Drives animated values
-     */
-    animate: PropTypes.func,
-    /**
-     * Generates a transform style unique to the component
-     */
-    generateTransform: PropTypes.func,
-    /**
-     * Saves the height of TransactionReviewData
-     */
-    saveTransactionReviewDataHeight: PropTypes.func,
-    /**
-     * Hides or shows TransactionReviewData
-     */
-    hideData: PropTypes.bool,
-    /**
-     * True if transaction is over the available funds
-     */
-    over: PropTypes.bool,
-    gasEstimateType: PropTypes.string,
-    EIP1559GasData: PropTypes.object,
-    /**
-     * Function to call when update animation starts
-     */
-    onUpdatingValuesStart: PropTypes.func,
-    /**
-     * Function to call when update animation ends
-     */
-    onUpdatingValuesEnd: PropTypes.func,
-    /**
-     * If the values should animate upon update or not
-     */
-    animateOnChange: PropTypes.bool,
-    /**
-     * Boolean to determine if the animation is happening
-     */
-    isAnimating: PropTypes.bool,
-    dappSuggestedGas: PropTypes.bool,
-    /**
-     * List of tokens from TokenListController
-     */
-    tokenList: PropTypes.object,
-    /**
-     * Object that represents the navigator
-     */
-    navigation: PropTypes.object,
-    /**
-     * If it's a eip1559 network and dapp suggest legact gas then it should show a warning
-     */
-    dappSuggestedGasWarning: PropTypes.bool,
-    isSigningQRObject: PropTypes.bool,
-    QRState: PropTypes.object,
-    /**
-     * Returns the selected gas type
-     * @returns {string}
-     */
-    gasSelected: PropTypes.string,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-    /**
-     * Boolean that indicates if smart transaction should be used
-     */
-    shouldUseSmartTransaction: PropTypes.bool,
-    /**
-     * Boolean that indicates if transaction simulations should be enabled
-     */
-    useTransactionSimulations: PropTypes.bool,
-    /**
-     * Object containing blockaid validation response for confirmation
-     */
-    securityAlertResponse: PropTypes.object,
-    /**
-     * Object containing the current transaction metadata
-     */
-    transactionMetadata: PropTypes.object,
-    /**
-     * Network client id
-     */
-    networkClientId: PropTypes.string,
-  };
-
-  state = {
+class TransactionReview extends PureComponent<
+  TransactionReviewProps,
+  TransactionReviewComponentState
+> {
+  state: TransactionReviewComponentState = {
     toFocused: false,
     actionKey: strings('transactions.tx_review_confirm'),
     showHexData: false,
@@ -303,12 +382,12 @@ class TransactionReview extends PureComponent {
         txParams: transaction.transaction,
         chainId,
         networkClientId,
-      });
+      } as Parameters<typeof fetchEstimatedMultiLayerL1Fee>[1]);
       this.setState({
         multiLayerL1FeeTotal: result,
       });
     } catch (e) {
-      Logger.error(e, 'fetchEstimatedMultiLayerL1Fee call failed');
+      Logger.error(e as Error, 'fetchEstimatedMultiLayerL1Fee call failed');
       this.setState({
         multiLayerL1FeeTotal: '0x0',
       });
@@ -326,11 +405,13 @@ class TransactionReview extends PureComponent {
       metrics,
       shouldUseSmartTransaction,
     } = this.props;
-    let { showHexData } = this.props;
-    let assetAmount, conversionRate, fiatValue;
+    let showHexData: boolean | string | undefined = this.props.showHexData;
+    let assetAmount: string | undefined,
+      conversionRate: number | undefined,
+      fiatValue: string | undefined;
     showHexData = showHexData || data;
     const approveTransaction =
-      isApprovalTransaction(data) && (!value || isZeroValue(value));
+      isApprovalTransaction(data as string) && (!value || isZeroValue(value));
 
     const actionKey = await getTransactionReviewActionKey(
       {
@@ -338,25 +419,32 @@ class TransactionReview extends PureComponent {
         transaction,
         txParams: undefined,
       },
-      chainId,
+      chainId as string,
     );
 
     if (approveTransaction) {
-      let contract = tokenList[safeToChecksumAddress(to)];
+      let contract: { symbol?: string } | undefined =
+        tokenList[safeToChecksumAddress(to as string) as string];
       if (!contract) {
         contract = tokens.find(
-          ({ address }) => address === safeToChecksumAddress(to),
+          ({ address }) => address === safeToChecksumAddress(to as string),
         );
       }
-      const symbol = (contract && contract.symbol) || 'ERC20';
-      assetAmount = `${decodeTransferData('transfer', data)[1]} ${symbol}`;
+      const symbol = contract?.symbol || 'ERC20';
+      assetAmount = `${
+        decodeTransferData('transfer', data as string)[1]
+      } ${symbol}`;
     } else {
-      [assetAmount, conversionRate, fiatValue] = this.getRenderValues()();
+      [assetAmount, conversionRate, fiatValue] = this.getRenderValues()() as [
+        string | undefined,
+        number | undefined,
+        string | undefined,
+      ];
     }
 
     this.setState({
       actionKey,
-      showHexData,
+      showHexData: showHexData as boolean | string,
       assetAmount,
       conversionRate,
       fiatValue,
@@ -409,18 +497,24 @@ class TransactionReview extends PureComponent {
     } = this.props;
     const values = {
       ETH: () => {
-        const assetAmount = `${renderFromWei(value)} ${getTicker(ticker)}`;
+        const assetAmount = `${renderFromWei(value as string)} ${getTicker(
+          ticker,
+        )}`;
         const conversionRate = this.props.conversionRate;
-        const fiatValue = weiToFiat(value, conversionRate, currentCurrency);
+        const fiatValue = weiToFiat(
+          value as unknown as Parameters<typeof weiToFiat>[0],
+          conversionRate as number,
+          currentCurrency,
+        );
         return [assetAmount, conversionRate, fiatValue];
       },
       ERC20: () => {
         const assetAmount = `${renderFromTokenMinimalUnit(
-          value,
+          value as string,
           selectedAsset.decimals,
         )} ${selectedAsset.symbol}`;
         const conversionRate = contractExchangeRates
-          ? contractExchangeRates[selectedAsset.address]?.price
+          ? contractExchangeRates[selectedAsset.address as Hex]?.price
           : undefined;
         const fiatValue = balanceToFiat(
           (value && fromTokenMinimalUnit(value, selectedAsset.decimals)) || 0,
@@ -438,7 +532,7 @@ class TransactionReview extends PureComponent {
       },
       default: () => [undefined, undefined, undefined],
     };
-    return values[assetType] || values.default;
+    return values[assetType as keyof typeof values] || values.default;
   };
 
   edit = () => {
@@ -452,14 +546,15 @@ class TransactionReview extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     return createStyles(colors);
   };
 
   toggleDataView = () => {
     const { animate } = this.props;
     if (this.state.dataVisible) {
-      animate({
+      animate?.({
         modalEndValue: 1,
         xTranslationName: 'reviewToData',
         xTranslationEndValue: 0,
@@ -467,7 +562,7 @@ class TransactionReview extends PureComponent {
       this.setState({ dataVisible: false });
       return;
     }
-    animate({
+    animate?.({
       modalEndValue: 0,
       xTranslationName: 'reviewToData',
       xTranslationEndValue: 1,
@@ -478,7 +573,7 @@ class TransactionReview extends PureComponent {
   getUrlFromBrowser() {
     const { browser } = this.props;
     let url;
-    browser.tabs.forEach((tab) => {
+    browser.tabs.forEach((tab: { id: number; url: string }) => {
       if (tab.id === browser.activeTab) {
         url = tab.url;
       }
@@ -548,9 +643,9 @@ class TransactionReview extends PureComponent {
 
     const currentConnection = sdkConnections[channelIdOrHostname ?? ''];
 
-    let url = '';
+    let url: string | undefined = '';
     if (currentConnection) {
-      url = currentConnection.originatorInfo.url;
+      url = (currentConnection.originatorInfo as { url: string }).url;
     } else {
       url = this.getUrlFromBrowser();
     }
@@ -560,13 +655,13 @@ class TransactionReview extends PureComponent {
     const originatorInfo = currentConnection?.originatorInfo;
     const sdkDappMetadata = {
       url: originatorInfo?.url ?? strings('sdk.unknown'),
-      icon: originatorInfo?.icon,
+      icon: originatorInfo?.icon as string,
     };
 
     return (
       <>
         <Animated.View
-          style={generateTransform('reviewToData', [
+          style={generateTransform?.('reviewToData', [
             0,
             -Device.getDeviceWidth(),
           ])}
@@ -591,10 +686,10 @@ class TransactionReview extends PureComponent {
                   >
                     <ApprovalTagUrl
                       currentEnsName={ensRecipient}
-                      from={from}
+                      from={from as string}
                       origin={origin}
                       sdkDappMetadata={sdkDappMetadata}
-                      url={url}
+                      url={url as string}
                     />
                     <View style={styles.blockaidBannerContainer}>
                       <TransactionBlockaidBanner
@@ -608,7 +703,13 @@ class TransactionReview extends PureComponent {
                       </View>
                     )}
                     {to && (
-                      <View style={styles.accountWrapper}>
+                      // `accountWrapper` is not part of the style sheet
+                      <View
+                        style={
+                          (styles as { accountWrapper?: ViewStyle })
+                            .accountWrapper
+                        }
+                      >
                         <AccountFromToInfoCard
                           transactionState={transaction}
                           layout="vertical"
@@ -666,7 +767,7 @@ class TransactionReview extends PureComponent {
         <Animated.View
           style={[
             styles.transactionData,
-            generateTransform('reviewToData', [Device.getDeviceWidth(), 0]),
+            generateTransform?.('reviewToData', [Device.getDeviceWidth(), 0]),
             hideData && styles.hidden,
           ]}
         >
@@ -695,12 +796,12 @@ class TransactionReview extends PureComponent {
       <View style={styles.actionViewQRObject}>
         <TransactionHeader currentPageInformation={currentPageInformation} />
         <QRSigningDetails
-          QRState={QRState}
+          QRState={QRState as IQRState}
           tighten
           showCancelButton
           showHint={false}
           bypassAndroidCameraAccessCheck={false}
-          fromAddress={from}
+          fromAddress={from as string}
           cancelCallback={onCancel}
           successCallback={onConfirm}
         />
@@ -716,7 +817,7 @@ class TransactionReview extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
   const transaction = getNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const transactionMetadata = selectCurrentTransactionMetadata(state);
@@ -744,8 +845,15 @@ const mapStateToProps = (state) => {
 
 TransactionReview.contextType = ThemeContext;
 
+// Each HOC only knows about the props it injects itself
+const TransactionReviewWithMetrics = withMetricsAwareness(
+  TransactionReview as unknown as ComponentType<IWithMetricsAwarenessProps>,
+) as unknown as ComponentClass<{
+  QRState?: IQRState;
+  isSigningQRObject?: boolean;
+  isSyncingQRHardware?: boolean;
+}>;
+
 export default connect(mapStateToProps)(
-  withNavigation(
-    withQRHardwareAwareness(withMetricsAwareness(TransactionReview)),
-  ),
+  withNavigation(withQRHardwareAwareness(TransactionReviewWithMetrics)),
 );
