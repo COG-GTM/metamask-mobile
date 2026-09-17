@@ -47,6 +47,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix(bridge): change networks properly when user switches between source and destination tokens ([#14812](https://github.com/MetaMask/metamask-mobile/pull/14812))
 - fix(bridge): fix(bridge): update quote details card toggle to handle same chain swaps and improve slippage button layout ([#15153](https://github.com/MetaMask/metamask-mobile/pull/15153))
 
+### Removed
+
+- chore: remove unused Engine controller-init and messenger factories, their orphaned messenger action/event types, and the unused `ControllerMessengerByControllerName` type ([#1873](https://github.com/COG-GTM/metamask-mobile/pull/1873))
+
 ## [7.45.2]
 
 ### Fixed
