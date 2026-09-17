@@ -1,24 +1,13 @@
 import { KeyringController } from '@metamask/keyring-controller';
-import { DappClient } from '../AndroidSDK/dapp-sdk-types';
 import { Connection } from '../Connection';
-import RPCQueueManager from '../RPCQueueManager';
 import { SDKConnect } from '../SDKConnect';
 import {
   waitForAndroidServiceBinding,
   waitForAsyncCondition,
   waitForCondition,
   waitForConnectionReadiness,
-  waitForEmptyRPCQueue,
   waitForKeychainUnlocked,
-  waitForReadyClient,
-  waitForUserLoggedIn,
 } from './wait.util';
-
-jest.mock('../../../../app/store/index', () => ({
-  store: {
-    getState: jest.fn(),
-  },
-}));
 
 jest.mock('../SDKConnect', () => ({
   SDKConnect: {
@@ -32,7 +21,6 @@ jest.mock('./wait.util', () => {
   return {
     ...originalModule,
     wait: (_ms: number) => new Promise((resolve) => setTimeout(resolve, 10)),
-    waitForUserLoggedIn: jest.fn().mockResolvedValue(true),
   };
 });
 
@@ -44,19 +32,6 @@ describe('wait.util', () => {
 
   afterEach(() => {
     jest.useFakeTimers({ legacyFakeTimers: true });
-  });
-
-  test('waitForReadyClient resolves when client is ready', async () => {
-    const connectedClients: { [clientId: string]: DappClient } = {};
-    const clientId = 'testClient';
-
-    const waitPromise = waitForReadyClient(clientId, connectedClients, 10);
-    connectedClients[clientId] = {} as DappClient;
-
-    await jest.runAllTimersAsync();
-    await waitPromise;
-
-    expect(connectedClients[clientId]).toBeDefined();
   });
 
   test('waitForCondition resolves when condition is true', async () => {
@@ -115,12 +90,6 @@ describe('wait.util', () => {
     expect(keyringController.isUnlocked()).toBe(true);
   });
 
-  test('waitForUserLoggedIn resolves when user is logged in', async () => {
-    const result = await waitForUserLoggedIn({ waitTime: 10 });
-    expect(result).toBe(true);
-    expect(waitForUserLoggedIn).toHaveBeenCalledWith({ waitTime: 10 });
-  });
-
   test('waitForAndroidServiceBinding resolves when Android service is bound', async () => {
     const mockSDKConnect = {
       isAndroidSDKBound: jest.fn().mockReturnValue(false),
@@ -134,19 +103,5 @@ describe('wait.util', () => {
     await waitPromise;
 
     expect(mockSDKConnect.isAndroidSDKBound()).toBe(true);
-  });
-
-  test('waitForEmptyRPCQueue resolves when RPC queue is empty', async () => {
-    const manager = {
-      get: jest.fn().mockReturnValue({ task1: {}, task2: {} }),
-    } as unknown as RPCQueueManager;
-
-    const waitPromise = waitForEmptyRPCQueue(manager, 10);
-
-    manager.get = jest.fn().mockReturnValue({});
-    await jest.runAllTimersAsync();
-    await waitPromise;
-
-    expect(Object.keys(manager.get()).length).toBe(0);
   });
 });

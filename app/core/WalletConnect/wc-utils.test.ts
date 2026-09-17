@@ -2,12 +2,9 @@ import {
   parseWalletConnectUri,
   hideWCLoadingState,
   showWCLoadingState,
-  isValidWCURI,
-  waitForNetworkModalOnboarding,
   getApprovedSessionMethods,
   getScopedPermissions,
   checkWCPermissions,
-  networkModalOnboardingConfig,
   onRequestUserApproval,
   getHostname,
 } from './wc-utils';
@@ -169,53 +166,6 @@ describe('WalletConnect Utils', () => {
         Routes.MODAL.ROOT_MODAL_FLOW,
         { screen: Routes.SHEET.SDK_LOADING },
       );
-    });
-  });
-
-  describe('isValidWCURI', () => {
-    it('validates v1 URI correctly', () => {
-      const uri = 'wc:topic@1?bridge=https://bridge&key=abc&handshakeTopic=xyz';
-      expect(isValidWCURI(uri)).toBe(true);
-    });
-
-    it('validates v2 URI correctly', () => {
-      const uri = 'wc:topic@2?symKey=def&relayProtocol=irn';
-      expect(isValidWCURI(uri)).toBe(true);
-    });
-
-    it('returns false for invalid URI', () => {
-      const uri = 'wc:topic@1';
-      expect(isValidWCURI(uri)).toBe(false);
-    });
-
-    it('returns false for invalid version URI', () => {
-      const uri = 'wc:topic@5';
-      expect(isValidWCURI(uri)).toBe(false);
-    });
-  });
-
-  describe('waitForNetworkModalOnboarding', () => {
-    it('waits until network is onboarded', async () => {
-      mockStore.getState.mockReturnValueOnce({
-        networkOnboarded: {
-          networkOnboardedState: { '1': true },
-        },
-      });
-      await expect(
-        waitForNetworkModalOnboarding({ chainId: '1' }),
-      ).resolves.toBeUndefined();
-    });
-
-    it('throws timeout error after max iterations', async () => {
-      networkModalOnboardingConfig.MAX_LOOP_COUNTER = 1;
-      mockStore.getState.mockReturnValue({
-        networkOnboarded: {
-          networkOnboardedState: { '1': false },
-        },
-      });
-      await expect(
-        waitForNetworkModalOnboarding({ chainId: '1' }),
-      ).rejects.toThrow('Timeout error');
     });
   });
 

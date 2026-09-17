@@ -19,7 +19,6 @@ import {
 } from '../RPCMethods/lib/ethereum-chain-utils';
 import { getRpcMethodMiddlewareHooks } from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
-import { wait } from '../SDKConnect/utils/wait.util';
 
 export interface WCMultiVersionParams {
   protocol: string;
@@ -115,49 +114,6 @@ export const showWCLoadingState = ({
   navigation?.navigate(Routes.MODAL.ROOT_MODAL_FLOW, {
     screen: Routes.SHEET.SDK_LOADING,
   });
-};
-
-export const isValidWCURI = (uri: string): boolean => {
-  const result = parseWalletConnectUri(uri);
-  if (result.version === 1) {
-    return !(!result.handshakeTopic || !result.bridge || !result.key);
-  } else if (result.version === 2) {
-    return !(!result.topic || !result.symKey || !result.relay);
-  }
-  return false;
-};
-
-// Export a config object that can be modified for testing
-export const networkModalOnboardingConfig = {
-  MAX_LOOP_COUNTER: 60,
-};
-
-export const waitForNetworkModalOnboarding = async ({
-  chainId,
-}: {
-  chainId: string;
-}): Promise<void> => {
-  let waitForNetworkModalOnboarded = true;
-
-  // throw timeout error after 30sec
-  let loopCounter = 0;
-
-  while (waitForNetworkModalOnboarded) {
-    loopCounter += 1;
-    const { networkOnboarded } = store.getState();
-    const { networkOnboardedState } = networkOnboarded;
-
-    if (networkOnboardedState[chainId]) {
-      waitForNetworkModalOnboarded = false;
-      // exit the loop
-    } else {
-      await wait(1000);
-    }
-
-    if (loopCounter >= networkModalOnboardingConfig.MAX_LOOP_COUNTER) {
-      throw new Error('Timeout error');
-    }
-  }
 };
 
 export const getApprovedSessionMethods = (_: { origin: string }): string[] => {

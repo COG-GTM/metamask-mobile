@@ -1,35 +1,14 @@
 import { KeyringController } from '@metamask/keyring-controller';
-import { DappClient } from '../AndroidSDK/dapp-sdk-types';
-import RPCQueueManager from '../RPCQueueManager';
 import { SDKConnect } from '../SDKConnect';
 import DevLogger from './DevLogger';
 import { Connection } from '../Connection';
 import { isE2E } from '../../../util/test/utils';
-import { store } from '../../../../app/store/index';
 
 export const MAX_QUEUE_LOOP = Infinity;
 export const wait = (ms: number) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
-
-export const waitForReadyClient = async (
-  id: string,
-  connectedClients: {
-    [clientId: string]: DappClient;
-  },
-  waitTime = 200,
-) => {
-  let i = 0;
-  while (!connectedClients[id]) {
-    i += 1;
-    if (i++ > MAX_QUEUE_LOOP) {
-      console.warn(`RPC queue not empty after ${MAX_QUEUE_LOOP} seconds`);
-      break;
-    }
-    await wait(waitTime);
-  }
-};
 
 /**
  * Asynchronously waits for a given condition to return true by periodically executing
@@ -140,40 +119,6 @@ export const waitForKeychainUnlocked = async ({
   return unlocked;
 };
 
-export const waitForUserLoggedIn = async ({
-  context,
-  waitTime = 1000,
-}: {
-  waitTime?: number;
-  context?: string;
-}) => {
-  let i = 1;
-
-  // Disable during e2e tests otherwise Detox fails
-  if (isE2E) {
-    return true;
-  }
-
-  const state = store.getState();
-  let isLoggedIn = state.user.userLoggedIn ?? false;
-
-  DevLogger.log(
-    `wait:: waitForUserLoggedIn[${context}] isLoggedIn: ${isLoggedIn}`,
-  );
-  while (!isLoggedIn) {
-    await wait(waitTime);
-    if (i % 60 === 0) {
-      DevLogger.log(
-        `[wait.util] [${context}] Waiting for userLoggedIn... attempt ${i}`,
-      );
-    }
-    isLoggedIn = state.user.userLoggedIn ?? false;
-    i += 1;
-  }
-
-  return isLoggedIn;
-};
-
 export const waitForAndroidServiceBinding = async (waitTime = 500) => {
   let i = 1;
   while (SDKConnect.getInstance().isAndroidSDKBound() === false) {
@@ -182,21 +127,5 @@ export const waitForAndroidServiceBinding = async (waitTime = 500) => {
     if (i > 5 && i % 10 === 0) {
       console.warn(`Waiting for Android service binding...`);
     }
-  }
-};
-
-export const waitForEmptyRPCQueue = async (
-  manager: RPCQueueManager,
-  waitTime = 1000,
-) => {
-  let i = 0;
-  let queue = Object.keys(manager.get());
-  while (queue.length > 0) {
-    queue = Object.keys(manager.get());
-    if (i++ > MAX_QUEUE_LOOP) {
-      console.warn(`RPC queue not empty after ${MAX_QUEUE_LOOP} seconds`);
-      break;
-    }
-    await wait(waitTime);
   }
 };
