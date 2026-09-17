@@ -194,10 +194,3 @@ describe('GetEIP1559TransactionData', () => {
     expect(result).toEqual(expected);
   });
 });
-
-// describe('useDataStore', () => {
-//   it('should return the data store', () => {
-//     const result = useDataStore();
-//     expect(result.conversionRate).toEqual(1);
-//   });
-// });
