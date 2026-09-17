@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useState } from 'react';
 
 interface PriceChartContextType {
   isChartBeingTouched: boolean;
@@ -13,8 +13,6 @@ const PriceChartContext = createContext<PriceChartContextType>({
     );
   },
 });
-
-export const usePriceChart = () => useContext(PriceChartContext);
 
 interface PriceChartProviderProps {
   children: React.ReactNode;

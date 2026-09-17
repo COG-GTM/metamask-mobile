@@ -155,10 +155,6 @@ class Tabs extends PureComponent {
      */
     switchToTab: PropTypes.func,
     /**
-     * Sets the current tab used for the animation
-     */
-    animateCurrentTab: PropTypes.func, // eslint-disable-line react/no-unused-prop-types
-    /**
      * Metrics injected by withMetricsAwareness HOC
      */
     metrics: PropTypes.object

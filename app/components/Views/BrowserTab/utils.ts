@@ -3,29 +3,6 @@ import URLParse from 'url-parse';
 import { SessionENSNames } from './types';
 
 /**
- * Validates url for browser
- *
- * Regular domains (e.g., google.com)
- * Localhost URLs (e.g., http://localhost:3000)
- * URLs with ports (e.g., http://localhost:1234)
- * HTTPS/HTTP protocols
- *
- * @param url - The url to validate
- * @returns
- */
-export const isValidUrl = (url: URLParse<string>): boolean => {
-  const urlPattern = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/\S*)?$/;
-  try {
-    return (
-      (url.protocol === 'http:' || url.protocol === 'https:') &&
-      (urlPattern.test(url.origin) || url.hostname === 'localhost')
-    );
-  } catch {
-    return false;
-  }
-};
-
-/**
  * Checks if it is a ENS website
  */
 export const isENSUrl = (urlToCheck: string, ensIgnoreList: string[]) => {
