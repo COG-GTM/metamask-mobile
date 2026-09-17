@@ -1,0 +1,20 @@
+# F4 — core services — 19 files, convert in listed order (leaf-first)
+app/core/DrawerStatusTracker.js
+app/core/RPCMethods/index.js
+app/core/EntryScriptWeb3.js
+app/core/SecureKeychain.js
+app/core/MobilePortStream.js
+app/core/RPCMethods/handlers/index.js
+app/core/PreventScreenshot.js
+app/core/RPCMethods/eth-request-accounts.js
+app/core/Vault.js
+app/core/Permissions/specifications.js
+app/core/RPCMethods/wallet_addEthereumChain.js
+app/core/RPCMethods/wallet_switchEthereumChain.js
+app/core/RPCMethods/lib/ethereum-chain-utils.js
+app/core/WalletConnect/WalletConnect.js
+app/core/BackgroundBridge/BackgroundBridge.js
+app/core/RPCMethods/createEip1193MethodMiddleware/index.js
+app/core/TransactionTypes.js
+app/core/ClipboardManager.js
+app/core/NotificationManager.js

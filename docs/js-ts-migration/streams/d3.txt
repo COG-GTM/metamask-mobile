@@ -1,0 +1,9 @@
+# D3 — Views/Settings — 8 files, convert in listed order (leaf-first)
+app/components/Views/Settings/NetworksSettings/NetworkSettings/index.js
+app/components/Views/Settings/NetworksSettings/NetworkSettings/withIsOriginalNativeToken.js
+app/components/Views/Settings/AdvancedSettings/index.js
+app/components/Views/Settings/AppInformation/index.js
+app/components/Views/Settings/Contacts/ContactForm/index.js
+app/components/Views/Settings/Contacts/index.js
+app/components/Views/Settings/GeneralSettings/index.js
+app/components/Views/Settings/NetworksSettings/index.js

@@ -1,0 +1,21 @@
+# C1 — UI/Swaps — 20 files, convert in listed order (leaf-first)
+app/components/UI/Swaps/components/AssetSwapButton.js
+app/components/UI/Swaps/components/LoadingAnimation/backgroundShapes.js
+app/components/UI/Swaps/components/Onboarding.js
+app/components/UI/Swaps/components/ApprovalTransactionEditionModal.js
+app/components/UI/Swaps/components/GasEditModal.js
+app/components/UI/Swaps/components/QuotesModal.js
+app/components/UI/Swaps/components/QuotesSummary.js
+app/components/UI/Swaps/components/SlippageModal.js
+app/components/UI/Swaps/components/TokenImportModal.js
+app/components/UI/Swaps/components/TokenSelectModal.js
+app/components/UI/Swaps/utils/useFetchTokenMetadata.js
+app/components/UI/Swaps/QuotesView.js
+app/components/UI/Swaps/components/LoadingAnimation/index.js
+app/components/UI/Swaps/index.js
+app/components/UI/Swaps/components/ActionAlert.js
+app/components/UI/Swaps/components/TokenSelectButton.js
+app/components/UI/Swaps/utils/useBalance.js
+app/components/UI/Swaps/utils/useBlockExplorer.js
+app/components/UI/Swaps/components/TokenIcon.js
+app/components/UI/Swaps/utils/index.js
