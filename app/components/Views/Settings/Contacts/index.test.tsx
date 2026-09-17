@@ -17,7 +17,7 @@ describe('Contacts', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Contacts />
+        <Contacts {...({} as React.ComponentProps<typeof Contacts>)} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
