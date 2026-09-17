@@ -1,10 +1,8 @@
 # Banner
 [BannerAlert](https://metamask-consensys.notion.site/Banner-Alert-56177453644641ed8ef5c96db6a7681f)
 ![BannerAlert](./variants/BannerAlert/BannerAlert.png)
-[BannerTip](https://metamask-consensys.notion.site/Banner-Tip-67fdb01ab850472f90abc6f4127395cb)
-![BannerTip](./variants/BannerTip/BannerTip.png)
 
-This component is a union Banner component, which consists of [BannerAlert](../BannerAlert/BannerAlert.tsx) and [BannerTip](../BannerTip/BannerTip.tsx).
+This component is a union Banner component, which consists of [BannerAlert](../BannerAlert/BannerAlert.tsx).
 
 ## Banner Props
 
@@ -25,16 +23,6 @@ Optional enum to determine the severity color of the BannerAlert.
 | <span style="color:gray;font-size:14px">TYPE</span> | <span style="color:gray;font-size:14px">REQUIRED</span> | <span style="color:gray;font-size:14px">DEFAULT</span> |
 | :-------------------------------------------------- | :------------------------------------------------------ | :----------------------------------------------------- |
 | [BannerAlertSeverity](./BannerAlert.types.ts)    | No                                                     | BannerAlertSeverity.Info                                |
-
-## BannerTip Props
-
-### `logoType`
-
-Optional enum to determine the logo type of the Banner.
-
-| <span style="color:gray;font-size:14px">TYPE</span> | <span style="color:gray;font-size:14px">REQUIRED</span> | <span style="color:gray;font-size:14px">DEFAULT</span> |
-| :-------------------------------------------------- | :------------------------------------------------------ | :----------------------------------------------------- |
-| [BannerLogoType](./Banner.types.ts)    | No                                                     | BannerLogoType.Greeting                                |
 
 ## Common Props
 
@@ -134,17 +122,6 @@ Optional prop to add children components to the Banner
 <Banner
   variant={BannerVariant.Alert}
   severity={BannerAlertSeverity.Error}
-  title={SAMPLE_BANNERALERT_TITLE}
-  description={SAMPLE_BANNERALERT_DESCRIPTION}
-  actionButtonLabel={SAMPLE_BANNERALERT_ACTIONBUTTONLABEL}
-  actionButtonOnPress={() => {}}
-  onClose={() => {}}
-/>;
-
-// Banner Tip
-<Banner
-  variant={BannerVariant.Tip}
-  logoType={BannerLogoType.Greeting}
   title={SAMPLE_BANNERALERT_TITLE}
   description={SAMPLE_BANNERALERT_DESCRIPTION}
   actionButtonLabel={SAMPLE_BANNERALERT_ACTIONBUTTONLABEL}

@@ -286,20 +286,6 @@ const DisabledStateDemo = ({
   </View>
 );
 
-// This is needed to suppress the unused variable warnings
-// These components are used in the story but ESLint doesn't recognize it
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _unusedComponents = {
-  BasicSingleSelectDemo,
-  MultiSelectDemo,
-  ScrollableFlexibleWidthDemo,
-  ScrollableFixedWidthDemo,
-  SingleSelectWithIconsDemo,
-  MultiSelectWithIconsScrollableDemo,
-  ButtonSizesDemo,
-  DisabledStateDemo,
-};
-
 // Replace all the individual exports with a single comprehensive view
 export const SegmentedControl = {
   render: () => {
