@@ -39,6 +39,7 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  type SelectedGasFee,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
@@ -195,7 +196,7 @@ describe('Transactions utils :: parseTransactionLegacy', () => {
     },
     conversionRate: 1,
     currentCurrency: 'USD',
-    selectedGasFee: 'average',
+    selectedGasFee: 'average' as unknown as SelectedGasFee,
     multiLayerL1FeeTotal: '0x0',
     ticker: 'tBNB',
   };
@@ -608,7 +609,7 @@ describe('Transactions utils :: generateTxWithNewTokenAllowance', () => {
 
   const decodeAmount = (data: string): string => {
     const decode = decodeApproveData(data);
-    return BNToHex(decode.encodedAmount);
+    return BNToHex(decode.encodedAmount as unknown as BN);
   };
 
   it('should encode a integer correctly and return a new transaction', () => {
@@ -1214,7 +1215,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1222,7 +1223,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx2', mockTransactionController);
-    
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1232,7 +1233,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1240,7 +1241,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('nonexistent', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1253,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 });

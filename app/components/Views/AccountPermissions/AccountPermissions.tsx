@@ -93,7 +93,7 @@ const AccountPermissions = (props: AccountPermissionsProps) => {
       Object.keys(selectEvmNetworkConfigurationsByChainId(state)).length + 1,
   );
 
-  const origin: string = useSelector(getActiveTabUrl, isEqual);
+  const origin: string = useSelector(getActiveTabUrl, isEqual) as string;
   const faviconSource = useFavicon(origin);
   // TODO - Once we can pass metadata to permission system, pass origin instead of hostname into this component.
   // const hostname = useMemo(() => new URL(origin).hostname, [origin]);

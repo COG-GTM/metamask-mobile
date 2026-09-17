@@ -15,16 +15,34 @@ const USER_REJECTED_ERRORS = ['user rejected', 'user denied', 'user cancelled'];
 
 const USER_REJECTED_ERROR_CODE = 4001;
 
+interface MiddlewareRequest {
+  origin?: string;
+  params?: unknown[];
+  isMetamaskInternal?: boolean;
+}
+
+interface MiddlewareResponseError {
+  message: string;
+  code?: number;
+  data?: unknown;
+}
+
+interface MiddlewareResponse {
+  error?: MiddlewareResponseError;
+}
+
+type MiddlewareNext = (cb?: (cb: () => void) => void) => void;
+
 /**
  * Returns a middleware that appends the DApp origin to request
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createOriginMiddleware(opts) {
+export function createOriginMiddleware(opts: { origin: string }) {
   return function originMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ _,
-    /** @type {Function} */ next,
+    req: MiddlewareRequest,
+    _: MiddlewareResponse,
+    next: MiddlewareNext,
   ) {
     req.origin = opts.origin;
 
@@ -43,7 +61,10 @@ export function createOriginMiddleware(opts) {
  * @param {String} errorMessage
  * @returns {boolean}
  */
-export function containsUserRejectedError(errorMessage, errorCode) {
+export function containsUserRejectedError(
+  errorMessage: string | undefined,
+  errorCode: number | undefined,
+): boolean {
   try {
     if (!errorMessage || !(typeof errorMessage === 'string')) return false;
 
@@ -67,13 +88,13 @@ export function containsUserRejectedError(errorMessage, errorCode) {
  * @param {{ origin: string }} opts - The middleware options
  * @returns {Function}
  */
-export function createLoggerMiddleware(opts) {
+export function createLoggerMiddleware(opts: { origin: string }) {
   return function loggerMiddleware(
-    /** @type {any} */ req,
-    /** @type {any} */ res,
-    /** @type {Function} */ next,
+    req: MiddlewareRequest,
+    res: MiddlewareResponse,
+    next: MiddlewareNext,
   ) {
-    next((/** @type {Function} */ cb) => {
+    next((cb: () => void) => {
       if (res.error) {
         const { error, ...resWithoutError } = res;
         if (error) {
@@ -83,7 +104,7 @@ export function createLoggerMiddleware(opts) {
               error.message,
             );
           } else {
-            /**
+            /*
              * Example of a rpc error:
              * { "code":-32603,
              *   "message":"Internal JSON-RPC error.",
@@ -92,7 +113,13 @@ export function createLoggerMiddleware(opts) {
              * This will make the error log to sentry with the title "gas required exceeds allowance (59956966) or always failing transaction"
              * making it easier to differentiate each error.
              */
-            const errorParams = {
+            const errorParams: {
+              message: string;
+              orginalError: MiddlewareResponseError;
+              res: Omit<MiddlewareResponse, 'error'>;
+              req: MiddlewareRequest;
+              data?: unknown;
+            } = {
               message: 'Error in RPC response',
               orginalError: error,
               res: resWithoutError,
@@ -103,7 +130,7 @@ export function createLoggerMiddleware(opts) {
               errorParams.data = error.data;
             }
 
-            Logger.error(error, errorParams);
+            Logger.error(error as unknown as Error, errorParams);
           }
         }
       }
