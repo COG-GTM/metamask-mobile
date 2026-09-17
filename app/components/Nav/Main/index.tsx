@@ -9,13 +9,15 @@ import React, {
 import {
   ActivityIndicator,
   AppState,
+  AppStateStatus,
   StyleSheet,
   View,
   Linking,
 } from 'react-native';
-import NetInfo from '@react-native-community/netinfo';
-import PropTypes from 'prop-types';
+import NetInfo, { NetInfoState } from '@react-native-community/netinfo';
 import { connect, useSelector } from 'react-redux';
+import { NavigationProp, ParamListBase, RouteProp } from '@react-navigation/native';
+import { Dispatch } from 'redux';
 import GlobalAlert from '../../UI/GlobalAlert';
 import BackgroundTimer from 'react-native-background-timer';
 import NotificationManager from '../../../core/NotificationManager';
@@ -31,7 +33,7 @@ import {
   hideCurrentNotification,
   showSimpleNotification,
   removeNotificationById,
-  removeNotVisibleNotifications,
+  removeNotVisibleNotifications as removeNotVisibleNotificationsAction,
 } from '../../../actions/notification';
 
 import ProtectYourWalletModal from '../../UI/ProtectYourWalletModal';
@@ -48,11 +50,15 @@ import {
 import { createStackNavigator } from '@react-navigation/stack';
 import ReviewModal from '../../UI/ReviewModal';
 import { useTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import RootRPCMethodsUI from './RootRPCMethodsUI';
 import {
   ToastContext,
   ToastVariants,
 } from '../../../component-library/components/Toast';
+import { ToastOptions } from '../../../component-library/components/Toast/Toast.types';
+import { Hex } from '@metamask/utils';
 import { useEnableAutomaticSecurityChecks } from '../../hooks/EnableAutomaticSecurityChecks';
 import { useMinimumVersions } from '../../hooks/MinimumVersions';
 import navigateTermsOfUse from '../../../util/termsOfUse/termsOfUse';
@@ -94,7 +100,7 @@ import { useIdentityEffects } from '../../../util/identity/hooks/useIdentityEffe
 
 const Stack = createStackNavigator();
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     flex: {
       flex: 1,
@@ -107,7 +113,76 @@ const createStyles = (colors) =>
     },
   });
 
-const Main = (props) => {
+interface PartialProviderConfig {
+  chainId?: string;
+  type?: string;
+}
+
+interface MainProps {
+  /**
+   * Object that represents the navigator
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<ParamListBase, string>;
+  /**
+   * Dispatch showing a transaction notification
+   */
+  showTransactionNotification: (
+    args: Parameters<typeof showTransactionNotification>[0],
+  ) => void;
+  /**
+   * Dispatch showing a simple notification
+   */
+  showSimpleNotification: (
+    args: Parameters<typeof showSimpleNotification>[0],
+  ) => void;
+  /**
+   * Dispatch hiding a transaction notification
+   */
+  hideCurrentNotification: () => void;
+  removeNotificationById: (id: number) => void;
+  /**
+   * Indicates whether networks allows incoming transactions
+   */
+  showIncomingTransactionsNetworks: Record<string, boolean>;
+  /**
+   * Network provider type
+   */
+  providerType: string;
+  /**
+   * Dispatch infura availability blocked
+   */
+  setInfuraAvailabilityBlocked: () => void;
+  /**
+   * Dispatch infura availability not blocked
+   */
+  setInfuraAvailabilityNotBlocked: () => void;
+  /**
+   * Remove not visible notifications from state
+   */
+  removeNotVisibleNotifications: () => void;
+  /**
+   * Current chain id
+   */
+  chainId: ReturnType<typeof selectChainId>;
+  /**
+   * backup seed phrase modal visible
+   */
+  backUpSeedphraseVisible: boolean;
+  /**
+   * ID of the global network client
+   */
+  networkClientId: string;
+  /**
+   * Network configurations
+   */
+  networkConfigurations: ReturnType<typeof selectNetworkConfigurations>;
+}
+
+const Main = (props: MainProps) => {
   const [forceReload, setForceReload] = useState(false);
   const [showRemindLaterModal, setShowRemindLaterModal] = useState(false);
   const [skipCheckbox, setSkipCheckbox] = useState(false);
@@ -116,7 +191,9 @@ const Main = (props) => {
   const styles = createStyles(colors);
   const backgroundMode = useRef(false);
   const locale = useRef(I18n.locale);
-  const removeConnectionStatusListener = useRef();
+  const removeConnectionStatusListener = useRef<(() => void) | undefined>(
+    undefined,
+  );
 
   const { connectionChangeHandler } = useConnectionHandler(props.navigation);
 
@@ -129,7 +206,7 @@ const Main = (props) => {
   const { chainId, networkClientId, showIncomingTransactionsNetworks } = props;
 
   useEffect(() => {
-    if (DEPRECATED_NETWORKS.includes(props.chainId)) {
+    if (DEPRECATED_NETWORKS.includes(props.chainId as Hex)) {
       setShowDeprecatedAlert(true);
     } else {
       setShowDeprecatedAlert(false);
@@ -153,7 +230,7 @@ const Main = (props) => {
         await query(ethQuery, 'blockNumber', []);
         props.setInfuraAvailabilityNotBlocked();
       } catch (e) {
-        if (e.message === AppConstants.ERRORS.INFURA_BLOCKED_MESSAGE) {
+        if ((e as Error).message === AppConstants.ERRORS.INFURA_BLOCKED_MESSAGE) {
           props.navigation.navigate('OfflineModeView');
           props.setInfuraAvailabilityBlocked();
         }
@@ -170,7 +247,7 @@ const Main = (props) => {
   ]);
 
   const handleAppStateChange = useCallback(
-    (appState) => {
+    (appState: AppStateStatus) => {
       const newModeIsBackground = appState === 'background';
 
       // If it was in background and it's not anymore
@@ -235,8 +312,12 @@ const Main = (props) => {
   const networkConfigurations = useSelector(selectNetworkConfigurations);
   const networkName = useSelector(selectNetworkName);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
-  const previousProviderConfig = useRef(undefined);
-  const previousNetworkConfigurations = useRef(undefined);
+  const previousProviderConfig = useRef<PartialProviderConfig | undefined>(
+    undefined,
+  );
+  const previousNetworkConfigurations = useRef<
+    ReturnType<typeof selectNetworkConfigurations> | undefined
+  >(undefined);
   const { toastRef } = useContext(ToastContext);
   const networkImage = useSelector(selectNetworkImageSource);
 
@@ -244,13 +325,17 @@ const Main = (props) => {
   const tokenNetworkFilter = useSelector(selectTokenNetworkFilter);
 
   const hasNetworkChanged = useCallback(
-    (chainId, previousConfig, isEvmSelected) => {
+    (
+      currentChainId: string,
+      previousConfig: PartialProviderConfig | undefined,
+      evmSelected: boolean,
+    ) => {
       if (!previousConfig) return false;
 
-      return isEvmSelected
-        ? chainId !== previousConfig.chainId ||
+      return evmSelected
+        ? currentChainId !== previousConfig.chainId ||
             providerConfig.type !== previousConfig.type
-        : chainId !== previousConfig.chainId;
+        : currentChainId !== previousConfig.chainId;
     },
     [providerConfig.type],
   );
@@ -271,7 +356,7 @@ const Main = (props) => {
           PreferencesController.setTokenNetworkFilter({
             ...tokenNetworkFilter,
             [chainId]: true,
-          });
+          } as unknown as Record<string, boolean>);
         }
       }
       toastRef?.current?.showToast({
@@ -284,7 +369,7 @@ const Main = (props) => {
           { label: strings('toast.now_active') },
         ],
         networkImageSource: networkImage,
-      });
+      } as ToastOptions);
     }
     previousProviderConfig.current = !isEvmSelected
       ? { chainId }
@@ -340,7 +425,7 @@ const Main = (props) => {
           },
         ],
         networkImageSource: networkImage,
-      });
+      } as unknown as ToastOptions);
     }
     previousNetworkConfigurations.current = networkConfigurations;
   }, [networkConfigurations, networkName, networkImage, toastRef]);
@@ -374,7 +459,7 @@ const Main = (props) => {
       });
       checkInfuraAvailability();
       removeConnectionStatusListener.current = NetInfo.addEventListener(
-        connectionChangeHandler,
+        connectionChangeHandler as (state: NetInfoState) => void,
       );
     }, 1000);
 
@@ -400,9 +485,15 @@ const Main = (props) => {
     Linking.openURL(GOERLI_DEPRECATED_ARTICLE);
   };
 
-  const renderDeprecatedNetworkAlert = (chainId, backUpSeedphraseVisible) => {
-    if (DEPRECATED_NETWORKS.includes(chainId) && showDeprecatedAlert) {
-      if (NETWORKS_CHAIN_ID.MUMBAI === chainId) {
+  const renderDeprecatedNetworkAlert = (
+    alertChainId: ReturnType<typeof selectChainId>,
+    backUpSeedphraseVisible: boolean,
+  ) => {
+    if (
+      DEPRECATED_NETWORKS.includes(alertChainId as Hex) &&
+      showDeprecatedAlert
+    ) {
+      if (NETWORKS_CHAIN_ID.MUMBAI === alertChainId) {
         return (
           <WarningAlert
             text={strings('networks.network_deprecated_title')}
@@ -426,13 +517,13 @@ const Main = (props) => {
     <React.Fragment>
       <View style={styles.flex}>
         {!forceReload ? (
-          <MainNavigator navigation={props.navigation} />
+          <MainNavigator />
         ) : (
           renderLoader()
         )}
         <GlobalAlert />
         <FadeOutOverlay />
-        <Notification navigation={props.navigation} />
+        <Notification />
         <RampOrders />
         <SwapsLiveness />
         <BackupAlert
@@ -457,69 +548,11 @@ const Main = (props) => {
   );
 };
 
-Main.router = MainNavigator.router;
+(Main as unknown as { router: unknown }).router = (
+  MainNavigator as unknown as { router: unknown }
+).router;
 
-Main.propTypes = {
-  /**
-   * Object that represents the navigator
-   */
-  navigation: PropTypes.object,
-  /**
-   * Dispatch showing a transaction notification
-   */
-  showTransactionNotification: PropTypes.func,
-  /**
-   * Dispatch showing a simple notification
-   */
-  showSimpleNotification: PropTypes.func,
-  /**
-   * Dispatch hiding a transaction notification
-   */
-  hideCurrentNotification: PropTypes.func,
-  removeNotificationById: PropTypes.func,
-  /**
-   * Indicates whether networks allows incoming transactions
-   */
-  showIncomingTransactionsNetworks: PropTypes.object,
-  /**
-   * Network provider type
-   */
-  providerType: PropTypes.string,
-  /**
-   * Dispatch infura availability blocked
-   */
-  setInfuraAvailabilityBlocked: PropTypes.func,
-  /**
-   * Dispatch infura availability not blocked
-   */
-  setInfuraAvailabilityNotBlocked: PropTypes.func,
-  /**
-   * Remove not visible notifications from state
-   */
-  removeNotVisibleNotifications: PropTypes.func,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current chain id
-   */
-  chainId: PropTypes.string,
-  /**
-   * backup seed phrase modal visible
-   */
-  backUpSeedphraseVisible: PropTypes.bool,
-  /**
-   * ID of the global network client
-   */
-  networkClientId: PropTypes.string,
-  /**
-   * Network configurations
-   */
-  networkConfigurations: PropTypes.object,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   showIncomingTransactionsNetworks:
     selectShowIncomingTransactionNetworks(state),
   providerType: selectProviderType(state),
@@ -529,17 +562,20 @@ const mapStateToProps = (state) => ({
   networkConfigurations: selectNetworkConfigurations(state),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showTransactionNotification: (args) =>
-    dispatch(showTransactionNotification(args)),
-  showSimpleNotification: (args) => dispatch(showSimpleNotification(args)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  showTransactionNotification: (
+    args: Parameters<typeof showTransactionNotification>[0],
+  ) => dispatch(showTransactionNotification(args)),
+  showSimpleNotification: (
+    args: Parameters<typeof showSimpleNotification>[0],
+  ) => dispatch(showSimpleNotification(args)),
   hideCurrentNotification: () => dispatch(hideCurrentNotification()),
-  removeNotificationById: (id) => dispatch(removeNotificationById(id)),
+  removeNotificationById: (id: number) => dispatch(removeNotificationById(id)),
   setInfuraAvailabilityBlocked: () => dispatch(setInfuraAvailabilityBlocked()),
   setInfuraAvailabilityNotBlocked: () =>
     dispatch(setInfuraAvailabilityNotBlocked()),
   removeNotVisibleNotifications: () =>
-    dispatch(removeNotVisibleNotifications()),
+    dispatch(removeNotVisibleNotificationsAction()),
 });
 
 const ConnectedMain = connect(mapStateToProps, mapDispatchToProps)(Main);
