@@ -2,6 +2,7 @@ import {
   isPortfolioUrl,
   isBridgeUrl,
   isValidASCIIURL,
+  isSafeSvgUri,
   toPunycodeURL,
 } from './index';
 import AppConstants from '../../core/AppConstants';
@@ -95,6 +96,60 @@ describe('URL Check Functions', () => {
 
     it('returns false for empty string', () => {
       expect(isValidASCIIURL('')).toStrictEqual(false);
+    });
+  });
+
+  describe('isSafeSvgUri', () => {
+    it('returns true for https URLs to public hosts', () => {
+      expect(isSafeSvgUri('https://example.com/icon.svg')).toBe(true);
+      expect(isSafeSvgUri('http://example.com/icon.svg')).toBe(true);
+      expect(isSafeSvgUri('https://8.8.8.8/icon.svg')).toBe(true);
+    });
+
+    it('returns true for inline data URIs', () => {
+      expect(
+        isSafeSvgUri('data:image/svg+xml;utf8,<svg></svg>'),
+      ).toBe(true);
+    });
+
+    it('returns false for empty or missing uris', () => {
+      expect(isSafeSvgUri()).toBe(false);
+      expect(isSafeSvgUri('')).toBe(false);
+      expect(isSafeSvgUri('not a url')).toBe(false);
+    });
+
+    it('returns false for non-http(s) schemes', () => {
+      expect(isSafeSvgUri('file:///etc/passwd')).toBe(false);
+      expect(isSafeSvgUri('ftp://example.com/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('blob:https://example.com/abc')).toBe(false);
+      // eslint-disable-next-line no-script-url
+      expect(isSafeSvgUri('javascript:alert(1)')).toBe(false);
+    });
+
+    it('returns false for loopback and localhost hosts', () => {
+      expect(isSafeSvgUri('http://localhost/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://sub.localhost/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://127.0.0.1/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://127.5.5.5/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://0.0.0.0/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://[::1]/icon.svg')).toBe(false);
+    });
+
+    it('returns false for private and link-local hosts', () => {
+      expect(isSafeSvgUri('http://10.0.0.1/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://172.16.0.1/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://172.31.255.255/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://192.168.1.1/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://169.254.169.254/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://[fe80::1]/icon.svg')).toBe(false);
+      expect(isSafeSvgUri('http://[fd00::1]/icon.svg')).toBe(false);
+    });
+
+    it('returns true for public hosts in ranges adjacent to private ones', () => {
+      expect(isSafeSvgUri('http://11.0.0.1/icon.svg')).toBe(true);
+      expect(isSafeSvgUri('http://172.15.0.1/icon.svg')).toBe(true);
+      expect(isSafeSvgUri('http://172.32.0.1/icon.svg')).toBe(true);
+      expect(isSafeSvgUri('http://192.167.0.1/icon.svg')).toBe(true);
     });
   });
 

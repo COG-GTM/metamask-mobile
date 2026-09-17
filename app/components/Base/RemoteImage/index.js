@@ -33,6 +33,7 @@ import { selectNetworkName } from '../../../selectors/networkInfos';
 
 import { BadgeAnchorElementShape } from '../../../component-library/components/Badges/BadgeWrapper/BadgeWrapper.types';
 import useSvgUriViewBox from '../../hooks/useSvgUriViewBox';
+import { isSafeSvgUri } from '../../../util/url';
 import { AvatarSize } from '../../../component-library/components/Avatars/Avatar';
 import Logger from '../../../util/Logger';
 import { toHex } from '@metamask/controller-utils';
@@ -169,7 +170,8 @@ const RemoteImage = (props) => {
     source &&
     source.uri &&
     source.uri.match('.svg') &&
-    (isImageUrl || resolvedIpfsUrl);
+    (isImageUrl || resolvedIpfsUrl) &&
+    isSafeSvgUri(uri);
 
   const viewbox = useSvgUriViewBox(uri, isSVG);
 

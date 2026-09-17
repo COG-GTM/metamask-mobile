@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { isSafeSvgUri } from '../../util/url';
 
 /**
  * Support svg images urls that do not have a view box
@@ -16,12 +17,22 @@ export default function useSvgUriViewBox(
   const [viewBox, setViewBox] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (!isSVG) {
+    if (!isSVG || !isSafeSvgUri(uri)) {
       return;
     }
 
     fetch(uri)
-      .then((response) => response.text())
+      .then((response) => {
+        // Mirror the content-type guard applied to react-native-svg's own
+        // fetch so attacker-influenced URLs can't be probed via this pre-fetch.
+        const contentType = response.headers.get('content-type') || '';
+        if (['text/html', ''].includes(contentType)) {
+          throw new Error(
+            `Fetching ${uri} resulted in invalid content-type ${contentType}`,
+          );
+        }
+        return response.text();
+      })
       .then((svgContent) => {
         const widthMatch = svgContent.match(/width="([^"]+)"/);
         const heightMatch = svgContent.match(/height="([^"]+)"/);

@@ -13,6 +13,7 @@ import AvatarBase from '../../foundation/AvatarBase';
 
 // Internal dependencies.
 import { isFaviconSVG } from '../../../../../../util/favicon';
+import { isSafeSvgUri } from '../../../../../../util/url';
 import {
   AVATARFAVICON_IMAGE_TESTID,
   AVATARFAVICON_IMAGE_SVG_TESTID,
@@ -66,6 +67,10 @@ const AvatarFavicon = ({
         // Skip header check for data URIs
         if (uri.startsWith('data:image/svg+xml')) {
           return true;
+        }
+        // Block SSRF/local-file egress to non-public hosts and unsafe schemes.
+        if (!isSafeSvgUri(uri)) {
+          return false;
         }
         const response = await fetch(uri, { method: 'HEAD' });
         const contentType = response.headers.get('Content-Type');

@@ -8,6 +8,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import withFaviconAwareness from '../../hooks/useFavicon/withFaviconAwareness';
 import { isNumber } from 'lodash';
 import { isFaviconSVG } from '../../../util/favicon';
+import { isSafeSvgUri } from '../../../util/url';
 import { SvgUri } from 'react-native-svg';
 
 const createStyles = (colors) =>
@@ -134,7 +135,7 @@ class WebsiteIcon extends PureComponent {
 
     return (
       <View style={viewStyle}>
-        {imageSVG ? (
+        {imageSVG && isSafeSvgUri(imageSVG) ? (
           <SvgUri
             uri={imageSVG}
             width={style.width}
