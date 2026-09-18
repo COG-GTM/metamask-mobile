@@ -111,7 +111,7 @@ export function setTransactionObject(transaction) {
 /**
  * Sets the current transaction ID only.
  *
- * @param {object} transactionId - Id of the current transaction.
+ * @param {string} transactionId - Id of the current transaction.
  */
 export function setTransactionId(transactionId) {
   return {

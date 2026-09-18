@@ -89,6 +89,11 @@ const sdkReducer = (
           [action.channelId]: action.validUntil,
         },
       };
+    case ActionType.RESET_APPROVED_HOSTS:
+      return {
+        ...state,
+        approvedHosts: action.approvedHosts,
+      };
     case ActionType.UPDATE_DAPP_CONNECTION:
       return {
         ...state,
