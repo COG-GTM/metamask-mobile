@@ -84,9 +84,11 @@ describe('sdkReducer', () => {
     expect(state.approvedHosts).toEqual({ b: 456 });
   });
 
-  it('ignores RESET_APPROVED_HOSTS (unhandled action)', () => {
-    const state = sdkReducer(initialState, resetApprovedHosts({ a: 1 }));
-    expect(state).toBe(initialState);
+  it('replaces approved hosts on RESET_APPROVED_HOSTS', () => {
+    let state = sdkReducer(initialState, setApprovedHost('expired', 100));
+    state = sdkReducer(state, setApprovedHost('valid', 200));
+    state = sdkReducer(state, resetApprovedHosts({ valid: 200 }));
+    expect(state.approvedHosts).toEqual({ valid: 200 });
   });
 
   it('updates, removes and resets dapp connections', () => {

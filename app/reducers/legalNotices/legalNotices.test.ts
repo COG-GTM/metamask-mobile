@@ -118,3 +118,69 @@ describe('shouldShowNewPrivacyToastSelector', () => {
     ).toBe(false);
   });
 });
+
+describe('shouldShowNewPrivacyToastSelector after the privacy policy date', () => {
+  const now = new Date('2024-07-01T12:00:00Z').getTime();
+  const oneDay = 24 * 60 * 60 * 1000;
+  let legalNotices: typeof import('./index');
+
+  beforeAll(() => {
+    jest.spyOn(Date, 'now').mockReturnValue(now);
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      legalNotices = require('./index');
+    });
+  });
+
+  afterAll(() => {
+    jest.spyOn(Date, 'now').mockReturnValue(123);
+  });
+
+  it('is past the privacy policy date', () => {
+    expect(legalNotices.isPastPrivacyPolicyDate).toBe(true);
+  });
+
+  it('shows the toast when it has never been shown', () => {
+    expect(
+      legalNotices.shouldShowNewPrivacyToastSelector(
+        buildState({
+          newPrivacyPolicyToastClickedOrClosed: false,
+          newPrivacyPolicyToastShownDate: null,
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it('keeps showing the toast within a day of first being shown', () => {
+    expect(
+      legalNotices.shouldShowNewPrivacyToastSelector(
+        buildState({
+          newPrivacyPolicyToastClickedOrClosed: false,
+          newPrivacyPolicyToastShownDate: now - 1000,
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it('stops showing the toast more than a day after it was shown', () => {
+    expect(
+      legalNotices.shouldShowNewPrivacyToastSelector(
+        buildState({
+          newPrivacyPolicyToastClickedOrClosed: false,
+          newPrivacyPolicyToastShownDate: now - 2 * oneDay,
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it('does not show the toast once clicked or closed', () => {
+    expect(
+      legalNotices.shouldShowNewPrivacyToastSelector(
+        buildState({
+          newPrivacyPolicyToastClickedOrClosed: true,
+          newPrivacyPolicyToastShownDate: null,
+        }),
+      ),
+    ).toBe(false);
+  });
+});
