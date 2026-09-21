@@ -8,6 +8,9 @@ import { DEFAULT_DAPP_SERVER_PORT } from './fixture-helper';
 
 export const DEFAULT_MOCKSERVER_PORT = 8000;
 
+// Test-only wallet password; must match the password used to encrypt the fixture vaults.
+export const TEST_FIXTURE_PASSWORD = '123123123';
+
 function transformToValidPort(defaultPort, pid) {
   // Improve uniqueness by using a simple transformation
   const transformedPort = (parseInt(pid, 10) % 100000) + defaultPort;

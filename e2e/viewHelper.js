@@ -24,7 +24,7 @@ import TestHelpers from './helpers';
 import TermsOfUseModal from './pages/Onboarding/TermsOfUseModal';
 import TabBarComponent from './pages/wallet/TabBarComponent';
 import LoginView from './pages/wallet/LoginView';
-import { getGanachePort } from './fixtures/utils';
+import { getGanachePort, TEST_FIXTURE_PASSWORD } from './fixtures/utils';
 import Assertions from './utils/Assertions';
 import { CustomNetworks } from './resources/networks.e2e';
 import ToastModal from './pages/wallet/ToastModal';
@@ -236,10 +236,9 @@ export const switchToSepoliaNetwork = async () => {
 };
 
 export const loginToApp = async () => {
-  const PASSWORD = '123123123';
   await Assertions.checkIfVisible(LoginView.container);
   await Assertions.checkIfVisible(LoginView.passwordInput);
-  await LoginView.enterPassword(PASSWORD);
+  await LoginView.enterPassword(TEST_FIXTURE_PASSWORD);
 };
 
 export const waitForTestDappToLoad = async () => {
