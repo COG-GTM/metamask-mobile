@@ -100,6 +100,9 @@ public class RNTar extends ReactContextBaseJavaModule {
 
         // Loop through the entries in the .tgz file
         while ((entry = (TarArchiveEntry) tarInputStream.getNextEntry()) != null) {
+          if (entry.isSymbolicLink() || entry.isLink()) {
+            throw new IOException("Archive contains a link entry, which is not allowed: " + entry.getName());
+          }
           File outputFile = resolveWithinDirectory(outputDir, entry.getName());
 
           // If it is a directory, create the output directory
