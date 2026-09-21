@@ -1,3 +1,6 @@
+const iosOtherByLabel = (label, index) =>
+  `**/XCUIElementTypeOther[\`label == "${label}"\`][${index}]`;
+
 export const IMPORT_FROM_SEED_SCREEN_TITLE_ID =
   'import-from-seed-screen-title-id';
 export const IMPORT_FROM_SEED_SCREEN_SUBMIT_BUTTON_ID =
@@ -7,10 +10,12 @@ export const IMPORT_FROM_SEED_SCREEN_SEED_PHRASE_INPUT_ID =
   'import-from-seed-screen-seed-phrase-input-id';
 export const IOS_IMPORT_FROM_SEED_SCREEN_SEED_PHRASE_INPUT_ID =
   '(//XCUIElementTypeOther[@name="Enter your Secret Recovery Phrase"])[3]';
-export const IMPORT_FROM_SEED_SCREEN_NEW_PASSWORD_INPUT_ID =
-  '**/XCUIElementTypeOther[`label == "New Password"`][6]';
+export const IMPORT_FROM_SEED_SCREEN_NEW_PASSWORD_INPUT_ID = iosOtherByLabel(
+  'New Password',
+  6,
+);
 export const IMPORT_FROM_SEED_SCREEN_CONFIRM_PASSWORD_INPUT_ID =
-  '**/XCUIElementTypeOther[`label == "Confirm password"`][5]';
+  iosOtherByLabel('Confirm password', 5);
 export const IMPORT_FROM_SEED_SCREEN_PASSWORD_STRENGTH_ID =
   'import-from-seed-screen-seed-password-strength-id';
 export const IMPORT_FROM_SEED_SCREEN_CONFIRM_PASSWORD_CHECK_ICON_ID =

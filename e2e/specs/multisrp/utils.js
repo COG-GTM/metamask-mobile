@@ -11,8 +11,9 @@ import { RevealSeedViewSelectorsText } from '../../selectors/Settings/SecurityAn
 import TabBarComponent from '../../pages/wallet/TabBarComponent';
 import SettingsView from '../../pages/Settings/SettingsView';
 import SecurityAndPrivacyView from '../../pages/Settings/SecurityAndPrivacy/SecurityAndPrivacyView';
+import { TEST_FIXTURE_PASSWORD } from '../../fixtures/utils';
 
-const PASSWORD = '123123123';
+const PASSWORD = TEST_FIXTURE_PASSWORD;
 
 export const goToImportSrp = async () => {
   await WalletView.tapIdenticon();
