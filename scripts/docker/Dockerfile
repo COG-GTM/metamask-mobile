@@ -1,13 +1,18 @@
 # syntax=docker/dockerfile:1.4
-FROM node:20-bookworm
+# node:20-bookworm-slim
+FROM node@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0
 
 RUN apt-get update \
-  && apt-get install -y \
-    git curl jq time \
-    sudo locales \
+  && apt-get upgrade -y \
+  && apt-get install -y --no-install-recommends \
+    ca-certificates git curl jq time \
+    sudo locales procps \
     build-essential ccache cmake cmake-format distcc \
+    autoconf bison patch libssl-dev libyaml-dev libreadline-dev zlib1g-dev \
+    libgmp-dev libncurses-dev libffi-dev libgdbm-dev libdb-dev uuid-dev \
   && sed -i '/en_US.UTF-8/s/^# //' /etc/locale.gen \
-  && locale-gen
+  && locale-gen \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV YARN_VERSION 1.22.22
 # replace base image yarn 1.19
