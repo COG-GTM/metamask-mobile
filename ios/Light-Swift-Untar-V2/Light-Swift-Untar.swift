@@ -15,10 +15,12 @@ public typealias Closure = (Double) -> Void
 enum UntarError: Error, LocalizedError {
   case notFound(file: String)
   case corruptFile(type: UnicodeScalar)
+  case pathTraversal(name: String)
   public var errorDescription: String? {
     switch self {
     case let .notFound(file: file): return "Source file \(file) not found"
     case let .corruptFile(type: type): return "Invalid block type \(type) found"
+    case let .pathTraversal(name: name): return "Tar entry \(name) resolves outside of the destination directory"
     }
   }
 }
@@ -46,7 +48,7 @@ public extension FileManager {
       switch type {
       case "0": // File
         let name = self.name(object: tarObject, offset: location)
-        let filePath = URL(fileURLWithPath: path).appendingPathComponent(name).path
+        let filePath = try resolvedPath(within: path, entryName: name)
         let size = self.size(object: tarObject, offset: location)
         if size == 0 { try "".write(toFile: filePath, atomically: true, encoding: .utf8) } else {
           blockCount += (size - 1) / FileManager.tarBlockSize + 1 // size / tarBlockSize rounded up
@@ -55,7 +57,7 @@ public extension FileManager {
         }
       case "5": // Directory
         let name = self.name(object: tarObject, offset: location)
-        let directoryPath = URL(fileURLWithPath: path).appendingPathComponent(name).path
+        let directoryPath = try resolvedPath(within: path, entryName: name)
         try createDirectory(atPath: directoryPath, withIntermediateDirectories: true,
                             attributes: nil)
       case "\0": break // Null block
@@ -74,6 +76,16 @@ public extension FileManager {
       location += blockCount * FileManager.tarBlockSize
     }
     return true
+  }
+
+  private func resolvedPath(within basePath: String, entryName: String) throws -> String {
+    let baseURL = URL(fileURLWithPath: basePath, isDirectory: true).standardizedFileURL
+    let entryURL = baseURL.appendingPathComponent(entryName).standardizedFileURL
+    let base = baseURL.path.hasSuffix("/") ? baseURL.path : baseURL.path + "/"
+    guard entryURL.path == baseURL.path || entryURL.path.hasPrefix(base) else {
+      throw UntarError.pathTraversal(name: entryName)
+    }
+    return entryURL.path
   }
 
   private func type(object: Any, offset: UInt64) -> UnicodeScalar {
