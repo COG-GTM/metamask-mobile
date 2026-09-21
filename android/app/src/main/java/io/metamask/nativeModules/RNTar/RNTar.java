@@ -62,6 +62,17 @@ public class RNTar extends ReactContextBaseJavaModule {
     }
   }
 
+  private File resolveEntryWithinOutput(File outputDir, String entryName) throws IOException {
+    File outputFile = new File(outputDir, entryName);
+    String canonicalOutputDir = outputDir.getCanonicalPath();
+    String canonicalEntry = outputFile.getCanonicalPath();
+    if (!canonicalEntry.equals(canonicalOutputDir)
+        && !canonicalEntry.startsWith(canonicalOutputDir + File.separator)) {
+      throw new IOException("Tar entry is outside of the output directory: " + entryName);
+    }
+    return outputFile;
+  }
+
   private String extractTgzFile(String tgzPath, String outputPath) throws IOException {
     try {
       // Check if .tgz file exists
@@ -83,10 +94,14 @@ public class RNTar extends ReactContextBaseJavaModule {
            TarArchiveInputStream tarInputStream = new TarArchiveInputStream(new BufferedInputStream(gzipInputStream))) {
 
         TarArchiveEntry entry;
+        File outputDir = new File(outputPath);
 
         // Loop through the entries in the .tgz file
         while ((entry = (TarArchiveEntry) tarInputStream.getNextEntry()) != null) {
-          File outputFile = new File(outputPath, entry.getName());
+          if (entry.isSymbolicLink() || entry.isLink()) {
+            throw new IOException("Tar entry links are not supported: " + entry.getName());
+          }
+          File outputFile = resolveEntryWithinOutput(outputDir, entry.getName());
 
           // If it is a directory, create the output directory
           if (entry.isDirectory()) {
