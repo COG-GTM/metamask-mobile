@@ -9,6 +9,23 @@ import {
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 
+interface SwitchRequest {
+  params?: unknown;
+  origin?: string;
+}
+
+interface SwitchResponse {
+  result?: unknown;
+}
+
+interface SwitchInput {
+  req: SwitchRequest;
+  res: SwitchResponse;
+  requestUserApproval: (options: unknown) => Promise<unknown>;
+  analytics?: Record<string, unknown>;
+  hooks: Record<string, (...args: unknown[]) => unknown>;
+}
+
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
  *
@@ -19,21 +36,22 @@ import { MESSAGE_TYPE } from '../createTracingMiddleware';
  * @param params.hooks - Method hooks passed to the method implementation.
  * @returns {void}.
  */
-export const wallet_switchEthereumChain = async ({
-  req,
-  res,
-  requestUserApproval,
-  analytics,
-  hooks,
-}) => {
+export const wallet_switchEthereumChain = async (input: unknown) => {
+  const {
+    req,
+    res,
+    requestUserApproval,
+    analytics,
+    hooks,
+  } = input as SwitchInput;
   const {
     CurrencyRateController,
     NetworkController,
     MultichainNetworkController,
     SelectedNetworkController,
   } = Engine.context;
-  const params = req.params?.[0];
-  const { origin } = req;
+  const params = (req.params as unknown[] | undefined)?.[0];
+  const { origin } = req as { origin: string };
   if (!params || typeof params !== 'object') {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
@@ -41,12 +59,14 @@ export const wallet_switchEthereumChain = async ({
       )}`,
     });
   }
-  const { chainId } = params;
+  const { chainId } = params as { chainId: unknown };
   const allowedKeys = {
     chainId: true,
   };
 
-  const extraKeys = Object.keys(params).filter((key) => !allowedKeys[key]);
+  const extraKeys = Object.keys(params).filter(
+    (key) => !allowedKeys[key as keyof typeof allowedKeys],
+  );
   if (extraKeys.length) {
     throw rpcErrors.invalidParams(
       `Received unexpected keys on object parameter. Unsupported keys:\n${extraKeys}`,
@@ -57,7 +77,13 @@ export const wallet_switchEthereumChain = async ({
   const networkConfigurations = selectEvmNetworkConfigurationsByChainId(
     store.getState(),
   );
-  const existingNetwork = findExistingNetwork(_chainId, networkConfigurations);
+  const existingNetwork = findExistingNetwork(
+    _chainId,
+    networkConfigurations as unknown as Record<
+      string,
+      Parameters<typeof findExistingNetwork>[1][string]
+    >,
+  );
   if (existingNetwork) {
     const currentDomainSelectedNetworkClientId =
       SelectedNetworkController.getNetworkClientIdForDomain(origin);
