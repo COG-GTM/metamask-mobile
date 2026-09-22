@@ -3,6 +3,8 @@ import { QuickCryptoLib } from './lib';
 import {
   ENCRYPTION_LIBRARY,
   LEGACY_DERIVATION_OPTIONS,
+  DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+  KeyDerivationIteration,
 } from './constants';
 
 describe('Encryptor', () => {
@@ -48,6 +50,70 @@ describe('Encryptor', () => {
       );
 
       expect(decryptedObject).toEqual({ test: 'data' });
+    });
+  });
+
+  describe('with OWASP 2023 key derivation options', () => {
+    let owaspEncryptor: Encryptor;
+
+    beforeEach(() => {
+      owaspEncryptor = new Encryptor({
+        keyDerivationOptions: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+      });
+    });
+
+    it('encrypts using the OWASP 2023 iteration count', async () => {
+      const encryptedObject = JSON.parse(
+        await owaspEncryptor.encrypt('testPassword', { key: 'value' }),
+      );
+
+      expect(encryptedObject.keyMetadata).toEqual(
+        DERIVATION_OPTIONS_DEFAULT_OWASP2023,
+      );
+      expect(encryptedObject.keyMetadata.params.iterations).toBe(
+        KeyDerivationIteration.OWASP2023Default,
+      );
+    });
+
+    it('flags legacy vaults as not updated so they get re-encrypted', () => {
+      const legacyVault = JSON.stringify({
+        cipher: 'mockedCipher',
+        iv: 'mockedIV',
+        salt: 'mockedSalt',
+        lib: ENCRYPTION_LIBRARY.original,
+        keyMetadata: LEGACY_DERIVATION_OPTIONS,
+      });
+
+      expect(owaspEncryptor.isVaultUpdated(legacyVault)).toBe(false);
+    });
+
+    it('still decrypts legacy vaults using the params from the payload', async () => {
+      const deriveKeySpy = jest
+        .spyOn(QuickCryptoLib, 'deriveKey')
+        .mockResolvedValue('mockedKey');
+      jest
+        .spyOn(QuickCryptoLib, 'decrypt')
+        .mockResolvedValue(JSON.stringify({ test: 'data' }));
+
+      const decryptedObject = await owaspEncryptor.decrypt(
+        'testPassword',
+        JSON.stringify({
+          cipher: 'mockedCipher',
+          iv: 'mockedIV',
+          salt: 'mockedSalt',
+          lib: ENCRYPTION_LIBRARY.original,
+          keyMetadata: LEGACY_DERIVATION_OPTIONS,
+        }),
+      );
+
+      expect(decryptedObject).toEqual({ test: 'data' });
+      expect(deriveKeySpy).toHaveBeenCalledWith(
+        'testPassword',
+        'mockedSalt',
+        LEGACY_DERIVATION_OPTIONS,
+      );
+
+      jest.restoreAllMocks();
     });
   });
 
