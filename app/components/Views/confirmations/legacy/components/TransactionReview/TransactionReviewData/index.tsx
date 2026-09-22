@@ -5,9 +5,9 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import IonicIcon from 'react-native-vector-icons/Ionicons';
 import { fontStyles } from '../../../../../../../styles/common';
 import { strings } from '../../../../../../../../locales/i18n';
-import { connect } from 'react-redux';
 import Device from '../../../../../../../util/device';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
+import type { Theme } from '@metamask/design-tokens';
 import ClipboardManager from '../../../../../../../core/ClipboardManager';
 import { showAlert } from '../../../../../../../actions/alert';
 import GlobalAlert from '../../../../../../UI/GlobalAlert';
@@ -15,8 +15,24 @@ import {
   selectConversionRateByChainId,
   selectCurrentCurrency,
 } from '../../../../../../../selectors/currencyRateController';
+import type { RootState } from '../../../../../../../reducers';
+import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
 
-const createStyles = (colors) =>
+interface TransactionReviewDataStyles {
+  root: object;
+  dataHeader: object;
+  dataTitleText: object;
+  dataDescription: object;
+  dataBox: object;
+  label: object;
+  boldLabel: object;
+  labelText: object;
+  hexData: object;
+  scrollView: object;
+}
+
+const createStyles = (colors: Theme['colors']): TransactionReviewDataStyles =>
   StyleSheet.create({
     root: {
       paddingHorizontal: 24,
@@ -73,12 +89,42 @@ const createStyles = (colors) =>
     scrollView: {
       flex: 1,
     },
-  });
+  }) as TransactionReviewDataStyles;
+
+interface TransactionReviewDataStateProps {
+  transaction: {
+    transaction: {
+      data: string;
+    };
+  };
+  conversionRate?: number | null;
+  currentCurrency?: string;
+}
+
+interface TransactionReviewDataDispatchProps {
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => void;
+}
+
+interface TransactionReviewDataOwnProps {
+  actionKey?: string;
+  toggleDataView?: () => void;
+  customGasHeight?: number;
+}
+
+type TransactionReviewDataProps = TransactionReviewDataStateProps &
+  TransactionReviewDataDispatchProps &
+  TransactionReviewDataOwnProps;
 
 /**
  * PureComponent that supports reviewing transaction data
  */
-class TransactionReviewData extends PureComponent {
+class TransactionReviewData extends PureComponent<TransactionReviewDataProps> {
+  static contextType = ThemeContext;
   static propTypes = {
     /**
      * Transaction object associated with this transaction
@@ -127,7 +173,8 @@ class TransactionReviewData extends PureComponent {
       actionKey,
       toggleDataView,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -182,19 +229,26 @@ class TransactionReviewData extends PureComponent {
   };
 }
 
-const mapStateToProps = (state) => ({
-  conversionRate: selectConversionRateByChainId(state, state.transaction.chainId),
+const mapStateToProps = (
+  state: RootState,
+): TransactionReviewDataStateProps => ({
+  conversionRate: selectConversionRateByChainId(
+    state,
+    state.transaction.chainId,
+  ),
   currentCurrency: selectCurrentCurrency(state),
   transaction: state.transaction,
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (
+  dispatch: Dispatch,
+): TransactionReviewDataDispatchProps => ({
   showAlert: (config) => dispatch(showAlert(config)),
 });
-
-TransactionReviewData.contextType = ThemeContext;
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(TransactionReviewData);
+)(
+  TransactionReviewData as unknown as React.ComponentType<TransactionReviewDataOwnProps>,
+);
