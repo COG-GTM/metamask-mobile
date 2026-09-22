@@ -1,5 +1,5 @@
 import { SmartTransaction } from '@metamask/smart-transactions-controller/dist/types';
-import { RootState } from '../components/UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
+import type { RootState } from '../reducers';
 import {
   selectTransactions,
   selectNonReplacedTransactions,

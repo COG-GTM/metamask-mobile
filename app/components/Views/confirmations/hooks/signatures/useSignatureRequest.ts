@@ -3,7 +3,7 @@ import { SignatureRequest } from '@metamask/signature-controller';
 import { useSelector } from 'react-redux';
 
 import { selectSignatureRequestById } from '../../../../../selectors/signatureController';
-import { RootState } from '../../../../UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
+import type { RootState } from '../../../../../reducers';
 import useApprovalRequest from '../useApprovalRequest';
 
 const SIGNATURE_APPROVAL_TYPES = [
