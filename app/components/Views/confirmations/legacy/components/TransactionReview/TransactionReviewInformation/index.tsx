@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import type { Theme } from '@metamask/design-tokens';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import PropTypes from 'prop-types';
 import {
@@ -7,9 +8,21 @@ import {
   View,
   TouchableOpacity,
   InteractionManager,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
 } from 'react-native';
 import { fontStyles } from '../../../../../../../styles/common';
 import { connect } from 'react-redux';
+import type { Dispatch } from 'redux';
+import type { RootState } from '../../../../../../../reducers';
+import type BN from 'bnjs4';
+import type { MarketDataDetails } from '@metamask/assets-controllers';
+import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import {
+  withMetricsAwareness,
+  type IUseMetricsHook,
+} from '../../../../../../../components/hooks/useMetrics';
 import {
   isBN,
   weiToFiat,
@@ -41,6 +54,10 @@ import {
   setProposedNonce,
 } from '../../../../../../../actions/transaction';
 import TransactionReviewEIP1559 from '../TransactionReviewEIP1559';
+const TransactionReviewEIP1559Component =
+  TransactionReviewEIP1559 as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import CustomNonce from '../../CustomNonce';
 import Logger from '../../../../../../../util/Logger';
@@ -55,13 +72,79 @@ import { createBrowserNavDetails } from '../../../../../Browser';
 import { isNetworkRampNativeTokenSupported } from '../../../../../../../components/UI/Ramp/utils';
 import { getRampNetworks } from '../../../../../../../reducers/fiatOrders';
 import { createBuyNavigationDetails } from '../../../../../../UI/Ramp/routes/utils';
-import { withMetricsAwareness } from '../../../../../../../components/hooks/useMetrics';
 import { selectShouldUseSmartTransaction } from '../../../../../../../selectors/smartTransactionsController';
 import { getNetworkNonce } from '../../../../../../../util/transaction-controller';
 import { selectNativeCurrencyByChainId } from '../../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../../selectors/tokenRatesController';
 
-const createStyles = (colors) =>
+interface TransactionAsset {
+  address: string;
+  decimals: number;
+  symbol: string;
+  name?: string;
+  tokenId?: string | number;
+}
+
+interface EIP1559GasData {
+  gasFeeMinNative?: string;
+  gasFeeMinConversion?: string;
+  gasFeeMaxNative?: string;
+  gasFeeMaxConversion?: string;
+  renderableGasFeeMinNative?: string;
+  renderableGasFeeMinConversion?: string;
+  renderableGasFeeMaxNative?: string;
+  renderableGasFeeMaxConversion?: string;
+  timeEstimate?: string;
+  timeEstimateColor?: string;
+  timeEstimateId?: string;
+}
+
+interface TransactionReviewInformationProps {
+  edit?: () => void;
+  toggleDataView?: () => void;
+  ready?: boolean;
+  error?: string | boolean;
+  over?: boolean;
+  EIP1559GasData?: EIP1559GasData;
+  gasSelected?: string;
+  multiLayerL1FeeTotal?: string;
+  navigation?: NavigationProp<ParamListBase>;
+  onCancelPress?: () => void;
+  gasEstimateType?: string;
+  origin?: string | null;
+  onUpdatingValuesStart?: () => void;
+  onUpdatingValuesEnd?: () => void;
+  animateOnChange?: boolean;
+  isAnimating?: boolean;
+  originWarning?: boolean;
+  metrics?: IUseMetricsHook;
+  assetAmount?: string | number;
+  fiatValue?: string | number;
+}
+
+interface TransactionReviewInformationState {
+  toFocused: boolean;
+  amountError: string;
+  actionKey: string;
+  nonceModalVisible: boolean;
+}
+
+interface TransactionReviewInformationStyles {
+  overviewAlert: StyleProp<ViewStyle | TextStyle>;
+  overviewAlertText: StyleProp<ViewStyle | TextStyle>;
+  overviewAlertIcon: StyleProp<ViewStyle | TextStyle>;
+  viewDataWrapper: StyleProp<ViewStyle | TextStyle>;
+  viewDataButton: StyleProp<ViewStyle | TextStyle>;
+  viewDataText: StyleProp<ViewStyle | TextStyle>;
+  errorWrapper: StyleProp<ViewStyle | TextStyle>;
+  error: StyleProp<ViewStyle | TextStyle>;
+  underline: StyleProp<ViewStyle | TextStyle>;
+  actionsWrapper: StyleProp<ViewStyle | TextStyle>;
+}
+
+const createStyles = (
+  colors: Theme['colors'],
+): TransactionReviewInformationStyles =>
   StyleSheet.create({
     overviewAlert: {
       alignItems: 'center',
@@ -131,7 +214,47 @@ const createStyles = (colors) =>
 /**
  * PureComponent that supports reviewing a transaction information
  */
-class TransactionReviewInformation extends PureComponent {
+const mapStateToProps = (state: RootState) => {
+  const transaction = getNormalizedTxState(state);
+  const chainId = transaction?.chainId;
+  const networkClientId = transaction?.networkClientId;
+
+  return {
+    chainId,
+    networkClientId,
+    conversionRate: selectConversionRateByChainId(state, chainId),
+    currentCurrency: selectCurrentCurrency(state),
+    contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
+    transaction,
+    ticker: selectNativeCurrencyByChainId(state, chainId),
+    primaryCurrency: state.settings.primaryCurrency,
+    showCustomNonce: state.settings.showCustomNonce,
+    isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
+      chainId,
+      getRampNetworks(state),
+    ),
+    shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),
+  };
+};
+
+type TransactionReviewInformationComponentProps =
+  TransactionReviewInformationProps &
+    ReturnType<typeof mapStateToProps> & {
+      navigation: NavigationProp<ParamListBase>;
+      metrics: IUseMetricsHook;
+      EIP1559GasData: EIP1559GasData;
+      gasSelected: string;
+      multiLayerL1FeeTotal: string;
+      setNonce: (nonce: number) => unknown;
+      setProposedNonce: (nonce: number) => unknown;
+    };
+
+class TransactionReviewInformation extends PureComponent<
+  TransactionReviewInformationComponentProps,
+  TransactionReviewInformationState
+> {
+  static contextType = ThemeContext;
+
   static propTypes = {
     /**
      * ETH to current currency conversion rate
@@ -244,7 +367,7 @@ class TransactionReviewInformation extends PureComponent {
     shouldUseSmartTransaction: PropTypes.bool,
   };
 
-  state = {
+  state: TransactionReviewInformationState = {
     toFocused: false,
     amountError: '',
     actionKey: strings('transactions.tx_review_confirm'),
@@ -257,46 +380,57 @@ class TransactionReviewInformation extends PureComponent {
   };
 
   setNetworkNonce = async () => {
-    const { networkClientId, setNonce, setProposedNonce, transaction } =
-      this.props;
-    const proposedNonce = await getNetworkNonce(transaction, networkClientId);
-    setNonce(proposedNonce);
-    setProposedNonce(proposedNonce);
+    const {
+      networkClientId,
+      setNonce: setNonceProp,
+      setProposedNonce: setProposedNonceProp,
+      transaction,
+    } = this.props;
+    const proposedNonce = await getNetworkNonce(
+      transaction,
+      networkClientId as string,
+    );
+    setNonceProp(proposedNonce);
+    setProposedNonceProp(proposedNonce);
   };
 
   toggleNonceModal = () =>
     this.setState((state) => ({ nonceModalVisible: !state.nonceModalVisible }));
 
   renderCustomNonceModal = () => {
-    const { setNonce } = this.props;
+    const { setNonce: setNonceProp } = this.props;
     const { proposedNonce, nonce } = this.props.transaction;
     return (
       <CustomNonceModal
         proposedNonce={proposedNonce}
         nonceValue={nonce}
         close={this.toggleNonceModal}
-        save={setNonce}
+        save={setNonceProp}
       />
     );
   };
 
   getTotalFiat = (
-    asset,
-    totalGas,
-    conversionRate,
-    exchangeRate,
-    currentCurrency,
-    amountToken,
-  ) => {
+    _asset: TransactionAsset,
+    totalGas: BN,
+    conversionRate: number | null | undefined,
+    exchangeRate: MarketDataDetails | undefined,
+    currentCurrency: string | undefined,
+    amountToken: string,
+  ): string => {
     let total = 0;
-    const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate);
+    const gasFeeFiat = weiToFiatNumber(totalGas, conversionRate as number);
     const balanceFiat = balanceToFiatNumber(
       parseFloat(amountToken),
-      conversionRate,
-      exchangeRate,
+      conversionRate as number,
+      exchangeRate as unknown as number,
     );
     const base = Math.pow(10, 5);
-    total = ((parseFloat(gasFeeFiat) + parseFloat(balanceFiat)) * base) / base;
+    total =
+      ((parseFloat(gasFeeFiat as unknown as string) +
+        parseFloat(balanceFiat as unknown as string)) *
+        base) /
+      base;
     return `${total} ${currentCurrency}`;
   };
 
@@ -307,7 +441,10 @@ class TransactionReviewInformation extends PureComponent {
     try {
       navigation.navigate(...createBuyNavigationDetails());
     } catch (error) {
-      Logger.error(error, 'Navigation: Error when navigating to buy ETH.');
+      Logger.error(
+        error as Error,
+        'Navigation: Error when navigating to buy ETH.',
+      );
     }
 
     this.props.metrics.trackEvent(
@@ -322,7 +459,10 @@ class TransactionReviewInformation extends PureComponent {
     edit && edit();
   };
 
-  getRenderTotals = (totalGas, totalGasFiat) => {
+  getRenderTotals = (
+    totalGas: BN,
+    totalGasFiat: string,
+  ): (() => (string | undefined)[]) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -333,7 +473,9 @@ class TransactionReviewInformation extends PureComponent {
 
     const totals = {
       ETH: () => {
-        const totalEth = isBN(value) ? value.add(totalGas) : totalGas;
+        const totalEth = isBN(value)
+          ? (value as unknown as BN).add(totalGas)
+          : totalGas;
         const totalFiat = `${weiToFiat(
           totalEth,
           conversionRate,
@@ -373,7 +515,7 @@ class TransactionReviewInformation extends PureComponent {
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType] || totals.default;
+    return totals[assetType as keyof typeof totals] || totals.default;
   };
 
   isTestNetwork = () => {
@@ -386,7 +528,12 @@ class TransactionReviewInformation extends PureComponent {
     gasFeeMinConversion,
     gasFeeMaxNative,
     gasFeeMaxConversion,
-  }) => {
+  }: {
+    gasFeeMinNative?: string;
+    gasFeeMinConversion?: string;
+    gasFeeMaxNative?: string;
+    gasFeeMaxConversion?: string;
+  }): (() => (string | undefined)[]) => {
     const {
       transaction: { value, selectedAsset, assetType },
       currentCurrency,
@@ -416,7 +563,7 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-        });
+        } as Parameters<typeof calculateAmountsEIP1559>[0]);
 
         [
           renderableTotalMinNative,
@@ -454,7 +601,7 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-        });
+        } as Parameters<typeof calculateAmountsEIP1559>[0]);
 
         const tokenAmount = renderFromTokenMinimalUnit(
           value,
@@ -502,7 +649,7 @@ class TransactionReviewInformation extends PureComponent {
           gasFeeMinNative,
           gasFeeMaxNative,
           gasFeeMaxConversion,
-        });
+        } as Parameters<typeof calculateAmountsEIP1559>[0]);
 
         [
           renderableTotalMinNative,
@@ -535,7 +682,7 @@ class TransactionReviewInformation extends PureComponent {
       },
       default: () => [undefined, undefined],
     };
-    return totals[assetType] || totals.default;
+    return totals[assetType as keyof typeof totals] || totals.default;
   };
 
   onCancelPress = () => {
@@ -549,7 +696,7 @@ class TransactionReviewInformation extends PureComponent {
       this.onCancelPress();
       this.props.navigation.navigate(
         ...createBrowserNavDetails({
-          newTabUrl: TESTNET_FAUCETS[chainId],
+          newTabUrl: TESTNET_FAUCETS[chainId as keyof typeof TESTNET_FAUCETS],
           timestamp: Date.now(),
         }),
       );
@@ -579,7 +726,7 @@ class TransactionReviewInformation extends PureComponent {
       renderableTotalMaxNative,
     ] = this.getRenderTotalsEIP1559(EIP1559GasData)();
     return (
-      <TransactionReviewEIP1559
+      <TransactionReviewEIP1559Component
         totalNative={renderableTotalMinNative}
         totalConversion={renderableTotalMinConversion}
         totalMaxNative={renderableTotalMaxNative}
@@ -634,7 +781,7 @@ class TransactionReviewInformation extends PureComponent {
       totalGasFiat,
     )();
     return (
-      <TransactionReviewEIP1559
+      <TransactionReviewEIP1559Component
         totalNative={totalValue}
         totalConversion={totalFiat}
         gasFeeNative={totalGasEth}
@@ -668,7 +815,8 @@ class TransactionReviewInformation extends PureComponent {
       shouldUseSmartTransaction,
     } = this.props;
     const { nonce } = this.props.transaction;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     const errorPress = this.isTestNetwork() ? this.goToFaucet : this.buyEth;
@@ -747,37 +895,27 @@ class TransactionReviewInformation extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
-  const chainId = transaction?.chainId;
-  const networkClientId = transaction?.networkClientId;
-
-  return {
-    chainId,
-    networkClientId,
-    conversionRate: selectConversionRateByChainId(state, chainId),
-    currentCurrency: selectCurrentCurrency(state),
-    contractExchangeRates: selectContractExchangeRatesByChainId(state, chainId),
-    transaction,
-    ticker: selectNativeCurrencyByChainId(state, chainId),
-    primaryCurrency: state.settings.primaryCurrency,
-    showCustomNonce: state.settings.showCustomNonce,
-    isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
-      chainId,
-      getRampNetworks(state),
-    ),
-    shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),
-  };
-};
-
-const mapDispatchToProps = (dispatch) => ({
-  setNonce: (nonce) => dispatch(setNonce(nonce)),
-  setProposedNonce: (nonce) => dispatch(setProposedNonce(nonce)),
+const mapDispatchToProps = (
+  dispatch: Dispatch,
+): {
+  setNonce: (nonce: number) => unknown;
+  setProposedNonce: (nonce: number) => unknown;
+} => ({
+  setNonce: (nonce: number) => dispatch(setNonce(nonce)),
+  setProposedNonce: (nonce: number) => dispatch(setProposedNonce(nonce)),
 });
 
-TransactionReviewInformation.contextType = ThemeContext;
+const withMetricsAwarenessTyped = withMetricsAwareness as unknown as (
+  component: React.ComponentType<Record<string, unknown>>,
+) => React.ComponentType<Record<string, unknown>>;
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(TransactionReviewInformation));
+)(
+  withMetricsAwarenessTyped(
+    TransactionReviewInformation as unknown as React.ComponentType<
+      Record<string, unknown>
+    >,
+  ),
+);
