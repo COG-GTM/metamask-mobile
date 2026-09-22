@@ -5,7 +5,10 @@ import {
   getDefaultInternalOptions,
 } from '@metamask/eth-snap-keyring';
 import Logger from '../../util/Logger';
-import { showAccountNameSuggestionDialog } from './utils/showDialog';
+import {
+  showAccountNameSuggestionDialog,
+  showAccountRemovalConfirmationDialog,
+} from './utils/showDialog';
 import { SnapKeyringBuilderMessenger } from './types';
 import { SnapId } from '@metamask/snaps-sdk';
 import { assertIsValidSnapId } from '@metamask/snaps-utils';
@@ -145,6 +148,44 @@ class SnapKeyringImpl implements SnapKeyringCallbacks {
     });
   }
 
+  /**
+   * Ask the user to confirm the removal of an account requested by a Snap.
+   *
+   * @param options - Options.
+   * @param options.address - Address of the account to remove.
+   * @param options.snapId - ID of the Snap that owns the account.
+   * @param options.handleUserInput - Callback used to resume the Snap execution.
+   * @param options.skipConfirmation - Whether the confirmation dialog can be skipped.
+   */
+  private async removeAccountConfirmations({
+    address,
+    snapId,
+    handleUserInput,
+    skipConfirmation,
+  }: {
+    address: string;
+    snapId: SnapId;
+    handleUserInput: (accepted: boolean) => Promise<void>;
+    skipConfirmation: boolean;
+  }): Promise<void> {
+    await this.withApprovalFlow(async (_) => {
+      const confirmed =
+        skipConfirmation ||
+        (await showAccountRemovalConfirmationDialog(
+          snapId,
+          this.#messenger,
+          address,
+        ));
+
+      // User has cancelled account removal
+      await handleUserInput(confirmed);
+
+      if (!confirmed) {
+        throw new Error('User denied account removal');
+      }
+    });
+  }
+
   private async addAccountFinalize({
     address: _address,
     snapId,
@@ -256,16 +297,17 @@ class SnapKeyringImpl implements SnapKeyringCallbacks {
   ) {
     assertIsValidSnapId(snapId);
 
-    // TODO: Implement proper snap account confirmations. Currently, we are approving everything for testing purposes.
-    Logger.log(
-      `SnapKeyring: removeAccount called with \n
-          - address: ${address} \n
-          - handleUserInput: ${handleUserInput} \n
-          - snapId: ${snapId} \n`,
-    );
+    // Only pre-installed Snaps can skip the account removal confirmation.
+    const skipConfirmation = isSnapPreinstalled(snapId);
 
-    // Approve everything for now because we have not implemented snap account confirmations yet
-    await handleUserInput(true);
+    // Ask the user to confirm the removal before mutating the keyring state.
+    // This throws when the user rejects, and the Snap is notified either way.
+    await this.removeAccountConfirmations({
+      address,
+      snapId,
+      handleUserInput,
+      skipConfirmation,
+    });
 
     try {
       await this.#removeAccountHelper(address);
