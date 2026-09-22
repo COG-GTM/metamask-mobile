@@ -11,6 +11,7 @@ import { buildControllerInitRequestMock } from '../../utils/test-utils';
 import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenger';
 import { KeyringControllerGetKeyringsByTypeAction } from '@metamask/keyring-controller';
 import { store } from '../../../../store';
+import { KeyDerivationIteration } from '../../../Encryptor/constants';
 
 jest.mock('@metamask/snaps-controllers');
 
@@ -69,6 +70,25 @@ describe('SnapControllerInit', () => {
       maxIdleTime: expect.any(Number),
       preinstalledSnaps: expect.any(Array),
     });
+  });
+
+  it('encrypts the snap state with the OWASP 2023 KDF params', async () => {
+    snapControllerInit(getInitRequestMock());
+
+    const controllerMock = jest.mocked(SnapController);
+    const { encryptor } = controllerMock.mock.calls[0][0];
+
+    // Snap state is persisted (via redux-persist) to non-hardware-backed
+    // storage just like the keyring vault, so it must use the strong OWASP
+    // 2023 default KDF rather than the legacy 5,000-iteration KDF.
+    const vault = await encryptor.encrypt('mock-password', { foo: 'bar' });
+    const { keyMetadata } = JSON.parse(vault);
+    expect(keyMetadata.params.iterations).toBe(
+      KeyDerivationIteration.OWASP2023Default,
+    );
+    expect(keyMetadata.params.iterations).toBeGreaterThanOrEqual(
+      KeyDerivationIteration.OWASP2023Minimum,
+    );
   });
 
   describe('getMnemonicSeed', () => {

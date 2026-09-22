@@ -10,8 +10,17 @@ import {
 } from '../../util/test/accountsControllerTestUtils';
 import { mockNetworkState } from '../../util/test/network';
 import { Hex } from '@metamask/utils';
-import { KeyringControllerState } from '@metamask/keyring-controller';
+import {
+  KeyringControllerState,
+  KeyringControllerOptions,
+} from '@metamask/keyring-controller';
+import { LEGACY_DERIVATION_OPTIONS } from '../Encryptor';
+import { KeyDerivationIteration } from '../Encryptor/constants';
 import { backupVault } from '../BackupVault';
+
+// Capture the options the KeyringController is constructed with so we can assert
+// the vault encryptor is configured with strong key-derivation parameters.
+const mockKeyringControllerOptions: KeyringControllerOptions[] = [];
 
 jest.mock('../BackupVault', () => ({
   backupVault: jest.fn().mockResolvedValue({ success: true, vault: 'vault' }),
@@ -50,6 +59,20 @@ jest.mock('./utils', () => ({
   ...jest.requireActual('./utils'),
   rejectOriginApprovals: jest.fn(),
 }));
+
+jest.mock('@metamask/keyring-controller', () => {
+  const actual = jest.requireActual('@metamask/keyring-controller');
+  class MockKeyringController extends actual.KeyringController {
+    constructor(options: KeyringControllerOptions) {
+      mockKeyringControllerOptions.push(options);
+      super(options);
+    }
+  }
+  return {
+    ...actual,
+    KeyringController: MockKeyringController,
+  };
+});
 
 describe('Engine', () => {
   // Create a shared mock account for tests
@@ -95,6 +118,31 @@ describe('Engine', () => {
     expect(engine.context).toHaveProperty('BridgeStatusController');
     expect(engine.context).toHaveProperty('EarnController');
     expect(engine.context).toHaveProperty('MultichainTransactionsController');
+  });
+
+  it('encrypts the KeyringController vault with the OWASP 2023 KDF params', async () => {
+    Engine.init({});
+
+    expect(mockKeyringControllerOptions.length).toBeGreaterThan(0);
+    const { encryptor } = mockKeyringControllerOptions[0];
+
+    // New vaults must be encrypted with the strong OWASP 2023 default KDF
+    // (>= the OWASP 2023 minimum), not the legacy 5,000-iteration KDF.
+    const vault = await encryptor.encrypt('mock-password', { foo: 'bar' });
+    const { keyMetadata } = JSON.parse(vault);
+    expect(keyMetadata.params.iterations).toBe(
+      KeyDerivationIteration.OWASP2023Default,
+    );
+    expect(keyMetadata.params.iterations).toBeGreaterThanOrEqual(
+      KeyDerivationIteration.OWASP2023Minimum,
+    );
+
+    // Legacy (5,000-iteration) vaults must be flagged as out-of-date so the
+    // KeyringController re-encrypts them with the strong KDF on unlock.
+    const legacyVault = JSON.stringify({
+      keyMetadata: LEGACY_DERIVATION_OPTIONS,
+    });
+    expect(encryptor.isVaultUpdated?.(legacyVault)).toBe(false);
   });
 
   it('calling Engine.init twice returns the same instance', () => {
