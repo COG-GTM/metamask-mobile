@@ -46,6 +46,14 @@ jest.mock('../store/storage-wrapper', () => ({
   },
 }));
 
+jest.mock('../util/Logger', () => ({
+  __esModule: true,
+  default: {
+    error: jest.fn(),
+    log: jest.fn(),
+  },
+}));
+
 const mockAddTraitsToUser = jest.fn();
 jest.mock('../core/Analytics', () => ({
   MetaMetrics: {
@@ -146,16 +154,21 @@ describe('SecureKeychain - setGenericPassword', () => {
       Platform.OS = 'ios';
     });
 
-    it('should handle user cancellation of biometric prompt', async () => {
-      (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
-        new Error('User canceled the operation.'),
-      );
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
 
-      await SecureKeychain.setGenericPassword(
-        mockPassword,
-        SecureKeychain.TYPES.BIOMETRICS,
+    const expectCredentialsRemoved = () => {
+      // the only write is the biometry protected one, no unprotected copy
+      expect(Keychain.setGenericPassword).toHaveBeenCalledTimes(1);
+      expect(Keychain.setGenericPassword).toHaveBeenCalledWith(
+        'metamask-user',
+        expect.any(String),
+        expect.objectContaining({
+          accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+        }),
       );
-
+      expect(Keychain.resetGenericPassword).toHaveBeenCalled();
       expect(StorageWrapper.removeItem).toHaveBeenCalledWith(BIOMETRY_CHOICE);
       expect(StorageWrapper.setItem).toHaveBeenCalledWith(
         BIOMETRY_CHOICE_DISABLED,
@@ -167,17 +180,59 @@ describe('SecureKeychain - setGenericPassword', () => {
             AUTHENTICATION_TYPE.PASSWORD,
         }),
       );
+    };
+
+    it('should handle user cancellation of biometric prompt', async () => {
+      (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+        new Error('User canceled the operation.'),
+      );
+
+      await SecureKeychain.setGenericPassword(
+        mockPassword,
+        SecureKeychain.TYPES.BIOMETRICS,
+      );
+
+      expectCredentialsRemoved();
+    });
+
+    it('should remove the credentials when the biometric prompt fails for any other reason', async () => {
+      (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+        new Error('Biometry is locked out.'),
+      );
+
+      await SecureKeychain.setGenericPassword(
+        mockPassword,
+        SecureKeychain.TYPES.BIOMETRICS,
+      );
+
+      expectCredentialsRemoved();
+    });
+
+    it('should remove the credentials when they cannot be read back', async () => {
+      jest.spyOn(SecureKeychain, 'getGenericPassword').mockResolvedValue(null);
+
+      await SecureKeychain.setGenericPassword(
+        mockPassword,
+        SecureKeychain.TYPES.BIOMETRICS,
+      );
+
+      expectCredentialsRemoved();
     });
 
     it('should successfully set up biometric authentication', async () => {
-      (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce({
-        password: 'encrypted_password',
+      jest.spyOn(SecureKeychain, 'getGenericPassword').mockResolvedValue({
+        username: 'metamask-user',
+        password: mockPassword,
+        service: 'com.metamask',
+        storage: 'keychain',
       });
 
       await SecureKeychain.setGenericPassword(
         mockPassword,
         SecureKeychain.TYPES.BIOMETRICS,
       );
+
+      expect(Keychain.resetGenericPassword).not.toHaveBeenCalled();
 
       expect(StorageWrapper.setItem).toHaveBeenCalledWith(
         BIOMETRY_CHOICE,
