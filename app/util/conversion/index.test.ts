@@ -7,7 +7,7 @@ describe('conversion utils', () => {
       const result = addCurrencies(3, 9, {
         aBase: 10,
         bBase: 10,
-      }) as BigNumber;
+      }) as unknown as BigNumber;
       expect(result.toNumber()).toStrictEqual(12);
     });
 
@@ -15,7 +15,7 @@ describe('conversion utils', () => {
       const result = addCurrencies(1.3, 1.9, {
         aBase: 10,
         bBase: 10,
-      }) as BigNumber;
+      }) as unknown as BigNumber;
       expect(result.toNumber()).toStrictEqual(3.2);
     });
 
@@ -23,7 +23,7 @@ describe('conversion utils', () => {
       const result = addCurrencies(1 / 3, 1 / 9, {
         aBase: 10,
         bBase: 10,
-      }) as BigNumber;
+      }) as unknown as BigNumber;
       expect(result.toNumber()).toStrictEqual(0.4444444444444444);
     });
   });
@@ -49,7 +49,7 @@ describe('conversion utils', () => {
         toNumericBase: undefined,
       });
       expect(typeof conv1 === 'string').toStrictEqual(true);
-      expect(conv2 instanceof BigNumber).toStrictEqual(true);
+      expect((conv2 as unknown as BigNumber) instanceof BigNumber).toStrictEqual(true);
     });
     it('converts from dec to hex', () => {
       expect(
@@ -134,7 +134,7 @@ describe('conversion utils', () => {
             numberOfDecimals: undefined,
             conversionRate: undefined,
             invertConversionRate: undefined,
-          }) as BigNumber
+          }) as unknown as BigNumber
         ).toNumber(),
       ).toStrictEqual(1000000000000000000);
       expect(
@@ -147,7 +147,7 @@ describe('conversion utils', () => {
             numberOfDecimals: undefined,
             conversionRate: undefined,
             invertConversionRate: undefined,
-          }) as BigNumber
+          }) as unknown as BigNumber
         ).toNumber(),
       ).toStrictEqual(1500000000000000000);
     });
@@ -162,7 +162,7 @@ describe('conversion utils', () => {
             numberOfDecimals: undefined,
             conversionRate: undefined,
             invertConversionRate: undefined,
-          }) as BigNumber
+          }) as unknown as BigNumber
         ).toNumber(),
       ).toStrictEqual(1000000000);
       expect(
@@ -175,7 +175,7 @@ describe('conversion utils', () => {
             numberOfDecimals: undefined,
             conversionRate: undefined,
             invertConversionRate: undefined,
-          }) as BigNumber
+          }) as unknown as BigNumber
         ).toNumber(),
       ).toStrictEqual(1500000000);
     });
@@ -184,7 +184,6 @@ describe('conversion utils', () => {
         conversionUtil('1', {
           fromNumericBase: 'dec',
           toNumericBase: 'dec',
-          //@ts-expect-error - conversion.js file needs conversion to ts file
           toCurrency: 'usd',
           conversionRate: 468.58,
           numberOfDecimals: 2,
@@ -197,7 +196,6 @@ describe('conversion utils', () => {
         conversionUtil('1.5', {
           fromNumericBase: 'dec',
           toNumericBase: 'dec',
-          //@ts-expect-error - conversion.js file needs conversion to ts file
           toCurrency: 'usd',
           conversionRate: 468.58,
           numberOfDecimals: 2,
@@ -212,7 +210,6 @@ describe('conversion utils', () => {
         conversionUtil('468.58', {
           fromNumericBase: 'dec',
           toNumericBase: 'dec',
-          //@ts-expect-error - conversion.js file needs conversion to ts file
           toCurrency: 'usd',
           conversionRate: 468.58,
           numberOfDecimals: 2,
@@ -225,7 +222,6 @@ describe('conversion utils', () => {
         conversionUtil('702.87', {
           fromNumericBase: 'dec',
           toNumericBase: 'dec',
-          //@ts-expect-error - conversion.js file needs conversion to ts file
           toCurrency: 'usd',
           conversionRate: 468.58,
           numberOfDecimals: 2,

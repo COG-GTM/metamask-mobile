@@ -134,7 +134,9 @@ export const getEIP1559TransactionData = ({
             data: transactionState.transaction.data,
           },
         },
-        gasFeeEstimates,
+        gasFeeEstimates: gasFeeEstimates as unknown as Parameters<
+          typeof parseTransactionEIP1559
+        >[0]['gasFeeEstimates'],
         swapsParams: undefined,
         selectedGasFee: {
           ...gas,

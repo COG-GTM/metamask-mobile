@@ -25,7 +25,15 @@ const SUPPORTED_CHAIN_IDS = new Set<string>([
 export const getSupportedEarnTokens = (tokens: TokenI[]) =>
   Object.values(tokens).filter(({ isETH, isStaked, symbol, chainId }) => {
     // We only support staking on Ethereum
-    if (isETH && !isSupportedChain(getDecimalChainId(chainId))) return false;
+    if (
+      isETH &&
+      !isSupportedChain(
+        getDecimalChainId(chainId) as unknown as Parameters<
+          typeof isSupportedChain
+        >[0],
+      )
+    )
+      return false;
     if (isStaked) return false;
 
     return (
