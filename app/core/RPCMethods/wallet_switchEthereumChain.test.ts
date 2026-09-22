@@ -1,10 +1,22 @@
-import { wallet_switchEthereumChain } from './wallet_switchEthereumChain';
+import {
+  SwitchEthereumChainOptions,
+  wallet_switchEthereumChain,
+} from './wallet_switchEthereumChain';
 import Engine from '../Engine';
 import { mockNetworkState } from '../../util/test/network';
 import {
   Caip25CaveatType,
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
+
+type NetworkStateOptions = Parameters<typeof mockNetworkState>[0];
+type NetworkClient = ReturnType<
+  typeof Engine.context.NetworkController.getNetworkClientById
+>;
+
+// The tests intentionally exercise the handler with partial/invalid options.
+const asOptions = (options: object) =>
+  options as unknown as SwitchEthereumChainOptions;
 
 const existingNetworkConfiguration = {
   id: 'test-network-configuration-id',
@@ -59,7 +71,7 @@ jest.mock('../../store', () => ({
               },
               {
                 ...existingNetworkConfiguration,
-              },
+              } as unknown as NetworkStateOptions,
             ),
           },
         },
@@ -92,27 +104,33 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
 
   it('should report missing params', async () => {
     try {
-      await wallet_switchEthereumChain({
-        req: {
-          params: null,
-        },
-        ...otherOptions,
-      });
+      await wallet_switchEthereumChain(
+        asOptions({
+          req: {
+            params: null,
+          },
+          ...otherOptions,
+        }),
+      );
     } catch (error) {
-      expect(error.message).toContain('Expected single, object parameter.');
+      expect((error as Error).message).toContain(
+        'Expected single, object parameter.',
+      );
     }
   });
 
   it('should report extra keys', async () => {
     try {
-      await wallet_switchEthereumChain({
-        req: {
-          params: [{ ...correctParams, extraKey: 10 }],
-        },
-        ...otherOptions,
-      });
+      await wallet_switchEthereumChain(
+        asOptions({
+          req: {
+            params: [{ ...correctParams, extraKey: 10 }],
+          },
+          ...otherOptions,
+        }),
+      );
     } catch (error) {
-      expect(error.message).toContain(
+      expect((error as Error).message).toContain(
         'Received unexpected keys on object parameter. Unsupported keys',
       );
     }
@@ -120,14 +138,16 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
 
   it('should report invalid chainId', async () => {
     try {
-      await wallet_switchEthereumChain({
-        req: {
-          params: [{ ...correctParams, chainId: '10' }],
-        },
-        ...otherOptions,
-      });
+      await wallet_switchEthereumChain(
+        asOptions({
+          req: {
+            params: [{ ...correctParams, chainId: '10' }],
+          },
+          ...otherOptions,
+        }),
+      );
     } catch (error) {
-      expect(error.message).toContain(
+      expect((error as Error).message).toContain(
         `Expected 0x-prefixed, unpadded, non-zero hexadecimal string 'chainId'.`,
       );
     }
@@ -135,14 +155,16 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
 
   it('should report unsafe chainId', async () => {
     try {
-      await wallet_switchEthereumChain({
-        req: {
-          params: [{ ...correctParams, chainId: '0xFFFFFFFFFFFED' }],
-        },
-        ...otherOptions,
-      });
+      await wallet_switchEthereumChain(
+        asOptions({
+          req: {
+            params: [{ ...correctParams, chainId: '0xFFFFFFFFFFFED' }],
+          },
+          ...otherOptions,
+        }),
+      );
     } catch (error) {
-      expect(error.message).toContain(
+      expect((error as Error).message).toContain(
         'numerical value greater than max safe value.',
       );
     }
@@ -162,17 +184,21 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
       .mockReturnValue('mainnet');
     jest
       .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
-      .mockReturnValue({ configuration: { chainId: '0x1' } });
+      .mockReturnValue({
+        configuration: { chainId: '0x1' },
+      } as unknown as NetworkClient);
     const spyOnSetActiveNetwork = jest.spyOn(
       Engine.context.MultichainNetworkController,
       'setActiveNetwork',
     );
-    await wallet_switchEthereumChain({
-      req: {
-        params: [{ chainId: '0x64' }],
-      },
-      ...otherOptions,
-    });
+    await wallet_switchEthereumChain(
+      asOptions({
+        req: {
+          params: [{ chainId: '0x64' }],
+        },
+        ...otherOptions,
+      }),
+    );
     expect(otherOptions.requestUserApproval).toHaveBeenCalled();
     expect(spyOnGrantPermissionsIncremental).not.toHaveBeenCalled();
     expect(spyOnSetActiveNetwork).toHaveBeenCalledWith(
@@ -200,7 +226,9 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         .mockReturnValue('mainnet');
       jest
         .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
-        .mockReturnValue({ configuration: { chainId: '0x1' } });
+        .mockReturnValue({
+          configuration: { chainId: '0x1' },
+        } as unknown as NetworkClient);
       otherOptions.hooks.getCaveat.mockReturnValue({
         type: Caip25CaveatType,
         value: {
@@ -219,12 +247,14 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         Engine.context.MultichainNetworkController,
         'setActiveNetwork',
       );
-      await wallet_switchEthereumChain({
-        req: {
-          params: [{ chainId: '0x64' }],
-        },
-        ...otherOptions,
-      });
+      await wallet_switchEthereumChain(
+        asOptions({
+          req: {
+            params: [{ chainId: '0x64' }],
+          },
+          ...otherOptions,
+        }),
+      );
 
       expect(otherOptions.requestUserApproval).not.toHaveBeenCalled();
       expect(spyOnGrantPermissionsIncremental).not.toHaveBeenCalled();
@@ -247,7 +277,9 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         .mockReturnValue('mainnet');
       jest
         .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
-        .mockReturnValue({ configuration: { chainId: '0x1' } });
+        .mockReturnValue({
+          configuration: { chainId: '0x1' },
+        } as unknown as NetworkClient);
       const spyOnSetActiveNetwork = jest.spyOn(
         Engine.context.MultichainNetworkController,
         'setActiveNetwork',
@@ -262,13 +294,15 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
           sessionProperties: {},
         },
       });
-      await wallet_switchEthereumChain({
-        req: {
-          params: [{ chainId: '0x64' }],
-          origin,
-        },
-        ...otherOptions,
-      });
+      await wallet_switchEthereumChain(
+        asOptions({
+          req: {
+            params: [{ chainId: '0x64' }],
+            origin,
+          },
+          ...otherOptions,
+        }),
+      );
       expect(otherOptions.requestUserApproval).toHaveBeenCalled();
       expect(spyOnGrantPermissionsIncremental).toHaveBeenCalledTimes(1);
       expect(spyOnGrantPermissionsIncremental).toHaveBeenCalledWith({
