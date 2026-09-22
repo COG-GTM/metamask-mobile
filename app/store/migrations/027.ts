@@ -1,17 +1,57 @@
 import { NetworkType } from '@metamask/controller-utils';
 
+interface Transaction {
+  chainId: string;
+  transactionHash: string;
+  origin: string;
+  time: number;
+  transaction: unknown;
+  rawTransaction?: string;
+  [key: string]: unknown;
+}
+
+interface ProviderConfig {
+  chainId?: string;
+  type?: string;
+  [key: string]: unknown;
+}
+
+interface NetworkConfiguration {
+  chainId: string;
+  rpcUrl: string;
+  [key: string]: unknown;
+}
+
+interface TransactionControllerState {
+  transactions?: Transaction[];
+  submitHistory?: unknown[];
+}
+
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      TransactionController: TransactionControllerState;
+      NetworkController?: {
+        providerConfig?: ProviderConfig;
+        networkConfigurations?: Record<string, NetworkConfiguration>;
+      };
+    };
+  };
+}
+
 /**
  * Populate the submitHistory in the TransactionController using any
  * transaction metadata entries that have a rawTransaction value.
- * @param {any} state - Redux state
+ * @param {unknown} state - Redux state
  * @returns
  */
-export default function migrate(state) {
-  const backgroundState = state.engine.backgroundState;
+export default function migrate(state: unknown) {
+  const typedState = state as MigrationState;
+  const backgroundState = typedState.engine.backgroundState;
 
   const transactionControllerState = backgroundState.TransactionController;
 
-  if (!transactionControllerState) return state;
+  if (!transactionControllerState) return typedState;
 
   const transactions = transactionControllerState.transactions || [];
   const networkControllerState = backgroundState.NetworkController || {};
@@ -51,8 +91,8 @@ export default function migrate(state) {
       };
     });
 
-  state.engine.backgroundState.TransactionController.submitHistory =
+  typedState.engine.backgroundState.TransactionController.submitHistory =
     submitHistory;
 
-  return state;
+  return typedState;
 }
