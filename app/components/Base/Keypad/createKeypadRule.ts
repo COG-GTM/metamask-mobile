@@ -1,11 +1,21 @@
 import { regex, hasDecimals } from '../../../../app/util/regex';
-import { KEYS } from './constants';
+import { KEYS, KeypadKey } from './constants';
+
+interface KeypadRuleOptions {
+  decimalSeparator?: string | null | false;
+  decimals?: number | null | false;
+}
+
+export type KeypadRule = (
+  currentAmount?: string,
+  inputKey?: KeypadKey,
+) => string;
 
 export default function createKeypadRule({
   decimalSeparator = null,
   decimals = null,
-} = {}) {
-  return function handler(currentAmount, inputKey) {
+}: KeypadRuleOptions = {}): KeypadRule {
+  return function handler(currentAmount = '0', inputKey?: KeypadKey) {
     if (!currentAmount) {
       currentAmount = '0';
     }
@@ -49,7 +59,10 @@ export default function createKeypadRule({
           return inputKey;
         }
 
-        if (hasDecimals(decimalSeparator, decimals).test(currentAmount)) {
+        if (
+          decimalSeparator &&
+          hasDecimals(decimalSeparator, String(decimals)).test(currentAmount)
+        ) {
           return currentAmount;
         }
 

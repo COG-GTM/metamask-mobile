@@ -14,7 +14,9 @@ export const KEYS = {
   PERIOD: 'PERIOD',
   BACK: 'BACK',
   INITIAL: 'INITIAL',
-};
+} as const;
+
+export type KeypadKey = (typeof KEYS)[keyof typeof KEYS];
 
 export const CURRENCIES = {
   native: {
@@ -177,4 +179,7 @@ export const CURRENCIES = {
     handler: createKeypadRule({ decimalSeparator: '.', decimals: 2 }),
     symbol: 'R',
   },
-};
+} as const;
+
+export type CurrencyCode = keyof typeof CURRENCIES;
+export type CurrencyData = (typeof CURRENCIES)[CurrencyCode];
