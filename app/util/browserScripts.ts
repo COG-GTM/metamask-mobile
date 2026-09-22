@@ -1,3 +1,5 @@
+import toJsLiteral from './browser/toJsLiteral';
+
 const getWindowInformation = `
   const shortcutIcon = window.document.querySelector('head > link[rel="shortcut icon"]');
   const icon = shortcutIcon || Array.from(window.document.querySelectorAll('head > link[rel="icon"]')).find((icon) => Boolean(icon.href));
@@ -81,7 +83,7 @@ export const JS_POST_MESSAGE_TO_PROVIDER = (
   origin: string
 ) => `(function () {
   try {
-    window.postMessage(${JSON.stringify(message)}, '${origin}');
+    window.postMessage(${toJsLiteral(message)}, ${toJsLiteral(origin)});
   } catch (e) {
     //Nothing to do
   }
@@ -99,7 +101,7 @@ export const JS_IFRAME_POST_MESSAGE_TO_PROVIDER = (
   for (let frame of iframes){
 
       try {
-        frame.contentWindow.postMessage(${JSON.stringify(_message)}, '${_origin}');
+        frame.contentWindow.postMessage(${toJsLiteral(_message)}, ${toJsLiteral(_origin)});
       } catch (e) {
         //Nothing to do
       }
