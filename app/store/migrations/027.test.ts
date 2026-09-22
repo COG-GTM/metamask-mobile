@@ -1,5 +1,15 @@
 import migration from './027';
 
+interface MigratedState {
+  engine: {
+    backgroundState: {
+      TransactionController: {
+        submitHistory: unknown[];
+      };
+    };
+  };
+}
+
 describe('Migration #27', () => {
   it('does nothing if no transaction controller state', () => {
     const oldState = {
@@ -68,7 +78,7 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as MigratedState;
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -136,7 +146,7 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as MigratedState;
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
@@ -226,7 +236,7 @@ describe('Migration #27', () => {
       },
     };
 
-    const newState = migration(oldState);
+    const newState = migration(oldState) as MigratedState;
 
     expect(
       newState.engine.backgroundState.TransactionController.submitHistory,
