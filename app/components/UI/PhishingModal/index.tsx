@@ -11,17 +11,19 @@ import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
-import URL from 'url-parse';
+import URLParser from 'url-parse';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
+// @ts-expect-error Legacy test ID module does not export this runtime property.
 import { ETHEREUM_DETECTION_TITLE } from '../../../../wdio/screen-objects/testIDs/BrowserScreen/ExternalWebsites.testIds';
 import Button from '../../../component-library/components/Buttons/Button/Button';
 import {
   ButtonVariants,
   ButtonWidthTypes,
 } from '../../../component-library/components/Buttons/Button/Button.types';
+import { Colors, Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     warningIcon: {
       color: colors.error.default,
@@ -89,6 +91,7 @@ const createStyles = (colors) =>
       color: colors.primary.default,
     },
     warningContainer: {
+      // @ts-expect-error Preserve the legacy unsupported alignItems value.
       alignItems: 'left',
     },
     buttonWrapper: {
@@ -97,7 +100,16 @@ const createStyles = (colors) =>
     },
   });
 
-export default class PhishingModal extends PureComponent {
+interface PhishingModalProps {
+  fullUrl?: string;
+  goToETHPhishingDetector?: () => void;
+  goToEtherscam?: () => void;
+  continueToPhishingSite?: () => void;
+  goToFilePhishingIssue?: () => void;
+  goBackToSafety?: () => void;
+}
+
+export default class PhishingModal extends PureComponent<PhishingModalProps> {
   static propTypes = {
     /**
      * name of the blacklisted url
@@ -134,11 +146,10 @@ export default class PhishingModal extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     const styles = createStyles(colors);
-    const urlObj = new URL(this.props.fullUrl);
-    const host = urlObj.hostname;
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const urlObj = new URLParser(this.props.fullUrl as string);
     return (
       <View style={styles.phishingModalWrapper}>
         <View style={styles.warningContainer}>
@@ -181,6 +192,7 @@ export default class PhishingModal extends PureComponent {
         <Button
           variant={ButtonVariants.Primary}
           label={strings('phishing.back_to_safety')}
+          // @ts-expect-error Preserve the legacy optional callback passed directly to onPress.
           onPress={this.props.goBackToSafety}
           style={styles.buttonWrapper}
           width={ButtonWidthTypes.Full}
