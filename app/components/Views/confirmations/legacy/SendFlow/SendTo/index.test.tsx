@@ -3,11 +3,17 @@ import { render, screen, fireEvent } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { Store } from 'redux';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 
 import SendTo from './index';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
 import initialRootState from '../../../../../../util/test/initial-root-state';
 import { validateAddressOrENS } from '../../../../../../util/address';
+
+const SendToForTest = SendTo as React.ComponentType<
+  Partial<React.ComponentProps<typeof SendTo>>
+>;
 
 jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');
@@ -29,7 +35,7 @@ const navigationPropMock = {
   setOptions: jest.fn(),
   setParams: jest.fn(),
   navigate: jest.fn(),
-};
+} as unknown as StackNavigationProp<ParamListBase>;
 const routeMock = {
   params: {},
 };
@@ -58,7 +64,7 @@ describe('SendTo Component', () => {
     const wrapper = render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <SendTo navigation={navigationPropMock} route={routeMock} />
+          <SendToForTest navigation={navigationPropMock} route={routeMock} />
         </ThemeContext.Provider>
       </Provider>,
     );
@@ -79,7 +85,7 @@ describe('SendTo Component', () => {
     render(
       <Provider store={store}>
         <ThemeContext.Provider value={mockTheme}>
-          <SendTo navigation={navigationPropMock} route={routeProps} />
+          <SendToForTest navigation={navigationPropMock} route={routeProps} />
         </ThemeContext.Provider>
       </Provider>,
     );
