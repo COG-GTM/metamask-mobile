@@ -4,8 +4,9 @@ import { StyleSheet, View, Text } from 'react-native';
 import { fontStyles } from '../../../../styles/common';
 import { strings } from '../../../../../locales/i18n';
 import { useTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     modalView: {
       flexDirection: 'column',
@@ -58,13 +59,21 @@ const createStyles = (colors) =>
 /**
  * View that renders a modal to be used for speed up or cancel transaction modal
  */
+interface TransactionActionContentProps {
+  confirmDisabled?: boolean;
+  feeText?: string;
+  titleText?: string;
+  gasTitleText?: string;
+  descriptionText?: string;
+}
+
 export default function TransactionActionContent({
   confirmDisabled,
   feeText,
   titleText,
   gasTitleText,
   descriptionText,
-}) {
+}: TransactionActionContentProps) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 

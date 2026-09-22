@@ -1,11 +1,15 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+// @ts-expect-error Legacy platform-specific button package has no TypeScript declarations.
 import Button from '@metamask/react-native-button';
+import { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import getStyles from './styledButtonStyles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
 import {
   ViewPropTypes,
   TextPropTypes,
+  // @ts-expect-error Legacy prop-types package has no TypeScript declarations.
 } from 'deprecated-react-native-prop-types';
 
 /**
@@ -16,7 +20,20 @@ import {
  * If you would like to help with the replacement of the old `Button` component, please submit a pull request against this GitHub issue:
  * {@link https://github.com/MetaMask/metamask-mobile/issues/8106}
  */
-export default class StyledButton extends PureComponent {
+interface StyledButtonProps {
+  children?: React.ReactNode;
+  disabled?: boolean;
+  style?: StyleProp<TextStyle>;
+  styleDisabled?: StyleProp<TextStyle>;
+  disabledContainerStyle?: StyleProp<ViewStyle>;
+  containerStyle?: StyleProp<ViewStyle>;
+  onPress?: () => void;
+  onPressOut?: () => void;
+  type?: string;
+  testID?: string;
+}
+
+export default class StyledButton extends PureComponent<StyledButtonProps> {
   static propTypes = {
     /**
      * Children components of the Button
@@ -63,6 +80,7 @@ export default class StyledButton extends PureComponent {
   };
 
   static defaultProps = {
+    // @ts-expect-error React's PureComponent type omits its legacy defaultProps static.
     ...PureComponent.defaultProps,
     styleDisabled: { opacity: 0.6 },
     disabledContainerStyle: { opacity: 0.6 },
@@ -80,8 +98,8 @@ export default class StyledButton extends PureComponent {
       testID,
       disabledContainerStyle,
     } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
-    const { fontStyle, containerStyle } = getStyles(type, colors);
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
+    const { fontStyle, containerStyle } = getStyles(type as string, colors);
 
     return (
       <Button

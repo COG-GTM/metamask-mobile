@@ -1,6 +1,13 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import {
+  Animated,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
 import {
   colors as importedColors,
   fontStyles,
@@ -27,8 +34,9 @@ import {
   getFontFamily,
   TextVariant,
 } from '../../../../component-library/components/Texts/Text';
+import { Theme } from '../../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     coachmark: {
       backgroundColor: colors.primary.default,
@@ -164,6 +172,7 @@ const createStyles = (colors) =>
       alignSelf: 'center',
     },
     stepCounter: {
+      // @ts-expect-error Preserve the legacy BodyMD typography token.
       ...typography.BodyMD,
       fontFamily: getFontFamily(TextVariant.BodyMD),
       color: colors.info.inverse,
@@ -175,7 +184,43 @@ const createStyles = (colors) =>
     },
   });
 
-export default class Coachmark extends PureComponent {
+type IndicatorPosition =
+  | false
+  | 'topCenter'
+  | 'topLeft'
+  | 'topLeftCorner'
+  | 'topRight'
+  | 'topRightCorner';
+
+type BottomIndicatorPosition =
+  | false
+  | 'bottomCenter'
+  | 'bottomLeft'
+  | 'bottomLeftCorner'
+  | 'bottomRight';
+
+interface CoachmarkProps {
+  coachmarkStyle?: StyleProp<ViewStyle>;
+  style?: StyleProp<ViewStyle>;
+  content?: React.ReactNode;
+  title?: string;
+  currentStep?: number;
+  onNext?: () => void;
+  onBack?: () => void;
+  action?: boolean;
+  topIndicatorPosition?: IndicatorPosition;
+  bottomIndicatorPosition?: BottomIndicatorPosition;
+  onClose?: () => void;
+}
+
+interface CoachmarkState {
+  ready: boolean;
+}
+
+export default class Coachmark extends PureComponent<
+  CoachmarkProps,
+  CoachmarkState
+> {
   static propTypes = {
     /**
      * Custom coachmark style to apply
@@ -277,7 +322,7 @@ export default class Coachmark extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -287,7 +332,7 @@ export default class Coachmark extends PureComponent {
    * @param {string} topIndicatorPosition - Indicator position
    * @returns {Object} - Corresponding style object
    */
-  getIndicatorStyle = (topIndicatorPosition) => {
+  getIndicatorStyle = (topIndicatorPosition?: IndicatorPosition) => {
     const styles = this.getStyles();
 
     const positions = {
@@ -296,9 +341,9 @@ export default class Coachmark extends PureComponent {
       topRight: styles.topRight,
       topLeftCorner: styles.topLeftCorner,
       topRightCorner: styles.topRightCorner,
-      [undefined]: styles.topCenter,
+      undefined: styles.topCenter,
     };
-    return positions[topIndicatorPosition];
+    return positions[topIndicatorPosition as keyof typeof positions];
   };
 
   /**
@@ -307,7 +352,9 @@ export default class Coachmark extends PureComponent {
    * @param {string} bottomIndicatorPosition - Indicator position
    * @returns {Object} - Corresponding style object
    */
-  getBotttomIndicatorStyle = (bottomIndicatorPosition) => {
+  getBotttomIndicatorStyle = (
+    bottomIndicatorPosition?: BottomIndicatorPosition,
+  ) => {
     const styles = this.getStyles();
 
     const positions = {
@@ -315,9 +362,9 @@ export default class Coachmark extends PureComponent {
       bottomLeft: styles.bottomLeft,
       bottomLeftCorner: styles.bottomLeftCorner,
       bottomRight: styles.bottomRight,
-      [undefined]: styles.bottomCenter,
+      undefined: styles.bottomCenter,
     };
-    return positions[bottomIndicatorPosition];
+    return positions[bottomIndicatorPosition as keyof typeof positions];
   };
 
   /**
