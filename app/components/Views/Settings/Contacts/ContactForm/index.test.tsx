@@ -5,6 +5,10 @@ import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../../../util/test/initial-root-state';
 
+const ContactFormForTest = ContactForm as React.ComponentType<
+  Partial<React.ComponentProps<typeof ContactForm>>
+>;
+
 const mockStore = configureMockStore();
 const initialState = {
   engine: {
@@ -17,7 +21,7 @@ describe('ContactForm', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ContactForm />
+        <ContactFormForTest />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

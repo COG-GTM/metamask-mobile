@@ -6,7 +6,7 @@ import Device from '../../../util/device';
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createStyles = (colors: any) =>
-  StyleSheet.create({
+  StyleSheet.create<Record<string, object>>({
     mainWrapper: {
       backgroundColor: colors.background.default,
       flex: 1,
