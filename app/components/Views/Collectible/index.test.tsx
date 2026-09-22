@@ -3,6 +3,8 @@ import { shallow } from 'enzyme';
 import Collectible from '.';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
+import type { ParamListBase } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { act, render } from '@testing-library/react-native';
@@ -45,7 +47,16 @@ jest.mock('@react-navigation/native', () => {
 const navigationMock = {
   navigate: jest.fn(),
   push: jest.fn(),
+} as unknown as StackNavigationProp<ParamListBase>;
+
+type CollectibleTestProps = Omit<
+  React.ComponentProps<typeof Collectible>,
+  'navigation'
+> & {
+  navigation?: StackNavigationProp<ParamListBase>;
 };
+const CollectibleForTest =
+  Collectible as React.ComponentType<CollectibleTestProps>;
 
 const defaultCollectibleContract = {
   address: '0x1',
@@ -63,7 +74,7 @@ describe('Collectible', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <Collectible route={{ params: { address: '0x1' } }} />
+        <CollectibleForTest route={{ params: { address: '0x1' } }} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
