@@ -9,7 +9,7 @@ jest.preprocessor.js
 node_modules
 CHANGELOG.md
 wdio
-/app/util/test/testSetup.js
+/app/util/test/testSetup.tsx
 /app/lib/ppom/ppom.html.js
 /app/lib/ppom/blockaid-version.js
 /ppom
