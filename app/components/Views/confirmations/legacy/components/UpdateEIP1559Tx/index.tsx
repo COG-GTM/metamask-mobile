@@ -1,6 +1,6 @@
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import { CANCEL_RATE, SPEED_UP_RATE } from '@metamask/transaction-controller';
-import { isHexString } from '@metamask/utils';
+import { Hex, isHexString } from '@metamask/utils';
 import BigNumber from 'bignumber.js';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
@@ -24,6 +24,76 @@ import {
 } from '../../../../../../util/number';
 import { getTicker } from '../../../../../../util/transactions';
 import EditGasFee1559Update from '../EditGasFee1559Update';
+import { RootState } from '../../../../../../reducers';
+
+interface GasFeeEstimate {
+  suggestedMaxFeePerGas: string;
+  suggestedMaxPriorityFeePerGas: string;
+}
+
+interface UpdateTx1559Options {
+  maxPriortyFeeThreshold: string | BigNumber;
+  maxFeeThreshold: string | BigNumber;
+  showAdvanced: boolean;
+  isCancel?: boolean;
+}
+
+interface UpdateEIP1559TxProps {
+  /**
+   * Gas limit of the transaction being updated
+   */
+  gas: string;
+  /**
+   * List of accounts from the AccountTrackerController
+   */
+  // TODO: Replace "any" with type once the account selectors are migrated
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  accounts: Record<string, any>;
+  /**
+   * Currently selected address
+   */
+  selectedAddress?: string;
+  /**
+   * Current provider ticker
+   */
+  ticker?: string;
+  /**
+   * Gas fees of the transaction being updated
+   */
+  existingGas: {
+    maxFeePerGas: string;
+    maxPriorityFeePerGas: string;
+  };
+  /**
+   * Gas fee estimates from the GasFeeController
+   */
+  gasFeeEstimates: Record<string, GasFeeEstimate>;
+  /**
+   * Type of gas estimate provided by the GasFeeController
+   */
+  gasEstimateType?: string;
+  /**
+   * ETH or fiat, depending on user setting
+   */
+  primaryCurrency?: string;
+  /**
+   * Whether the update is a cancellation or a speed up
+   */
+  isCancel?: boolean;
+  /**
+   * A string representing the network chainId
+   */
+  chainId?: Hex;
+  /**
+   * Function called when user cancels
+   */
+  onCancel: () => void;
+  /**
+   * Function called when user saves the updated transaction
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSave: (gasTxn: any) => void;
+}
 
 const UpdateEIP1559Tx = ({
   gas,
@@ -38,9 +108,9 @@ const UpdateEIP1559Tx = ({
   chainId,
   onCancel,
   onSave,
-}) => {
+}: UpdateEIP1559TxProps) => {
   const [animateOnGasChange, setAnimateOnGasChange] = useState(false);
-  const [gasSelected, setGasSelected] = useState(
+  const [gasSelected, setGasSelected] = useState<string>(
     AppConstants.GAS_OPTIONS.MEDIUM,
   );
   const stopUpdateGas = useRef(false);
@@ -51,8 +121,8 @@ const UpdateEIP1559Tx = ({
   /**
    * Options
    */
-  const updateTx1559Options = useRef();
-  const pollToken = useRef();
+  const updateTx1559Options = useRef<UpdateTx1559Options>();
+  const pollToken = useRef<string>();
   const firstTime = useRef(true);
 
   const suggestedGasLimit = fromWei(gas, 'wei');
@@ -73,7 +143,7 @@ const UpdateEIP1559Tx = ({
   }, []);
 
   const isMaxFeePerGasMoreThanLegacy = useCallback(
-    (maxFeePerGas) => {
+    (maxFeePerGas: BigNumber) => {
       const newDecMaxFeePerGas = new BigNumber(existingGas.maxFeePerGas).times(
         new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE),
       );
@@ -86,7 +156,7 @@ const UpdateEIP1559Tx = ({
   );
 
   const isMaxPriorityFeePerGasMoreThanLegacy = useCallback(
-    (maxPriorityFeePerGas) => {
+    (maxPriorityFeePerGas: BigNumber) => {
       const newDecMaxPriorityFeePerGas = new BigNumber(
         existingGas.maxPriorityFeePerGas,
       ).times(new BigNumber(isCancel ? CANCEL_RATE : SPEED_UP_RATE));
@@ -99,7 +169,11 @@ const UpdateEIP1559Tx = ({
   );
 
   const validateAmount = useCallback(
-    (updateTx) => {
+    (updateTx: {
+      totalMaxHex: string;
+      suggestedMaxFeePerGas: string;
+      suggestedMaxPriorityFeePerGas: string;
+    }) => {
       let error;
       const totalMaxHexPrefixed = addHexPrefix(updateTx.totalMaxHex);
 
@@ -107,7 +181,9 @@ const UpdateEIP1559Tx = ({
         return strings('transaction.invalid_amount');
       }
       const updateTxCost = hexToBN(totalMaxHexPrefixed);
-      const accountBalance = hexToBN(accounts[selectedAddress].balance);
+      const accountBalance = hexToBN(
+        accounts[selectedAddress as string].balance,
+      );
       const isMaxFeePerGasMoreThanLegacyResult = isMaxFeePerGasMoreThanLegacy(
         new BigNumber(updateTx.suggestedMaxFeePerGas),
       );
@@ -211,12 +287,15 @@ const UpdateEIP1559Tx = ({
     isMaxPriorityFeePerGasMoreThanLegacy,
   ]);
 
-  const update1559TempGasValue = (selected) => {
+  const update1559TempGasValue = (selected: string | null) => {
     stopUpdateGas.current = !selected;
-    setGasSelected(selected);
+    setGasSelected(selected as string);
   };
 
-  const onSaveTxnWithError = (gasTxn) => {
+  // TODO: Replace "any" with the parsed gas transaction type once
+  // app/util/transactions is migrated to TypeScript
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const onSaveTxnWithError = (gasTxn: any) => {
     gasTxn.error = validateAmount(gasTxn);
     onSave(gasTxn);
   };
@@ -248,7 +327,11 @@ const UpdateEIP1559Tx = ({
           ? [AppConstants.GAS_OPTIONS.LOW, AppConstants.GAS_OPTIONS.MEDIUM]
           : [AppConstants.GAS_OPTIONS.LOW]
       }
-      updateOption={updateTx1559Options.current}
+      updateOption={
+        updateTx1559Options.current as React.ComponentProps<
+          typeof EditGasFee1559Update
+        >['updateOption']
+      }
       analyticsParams={getGasAnalyticsParams()}
       animateOnChange={animateOnGasChange}
       selectedGasObject={selectedGasObject}
@@ -257,7 +340,10 @@ const UpdateEIP1559Tx = ({
   );
 };
 
-const mapStateToProps = (state, ownProps) => ({
+const mapStateToProps = (
+  state: RootState,
+  ownProps: { chainId?: Hex },
+) => ({
   accounts: selectAccounts(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   ticker: selectNativeCurrencyByChainId(state, ownProps.chainId),
@@ -266,4 +352,8 @@ const mapStateToProps = (state, ownProps) => ({
   primaryCurrency: state.settings.primaryCurrency,
 });
 
-export default connect(mapStateToProps)(UpdateEIP1559Tx);
+export default connect(mapStateToProps)(
+  UpdateEIP1559Tx as unknown as React.ComponentType<
+    Omit<UpdateEIP1559TxProps, keyof ReturnType<typeof mapStateToProps>>
+  >,
+);

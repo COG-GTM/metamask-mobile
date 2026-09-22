@@ -1,7 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { StyleSheet, View, Text, InteractionManager } from 'react-native';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import { useSelector } from 'react-redux';
 import { fontStyles } from '../../../../../../styles/common';
 import { strings } from '../../../../../../../locales/i18n';
@@ -22,8 +21,43 @@ import { AssetWatcherSelectorsIDs } from '../../../../../../../e2e/selectors/Tra
 import { getDecimalChainId } from '../../../../../../util/networks';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
 import Logger from '../../../../../../util/Logger';
+import { Theme } from '../../../../../../util/theme/models';
 
-const createStyles = (colors) =>
+interface SuggestedAssetMeta {
+  asset: {
+    address: string;
+    symbol: string;
+    decimals: number;
+    standard?: string;
+    image?: string;
+  };
+  interactingAddress?: string;
+}
+
+interface WatchAssetRequestProps {
+  /**
+   * Callback triggered when this message signature is rejected
+   */
+  onCancel?: () => void;
+  /**
+   * Callback triggered when this message signature is approved
+   */
+  onConfirm?: () => Promise<void> | void;
+  /**
+   * Token object
+   */
+  suggestedAssetMeta: SuggestedAssetMeta;
+  /**
+   * Object containing current page title, url, and icon href
+   */
+  currentPageInformation?: {
+    title?: string;
+    url?: string;
+    icon?: string;
+  };
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     root: {
       backgroundColor: colors.background.default,
@@ -101,23 +135,28 @@ const WatchAssetRequest = ({
   currentPageInformation,
   onCancel,
   onConfirm,
-}) => {
+}: WatchAssetRequestProps) => {
   const { asset, interactingAddress } = suggestedAssetMeta;
   // TODO - Once TokensController is updated, interactingAddress should always be defined
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
   const styles = createStyles(colors);
-  const [balance, , error] = useTokenBalance(asset.address, interactingAddress);
+  const [balance, , error] = useTokenBalance(
+    asset.address,
+    interactingAddress as string,
+  );
   const chainId = useSelector(selectEvmChainId);
   const balanceWithSymbol = error
     ? strings('transaction.failed')
-    : `${renderFromTokenMinimalUnit(balance, asset.decimals)} ${asset.symbol}`;
+    : `${renderFromTokenMinimalUnit(balance ?? 0, asset.decimals)} ${
+        asset.symbol
+      }`;
 
   const activeTabUrl = useSelector(getActiveTabUrl, isEqual);
 
   const getTokenAddedAnalyticsParams = () => {
     try {
-      const url = new URL(currentPageInformation?.url);
+      const url = new URLParse(currentPageInformation?.url ?? '');
 
       return {
         token_address: asset?.address,
@@ -126,14 +165,17 @@ const WatchAssetRequest = ({
         chain_id: getDecimalChainId(chainId),
         source: 'Dapp suggested (watchAsset)',
       };
-    } catch (error) {
-      Logger.error(error, 'WatchAssetRequest.getTokenAddedAnalyticsParams');
+    } catch (e) {
+      Logger.error(
+        e as Error,
+        'WatchAssetRequest.getTokenAddedAnalyticsParams',
+      );
       return undefined;
     }
   };
 
   const onConfirmPress = async () => {
-    await onConfirm();
+    await onConfirm?.();
     InteractionManager.runAfterInteractions(() => {
       const analyticsParams = getTokenAddedAnalyticsParams();
 
@@ -164,7 +206,7 @@ const WatchAssetRequest = ({
         <ApproveTransactionHeader
           origin={currentPageInformation?.url}
           url={activeTabUrl}
-          from={suggestedAssetMeta.interactingAddress}
+          from={suggestedAssetMeta.interactingAddress as string}
           asset={{
             address,
             symbol,
@@ -174,8 +216,8 @@ const WatchAssetRequest = ({
           dontWatchAsset
         />
       </View>
-      <View style={styles.titleWrapper}>
-        <Text style={styles.title} onPress={this.cancelSignature}>
+      <View>
+        <Text style={styles.title}>
           {strings('watch_asset_request.title')}
         </Text>
       </View>
@@ -228,25 +270,6 @@ const WatchAssetRequest = ({
       </ActionView>
     </View>
   );
-};
-
-WatchAssetRequest.propTypes = {
-  /**
-   * Callback triggered when this message signature is rejected
-   */
-  onCancel: PropTypes.func,
-  /**
-   * Callback triggered when this message signature is approved
-   */
-  onConfirm: PropTypes.func,
-  /**
-   * Token object
-   */
-  suggestedAssetMeta: PropTypes.object,
-  /**
-   * Object containing current page title, url, and icon href
-   */
-  currentPageInformation: PropTypes.object,
 };
 
 export default WatchAssetRequest;
