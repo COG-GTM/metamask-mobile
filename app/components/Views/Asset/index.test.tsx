@@ -1,11 +1,20 @@
 import React from 'react';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { TransactionType } from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller/';
-import renderWithProvider from '../../../util/test/renderWithProvider';
+import renderWithProvider, {
+  DeepPartial,
+} from '../../../util/test/renderWithProvider';
+import { RootState } from '../../../reducers';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import Asset from './';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
-import { isPortfolioViewEnabled } from '../../../util/networks';
+
+const mockNavigation = (setOptions: jest.Mock) =>
+  ({ setOptions } as unknown as NavigationProp<ParamListBase>);
+
+const mockRoute = (params: Record<string, unknown>) =>
+  ({ params } as unknown as React.ComponentProps<typeof Asset>['route']);
 
 const mockInitialState = {
   swaps: { '0x1': { isLive: true }, hasOnboarded: false, isLive: true },
@@ -75,7 +84,7 @@ const mockInitialState = {
       },
     },
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 jest.unmock('react-native/Libraries/Interaction/InteractionManager');
 
@@ -87,6 +96,7 @@ jest.mock('../../../util/networks', () => ({
 jest.mock('../../../core/Engine', () => {
   const {
     MOCK_ADDRESS_1,
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
   } = require('../../../util/test/accountsControllerTestUtils');
 
   return {
@@ -112,15 +122,13 @@ describe('Asset', () => {
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(
       <Asset
-        navigation={{ setOptions: jest.fn() }}
-        route={{
-          params: {
-            symbol: 'ETH',
-            address: 'something',
-            isETH: true,
-            chainId: '0x1',
-          },
-        }}
+        navigation={mockNavigation(jest.fn())}
+        route={mockRoute({
+          symbol: 'ETH',
+          address: 'something',
+          isETH: true,
+          chainId: '0x1',
+        })}
       />,
       {
         state: mockInitialState,
@@ -133,16 +141,13 @@ describe('Asset', () => {
     const mockSetOptions = jest.fn();
     renderWithProvider(
       <Asset
-        navigation={{ setOptions: mockSetOptions }}
-        route={{
-          params: {
-            symbol: 'BNB',
-            address: 'something',
-            isETH: true,
-            chainId: '0x1',
-          },
-        }}
-        transactions={[]}
+        navigation={mockNavigation(mockSetOptions)}
+        route={mockRoute({
+          symbol: 'BNB',
+          address: 'something',
+          isETH: true,
+          chainId: '0x1',
+        })}
       />,
       {
         state: mockInitialState,
@@ -155,15 +160,13 @@ describe('Asset', () => {
   it('should display swaps button if the asset is allowed', () => {
     const { toJSON } = renderWithProvider(
       <Asset
-        navigation={{ setOptions: jest.fn() }}
-        route={{
-          params: {
-            symbol: 'ETH',
-            address: 'something',
-            isETH: true,
-            chainId: '0x1',
-          },
-        }}
+        navigation={mockNavigation(jest.fn())}
+        route={mockRoute({
+          symbol: 'ETH',
+          address: 'something',
+          isETH: true,
+          chainId: '0x1',
+        })}
       />,
       {
         state: mockInitialState,
@@ -177,15 +180,13 @@ describe('Asset', () => {
     jest.spyOn(swapsUtils, 'fetchSwapsFeatureFlags').mockRejectedValue('error');
     const { toJSON } = renderWithProvider(
       <Asset
-        navigation={{ setOptions: jest.fn() }}
-        route={{
-          params: {
-            symbol: 'AVAX',
-            address: 'something',
-            isETH: false,
-            chainId: '0x1',
-          },
-        }}
+        navigation={mockNavigation(jest.fn())}
+        route={mockRoute({
+          symbol: 'AVAX',
+          address: 'something',
+          isETH: false,
+          chainId: '0x1',
+        })}
       />,
       {
         state: mockInitialState,

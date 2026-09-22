@@ -9,7 +9,12 @@ import {
   Image,
   Dimensions,
 } from 'react-native';
-import PropTypes from 'prop-types';
+import type { ThemeColors } from '@metamask/design-tokens';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { fontStyles } from '../../../styles/common';
 import StyledButton from '../../UI/StyledButton';
@@ -34,7 +39,7 @@ const IMAGE_1_RATIO = 162.8 / 138;
 const DEVICE_WIDTH = Dimensions.get('window').width;
 const IMG_PADDING = Device.isIphoneX() ? 100 : Device.isIphone5S() ? 180 : 220;
 
-const createStyles = (colors) =>
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -196,11 +201,22 @@ const createStyles = (colors) =>
     },
   });
 
+interface AccountBackupStep1BProps {
+  /**
+   * navigation object required to push and pop other views
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<ParamListBase, string>;
+}
+
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
  */
-const AccountBackupStep1B = (props) => {
+const AccountBackupStep1B = (props: AccountBackupStep1BProps) => {
   const { navigation, route } = props;
   const [showWhySecureWalletModal, setWhySecureWalletModal] = useState(false);
   const [showWhatIsSeedphraseModal, setWhatIsSeedphraseModal] = useState(false);
@@ -208,7 +224,9 @@ const AccountBackupStep1B = (props) => {
   const styles = createStyles(colors);
 
   useEffect(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(
+      getOnboardingNavbarOptions(route, { headerLeft: undefined }, colors),
+    );
   }, [navigation, route, colors]);
 
   const goNext = () => {
@@ -321,7 +339,6 @@ const AccountBackupStep1B = (props) => {
             </Text>
 
             <StyledButton
-              containerStyle={styles.button}
               type={'confirm'}
               onPress={goNext}
             >
@@ -366,7 +383,6 @@ const AccountBackupStep1B = (props) => {
               </Text>
             </Text>
             <TouchableOpacity
-              style={styles.remindLaterButton}
               onPress={learnMore}
               hitSlop={{ top: 10, left: 10, bottom: 10, right: 10 }}
             >
@@ -385,15 +401,6 @@ const AccountBackupStep1B = (props) => {
   );
 };
 
-AccountBackupStep1B.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-};
-
-export default AccountBackupStep1B;
+export default AccountBackupStep1B as unknown as React.ComponentType<
+  Partial<AccountBackupStep1BProps>
+>;

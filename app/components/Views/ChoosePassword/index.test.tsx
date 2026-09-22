@@ -26,7 +26,11 @@ describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ChoosePassword route={{ params: [ONBOARDING, PROTECT] }} />
+        <ChoosePassword
+          {...({
+            route: { params: [ONBOARDING, PROTECT] },
+          } as unknown as React.ComponentProps<typeof ChoosePassword>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
