@@ -6,6 +6,16 @@ function getSentUnitMessage(unit) {
 
 export const ActivitiesViewSelectorsIDs = {
   CONTAINER: 'transactions-container',
+  CONTROL_BAR: 'activity-control-bar',
+  SEARCH_INPUT: 'activity-search-input',
+  TYPE_FILTER_CHIP: 'activity-type-filter-chip',
+  STATUS_FILTER_CHIP: 'activity-status-filter-chip',
+  DATE_FILTER_CHIP: 'activity-date-filter-chip',
+  ACTIVE_FILTER_TOKEN: 'activity-active-filter-token',
+  CLEAR_ALL_FILTERS: 'activity-clear-all-filters',
+  FILTERED_EMPTY_STATE: 'activity-filtered-empty-state',
+  FILTERS_BOTTOM_SHEET: 'activity-filters-bottom-sheet',
+  EXPORT_CSV_BUTTON: 'activity-export-csv-button',
 };
 
 export const ActivitiesViewSelectorsText = {
