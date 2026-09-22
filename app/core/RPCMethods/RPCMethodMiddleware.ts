@@ -871,7 +871,7 @@ export const getRpcMethodMiddleware = ({
           }),
 
         wallet_watchAsset: async () =>
-          RPCMethods.wallet_watchAsset({ req, res, hostname, checkTabActive }),
+          RPCMethods.wallet_watchAsset({ req, res, origin, checkTabActive }),
 
         metamask_removeFavorite: async () => {
           checkTabActive();

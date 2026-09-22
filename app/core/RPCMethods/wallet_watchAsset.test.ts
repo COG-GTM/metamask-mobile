@@ -108,7 +108,7 @@ describe('wallet_watchAsset', () => {
         // TODO: Replace "any" with type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         checkTabActive: () => null as any,
-        hostname: '',
+        origin: '',
       }),
     ).rejects.toThrow(TOKEN_NOT_VALID);
   });
@@ -139,7 +139,7 @@ describe('wallet_watchAsset', () => {
         // TODO: Replace "any" with type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         checkTabActive: () => null as any,
-        hostname: '',
+        origin: '',
       }),
     ).rejects.toThrow(TOKEN_NOT_SUPPORTED_FOR_NETWORK);
   });
@@ -174,7 +174,7 @@ describe('wallet_watchAsset', () => {
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       checkTabActive: () => null as any,
-      hostname: '',
+      origin: '',
     });
     expect(spyOnWatchAsset).toHaveBeenCalledWith({
       asset: correctWBTC,
@@ -220,7 +220,7 @@ describe('wallet_watchAsset', () => {
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       checkTabActive: () => null as any,
-      hostname: '',
+      origin: '',
     });
     expect(spyOnWatchAsset).toHaveBeenCalledWith({
       asset: correctWBTC,

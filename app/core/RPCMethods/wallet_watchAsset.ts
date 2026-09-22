@@ -21,7 +21,7 @@ import { MESSAGE_TYPE } from '../createTracingMiddleware';
 export const wallet_watchAsset = async ({
   req,
   res,
-  hostname,
+  origin,
   checkTabActive,
 }: {
   req: JsonRpcRequest<{
@@ -36,7 +36,7 @@ export const wallet_watchAsset = async ({
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   res: PendingJsonRpcResponse<any>;
-  hostname: string;
+  origin: string;
   checkTabActive: () => true | undefined;
 }) => {
   const { AssetsContractController } = Engine.context;
@@ -73,7 +73,7 @@ export const wallet_watchAsset = async ({
     throw new Error(TOKEN_NOT_SUPPORTED_FOR_NETWORK);
   }
 
-  const permittedAccounts = getPermittedAccounts(hostname);
+  const permittedAccounts = getPermittedAccounts(origin);
   // This should return the current active account on the Dapp.
   const selectedInternalAccountChecksummedAddress = toChecksumHexAddress(
     Engine.context.AccountsController.getSelectedAccount().address,
