@@ -1,6 +1,8 @@
-const noop = () => ({});
+type Noop = () => Record<string, never>;
 
-export default {
+const noop: Noop = () => ({});
+
+const rnFetchBlob = {
   DocumentDir: noop,
   fetch: noop,
   base64: noop,
@@ -19,3 +21,5 @@ export default {
   },
   wrap: noop,
 };
+
+export default rnFetchBlob;
