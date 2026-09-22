@@ -4,6 +4,7 @@ import {
   isSwapsAllowed,
 } from './index';
 import { swapsUtils } from '@metamask/swaps-controller';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SolScope } from '@metamask/keyring-api';
 
 // Mock AppConstants
@@ -95,6 +96,7 @@ describe('getFetchParams', () => {
   it('returns correct parameters with gas included quotes disabled', () => {
     const result = getFetchParams({
       ...mockBaseParams,
+      // @ts-expect-error Preserve the legacy fetch option accepted at runtime.
       enableGasIncludedQuotes: false,
     });
 
@@ -227,6 +229,7 @@ describe('isSwapsAllowed', () => {
 
   describe('testnet chain IDs', () => {
     it('should return true for testnet chain IDs in development when ONLY_MAINNET is true', () => {
+      // @ts-expect-error Preserve the legacy global test flag.
       global.__DEV__ = true;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),
@@ -236,6 +239,7 @@ describe('isSwapsAllowed', () => {
     });
 
     it('should return true for testnet chain IDs when ONLY_MAINNET is false', () => {
+      // @ts-expect-error Preserve the legacy global test flag.
       global.__DEV__ = false;
       mockSwapsConstantsGetter.mockReturnValue({
         ...mockSwapsConstantsGetter(),

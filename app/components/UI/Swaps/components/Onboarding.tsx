@@ -10,20 +10,28 @@ import {
   UIManager,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import {
+  useNavigation,
+  type NavigationProp,
+  type ParamListBase,
+} from '@react-navigation/native';
 import { strings } from '../../../../../locales/i18n';
 import Device from '../../../../util/device';
 import Text from '../../../Base/Text';
 import StyledButton from '../../StyledButton';
 import { useTheme, useAssetFromTheme } from '../../../../util/theme';
+import { Theme } from '@metamask/design-tokens';
 
 /* eslint-disable import/no-commonjs */
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const onboardingDeviceImage = require('../../../../images/swaps_onboard_device.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const swapsAggregatorsLight = require('../../../../images/swaps_aggs-light.png');
+// eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const swapsAggregatorsDark = require('../../../../images/swaps_aggs-dark.png');
 /* eslint-enable import/no-commonjs */
 
-const createStyles = (colors, bottomInset) =>
+const createStyles = (colors: Theme['colors'], bottomInset: number) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -72,8 +80,12 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function Onboarding({ setHasOnboarded }) {
-  const navigation = useNavigation();
+interface OnboardingProps {
+  setHasOnboarded?: (hasOnboarded: boolean) => void;
+}
+
+function Onboarding({ setHasOnboarded }: OnboardingProps) {
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { colors } = useTheme();
   const { bottom: bottomInset } = useSafeAreaInsets();
   const styles = createStyles(colors, bottomInset);
@@ -84,6 +96,7 @@ function Onboarding({ setHasOnboarded }) {
 
   const handleStartSwapping = useCallback(() => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    // @ts-expect-error Preserve the legacy optional callback invocation.
     setHasOnboarded(true);
   }, [setHasOnboarded]);
 
