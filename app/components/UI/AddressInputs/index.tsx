@@ -1,5 +1,13 @@
-import React from 'react';
-import { StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
+import React, { type RefObject } from 'react';
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  TouchableOpacity,
+  StyleProp,
+  TextStyle,
+  ViewStyle,
+} from 'react-native';
 import { fontStyles, baseStyles } from '../../../styles/common';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -9,18 +17,28 @@ import {
   renderShortAddress,
   renderSlightlyLongAddress,
   isENS,
-  getLabelTextByAddress,
 } from '../../../util/address';
 import { strings } from '../../../../locales/i18n';
 import { hasZeroWidthPoints } from '../../../util/confusables';
 import { useTheme } from '../../../util/theme';
-import AddToAddressBookWrapper from '../AddToAddressBookWrapper/AddToAddressBookWrapper';
+import AddToAddressBookWrapperComponent from '../AddToAddressBookWrapper/AddToAddressBookWrapper';
 import { SendViewSelectorsIDs } from '../../../../e2e/selectors/SendFlow/SendView.selectors';
-import Text, {
-  TextVariant,
-} from '../../../component-library/components/Texts/Text';
+import Text from '../../../component-library/components/Texts/Text';
+import type { Colors } from '../../../util/theme/models';
 
-const createStyles = (colors, layout = 'horizontal') => {
+type AddressLayout = 'horizontal' | 'vertical';
+type AddressTextProps = React.ComponentProps<typeof Text> & {
+  red?: boolean;
+  black?: boolean;
+};
+const AddressText = Text as React.ComponentType<AddressTextProps>;
+const AddToAddressBookWrapper =
+  AddToAddressBookWrapperComponent as React.ComponentType<{
+    address: string;
+    children: React.ReactNode;
+  }>;
+
+const createStyles = (colors: Colors, layout: AddressLayout = 'horizontal') => {
   const isVerticalLayout = layout === 'vertical';
   return StyleSheet.create({
     wrapper: {
@@ -178,7 +196,15 @@ const createStyles = (colors, layout = 'horizontal') => {
   });
 };
 
-const AddressName = ({ toAddressName, confusableCollection = [] }) => {
+interface AddressNameProps {
+  toAddressName?: string;
+  confusableCollection?: string[];
+}
+
+const AddressName = ({
+  toAddressName,
+  confusableCollection = [],
+}: AddressNameProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   if (confusableCollection.length) {
@@ -188,15 +214,15 @@ const AddressName = ({ toAddressName, confusableCollection = [] }) => {
         // if the confusable is zero width, replace it with `?`
         const replacement = hasZeroWidthPoints(char) ? '?' : char;
         return (
-          <Text red key={index}>
+          <AddressText red key={index}>
             {replacement}
-          </Text>
+          </AddressText>
         );
       }
       return (
-        <Text black key={index}>
+        <AddressText black key={index}>
           {char}
-        </Text>
+        </AddressText>
       );
     });
     return (
@@ -219,21 +245,41 @@ AddressName.propTypes = {
   confusableCollection: PropTypes.array,
 };
 
-export const AddressTo = (props) => {
+export interface AddressToProps {
+  addressToReady?: boolean;
+  highlighted?: boolean;
+  inputRef?: RefObject<React.ComponentRef<typeof TextInput>>;
+  toSelectedAddress?: string;
+  onToSelectedAddressChange?: (address: string) => void;
+  onScan?: () => void;
+  onClear?: () => void;
+  toAddressName?: string;
+  onInputFocus?: () => void;
+  onSubmit?: () => void;
+  onInputBlur?: () => void;
+  inputWidth?: StyleProp<TextStyle>;
+  confusableCollection?: string[];
+  displayExclamation?: boolean;
+  isConfirmScreen?: boolean;
+  isFromAddressBook?: boolean;
+  layout?: AddressLayout;
+}
+
+export const AddressTo = (props: AddressToProps) => {
   const {
     addressToReady,
     highlighted,
     inputRef,
-    toSelectedAddress,
+    toSelectedAddress = '',
     onToSelectedAddressChange,
     onScan,
     onClear,
-    toAddressName,
+    toAddressName = '',
     onInputFocus,
     onSubmit,
     onInputBlur,
     inputWidth,
-    confusableCollection,
+    confusableCollection = [],
     displayExclamation,
     isConfirmScreen = false,
     isFromAddressBook = false,
@@ -245,7 +291,7 @@ export const AddressTo = (props) => {
   const isInputFilled = toSelectedAddress?.length;
 
   if (isConfirmScreen) {
-    const wrapperStyles = [styles.wrapper];
+    const wrapperStyles: StyleProp<ViewStyle>[] = [styles.wrapper];
     if (layout === 'vertical') {
       wrapperStyles.push(styles.marginedWrapper);
     }
@@ -557,7 +603,16 @@ AddressTo.propTypes = {
   layout: PropTypes.string,
 };
 
-export const AddressFrom = (props) => {
+export interface AddressFromProps {
+  highlighted?: boolean;
+  onPressIcon?: () => void;
+  fromAccountAddress?: string;
+  fromAccountName?: string;
+  fromAccountBalance?: string;
+  layout?: AddressLayout;
+}
+
+export const AddressFrom = (props: AddressFromProps) => {
   const {
     highlighted,
     onPressIcon,

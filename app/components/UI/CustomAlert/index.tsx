@@ -1,13 +1,15 @@
 import React, { PureComponent } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, StyleProp, ViewStyle } from 'react-native';
 import PropTypes from 'prop-types';
 import Modal from 'react-native-modal';
 import StyledButton from '../StyledButton';
 import { fontStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+// @ts-expect-error Package does not publish TypeScript declarations.
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import type { Colors, Theme } from '../../../util/theme/models';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     modal: {
       padding: 20,
@@ -43,7 +45,21 @@ const createStyles = (colors) =>
 /* PureComponent that renders our custom alerts, which contains
 /* a header with an image, body and footer with a button
 */
-export default class CustomAlert extends PureComponent {
+interface CustomAlertProps {
+  headerStyle?: StyleProp<ViewStyle>;
+  headerContent?: React.ReactNode;
+  titleText?: string;
+  bodyContent?: React.ReactElement;
+  buttonText?: string;
+  onPress?: () => void;
+  isVisible?: boolean;
+  onBackdropPress?: () => void;
+  onSwipeComplete?: () => void;
+  swipeDirection?: string;
+  children?: React.ReactNode;
+}
+
+export default class CustomAlert extends PureComponent<CustomAlertProps> {
   static propTypes = {
     /**
     /* Style of the header view
@@ -92,12 +108,14 @@ export default class CustomAlert extends PureComponent {
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
+      // @ts-expect-error Preserve the legacy custom props and propTypes read.
       <Modal
         style={styles.modal}
+        // @ts-expect-error Preserve the legacy instance propTypes read.
         isVisible={this.propTypes}
         onBackButtonPress={this.props.onPress}
         {...this.props}
