@@ -10,7 +10,7 @@ import { isPrivateConnection } from '../../../util/networks';
 import { toggleUseSafeChainsListValidation } from '../../../util/networks/engineNetworkUtils';
 import getDecimalChainId from '../../../util/networks/getDecimalChainId';
 import URLPARSE from 'url-parse';
-import { isWebUri } from 'valid-url';
+import { isWebUri, isHttpsUri } from 'valid-url';
 import { useDispatch, useSelector } from 'react-redux';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { BannerAlertSeverity } from '../../../component-library/components/Banners/Banner';
@@ -118,6 +118,10 @@ const NetworkModals = (props: NetworkProps) => {
 
   const validateRpcUrl = (url: string) => {
     if (!isWebUri(url)) return false;
+    // Enforce HTTPS for public hosts as defense-in-depth; allow cleartext http
+    // only for private/localhost connections.
+    const { hostname } = new URLPARSE(url);
+    if (!isHttpsUri(url) && !isPrivateConnection(hostname)) return false;
     return true;
   };
 
@@ -193,6 +197,7 @@ const NetworkModals = (props: NetworkProps) => {
     const { NetworkController } = Engine.context;
     const url = new URLPARSE(rpcUrl);
     !isPrivateConnection(url.hostname) && url.set('protocol', 'https:');
+    const secureRpcUrl = url.href;
 
     const existingNetwork = networkConfigurationByChainId[chainId];
     let networkClientId;
@@ -222,7 +227,7 @@ const NetworkModals = (props: NetworkProps) => {
         nativeCurrency: ticker,
         rpcEndpoints: [
           {
-            url: rpcUrl,
+            url: secureRpcUrl,
             name: nickname,
             type: RpcEndpointType.Custom,
           },
@@ -321,7 +326,7 @@ const NetworkModals = (props: NetworkProps) => {
     } else {
       const addedNetwork = await handleNewNetwork(
         chainId,
-        rpcUrl,
+        url.href,
         nickname,
         ticker,
         blockExplorerUrl,

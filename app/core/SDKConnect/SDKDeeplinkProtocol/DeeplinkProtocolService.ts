@@ -78,6 +78,12 @@ export default class DeeplinkProtocolService {
         };
 
         this.connections[connection.id] = clientInfo;
+        // Restore the dapp public key established at pairing so inbound
+        // messages can be authenticated against it after a restart.
+        if (connection.otherPublicKey) {
+          this.dappPublicKeyByClientId[connection.id] =
+            connection.otherPublicKey;
+        }
 
         this.setupBridge(clientInfo);
       });
@@ -271,6 +277,32 @@ export default class DeeplinkProtocolService {
         `DeeplinkProtocolService::openDeeplink error opening deeplink`,
       );
     }
+  }
+
+  /**
+   * Verifies that an inbound deeplink message is authorized to drive the given
+   * channel. A matching channelId alone is not sufficient: the message must
+   * also present the dapp public key that was established when the channel was
+   * paired. This binds message-processing authority to the connection's key
+   * material rather than to knowledge of a (non-secret) channelId, which can
+   * leak via cross-app scheme registration or deeplink URL observation.
+   */
+  public isAuthorizedDappMessage(
+    sessionId: string,
+    dappPublicKey?: string,
+  ): boolean {
+    const expectedPublicKey = this.dappPublicKeyByClientId[sessionId];
+
+    // No key was captured at pairing (e.g. a legacy persisted connection):
+    // fall back to channel existence to avoid breaking established sessions.
+    if (!expectedPublicKey) {
+      DevLogger.log(
+        `DeeplinkProtocolService::isAuthorizedDappMessage no stored public key for sessionId=${sessionId}`,
+      );
+      return true;
+    }
+
+    return Boolean(dappPublicKey) && dappPublicKey === expectedPublicKey;
   }
 
   public async checkPermission({
@@ -780,6 +812,9 @@ export default class DeeplinkProtocolService {
       }
 
       const isSessionExists = this.connections?.[sessionId];
+      const isAuthorized =
+        isSessionExists &&
+        this.isAuthorizedDappMessage(sessionId, params.dappPublicKey);
 
       DevLogger.log(
         `DeeplinkProtocolService::onMessageReceived connections=`,
@@ -795,7 +830,12 @@ export default class DeeplinkProtocolService {
         isSessionExists,
       );
 
-      if (!isSessionExists) {
+      DevLogger.log(
+        `DeeplinkProtocolService::onMessageReceived isAuthorized`,
+        isAuthorized,
+      );
+
+      if (!isAuthorized) {
         const message = {
           data: {
             id: data.id,
