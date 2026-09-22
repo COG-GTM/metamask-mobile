@@ -1,6 +1,16 @@
 import React, { PureComponent } from 'react';
-import { SafeAreaView, Text, TextInput, View, StyleSheet } from 'react-native';
+import {
+  SafeAreaView,
+  Text,
+  TextInput,
+  View,
+  StyleSheet,
+  type TextInputProps,
+} from 'react-native';
+import type { ParamListBase, RouteProp } from '@react-navigation/native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import PropTypes from 'prop-types';
+import type { Theme } from '@metamask/design-tokens';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import ActionView from '../../UI/ActionView';
@@ -9,7 +19,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 
 import { AddBookmarkViewSelectorsIDs } from '../../../../e2e/selectors/Browser/AddBookmarkView.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: colors.background.default,
@@ -36,11 +46,45 @@ const createStyles = (colors) =>
     },
   });
 
+interface AddBookmarkRouteParams {
+  title?: string;
+  url?: string;
+  onAddBookmark: (bookmark: { name: string; url: string }) => void;
+}
+
+interface AddBookmarkParamList extends ParamListBase {
+  AddBookmark: AddBookmarkRouteParams;
+}
+
+interface AddBookmarkProps {
+  navigation: Pick<
+    StackNavigationProp<AddBookmarkParamList>,
+    'setOptions' | 'pop'
+  >;
+  route: Pick<RouteProp<AddBookmarkParamList, 'AddBookmark'>, 'params'>;
+}
+
+interface AddBookmarkState {
+  title: string;
+  url: string;
+  warningSymbol?: React.ReactNode;
+  warningDecimals?: React.ReactNode;
+}
+
+type AddBookmarkTheme = Theme & {
+  themeAppearance?: TextInputProps['keyboardAppearance'];
+};
+
 /**
  * Copmonent that provides ability to add a bookmark
  */
-export default class AddBookmark extends PureComponent {
-  state = {
+export default class AddBookmark extends PureComponent<
+  AddBookmarkProps,
+  AddBookmarkState
+> {
+  static contextType = ThemeContext;
+
+  state: AddBookmarkState = {
     title: '',
     url: '',
   };
@@ -58,7 +102,8 @@ export default class AddBookmark extends PureComponent {
 
   updateNavBar = () => {
     const { navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
 
     navigation.setOptions(
       getNavigationOptionsTitle(
@@ -98,15 +143,15 @@ export default class AddBookmark extends PureComponent {
     this.props.navigation.pop();
   };
 
-  onTitleChange = (title) => {
+  onTitleChange = (title: string) => {
     this.setState({ title });
   };
 
-  onUrlChange = (url) => {
+  onUrlChange = (url: string) => {
     this.setState({ url });
   };
 
-  urlInput = React.createRef();
+  urlInput = React.createRef<TextInput>();
 
   jumpToUrl = () => {
     const { current } = this.urlInput;
@@ -114,8 +159,9 @@ export default class AddBookmark extends PureComponent {
   };
 
   render = () => {
-    const colors = this.context.colors || mockTheme.colors;
-    const themeAppearance = this.context.themeAppearance || 'light';
+    const theme = this.context as unknown as AddBookmarkTheme;
+    const colors = theme.colors || mockTheme.colors;
+    const themeAppearance = theme.themeAppearance || 'light';
     const styles = createStyles(colors);
 
     return (
@@ -160,7 +206,13 @@ export default class AddBookmark extends PureComponent {
                 onChangeText={this.onUrlChange}
                 testID={AddBookmarkViewSelectorsIDs.URL_TEXT}
                 ref={this.urlInput}
-                onSubmitEditing={this.addToken}
+                onSubmitEditing={
+                  (
+                    this as unknown as {
+                      addToken?: TextInputProps['onSubmitEditing'];
+                    }
+                  ).addToken
+                }
                 returnKeyType={'done'}
                 placeholderTextColor={colors.text.muted}
                 keyboardAppearance={themeAppearance}
@@ -175,5 +227,3 @@ export default class AddBookmark extends PureComponent {
     );
   };
 }
-
-AddBookmark.contextType = ThemeContext;

@@ -29,7 +29,6 @@ describe('CollectibleView Snapshot', () => {
           address: '0xABCDEF',
         },
       },
-      newAssetTransaction: jest.fn(),
     };
 
     const { toJSON } = render(
@@ -54,7 +53,6 @@ describe('CollectibleView Snapshot', () => {
           address: '0xABCDEF',
         },
       },
-      newAssetTransaction: jest.fn(),
     };
 
     const wrapper = render(
