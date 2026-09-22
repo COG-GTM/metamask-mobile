@@ -39,6 +39,16 @@ jest.mock(
   () => () => mockImportAdditionalAccounts(),
 );
 
+const mockUseSelector = useSelector as unknown as jest.Mock;
+const mockUseDispatch = useDispatch as unknown as jest.Mock;
+
+// The component is rendered here with a subset of its props plus the mocked navigation
+const OnboardingSuccessView = OnboardingSuccess as React.ComponentType<
+  Partial<React.ComponentProps<typeof OnboardingSuccess>> & {
+    navigation?: ReturnType<typeof useNavigation>;
+  }
+>;
+
 const mockProviderConfig = {
   type: 'mainnet',
   chainId: '1',
@@ -46,24 +56,24 @@ const mockProviderConfig = {
 
 describe('OnboardingSuccess', () => {
   it('should render correctly', () => {
-    useSelector.mockImplementation((selector) => {
+    mockUseSelector.mockImplementation((selector: unknown) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const { toJSON } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} />,
+      <OnboardingSuccessView navigation={useNavigation()} />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('imports additional accounts and sets completedOnboarding to true when onDone is called', () => {
-    useSelector.mockImplementation((selector) => {
+    mockUseSelector.mockImplementation((selector: unknown) => {
       if (selector === selectProviderConfig) return mockProviderConfig;
     });
     const mockDispatch = jest.fn();
-    useDispatch.mockImplementation(() => mockDispatch);
+    mockUseDispatch.mockImplementation(() => mockDispatch);
 
     const { getByTestId } = renderWithProvider(
-      <OnboardingSuccess navigation={useNavigation()} onDone={jest.fn()} />,
+      <OnboardingSuccessView navigation={useNavigation()} onDone={jest.fn()} />,
     );
     const button = getByTestId(OnboardingSuccessSelectorIDs.DONE_BUTTON);
     button.props.onPress();
