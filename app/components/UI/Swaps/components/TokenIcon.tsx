@@ -1,15 +1,26 @@
 import React, { useCallback, useState } from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, View } from 'react-native';
+import {
+  ImageSourcePropType,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewProps,
+  ViewStyle,
+} from 'react-native';
 
 import RemoteImage from '../../../Base/RemoteImage';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
 import imageIcons from '../../../../images/image-icons';
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable import/no-commonjs */
 const ethLogo = require('../../../../images/eth-logo-new.png');
 /* eslint-enable import/no-commonjs */
+/* eslint-enable @typescript-eslint/no-var-requires */
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 const REGULAR_SIZE = 24;
 const REGULAR_RADIUS = 12;
@@ -20,7 +31,7 @@ const BIG_RADIUS = 25;
 const BIGGEST_SIZE = 70;
 const BIGGEST_RADIUS = 35;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     icon: {
       width: REGULAR_SIZE,
@@ -63,7 +74,21 @@ const createStyles = (colors) =>
     },
   });
 
-const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
+interface EmptyIconProps extends ViewProps {
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
+
+const EmptyIcon = ({
+  medium,
+  big,
+  biggest,
+  style,
+  ...props
+}: EmptyIconProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -82,20 +107,30 @@ const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
   );
 };
 
-EmptyIcon.propTypes = {
-  medium: PropTypes.bool,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  testID: PropTypes.string,
-};
+interface TokenIconProps {
+  symbol?: string;
+  icon?: string;
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
 
-function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
+function TokenIcon({
+  symbol,
+  icon,
+  medium,
+  big,
+  biggest,
+  style,
+  testID,
+}: TokenIconProps) {
   const [showFallback, setShowFallback] = useState(false);
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const getSource = useCallback(() => {
+  const getSource = useCallback((): ImageSourcePropType | null => {
     if (symbol === 'ETH') {
       return ethLogo;
     }
@@ -104,8 +139,8 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
       return imageIcons.SOLANA;
     }
 
-    if (Object.keys(imageIcons).includes(symbol)) {
-      return imageIcons[symbol];
+    if (symbol && symbol in imageIcons) {
+      return imageIcons[symbol as keyof typeof imageIcons];
     }
 
     if (icon) {
@@ -121,7 +156,7 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
       <RemoteImage
         testID={testID}
         fadeIn
-        source={getSource()}
+        source={source}
         onError={() => setShowFallback(true)}
         style={[
           styles.icon,
@@ -148,7 +183,8 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
             styles.tokenSymbol,
             medium && styles.tokenSymbolMedium,
             (big || biggest) && styles.tokenSymbolBig,
-            biggest && styles.tokenSymbolBiggest,
+            // No dedicated style exists for the biggest variant
+            biggest && undefined,
           ]}
         >
           {symbol[0].toUpperCase()}
@@ -159,15 +195,5 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
 
   return <EmptyIcon medium={medium} style={style} />;
 }
-
-TokenIcon.propTypes = {
-  symbol: PropTypes.string,
-  icon: PropTypes.string,
-  medium: PropTypes.bool,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  testID: PropTypes.string,
-};
 
 export default TokenIcon;

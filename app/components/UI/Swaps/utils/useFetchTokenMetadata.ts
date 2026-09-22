@@ -1,23 +1,44 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios, { CancelTokenSource } from 'axios';
 import { swapsUtils } from '@metamask/swaps-controller';
+import { Hex } from '@metamask/utils';
 
-const defaultTokenMetadata = {
+export interface FetchedTokenMetadata {
+  address: string;
+  symbol: string;
+  decimals: number;
+  name?: string;
+  iconUrl?: string;
+  occurrences?: number;
+  aggregators?: string[];
+}
+
+export interface TokenMetadata {
+  valid: boolean | null;
+  error: boolean;
+  metadata: FetchedTokenMetadata | null;
+}
+
+const defaultTokenMetadata: TokenMetadata = {
   valid: null,
   error: false,
   metadata: null,
 };
 
-function useFetchTokenMetadata(address, chainId) {
+function useFetchTokenMetadata(
+  address: string | undefined,
+  chainId: Hex,
+): [boolean, TokenMetadata] {
   const [isLoading, setIsLoading] = useState(false);
-  const [tokenMetadata, setTokenMetadata] = useState(defaultTokenMetadata);
+  const [tokenMetadata, setTokenMetadata] =
+    useState<TokenMetadata>(defaultTokenMetadata);
 
   useEffect(() => {
     if (!address) {
       return;
     }
 
-    let cancelTokenSource;
+    let cancelTokenSource: CancelTokenSource | undefined;
     async function fetchTokenMetadata() {
       try {
         cancelTokenSource = axios.CancelToken.source();
@@ -33,7 +54,7 @@ function useFetchTokenMetadata(address, chainId) {
         setTokenMetadata({ error: false, valid: true, metadata: data });
       } catch (error) {
         // Address is not an ERC20
-        if (error?.response?.status === 422) {
+        if (axios.isAxiosError(error) && error.response?.status === 422) {
           setTokenMetadata({ error: false, valid: false, metadata: null });
         } else {
           setTokenMetadata({ ...defaultTokenMetadata, error: true });

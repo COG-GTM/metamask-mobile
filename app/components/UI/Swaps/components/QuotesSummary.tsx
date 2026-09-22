@@ -1,13 +1,25 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { View, StyleSheet, Image } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Image,
+  StyleProp,
+  TextStyle,
+  ViewProps,
+  ViewStyle,
+} from 'react-native';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable @typescript-eslint/no-var-requires */
 // eslint-disable-next-line import/no-commonjs
 const piggyBank = require('../../../../images/piggybank.png');
+/* eslint-enable @typescript-eslint/no-var-requires */
+/* eslint-enable @typescript-eslint/no-require-imports */
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     header: {
       paddingVertical: 10,
@@ -58,9 +70,16 @@ const createStyles = (colors) =>
     },
   });
 
-const QuotesSummary = (props) => <View {...props} />;
+const QuotesSummaryBase = (props: ViewProps) => <View {...props} />;
 
-const Header = ({ style, savings, children, ...props }) => {
+interface HeaderProps extends ViewProps {
+  style?: StyleProp<ViewStyle>;
+  /** Wether the piggybank is shown or not */
+  savings?: boolean;
+  children?: React.ReactNode;
+}
+
+const Header = ({ style, savings, children, ...props }: HeaderProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return (
@@ -79,44 +98,30 @@ const Header = ({ style, savings, children, ...props }) => {
   );
 };
 
-const Body = ({ style, ...props }) => {
+const Body = ({ style, ...props }: ViewProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return <View style={[styles.body, style]} {...props} />;
 };
-const HeaderText = ({ style, ...props }) => {
+const HeaderText = ({
+  style,
+  ...props
+}: React.ComponentProps<typeof Text> & { style?: StyleProp<TextStyle> }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return <Text style={[styles.headerText, style]} {...props} />;
 };
-const Separator = ({ style }) => {
+const Separator = ({ style }: { style?: StyleProp<ViewStyle> }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return <View style={[styles.separator, style]} />;
 };
 
-QuotesSummary.Body = Body;
-QuotesSummary.Header = Header;
-QuotesSummary.HeaderText = HeaderText;
-QuotesSummary.Separator = Separator;
-
-Header.propTypes = {
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  /** Wether the piggybank is shown or not */
-  savings: PropTypes.bool,
-  children: PropTypes.node,
-};
-
-Body.propTypes = {
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-};
-
-HeaderText.propTypes = {
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-};
-
-Separator.propTypes = {
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-};
+const QuotesSummary = Object.assign(QuotesSummaryBase, {
+  Body,
+  Header,
+  HeaderText,
+  Separator,
+});
 
 export default QuotesSummary;
