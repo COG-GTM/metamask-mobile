@@ -1,4 +1,5 @@
 import React, { PureComponent } from 'react';
+import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import PropTypes from 'prop-types';
 import {
   SafeAreaView,
@@ -10,6 +11,7 @@ import {
 import Share from 'react-native-share';
 import QRCode from 'react-native-qrcode-svg';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import Logger from '../../../util/Logger';
@@ -23,6 +25,8 @@ import GlobalAlert from '../GlobalAlert';
 import StyledButton from '../StyledButton';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import { selectChainId } from '../../../selectors/networkController';
 import { isNetworkRampSupported } from '../Ramp/utils';
 import { createBuyNavigationDetails } from '../Ramp/routes/utils';
@@ -33,10 +37,11 @@ import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { getDecimalChainId } from '../../../util/networks';
 import QRAccountDisplay from '../../Views/QRAccountDisplay';
 import PNG_MM_LOGO_PATH from '../../../images/branding/fox.png';
+import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics/withMetricsAwareness.types';
 
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
-const createStyles = (theme) =>
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     wrapper: {
       backgroundColor: theme.colors.background.default,
@@ -109,7 +114,32 @@ const createStyles = (theme) =>
 /**
  * PureComponent that renders receive options
  */
-class ReceiveRequest extends PureComponent {
+interface ReceiveRequestProps extends IWithMetricsAwarenessProps {
+  navigation: NavigationProp<ParamListBase>;
+  selectedAddress: string;
+  receiveAsset?: Record<string, unknown>;
+  showAlert: (config: {
+    isVisible: boolean;
+    autodismiss: number;
+    content: string;
+    data: { msg: string };
+  }) => void;
+  chainId: string;
+  protectWalletModalVisible: () => void;
+  hideModal: () => void;
+  seedphraseBackedUp?: boolean;
+  isNetworkBuySupported: boolean;
+}
+
+interface ReceiveRequestState {
+  qrModalVisible: boolean;
+  buyModalVisible: boolean;
+}
+
+class ReceiveRequest extends PureComponent<
+  ReceiveRequestProps,
+  ReceiveRequestState
+> {
   static propTypes = {
     /**
      * The navigator object
@@ -237,7 +267,7 @@ class ReceiveRequest extends PureComponent {
   };
 
   render() {
-    const theme = this.context || mockTheme;
+    const theme = (this.context as Theme) || mockTheme;
     const styles = createStyles(theme);
 
     return (
@@ -275,7 +305,7 @@ class ReceiveRequest extends PureComponent {
 
 ReceiveRequest.contextType = ThemeContext;
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   chainId: selectChainId(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   receiveAsset: state.modals.receiveAsset,
@@ -286,12 +316,14 @@ const mapStateToProps = (state) => ({
   ),
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  showAlert: (config: Parameters<typeof showAlert>[0]) =>
+    dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
+  // @ts-expect-error Metrics HOC injects metrics into the legacy component.
 )(withMetricsAwareness(ReceiveRequest));
