@@ -71,7 +71,7 @@ jest.mock('react-native', () => {
 jest.mock('@metamask/react-native-webview', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
   const { View } = require('react-native');
-  const WebView = (props) => <View {...props} />;
+  const WebView = (props: Record<string, unknown>) => <View {...props} />;
 
   return {
     WebView,
@@ -157,14 +157,14 @@ jest.mock('../../core/NotificationManager', () => ({
   showSimpleNotification: jest.fn(),
 }));
 
-let mockState = {};
+let mockState: Record<string, unknown> = {};
 
 jest.mock('../../store', () => ({
   store: {
     getState: jest.fn().mockImplementation(() => mockState),
     dispatch: jest.fn(),
   },
-  _updateMockState: (state) => {
+  _updateMockState: (state: Record<string, unknown>) => {
     mockState = state;
   },
 }));
@@ -206,12 +206,12 @@ jest.mock('react-native-keychain', () => ({
   },
   getSupportedBiometryType: jest.fn().mockReturnValue('FaceID'),
   setInternetCredentials: jest
-    .fn(('server', 'username', 'password'))
+    .fn()
     .mockResolvedValue({ service: 'metamask', storage: 'storage' }),
   getInternetCredentials: jest
     .fn()
     .mockResolvedValue({ password: 'mock-credentials-password' }),
-  resetInternetCredentials: jest.fn().mockResolvedValue(),
+  resetInternetCredentials: jest.fn().mockResolvedValue(undefined),
   ACCESSIBLE: {
     WHEN_UNLOCKED: 'AccessibleWhenUnlocked',
     AFTER_FIRST_UNLOCK: 'AccessibleAfterFirstUnlock',
@@ -324,9 +324,27 @@ jest.mock('../theme', () => ({
   useAppThemeFromContext: () => ({ ...mockTheme }),
 }));
 
+interface SegmentMockClient {
+  screen: jest.Mock;
+  track: jest.Mock;
+  identify: jest.Mock;
+  flush: jest.Mock;
+  group: jest.Mock;
+  alias: jest.Mock;
+  reset: jest.Mock;
+  add: jest.Mock;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var segmentMockClient: SegmentMockClient | null;
+  // eslint-disable-next-line no-var
+  var __reanimatedWorkletInit: jest.Mock;
+}
+
 global.segmentMockClient = null;
 
-const initializeMockClient = () => {
+const initializeMockClient = (): SegmentMockClient => {
   global.segmentMockClient = {
     screen: jest.fn(),
     track: jest.fn(),
@@ -343,9 +361,11 @@ const initializeMockClient = () => {
 jest.mock('@segment/analytics-react-native', () => {
   class Plugin {
     type = 'utility';
-    analytics = undefined;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    analytics: any = undefined;
 
-    configure(analytics) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    configure(analytics: any) {
       this.analytics = analytics;
     }
   }
@@ -370,16 +390,19 @@ jest.mock('@notifee/react-native', () =>
 
 jest.mock('react-native/Libraries/Image/resolveAssetSource', () => ({
   __esModule: true,
-  default: (source) => {
+  default: (source: { uri: string }) => {
     return { uri: source.uri };
   },
 }));
 
 jest.mock('redux-persist', () => ({
   persistStore: jest.fn(),
-  persistReducer: (_, reducer) => {
-    return reducer || ((state) => state);
-  },
+  persistReducer: (
+    _: unknown,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    reducer: ((state: any) => any) | undefined,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) => reducer || ((state: any) => state),
   createTransform: jest.fn(),
   createMigrate: jest.fn(),
 }));
@@ -392,7 +415,7 @@ jest.mock('../../store/storage-wrapper', () => ({
 // eslint-disable-next-line import/no-commonjs
 require('react-native-reanimated').setUpTests();
 global.__reanimatedWorkletInit = jest.fn();
-global.__DEV__ = false;
+(global as unknown as { __DEV__: boolean }).__DEV__ = false;
 
 jest.mock('../../core/Engine', () =>
   require('../../core/__mocks__/MockedEngine'),
@@ -405,18 +428,19 @@ jest.mock('react-native-safe-area-context', () => ({
 
 afterEach(() => {
   jest.restoreAllMocks();
-  global.gc && global.gc(true);
+  global.gc?.();
 });
 
 global.crypto = {
-  getRandomValues: (arr) => {
+  getRandomValues: <T extends ArrayBufferView | null>(arr: T): T => {
     const uint8Max = 255;
-    for (let i = 0; i < arr.length; i++) {
-      arr[i] = Math.floor(Math.random() * (uint8Max + 1));
+    const values = arr as unknown as number[];
+    for (let i = 0; i < values.length; i++) {
+      values[i] = Math.floor(Math.random() * (uint8Max + 1));
     }
     return arr;
   },
-};
+} as unknown as Crypto;
 
 jest.mock('@react-native-firebase/messaging', () => {
   const module = () => {
