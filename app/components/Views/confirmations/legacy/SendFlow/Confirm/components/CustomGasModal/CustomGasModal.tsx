@@ -6,9 +6,24 @@ import { selectGasFeeEstimates } from '../../../../../../../../selectors/confirm
 import { selectGasFeeControllerEstimateType } from '../../../../../../../../selectors/gasFeeController';
 import { selectPrimaryCurrency } from '../../../../../../../../selectors/settings';
 import { useAppThemeFromContext } from '../../../../../../../../util/theme';
-import EditGasFee1559 from '../../../../components/EditGasFee1559Update';
-import EditGasFeeLegacy from '../../../../components/EditGasFeeLegacyUpdate';
+import EditGasFee1559Untyped from '../../../../components/EditGasFee1559Update';
+import EditGasFeeLegacyUntyped from '../../../../components/EditGasFeeLegacyUpdate';
 import createStyles from './CustomGasModal.styles';
+import { CustomGasModalProps } from './CustomGasModal.types';
+import { RootState } from '../../../../../../../../reducers';
+
+// The gas fee editors are still untyped JavaScript modules.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const EditGasFee1559 = EditGasFee1559Untyped as React.ComponentType<any>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const EditGasFeeLegacy = EditGasFeeLegacyUntyped as React.ComponentType<any>;
+
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GasTransaction = any;
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type GasObject = any;
 
 const CustomGasModal = ({
   gasSelected,
@@ -23,16 +38,16 @@ const CustomGasModal = ({
   onGasChanged,
   onGasCanceled,
   updateGasState,
-}) => {
+}: CustomGasModalProps) => {
   const { colors } = useAppThemeFromContext();
   const styles = createStyles();
 
-  const transaction = useSelector((state) => state.transaction);
+  const transaction = useSelector((state: RootState) => state.transaction);
   const gasFeeEstimate = useSelector(selectGasFeeEstimates);
   const primaryCurrency = useSelector(selectPrimaryCurrency);
   const chainId = transaction?.chainId;
   const selectedAsset = useSelector(
-    (state) => state.transaction.selectedAsset,
+    (state: RootState) => state.transaction.selectedAsset,
   );
   const gasEstimateType = useSelector(selectGasFeeControllerEstimateType);
 
@@ -55,13 +70,13 @@ const CustomGasModal = ({
     gas_estimate_type: gasEstimateType,
   });
 
-  const onChangeGas = (gasValue) => {
+  const onChangeGas = (gasValue: string) => {
     setSelectedGas(gasValue);
-    onGasChanged(selectedGas);
+    onGasChanged(selectedGas as string);
   };
 
   const onCancelGas = () => {
-    onGasCanceled(selectedGas);
+    onGasCanceled(selectedGas as string);
   };
 
   const updatedTransactionFrom = useMemo(
@@ -74,7 +89,7 @@ const CustomGasModal = ({
   );
 
   const onSaveLegacyGasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: GasTransaction, gasObj: GasObject) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalHex,
@@ -87,7 +102,7 @@ const CustomGasModal = ({
   );
 
   const onSaveEIP1559GasOption = useCallback(
-    (gasTxn, gasObj) => {
+    (gasTxn: GasTransaction, gasObj: GasObject) => {
       gasTxn.error = validateAmount({
         transaction: updatedTransactionFrom,
         total: gasTxn.totalMaxHex,
@@ -99,7 +114,7 @@ const CustomGasModal = ({
       updateGasState({
         gasTxn,
         gasObj,
-        gasSelect: selectedGas,
+        gasSelect: selectedGas as string,
         txnType: legacy,
       });
     },
@@ -120,10 +135,13 @@ const CustomGasModal = ({
   const eip1559GasObject = {
     suggestedMaxFeePerGas:
       eip1559GasObj?.suggestedMaxFeePerGas ||
-      eip1559GasObj?.[selectedGas]?.suggestedMaxFeePerGas,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (eip1559GasObj as any)?.[selectedGas as string]?.suggestedMaxFeePerGas,
     suggestedMaxPriorityFeePerGas:
       eip1559GasObj?.suggestedMaxPriorityFeePerGas ||
-      gasFeeEstimate[selectedGas]?.suggestedMaxPriorityFeePerGas,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (gasFeeEstimate as any)[selectedGas as string]
+        ?.suggestedMaxPriorityFeePerGas,
     suggestedGasLimit:
       eip1559GasObj?.suggestedGasLimit || eip1559Txn?.suggestedGasLimit,
   };

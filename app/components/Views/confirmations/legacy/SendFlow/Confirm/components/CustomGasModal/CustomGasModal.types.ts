@@ -1,7 +1,7 @@
 export interface CustomGasModalProps {
-  gasSelected: string;
-  onChange: (gas: string) => void;
-  onCancel: () => void;
+  gasSelected: string | null;
+  onChange?: (gas: string) => void;
+  onCancel?: () => void;
   animateOnChange?: boolean;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
