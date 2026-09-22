@@ -1,16 +1,25 @@
-import React, { useRef, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { ComponentType, ReactNode, useRef, useState } from 'react';
 import {
+  StyleProp,
   StyleSheet,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from 'react-native';
 import AndroidMediaPlayer from './AndroidMediaPlayer';
-import Video from 'react-native-video';
+import Video, {
+  ReactVideoSource,
+  SelectedTrack,
+  TextTracks,
+  VideoRef,
+} from 'react-native-video';
 import Device from '../../../util/device';
 import Loader from './Loader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { TapGestureHandler } from 'react-native-gesture-handler';
+import {
+  TapGestureHandler,
+  TapGestureHandlerProperties,
+} from 'react-native-gesture-handler';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -19,9 +28,21 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useStyles } from '../../../component-library/hooks';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { Theme } from '../../../util/theme/models';
 
-const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
+// react-native-gesture-handler v1 types predate React 18 and do not declare
+// `children` on the handler props.
+const TapGestureHandlerContainer = TapGestureHandler as ComponentType<
+  TapGestureHandlerProperties & { children?: ReactNode }
+>;
+
+const styleSheet = ({
+  theme: { colors },
+  vars: { isPlaying },
+}: {
+  theme: Theme;
+  vars: { isPlaying: boolean };
+}) =>
   StyleSheet.create({
     loaderContainer: {
       position: 'absolute',
@@ -56,10 +77,45 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
     },
   });
 
-function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
+interface MediaPlayerProps {
+  /**
+   * Media URI
+   * Can be a number returned by import for bundled files
+   * or a string for remote files (http://...)
+   */
+  uri?: string | number;
+  /**
+   * Custom style object
+   */
+  style?: StyleProp<ViewStyle>;
+  /**
+   * On close callback
+   */
+  onClose?: () => void;
+  /**
+   * Array of remote possible text tracks to display
+   */
+  textTracks?: TextTracks;
+  /**
+   * The selected text track to display by id, language, title, index
+   */
+  selectedTextTrack?: SelectedTrack;
+  /**
+   * On error callback
+   */
+  onError?: () => void;
+}
+
+function MediaPlayer({
+  uri,
+  style,
+  onClose,
+  textTracks,
+  selectedTextTrack,
+}: MediaPlayerProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const videoRef = useRef();
+  const videoRef = useRef<VideoRef>(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const videoControlsOpacity = useSharedValue(0);
@@ -80,7 +136,9 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
 
   // Video source can be either a number returned by import for bundled files
   // or an object of the form { uri: 'http://...' } for remote files
-  const source = Number.isInteger(uri) ? uri : { uri };
+  const source = (
+    Number.isInteger(uri) ? uri : { uri }
+  ) as ReactVideoSource;
 
   const videoControlsStyle = useAnimatedStyle(() => ({
     ...styles.videoControlsStyle,
@@ -132,7 +190,7 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
           {/**
            * Use custom controls for iOS since iOS 17.2+ begins crashing. https://github.com/react-native-video/react-native-video/issues/3329
            */}
-          <TapGestureHandler onEnded={onPressVideoControls}>
+          <TapGestureHandlerContainer onEnded={onPressVideoControls}>
             <Animated.View style={videoControlsStyle}>
               <View style={styles.playButtonCircle}>
                 <Ionicons
@@ -143,7 +201,7 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
                 />
               </View>
             </Animated.View>
-          </TapGestureHandler>
+          </TapGestureHandlerContainer>
           {isPlaying ? (
             <TouchableOpacity
               activeOpacity={1}
@@ -162,31 +220,6 @@ function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
     </View>
   );
 }
-
-MediaPlayer.propTypes = {
-  /**
-   * Media URI
-   * Can be a number returned by import for bundled files
-   * or a string for remote files (http://...)
-   */
-  uri: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  /**
-   * Custom style object
-   */
-  style: ViewPropTypes.style,
-  /**
-   * On close callback
-   */
-  onClose: PropTypes.func,
-  /**
-   * Array of remote possible text tracks to display
-   */
-  textTracks: PropTypes.arrayOf(PropTypes.object),
-  /**
-   * The selected text track to display by id, language, title, index
-   */
-  selectedTextTrack: PropTypes.object,
-};
 
 MediaPlayer.defaultProps = {
   onError: () => null,
