@@ -99,17 +99,18 @@ export default {
         const keychainObject = await Keychain.getGenericPassword(
           defaultOptions,
         );
-        if (keychainObject.password) {
+        // Keychain.getGenericPassword resolves to `false` when no credentials
+        // are stored, and may resolve to `null`/`undefined` on some platforms
+        if (keychainObject && keychainObject.password) {
           const encryptedPassword = keychainObject.password;
           const decrypted = await instance.decryptPassword(encryptedPassword);
           keychainObject.password = decrypted.password;
-          instance.isAuthenticating = false;
           return keychainObject;
         }
-        instance.isAuthenticating = false;
       } catch (error) {
-        instance.isAuthenticating = false;
         throw new Error(error.message);
+      } finally {
+        instance.isAuthenticating = false;
       }
     }
     return null;
