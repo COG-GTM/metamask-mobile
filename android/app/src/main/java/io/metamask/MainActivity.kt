@@ -3,6 +3,7 @@ package io.metamask
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.view.MotionEvent
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.ReactRootView
@@ -18,6 +19,42 @@ class MainActivity : ReactActivity() {
         // This is required for expo-splash-screen.
         setTheme(R.style.AppTheme)
         super.onCreate(null)
+        enableOverlayProtection()
+    }
+
+    /**
+     * Tapjacking / UI redressing protection.
+     *
+     * On Android 12+ the system hides overlay windows drawn by other apps while
+     * this activity is in the foreground. On every version, touches delivered
+     * while the window is (partially) obscured by another app's window are
+     * discarded, so a spoofed overlay cannot get a signing/approval action
+     * confirmed on the user's behalf.
+     *
+     * Disabled in debug builds only, where the React Native dev menu itself is
+     * drawn as an overlay window.
+     */
+    private fun enableOverlayProtection() {
+        if (BuildConfig.DEBUG) {
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            window.setHideOverlayWindows(true)
+        }
+        window.decorView.filterTouchesWhenObscured = true
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (isObscured(event)) {
+            return false
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+    private fun isObscured(event: MotionEvent): Boolean {
+        val obscuredFlags = MotionEvent.FLAG_WINDOW_IS_OBSCURED or
+            MotionEvent.FLAG_WINDOW_IS_PARTIALLY_OBSCURED
+        return !BuildConfig.DEBUG && (event.flags and obscuredFlags) != 0
     }
 
     /**
