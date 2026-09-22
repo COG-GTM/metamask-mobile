@@ -48,6 +48,23 @@ const CHAIN_ID_TO_NETWORK_ID = {
 };
 
 /**
+ * Build the key used to read and write ENS cache entries.
+ *
+ * @param {string} address - The address the ENS name belongs to.
+ * @param {string} chainId - The chain ID the ENS name was resolved on.
+ * @returns {string|undefined} The cache key, or undefined if the chain is not
+ * supported by the legacy ENS library.
+ */
+export function getEnsCacheKey(address, chainId) {
+  const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
+  if (networkId === undefined) {
+    return undefined;
+  }
+
+  return `${networkId}${address}`;
+}
+
+/**
  * Get a cached ENS name.
  *
  * @param {string} address - The address to lookup.
@@ -56,22 +73,20 @@ const CHAIN_ID_TO_NETWORK_ID = {
  * was not found in the cache.
  */
 export function getCachedENSName(address, chainId) {
-  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
-  if (!networkHasEnsSupport) {
+  const cacheKey = getEnsCacheKey(address, chainId);
+  if (!cacheKey) {
     return undefined;
   }
 
-  const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
-  const cacheEntry = ENSCache.cache[networkId + address];
-
-  return cacheEntry?.name;
+  return ENSCache.cache[cacheKey]?.name;
 }
 
 export async function doENSReverseLookup(address, chainId) {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
+  const cacheKey = getEnsCacheKey(address, chainId);
   const { name: cachedName, timestamp } =
-    ENSCache.cache[chainId + address] || {};
+    (cacheKey && ENSCache.cache[cacheKey]) || {};
   const nowTimestamp = Date.now();
   if (timestamp && nowTimestamp - timestamp < CACHE_REFRESH_THRESHOLD) {
     return Promise.resolve(cachedName);
@@ -86,7 +101,7 @@ export async function doENSReverseLookup(address, chainId) {
       const name = await this.ens.reverse(address);
       const resolvedAddress = await this.ens.lookup(name);
       if (toLowerCaseEquals(address, resolvedAddress)) {
-        ENSCache.cache[networkId + address] = { name, timestamp: Date.now() };
+        ENSCache.cache[cacheKey] = { name, timestamp: Date.now() };
         return name;
       }
     } catch (e) {
@@ -94,7 +109,7 @@ export async function doENSReverseLookup(address, chainId) {
         e.message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
         e.message.includes(INVALID_ENS_NAME_ERROR)
       ) {
-        ENSCache.cache[networkId + address] = { timestamp: Date.now() };
+        ENSCache.cache[cacheKey] = { timestamp: Date.now() };
       }
     }
   }
