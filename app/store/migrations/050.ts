@@ -1,6 +1,7 @@
 import DefaultPreference from 'react-native-default-preference';
 import { captureException } from '@sentry/react-native';
 import StorageWrapper from '../storage-wrapper';
+import { invalidateMetricsOptInCache } from '../../util/Logger';
 
 /**
  * The goal of this migration is set all the data that was on DefaultPreference to MMKV
@@ -25,6 +26,8 @@ export default async function migrate(state: unknown) {
       );
     }
   }
+
+  invalidateMetricsOptInCache();
 
   return state;
 }

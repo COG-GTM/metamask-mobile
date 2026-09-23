@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { captureException } from '@sentry/react-native';
 import { MMKV } from 'react-native-mmkv';
+import { invalidateMetricsOptInCache } from '../../util/Logger';
 
 export const storage = new MMKV();
 
@@ -22,6 +23,8 @@ export default async function migrate(state: unknown) {
       );
     }
   }
+
+  invalidateMetricsOptInCache();
 
   return state;
 }

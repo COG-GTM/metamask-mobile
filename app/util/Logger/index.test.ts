@@ -1,6 +1,6 @@
-import Logger from '.';
+import Logger, { invalidateMetricsOptInCache } from '.';
 import { captureException, withScope } from '@sentry/react-native';
-import { AGREED, METRICS_OPT_IN } from '../../constants/storage';
+import { AGREED, DENIED, METRICS_OPT_IN } from '../../constants/storage';
 import StorageWrapper from '../../store/storage-wrapper';
 
 jest.mock('@sentry/react-native', () => ({
@@ -13,6 +13,7 @@ const mockedWithScope = jest.mocked(withScope);
 
 describe('Logger', () => {
   beforeEach(() => {
+    invalidateMetricsOptInCache();
     StorageWrapper.getItem = jest.fn((key: string) => {
       switch (key) {
         case METRICS_OPT_IN:
@@ -45,6 +46,7 @@ describe('Logger', () => {
             return Promise.resolve('');
         }
       });
+      invalidateMetricsOptInCache();
       const testError = new Error('testError');
       await Logger.error(testError);
       expect(mockedCaptureException).not.toBeCalled();
@@ -68,6 +70,36 @@ describe('Logger', () => {
       const testError = 'testError' as any;
       await Logger.error(testError);
       expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
+    });
+  });
+
+  describe('metrics opt-in cache', () => {
+    it('reads the opt-in preference from storage only once', async () => {
+      await Logger.error(new Error('testError'));
+      await Logger.error(new Error('testError'));
+      await Logger.log('message');
+
+      expect(StorageWrapper.getItem).toHaveBeenCalledTimes(1);
+      expect(StorageWrapper.getItem).toHaveBeenCalledWith(METRICS_OPT_IN);
+    });
+
+    it('re-reads the opt-in preference after the cache is invalidated', async () => {
+      await Logger.error(new Error('testError'));
+      invalidateMetricsOptInCache();
+      await Logger.error(new Error('testError'));
+
+      expect(StorageWrapper.getItem).toHaveBeenCalledTimes(2);
+    });
+
+    it('stops reporting once the preference changes to opted out', async () => {
+      await Logger.error(new Error('testError'));
+      expect(mockedCaptureException).toHaveBeenCalledTimes(1);
+
+      StorageWrapper.getItem = jest.fn(() => Promise.resolve(DENIED));
+      invalidateMetricsOptInCache();
+      await Logger.error(new Error('testError'));
+
+      expect(mockedCaptureException).toHaveBeenCalledTimes(1);
     });
   });
 });

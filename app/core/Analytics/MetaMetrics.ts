@@ -6,7 +6,7 @@ import {
 } from '@segment/analytics-react-native';
 import axios, { AxiosHeaderValue } from 'axios';
 import StorageWrapper from '../../store/storage-wrapper';
-import Logger from '../../util/Logger';
+import Logger, { invalidateMetricsOptInCache } from '../../util/Logger';
 import {
   AGREED,
   ANALYTICS_DATA_DELETION_DATE,
@@ -375,6 +375,7 @@ class MetaMetrics implements IMetaMetrics {
   #storeMetricsOptInPreference = async (enabled: boolean) => {
     try {
       await StorageWrapper.setItem(METRICS_OPT_IN, enabled ? AGREED : DENIED);
+      invalidateMetricsOptInCache();
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
