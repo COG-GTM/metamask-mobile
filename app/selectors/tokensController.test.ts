@@ -99,6 +99,28 @@ describe('TokensController Selectors', () => {
       jest.spyOn(networks, 'isPortfolioViewEnabled').mockReturnValue(true);
       expect(selectTokens(mockRootState)).toStrictEqual([mockToken]);
     });
+
+    it('returns the same reference when only other accounts or chains change', () => {
+      const first = selectTokens(mockRootState);
+      const stateWithOtherChainTokens = {
+        ...mockRootState,
+        engine: {
+          backgroundState: {
+            ...mockRootState.engine.backgroundState,
+            TokensController: {
+              ...mockTokensControllerState,
+              allTokens: {
+                ...mockTokensControllerState.allTokens,
+                '0x2': { '0xAddress2': [mockToken2] },
+              },
+              allDetectedTokens: {},
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      expect(selectTokens(stateWithOtherChainTokens)).toBe(first);
+    });
   });
 
   describe('selectTokensByAddress', () => {
@@ -320,14 +342,35 @@ describe('TokensController Selectors', () => {
   });
 
   describe('selectTokensByChainIdAndAddress', () => {
+    it('returns tokens for the selected chain ID and address', () => {
+      expect(selectTokensByChainIdAndAddress(mockRootState)).toStrictEqual([
+        mockToken,
+      ]);
+    });
+
     it('returns undefined if no tokens exist for chain ID and address', () => {
-      const tokensByChainAndAddress =
-        selectTokensByChainIdAndAddress.resultFunc(
-          mockTokensControllerState as unknown as TokensControllerState,
-          '0x1',
-          '0xNonExistentAddress',
-        );
-      expect(tokensByChainAndAddress).toBeUndefined();
+      const stateWithOtherAccount = {
+        ...mockRootState,
+        engine: {
+          backgroundState: {
+            TokensController: mockTokensControllerState,
+            AccountsController: {
+              internalAccounts: {
+                selectedAccount: '0xNonExistentAddress',
+                accounts: {
+                  '0xNonExistentAddress': {
+                    address: '0xNonExistentAddress',
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      expect(
+        selectTokensByChainIdAndAddress(stateWithOtherAccount),
+      ).toBeUndefined();
     });
   });
 
