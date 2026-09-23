@@ -3,7 +3,9 @@ import { Text } from 'react-native';
 import { waitFor } from '@testing-library/react-native';
 import renderWithProvider from '../../../../../util/test/renderWithProvider';
 import { getSafeChainsList } from '../../../../../util/networks/safeChainsList';
-import withIsOriginalNativeToken from './withIsOriginalNativeToken';
+import withIsOriginalNativeToken, {
+  WithIsOriginalNativeTokenProps,
+} from './withIsOriginalNativeToken';
 
 jest.mock('../../../../../util/networks/safeChainsList', () => ({
   getSafeChainsList: jest.fn(),
@@ -11,13 +13,16 @@ jest.mock('../../../../../util/networks/safeChainsList', () => ({
 
 const mockGetSafeChainsList = getSafeChainsList as jest.Mock;
 
-const safeChainsList = [{ chainId: 1, name: 'Ethereum Mainnet' }];
+const safeChainsList = [
+  {
+    chainId: 1,
+    name: 'Ethereum Mainnet',
+    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+    rpc: ['https://mainnet.infura.io/v3/'],
+  },
+];
 
-interface WrappedProps {
-  matchedChainNetwork?: { safeChainsList: unknown[] } | null;
-}
-
-const Wrapped = ({ matchedChainNetwork }: WrappedProps) => (
+const Wrapped = ({ matchedChainNetwork }: WithIsOriginalNativeTokenProps) => (
   <Text testID="matched">
     {matchedChainNetwork
       ? String(matchedChainNetwork.safeChainsList.length)

@@ -1,13 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { ComponentType, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectUseSafeChainsListValidation } from '../../../../../selectors/preferencesController';
-import { getSafeChainsList } from '../../../../../util/networks/safeChainsList';
+import {
+  SafeChainsListEntry,
+  getSafeChainsList,
+} from '../../../../../util/networks/safeChainsList';
 
-const withIsOriginalNativeToken = (WrappedComponent) => {
+export interface MatchedChainNetwork {
+  safeChainsList: SafeChainsListEntry[];
+}
+
+export interface WithIsOriginalNativeTokenProps {
+  matchedChainNetwork: MatchedChainNetwork | null;
+}
+
+const withIsOriginalNativeToken = <P extends object>(
+  WrappedComponent: ComponentType<P & WithIsOriginalNativeTokenProps>,
+) => {
   // This is the functional component wrapper that can use hooks
-  const WithIsOriginalNativeTokenWrapper = (props) => {
-    // Use the useSelector hook to access Redux state
-    const [matchedChainNetwork, setMatchedChainNetwork] = useState(null);
+  const WithIsOriginalNativeTokenWrapper = (props: P) => {
+    const [matchedChainNetwork, setMatchedChainNetwork] =
+      useState<MatchedChainNetwork | null>(null);
     const useSafeChainsListValidation = useSelector(
       selectUseSafeChainsListValidation,
     );
@@ -38,7 +51,6 @@ const withIsOriginalNativeToken = (WrappedComponent) => {
       };
     }, [useSafeChainsListValidation]);
 
-    // Pass the value from useSelector as a prop to the WrappedComponent
     return (
       <WrappedComponent {...props} matchedChainNetwork={matchedChainNetwork} />
     );

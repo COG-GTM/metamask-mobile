@@ -18,7 +18,7 @@ export interface SafeChainsListEntry {
 
 let cachedList: {
   fetchedAt: number;
-  request: Promise<SafeChainsListEntry[]>;
+  request: Promise<unknown[]>;
 } | null = null;
 
 /**
@@ -26,16 +26,16 @@ let cachedList: {
  * resolved request so repeated callers do not re-download the multi-megabyte
  * payload. Failed requests are not cached.
  */
-export const getSafeChainsList = (): Promise<SafeChainsListEntry[]> => {
+export const getSafeChainsList = <T = SafeChainsListEntry>(): Promise<T[]> => {
   if (
     cachedList &&
     Date.now() - cachedList.fetchedAt < SAFE_CHAINS_LIST_TTL_MS
   ) {
-    return cachedList.request;
+    return cachedList.request as Promise<T[]>;
   }
 
   const request = axios
-    .get<SafeChainsListEntry[]>(CHAIN_ID_NETWORK_URL, {
+    .get<T[]>(CHAIN_ID_NETWORK_URL, {
       timeout: SAFE_CHAINS_LIST_TIMEOUT_MS,
     })
     .then(({ data }) => data)
