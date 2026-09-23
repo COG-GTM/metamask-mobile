@@ -56,6 +56,8 @@ import { NATIVE_ADDRESS } from '../../../../../constants/on-ramp';
 import { safeToChecksumAddress } from '../../../../../util/address';
 import { generateTransferData } from '../../../../../util/transactions';
 import useAnalytics from '../../hooks/useAnalytics';
+import trackErrorAsAnalytics from '../../../../../util/metrics/TrackError/trackErrorAsAnalytics';
+import Logger from '../../../../../util/Logger';
 import { toHex } from '@metamask/controller-utils';
 import { RAMPS_SEND } from '../../constants';
 import { selectNetworkClientId } from '../../../../../selectors/networkController';
@@ -126,7 +128,23 @@ function SendTransaction() {
     let chainIdAsHex: `0x${string}`;
     try {
       chainIdAsHex = toHex(orderData.cryptoCurrency.network.chainId);
-    } catch {
+    } catch (error) {
+      Logger.error(
+        error as Error,
+        'Ramps: Failed to convert order chainId to hex',
+      );
+      trackErrorAsAnalytics(
+        'OFFRAMP_SEND_TRANSACTION_REJECTED',
+        (error as Error)?.message ?? 'Invalid chainId',
+        `chain_id_source: ${orderData?.cryptoCurrency?.network?.chainId}`,
+      );
+      trackEvent(
+        'OFFRAMP_SEND_TRANSACTION_REJECTED',
+        //@ts-expect-error - TODO: Ramps team needs to resolve discrepancy between
+        // transactionAnalyticsPayload expecting chain_id_source to be a string
+        // but RampTransaction type / interface expecting it to be a number
+        transactionAnalyticsPayload,
+      );
       return;
     }
 
