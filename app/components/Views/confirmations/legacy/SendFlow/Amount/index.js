@@ -517,6 +517,7 @@ class Amount extends PureComponent {
   amountInput = React.createRef();
   tokens = [];
   collectibles = [];
+  assetsModalList = [];
 
   updateNavBar = () => {
     const { navigation, route, resetTransaction } = this.props;
@@ -550,6 +551,10 @@ class Amount extends PureComponent {
 
     this.tokens = [getEther(ticker), ...tokens];
     this.collectibles = this.processCollectibles();
+    this.assetsModalList = [
+      ...this.tokens,
+      ...this.collectibles.filter(({ standard }) => standard === 'ERC721'),
+    ];
     // Wait until navigation finishes to focus
     InteractionManager.runAfterInteractions(() =>
       this.amountInput?.current?.focus?.(),
@@ -1191,9 +1196,6 @@ class Amount extends PureComponent {
 
   renderAssetsModal = () => {
     const { assetsModalVisible } = this.state;
-    const tradableCollectibles = this.collectibles.filter(
-      ({ standard }) => standard === 'ERC721',
-    );
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -1214,7 +1216,7 @@ class Amount extends PureComponent {
             <View style={styles.dragger} />
           </View>
           <FlatList
-            data={[...this.tokens, ...tradableCollectibles]}
+            data={this.assetsModalList}
             keyExtractor={this.assetKeyExtractor}
             renderItem={this.renderAsset}
           />
