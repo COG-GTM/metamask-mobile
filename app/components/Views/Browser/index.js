@@ -182,7 +182,7 @@ export const Browser = (props) => {
             newIdleTimes[tab.id] =
               (newIdleTimes[tab.id] || 0) + IDLE_TIME_CALC_INTERVAL;
             // if the tab has surpassed the maximum
-            if (newIdleTimes[tab.id] > IDLE_TIME_MAX) {
+            if (newIdleTimes[tab.id] > IDLE_TIME_MAX && !tab.isArchived) {
               // then "archive" it
               updateTab(tab.id, {
                 isArchived: true,
@@ -192,9 +192,11 @@ export const Browser = (props) => {
             // set any active tab as NOT "archived"
             // this can mean "unarchiving" a tab so that, for example,
             // the actual browser tab window is mounted again
-            updateTab(tab.id, {
-              isArchived: false,
-            });
+            if (tab.isArchived) {
+              updateTab(tab.id, {
+                isArchived: false,
+              });
+            }
             // also set new tab idle time back to zero
             newIdleTimes[tab.id] = 0;
           }
