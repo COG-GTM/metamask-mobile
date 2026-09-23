@@ -88,6 +88,25 @@ const UrlAutocomplete = forwardRef<
     }
   }, [currentCurrency]);
 
+  const fuseResultsByCategory = useMemo(() => {
+    const byCategory = new Map<UrlAutocompleteCategory, FuseSearchResult[]>();
+    const seen = new Set<string>();
+    for (const result of fuseResults) {
+      const key = `${result.category}-${result.url}`;
+      if (seen.has(key)) {
+        continue;
+      }
+      seen.add(key);
+      const data = byCategory.get(result.category);
+      if (data) {
+        data.push(result);
+      } else {
+        byCategory.set(result.category, [result]);
+      }
+    }
+    return byCategory;
+  }, [fuseResults]);
+
   const resultsByCategory: ResultsWithCategory[] = useMemo(() => (
     ORDERED_CATEGORIES.flatMap((category) => {
       if (category === UrlAutocompleteCategory.Tokens) {
@@ -100,10 +119,7 @@ const UrlAutocomplete = forwardRef<
         };
       }
 
-      let data = fuseResults.filter((result, index, self) =>
-        result.category === category &&
-        index === self.findIndex(r => r.url === result.url && r.category === result.category)
-      );
+      let data: AutocompleteSearchResult[] = fuseResultsByCategory.get(category) ?? [];
       if (data.length === 0) {
         return [];
       }
@@ -115,7 +131,7 @@ const UrlAutocomplete = forwardRef<
         data,
       };
     })
-  ), [fuseResults, tokenResults, isTokenSearchLoading]);
+  ), [fuseResultsByCategory, tokenResults, isTokenSearchLoading]);
 
   const browserHistory = useSelector(selectBrowserHistoryWithType);
   const bookmarks = useSelector(selectBrowserBookmarksWithType);
