@@ -1317,6 +1317,53 @@ describe('Transactions utils :: isSmartContractAddress', () => {
     expect(querySpy).toHaveBeenCalledTimes(2);
   });
 
+  it('re-queries an address without code once the negative cache expires', async () => {
+    const querySpy = spyOnQueryMethod('0x');
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(false);
+
+    nowSpy.mockReturnValue(60000);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(false);
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+
+    nowSpy.mockRestore();
+  });
+
+  it('keeps contract results cached indefinitely', async () => {
+    const querySpy = spyOnQueryMethod('0x1234');
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(true);
+
+    nowSpy.mockReturnValue(60000);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(true);
+
+    expect(querySpy).toHaveBeenCalledTimes(1);
+
+    nowSpy.mockRestore();
+  });
+
+  it('caches per network client id', async () => {
+    const querySpy = spyOnQueryMethod('0x1234');
+
+    await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID, 'mainnet');
+    await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID, 'other');
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+  });
+
   it('resolves false without querying when no address is given', async () => {
     const querySpy = spyOnQueryMethod('0x1234');
 

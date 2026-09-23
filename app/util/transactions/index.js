@@ -113,11 +113,17 @@ class CollectibleAddresses {
 
 /**
  * Utility class with the single responsibility
- * of caching smart contract lookups by `chainId:address`
+ * of caching smart contract lookups by `chainId:networkClientId:address`
  */
 class SmartContractAddresses {
   static cache = {};
 }
+
+/**
+ * How long a negative (not a contract) lookup stays cached, since an address
+ * without code today can hold a deployed contract later
+ */
+const NON_CONTRACT_CACHE_TTL_MS = 30000;
 
 /**
  * Clears the cached smart contract lookups
@@ -388,7 +394,7 @@ export async function getMethodData(data, networkClientId) {
  * @param {string | undefined} networkClientId - ID of the network client
  * @returns {Promise<boolean>} - Whether the given address is a contract
  *
- * Results are cached per `chainId:address` since contract-ness is immutable.
+ * Positive results are cached for the session, negative ones only briefly.
  */
 export async function isSmartContractAddress(
   address,
@@ -408,24 +414,32 @@ export async function isSmartContractAddress(
     return true;
   }
 
-  const cacheKey = `${chainId}:${checksummedAddress}`;
+  const cacheKey = `${chainId}:${networkClientId ?? ''}:${checksummedAddress}`;
   const cached = SmartContractAddresses.cache[cacheKey];
-  if (cached) {
-    return cached;
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.request;
   }
 
-  const request = queryIsSmartContractAddress(
+  const entry = { expiresAt: Infinity };
+  entry.request = queryIsSmartContractAddress(
     checksummedAddress,
     chainId,
     networkClientId,
-  ).catch((error) => {
-    delete SmartContractAddresses.cache[cacheKey];
-    throw error;
-  });
+  )
+    .then((isSmartContract) => {
+      entry.expiresAt = isSmartContract
+        ? Infinity
+        : Date.now() + NON_CONTRACT_CACHE_TTL_MS;
+      return isSmartContract;
+    })
+    .catch((error) => {
+      delete SmartContractAddresses.cache[cacheKey];
+      throw error;
+    });
 
-  SmartContractAddresses.cache[cacheKey] = request;
+  SmartContractAddresses.cache[cacheKey] = entry;
 
-  return request;
+  return entry.request;
 }
 
 async function queryIsSmartContractAddress(address, chainId, networkClientId) {
