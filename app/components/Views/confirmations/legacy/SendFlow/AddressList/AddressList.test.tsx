@@ -1,4 +1,5 @@
 import React from 'react';
+import { act } from '@testing-library/react-native';
 import renderWithProvider from '../../../../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import AddressList from '.';
@@ -9,6 +10,14 @@ const MOCK_ADDRESS = '0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272';
 const MOCK_ACCOUNTS_CONTROLLER_STATE = createMockAccountsControllerState([
   MOCK_ADDRESS,
 ]);
+
+const mockIsSmartContractAddress = jest.fn().mockResolvedValue(false);
+
+jest.mock('../../../../../../util/transactions', () => ({
+  ...jest.requireActual('../../../../../../util/transactions'),
+  isSmartContractAddress: (...args: unknown[]) =>
+    mockIsSmartContractAddress(...args),
+}));
 
 jest.mock('../../../../../../core/Engine', () => {
   const { MOCK_ACCOUNTS_CONTROLLER_STATE: mockAccountsControllerState } =
@@ -66,8 +75,42 @@ const renderComponent = (state: any) =>
   );
 
 describe('AddressList', () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should render correctly', () => {
     const { toJSON } = renderComponent(initialState);
     expect(toJSON()).toMatchSnapshot();
+  });
+
+  it('only looks up contract addresses once the search input settles', async () => {
+    jest.useFakeTimers();
+
+    const { rerender } = renderComponent(initialState);
+    mockIsSmartContractAddress.mockClear();
+
+    ['a', 'aa', 'aaa'].forEach((inputSearch) => {
+      rerender(
+        <AddressList
+          onIconPress={() => null}
+          onAccountLongPress={() => null}
+          onAccountPress={() => null}
+          chainId="0x1"
+          inputSearch={inputSearch}
+          reloadAddressList={false}
+        />,
+      );
+    });
+
+    expect(mockIsSmartContractAddress).not.toHaveBeenCalled();
+
+    await act(async () => {
+      jest.runOnlyPendingTimers();
+    });
+
+    expect(mockIsSmartContractAddress).toHaveBeenCalledTimes(1);
+
+    jest.useRealTimers();
   });
 });

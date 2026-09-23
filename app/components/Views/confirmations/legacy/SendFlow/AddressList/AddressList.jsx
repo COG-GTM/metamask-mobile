@@ -16,6 +16,9 @@ import { selectInternalAccounts } from '../../../../../../selectors/accountsCont
 import styleSheet from './AddressList.styles';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectAddressBook } from '../../../../../../selectors/addressBookController';
+import { useDebouncedValue } from '../../../../../hooks/useDebouncedValue';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 const LabelElement = (styles, label) => (
   <View key={label} style={styles.labelElementWrapper}>
@@ -36,6 +39,10 @@ const AddressList = ({
 }) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
+  const debouncedInputSearch = useDebouncedValue(
+    inputSearch,
+    SEARCH_DEBOUNCE_MS,
+  );
   const [contactElements, setContactElements] = useState([]);
   const [fuse, setFuse] = useState(undefined);
   const internalAccounts = useSelector(selectInternalAccounts);
@@ -127,20 +134,20 @@ const AddressList = ({
   }, [networkAddressBook, parseAddressBook]);
 
   const getNetworkAddressBookList = useCallback(() => {
-    if (inputSearch && fuse) {
-      return fuse.search(inputSearch);
+    if (debouncedInputSearch && fuse) {
+      return fuse.search(debouncedInputSearch);
     }
 
     return Object.keys(networkAddressBook).map(
       (address) => networkAddressBook[address],
     );
-  }, [fuse, inputSearch, networkAddressBook]);
+  }, [fuse, debouncedInputSearch, networkAddressBook]);
 
   useEffect(() => {
     const networkAddressBookList = getNetworkAddressBookList();
     parseAddressBook(networkAddressBookList);
   }, [
-    inputSearch,
+    debouncedInputSearch,
     addressBook,
     chainId,
     reloadAddressList,

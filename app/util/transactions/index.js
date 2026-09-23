@@ -112,6 +112,21 @@ class CollectibleAddresses {
 }
 
 /**
+ * Utility class with the single responsibility
+ * of caching smart contract lookups by `chainId:address`
+ */
+class SmartContractAddresses {
+  static cache = {};
+}
+
+/**
+ * Clears the cached smart contract lookups
+ */
+export function clearSmartContractAddressCache() {
+  SmartContractAddresses.cache = {};
+}
+
+/**
  * Object containing all known action keys, to be used in transaction review
  */
 const reviewActionKeys = {
@@ -372,6 +387,8 @@ export async function getMethodData(data, networkClientId) {
  * @param {string} chainId - Current chainId
  * @param {string | undefined} networkClientId - ID of the network client
  * @returns {Promise<boolean>} - Whether the given address is a contract
+ *
+ * Results are cached per `chainId:address` since contract-ness is immutable.
  */
 export async function isSmartContractAddress(
   address,
@@ -380,17 +397,38 @@ export async function isSmartContractAddress(
 ) {
   if (!address) return false;
 
-  address = toChecksumAddress(address);
+  const checksummedAddress = toChecksumAddress(address);
 
   // If in contract map we don't need to cache it
   if (
     isMainnetByChainId(chainId) &&
     Engine.context.TokenListController.state.tokensChainsCache?.[chainId]
-      ?.data?.[address]
+      ?.data?.[checksummedAddress]
   ) {
-    return Promise.resolve(true);
+    return true;
   }
 
+  const cacheKey = `${chainId}:${checksummedAddress}`;
+  const cached = SmartContractAddresses.cache[cacheKey];
+  if (cached) {
+    return cached;
+  }
+
+  const request = queryIsSmartContractAddress(
+    checksummedAddress,
+    chainId,
+    networkClientId,
+  ).catch((error) => {
+    delete SmartContractAddresses.cache[cacheKey];
+    throw error;
+  });
+
+  SmartContractAddresses.cache[cacheKey] = request;
+
+  return request;
+}
+
+async function queryIsSmartContractAddress(address, chainId, networkClientId) {
   const { NetworkController } = Engine.context;
   const finalNetworkClientId =
     networkClientId ?? NetworkController.findNetworkClientIdByChainId(chainId);
@@ -398,9 +436,7 @@ export async function isSmartContractAddress(
     NetworkController.getNetworkClientById(finalNetworkClientId).provider,
   );
 
-  const code = address
-    ? await query(ethQuery, 'getCode', [address])
-    : undefined;
+  const code = await query(ethQuery, 'getCode', [address]);
 
   return isSmartContractCode(code);
 }
