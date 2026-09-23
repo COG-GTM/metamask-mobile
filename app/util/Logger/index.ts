@@ -12,6 +12,38 @@ interface ExtraInfo {
 }
 
 /**
+ * In-memory cache of the metrics opt-in preference.
+ *
+ * The preference only changes when the user toggles it, so it is read from
+ * storage at most once per session instead of on every log call.
+ */
+let metricsOptInPromise: Promise<string | null> | undefined;
+
+const getMetricsOptIn = (): Promise<string | null> => {
+  if (!metricsOptInPromise) {
+    const pending = StorageWrapper.getItem(METRICS_OPT_IN);
+    // A failed read must not be cached for the rest of the session
+    pending.catch(() => {
+      if (metricsOptInPromise === pending) {
+        metricsOptInPromise = undefined;
+      }
+    });
+    metricsOptInPromise = pending;
+  }
+  return metricsOptInPromise;
+};
+
+/**
+ * Drop the cached metrics opt-in preference.
+ *
+ * Must be called whenever the preference is written to storage so the next log
+ * call picks up the new value.
+ */
+export const invalidateMetricsOptInCache = (): void => {
+  metricsOptInPromise = undefined;
+};
+
+/**
  * Wrapper class that allows us to override
  * console.log and console.error and in the future
  * we will have flags to do different actions based on
@@ -39,7 +71,7 @@ export class AsyncLogger {
     }
 
     // Check if user passed accepted opt-in to metrics
-    const metricsOptIn = await StorageWrapper.getItem(METRICS_OPT_IN);
+    const metricsOptIn = await getMetricsOptIn();
     if (metricsOptIn === AGREED) {
       addBreadcrumb({
         message: JSON.stringify(args),
@@ -70,7 +102,7 @@ export class AsyncLogger {
     }
 
     // Check if user passed accepted opt-in to metrics
-    const metricsOptIn = await StorageWrapper.getItem(METRICS_OPT_IN);
+    const metricsOptIn = await getMetricsOptIn();
     if (metricsOptIn === AGREED) {
       let exception = error;
 
