@@ -8,6 +8,10 @@ const asyncStorageItems: { [key: string]: string } = {
 };
 
 describe('Migration #49', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('migrates asyncStorage values to mmkv ', async () => {
     // set asyncStorageItems to AsyncStorage
     for (const key in asyncStorageItems) {
@@ -27,5 +31,55 @@ describe('Migration #49', () => {
     for (const key in asyncStorageItems) {
       expect(mmkvStorage.getString(key)).toEqual(asyncStorageItems[key]);
     }
+  });
+
+  it('falls back to per-key reads when multiGet rejects', async () => {
+    await AsyncStorage.setItem('batchFailA', 'a');
+    await AsyncStorage.setItem('batchFailB', 'b');
+    jest
+      .spyOn(AsyncStorage, 'multiGet')
+      .mockRejectedValueOnce(new Error('multiGet failed'));
+
+    await expect(migrate({})).resolves.toEqual({});
+
+    expect(mmkvStorage.getString('batchFailA')).toEqual('a');
+    expect(mmkvStorage.getString('batchFailB')).toEqual('b');
+    expect(await AsyncStorage.getAllKeys()).toEqual([]);
+  });
+
+  it('keeps a key in AsyncStorage when its fallback read fails', async () => {
+    await AsyncStorage.setItem('unreadable', 'keepMe');
+    await AsyncStorage.setItem('readable', 'copyMe');
+    jest
+      .spyOn(AsyncStorage, 'multiGet')
+      .mockRejectedValueOnce(new Error('multiGet failed'));
+    const getItem = jest.spyOn(AsyncStorage, 'getItem');
+    getItem.mockImplementation(async (key) => {
+      if (key === 'unreadable') {
+        throw new Error('getItem failed');
+      }
+      return 'copyMe';
+    });
+
+    await expect(migrate({})).resolves.toEqual({});
+
+    expect(mmkvStorage.getString('readable')).toEqual('copyMe');
+    expect(mmkvStorage.getString('unreadable')).toBeUndefined();
+
+    getItem.mockRestore();
+    expect(await AsyncStorage.getAllKeys()).toEqual(['unreadable']);
+    await AsyncStorage.removeItem('unreadable');
+  });
+
+  it('falls back to per-key removes when multiRemove rejects', async () => {
+    await AsyncStorage.setItem('removeFail', 'x');
+    jest
+      .spyOn(AsyncStorage, 'multiRemove')
+      .mockRejectedValueOnce(new Error('multiRemove failed'));
+
+    await expect(migrate({})).resolves.toEqual({});
+
+    expect(mmkvStorage.getString('removeFail')).toEqual('x');
+    expect(await AsyncStorage.getAllKeys()).toEqual([]);
   });
 });
