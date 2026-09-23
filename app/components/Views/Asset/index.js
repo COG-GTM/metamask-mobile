@@ -298,9 +298,18 @@ class Asset extends PureComponent {
         this.props.selectedInternalAccount?.address
     ) {
       this.showLoaderAndNormalize();
-    } else {
+    } else if (this.shouldNormalizeTransactions(prevProps)) {
       this.normalizeTransactions();
     }
+  }
+
+  shouldNormalizeTransactions(prevProps) {
+    return (
+      prevProps.transactions !== this.props.transactions ||
+      prevProps.tokens !== this.props.tokens ||
+      prevProps.swapsTransactions !== this.props.swapsTransactions ||
+      prevProps.selectedInternalAccount !== this.props.selectedInternalAccount
+    );
   }
 
   showLoaderAndNormalize() {
@@ -395,10 +404,12 @@ class Asset extends PureComponent {
 
     const { chainId, transactions } = this.props;
     if (transactions.length) {
-      const sortedTransactions = sortTransactions(transactions).filter(
-        (tx, index, self) =>
-          self.findIndex((_tx) => _tx.id === tx.id) === index,
-      );
+      const seenTransactionIds = new Set();
+      const sortedTransactions = sortTransactions(transactions).filter((tx) => {
+        if (seenTransactionIds.has(tx.id)) return false;
+        seenTransactionIds.add(tx.id);
+        return true;
+      });
       const filteredTransactions = sortedTransactions.filter((tx) => {
         const filterResult = this.filter(tx);
         if (filterResult) {
