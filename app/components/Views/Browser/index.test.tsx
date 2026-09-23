@@ -235,4 +235,85 @@ describe('Browser', () => {
 
     expect(mockUpdateTab).toHaveBeenCalledWith(2, { isArchived: true });
   });
+
+  it('should not update the active tab while it is already unarchived', async () => {
+    const idleTabs = [
+      { id: 1, url: 'about:blank', image: '', isArchived: false },
+      { id: 2, url: 'about:blank', image: '', isArchived: true },
+    ];
+
+    jest.useFakeTimers();
+    const mockUpdateTab = jest.fn();
+
+    renderWithProvider(
+      <Provider store={mockStore(mockInitialState)}>
+        <NavigationContainer independent>
+          <Stack.Navigator>
+            <Stack.Screen name="Browser">
+              {() => (
+                <Browser
+                  route={{ params: {} }}
+                  tabs={idleTabs}
+                  activeTab={1}
+                  navigation={mockNavigation}
+                  createNewTab={jest.fn}
+                  closeAllTabs={jest.fn}
+                  closeTab={jest.fn}
+                  setActiveTab={jest.fn}
+                  updateTab={mockUpdateTab}
+                />
+              )}
+            </Stack.Screen>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </Provider>,
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000 * 60 * 5);
+    });
+
+    expect(mockUpdateTab).not.toHaveBeenCalledWith(1, expect.anything());
+    expect(mockUpdateTab).not.toHaveBeenCalledWith(2, { isArchived: true });
+  });
+
+  it('should unarchive the active tab when it is archived', async () => {
+    const idleTabs = [
+      { id: 1, url: 'about:blank', image: '', isArchived: true },
+      { id: 2, url: 'about:blank', image: '', isArchived: false },
+    ];
+
+    jest.useFakeTimers();
+    const mockUpdateTab = jest.fn();
+
+    renderWithProvider(
+      <Provider store={mockStore(mockInitialState)}>
+        <NavigationContainer independent>
+          <Stack.Navigator>
+            <Stack.Screen name="Browser">
+              {() => (
+                <Browser
+                  route={{ params: {} }}
+                  tabs={idleTabs}
+                  activeTab={1}
+                  navigation={mockNavigation}
+                  createNewTab={jest.fn}
+                  closeAllTabs={jest.fn}
+                  closeTab={jest.fn}
+                  setActiveTab={jest.fn}
+                  updateTab={mockUpdateTab}
+                />
+              )}
+            </Stack.Screen>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </Provider>,
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000 * 60 * 5);
+    });
+
+    expect(mockUpdateTab).toHaveBeenCalledWith(1, { isArchived: false });
+  });
 });
