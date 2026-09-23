@@ -517,6 +517,8 @@ class Amount extends PureComponent {
   amountInput = React.createRef();
   tokens = [];
   collectibles = [];
+  assetsModalList = [];
+  assetsModalExtraData = null;
 
   updateNavBar = () => {
     const { navigation, route, resetTransaction } = this.props;
@@ -550,6 +552,10 @@ class Amount extends PureComponent {
 
     this.tokens = [getEther(ticker), ...tokens];
     this.collectibles = this.processCollectibles();
+    this.assetsModalList = [
+      ...this.tokens,
+      ...this.collectibles.filter(({ standard }) => standard === 'ERC721'),
+    ];
     // Wait until navigation finishes to focus
     InteractionManager.runAfterInteractions(() =>
       this.amountInput?.current?.focus?.(),
@@ -1189,11 +1195,37 @@ class Amount extends PureComponent {
     return collectibles;
   };
 
+  /**
+   * Cached identity of every dynamic value read by renderToken, so the asset
+   * list rows re-render when balances, rates or the theme change.
+   */
+  getAssetsModalExtraData = (colors) => {
+    const {
+      accounts,
+      selectedAddress,
+      conversionRate,
+      currentCurrency,
+      contractBalances,
+      contractExchangeRates,
+    } = this.props;
+    const next = [
+      accounts,
+      selectedAddress,
+      conversionRate,
+      currentCurrency,
+      contractBalances,
+      contractExchangeRates,
+      colors,
+    ];
+    const previous = this.assetsModalExtraData;
+    if (!previous || next.some((value, index) => value !== previous[index])) {
+      this.assetsModalExtraData = next;
+    }
+    return this.assetsModalExtraData;
+  };
+
   renderAssetsModal = () => {
     const { assetsModalVisible } = this.state;
-    const tradableCollectibles = this.collectibles.filter(
-      ({ standard }) => standard === 'ERC721',
-    );
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
@@ -1214,7 +1246,8 @@ class Amount extends PureComponent {
             <View style={styles.dragger} />
           </View>
           <FlatList
-            data={[...this.tokens, ...tradableCollectibles]}
+            data={this.assetsModalList}
+            extraData={this.getAssetsModalExtraData(colors)}
             keyExtractor={this.assetKeyExtractor}
             renderItem={this.renderAsset}
           />
