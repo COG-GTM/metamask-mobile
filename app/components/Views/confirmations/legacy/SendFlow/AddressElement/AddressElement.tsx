@@ -111,4 +111,4 @@ const AddressElement: React.FC<AddressElementProps> = ({
   );
 };
 
-export default AddressElement;
+export default React.memo(AddressElement);
