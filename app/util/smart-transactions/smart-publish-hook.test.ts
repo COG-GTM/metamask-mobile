@@ -405,6 +405,7 @@ describe('submitSmartTransactionHook', () => {
         .map(([, handler]) => handler);
 
       expect(subscribedHandlers).toHaveLength(2);
+      expect(unsubscribedHandlers).toHaveLength(2);
       expect(new Set(unsubscribedHandlers)).toEqual(new Set(subscribedHandlers));
     });
   });
