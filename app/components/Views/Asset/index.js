@@ -154,6 +154,10 @@ class Asset extends PureComponent {
      */
     chainId: PropTypes.string,
     /**
+     * The network ID of the currently selected network
+     */
+    networkId: PropTypes.string,
+    /**
      * An array that represents the user transactions
      */
     transactions: PropTypes.array,
@@ -298,7 +302,13 @@ class Asset extends PureComponent {
         this.props.selectedInternalAccount?.address
     ) {
       this.showLoaderAndNormalize();
-    } else {
+    } else if (
+      prevProps.transactions !== this.props.transactions ||
+      prevProps.tokens !== this.props.tokens ||
+      prevProps.swapsTransactions !== this.props.swapsTransactions ||
+      prevProps.selectedInternalAccount !== this.props.selectedInternalAccount ||
+      prevProps.networkId !== this.props.networkId
+    ) {
       this.normalizeTransactions();
     }
   }
@@ -391,14 +401,16 @@ class Asset extends PureComponent {
     let submittedTxs = [];
     const newPendingTxs = [];
     const confirmedTxs = [];
-    const submittedNonces = [];
+    const submittedNonces = new Set();
 
     const { chainId, transactions } = this.props;
     if (transactions.length) {
-      const sortedTransactions = sortTransactions(transactions).filter(
-        (tx, index, self) =>
-          self.findIndex((_tx) => _tx.id === tx.id) === index,
-      );
+      const seenTransactionIds = new Set();
+      const sortedTransactions = sortTransactions(transactions).filter((tx) => {
+        if (seenTransactionIds.has(tx.id)) return false;
+        seenTransactionIds.add(tx.id);
+        return true;
+      });
       const filteredTransactions = sortedTransactions.filter((tx) => {
         const filterResult = this.filter(tx);
         if (filterResult) {
@@ -425,22 +437,27 @@ class Asset extends PureComponent {
         return filterResult;
       });
 
+      const confirmedNonces = new Set(
+        confirmedTxs
+          .filter((confirmedTransaction) =>
+            toLowerCaseEquals(
+              safeToChecksumAddress(confirmedTransaction.txParams.from),
+              this.selectedAddress,
+            ),
+          )
+          .map((confirmedTransaction) => confirmedTransaction.txParams.nonce),
+      );
+
       submittedTxs = submittedTxs.filter(({ txParams: { from, nonce } }) => {
         if (!toLowerCaseEquals(from, this.selectedAddress)) {
           return false;
         }
-        const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTxs.find(
-          (confirmedTransaction) =>
-            toLowerCaseEquals(
-              safeToChecksumAddress(confirmedTransaction.txParams.from),
-              this.selectedAddress,
-            ) && confirmedTransaction.txParams.nonce === nonce,
-        );
+        const alreadySubmitted = submittedNonces.has(nonce);
+        const alreadyConfirmed = confirmedNonces.has(nonce);
         if (alreadyConfirmed) {
           return false;
         }
-        submittedNonces.push(nonce);
+        submittedNonces.add(nonce);
         return !alreadySubmitted;
       });
 
@@ -607,6 +624,7 @@ const mapStateToProps = (state, { route }) => ({
     getRampNetworks(state),
   ),
   networkClientId: selectNetworkClientId(state),
+  networkId: state.inpageProvider.networkId,
 });
 
 const mapDispatchToProps = (dispatch) => ({
