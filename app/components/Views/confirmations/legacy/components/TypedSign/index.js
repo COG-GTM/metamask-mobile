@@ -187,6 +187,22 @@ class TypedSign extends PureComponent {
     this.setState({ truncateMessage });
   };
 
+  getParsedTypedData = () => {
+    const { messageParams } = this.props;
+    const { version, data } = messageParams;
+
+    if (version !== 'V3' && version !== 'V4') {
+      return {};
+    }
+
+    if (!this.parsedTypedData || this.parsedTypedDataSource !== data) {
+      this.parsedTypedDataSource = data;
+      this.parsedTypedData = parseAndSanitizeSignTypedData(data);
+    }
+
+    return this.parsedTypedData;
+  };
+
   getStyles = () => {
     const colors = this.context.colors || mockTheme.colors;
     return createStyles(colors);
@@ -234,7 +250,7 @@ class TypedSign extends PureComponent {
       );
     }
     if (messageParams.version === 'V3' || messageParams.version === 'V4') {
-      const { sanitizedMessage } = parseAndSanitizeSignTypedData(messageParams.data);
+      const { sanitizedMessage } = this.getParsedTypedData();
       return this.renderTypedMessageV3(sanitizedMessage);
     }
   };
@@ -254,7 +270,7 @@ class TypedSign extends PureComponent {
     const styles = this.getStyles();
 
     if (messageParams.version === 'V3') {
-      domain = JSON.parse(messageParams.data).domain;
+      domain = this.getParsedTypedData().domain;
     }
 
     if (truncateMessage) {
