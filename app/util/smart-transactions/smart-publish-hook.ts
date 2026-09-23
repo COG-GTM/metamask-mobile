@@ -61,6 +61,13 @@ export interface SubmitSmartTransactionRequest {
   transactions: PublishBatchHookTransaction[];
 }
 
+type SmartTransactionEventHandler = (
+  smartTransaction: SmartTransaction,
+) => void;
+
+const SMART_TRANSACTION_EVENT =
+  'SmartTransactionsController:smartTransaction' as const;
+
 const LOG_PREFIX = 'STX publishHook';
 // It has to be 21000 for cancel transactions, otherwise the API would reject it.
 const CANCEL_GAS = 21000;
@@ -101,6 +108,7 @@ class SmartTransactionHook {
   #shouldUpdateApprovalRequest: boolean;
   #mobileReturnTxHashAsap: boolean;
   #transactions: PublishBatchHookTransaction[];
+  #smartTransactionEventHandlers: SmartTransactionEventHandler[] = [];
 
   constructor(request: SubmitSmartTransactionRequest) {
     const {
@@ -244,6 +252,7 @@ class SmartTransactionHook {
       );
       throw error;
     } finally {
+      this.#unsubscribeAll();
       if (!this.#mobileReturnTxHashAsap) {
         this.#cleanup();
       }
@@ -336,6 +345,7 @@ class SmartTransactionHook {
       );
       throw error;
     } finally {
+      this.#unsubscribeAll();
       if (!this.#mobileReturnTxHashAsap) {
         this.#cleanup();
       }
@@ -509,24 +519,45 @@ class SmartTransactionHook {
     }
   };
 
+  #subscribe = (handler: SmartTransactionEventHandler) => {
+    this.#smartTransactionEventHandlers.push(handler);
+    this.#controllerMessenger.subscribe(SMART_TRANSACTION_EVENT, handler);
+  };
+
+  #unsubscribe = (handler: SmartTransactionEventHandler) => {
+    const index = this.#smartTransactionEventHandlers.indexOf(handler);
+    if (index === -1) {
+      return;
+    }
+    this.#smartTransactionEventHandlers.splice(index, 1);
+    this.#controllerMessenger.unsubscribe(SMART_TRANSACTION_EVENT, handler);
+  };
+
+  #unsubscribeAll = () => {
+    for (const handler of [...this.#smartTransactionEventHandlers]) {
+      this.#unsubscribe(handler);
+    }
+  };
+
   #addListenerToUpdateStatusPage = async ({ uuid }: { uuid: string }) => {
-    this.#controllerMessenger.subscribe(
-      'SmartTransactionsController:smartTransaction',
-      async (smartTransaction: SmartTransaction) => {
-        if (uuid === smartTransaction.uuid) {
-          const { status } = smartTransaction;
-          if (!status || status === SmartTransactionStatuses.PENDING) {
-            return;
-          }
-          if (this.#shouldUpdateApprovalRequest && !this.#approvalEnded) {
-            await this.#updateApprovalRequest({
-              smartTransaction,
-            });
-          }
-          this.#cleanup();
+    const handler: SmartTransactionEventHandler = async (
+      smartTransaction: SmartTransaction,
+    ) => {
+      if (uuid === smartTransaction.uuid) {
+        const { status } = smartTransaction;
+        if (!status || status === SmartTransactionStatuses.PENDING) {
+          return;
         }
-      },
-    );
+        if (this.#shouldUpdateApprovalRequest && !this.#approvalEnded) {
+          await this.#updateApprovalRequest({
+            smartTransaction,
+          });
+        }
+        this.#cleanup();
+      }
+    };
+
+    this.#subscribe(handler);
   };
 
   #waitForTransactionHash = ({
@@ -535,32 +566,35 @@ class SmartTransactionHook {
     uuid: string;
   }): Promise<string | null> =>
     new Promise((resolve) => {
-      this.#controllerMessenger.subscribe(
-        'SmartTransactionsController:smartTransaction',
-        async (smartTransaction: SmartTransaction) => {
-          if (uuid === smartTransaction.uuid) {
-            const { status, statusMetadata } = smartTransaction;
-            Logger.log(LOG_PREFIX, 'Smart Transaction: ', smartTransaction);
-            if (!status || status === SmartTransactionStatuses.PENDING) {
-              return;
-            }
-            if (statusMetadata?.minedHash) {
-              Logger.log(
-                LOG_PREFIX,
-                'Smart Transaction - Received tx hash: ',
-                statusMetadata?.minedHash,
-              );
-              resolve(statusMetadata.minedHash);
-            } else {
-              // cancelled status will have statusMetadata?.minedHash === ''
-              resolve(null);
-            }
+      const handler: SmartTransactionEventHandler = async (
+        smartTransaction: SmartTransaction,
+      ) => {
+        if (uuid === smartTransaction.uuid) {
+          const { status, statusMetadata } = smartTransaction;
+          Logger.log(LOG_PREFIX, 'Smart Transaction: ', smartTransaction);
+          if (!status || status === SmartTransactionStatuses.PENDING) {
+            return;
           }
-        },
-      );
+          this.#unsubscribe(handler);
+          if (statusMetadata?.minedHash) {
+            Logger.log(
+              LOG_PREFIX,
+              'Smart Transaction - Received tx hash: ',
+              statusMetadata?.minedHash,
+            );
+            resolve(statusMetadata.minedHash);
+          } else {
+            // cancelled status will have statusMetadata?.minedHash === ''
+            resolve(null);
+          }
+        }
+      };
+
+      this.#subscribe(handler);
     });
 
   #cleanup = () => {
+    this.#unsubscribeAll();
     if (this.#approvalEnded) {
       return;
     }
