@@ -5,6 +5,14 @@ import { createEip1193MethodMiddleware } from '../RPCMethods/createEip1193Method
 import createEthAccountsMethodMiddleware from '../RPCMethods/createEthAccountsMethodMiddleware';
 import { getPermittedAccounts } from '../Permissions';
 import { getCaip25PermissionFromLegacyPermissions } from '../../util/permissions';
+import Logger from '../../util/Logger';
+
+const mockSendAsync = jest.fn();
+
+jest.mock('../../util/Logger', () => ({
+  error: jest.fn(),
+  log: jest.fn(),
+}));
 
 jest.mock('../../util/permissions', () => ({
   getCaip25PermissionFromLegacyPermissions: jest.fn(),
@@ -21,7 +29,7 @@ jest.mock('../RPCMethods/createEip1193MethodMiddleware', () => ({
 }));
 
 jest.mock('@metamask/eth-query', () => () => ({
-  sendAsync: jest.fn().mockResolvedValue(1),
+  sendAsync: (...args) => mockSendAsync(...args),
 }));
 
 jest.mock('../../store', () => ({
@@ -107,6 +115,19 @@ function setupBackgroundBridge(url) {
   });
 }
 
+// Exercises bridge methods without the constructor's stream/middleware setup,
+// which the module-level mocks above cannot fully stand in for.
+function createBridgeStub() {
+  return Object.assign(Object.create(BackgroundBridge.prototype), {
+    hostname: 'www.mock.io',
+    url: 'https:www.mock.io',
+    channelId: 'clientId',
+    isWalletConnect: false,
+    deprecatedNetworkVersions: {},
+    sendNotification: jest.fn(),
+  });
+}
+
 describe('BackgroundBridge', () => {
   beforeEach(() => jest.clearAllMocks());
   describe('constructor', () => {
@@ -189,6 +210,43 @@ describe('BackgroundBridge', () => {
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+    });
+  });
+
+  describe('getProviderNetworkState', () => {
+    it('reports net_version failures to Logger and resolves a loading network version', async () => {
+      const error = new Error('net_version failed');
+      const bridge = createBridgeStub();
+      mockSendAsync.mockImplementation((_payload, callback) => callback(error));
+
+      const state = await bridge.getProviderNetworkState('www.mock.io');
+
+      expect(Logger.error).toHaveBeenCalledWith(error, {
+        location: 'BackgroundBridge.getProviderNetworkState',
+        networkClientId: 'mainnet',
+        chainId: '0x1',
+        origin: bridge.hostname,
+      });
+      expect(state).toEqual({ chainId: '0x1', networkVersion: 'loading' });
+    });
+  });
+
+  describe('notifySelectedAddressChanged', () => {
+    it('reports notification failures to Logger', async () => {
+      const error = new Error('permissions unavailable');
+      const bridge = createBridgeStub();
+      getPermittedAccounts.mockImplementation(() => {
+        throw error;
+      });
+
+      await bridge.notifySelectedAddressChanged('0x0');
+
+      expect(Logger.error).toHaveBeenCalledWith(error, {
+        location: 'BackgroundBridge.notifySelectedAddressChanged',
+        origin: bridge.hostname,
+        channelId: bridge.channelId,
+        isWalletConnect: bridge.isWalletConnect,
+      });
     });
   });
 });
