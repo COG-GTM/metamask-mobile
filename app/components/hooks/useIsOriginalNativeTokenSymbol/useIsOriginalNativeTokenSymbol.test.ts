@@ -3,6 +3,11 @@ import { useSelector } from 'react-redux';
 import useIsOriginalNativeTokenSymbol from './useIsOriginalNativeTokenSymbol';
 import { backgroundState } from '../../../../app/util/test/initial-root-state';
 import axios from 'axios';
+import Logger from '../../../util/Logger';
+
+jest.mock('../../../util/Logger', () => ({
+  error: jest.fn(),
+}));
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
@@ -138,6 +143,10 @@ describe('useIsOriginalNativeTokenSymbol', () => {
     // Expect the hook to return false when the native symbol does not match the ticker
     expect(result.result.current).toBe(false);
     expect(spyFetch).toHaveBeenCalled();
+    expect(Logger.error).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.stringContaining('useIsOriginalNativeTokenSymbol'),
+    );
   });
 
   it('should return the correct value when the chainId is in the CURRENCY_SYMBOL_BY_CHAIN_ID', async () => {
