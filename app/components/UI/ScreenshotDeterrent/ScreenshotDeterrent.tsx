@@ -9,6 +9,8 @@ import Routes from '../../../constants/navigation/Routes';
 import { strings } from '../../../../locales/i18n';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 
+const SCREENSHOT_DETERRENT_LOCATION = 'ScreenshotDeterrent';
+
 const ScreenshotDeterrentWithoutNavigation = ({
   enabled,
 }: {
@@ -16,12 +18,12 @@ const ScreenshotDeterrentWithoutNavigation = ({
 }) => {
   useEffect(() => {
     InteractionManager.runAfterInteractions(() => {
-      PreventScreenshot.forbid();
+      PreventScreenshot.forbid(SCREENSHOT_DETERRENT_LOCATION);
     });
 
     return () => {
       InteractionManager.runAfterInteractions(() => {
-        PreventScreenshot.allow();
+        PreventScreenshot.allow(SCREENSHOT_DETERRENT_LOCATION);
       });
     };
   }, [enabled]);
@@ -81,12 +83,12 @@ const ScreenshotDeterrentWithNavigation = ({
   useEffect(() => {
     enableScreenshotWarning(enabled && !alertPresent);
     InteractionManager.runAfterInteractions(() => {
-      PreventScreenshot.forbid();
+      PreventScreenshot.forbid(SCREENSHOT_DETERRENT_LOCATION);
     });
 
     return () => {
       InteractionManager.runAfterInteractions(() => {
-        PreventScreenshot.allow();
+        PreventScreenshot.allow(SCREENSHOT_DETERRENT_LOCATION);
       });
     };
   }, [alertPresent, enableScreenshotWarning, enabled]);
