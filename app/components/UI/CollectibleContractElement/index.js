@@ -78,8 +78,8 @@ const createStyles = (colors, brandColors) =>
 
 const splitIntoSubArrays = (array, count) => {
   const newArray = [];
-  while (array.length > 0) {
-    newArray.push(array.splice(0, count));
+  for (let i = 0; i < array.length; i += count) {
+    newArray.push(array.slice(i, i + count));
   }
   return newArray;
 };

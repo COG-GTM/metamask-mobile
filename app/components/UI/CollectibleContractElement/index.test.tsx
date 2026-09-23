@@ -157,6 +157,37 @@ describe('CollectibleContractElement', () => {
       expect(onPressMock).toHaveBeenCalled();
     });
 
+    it('keeps collectibles visible when the same array is rendered twice', () => {
+      const contractCollectibles = [
+        { address: '0xdef', tokenId: '1', name: 'Collectible1' },
+        { address: '0xdef', tokenId: '2', name: 'Collectible2' },
+      ];
+
+      const props = {
+        asset: { favorites: false, name: 'AssetName', logo: 'asset-logo.png' },
+        contractCollectibles,
+        collectiblesVisible: true,
+        onPress: jest.fn(),
+        removeFavoriteCollectible: jest.fn(),
+      };
+
+      const renderElement = () =>
+        render(
+          <Provider store={store}>
+            <ThemeContext.Provider value={mockTheme}>
+              <CollectibleContractElement {...props} />
+            </ThemeContext.Provider>
+          </Provider>,
+        );
+
+      renderElement().unmount();
+      const { getAllByTestId } = renderElement();
+
+      expect(getAllByTestId('collectible-Collectible1-1')).toBeTruthy();
+      expect(getAllByTestId('collectible-Collectible2-2')).toBeTruthy();
+      expect(contractCollectibles).toHaveLength(2);
+    });
+
     it('hides collectibles list when pressed', async () => {
       const onPressMock = jest.fn();
       const removeFavoriteMock = jest.fn();
