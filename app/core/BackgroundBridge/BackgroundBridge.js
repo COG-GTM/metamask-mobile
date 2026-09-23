@@ -248,7 +248,12 @@ export class BackgroundBridge extends EventEmitter {
       networkVersion = await new Promise((resolve) => {
         ethQuery.sendAsync({ method: 'net_version' }, (error, result) => {
           if (error) {
-            console.error(error);
+            Logger.error(error, {
+              location: 'BackgroundBridge.getProviderNetworkState',
+              networkClientId,
+              chainId,
+              origin: this.hostname,
+            });
             resolve(null);
           } else {
             resolve(result);
@@ -314,7 +319,12 @@ export class BackgroundBridge extends EventEmitter {
         );
       }
     } catch (err) {
-      console.error(`notifySelectedAddressChanged: ${err}`);
+      Logger.error(err, {
+        location: 'BackgroundBridge.notifySelectedAddressChanged',
+        origin: this.hostname,
+        channelId: this.channelId,
+        isWalletConnect: this.isWalletConnect,
+      });
     }
   }
 
