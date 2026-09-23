@@ -385,6 +385,7 @@ describe('Smart Transactions utils', () => {
       } as unknown as SmartTransactionsController;
       controllerMessenger = {
         subscribe: jest.fn(),
+        unsubscribe: jest.fn(),
       } as unknown as BaseControllerMessenger;
     });
 
@@ -454,6 +455,33 @@ describe('Smart Transactions utils', () => {
         smart_transaction_timed_out: true,
         smart_transaction_proxied: false,
       });
+      expect(controllerMessenger.unsubscribe).toHaveBeenCalledWith(
+        'SmartTransactionsController:smartTransactionConfirmationDone',
+        (controllerMessenger.subscribe as jest.Mock).mock.calls[0][1],
+      );
+    });
+
+    it('unsubscribes when the confirmation done event does not arrive in time', async () => {
+      jest.useFakeTimers();
+      const transactionMeta = { hash: '0x123' } as TransactionMeta;
+      (
+        smartTransactionsController.getSmartTransactionByMinedTxHash as jest.Mock
+      ).mockReturnValue(undefined);
+
+      const resultPromise = getSmartTransactionMetricsProperties(
+        smartTransactionsController,
+        transactionMeta,
+        true,
+        controllerMessenger,
+      );
+      jest.advanceTimersByTime(10000);
+
+      expect(await resultPromise).toEqual({});
+      expect(controllerMessenger.unsubscribe).toHaveBeenCalledWith(
+        'SmartTransactionsController:smartTransactionConfirmationDone',
+        (controllerMessenger.subscribe as jest.Mock).mock.calls[0][1],
+      );
+      jest.useRealTimers();
     });
 
     it('returns empty object if smartTransaction is not found and waitForSmartTransaction is false', async () => {
