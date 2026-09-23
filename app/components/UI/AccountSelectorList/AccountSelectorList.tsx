@@ -28,7 +28,6 @@ import { isDefaultAccountName } from '../../../util/ENSUtils';
 import { strings } from '../../../../locales/i18n';
 import { AvatarVariant } from '../../../component-library/components/Avatars/Avatar/Avatar.types';
 import { Account, Assets } from '../../hooks/useAccounts';
-import { getAccountItemHeight } from '../../hooks/useAccounts/utils';
 import Engine from '../../../core/Engine';
 import { removeAccountsFromPermissions } from '../../../core/Permissions';
 import Routes from '../../../constants/navigation/Routes';
@@ -43,6 +42,10 @@ import {
   ACCOUNT_SELECTOR_LIST_INITIAL_NUM_TO_RENDER,
   ACCOUNT_SELECTOR_LIST_TESTID,
 } from './AccountSelectorList.constants';
+import {
+  getAccountItemHeight,
+  getAccountItemOffsets,
+} from './AccountSelectorList.utils';
 import { toHex } from '@metamask/controller-utils';
 
 const AccountSelectorList = ({
@@ -304,41 +307,50 @@ const AccountSelectorList = ({
     ],
   );
 
+  // Offsets are derived from the rendered accounts rather than from
+  // Account.yOffset, which is relative to the unfiltered account list.
+  const accountOffsets = useMemo(
+    () => getAccountItemOffsets(accounts),
+    [accounts],
+  );
+
   const getItemLayout = useCallback(
     (data: ArrayLike<Account> | null | undefined, index: number) => {
       const item = data?.[index];
-      const offset = item?.yOffset ?? 0;
-      const length = item ? getAccountItemHeight(item) : 0;
-      return { length, offset, index };
+      return {
+        length: item ? getAccountItemHeight(item) : 0,
+        offset: accountOffsets[index] ?? 0,
+        index,
+      };
     },
-    [],
+    [accountOffsets],
   );
 
   const onContentSizeChanged = useCallback(() => {
     // Handle auto scroll to account
     if (!accounts.length || !isAutoScrollEnabled) return;
     if (accountsLengthRef.current !== accounts.length) {
-      let selectedAccount: Account | undefined;
+      let selectedIndex = -1;
 
       if (selectedAddresses?.length) {
         const selectedAddressLower = selectedAddresses[0].toLowerCase();
-        selectedAccount = accounts.find(
+        selectedIndex = accounts.findIndex(
           (acc) => acc.address.toLowerCase() === selectedAddressLower,
         );
       }
       // Fall back to the account with isSelected flag if no override or match found
-      if (!selectedAccount) {
-        selectedAccount = accounts.find((acc) => acc.isSelected);
+      if (selectedIndex === -1) {
+        selectedIndex = accounts.findIndex((acc) => acc.isSelected);
       }
 
       accountListRef?.current?.scrollToOffset({
-        offset: selectedAccount?.yOffset,
+        offset: accountOffsets[selectedIndex] ?? 0,
         animated: false,
       });
 
       accountsLengthRef.current = accounts.length;
     }
-  }, [accounts, selectedAddresses, isAutoScrollEnabled]);
+  }, [accounts, accountOffsets, selectedAddresses, isAutoScrollEnabled]);
 
   return (
     <FlatList
