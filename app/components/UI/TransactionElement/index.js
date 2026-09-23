@@ -63,7 +63,7 @@ import {
 } from '@metamask/bridge-controller';
 import { getBridgeTxActivityTitle } from '../Bridge/utils/transaction-history';
 
-const createStyles = (colors, typography) =>
+const buildStyles = (colors, typography) =>
   StyleSheet.create({
     row: {
       backgroundColor: colors.background.default,
@@ -134,6 +134,23 @@ const createStyles = (colors, typography) =>
       color: colors.text.alternative,
     },
   });
+
+let cachedTheme = { colors: null, typography: null, styles: null };
+
+const createStyles = (colors, typography) => {
+  if (
+    cachedTheme.colors !== colors ||
+    cachedTheme.typography !== typography ||
+    !cachedTheme.styles
+  ) {
+    cachedTheme = {
+      colors,
+      typography,
+      styles: buildStyles(colors, typography),
+    };
+  }
+  return cachedTheme.styles;
+};
 
 /* eslint-disable import/no-commonjs */
 const transactionIconApprove = require('../../../images/transaction-icons/approve.png');
