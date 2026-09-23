@@ -518,6 +518,7 @@ class Amount extends PureComponent {
   tokens = [];
   collectibles = [];
   assetsModalList = [];
+  assetsModalExtraData = null;
 
   updateNavBar = () => {
     const { navigation, route, resetTransaction } = this.props;
@@ -1194,6 +1195,35 @@ class Amount extends PureComponent {
     return collectibles;
   };
 
+  /**
+   * Cached identity of every dynamic value read by renderToken, so the asset
+   * list rows re-render when balances, rates or the theme change.
+   */
+  getAssetsModalExtraData = (colors) => {
+    const {
+      accounts,
+      selectedAddress,
+      conversionRate,
+      currentCurrency,
+      contractBalances,
+      contractExchangeRates,
+    } = this.props;
+    const next = [
+      accounts,
+      selectedAddress,
+      conversionRate,
+      currentCurrency,
+      contractBalances,
+      contractExchangeRates,
+      colors,
+    ];
+    const previous = this.assetsModalExtraData;
+    if (!previous || next.some((value, index) => value !== previous[index])) {
+      this.assetsModalExtraData = next;
+    }
+    return this.assetsModalExtraData;
+  };
+
   renderAssetsModal = () => {
     const { assetsModalVisible } = this.state;
     const colors = this.context.colors || mockTheme.colors;
@@ -1217,6 +1247,7 @@ class Amount extends PureComponent {
           </View>
           <FlatList
             data={this.assetsModalList}
+            extraData={this.getAssetsModalExtraData(colors)}
             keyExtractor={this.assetKeyExtractor}
             renderItem={this.renderAsset}
           />
