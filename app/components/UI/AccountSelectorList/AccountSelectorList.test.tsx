@@ -20,7 +20,10 @@ import { AccountSelectorListProps } from './AccountSelectorList.types';
 import Engine from '../../../core/Engine';
 import { CellComponentSelectorsIDs } from '../../../../e2e/selectors/wallet/CellComponent.selectors';
 import { KeyringTypes } from '@metamask/keyring-controller';
-import { ACCOUNT_SELECTOR_LIST_TESTID } from './AccountSelectorList.constants';
+import {
+  ACCOUNT_SELECTOR_LIST_INITIAL_NUM_TO_RENDER,
+  ACCOUNT_SELECTOR_LIST_TESTID,
+} from './AccountSelectorList.constants';
 
 const BUSINESS_ACCOUNT = '0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272';
 const PERSONAL_ACCOUNT = '0xd018538C87232FF95acbCe4870629b75640a78E7';
@@ -270,6 +273,22 @@ describe('AccountSelectorList', () => {
   it('renders correctly', async () => {
     const { toJSON } = renderComponent(initialState);
     await waitFor(() => expect(toJSON()).toMatchSnapshot());
+  });
+
+  it('virtualizes rows and derives item layout from account offsets', async () => {
+    const { getByTestId } = renderComponent(initialState);
+
+    await waitFor(() => {
+      const list = getByTestId(ACCOUNT_SELECTOR_LIST_TESTID);
+      expect(list.props.initialNumToRender).toBe(
+        ACCOUNT_SELECTOR_LIST_INITIAL_NUM_TO_RENDER,
+      );
+      expect(list.props.getItemLayout(defaultAccountsMock, 1)).toEqual({
+        length: 80,
+        offset: 80,
+        index: 1,
+      });
+    });
   });
 
   it('renders all accounts with balances', async () => {
