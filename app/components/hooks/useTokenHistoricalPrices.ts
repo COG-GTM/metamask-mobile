@@ -60,6 +60,8 @@ const useTokenHistoricalPrices = ({
   const [error, setError] = useState<Error>();
 
   useEffect(() => {
+    let isCurrent = true;
+
     const fetchPrices = async () => {
       setIsLoading(true);
       try {
@@ -81,6 +83,9 @@ const useTokenHistoricalPrices = ({
             ([timestamp, price]) =>
               [timestamp.toString(), Number(price)] as TokenPrice,
           );
+          if (!isCurrent) {
+            return;
+          }
           setPrices(transformedResult);
         } else {
           const baseUri = 'https://price.api.cx.metamask.io/v1';
@@ -101,15 +106,26 @@ const useTokenHistoricalPrices = ({
 
           const response = await fetch(uri.toString());
           const data: { prices: TokenPrice[] } = await response.json();
+          if (!isCurrent) {
+            return;
+          }
           setPrices(data.prices as TokenPrice[]);
         }
       } catch (e: unknown) {
-        setError(e as Error);
+        if (isCurrent) {
+          setError(e as Error);
+        }
       } finally {
-        setIsLoading(false);
+        if (isCurrent) {
+          setIsLoading(false);
+        }
       }
     };
     fetchPrices();
+
+    return () => {
+      isCurrent = false;
+    };
   }, [
     address,
     chainId,

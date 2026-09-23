@@ -1,5 +1,5 @@
 import { CaipAssetId, Hex } from '@metamask/utils';
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import Engine from '../../core/Engine';
 import { TokenI } from '../UI/Tokens/types';
 import useTokenHistoricalPrices, {
@@ -49,8 +49,13 @@ const defaultProps = {
 };
 
 const mockFetch = jest.fn();
+const originalFetch = global.fetch;
 
 describe('useTokenHistoricalPrices', () => {
+  afterEach(() => {
+    global.fetch = originalFetch;
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     mockIsEvmSelected = true;
@@ -116,5 +121,46 @@ describe('useTokenHistoricalPrices', () => {
     expect(controller.fetchHistoricalPricesForAsset).toHaveBeenCalledTimes(1);
     expect(result.current.data).toEqual([['1000', 1.5]]);
     expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('ignores a stale non-EVM response that resolves after the period changed', async () => {
+    mockIsEvmSelected = false;
+    controller.state = {
+      historicalPrices: {
+        [CAIP_ASSET_ID]: {
+          usd: {
+            intervals: {
+              P1D: [['1000', '1']],
+              P1M: [['2000', '2']],
+            },
+          },
+        },
+      },
+    };
+
+    let resolveFirstFetch: () => void = () => undefined;
+    controller.fetchHistoricalPricesForAsset
+      .mockImplementationOnce(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveFirstFetch = resolve;
+          }),
+      )
+      .mockResolvedValue(undefined);
+
+    const { result, rerender } = renderHook(
+      (props: Parameters<typeof useTokenHistoricalPrices>[0]) =>
+        useTokenHistoricalPrices(props),
+      { initialProps: defaultProps },
+    );
+
+    rerender({ ...defaultProps, timePeriod: '1m' });
+    await waitFor(() => expect(result.current.data).toEqual([['2000', 2]]));
+
+    await act(async () => {
+      resolveFirstFetch();
+    });
+
+    expect(result.current.data).toEqual([['2000', 2]]);
   });
 });
