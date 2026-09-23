@@ -350,6 +350,9 @@ export class WC2Manager {
     });
 
     // Clear local sessions
+    Object.values(this.sessions).forEach((session) => {
+      session.removeListeners();
+    });
     this.sessions = {};
 
     await StorageWrapper.setItem(
