@@ -78,4 +78,23 @@ describe('BrowserTab', () => {
     });
     expect(toJSON()).toMatchSnapshot();
   });
+
+  it('unsubscribes navigation listeners on unmount', () => {
+    const unsubscribes: jest.Mock[] = [];
+    mockNavigation.addListener.mockImplementation(() => {
+      const unsubscribe = jest.fn();
+      unsubscribes.push(unsubscribe);
+      return unsubscribe;
+    });
+
+    const { unmount } = renderWithProvider(<BrowserTab {...mockProps} />, {
+      state: mockInitialState,
+    });
+
+    expect(unsubscribes.length).toBeGreaterThanOrEqual(2);
+    unmount();
+    unsubscribes.forEach((unsubscribe) =>
+      expect(unsubscribe).toHaveBeenCalled(),
+    );
+  });
 });
