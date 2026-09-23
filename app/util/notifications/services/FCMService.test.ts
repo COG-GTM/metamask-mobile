@@ -5,7 +5,13 @@ import messaging, {
 import { processNotification } from '@metamask/notification-services-controller/notification-services';
 import { createMockNotificationEthSent } from '@metamask/notification-services-controller/notification-services/mocks';
 
+import Logger from '../../../util/Logger';
 import FCMService from './FCMService';
+
+jest.mock('../../../util/Logger', () => ({
+  __esModule: true,
+  default: { log: jest.fn(), error: jest.fn() },
+}));
 
 // Firebase Mock
 jest.mock('@react-native-firebase/messaging', () => {
@@ -101,6 +107,22 @@ describe('FCMService - createRegToken()', () => {
     const result = await FCMService.createRegToken();
     expect(result).toBe(null);
     expect(firebaseMocks.mockGetToken).toHaveBeenCalled();
+    expect(Logger.error).toHaveBeenCalledWith(expect.any(Error), {
+      stage: 'get_token',
+    });
+  });
+
+  it('reports APNs device registration failures', async () => {
+    const firebaseMocks = arrangeFirebaseMocks();
+    firebaseMocks.mockRegisterDeviceForRemoteMessages.mockRejectedValueOnce(
+      new Error('TEST ERROR'),
+    );
+
+    const result = await FCMService.createRegToken();
+    expect(result).toBe('MOCK_FCM_TOKEN');
+    expect(Logger.error).toHaveBeenCalledWith(expect.any(Error), {
+      stage: 'apns_register',
+    });
   });
 });
 
@@ -139,6 +161,9 @@ describe('FCMService - deleteRegToken()', () => {
     const result = await FCMService.deleteRegToken();
     expect(result).toBe(false);
     expect(firebaseMocks.mockDeleteToken).toHaveBeenCalled();
+    expect(Logger.error).toHaveBeenCalledWith(expect.any(Error), {
+      stage: 'delete_token',
+    });
   });
 });
 
@@ -229,6 +254,9 @@ describe('FCMService - listenToPushNotificationsReceived()', () => {
       mockHandler,
     );
     expect(result).toBe(null);
+    expect(Logger.error).toHaveBeenCalledWith(expect.any(Error), {
+      stage: 'listener',
+    });
   });
 
   describe('FCMService - Process Foreground Messages', () => {
