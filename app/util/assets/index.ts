@@ -2,6 +2,30 @@ import { Nft, NftControllerState } from '@metamask/assets-controllers';
 import { Hex } from '@metamask/utils';
 import { isEqual } from 'lodash';
 
+const numberFormatterCache = new Map<string, Intl.NumberFormat>();
+
+/**
+ * Returns an `Intl.NumberFormat` instance for the given locale and options,
+ * reusing previously created instances since their construction is expensive.
+ *
+ * @param locale - The locale to format for.
+ * @param options - The number format options.
+ * @returns The cached formatter.
+ */
+export const getNumberFormatter = (
+  locale: string,
+  options: Intl.NumberFormatOptions,
+): Intl.NumberFormat => {
+  const key = `${locale}|${JSON.stringify(options)}`;
+  const cached = numberFormatterCache.get(key);
+  if (cached) {
+    return cached;
+  }
+  const formatter = new Intl.NumberFormat(locale, options);
+  numberFormatterCache.set(key, formatter);
+  return formatter;
+};
+
 export const formatWithThreshold = (
   amount: number | null,
   threshold: number,
@@ -11,12 +35,13 @@ export const formatWithThreshold = (
   if (amount === null) {
     return '';
   }
+  const formatter = getNumberFormatter(locale, options);
   if (amount === 0) {
-    return new Intl.NumberFormat(locale, options).format(0);
+    return formatter.format(0);
   }
   return amount < threshold
-    ? `<${new Intl.NumberFormat(locale, options).format(threshold)}`
-    : new Intl.NumberFormat(locale, options).format(amount);
+    ? `<${formatter.format(threshold)}`
+    : formatter.format(amount);
 };
 
 type AccountNfts = NftControllerState['allNfts'][string]; // Type for NFTs of a single account

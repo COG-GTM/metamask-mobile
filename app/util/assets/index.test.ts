@@ -2,6 +2,7 @@ import { Nft } from '@metamask/assets-controllers';
 import {
   compareNftStates,
   formatWithThreshold,
+  getNumberFormatter,
   prepareNftDetectionEvents,
 } from '.';
 import { Hex } from '@metamask/utils';
@@ -111,6 +112,25 @@ describe('formatWithThreshold', () => {
   test('formats BTC correctly when above threshold', () => {
     expect(formatWithThreshold(0.012345, 0.00001, 'en-US', cryptoOptions)).toBe(
       '0.01235',
+    );
+  });
+});
+
+describe('getNumberFormatter', () => {
+  const options = { style: 'currency', currency: 'USD' };
+
+  test('reuses the same formatter for the same locale and options', () => {
+    expect(getNumberFormatter('en-US', options)).toBe(
+      getNumberFormatter('en-US', { ...options }),
+    );
+  });
+
+  test('returns different formatters for different locales or options', () => {
+    expect(getNumberFormatter('en-US', options)).not.toBe(
+      getNumberFormatter('fr-FR', options),
+    );
+    expect(getNumberFormatter('en-US', options)).not.toBe(
+      getNumberFormatter('en-US', { style: 'currency', currency: 'EUR' }),
     );
   });
 });
