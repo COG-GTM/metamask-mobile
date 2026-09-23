@@ -273,4 +273,4 @@ const Quote: React.FC<Props> = ({
   );
 };
 
-export default Quote;
+export default React.memo(Quote);

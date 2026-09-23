@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { MutableRefObject, useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useStyles } from '../../../../hooks/useStyles';
 import { useRampSDK } from '../../sdk';
 
 import Text from '../../../../Base/Text';
 import styleSheet from './Quotes.styles';
+import useInterval from '../../../../hooks/useInterval';
 
 import { strings } from '../../../../../../locales/i18n';
 
-const Timer = ({
+export const TimerDisplay = ({
   isFetchingQuotes,
   pollingCyclesLeft,
   remainingTime,
@@ -46,6 +47,48 @@ const Timer = ({
         </Text>
       )}
     </View>
+  );
+};
+
+const Timer = ({
+  isFetchingQuotes,
+  pollingCyclesLeft,
+  onTimerExpired,
+  remainingTimeRef,
+}: {
+  isFetchingQuotes: boolean;
+  pollingCyclesLeft: number;
+  onTimerExpired: () => void;
+  remainingTimeRef: MutableRefObject<number>;
+}) => {
+  const { appConfig } = useRampSDK();
+  const [remainingTime, setRemainingTime] = useState(remainingTimeRef.current);
+
+  const onTimerExpiredRef = useRef(onTimerExpired);
+  onTimerExpiredRef.current = onTimerExpired;
+
+  const tick = useCallback(() => {
+    const newRemainingTime = remainingTimeRef.current - 1000;
+
+    if (newRemainingTime > 0) {
+      remainingTimeRef.current = newRemainingTime;
+      setRemainingTime(newRemainingTime);
+      return;
+    }
+
+    remainingTimeRef.current = appConfig.POLLING_INTERVAL;
+    setRemainingTime(appConfig.POLLING_INTERVAL);
+    onTimerExpiredRef.current();
+  }, [appConfig.POLLING_INTERVAL, remainingTimeRef]);
+
+  useInterval(tick, { delay: isFetchingQuotes ? null : 1000 });
+
+  return (
+    <TimerDisplay
+      isFetchingQuotes={isFetchingQuotes}
+      pollingCyclesLeft={pollingCyclesLeft}
+      remainingTime={remainingTime}
+    />
   );
 };
 
