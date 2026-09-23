@@ -39,6 +39,8 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  isSmartContractAddress,
+  clearSmartContractAddressCache,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
@@ -1254,5 +1256,121 @@ describe('Transactions utils :: getTransactionById', () => {
     const result = getTransactionById('tx1', mockTransactionController);
     
     expect(result).toBeUndefined();
+  });
+});
+
+describe('Transactions utils :: isSmartContractAddress', () => {
+  beforeEach(() => {
+    clearSmartContractAddressCache();
+    jest.clearAllMocks();
+  });
+
+  it('queries the code of an address only once', async () => {
+    const querySpy = spyOnQueryMethod('0x1234');
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(true);
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(true);
+
+    expect(querySpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('deduplicates concurrent lookups of the same address', async () => {
+    const querySpy = spyOnQueryMethod('0x');
+
+    await expect(
+      Promise.all([
+        isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+        isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+        isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+      ]),
+    ).resolves.toStrictEqual([false, false, false]);
+
+    expect(querySpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('caches per chain id', async () => {
+    const querySpy = spyOnQueryMethod('0x1234');
+
+    await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID);
+    await isSmartContractAddress(MOCK_ADDRESS3, '137');
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not cache failed lookups', async () => {
+    const querySpy = jest
+      .spyOn(controllerUtilsModule, 'query')
+      .mockRejectedValueOnce(new Error('request failed'))
+      .mockResolvedValueOnce('0x');
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).rejects.toThrow('request failed');
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(false);
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('re-queries an address without code once the negative cache expires', async () => {
+    const querySpy = spyOnQueryMethod('0x');
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(false);
+
+    nowSpy.mockReturnValue(60000);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(false);
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+
+    nowSpy.mockRestore();
+  });
+
+  it('keeps contract results cached indefinitely', async () => {
+    const querySpy = spyOnQueryMethod('0x1234');
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(0);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(true);
+
+    nowSpy.mockReturnValue(60000);
+
+    await expect(
+      isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID),
+    ).resolves.toBe(true);
+
+    expect(querySpy).toHaveBeenCalledTimes(1);
+
+    nowSpy.mockRestore();
+  });
+
+  it('caches per network client id', async () => {
+    const querySpy = spyOnQueryMethod('0x1234');
+
+    await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID, 'mainnet');
+    await isSmartContractAddress(MOCK_ADDRESS3, MOCK_CHAIN_ID, 'other');
+
+    expect(querySpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('resolves false without querying when no address is given', async () => {
+    const querySpy = spyOnQueryMethod('0x1234');
+
+    await expect(isSmartContractAddress(undefined, MOCK_CHAIN_ID)).resolves.toBe(
+      false,
+    );
+
+    expect(querySpy).not.toHaveBeenCalled();
   });
 });
