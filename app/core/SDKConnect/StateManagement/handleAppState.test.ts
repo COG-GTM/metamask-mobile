@@ -1,5 +1,6 @@
 import BackgroundTimer from 'react-native-background-timer';
 import Device from '../../../util/device';
+import Logger from '../../../util/Logger';
 import SDKConnect from '../SDKConnect';
 import handleAppState from './handleAppState';
 
@@ -105,6 +106,24 @@ describe('handleAppState', () => {
       });
 
       expect(mockInstance.state.paused).toBe(false);
+    });
+  });
+
+  it('should report unexpected errors to Logger.error with context', async () => {
+    const mockAppState = 'active';
+    const mockError = new Error('unexpected failure');
+    mockIsAndroid.mockImplementation(() => {
+      throw mockError;
+    });
+
+    await handleAppState({
+      appState: mockAppState,
+      instance: mockInstance,
+    });
+
+    expect(Logger.error).toHaveBeenCalledWith(mockError, {
+      location: 'SDKConnect.handleAppState',
+      appState: mockAppState,
     });
   });
 

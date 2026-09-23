@@ -111,7 +111,10 @@ async function handleAppState({
       }
     }
   } catch (error) {
-    console.error(`SDKConnect::_handleAppState - error`, error);
+    Logger.error(error as Error, {
+      location: 'SDKConnect.handleAppState',
+      appState,
+    });
   }
 }
 
