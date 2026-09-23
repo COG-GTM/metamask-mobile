@@ -89,6 +89,7 @@ class SmartTransactionHook {
   #signedTransactionInHex?: Hex;
   #txParams: TransactionParams;
   #controllerMessenger: SubmitSmartTransactionRequest['controllerMessenger'];
+  #statusPageListener?: (smartTransaction: SmartTransaction) => Promise<void>;
 
   #isDapp: boolean;
   #isSend: boolean;
@@ -510,23 +511,37 @@ class SmartTransactionHook {
   };
 
   #addListenerToUpdateStatusPage = async ({ uuid }: { uuid: string }) => {
+    const handler = async (smartTransaction: SmartTransaction) => {
+      if (uuid === smartTransaction.uuid) {
+        const { status } = smartTransaction;
+        if (!status || status === SmartTransactionStatuses.PENDING) {
+          return;
+        }
+        if (this.#shouldUpdateApprovalRequest && !this.#approvalEnded) {
+          await this.#updateApprovalRequest({
+            smartTransaction,
+          });
+        }
+        this.#cleanup();
+      }
+    };
+
+    this.#statusPageListener = handler;
     this.#controllerMessenger.subscribe(
       'SmartTransactionsController:smartTransaction',
-      async (smartTransaction: SmartTransaction) => {
-        if (uuid === smartTransaction.uuid) {
-          const { status } = smartTransaction;
-          if (!status || status === SmartTransactionStatuses.PENDING) {
-            return;
-          }
-          if (this.#shouldUpdateApprovalRequest && !this.#approvalEnded) {
-            await this.#updateApprovalRequest({
-              smartTransaction,
-            });
-          }
-          this.#cleanup();
-        }
-      },
+      handler,
     );
+  };
+
+  #removeStatusPageListener = () => {
+    if (!this.#statusPageListener) {
+      return;
+    }
+    this.#controllerMessenger.unsubscribe(
+      'SmartTransactionsController:smartTransaction',
+      this.#statusPageListener,
+    );
+    this.#statusPageListener = undefined;
   };
 
   #waitForTransactionHash = ({
@@ -535,32 +550,39 @@ class SmartTransactionHook {
     uuid: string;
   }): Promise<string | null> =>
     new Promise((resolve) => {
+      const handler = async (smartTransaction: SmartTransaction) => {
+        if (uuid === smartTransaction.uuid) {
+          const { status, statusMetadata } = smartTransaction;
+          Logger.log(LOG_PREFIX, 'Smart Transaction: ', smartTransaction);
+          if (!status || status === SmartTransactionStatuses.PENDING) {
+            return;
+          }
+          this.#controllerMessenger.unsubscribe(
+            'SmartTransactionsController:smartTransaction',
+            handler,
+          );
+          if (statusMetadata?.minedHash) {
+            Logger.log(
+              LOG_PREFIX,
+              'Smart Transaction - Received tx hash: ',
+              statusMetadata?.minedHash,
+            );
+            resolve(statusMetadata.minedHash);
+          } else {
+            // cancelled status will have statusMetadata?.minedHash === ''
+            resolve(null);
+          }
+        }
+      };
+
       this.#controllerMessenger.subscribe(
         'SmartTransactionsController:smartTransaction',
-        async (smartTransaction: SmartTransaction) => {
-          if (uuid === smartTransaction.uuid) {
-            const { status, statusMetadata } = smartTransaction;
-            Logger.log(LOG_PREFIX, 'Smart Transaction: ', smartTransaction);
-            if (!status || status === SmartTransactionStatuses.PENDING) {
-              return;
-            }
-            if (statusMetadata?.minedHash) {
-              Logger.log(
-                LOG_PREFIX,
-                'Smart Transaction - Received tx hash: ',
-                statusMetadata?.minedHash,
-              );
-              resolve(statusMetadata.minedHash);
-            } else {
-              // cancelled status will have statusMetadata?.minedHash === ''
-              resolve(null);
-            }
-          }
-        },
+        handler,
       );
     });
 
   #cleanup = () => {
+    this.#removeStatusPageListener();
     if (this.#approvalEnded) {
       return;
     }
