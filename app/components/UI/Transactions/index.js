@@ -34,7 +34,7 @@ import { selectPrimaryCurrency } from '../../../selectors/settings';
 import { selectTokensByAddress } from '../../../selectors/tokensController';
 import { selectGasFeeControllerEstimateType } from '../../../selectors/gasFeeController';
 import { baseStyles, fontStyles } from '../../../styles/common';
-import { isHardwareAccount } from '../../../util/address';
+import { getKeyringByAddress, isHardwareAccount } from '../../../util/address';
 import { createLedgerTransactionModalNavDetails } from '../../UI/LedgerModals/LedgerTransactionModal';
 import Device from '../../../util/device';
 import Logger from '../../../util/Logger';
@@ -266,9 +266,7 @@ class Transactions extends PureComponent {
       this.init();
       this.props.onRefSet && this.props.onRefSet(this.flatList);
     }, 100);
-    this.setState({
-      isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress),
-    });
+    this.updateBlockExplorer();
   };
 
   componentWillUnmount() {
@@ -291,19 +289,39 @@ class Transactions extends PureComponent {
       blockExplorer = findBlockExplorerForNonEvmChainId(chainId);
     }
 
-    this.setState({ rpcBlockExplorer: blockExplorer });
+    const keyringType = getKeyringByAddress(this.props.selectedAddress)?.type;
+
     this.setState({
-      isQRHardwareAccount: isHardwareAccount(this.props.selectedAddress, [
-        ExtendedKeyringTypes.qr,
-      ]),
-      isLedgerAccount: isHardwareAccount(this.props.selectedAddress, [
-        ExtendedKeyringTypes.ledger,
-      ]),
+      rpcBlockExplorer: blockExplorer,
+      isQRHardwareAccount: keyringType === ExtendedKeyringTypes.qr,
+      isLedgerAccount: keyringType === ExtendedKeyringTypes.ledger,
     });
   };
 
-  componentDidUpdate() {
-    this.updateBlockExplorer();
+  componentDidUpdate(prevProps) {
+    const {
+      providerConfig: { type, rpcUrl },
+      networkConfigurations,
+      chainId,
+      selectedAddress,
+    } = this.props;
+    const {
+      providerConfig: { type: prevType, rpcUrl: prevRpcUrl },
+      networkConfigurations: prevNetworkConfigurations,
+      chainId: prevChainId,
+      selectedAddress: prevSelectedAddress,
+    } = prevProps;
+
+    if (
+      type !== prevType ||
+      rpcUrl !== prevRpcUrl ||
+      chainId !== prevChainId ||
+      selectedAddress !== prevSelectedAddress ||
+      networkConfigurations !== prevNetworkConfigurations
+    ) {
+      this.updateBlockExplorer();
+    }
+
     if (
       this.props.confirmedTransactions.some(
         ({ id }) => id === this.existingTx?.id,
