@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { swapsUtils } from '@metamask/swaps-controller';
+import Logger from '../../../../util/Logger';
 
 const defaultTokenMetadata = {
   valid: null,
@@ -35,7 +36,12 @@ function useFetchTokenMetadata(address, chainId) {
         // Address is not an ERC20
         if (error?.response?.status === 422) {
           setTokenMetadata({ error: false, valid: false, metadata: null });
-        } else {
+        } else if (!axios.isCancel(error)) {
+          Logger.error(error, {
+            message: 'Swaps: error while fetching token metadata',
+            chain_id: chainId,
+            status: error?.response?.status,
+          });
           setTokenMetadata({ ...defaultTokenMetadata, error: true });
         }
       } finally {
