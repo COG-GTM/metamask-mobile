@@ -1,6 +1,7 @@
 import { strings } from '../../../../locales/i18n';
 import { showAlert } from '../../../actions/alert';
 import { handleNetworkSwitch } from '../../../util/networks/handleNetworkSwitch';
+import { UNABLE_TO_FIND_NETWORK_ERROR_PREFIX } from '../../../constants/error';
 import DevLogger from '../../SDKConnect/utils/DevLogger';
 import DeeplinkManager from '../DeeplinkManager';
 
@@ -27,7 +28,7 @@ function switchNetwork({
       if (activeChainId === toHex(newChainId)) {
         return;
       }
-      throw new Error(`Unable to find network with chain id ${newChainId}`);
+      throw new Error(`${UNABLE_TO_FIND_NETWORK_ERROR_PREFIX} ${newChainId}`);
     }
 
     deeplinkManager.dispatch(

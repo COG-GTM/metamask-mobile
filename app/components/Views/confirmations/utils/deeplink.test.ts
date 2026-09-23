@@ -201,6 +201,29 @@ describe('addTransactionForDeeplink', () => {
     expect(mockAddTransaction).toHaveBeenCalledTimes(1);
   });
 
+  it('rethrows and allows further transactions when adding the transaction fails', async () => {
+    const error = new Error('Invalid transaction params');
+    mockAddTransaction.mockRejectedValueOnce(error);
+
+    await expect(
+      addTransactionForDeeplink({
+        parameters: {
+          value: '1000',
+        },
+        target_address: TO_ADDRESS_MOCK,
+      } as unknown as ParseOutput),
+    ).rejects.toThrow(error);
+
+    await addTransactionForDeeplink({
+      parameters: {
+        value: '1000',
+      },
+      target_address: TO_ADDRESS_MOCK,
+    } as unknown as ParseOutput);
+
+    expect(mockAddTransaction).toHaveBeenCalledTimes(2);
+  });
+
   it('adds an ERC20 transfer transaction', async () => {
     const mockGeneratedDataForTransfer = 'generated-data-for-transfer';
 

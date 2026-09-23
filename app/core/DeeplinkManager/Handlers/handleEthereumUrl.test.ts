@@ -1,7 +1,11 @@
 import { parse } from 'eth-url-parser';
 import { Alert } from 'react-native';
 import { ETH_ACTIONS } from '../../../constants/deeplinks';
-import { NetworkSwitchErrorType } from '../../../constants/error';
+import {
+  NetworkSwitchErrorType,
+  UNABLE_TO_FIND_NETWORK_ERROR_PREFIX,
+} from '../../../constants/error';
+import Logger from '../../../util/Logger';
 import DeeplinkManager from '../DeeplinkManager';
 import handleEthereumUrl from './handleEthereumUrl';
 import { getDecimalChainId } from '../../../util/networks';
@@ -39,6 +43,10 @@ jest.mock('../../Engine', () => ({
 
 jest.mock('../../../components/Views/confirmations/utils/deeplink');
 
+jest.mock('../../../util/Logger', () => ({
+  error: jest.fn(),
+}));
+
 describe('handleEthereumUrl', () => {
   let deeplinkManager: DeeplinkManager;
   const mockParse = parse as jest.Mock;
@@ -51,6 +59,7 @@ describe('handleEthereumUrl', () => {
     isDeeplinkRedesignedConfirmationCompatible,
   );
   const mockAddTransactionForDeeplink = jest.mocked(addTransactionForDeeplink);
+  const mockLoggerError = jest.mocked(Logger.error);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -218,11 +227,12 @@ describe('handleEthereumUrl', () => {
     });
   });
 
-  it('shows alert when there is an unknown error during Ethereum URL handling', () => {
+  it('shows a transaction error alert and logs the error when handling fails for a non network reason', async () => {
     const spyAlert = jest.spyOn(Alert, 'alert');
 
     const url = 'ethereum:transfer';
     const origin = 'test_origin';
+    const mockError = new Error('Unknown error');
     mockParse.mockReturnValue({
       function_name: ETH_ACTIONS.TRANSFER,
       chain_id: 1,
@@ -232,10 +242,85 @@ describe('handleEthereumUrl', () => {
     });
 
     mockNavigate.mockImplementation(() => {
-      throw new Error('Unknown error');
+      throw mockError;
     });
 
-    handleEthereumUrl({ deeplinkManager, url, origin });
+    await handleEthereumUrl({ deeplinkManager, url, origin });
+
+    expect(mockLoggerError).toHaveBeenCalledWith(mockError, {
+      message: 'Deeplink transaction failed',
+      origin: 'deeplink',
+      function_name: ETH_ACTIONS.TRANSFER,
+    });
+
+    expect(spyAlert).toHaveBeenCalledWith(
+      'transaction.transaction_error',
+      'send.deeplink_failure',
+    );
+  });
+
+  it('logs the error and shows a transaction error alert when the deeplink transaction cannot be added', async () => {
+    const spyAlert = jest.spyOn(Alert, 'alert');
+
+    const url = 'ethereum:transfer';
+    const origin = 'test_origin';
+    const mockError = new Error('Invalid transaction params');
+
+    mockIsDeeplinkRedesignedConfirmationCompatible.mockReturnValue(true);
+    mockAddTransactionForDeeplink.mockRejectedValue(mockError);
+
+    await handleEthereumUrl({ deeplinkManager, url, origin });
+
+    expect(mockLoggerError).toHaveBeenCalledWith(mockError, {
+      message: 'Deeplink transaction failed',
+      origin: 'deeplink',
+      function_name: ETH_ACTIONS.TRANSFER,
+    });
+
+    expect(spyAlert).toHaveBeenCalledWith(
+      'transaction.transaction_error',
+      'send.deeplink_failure',
+    );
+  });
+
+  it('reports an unknown function name as other', async () => {
+    const url = 'ethereum:sign';
+    const origin = 'test_origin';
+    const mockError = new Error('Unknown error');
+
+    mockParse.mockReturnValue({
+      function_name: 'sign',
+      chain_id: 1,
+    });
+
+    mockNavigate.mockImplementation(() => {
+      throw mockError;
+    });
+
+    await handleEthereumUrl({ deeplinkManager, url, origin });
+
+    expect(mockLoggerError).toHaveBeenCalledWith(
+      mockError,
+      expect.objectContaining({ function_name: 'other' }),
+    );
+  });
+
+  it('shows the network not found alert when the network cannot be found', async () => {
+    const spyAlert = jest.spyOn(Alert, 'alert');
+
+    const url = 'ethereum:transfer';
+    const origin = 'test_origin';
+
+    mockParse.mockReturnValue({
+      function_name: ETH_ACTIONS.TRANSFER,
+      chain_id: 1,
+    });
+
+    mockHandleNetworkSwitch.mockImplementation(() => {
+      throw new Error(`${UNABLE_TO_FIND_NETWORK_ERROR_PREFIX} 1`);
+    });
+
+    await handleEthereumUrl({ deeplinkManager, url, origin });
 
     expect(spyAlert).toHaveBeenCalledWith(
       'send.network_not_found_title',
@@ -279,8 +364,8 @@ describe('handleEthereumUrl', () => {
     handleEthereumUrl({ deeplinkManager, url, origin });
 
     expect(spyAlert).toHaveBeenCalledWith(
-      'send.network_not_found_title',
-      'send.network_not_found_description',
+      'transaction.transaction_error',
+      'send.deeplink_failure',
     );
   });
 
@@ -303,8 +388,8 @@ describe('handleEthereumUrl', () => {
     handleEthereumUrl({ deeplinkManager, url, origin });
 
     expect(spyAlert).toHaveBeenCalledWith(
-      'send.network_not_found_title',
-      'send.network_not_found_description',
+      'transaction.transaction_error',
+      'send.deeplink_failure',
     );
   });
 
