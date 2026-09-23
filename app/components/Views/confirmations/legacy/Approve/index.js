@@ -189,6 +189,20 @@ class Approve extends PureComponent {
     simulationData: PropTypes.object,
   };
 
+  contactListCache = { addressBook: null, contacts: [] };
+
+  getContactList = (addressBook) => {
+    if (this.contactListCache.addressBook !== addressBook) {
+      this.contactListCache = {
+        addressBook,
+        contacts: Object.values(addressBook).flatMap((value) =>
+          Object.values(value),
+        ),
+      };
+    }
+    return this.contactListCache.contacts;
+  };
+
   state = {
     approved: false,
     gasError: undefined,
@@ -809,19 +823,13 @@ class Approve extends PureComponent {
       transaction,
     );
 
-    const savedContactListToArray = Object.values(addressBook).flatMap(
-      (value) => Object.values(value),
-    );
+    const savedContactListToArray = this.getContactList(addressBook);
 
-    let addressNickname = '';
-
-    const filteredSavedContactList = savedContactListToArray.filter(
-      (contact) => contact.address === safeToChecksumAddress(address),
-    );
-
-    if (filteredSavedContactList.length > 0) {
-      addressNickname = filteredSavedContactList[0].name;
-    }
+    const checksummedAddress = safeToChecksumAddress(address);
+    const addressNickname =
+      savedContactListToArray.find(
+        (contact) => contact.address === checksummedAddress,
+      )?.name ?? '';
 
     if (!transaction.id) return null;
     return (
