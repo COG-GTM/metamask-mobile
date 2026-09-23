@@ -83,4 +83,41 @@ describe('AddressElement', () => {
     const addressText = getByText(renderShortAddress(address));
     expect(addressText).toBeDefined();
   });
+
+  it('should be memoized', () => {
+    expect((AddressElement as unknown as { $$typeof: symbol }).$$typeof).toBe(
+      Symbol.for('react.memo'),
+    );
+  });
+
+  it('should re-render when its props change', () => {
+    const address = '0xd018538C87232FF95acbCe4870629b75640a78E7';
+    const otherAddress = '0x2990079bcdEe240329a520d2444386FC119da21a';
+    const { getByText, queryByText, rerender } = renderWithProvider(
+      <AddressElement
+        address={address}
+        onAccountPress={() => null}
+        onAccountLongPress={() => null}
+        onIconPress={() => null}
+        testID="address-element"
+        chainId="0x1"
+      />,
+      { state: initialState },
+    );
+    expect(getByText(renderShortAddress(address))).toBeDefined();
+
+    rerender(
+      <AddressElement
+        address={otherAddress}
+        onAccountPress={() => null}
+        onAccountLongPress={() => null}
+        onIconPress={() => null}
+        testID="address-element"
+        chainId="0x1"
+      />,
+    );
+
+    expect(getByText(renderShortAddress(otherAddress))).toBeDefined();
+    expect(queryByText(renderShortAddress(address))).toBeNull();
+  });
 });
