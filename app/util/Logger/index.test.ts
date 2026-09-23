@@ -1,6 +1,6 @@
 import Logger, { invalidateMetricsOptInCache } from '.';
 import { captureException, withScope } from '@sentry/react-native';
-import { AGREED, METRICS_OPT_IN } from '../../constants/storage';
+import { AGREED, DENIED, METRICS_OPT_IN } from '../../constants/storage';
 import StorageWrapper from '../../store/storage-wrapper';
 
 jest.mock('@sentry/react-native', () => ({
@@ -89,6 +89,17 @@ describe('Logger', () => {
       await Logger.error(new Error('testError'));
 
       expect(StorageWrapper.getItem).toHaveBeenCalledTimes(2);
+    });
+
+    it('stops reporting once the preference changes to opted out', async () => {
+      await Logger.error(new Error('testError'));
+      expect(mockedCaptureException).toHaveBeenCalledTimes(1);
+
+      StorageWrapper.getItem = jest.fn(() => Promise.resolve(DENIED));
+      invalidateMetricsOptInCache();
+      await Logger.error(new Error('testError'));
+
+      expect(mockedCaptureException).toHaveBeenCalledTimes(1);
     });
   });
 });
