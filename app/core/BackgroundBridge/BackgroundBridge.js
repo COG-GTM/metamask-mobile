@@ -127,34 +127,37 @@ export class BackgroundBridge extends EventEmitter {
       ),
     );
 
-    Engine.controllerMessenger.subscribe(
+    // Every controller messenger subscription is recorded so that
+    // onDisconnect can remove all of them.
+    this.controllerSubscriptions = [];
+
+    this.subscribeToControllerEvent(
       AppConstants.NETWORK_STATE_CHANGE_EVENT,
       this.sendStateUpdate,
     );
 
-    Engine.controllerMessenger.subscribe(
+    this.subscribeToControllerEvent(
       'PreferencesController:stateChange',
       this.sendStateUpdate,
     );
 
-    Engine.controllerMessenger.subscribe(
+    this.subscribeToControllerEvent(
       'SelectedNetworkController:stateChange',
       this.sendStateUpdate,
     );
 
-    Engine.controllerMessenger.subscribe(
+    this.subscribeToControllerEvent(
       'KeyringController:lock',
       this.onLock.bind(this),
     );
-    Engine.controllerMessenger.subscribe(
+    this.subscribeToControllerEvent(
       'KeyringController:unlock',
       this.onUnlock.bind(this),
     );
 
     try {
       const pc = Engine.context.PermissionController;
-      const controllerMessenger = Engine.controllerMessenger;
-      controllerMessenger.subscribe(
+      this.subscribeToControllerEvent(
         `${pc.name}:stateChange`,
         (subjectWithPermission) => {
           DevLogger.log(
@@ -181,8 +184,24 @@ export class BackgroundBridge extends EventEmitter {
     }
   }
 
+  /**
+   * Subscribes to a controller messenger event, retaining the handler
+   * reference so the subscription can be removed on disconnect.
+   *
+   * @param {string} eventName - The controller messenger event name.
+   * @param {Function} handler - The event handler.
+   * @param {Function} [selector] - Optional state selector.
+   */
+  subscribeToControllerEvent(eventName, handler, selector) {
+    if (selector) {
+      Engine.controllerMessenger.subscribe(eventName, handler, selector);
+    } else {
+      Engine.controllerMessenger.subscribe(eventName, handler);
+    }
+    this.controllerSubscriptions.push({ eventName, handler });
+  }
+
   onUnlock() {
-    // TODO UNSUBSCRIBE EVENT INSTEAD
     if (this.disconnected) return;
 
     if (this.isRemoteConn) {
@@ -208,7 +227,6 @@ export class BackgroundBridge extends EventEmitter {
   }
 
   onLock() {
-    // TODO UNSUBSCRIBE EVENT INSTEAD
     if (this.disconnected) return;
 
     if (this.isRemoteConn) {
@@ -367,14 +385,15 @@ export class BackgroundBridge extends EventEmitter {
 
   onDisconnect = () => {
     this.disconnected = true;
-    Engine.controllerMessenger.unsubscribe(
-      AppConstants.NETWORK_STATE_CHANGE_EVENT,
-      this.sendStateUpdate,
-    );
-    Engine.controllerMessenger.unsubscribe(
-      'PreferencesController:stateChange',
-      this.sendStateUpdate,
-    );
+
+    for (const { eventName, handler } of this.controllerSubscriptions) {
+      try {
+        Engine.controllerMessenger.unsubscribe(eventName, handler);
+      } catch (err) {
+        DevLogger.log(`Error unsubscribing from ${eventName}: ${err}`);
+      }
+    }
+    this.controllerSubscriptions = [];
 
     this.port.emit('disconnect', { name: this.port.name, data: null });
   };
