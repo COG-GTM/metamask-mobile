@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { BackHandler } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -53,7 +59,6 @@ import {
 import Routes from '../../../../../constants/navigation/Routes';
 import { strings } from '../../../../../../locales/i18n';
 import LoadingAnimation from '../../components/LoadingAnimation';
-import useInterval from '../../../../hooks/useInterval';
 import useInAppBrowser from '../../hooks/useInAppBrowser';
 import { createCheckoutNavDetails } from '../Checkout';
 import { PROVIDER_LINKS, ScreenLocation } from '../../types';
@@ -115,9 +120,6 @@ function Quotes() {
   const [pollingCyclesLeft, setPollingCyclesLeft] = useState(
     appConfig.POLLING_CYCLES - 1,
   );
-  const [remainingTime, setRemainingTime] = useState(
-    appConfig.POLLING_INTERVAL,
-  );
   const { styles, theme } = useStyles(styleSheet, {});
 
   const scrollOffsetY = useSharedValue(0);
@@ -178,7 +180,6 @@ function Quotes() {
     setIsLoading(true);
     setIsInPolling(true);
     setPollingCyclesLeft(appConfig.POLLING_CYCLES - 1);
-    setRemainingTime(appConfig.POLLING_INTERVAL);
     fetchQuotes();
 
     const payload = {
@@ -204,7 +205,6 @@ function Quotes() {
     }
   }, [
     appConfig.POLLING_CYCLES,
-    appConfig.POLLING_INTERVAL,
     fetchQuotes,
     isBuy,
     params,
@@ -494,25 +494,101 @@ function Quotes() {
     ],
   );
 
-  useInterval(
-    () => {
-      setRemainingTime((prevRemainingTime) => {
-        const newRemainingTime = Number(prevRemainingTime - 1000);
+  const handleTimerExpired = useCallback(() => {
+    setPollingCyclesLeft((cycles) => cycles - 1);
+    if (pollingCyclesLeft > 0) {
+      setProviderId(null);
+      fetchQuotes();
+    }
+  }, [fetchQuotes, pollingCyclesLeft]);
 
-        if (newRemainingTime <= 0) {
-          setPollingCyclesLeft((cycles) => cycles - 1);
-          if (pollingCyclesLeft > 0) {
-            setProviderId(null);
-            fetchQuotes();
+  // Read through a ref so per-item callbacks stay referentially stable.
+  const handlersRef = useRef({
+    handleOnQuotePress,
+    handleOnPressCTA,
+    handleInfoPress,
+    handleOnCustomActionPress,
+    handleOnPressCustomActionCTA,
+  });
+  handlersRef.current = {
+    handleOnQuotePress,
+    handleOnPressCTA,
+    handleInfoPress,
+    handleOnCustomActionPress,
+    handleOnPressCustomActionCTA,
+  };
+
+  const createQuoteHandlers = useCallback(
+    (quote: QuoteResponse | SellQuoteResponse, index: number) => ({
+      onPress: () => handlersRef.current.handleOnQuotePress(quote),
+      onPressCTA: () => handlersRef.current.handleOnPressCTA(quote, index),
+      showInfo: () => handlersRef.current.handleInfoPress(quote),
+    }),
+    [],
+  );
+
+  const createCustomActionHandlers = useCallback(
+    (customAction: PaymentCustomAction) => ({
+      onPress: () =>
+        handlersRef.current.handleOnCustomActionPress(customAction),
+      onPressCTA: () =>
+        handlersRef.current.handleOnPressCustomActionCTA(customAction),
+      showInfo: () =>
+        handlersRef.current.handleInfoPress({
+          provider: customAction?.buy?.provider,
+        }),
+    }),
+    [],
+  );
+
+  const quoteItems = useMemo(
+    () =>
+      quotesByPriceWithoutError.map((quote, index) => ({
+        quote,
+        previouslyUsedProvider: ordersProviders.includes(quote.provider.id),
+        ...createQuoteHandlers(quote, index),
+      })),
+    [createQuoteHandlers, ordersProviders, quotesByPriceWithoutError],
+  );
+
+  const recommendedQuoteItem = useMemo(
+    () =>
+      recommendedQuote
+        ? {
+            quote: recommendedQuote,
+            previouslyUsedProvider: ordersProviders.includes(
+              recommendedQuote.provider.id,
+            ),
+            ...createQuoteHandlers(recommendedQuote, 0),
           }
-        }
+        : null,
+    [createQuoteHandlers, ordersProviders, recommendedQuote],
+  );
 
-        return newRemainingTime > 0
-          ? newRemainingTime
-          : appConfig.POLLING_INTERVAL;
-      });
-    },
-    { delay: isInPolling && !isFetchingQuotes ? 1000 : null },
+  const customActionItems = useMemo(
+    () =>
+      (customActions ?? []).map((customAction) => ({
+        customAction,
+        previouslyUsedProvider: ordersProviders.includes(
+          customAction.buy?.provider?.id,
+        ),
+        ...createCustomActionHandlers(customAction),
+      })),
+    [createCustomActionHandlers, customActions, ordersProviders],
+  );
+
+  const recommendedCustomActionItem = useMemo(
+    () =>
+      recommendedCustomAction
+        ? {
+            customAction: recommendedCustomAction,
+            previouslyUsedProvider: ordersProviders.includes(
+              recommendedCustomAction.buy?.provider?.id,
+            ),
+            ...createCustomActionHandlers(recommendedCustomAction),
+          }
+        : null,
+    [createCustomActionHandlers, ordersProviders, recommendedCustomAction],
   );
 
   useEffect(() => {
@@ -919,47 +995,42 @@ function Quotes() {
           <Timer
             pollingCyclesLeft={pollingCyclesLeft}
             isFetchingQuotes={isFetchingQuotes}
-            remainingTime={remainingTime}
+            onTimerExpired={handleTimerExpired}
           />
         )}
         <ScreenLayout.Content style={styles.withoutTopPadding}>
           <ScrollView testID={QuoteSelectors.QUOTES}>
             {isFetchingQuotes && isInPolling ? (
               <LoadingQuotes count={1} />
-            ) : recommendedCustomAction ? (
+            ) : recommendedCustomActionItem ? (
               <CustomAction
                 isLoading={isQuoteLoading}
-                previouslyUsedProvider={ordersProviders.includes(
-                  recommendedCustomAction.buy?.provider?.id,
-                )}
-                customAction={recommendedCustomAction}
-                onPress={() =>
-                  handleOnCustomActionPress(recommendedCustomAction)
+                previouslyUsedProvider={
+                  recommendedCustomActionItem.previouslyUsedProvider
                 }
-                onPressCTA={() => {
-                  handleOnPressCustomActionCTA(recommendedCustomAction);
-                }}
+                customAction={recommendedCustomActionItem.customAction}
+                onPress={recommendedCustomActionItem.onPress}
+                onPressCTA={recommendedCustomActionItem.onPressCTA}
                 highlighted={
-                  recommendedCustomAction.buy?.provider?.id === providerId
+                  recommendedCustomActionItem.customAction.buy?.provider?.id ===
+                  providerId
                 }
-                showInfo={() =>
-                  handleInfoPress({
-                    provider: recommendedCustomAction?.buy?.provider,
-                  })
-                }
+                showInfo={recommendedCustomActionItem.showInfo}
               />
-            ) : recommendedQuote ? (
-              <Row key={recommendedQuote.provider.id}>
+            ) : recommendedQuoteItem ? (
+              <Row key={recommendedQuoteItem.quote.provider.id}>
                 <Quote
                   isLoading={isQuoteLoading}
-                  previouslyUsedProvider={ordersProviders.includes(
-                    recommendedQuote.provider.id,
-                  )}
-                  quote={recommendedQuote}
-                  onPress={() => handleOnQuotePress(recommendedQuote)}
-                  onPressCTA={() => handleOnPressCTA(recommendedQuote, 0)}
-                  highlighted={recommendedQuote.provider.id === providerId}
-                  showInfo={() => handleInfoPress(recommendedQuote)}
+                  previouslyUsedProvider={
+                    recommendedQuoteItem.previouslyUsedProvider
+                  }
+                  quote={recommendedQuoteItem.quote}
+                  onPress={recommendedQuoteItem.onPress}
+                  onPressCTA={recommendedQuoteItem.onPressCTA}
+                  highlighted={
+                    recommendedQuoteItem.quote.provider.id === providerId
+                  }
+                  showInfo={recommendedQuoteItem.showInfo}
                   rampType={rampType}
                 />
               </Row>
@@ -1029,7 +1100,7 @@ function Quotes() {
             <Timer
               pollingCyclesLeft={pollingCyclesLeft}
               isFetchingQuotes={isFetchingQuotes}
-              remainingTime={remainingTime}
+              onTimerExpired={handleTimerExpired}
             />
           )}
 
@@ -1073,45 +1144,38 @@ function Quotes() {
                 <LoadingQuotes />
               ) : (
                 <>
-                  {customActions && customActions.length > 0
-                    ? customActions.map((customAction) => (
+                  {customActionItems.length > 0
+                    ? customActionItems.map((customActionItem) => (
                         <CustomAction
-                          key={customAction.buy?.provider.id}
+                          key={customActionItem.customAction.buy?.provider.id}
                           isLoading={isQuoteLoading}
-                          previouslyUsedProvider={ordersProviders.includes(
-                            customAction.buy?.provider?.id,
-                          )}
-                          customAction={customAction}
-                          onPress={() =>
-                            handleOnCustomActionPress(customAction)
+                          previouslyUsedProvider={
+                            customActionItem.previouslyUsedProvider
                           }
-                          onPressCTA={() =>
-                            handleOnPressCustomActionCTA(customAction)
-                          }
+                          customAction={customActionItem.customAction}
+                          onPress={customActionItem.onPress}
+                          onPressCTA={customActionItem.onPressCTA}
                           highlighted={
-                            customAction.buy?.provider?.id === providerId
+                            customActionItem.customAction.buy?.provider?.id ===
+                            providerId
                           }
-                          showInfo={() =>
-                            handleInfoPress({
-                              provider: customAction?.buy?.provider,
-                            })
-                          }
+                          showInfo={customActionItem.showInfo}
                         />
                       ))
                     : null}
 
-                  {quotesByPriceWithoutError.map((quote, index) => (
-                    <Row key={quote.provider.id}>
+                  {quoteItems.map((quoteItem) => (
+                    <Row key={quoteItem.quote.provider.id}>
                       <Quote
                         isLoading={isQuoteLoading}
-                        previouslyUsedProvider={ordersProviders.includes(
-                          quote.provider.id,
-                        )}
-                        quote={quote}
-                        onPress={() => handleOnQuotePress(quote)}
-                        onPressCTA={() => handleOnPressCTA(quote, index)}
-                        highlighted={quote.provider.id === providerId}
-                        showInfo={() => handleInfoPress(quote)}
+                        previouslyUsedProvider={
+                          quoteItem.previouslyUsedProvider
+                        }
+                        quote={quoteItem.quote}
+                        onPress={quoteItem.onPress}
+                        onPressCTA={quoteItem.onPressCTA}
+                        highlighted={quoteItem.quote.provider.id === providerId}
+                        showInfo={quoteItem.showInfo}
                         rampType={rampType}
                       />
                     </Row>

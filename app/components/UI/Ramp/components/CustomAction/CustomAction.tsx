@@ -166,4 +166,4 @@ const CustomAction: React.FC<Props> = ({
   );
 };
 
-export default CustomAction;
+export default React.memo(CustomAction);

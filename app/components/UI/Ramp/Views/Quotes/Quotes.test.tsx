@@ -19,7 +19,7 @@ import {
 
 import Quotes, { QuotesParams } from './Quotes';
 import { mockQuotesData } from './Quotes.constants';
-import Timer from './Timer';
+import { TimerDisplay } from './Timer';
 import LoadingQuotes from './LoadingQuotes';
 
 import { RampSDK } from '../../sdk';
@@ -1041,7 +1041,7 @@ describe('Timer component', () => {
       remainingTime: number;
     }) => {
       renderComponent(
-        <Timer
+        <TimerDisplay
           isFetchingQuotes={isFetchingQuotes}
           pollingCyclesLeft={pollingCyclesLeft}
           remainingTime={remainingTime}
