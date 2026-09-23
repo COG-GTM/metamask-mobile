@@ -191,4 +191,27 @@ describe('BackgroundBridge', () => {
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
     });
   });
+
+  describe('onDisconnect', () => {
+    it('unsubscribes from every controller event it subscribed to', () => {
+      const bridge = setupBackgroundBridge('https:www.mock.io');
+      // The provider engine is built from mocked middleware factories, so its
+      // real teardown cannot run in this environment.
+      bridge.engine = { destroy: jest.fn() };
+
+      const subscriptions = Engine.controllerMessenger.subscribe.mock.calls.map(
+        ([eventName, handler]) => [eventName, handler],
+      );
+      expect(subscriptions).toHaveLength(6);
+
+      bridge.onDisconnect();
+
+      const unsubscriptions =
+        Engine.controllerMessenger.unsubscribe.mock.calls.map(
+          ([eventName, handler]) => [eventName, handler],
+        );
+      expect(unsubscriptions).toStrictEqual(subscriptions);
+      expect(bridge.controllerSubscriptions).toStrictEqual([]);
+    });
+  });
 });
