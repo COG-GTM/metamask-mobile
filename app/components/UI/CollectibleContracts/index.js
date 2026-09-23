@@ -24,8 +24,6 @@ import {
 } from '../../../reducers/collectibles';
 import { removeFavoriteCollectible } from '../../../actions/collectibles';
 import AppConstants from '../../../core/AppConstants';
-import { toLowerCaseEquals } from '../../../util/general';
-import { compareTokenIds } from '../../../util/tokens';
 import CollectibleDetectionModal from '../CollectibleDetectionModal';
 import { useTheme } from '../../../util/theme';
 import { MAINNET } from '../../../constants/network';
@@ -152,6 +150,13 @@ const debouncedNavigation = debounce((navigation, collectible) => {
 }, 200);
 
 /**
+ * Builds a lookup key that is unique per collectible identity, keeping the
+ * token id type significant so matching stays equivalent to strict equality.
+ */
+const collectibleKey = (address, tokenId) =>
+  `${address}#${typeof tokenId}:${tokenId}`;
+
+/**
  * View that renders a list of CollectibleContract
  * ERC-721 and ERC-1155
  */
@@ -187,9 +192,39 @@ const CollectibleContracts = ({
     [allCollectibles, chainId, isAllNetworks],
   );
 
-  const collectibles = filteredCollectibles.filter(
-    (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+  const collectibles = useMemo(
+    () =>
+      filteredCollectibles.filter(
+        (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+      ),
+    [filteredCollectibles],
   );
+
+  const collectiblesByContractAddress = useMemo(() => {
+    const map = new Map();
+    collectibles.forEach((collectible) => {
+      if (!collectible.address) return;
+      const key = collectible.address.toLowerCase();
+      const existing = map.get(key);
+      if (existing) {
+        existing.push(collectible);
+      } else {
+        map.set(key, [collectible]);
+      }
+    });
+    return map;
+  }, [collectibles]);
+
+  const collectiblesByIdentity = useMemo(() => {
+    const map = new Map();
+    collectibles.forEach((collectible) => {
+      const key = collectibleKey(collectible.address, collectible.tokenId);
+      if (!map.has(key)) {
+        map.set(key, collectible);
+      }
+    });
+    return map;
+  }, [collectibles]);
 
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -222,16 +257,11 @@ const CollectibleContracts = ({
    *  @returns Boolean indicating if the collectible is ignored or not.
    */
   const isCollectibleIgnored = useCallback(
-    (collectible) => {
-      const found = collectibles.find(
-        (elm) =>
-          elm.address === collectible.address &&
-          elm.tokenId === collectible.tokenId,
-      );
-      if (found) return false;
-      return true;
-    },
-    [collectibles],
+    (collectible) =>
+      !collectiblesByIdentity.has(
+        collectibleKey(collectible.address, collectible.tokenId),
+      ),
+    [collectiblesByIdentity],
   );
 
   /**
@@ -338,9 +368,13 @@ const CollectibleContracts = ({
 
   const renderCollectibleContract = useCallback(
     (item, index) => {
-      const contractCollectibles = collectibles?.filter((collectible) =>
-        toLowerCaseEquals(collectible.address, item.address),
-      );
+      // CollectibleContractElement consumes the array destructively, so hand it a copy.
+      const contractCollectibles = item.address
+        ? [
+            ...(collectiblesByContractAddress.get(item.address.toLowerCase()) ??
+              []),
+          ]
+        : [];
       return (
         <CollectibleContractElement
           onPress={onItemPress}
@@ -351,15 +385,18 @@ const CollectibleContracts = ({
         />
       );
     },
-    [collectibles, onItemPress],
+    [collectiblesByContractAddress, onItemPress],
   );
 
   const renderFavoriteCollectibles = useCallback(() => {
     const filteredCollectibles = favoriteCollectibles.map((collectible) =>
-      collectibles.find(
-        ({ tokenId, address }) =>
-          compareTokenIds(collectible.tokenId, tokenId) &&
-          collectible.address === address,
+      collectiblesByIdentity.get(
+        collectibleKey(
+          collectible.address,
+          typeof collectible.tokenId === 'number'
+            ? String(collectible.tokenId)
+            : collectible.tokenId,
+        ),
       ),
     );
     return (
@@ -373,7 +410,7 @@ const CollectibleContracts = ({
         />
       )
     );
-  }, [favoriteCollectibles, collectibles, onItemPress]);
+  }, [favoriteCollectibles, collectiblesByIdentity, onItemPress]);
 
   const getNftDetectionAnalyticsParams = useCallback((nft) => {
     try {
