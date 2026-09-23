@@ -5,6 +5,7 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Promise;
 
+import android.app.Activity;
 import android.view.WindowManager;
 
 import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
@@ -29,10 +30,15 @@ public class PreventScreenshot extends ReactContextBaseJavaModule {
       @Override
       public void run() {
         try {
-          getCurrentActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+          Activity activity = getCurrentActivity();
+          if (activity == null) {
+            promise.reject(PREVENT_SCREENSHOT_ERROR_CODE, "Forbid screenshot taking failure: no current activity.");
+            return;
+          }
+          activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
           promise.resolve("Done. Screenshot taking locked.");
         } catch(Exception e) {
-          promise.reject(PREVENT_SCREENSHOT_ERROR_CODE, "Forbid screenshot taking failure.");
+          promise.reject(PREVENT_SCREENSHOT_ERROR_CODE, "Forbid screenshot taking failure: " + e.getMessage(), e);
         }
       }
     });
@@ -44,10 +50,15 @@ public class PreventScreenshot extends ReactContextBaseJavaModule {
       @Override
       public void run() {
         try {
-          getCurrentActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+          Activity activity = getCurrentActivity();
+          if (activity == null) {
+            promise.reject(PREVENT_SCREENSHOT_ERROR_CODE, "Allow screenshot taking failure: no current activity.");
+            return;
+          }
+          activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
           promise.resolve("Done. Screenshot taking unlocked.");
         } catch (Exception e) {
-          promise.reject(PREVENT_SCREENSHOT_ERROR_CODE, "Allow screenshot taking failure.");
+          promise.reject(PREVENT_SCREENSHOT_ERROR_CODE, "Allow screenshot taking failure: " + e.getMessage(), e);
         }
       }
     });
