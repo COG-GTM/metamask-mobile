@@ -218,10 +218,10 @@ const CollectibleContracts = ({
   const collectiblesByIdentity = useMemo(() => {
     const map = new Map();
     collectibles.forEach((collectible) => {
-      map.set(
-        collectibleKey(collectible.address, collectible.tokenId),
-        collectible,
-      );
+      const key = collectibleKey(collectible.address, collectible.tokenId);
+      if (!map.has(key)) {
+        map.set(key, collectible);
+      }
     });
     return map;
   }, [collectibles]);
@@ -368,8 +368,12 @@ const CollectibleContracts = ({
 
   const renderCollectibleContract = useCallback(
     (item, index) => {
+      // CollectibleContractElement consumes the array destructively, so hand it a copy.
       const contractCollectibles = item.address
-        ? collectiblesByContractAddress.get(item.address.toLowerCase()) ?? []
+        ? [
+            ...(collectiblesByContractAddress.get(item.address.toLowerCase()) ??
+              []),
+          ]
         : [];
       return (
         <CollectibleContractElement
