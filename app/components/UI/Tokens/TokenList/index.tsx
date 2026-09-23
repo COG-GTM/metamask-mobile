@@ -18,6 +18,7 @@ import { TokenListItem } from './TokenListItem';
 import { WalletViewSelectorsIDs } from '../../../../../e2e/selectors/wallet/WalletView.selectors';
 import { useNavigation } from '@react-navigation/native';
 import Routes from '../../../../constants/navigation/Routes';
+import { useEarnTokenKeys } from '../../Earn/hooks/useEarnTokens';
 
 export interface FlashListAssetKey {
   address: string;
@@ -52,6 +53,8 @@ export const TokenList = ({
     selectIsTokenNetworkFilterEqualCurrentNetwork,
   );
 
+  const earnTokenKeys = useEarnTokenKeys();
+
   const listRef = useRef<FlashList<FlashListAssetKey>>(null);
 
   const styles = createStyles(colors);
@@ -82,6 +85,7 @@ export const TokenList = ({
         setShowScamWarningModal={setShowScamWarningModal}
         privacyMode={privacyMode}
         showPercentageChange={showPercentageChange}
+        earnTokenKeys={earnTokenKeys}
       />
     ),
     [
@@ -89,6 +93,7 @@ export const TokenList = ({
       setShowScamWarningModal,
       privacyMode,
       showPercentageChange,
+      earnTokenKeys,
     ],
   );
 

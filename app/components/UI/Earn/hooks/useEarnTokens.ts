@@ -2,7 +2,11 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import useStakingEligibility from '../../Stake/hooks/useStakingEligibility';
 import { TokenI } from '../../Tokens/types';
-import { getSupportedEarnTokens, filterEligibleTokens } from '../utils';
+import {
+  getSupportedEarnTokens,
+  filterEligibleTokens,
+  getEarnTokenKey,
+} from '../utils';
 import { selectAccountTokensAcrossChains } from '../../../../selectors/multichain';
 import { isPortfolioViewEnabled } from '../../../../util/networks';
 import { RootState } from '../../BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
@@ -69,6 +73,20 @@ const useEarnTokens = () => {
   ]);
 
   return supportedStablecoins;
+};
+
+// Earn eligibility lookup for list rendering: derived once and shared so each
+// row does an O(1) membership check instead of re-deriving the whole list.
+export const useEarnTokenKeys = () => {
+  const earnTokens = useEarnTokens();
+
+  return useMemo(
+    () =>
+      new Set(
+        earnTokens.map((token) => getEarnTokenKey(token.symbol, token.chainId)),
+      ),
+    [earnTokens],
+  );
 };
 
 export default useEarnTokens;

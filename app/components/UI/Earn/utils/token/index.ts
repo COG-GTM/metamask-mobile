@@ -68,6 +68,16 @@ export const filterEligibleTokens = (
   return tokensCopy;
 };
 
+/**
+ * Builds the identity of an earn token for O(1) membership lookups.
+ *
+ * @param symbol - The token symbol, e.g. `USDC`.
+ * @param chainId - The chain the token lives on, e.g. `0x1`.
+ * @returns The `symbol|chainId` key.
+ */
+export const getEarnTokenKey = (symbol?: string, chainId?: string) =>
+  `${symbol}|${chainId}`;
+
 export const isSupportedLendingTokenByChainId = (
   tokenSymbol: string,
   chainId: string,
