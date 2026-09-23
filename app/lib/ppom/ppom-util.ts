@@ -173,21 +173,10 @@ async function validateWithAPI(
 ): Promise<SecurityAlertResponse> {
   const startTime = Date.now();
 
+  let response: SecurityAlertResponse;
+
   try {
-    const response = await validateWithSecurityAlertsAPI(chainId, request);
-
-    trackSecurityAlertsAPIEvent(
-      CONFIRMATION_EVENTS.SECURITY_ALERTS_API_REQUEST_COMPLETED,
-      {
-        chain_id: chainId,
-        duration_ms: Date.now() - startTime,
-      },
-    );
-
-    return {
-      ...response,
-      source: SecurityAlertSource.API,
-    };
+    response = await validateWithSecurityAlertsAPI(chainId, request);
   } catch (e) {
     const error = e as Error;
 
@@ -209,17 +198,45 @@ async function validateWithAPI(
 
     return await validateWithController(ppomController, request);
   }
+
+  trackSecurityAlertsAPIEvent(
+    CONFIRMATION_EVENTS.SECURITY_ALERTS_API_REQUEST_COMPLETED,
+    {
+      chain_id: chainId,
+      duration_ms: Date.now() - startTime,
+    },
+  );
+
+  return {
+    ...response,
+    source: SecurityAlertSource.API,
+  };
 }
 
+/**
+ * Submit a security alerts API metric to MetaMetrics, tagged with the
+ * `security_alerts_api` source.
+ *
+ * Telemetry is a side effect of validation, so any analytics failure is
+ * swallowed and logged rather than propagated to the validation flow.
+ *
+ * @param event - The analytics event to track.
+ * @param properties - Additional event properties. Must not contain request
+ * bodies or addresses.
+ */
 function trackSecurityAlertsAPIEvent(
   event: IMetaMetricsEvent,
   properties: JsonMap,
 ) {
-  MetaMetrics.getInstance().trackEvent(
-    MetricsEventBuilder.createEventBuilder(event)
-      .addProperties({ ...properties, source: SECURITY_ALERTS_API_SOURCE })
-      .build(),
-  );
+  try {
+    MetaMetrics.getInstance().trackEvent(
+      MetricsEventBuilder.createEventBuilder(event)
+        .addProperties({ ...properties, source: SECURITY_ALERTS_API_SOURCE })
+        .build(),
+    );
+  } catch (e) {
+    Logger.log(`Error tracking security alerts API metric: ${e}`);
+  }
 }
 
 function setSecurityAlertResponse(
