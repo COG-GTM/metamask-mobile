@@ -2,26 +2,21 @@ import React from 'react';
 import { Text } from 'react-native';
 import axios from 'axios';
 import { render, waitFor } from '@testing-library/react-native';
-// eslint-disable-next-line import/no-namespace
-import * as withIsOriginalNativeTokenModule from './withIsOriginalNativeToken';
-
-const withIsOriginalNativeToken = withIsOriginalNativeTokenModule.default as (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  component: any,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-) => any;
-const { resetSafeChainsListCache } = withIsOriginalNativeTokenModule;
+import withIsOriginalNativeToken from './withIsOriginalNativeToken';
+import { resetSafeChainsListCache, SafeChain } from './safeChainsList';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-const SAFE_CHAINS_LIST = [{ chainId: 1, nativeCurrency: { symbol: 'ETH' } }];
+const SAFE_CHAINS_LIST: SafeChain[] = [
+  { chainId: 1, nativeCurrency: { symbol: 'ETH' } },
+];
 
 const Wrapped = withIsOriginalNativeToken(
   ({
     matchedChainNetwork,
   }: {
-    matchedChainNetwork: { safeChainsList: { chainId: number }[] } | null;
+    matchedChainNetwork: { safeChainsList: SafeChain[] } | null;
   }) => (
     <Text testID="chains">
       {matchedChainNetwork ? matchedChainNetwork.safeChainsList.length : 'none'}
