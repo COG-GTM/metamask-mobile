@@ -1,5 +1,9 @@
 /* eslint-disable dot-notation */
-import { UserFeedback, captureUserFeedback } from '@sentry/react-native';
+import {
+  UserFeedback,
+  captureUserFeedback,
+  captureException,
+} from '@sentry/react-native';
 import {
   deriveSentryEnvironment,
   excludeEvents,
@@ -7,17 +11,91 @@ import {
   maskObject,
   sentryStateMask,
   AllProperties,
+  rewriteReport,
+  REPORT_REWRITE_FAILED_TAG,
+  REPORT_REWRITE_FAILED_MESSAGE,
 } from './utils';
 import { DeepPartial } from '../test/renderWithProvider';
 import { RootState } from '../../reducers';
 import { NetworkStatus } from '@metamask/network-controller';
 import { EthScope } from '@metamask/keyring-api';
+import { store } from '../../store';
 
 jest.mock('@sentry/react-native', () => ({
   ...jest.requireActual('@sentry/react-native'),
   captureUserFeedback: jest.fn(),
+  captureException: jest.fn(),
+}));
+jest.mock('../../store', () => ({
+  store: { getState: jest.fn(() => ({})) },
 }));
 const mockedCaptureUserFeedback = jest.mocked(captureUserFeedback);
+const mockedCaptureException = jest.mocked(captureException);
+const mockedGetState = jest.mocked(store.getState);
+
+const captureTagsAt = (callIndex: number) =>
+  (
+    mockedCaptureException.mock.calls[callIndex][1] as {
+      tags?: Record<string, unknown>;
+    }
+  )?.tags;
+
+describe('rewriteReport', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockedGetState.mockReturnValue({} as RootState);
+  });
+
+  it('masks the app state onto the report', () => {
+    const report = { contexts: { device: { name: 'iPhone' } } };
+
+    const rewritten = rewriteReport(report);
+
+    expect(rewritten).toBe(report);
+    expect(rewritten.contexts.appState).toEqual({});
+    expect(mockedCaptureException).not.toHaveBeenCalled();
+  });
+
+  it('drops the report and self-reports when scrubbing throws', () => {
+    // `exception` without `values` makes the SES frame filter throw
+    const report = { exception: {} };
+
+    expect(rewriteReport(report)).toBeNull();
+    expect(mockedCaptureException).toHaveBeenCalledTimes(1);
+    const [error] = mockedCaptureException.mock.calls[0];
+    expect((error as Error).message).toBe(REPORT_REWRITE_FAILED_MESSAGE);
+    expect(captureTagsAt(0)).toMatchObject({
+      [REPORT_REWRITE_FAILED_TAG]: true,
+      sentry_report_rewrite_stage: 'scrub',
+    });
+  });
+
+  it('sends the scrubbed report without app state when masking throws', () => {
+    mockedGetState.mockImplementation(() => {
+      throw new Error('state exploded');
+    });
+    const report = { contexts: { device: { name: 'iPhone' } } };
+
+    const rewritten = rewriteReport(report);
+
+    expect(rewritten).toBe(report);
+    expect(rewritten.contexts.appState).toEqual({ maskFailed: true });
+    expect(rewritten.contexts.device.name).toBeNull();
+    expect(captureTagsAt(0)).toMatchObject({
+      sentry_report_rewrite_stage: 'appState',
+    });
+  });
+
+  it('passes its own failure reports through untouched', () => {
+    const report = {
+      exception: {},
+      tags: { [REPORT_REWRITE_FAILED_TAG]: true },
+    };
+
+    expect(rewriteReport(report)).toBe(report);
+    expect(mockedCaptureException).not.toHaveBeenCalled();
+  });
+});
 
 describe('deriveSentryEnvironment', () => {
   it('returns production-flask for non-dev production environment and flask build type', async () => {

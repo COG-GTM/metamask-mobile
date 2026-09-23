@@ -419,7 +419,42 @@ export function maskObject(objectToMask, mask = {}) {
   }, {});
 }
 
-function rewriteReport(report) {
+export const REPORT_REWRITE_FAILED_TAG = 'sentry_report_rewrite_failed';
+export const REPORT_REWRITE_FAILED_MESSAGE = 'Sentry report rewrite failed';
+
+/**
+ * Reports a failure of the report rewriting pipeline to Sentry itself, so that
+ * dropped or partially scrubbed reports are visible instead of silent.
+ *
+ * The synthesized event carries `REPORT_REWRITE_FAILED_TAG` so that
+ * `rewriteReport` lets it through untouched, which keeps a systematically
+ * failing pipeline from recursing.
+ *
+ * @param {string} stage - The rewriting stage that failed ('scrub' or 'appState')
+ * @param {unknown} err - The error thrown by that stage
+ */
+function reportRewriteFailure(stage, err) {
+  try {
+    Sentry.captureException(new Error(REPORT_REWRITE_FAILED_MESSAGE), {
+      tags: {
+        [REPORT_REWRITE_FAILED_TAG]: true,
+        sentry_report_rewrite_stage: stage,
+      },
+      extra: {
+        originalErrorMessage: err instanceof Error ? err.message : String(err),
+      },
+    });
+  } catch {
+    // A failure to report the failure must never break the reporting pipeline.
+  }
+}
+
+export function rewriteReport(report) {
+  // Failure reports are synthesized by this module and contain no user data.
+  if (report?.tags?.[REPORT_REWRITE_FAILED_TAG]) {
+    return report;
+  }
+
   try {
     // filter out SES from error stack trace
     removeSES(report);
@@ -436,13 +471,25 @@ function rewriteReport(report) {
     removeDeviceTimezone(report);
     // remove device name
     removeDeviceName(report);
+  } catch (err) {
+    // The report may still hold unscrubbed user data, so drop it, but make the
+    // drop observable.
+    reportRewriteFailure('scrub', err);
+    return null;
+  }
 
+  try {
     const appState = store?.getState();
     const maskedState = maskObject(appState, sentryStateMask);
-    report.contexts.appState = maskedState;
+    report.contexts = { ...report.contexts, appState: maskedState };
   } catch (err) {
-    console.error('ENTER ERROR OF REPORT ', err);
-    throw err;
+    // App state is supplementary debugging context, so send the scrubbed report
+    // without it rather than losing the error entirely.
+    reportRewriteFailure('appState', err);
+    report.contexts = {
+      ...report.contexts,
+      appState: { maskFailed: true },
+    };
   }
 
   return report;
