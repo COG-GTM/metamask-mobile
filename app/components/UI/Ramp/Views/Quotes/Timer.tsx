@@ -21,20 +21,27 @@ const Timer = ({
   const { appConfig } = useRampSDK();
   const { styles } = useStyles(styleSheet, {});
 
-  const getRemainingTime = useCallback(() => {
+  const getInitialRemainingTime = useCallback(() => {
     const remaining = Math.ceil((expiresAt - Date.now()) / 1000) * 1000;
     return remaining > 0 ? remaining : appConfig.POLLING_INTERVAL;
   }, [appConfig.POLLING_INTERVAL, expiresAt]);
 
-  const [remainingTime, setRemainingTime] = useState(getRemainingTime);
+  const [remainingTime, setRemainingTime] = useState(getInitialRemainingTime);
 
   useEffect(() => {
-    setRemainingTime(getRemainingTime());
-  }, [getRemainingTime]);
+    setRemainingTime(getInitialRemainingTime());
+  }, [getInitialRemainingTime]);
 
-  useInterval(() => setRemainingTime(getRemainingTime()), {
-    delay: isFetchingQuotes ? null : 1000,
-  });
+  useInterval(
+    () =>
+      setRemainingTime((prevRemainingTime) => {
+        const newRemainingTime = prevRemainingTime - 1000;
+        return newRemainingTime > 0
+          ? newRemainingTime
+          : appConfig.POLLING_INTERVAL;
+      }),
+    { delay: isFetchingQuotes ? null : 1000 },
+  );
 
   return (
     <View style={styles.timerWrapper}>
