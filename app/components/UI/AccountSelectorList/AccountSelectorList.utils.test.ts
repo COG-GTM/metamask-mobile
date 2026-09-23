@@ -23,6 +23,8 @@ const createAccount = (address: string, balanceError?: string): Account =>
     balanceError,
   } as Account);
 
+const options = { rendersBalanceError: true };
+
 describe('AccountSelectorList utils', () => {
   beforeEach(() => {
     mockGetLabelTextByAddress.mockReset();
@@ -31,16 +33,26 @@ describe('AccountSelectorList utils', () => {
 
   describe('getAccountItemHeight', () => {
     it('returns the base height for an account without a tag or error', () => {
-      expect(getAccountItemHeight(createAccount('0x1'))).toBe(78);
+      expect(getAccountItemHeight(createAccount('0x1'), options)).toBe(80);
     });
 
     it('adds height for the tag label rendered next to the account name', () => {
       mockGetLabelTextByAddress.mockReturnValue('SRP #2');
-      expect(getAccountItemHeight(createAccount('0x1'))).toBe(102);
+      expect(getAccountItemHeight(createAccount('0x1'), options)).toBe(108);
     });
 
-    it('adds height for a balance error', () => {
-      expect(getAccountItemHeight(createAccount('0x1', 'error'))).toBe(100);
+    it('adds height for a balance error rendered as tertiary text', () => {
+      expect(getAccountItemHeight(createAccount('0x1', 'error'), options)).toBe(
+        104,
+      );
+    });
+
+    it('ignores the balance error for variants that do not render it', () => {
+      expect(
+        getAccountItemHeight(createAccount('0x1', 'error'), {
+          rendersBalanceError: false,
+        }),
+      ).toBe(80);
     });
   });
 
@@ -51,19 +63,18 @@ describe('AccountSelectorList utils', () => {
       );
 
       expect(
-        getAccountItemOffsets([
-          createAccount('0x1'),
-          createAccount('0x2'),
-          createAccount('0x3'),
-        ]),
-      ).toEqual([0, 78, 180]);
+        getAccountItemOffsets(
+          [createAccount('0x1'), createAccount('0x2'), createAccount('0x3')],
+          options,
+        ),
+      ).toEqual([0, 80, 188]);
     });
 
     it('starts at zero regardless of the account position in the unfiltered list', () => {
       const account = createAccount('0x3');
       account.yOffset = 780;
 
-      expect(getAccountItemOffsets([account])).toEqual([0]);
+      expect(getAccountItemOffsets([account], options)).toEqual([0]);
     });
   });
 });

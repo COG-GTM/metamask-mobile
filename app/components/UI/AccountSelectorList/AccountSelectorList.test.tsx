@@ -284,8 +284,8 @@ describe('AccountSelectorList', () => {
         ACCOUNT_SELECTOR_LIST_INITIAL_NUM_TO_RENDER,
       );
       expect(list.props.getItemLayout(defaultAccountsMock, 1)).toEqual({
-        length: 78,
-        offset: 78,
+        length: 80,
+        offset: 80,
         index: 1,
       });
     });

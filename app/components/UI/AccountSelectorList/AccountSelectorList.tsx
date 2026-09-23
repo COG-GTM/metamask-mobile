@@ -307,23 +307,28 @@ const AccountSelectorList = ({
     ],
   );
 
+  const itemLayoutOptions = useMemo(
+    () => ({ rendersBalanceError: isMultiSelect || isSelectWithoutMenu }),
+    [isMultiSelect, isSelectWithoutMenu],
+  );
+
   // Offsets are derived from the rendered accounts rather than from
   // Account.yOffset, which is relative to the unfiltered account list.
   const accountOffsets = useMemo(
-    () => getAccountItemOffsets(accounts),
-    [accounts],
+    () => getAccountItemOffsets(accounts, itemLayoutOptions),
+    [accounts, itemLayoutOptions],
   );
 
   const getItemLayout = useCallback(
     (data: ArrayLike<Account> | null | undefined, index: number) => {
       const item = data?.[index];
       return {
-        length: item ? getAccountItemHeight(item) : 0,
+        length: item ? getAccountItemHeight(item, itemLayoutOptions) : 0,
         offset: accountOffsets[index] ?? 0,
         index,
       };
     },
-    [accountOffsets],
+    [accountOffsets, itemLayoutOptions],
   );
 
   const onContentSizeChanged = useCallback(() => {
