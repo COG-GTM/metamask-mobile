@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-
-const CHAIN_ID_NETWORK_URL = 'https://chainid.network/chains.json';
+import { getSafeChainsList } from './safeChainsList';
 
 const withIsOriginalNativeToken = (WrappedComponent) => {
   // This is the functional component wrapper that can use hooks
@@ -10,11 +8,24 @@ const withIsOriginalNativeToken = (WrappedComponent) => {
     const [matchedChainNetwork, setMatchedChainNetwork] = useState(null);
 
     useEffect(() => {
-      axios.get(CHAIN_ID_NETWORK_URL).then(({ data: safeChainsList }) => {
-        setMatchedChainNetwork({
-          safeChainsList: [...safeChainsList],
-        });
-      });
+      let isMounted = true;
+      const { promise, release } = getSafeChainsList();
+
+      promise
+        .then((safeChainsList) => {
+          if (isMounted) {
+            setMatchedChainNetwork({ safeChainsList });
+          }
+        })
+        .catch(() => {
+          // network list is unavailable; consumers keep the null default
+        })
+        .finally(release);
+
+      return () => {
+        isMounted = false;
+        release();
+      };
     }, []);
 
     // Pass the value from useSelector as a prop to the WrappedComponent
