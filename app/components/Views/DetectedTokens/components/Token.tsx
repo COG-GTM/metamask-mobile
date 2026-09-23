@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import {
   MarketDataDetails,
@@ -107,7 +107,7 @@ const Token = ({ token, selected, toggleSelected }: Props) => {
   const { address, symbol, aggregators = [], decimals } = token;
   const accountAddress = useSelector(selectSelectedInternalAccountAddress);
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [expandTokenList, setExpandTokenList] = useState(false);
   const tokenExchangeRatesAllChains = useSelector(selectTokenMarketData);
   const currentChainId = useSelector(selectEvmChainId);
@@ -145,7 +145,8 @@ const Token = ({ token, selected, toggleSelected }: Props) => {
   const showMoreLink = !expandTokenList && aggregators.length > 2;
   const dispatch = useDispatch();
 
-  const triggerShowAlert = () =>
+  const copyAddressToClipboard = useCallback(async () => {
+    await ClipboardManager.setString(address);
     dispatch(
       showAlert({
         isVisible: true,
@@ -154,19 +155,15 @@ const Token = ({ token, selected, toggleSelected }: Props) => {
         data: { msg: strings('detected_tokens.address_copied_to_clipboard') },
       }),
     );
+  }, [address, dispatch]);
 
-  const copyAddressToClipboard = async () => {
-    await ClipboardManager.setString(address);
-    triggerShowAlert();
-  };
-
-  const triggerExpandTokenList = () => {
+  const triggerExpandTokenList = useCallback(() => {
     setExpandTokenList(true);
-  };
+  }, []);
 
-  const triggerToggleSelected = () => {
+  const triggerToggleSelected = useCallback(() => {
     toggleSelected(!selected);
-  };
+  }, [selected, toggleSelected]);
 
   return (
     <View style={styles.tokenContainer}>
@@ -241,4 +238,4 @@ const Token = ({ token, selected, toggleSelected }: Props) => {
   );
 };
 
-export default Token;
+export default React.memo(Token);

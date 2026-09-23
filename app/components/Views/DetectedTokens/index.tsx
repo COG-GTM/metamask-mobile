@@ -89,6 +89,32 @@ interface IgnoredTokensByAddress {
   [address: string]: true;
 }
 
+interface DetectedTokenRowProps {
+  token: TokenI & { chainId: Hex };
+  selected: boolean;
+  onToggle: (address: string, selected: boolean) => void;
+}
+
+const DetectedTokenRow = React.memo(
+  ({ token, selected, onToggle }: DetectedTokenRowProps) => {
+    const { address } = token;
+    const toggleSelected = useCallback(
+      (isSelected: boolean) => onToggle(address, isSelected),
+      [address, onToggle],
+    );
+
+    return (
+      <Token
+        token={token}
+        selected={selected}
+        toggleSelected={toggleSelected}
+      />
+    );
+  },
+);
+
+DetectedTokenRow.displayName = 'DetectedTokenRow';
+
 const DetectedTokens = () => {
   const navigation = useNavigation();
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -107,7 +133,7 @@ const DetectedTokens = () => {
   const isAllNetworks = useSelector(selectIsAllNetworks);
 
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const currentDetectedTokens =
     isPortfolioViewEnabled() && isAllNetworks && isPopularNetworks
@@ -341,28 +367,36 @@ const DetectedTokens = () => {
     </Text>
   );
 
-  const renderToken = ({ item }: { item: TokenType }) => {
-    const { address } = item;
-    const isChecked = !ignoredTokens[address];
+  const handleToggleToken = useCallback(
+    (address: string, selected: boolean) => {
+      setIgnoredTokens((previouslyIgnoredTokens) => {
+        const isIgnored = Boolean(previouslyIgnoredTokens[address]);
+        if (selected === !isIgnored) {
+          return previouslyIgnoredTokens;
+        }
+        if (selected) {
+          const newIgnoredTokens = { ...previouslyIgnoredTokens };
+          delete newIgnoredTokens[address];
+          return newIgnoredTokens;
+        }
+        return { ...previouslyIgnoredTokens, [address]: true };
+      });
+    },
+    [],
+  );
 
-    return (
-      <Token
+  const renderToken = useCallback(
+    ({ item }: { item: TokenType }) => (
+      <DetectedTokenRow
         token={item as TokenI & { chainId: Hex }}
-        selected={isChecked}
-        toggleSelected={(selected) => {
-          const newIgnoredTokens = { ...ignoredTokens };
-          if (selected) {
-            delete newIgnoredTokens[address];
-          } else {
-            newIgnoredTokens[address] = true;
-          }
-          setIgnoredTokens(newIgnoredTokens);
-        }}
+        selected={!ignoredTokens[item.address]}
+        onToggle={handleToggleToken}
       />
-    );
-  };
+    ),
+    [ignoredTokens, handleToggleToken],
+  );
 
-  const getTokenId = (item: TokenType) => item.address;
+  const getTokenId = useCallback((item: TokenType) => item.address, []);
 
   const renderDetectedTokens = () => (
     <FlatList
@@ -370,6 +404,7 @@ const DetectedTokens = () => {
       data={currentDetectedTokens}
       keyExtractor={getTokenId}
       renderItem={renderToken}
+      extraData={ignoredTokens}
       showsVerticalScrollIndicator={false}
     />
   );
