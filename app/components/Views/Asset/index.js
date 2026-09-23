@@ -59,7 +59,6 @@ import {
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { updateIncomingTransactions } from '../../../util/transaction-controller';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
-import { store } from '../../../store';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import {
   selectSwapsTransactions,
@@ -153,6 +152,10 @@ class Asset extends PureComponent {
      * The chain ID for the current selected network
      */
     chainId: PropTypes.string,
+    /**
+     * The network ID for the current selected network
+     */
+    networkId: PropTypes.string,
     /**
      * An array that represents the user transactions
      */
@@ -308,7 +311,9 @@ class Asset extends PureComponent {
       prevProps.transactions !== this.props.transactions ||
       prevProps.tokens !== this.props.tokens ||
       prevProps.swapsTransactions !== this.props.swapsTransactions ||
-      prevProps.selectedInternalAccount !== this.props.selectedInternalAccount
+      prevProps.selectedInternalAccount !==
+        this.props.selectedInternalAccount ||
+      prevProps.networkId !== this.props.networkId
     );
   }
 
@@ -326,8 +331,7 @@ class Asset extends PureComponent {
     this.txsPending.length !== newTxsPending.length;
 
   ethFilter = (tx) => {
-    const { networkId } = store.getState().inpageProvider;
-    const { chainId } = this.props;
+    const { chainId, networkId } = this.props;
     const {
       txParams: { from, to },
       isTransfer,
@@ -356,9 +360,7 @@ class Asset extends PureComponent {
   };
 
   noEthFilter = (tx) => {
-    const { networkId } = store.getState().inpageProvider;
-
-    const { chainId, swapsTransactions } = this.props;
+    const { chainId, networkId, swapsTransactions } = this.props;
     const {
       txParams: { to, from },
       isTransfer,
@@ -605,6 +607,7 @@ const mapStateToProps = (state, { route }) => ({
   currentCurrency: selectCurrentCurrency(state),
   selectedInternalAccount: selectSelectedInternalAccount(state),
   chainId: selectChainId(state),
+  networkId: state.inpageProvider.networkId,
   tokens: selectTokens(state),
   transactions: selectTransactions(state),
   rpcUrl: selectRpcUrl(state),
