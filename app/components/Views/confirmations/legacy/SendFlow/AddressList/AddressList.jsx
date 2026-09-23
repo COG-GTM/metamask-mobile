@@ -35,7 +35,7 @@ const AddressList = ({
   reloadAddressList,
 }) => {
   const { colors } = useTheme();
-  const styles = styleSheet(colors);
+  const styles = useMemo(() => styleSheet(colors), [colors]);
   const [contactElements, setContactElements] = useState([]);
   const [fuse, setFuse] = useState(undefined);
   const internalAccounts = useSelector(selectInternalAccounts);
@@ -148,7 +148,7 @@ const AddressList = ({
     parseAddressBook,
   ]);
 
-  const renderMyAccounts = () => {
+  const renderMyAccounts = useCallback(() => {
     if (inputSearch) return null;
 
     return (
@@ -173,32 +173,43 @@ const AddressList = ({
         ))}
       </View>
     );
-  };
+  }, [
+    inputSearch,
+    internalAccounts,
+    styles,
+    onAccountPress,
+    onIconPress,
+    onAccountLongPress,
+    chainId,
+  ]);
 
-  const renderElement = (addressElement) => {
-    if (typeof addressElement === 'string') {
-      return LabelElement(styles, addressElement);
-    }
+  const renderElement = useCallback(
+    (addressElement) => {
+      if (typeof addressElement === 'string') {
+        return LabelElement(styles, addressElement);
+      }
 
-    const key = addressElement.address + addressElement.name;
+      const key = addressElement.address + addressElement.name;
 
-    return (
-      <AddressElement
-        key={key}
-        address={addressElement.address}
-        name={addressElement.name}
-        onIconPress={onIconPress}
-        onAccountPress={onAccountPress}
-        onAccountLongPress={onAccountLongPress}
-        testID={SendViewSelectorsIDs.ADDRESS_BOOK_ACCOUNT}
-        isAmbiguousAddress={addressElement.isAmbiguousAddress}
-        chainId={chainId}
-      />
-    );
-  };
+      return (
+        <AddressElement
+          key={key}
+          address={addressElement.address}
+          name={addressElement.name}
+          onIconPress={onIconPress}
+          onAccountPress={onAccountPress}
+          onAccountLongPress={onAccountLongPress}
+          testID={SendViewSelectorsIDs.ADDRESS_BOOK_ACCOUNT}
+          isAmbiguousAddress={addressElement.isAmbiguousAddress}
+          chainId={chainId}
+        />
+      );
+    },
+    [styles, onIconPress, onAccountPress, onAccountLongPress, chainId],
+  );
 
-  const renderContent = () => {
-    const sendFlowContacts = [];
+  const sendFlowContacts = useMemo(() => {
+    const contacts = [];
 
     contactElements.forEach((contractElement) => {
       if (
@@ -206,47 +217,47 @@ const AddressList = ({
         contractElement.isSmartContract === false
       ) {
         const nameInitial = contractElement?.name?.[0].toLowerCase();
-        if (sendFlowContacts.includes(nameInitial)) {
-          sendFlowContacts.push(contractElement);
+        if (contacts.includes(nameInitial)) {
+          contacts.push(contractElement);
         } else {
-          sendFlowContacts.push(nameInitial);
-          sendFlowContacts.push(contractElement);
+          contacts.push(nameInitial);
+          contacts.push(contractElement);
         }
       }
     });
 
-    return (
-      <View style={styles.root}>
-        <KeyboardAwareScrollView
-          style={styles.myAccountsWrapper}
-          keyboardShouldPersistTaps="handled"
-        >
-          {!onlyRenderAddressBook ? (
-            <>
-              {renderMyAccounts()}
+    return contacts;
+  }, [contactElements]);
 
-              {sendFlowContacts.length ? (
-                <Text
-                  variant={TextVariant.BodyLGMedium}
-                  style={styles.labelElementText}
-                >
-                  {strings('app_settings.contacts_title')}
-                </Text>
-              ) : (
-                <></>
-              )}
+  return (
+    <View style={styles.root}>
+      <KeyboardAwareScrollView
+        style={styles.myAccountsWrapper}
+        keyboardShouldPersistTaps="handled"
+      >
+        {!onlyRenderAddressBook ? (
+          <>
+            {renderMyAccounts()}
 
-              {sendFlowContacts.map(renderElement)}
-            </>
-          ) : (
-            contactElements.map(renderElement)
-          )}
-        </KeyboardAwareScrollView>
-      </View>
-    );
-  };
+            {sendFlowContacts.length ? (
+              <Text
+                variant={TextVariant.BodyLGMedium}
+                style={styles.labelElementText}
+              >
+                {strings('app_settings.contacts_title')}
+              </Text>
+            ) : (
+              <></>
+            )}
 
-  return renderContent();
+            {sendFlowContacts.map(renderElement)}
+          </>
+        ) : (
+          contactElements.map(renderElement)
+        )}
+      </KeyboardAwareScrollView>
+    </View>
+  );
 };
 
 export default AddressList;
