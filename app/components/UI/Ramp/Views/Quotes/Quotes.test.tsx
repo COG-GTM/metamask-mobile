@@ -1044,10 +1044,29 @@ describe('Timer component', () => {
         <Timer
           isFetchingQuotes={isFetchingQuotes}
           pollingCyclesLeft={pollingCyclesLeft}
-          remainingTime={remainingTime}
+          expiresAt={Date.now() + remainingTime}
         />,
       );
       expect(screen.toJSON()).toMatchSnapshot();
     },
   );
+
+  it('counts down without prop changes', () => {
+    jest.useFakeTimers();
+    renderComponent(
+      <Timer
+        isFetchingQuotes={false}
+        pollingCyclesLeft={1}
+        expiresAt={Date.now() + 15000}
+      />,
+    );
+    expect(screen.getByText('0:15')).toBeTruthy();
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
+    expect(screen.getByText('0:13')).toBeTruthy();
+    act(() => {
+      jest.useFakeTimers({ legacyFakeTimers: true });
+    });
+  });
 });
