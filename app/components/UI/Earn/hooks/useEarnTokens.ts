@@ -12,7 +12,14 @@ import {
   selectStablecoinLendingEnabledFlag,
 } from '../selectors/featureFlags';
 
-// Identifies an earn token across chains without keeping a reference to it.
+/**
+ * Builds the key identifying an earn token across chains, so consumers can
+ * check membership without holding a reference to the token itself.
+ *
+ * @param symbol - The token symbol, e.g. `USDC`.
+ * @param chainId - The chain the token belongs to.
+ * @returns The earn token key.
+ */
 export const getEarnTokenKey = (symbol: string, chainId: TokenI['chainId']) =>
   `${symbol}-${chainId}`;
 

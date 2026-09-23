@@ -278,6 +278,10 @@ describe('useEarnTokenKeys', () => {
 
     expect(result.current.size).toBe(5);
 
+    // The same symbol on two chains must not collide.
+    expect(result.current.has('USDC-0x1')).toBe(true);
+    expect(result.current.has('USDC-0x2105')).toBe(true);
+
     [
       MOCK_ETH_MAINNET_ASSET,
       MOCK_USDC_MAINNET_ASSET,
