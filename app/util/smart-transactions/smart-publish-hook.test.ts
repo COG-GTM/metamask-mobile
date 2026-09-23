@@ -377,6 +377,41 @@ describe('submitSmartTransactionHook', () => {
     );
   });
 
+  it('unsubscribes every smart transaction listener once the transaction reaches a terminal status', async () => {
+    await withRequest(async ({ request, controllerMessenger }) => {
+      const subscribeSpy = jest.spyOn(controllerMessenger, 'subscribe');
+      const unsubscribeSpy = jest.spyOn(controllerMessenger, 'unsubscribe');
+
+      setImmediate(() => {
+        controllerMessenger.publish(
+          'SmartTransactionsController:smartTransaction',
+          {
+            status: 'success',
+            statusMetadata: {
+              minedHash: transactionHash,
+            },
+            uuid: stxUuid,
+          } as SmartTransaction,
+        );
+      });
+      await submitSmartTransactionHook(request);
+
+      const smartTransactionEvent =
+        'SmartTransactionsController:smartTransaction';
+      const subscribedHandlers = subscribeSpy.mock.calls
+        .filter(([eventType]) => eventType === smartTransactionEvent)
+        .map(([, handler]) => handler);
+      const unsubscribedHandlers = unsubscribeSpy.mock.calls
+        .filter(([eventType]) => eventType === smartTransactionEvent)
+        .map(([, handler]) => handler);
+
+      expect(subscribedHandlers).toHaveLength(2);
+      expect(new Set(unsubscribedHandlers)).toStrictEqual(
+        new Set(subscribedHandlers),
+      );
+    });
+  });
+
   it('submits a smart transaction without the smart transaction status page', async () => {
     withRequest(
       async ({ request, controllerMessenger, submitSignedTransactionsSpy }) => {
