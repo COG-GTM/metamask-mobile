@@ -103,7 +103,8 @@ const waitForSmartTransactionConfirmationDone = (
       clearTimeout(timeoutId);
       if (isSubscribed) {
         isSubscribed = false;
-        controllerMessenger.unsubscribe(
+        // Tolerates the subscription already being gone, e.g. after an Engine teardown.
+        controllerMessenger.tryUnsubscribe(
           'SmartTransactionsController:smartTransactionConfirmationDone',
           onDone,
         );
