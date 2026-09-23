@@ -11,6 +11,23 @@ import Logger from '../../../util/Logger';
 
 type UnsubscribeFunc = () => void;
 
+type PushRegistrationStage =
+  | 'apns_register'
+  | 'get_token'
+  | 'delete_token'
+  | 'listener';
+
+/**
+ * Reports a push registration failure to Sentry.
+ * Payloads only contain the failing stage - never tokens or user identifiers.
+ */
+function logPushRegistrationError(
+  error: unknown,
+  stage: PushRegistrationStage,
+) {
+  Logger.error(error as Error, { stage });
+}
+
 /**
  * Utility to check if devices have enabled push notifications
  * @returns boolean
@@ -38,7 +55,7 @@ async function registerForRemoteMessages() {
       await messaging().registerDeviceForRemoteMessages();
     }
   } catch (error) {
-    // Do Nothing - silently fail
+    logPushRegistrationError(error, 'apns_register');
   }
 }
 
@@ -97,7 +114,8 @@ class FCMService {
       await registerForRemoteMessages();
       const fcmToken = await messaging().getToken();
       return fcmToken;
-    } catch {
+    } catch (error) {
+      logPushRegistrationError(error, 'get_token');
       return null;
     }
   };
@@ -115,7 +133,8 @@ class FCMService {
     try {
       await messaging().deleteToken();
       return true;
-    } catch {
+    } catch (error) {
+      logPushRegistrationError(error, 'delete_token');
       return false;
     }
   };
@@ -138,7 +157,8 @@ class FCMService {
       // Firebase will still send push notifications in background + app kill as there is a `notification` payload in the remote message
       await this.#registerForegroundMessages(handler);
       return this.#hasRegisteredForeground;
-    } catch {
+    } catch (error) {
+      logPushRegistrationError(error, 'listener');
       return null;
     }
   };
@@ -164,8 +184,8 @@ class FCMService {
       this.#hasRegisteredForeground = messaging().onMessage(async (payload) => {
         processAndHandleNotification(payload, handler);
       });
-    } catch {
-      // Do nothing
+    } catch (error) {
+      logPushRegistrationError(error, 'listener');
     }
   };
 
