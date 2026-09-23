@@ -424,11 +424,19 @@ function SwapsQuotesView({
   } = useMemo(() => getQuotesNavigationsParams(route), [route]);
 
   /* Get tokens from the tokens list */
-  const sourceToken = [...swapsTokens, ...tokens].find((token) =>
-    toLowerCaseEquals(token.address, sourceTokenAddress),
+  const sourceToken = useMemo(
+    () =>
+      [...swapsTokens, ...tokens].find((token) =>
+        toLowerCaseEquals(token.address, sourceTokenAddress),
+      ),
+    [swapsTokens, tokens, sourceTokenAddress],
   );
-  const destinationToken = [...swapsTokens, ...tokens].find((token) =>
-    toLowerCaseEquals(token.address, destinationTokenAddress),
+  const destinationToken = useMemo(
+    () =>
+      [...swapsTokens, ...tokens].find((token) =>
+        toLowerCaseEquals(token.address, destinationTokenAddress),
+      ),
+    [swapsTokens, tokens, destinationTokenAddress],
   );
 
   /* State */
