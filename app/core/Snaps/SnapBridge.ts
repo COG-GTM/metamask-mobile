@@ -83,7 +83,7 @@ export default class SnapBridge {
     this.#setProvider(provider);
     this.#setBlockTracker(blockTracker);
 
-    this.#mux = setupMultiplex(this.stream);
+    this.#mux = setupMultiplex(this.stream, 'snap');
   }
 
   // TODO: Replace "any" with type

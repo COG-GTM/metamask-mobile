@@ -3,6 +3,8 @@ const Through = require('through2');
 const ObjectMultiplex = require('@metamask/object-multiplex');
 const pump = require('pump');
 
+import Logger from './Logger';
+
 /**
  * Returns a stream transform that parses JSON strings passing through
  * @return {stream.Transform}
@@ -29,13 +31,14 @@ function jsonStringifyStream() {
 /**
  * Sets up stream multiplexing for the given stream
  * @param {any} connectionStream - the stream to mux
+ * @param {string} [bridgeType] - the kind of bridge owning the stream, used to tag reported errors
  * @return {stream.Stream} the multiplexed stream
  */
-function setupMultiplex(connectionStream) {
+function setupMultiplex(connectionStream, bridgeType = 'unknown') {
   const mux = new ObjectMultiplex();
   pump(connectionStream, mux, connectionStream, (err) => {
     if (err) {
-      console.warn(err);
+      Logger.error(err, { context: 'setupMultiplex', bridgeType });
     }
   });
   return mux;
