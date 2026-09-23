@@ -10,7 +10,7 @@ const mockNavigation = {
   goForward: jest.fn(),
   canGoBack: true,
   canGoForward: true,
-  addListener: jest.fn(),
+  addListener: jest.fn(() => jest.fn()),
 };
 
 jest.mock('@react-navigation/native', () => {
@@ -77,5 +77,24 @@ describe('BrowserTab', () => {
       state: mockInitialState,
     });
     expect(toJSON()).toMatchSnapshot();
+  });
+
+  it('unsubscribes navigation listeners on unmount', () => {
+    const unsubscribes: jest.Mock[] = [];
+    mockNavigation.addListener.mockImplementation(() => {
+      const unsubscribe = jest.fn();
+      unsubscribes.push(unsubscribe);
+      return unsubscribe;
+    });
+
+    const { unmount } = renderWithProvider(<BrowserTab {...mockProps} />, {
+      state: mockInitialState,
+    });
+
+    expect(unsubscribes.length).toBeGreaterThanOrEqual(2);
+    unmount();
+    unsubscribes.forEach((unsubscribe) =>
+      expect(unsubscribe).toHaveBeenCalled(),
+    );
   });
 });
