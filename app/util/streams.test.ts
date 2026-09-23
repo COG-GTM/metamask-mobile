@@ -1,4 +1,4 @@
-import { PassThrough } from 'readable-stream';
+import { PassThrough } from 'stream';
 import { setupMultiplex } from './streams';
 import Logger from './Logger';
 
