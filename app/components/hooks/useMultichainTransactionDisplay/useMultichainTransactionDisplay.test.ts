@@ -267,4 +267,64 @@ describe('useMultichainTransactionDisplay', () => {
       expect(result.current.baseFee?.amount).not.toContain('0.00001');
     });
   });
+
+  describe('Memoization', () => {
+    const sendTransaction: Transaction = {
+      ...createBaseMockTransaction(TransactionType.Send),
+      from: [createMockFromToEntry(userAddress, '1.0')],
+      to: [
+        createMockFromToEntry(
+          '3GbLAVPjoCWvNvpxJTeBZ1fRNVJF7pZfC3qeFkiZTJ2C',
+          '1.0',
+        ),
+      ],
+      fees: [createMockFee('base', '0.000005')],
+    };
+
+    it('should return the same object when inputs are unchanged', () => {
+      const { result, rerender } = renderHook(
+        (props: { transaction: Transaction }) =>
+          useMultichainTransactionDisplay({
+            transaction: props.transaction,
+            userAddress,
+          }),
+        { initialProps: { transaction: sendTransaction } },
+      );
+
+      const first = result.current;
+      rerender({ transaction: sendTransaction });
+
+      expect(result.current).toBe(first);
+    });
+
+    it('should recompute when the transaction changes', () => {
+      const receiveTransaction: Transaction = {
+        ...createBaseMockTransaction(TransactionType.Receive),
+        from: [
+          createMockFromToEntry(
+            'CuieVDEDtLo7FypA9SbLM9saXFdb1dsshEkyErMqkRQq',
+            '2.0',
+          ),
+        ],
+        to: [createMockFromToEntry(userAddress, '2.0')],
+        fees: [],
+      };
+
+      const { result, rerender } = renderHook(
+        (props: { transaction: Transaction }) =>
+          useMultichainTransactionDisplay({
+            transaction: props.transaction,
+            userAddress,
+          }),
+        { initialProps: { transaction: sendTransaction } },
+      );
+
+      const first = result.current;
+      rerender({ transaction: receiveTransaction });
+
+      expect(result.current).not.toBe(first);
+      expect(result.current.type).toBe(TransactionType.Receive);
+      expect(result.current.asset?.amount).not.toContain('-');
+    });
+  });
 });
