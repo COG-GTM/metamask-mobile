@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Logger from '../../../../../util/Logger';
 
 const CHAIN_ID_NETWORK_URL = 'https://chainid.network/chains.json';
 
@@ -10,11 +11,19 @@ const withIsOriginalNativeToken = (WrappedComponent) => {
     const [matchedChainNetwork, setMatchedChainNetwork] = useState(null);
 
     useEffect(() => {
-      axios.get(CHAIN_ID_NETWORK_URL).then(({ data: safeChainsList }) => {
-        setMatchedChainNetwork({
-          safeChainsList: [...safeChainsList],
+      axios
+        .get(CHAIN_ID_NETWORK_URL)
+        .then(({ data: safeChainsList }) => {
+          setMatchedChainNetwork({
+            safeChainsList: [...safeChainsList],
+          });
+        })
+        .catch((error) => {
+          Logger.error(
+            error,
+            'withIsOriginalNativeToken chains.json fetch failed',
+          );
         });
-      });
     }, []);
 
     // Pass the value from useSelector as a prop to the WrappedComponent
