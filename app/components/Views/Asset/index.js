@@ -154,6 +154,10 @@ class Asset extends PureComponent {
      */
     chainId: PropTypes.string,
     /**
+     * The network ID of the currently selected network
+     */
+    networkId: PropTypes.string,
+    /**
      * An array that represents the user transactions
      */
     transactions: PropTypes.array,
@@ -302,7 +306,8 @@ class Asset extends PureComponent {
       prevProps.transactions !== this.props.transactions ||
       prevProps.tokens !== this.props.tokens ||
       prevProps.swapsTransactions !== this.props.swapsTransactions ||
-      prevProps.selectedInternalAccount !== this.props.selectedInternalAccount
+      prevProps.selectedInternalAccount !== this.props.selectedInternalAccount ||
+      prevProps.networkId !== this.props.networkId
     ) {
       this.normalizeTransactions();
     }
@@ -619,6 +624,7 @@ const mapStateToProps = (state, { route }) => ({
     getRampNetworks(state),
   ),
   networkClientId: selectNetworkClientId(state),
+  networkId: state.inpageProvider.networkId,
 });
 
 const mapDispatchToProps = (dispatch) => ({
