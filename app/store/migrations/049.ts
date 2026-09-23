@@ -6,14 +6,15 @@ export const storage = new MMKV();
 
 export default async function migrate(state: unknown) {
   const keys = await AsyncStorage.getAllKeys();
-  for (const key of keys) {
-    try {
-      const value = await AsyncStorage.getItem(key);
+  const entries = await AsyncStorage.multiGet(keys);
+  const migratedKeys: string[] = [];
 
+  for (const [key, value] of entries) {
+    try {
       if (value != null) {
         storage.set(key, value);
       }
-      await AsyncStorage.removeItem(key);
+      migratedKeys.push(key);
     } catch (error) {
       captureException(
         new Error(
@@ -21,6 +22,10 @@ export default async function migrate(state: unknown) {
         ),
       );
     }
+  }
+
+  if (migratedKeys.length > 0) {
+    await AsyncStorage.multiRemove(migratedKeys);
   }
 
   return state;
