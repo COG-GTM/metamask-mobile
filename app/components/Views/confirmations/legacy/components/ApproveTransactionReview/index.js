@@ -476,7 +476,7 @@ class ApproveTransactionReview extends PureComponent {
           tokenValue: encodedDecimalAmount,
           tokenStandard,
           tokenBalance,
-          tokenImage: contract?.iconUrl,
+          tokenImage: contract?.address === to ? contract.iconUrl : undefined,
         },
         spenderAddress,
         encodedHexAmount,
