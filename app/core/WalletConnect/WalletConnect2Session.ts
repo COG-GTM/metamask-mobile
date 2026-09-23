@@ -53,6 +53,7 @@ class WalletConnect2Session {
     [requestId: string]: WalletKitTypes.SessionRequest;
   } = {};
   private lastChainId: string;
+  private storeUnsubscribe?: () => void;
   private isHandlingChainChange = false;
   private _isHandlingRequest = false;
 
@@ -144,7 +145,7 @@ class WalletConnect2Session {
     this.lastChainId = selectEvmChainId(store.getState());
 
     // Subscribe to store changes to detect chain switches
-    store.subscribe(() => {
+    this.storeUnsubscribe = store.subscribe(() => {
       const newChainId = selectEvmChainId(store.getState());
       if (newChainId !== this.lastChainId && !this.isHandlingChainChange) {
         this.lastChainId = newChainId;
@@ -551,6 +552,8 @@ class WalletConnect2Session {
   };
 
   removeListeners = async () => {
+    this.storeUnsubscribe?.();
+    this.storeUnsubscribe = undefined;
     this.backgroundBridge.onDisconnect();
   };
 

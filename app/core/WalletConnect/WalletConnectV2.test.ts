@@ -531,6 +531,22 @@ describe('WC2Manager', () => {
         JSON.stringify({}),
       );
     });
+
+    it('removes listeners of every tracked session', async () => {
+      const removeListeners = jest.fn();
+      const sessions = (
+        manager as unknown as {
+          sessions: Record<string, WalletConnect2Session>;
+        }
+      ).sessions;
+      sessions['test-topic'] = {
+        removeListeners,
+      } as unknown as WalletConnect2Session;
+
+      await manager.removeAll();
+
+      expect(removeListeners).toHaveBeenCalled();
+    });
   });
 
   describe('WC2Manager isWalletConnect', () => {
