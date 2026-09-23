@@ -90,15 +90,32 @@ const waitForSmartTransactionConfirmationDone = (
   controllerMessenger: BaseControllerMessenger,
 ): Promise<SmartTransaction | undefined> =>
   new Promise((resolve) => {
+    // In a rare case we don't get the "smartTransactionConfirmationDone" event
+    // within 10 seconds, the timeout resolves with undefined to continue.
+    const timeoutId = setTimeout(
+      () => onDone(),
+      TIMEOUT_FOR_SMART_TRANSACTION_CONFIRMATION_DONE_EVENT,
+    );
+
+    let isSubscribed = true;
+
+    async function onDone(smartTransaction?: SmartTransaction) {
+      clearTimeout(timeoutId);
+      if (isSubscribed) {
+        isSubscribed = false;
+        // Tolerates the subscription already being gone, e.g. after an Engine teardown.
+        controllerMessenger.tryUnsubscribe(
+          'SmartTransactionsController:smartTransactionConfirmationDone',
+          onDone,
+        );
+      }
+      resolve(smartTransaction);
+    }
+
     controllerMessenger.subscribe(
       'SmartTransactionsController:smartTransactionConfirmationDone',
-      async (smartTransaction: SmartTransaction) => {
-        resolve(smartTransaction);
-      },
+      onDone,
     );
-    setTimeout(() => {
-      resolve(undefined); // In a rare case we don't get the "smartTransactionConfirmationDone" event within 10 seconds, we resolve with undefined to continue.
-    }, TIMEOUT_FOR_SMART_TRANSACTION_CONFIRMATION_DONE_EVENT);
   });
 
 export const getSmartTransactionMetricsProperties = async (
