@@ -85,6 +85,8 @@ const RemoteImage = (props) => {
   const onError = ({ nativeEvent: { error } }) => setError(error);
 
   const [dimensions, setDimensions] = useState(null);
+  // dimensions are only rendered by the full-ratio token image branch
+  const shouldMeasureImage = Boolean(props.isFullRatio && props.isTokenImage);
 
   useEffect(() => {
     resolveIpfsUrl();
@@ -105,6 +107,10 @@ const RemoteImage = (props) => {
   }, [props.source.uri, ipfsGateway]);
 
   useEffect(() => {
+    if (!shouldMeasureImage) {
+      return;
+    }
+
     const calculateImageDimensions = (imageWidth, imageHeight) => {
       const deviceWidth = Dimensions.get('window').width;
       const maxWidth = deviceWidth - 32;
@@ -136,7 +142,7 @@ const RemoteImage = (props) => {
         Logger.log('Failed to get image dimensions');
       },
     );
-  }, [uri]);
+  }, [uri, shouldMeasureImage]);
 
   const NetworkBadgeSource = useCallback(() => {
     if (isTestNet(chainId)) return getTestNetImageByChainId(chainId);
