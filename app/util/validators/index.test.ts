@@ -110,6 +110,23 @@ describe('parseVaultValue', () => {
     });
   });
 
+  it('reports a truncated vault that is missing its closing brace', async () => {
+    await expect(
+      parseVaultValue('password', '{"cipher":"abc","salt":"def"'),
+    ).resolves.toBeUndefined();
+    expect(mockLoggerError).toHaveBeenCalledWith(expect.any(Error), {
+      context: 'parseVaultValue',
+      reason: 'vault_json_parse_failed',
+    });
+  });
+
+  it('stays quiet for a raw seed phrase', async () => {
+    await expect(
+      parseVaultValue('password', VALID_12),
+    ).resolves.toBeUndefined();
+    expect(mockLoggerError).not.toHaveBeenCalled();
+  });
+
   it('reports a vault missing encryption fields', async () => {
     await expect(
       parseVaultValue('password', JSON.stringify({ cipher: 'cipher' })),

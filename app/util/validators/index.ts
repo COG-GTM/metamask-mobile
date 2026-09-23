@@ -32,10 +32,12 @@ export const parseVaultValue = async (
 ): Promise<string | undefined> => {
   let vaultSeed: string | undefined;
 
-  if (vault[0] === '{' && vault[vault.length - 1] === '}') {
+  const serializedVault = vault.trim();
+
+  if (serializedVault.startsWith('{')) {
     let seedObject;
     try {
-      seedObject = JSON.parse(vault);
+      seedObject = JSON.parse(serializedVault);
     } catch (error) {
       logParseVaultValueFailure(error, 'vault_json_parse_failed');
       return undefined;
@@ -51,7 +53,7 @@ export const parseVaultValue = async (
         const encryptor = new Encryptor({
           keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
         });
-        const result = (await encryptor.decrypt(password, vault)) as {
+        const result = (await encryptor.decrypt(password, serializedVault)) as {
           data?: { mnemonic?: string };
         }[];
         vaultSeed = result[0]?.data?.mnemonic;
