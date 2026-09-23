@@ -119,7 +119,10 @@ export class BackgroundBridge extends EventEmitter {
 
     const portStream = new MobilePortStream(this.port, url);
     // setup multiplexing
-    const mux = setupMultiplex(portStream);
+    const mux = setupMultiplex(
+      portStream,
+      isWalletConnect ? 'walletconnect' : 'dapp',
+    );
     // connect features
     this.setupProviderConnection(
       mux.createStream(
