@@ -2,8 +2,13 @@ import axios from 'axios';
 import { BannerAlertSeverity } from '../../component-library/components/Banners/Banner';
 import { strings } from '../../../locales/i18n';
 import { PopularList } from '../../util/networks/customNetworks';
+import Logger from '../../util/Logger';
+import { MetaMetrics, MetaMetricsEvents } from '../Analytics';
+import { MetricsEventBuilder } from '../Analytics/MetricsEventBuilder';
 
 import { toHex } from '@metamask/controller-utils';
+
+export const SAFE_CHAINS_LIST_URL = 'https://chainid.network/chains.json';
 
 const findPopularNetwork = (rpcUrl: string, chainId: string) =>
   PopularList.some((network) => {
@@ -32,8 +37,29 @@ const checkSafeNetwork = async (
   const alerts = [];
   const EVM_NATIVE_TOKEN_DECIMALS = 18;
 
-  const response = await axios.get('https://chainid.network/chains.json');
-  const safeChainsList = response.data;
+  const startTime = Date.now();
+  let safeChainsList;
+  try {
+    const response = await axios.get(SAFE_CHAINS_LIST_URL);
+    safeChainsList = response.data;
+  } catch (error) {
+    Logger.error(error as Error, {
+      location: 'checkSafeNetwork',
+      chainId: chainIdDecimal,
+    });
+    MetaMetrics.getInstance().trackEvent(
+      MetricsEventBuilder.createEventBuilder(
+        MetaMetricsEvents.SAFE_CHAINS_LIST_VALIDATION_FAILED,
+      )
+        .addProperties({
+          chain_id: chainIdDecimal,
+          outcome: 'fetch_failed',
+          duration_ms: Date.now() - startTime,
+        })
+        .build(),
+    );
+    throw error;
+  }
 
   const matchedChain = safeChainsList.find(
     (chain: { chainId: number }) => chain.chainId.toString() === chainIdDecimal,

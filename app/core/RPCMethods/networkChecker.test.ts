@@ -1,13 +1,18 @@
 import checkSafeNetwork from './networkChecker.util';
 import { BannerAlertSeverity } from '../../component-library/components/Banners/Banner';
 import axios from 'axios';
+import Logger from '../../util/Logger';
+import { MetaMetrics, MetaMetricsEvents } from '../Analytics';
 
 jest.mock('axios');
+jest.mock('../../util/Logger');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedLogger = jest.mocked(Logger);
 
 describe('checkSafeNetwork', () => {
   afterEach(() => {
     mockedAxios.get.mockRestore();
+    jest.clearAllMocks();
   });
 
   it('should return an error if the chainId is not recognized', async () => {
@@ -310,5 +315,34 @@ describe('checkSafeNetwork', () => {
         alertOrigin: 'chain_name',
       },
     ]);
+  });
+
+  it('logs and tracks a failure event when the safe chains list fetch fails', async () => {
+    const fetchError = new Error('Network Error');
+    mockedAxios.get.mockImplementation(() => Promise.reject(fetchError));
+    const trackEvent = jest.fn();
+    jest
+      .spyOn(MetaMetrics, 'getInstance')
+      .mockReturnValue({ trackEvent } as unknown as ReturnType<
+        typeof MetaMetrics.getInstance
+      >);
+
+    await expect(
+      checkSafeNetwork('10', 'https://example.com', 'Optimism', 'ETH'),
+    ).rejects.toThrow(fetchError);
+
+    expect(mockedLogger.error).toHaveBeenCalledWith(fetchError, {
+      location: 'checkSafeNetwork',
+      chainId: '10',
+    });
+    expect(trackEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: MetaMetricsEvents.SAFE_CHAINS_LIST_VALIDATION_FAILED.category,
+        properties: expect.objectContaining({
+          chain_id: '10',
+          outcome: 'fetch_failed',
+        }),
+      }),
+    );
   });
 });
