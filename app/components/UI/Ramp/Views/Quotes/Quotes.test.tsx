@@ -8,6 +8,7 @@ import {
 } from '@consensys/on-ramp-sdk';
 import {
   act,
+  cleanup,
   fireEvent,
   screen,
   render as renderComponent,
@@ -19,7 +20,7 @@ import {
 
 import Quotes, { QuotesParams } from './Quotes';
 import { mockQuotesData } from './Quotes.constants';
-import { TimerDisplay } from './Timer';
+import Timer, { TimerDisplay } from './Timer';
 import LoadingQuotes from './LoadingQuotes';
 
 import { RampSDK } from '../../sdk';
@@ -1050,4 +1051,86 @@ describe('Timer component', () => {
       expect(screen.toJSON()).toMatchSnapshot();
     },
   );
+
+  describe('countdown', () => {
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      cleanup();
+      jest.useRealTimers();
+    });
+
+    const renderTimer = ({
+      isFetchingQuotes = false,
+      remainingTimeRef,
+      onTimerExpired = jest.fn(),
+    }: {
+      isFetchingQuotes?: boolean;
+      remainingTimeRef: { current: number };
+      onTimerExpired?: () => void;
+    }) =>
+      renderComponent(
+        <Timer
+          isFetchingQuotes={isFetchingQuotes}
+          pollingCyclesLeft={1}
+          onTimerExpired={onTimerExpired}
+          remainingTimeRef={remainingTimeRef}
+        />,
+      );
+
+    it('counts down every second', () => {
+      const remainingTimeRef = { current: 10000 };
+      renderTimer({ remainingTimeRef });
+
+      expect(screen.getByText('0:10')).toBeTruthy();
+
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(screen.getByText('0:08')).toBeTruthy();
+      expect(remainingTimeRef.current).toBe(8000);
+    });
+
+    it('does not count down while quotes are being fetched', () => {
+      const remainingTimeRef = { current: 10000 };
+      renderTimer({ isFetchingQuotes: true, remainingTimeRef });
+
+      act(() => {
+        jest.advanceTimersByTime(5000);
+      });
+
+      expect(remainingTimeRef.current).toBe(10000);
+    });
+
+    it('resumes from the shared remaining time after a remount', () => {
+      const remainingTimeRef = { current: 10000 };
+      const { unmount } = renderTimer({ remainingTimeRef });
+
+      act(() => {
+        jest.advanceTimersByTime(3000);
+      });
+      unmount();
+
+      renderTimer({ remainingTimeRef });
+
+      expect(screen.getByText('0:07')).toBeTruthy();
+    });
+
+    it('calls onTimerExpired and restarts the countdown on expiry', () => {
+      const remainingTimeRef = { current: 2000 };
+      const onTimerExpired = jest.fn();
+      renderTimer({ remainingTimeRef, onTimerExpired });
+
+      act(() => {
+        jest.advanceTimersByTime(2000);
+      });
+
+      expect(onTimerExpired).toHaveBeenCalledTimes(1);
+      expect(remainingTimeRef.current).toBe(10000);
+      expect(screen.getByText('0:10')).toBeTruthy();
+    });
+  });
 });

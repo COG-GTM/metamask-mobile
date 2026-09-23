@@ -120,6 +120,8 @@ function Quotes() {
   const [pollingCyclesLeft, setPollingCyclesLeft] = useState(
     appConfig.POLLING_CYCLES - 1,
   );
+  // Owned by the parent so the countdown survives Timer remounts across layouts.
+  const remainingTimeRef = useRef(appConfig.POLLING_INTERVAL);
   const { styles, theme } = useStyles(styleSheet, {});
 
   const scrollOffsetY = useSharedValue(0);
@@ -180,6 +182,7 @@ function Quotes() {
     setIsLoading(true);
     setIsInPolling(true);
     setPollingCyclesLeft(appConfig.POLLING_CYCLES - 1);
+    remainingTimeRef.current = appConfig.POLLING_INTERVAL;
     fetchQuotes();
 
     const payload = {
@@ -205,6 +208,7 @@ function Quotes() {
     }
   }, [
     appConfig.POLLING_CYCLES,
+    appConfig.POLLING_INTERVAL,
     fetchQuotes,
     isBuy,
     params,
@@ -996,6 +1000,7 @@ function Quotes() {
             pollingCyclesLeft={pollingCyclesLeft}
             isFetchingQuotes={isFetchingQuotes}
             onTimerExpired={handleTimerExpired}
+            remainingTimeRef={remainingTimeRef}
           />
         )}
         <ScreenLayout.Content style={styles.withoutTopPadding}>
@@ -1101,6 +1106,7 @@ function Quotes() {
               pollingCyclesLeft={pollingCyclesLeft}
               isFetchingQuotes={isFetchingQuotes}
               onTimerExpired={handleTimerExpired}
+              remainingTimeRef={remainingTimeRef}
             />
           )}
 

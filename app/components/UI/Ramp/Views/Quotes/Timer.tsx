@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { MutableRefObject, useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useStyles } from '../../../../hooks/useStyles';
 import { useRampSDK } from '../../sdk';
@@ -54,16 +54,15 @@ const Timer = ({
   isFetchingQuotes,
   pollingCyclesLeft,
   onTimerExpired,
+  remainingTimeRef,
 }: {
   isFetchingQuotes: boolean;
   pollingCyclesLeft: number;
   onTimerExpired: () => void;
+  remainingTimeRef: MutableRefObject<number>;
 }) => {
   const { appConfig } = useRampSDK();
-  const [remainingTime, setRemainingTime] = useState(
-    appConfig.POLLING_INTERVAL,
-  );
-  const remainingTimeRef = useRef(appConfig.POLLING_INTERVAL);
+  const [remainingTime, setRemainingTime] = useState(remainingTimeRef.current);
 
   const onTimerExpiredRef = useRef(onTimerExpired);
   onTimerExpiredRef.current = onTimerExpired;
@@ -80,7 +79,7 @@ const Timer = ({
     remainingTimeRef.current = appConfig.POLLING_INTERVAL;
     setRemainingTime(appConfig.POLLING_INTERVAL);
     onTimerExpiredRef.current();
-  }, [appConfig.POLLING_INTERVAL]);
+  }, [appConfig.POLLING_INTERVAL, remainingTimeRef]);
 
   useInterval(tick, { delay: isFetchingQuotes ? null : 1000 });
 
