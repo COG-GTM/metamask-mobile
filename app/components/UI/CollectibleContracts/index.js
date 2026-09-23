@@ -187,8 +187,12 @@ const CollectibleContracts = ({
     [allCollectibles, chainId, isAllNetworks],
   );
 
-  const collectibles = filteredCollectibles.filter(
-    (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+  const collectibles = useMemo(
+    () =>
+      filteredCollectibles.filter(
+        (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+      ),
+    [filteredCollectibles],
   );
 
   const { colors } = useTheme();
@@ -216,25 +220,6 @@ const CollectibleContracts = ({
   );
 
   /**
-   *  Method that checks if the collectible is inside the collectibles array. If it is not it means the
-   *  collectible has been ignored, hence we should not call the updateMetadata which executes the addNft fct
-   *
-   *  @returns Boolean indicating if the collectible is ignored or not.
-   */
-  const isCollectibleIgnored = useCallback(
-    (collectible) => {
-      const found = collectibles.find(
-        (elm) =>
-          elm.address === collectible.address &&
-          elm.tokenId === collectible.tokenId,
-      );
-      if (found) return false;
-      return true;
-    },
-    [collectibles],
-  );
-
-  /**
    *  Method to check the token id data type of the current collectibles.
    *
    * @param collectible - Collectible object.
@@ -247,27 +232,16 @@ const CollectibleContracts = ({
   const updateAllCollectibleMetadata = useCallback(
     async (collectibles) => {
       const { NftController } = Engine.context;
-      // Filter out ignored collectibles
-      const filteredcollectibles = collectibles.filter(
-        (collectible) => !isCollectibleIgnored(collectible),
-      );
-
       // filter removable collectible
-      const removable = filteredcollectibles.filter((single) =>
+      const removable = collectibles.filter((single) =>
         String(single.tokenId).includes('e+'),
       );
-      const updatable = filteredcollectibles.filter(
+      const updatable = collectibles.filter(
         (single) => !String(single.tokenId).includes('e+'),
       );
 
       removable.forEach((elm) => {
         removeFavoriteCollectible(selectedAddress, chainId, elm);
-      });
-
-      filteredcollectibles.forEach((collectible) => {
-        if (String(collectible.tokenId).includes('e+')) {
-          removeFavoriteCollectible(selectedAddress, chainId, collectible);
-        }
       });
 
       if (updatable.length !== 0) {
@@ -277,7 +251,7 @@ const CollectibleContracts = ({
         });
       }
     },
-    [isCollectibleIgnored, removeFavoriteCollectible, chainId, selectedAddress],
+    [removeFavoriteCollectible, chainId, selectedAddress],
   );
 
   useEffect(() => {
