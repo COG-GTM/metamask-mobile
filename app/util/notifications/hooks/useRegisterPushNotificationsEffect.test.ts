@@ -9,6 +9,9 @@ import NotificationService from '../services/NotificationService';
 import { PressActionId } from '../types';
 import { useRegisterPushNotificationsEffect } from './useRegisterPushNotificationsEffect';
 import { EventType, Event as NotifeeEvent } from '@notifee/react-native';
+import Logger from '../../Logger';
+import MetaMetrics from '../../../core/Analytics/MetaMetrics';
+import { MetaMetricsEvents } from '../../../core/Analytics/MetaMetrics.events';
 
 const mockedNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => {
@@ -33,6 +36,44 @@ jest.mock('../../../core/Engine', () => ({
 jest.mock('../constants', () => ({
   isNotificationsFeatureEnabled: jest.fn(),
 }));
+
+jest.mock('../../Logger', () => ({
+  __esModule: true,
+  default: { error: jest.fn(), log: jest.fn() },
+}));
+
+jest.mock('../../../core/Analytics/MetaMetrics');
+
+const mockTrackEvent = jest.fn();
+(MetaMetrics.getInstance as jest.Mock).mockReturnValue({
+  trackEvent: mockTrackEvent,
+});
+
+const arrangeTelemetryMocks = () => ({
+  mockLoggerError: jest.mocked(Logger.error),
+  mockTrackEvent,
+});
+
+const expectOpenFailureReported = (
+  telemetry: ReturnType<typeof arrangeTelemetryMocks>,
+  stage: string,
+  reason: string,
+) => {
+  expect(telemetry.mockLoggerError).toHaveBeenCalledWith(
+    expect.any(Error),
+    expect.objectContaining({
+      context: 'push_notification_open',
+      stage,
+      reason,
+    }),
+  );
+  expect(telemetry.mockTrackEvent).toHaveBeenCalledWith(
+    expect.objectContaining({
+      name: MetaMetricsEvents.PUSH_NOTIFICATION_OPEN_FAILED.category,
+      properties: expect.objectContaining({ stage, reason }),
+    }),
+  );
+};
 
 const arrangeEngineMocks = () => ({
   mockPublish: jest.mocked(Engine.controllerMessenger.publish),
@@ -139,6 +180,48 @@ describe('useRegisterPushNotificationsEffect - onAppOpenNotification', () => {
     expect(notifService.mockGetInitialNotification).toHaveBeenCalled();
     await waitFor(() => expect(engine.mockPublish).not.toHaveBeenCalled());
   });
+
+  it('reports telemetry when the payload cannot be parsed', async () => {
+    const { notifService, engine } = arrangeMocks();
+    const telemetry = arrangeTelemetryMocks();
+    notifService.mockGetInitialNotification.mockResolvedValue({
+      notification: { data: { dataStr: 'not-json' } },
+      pressAction: { id: PressActionId.OPEN_NOTIFICATIONS_VIEW },
+    });
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    await waitFor(() =>
+      expectOpenFailureReported(
+        telemetry,
+        'app_open_notification',
+        'unparseable_payload',
+      ),
+    );
+    expect(engine.mockPublish).not.toHaveBeenCalled();
+  });
+
+  it('reports telemetry when the payload is not a notification', async () => {
+    const { notifService, engine } = arrangeMocks();
+    const telemetry = arrangeTelemetryMocks();
+    notifService.mockGetInitialNotification.mockResolvedValue({
+      notification: {
+        data: { dataStr: JSON.stringify({ badData: 'hello_world' }) },
+      },
+      pressAction: { id: PressActionId.OPEN_NOTIFICATIONS_VIEW },
+    });
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    await waitFor(() =>
+      expectOpenFailureReported(
+        telemetry,
+        'app_open_notification',
+        'invalid_payload_shape',
+      ),
+    );
+    expect(engine.mockPublish).not.toHaveBeenCalled();
+  });
 });
 
 describe('useRegisterPushNotificationsEffect - onBackgroundEvent', () => {
@@ -236,6 +319,7 @@ describe('useRegisterPushNotificationsEffect - onBackgroundEvent', () => {
 
   it('do nothing is notification is not parseable', async () => {
     const mocks = arrangeMocks();
+    const telemetry = arrangeTelemetryMocks();
 
     renderHookWithProvider(() => useRegisterPushNotificationsEffect());
 
@@ -253,6 +337,34 @@ describe('useRegisterPushNotificationsEffect - onBackgroundEvent', () => {
     );
     await waitFor(() =>
       expect(mocks.navigation.mockedNavigate).not.toHaveBeenCalled(),
+    );
+    expectOpenFailureReported(
+      telemetry,
+      'background_event',
+      'invalid_payload_shape',
+    );
+  });
+
+  it('reports telemetry on a malformed background payload', async () => {
+    const mocks = arrangeMocks();
+    const telemetry = arrangeTelemetryMocks();
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    await act(mocks, (e) => {
+      if (e.detail.notification?.data) {
+        e.detail.notification.data.dataStr = 'not-json';
+      }
+      return e;
+    });
+
+    await waitFor(() =>
+      expect(mocks.engine.mockPublish).not.toHaveBeenCalled(),
+    );
+    expectOpenFailureReported(
+      telemetry,
+      'background_event',
+      'unparseable_payload',
     );
   });
 });

@@ -11,12 +11,58 @@ import {
   selectIsMetamaskNotificationsEnabled,
   selectIsMetaMaskPushNotificationsEnabled,
 } from '../../../selectors/notifications';
+import Logger from '../../Logger';
+import MetaMetrics from '../../../core/Analytics/MetaMetrics';
+import { MetaMetricsEvents } from '../../../core/Analytics/MetaMetrics.events';
+import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
 type NavigationParams = Record<string, { notification: INotification }>;
+
+const PUSH_NOTIFICATION_OPEN_CONTEXT = 'push_notification_open';
+
+type PushNotificationOpenStage =
+  | 'app_open_notification'
+  | 'background_event'
+  | 'app_open_effect'
+  | 'background_effect';
+
+type PushNotificationOpenFailureReason =
+  | 'unparseable_payload'
+  | 'invalid_payload_shape'
+  | 'handler_error';
 
 function isINotification(n: unknown): n is INotification {
   const assumedShape = n as INotification;
   return Boolean(assumedShape?.type) && Boolean(assumedShape?.data);
+}
+
+/**
+ * Reports a push notification open failure to Sentry and MetaMetrics.
+ * Notification payload contents are never included, only the failure shape.
+ * @param error - error thrown while handling the notification open
+ * @param stage - where in the open flow the failure occurred
+ * @param reason - the kind of failure
+ * @returns - void
+ */
+function reportPushNotificationOpenFailure(
+  error: unknown,
+  stage: PushNotificationOpenStage,
+  reason: PushNotificationOpenFailureReason,
+) {
+  const e = error instanceof Error ? error : new Error(String(error));
+  Logger.error(e, {
+    context: PUSH_NOTIFICATION_OPEN_CONTEXT,
+    stage,
+    reason,
+  });
+
+  MetaMetrics.getInstance().trackEvent(
+    MetricsEventBuilder.createEventBuilder(
+      MetaMetricsEvents.PUSH_NOTIFICATION_OPEN_FAILED,
+    )
+      .addProperties({ stage, reason })
+      .build(),
+  );
 }
 
 /**
@@ -43,6 +89,45 @@ function clickPushNotification(
 }
 
 /**
+ * Parses a notification press payload and navigates, reporting failures.
+ * @param notificationDataStr - stringified notification payload
+ * @param pressActionId - press action of the notification press
+ * @param navigation - navigation prop for page navigations
+ * @param stage - where in the open flow this press was received
+ * @returns - void
+ */
+function handleNotificationPress(
+  notificationDataStr: string,
+  pressActionId: string | undefined,
+  navigation: NavigationProp<NavigationParams>,
+  stage: PushNotificationOpenStage,
+) {
+  if (pressActionId !== PressActionId.OPEN_NOTIFICATIONS_VIEW) {
+    return;
+  }
+
+  let notificationData: unknown;
+  try {
+    // Notify can only store strings
+    notificationData = JSON.parse(notificationDataStr);
+  } catch (e) {
+    reportPushNotificationOpenFailure(e, stage, 'unparseable_payload');
+    return;
+  }
+
+  if (!isINotification(notificationData)) {
+    reportPushNotificationOpenFailure(
+      new Error('Push notification payload is not a valid notification'),
+      stage,
+      'invalid_payload_shape',
+    );
+    return;
+  }
+
+  clickPushNotification(notificationData, navigation);
+}
+
+/**
  * Android Devices use a `getInitialNotifications` if a push notification cold-starts the application.
  * @param navigation - navigation prop for page navigations
  * @returns - void
@@ -63,18 +148,12 @@ async function onAppOpenNotification(
     return;
   }
 
-  try {
-    // Notify can only store strings
-    const notificationData = JSON.parse(notificationDataStr as string);
-    if (
-      pressAction?.id === PressActionId.OPEN_NOTIFICATIONS_VIEW &&
-      isINotification(notificationData)
-    ) {
-      clickPushNotification(notificationData, navigation);
-    }
-  } catch {
-    // Do Nothing
-  }
+  handleNotificationPress(
+    notificationDataStr as string,
+    pressAction?.id,
+    navigation,
+    'app_open_notification',
+  );
 }
 
 /**
@@ -94,18 +173,12 @@ async function onBackgroundEvent(navigation: NavigationProp<NavigationParams>) {
           return;
         }
 
-        try {
-          // Notify can only store strings
-          const notificationData = JSON.parse(notificationDataStr as string);
-          if (
-            pressAction?.id === PressActionId.OPEN_NOTIFICATIONS_VIEW &&
-            isINotification(notificationData)
-          ) {
-            clickPushNotification(notificationData, navigation);
-          }
-        } catch {
-          // Do Nothing
-        }
+        handleNotificationPress(
+          notificationDataStr as string,
+          pressAction?.id,
+          navigation,
+          'background_event',
+        );
       },
     }),
   );
@@ -137,8 +210,12 @@ export function useRegisterPushNotificationsEffect() {
         if (notificationsEnabled) {
           await onAppOpenNotification(navigation);
         }
-      } catch {
-        // Do Nothing
+      } catch (e) {
+        reportPushNotificationOpenFailure(
+          e,
+          'app_open_effect',
+          'handler_error',
+        );
       }
     };
     run();
@@ -151,8 +228,12 @@ export function useRegisterPushNotificationsEffect() {
         if (notificationsEnabled) {
           await onBackgroundEvent(navigation);
         }
-      } catch {
-        // Do Nothing
+      } catch (e) {
+        reportPushNotificationOpenFailure(
+          e,
+          'background_effect',
+          'handler_error',
+        );
       }
     };
     run();
