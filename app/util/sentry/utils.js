@@ -441,7 +441,9 @@ function reportRewriteFailure(stage, err) {
         sentry_report_rewrite_stage: stage,
       },
       extra: {
-        originalErrorMessage: err instanceof Error ? err.message : String(err),
+        // Only the error type, never its message: the thrown message can carry
+        // unscrubbed URLs, addresses or other user data.
+        originalErrorName: err instanceof Error ? err.name : typeof err,
       },
     });
   } catch {
