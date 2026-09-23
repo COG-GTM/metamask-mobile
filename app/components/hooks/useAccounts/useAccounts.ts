@@ -25,6 +25,7 @@ import {
   isNonEvmAddress,
 } from '../../../core/Multichain/utils';
 import { useMultichainBalancesForAllAccounts } from '../useMultichainBalances';
+import { getAccountCellHeight } from './useAccounts.utils';
 
 /**
  * Hook that returns both wallet accounts and ens name information.
@@ -182,13 +183,7 @@ const useAccounts = ({
           balanceError: accountBalance.balanceError,
         };
         // Calculate height of the account item.
-        yOffset += 78;
-        if (accountBalance.balanceError) {
-          yOffset += 22;
-        }
-        if (internalAccount.metadata.keyring.type !== KeyringTypes.hd) {
-          yOffset += 24;
-        }
+        yOffset += getAccountCellHeight(mappedAccount);
         return mappedAccount;
       },
     );

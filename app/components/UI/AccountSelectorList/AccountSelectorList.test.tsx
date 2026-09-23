@@ -1160,24 +1160,25 @@ describe('AccountSelectorList', () => {
     jest.spyOn(React, 'createRef').mockRestore();
   });
 
-  it('provides item layouts derived from account yOffsets', () => {
+  it('provides item layouts computed from each row content', () => {
     setAccountsMock([
-      { ...defaultAccountsMock[0], yOffset: 0 },
-      { ...defaultAccountsMock[1], yOffset: 100 },
+      { ...defaultAccountsMock[0], type: KeyringTypes.simple },
+      { ...defaultAccountsMock[1], balanceError: 'Insufficient funds' },
     ]);
 
     const { getByTestId } = renderComponent(initialState);
     const flatList = getByTestId(ACCOUNT_SELECTOR_LIST_TESTID);
 
+    // Non-HD accounts render a keyring tag label, adding 24 to the base height.
     expect(flatList.props.getItemLayout(undefined, 0)).toEqual({
-      length: 100,
+      length: 102,
       offset: 0,
       index: 0,
     });
-    // Last row falls back to the default cell height.
+    // The last row keeps its own extra height for the balance error.
     expect(flatList.props.getItemLayout(undefined, 1)).toEqual({
-      length: 78,
-      offset: 100,
+      length: 100,
+      offset: 102,
       index: 1,
     });
   });
@@ -1201,6 +1202,22 @@ describe('AccountSelectorList', () => {
 
     expect(mockScrollToIndex).toHaveBeenCalledWith({
       index: 1,
+      animated: false,
+    });
+  });
+
+  it('auto-scrolls back to the top when the first account is selected', () => {
+    mockScrollToIndex.mockClear();
+    setAccountsMock([
+      { ...defaultAccountsMock[0], isSelected: true },
+      { ...defaultAccountsMock[1], isSelected: false },
+    ]);
+
+    const { getByTestId } = renderComponent(initialState);
+    getByTestId(ACCOUNT_SELECTOR_LIST_TESTID).props.onContentSizeChange();
+
+    expect(mockScrollToIndex).toHaveBeenCalledWith({
+      index: 0,
       animated: false,
     });
   });

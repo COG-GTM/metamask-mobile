@@ -28,6 +28,7 @@ import { isDefaultAccountName } from '../../../util/ENSUtils';
 import { strings } from '../../../../locales/i18n';
 import { AvatarVariant } from '../../../component-library/components/Avatars/Avatar/Avatar.types';
 import { Account, Assets } from '../../hooks/useAccounts';
+import { getAccountCellHeight } from '../../hooks/useAccounts/useAccounts.utils';
 import Engine from '../../../core/Engine';
 import { removeAccountsFromPermissions } from '../../../core/Permissions';
 import Routes from '../../../constants/navigation/Routes';
@@ -40,9 +41,6 @@ import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletV
 import { RootState } from '../../../reducers';
 import { ACCOUNT_SELECTOR_LIST_TESTID } from './AccountSelectorList.constants';
 import { toHex } from '@metamask/controller-utils';
-
-// Fallback row height used when an account has no usable yOffset information.
-const DEFAULT_ACCOUNT_CELL_HEIGHT = 78;
 
 const AccountSelectorList = ({
   onSelectAccount,
@@ -303,17 +301,12 @@ const AccountSelectorList = ({
     ],
   );
 
-  // Row heights are derived from the yOffsets computed in useAccounts, which
-  // account for balance errors and non-HD keyring labels.
+  // Each row height is computed from its own content so that layouts stay
+  // correct when callers render a filtered subset of the accounts.
   const itemLayouts = useMemo(() => {
     let offset = 0;
     return (accounts ?? []).map((account, index) => {
-      const nextAccount = accounts[index + 1];
-      const derivedHeight = nextAccount
-        ? nextAccount.yOffset - account.yOffset
-        : 0;
-      const length =
-        derivedHeight > 0 ? derivedHeight : DEFAULT_ACCOUNT_CELL_HEIGHT;
+      const length = getAccountCellHeight(account);
       const layout = { length, offset, index };
       offset += length;
       return layout;
@@ -322,11 +315,7 @@ const AccountSelectorList = ({
 
   const getItemLayout = useCallback(
     (_: ArrayLike<Account> | null | undefined, index: number) =>
-      itemLayouts[index] ?? {
-        length: DEFAULT_ACCOUNT_CELL_HEIGHT,
-        offset: DEFAULT_ACCOUNT_CELL_HEIGHT * index,
-        index,
-      },
+      itemLayouts[index] ?? { length: 0, offset: 0, index },
     [itemLayouts],
   );
 
@@ -347,7 +336,7 @@ const AccountSelectorList = ({
         selectedIndex = accounts.findIndex((acc) => acc.isSelected);
       }
 
-      if (selectedIndex > 0) {
+      if (selectedIndex >= 0) {
         accountListRef?.current?.scrollToIndex({
           index: selectedIndex,
           animated: false,
