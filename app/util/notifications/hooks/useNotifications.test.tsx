@@ -21,6 +21,7 @@ import {
 } from './useNotifications';
 // eslint-disable-next-line import/no-namespace
 import * as UsePushNotifications from './usePushNotifications';
+import Logger from '../../Logger';
 
 jest.mock('../constants', () => ({
   isNotificationsFeatureEnabled: () => true,
@@ -124,7 +125,7 @@ describe('useNotifications - useListNotificationsEffect', () => {
 
 describe('useNotifications - useEnableNotifications()', () => {
   const arrangeMocks = () => {
-    const mockTogglePushNotification = jest.fn().mockResolvedValue(true);
+    const mockTogglePushNotification = jest.fn().mockResolvedValue('success');
     const mockUsePushNotificationsToggle = jest
       .spyOn(UsePushNotifications, 'usePushNotificationsToggle')
       .mockReturnValue({
@@ -159,7 +160,9 @@ describe('useNotifications - useEnableNotifications()', () => {
 
     // Act
     const hook = renderHookWithProvider(() => useEnableNotifications());
-    await act(() => hook.result.current.enableNotifications());
+    await act(async () => {
+      await hook.result.current.enableNotifications();
+    });
     await waitFor(() =>
       expect(mocks.mockEnableNotifications).toHaveBeenCalled(),
     );
@@ -181,6 +184,37 @@ describe('useNotifications - useEnableNotifications()', () => {
     });
 
     expect(hook.result.current.error).toBeDefined();
+  });
+
+  it.each(['success', 'permission-denied', 'enable-failed'])(
+    'returns the push notification outcome %s',
+    async (pushResult) => {
+      const mocks = arrangeMocks();
+      mocks.mockTogglePushNotification.mockResolvedValue(pushResult);
+
+      const hook = renderHookWithProvider(() => useEnableNotifications());
+      let result;
+      await act(async () => {
+        result = await hook.result.current.enableNotifications();
+      });
+
+      expect(result).toBe(pushResult);
+    },
+  );
+
+  it('returns enable-failed and logs when enabling push notifications throws', async () => {
+    const mocks = arrangeMocks();
+    mocks.mockTogglePushNotification.mockRejectedValue(new Error('TEST ERROR'));
+    const mockLoggerError = jest.spyOn(Logger, 'error').mockImplementation();
+
+    const hook = renderHookWithProvider(() => useEnableNotifications());
+    let result;
+    await act(async () => {
+      result = await hook.result.current.enableNotifications();
+    });
+
+    expect(result).toBe('enable-failed');
+    expect(mockLoggerError).toHaveBeenCalled();
   });
 });
 

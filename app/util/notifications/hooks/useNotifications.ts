@@ -16,7 +16,10 @@ import {
   selectIsMetamaskNotificationsEnabled,
   selectIsUpdatingMetamaskNotifications,
 } from '../../../selectors/notifications';
-import { usePushNotificationsToggle } from './usePushNotifications';
+import {
+  PushNotificationsEnableResult,
+  usePushNotificationsToggle,
+} from './usePushNotifications';
 import Logger from '../../Logger';
 import { isNotificationsFeatureEnabled } from '../constants';
 import ErrorMessage from '../../../components/Views/confirmations/legacy/SendFlow/ErrorMessage';
@@ -138,14 +141,19 @@ export function useEnableNotifications(props = { nudgeEnablePush: true }) {
   const data = useSelector(selectIsMetamaskNotificationsEnabled);
   const loading = useSelector(selectIsUpdatingMetamaskNotifications);
   const [error, setError] = useState<unknown>(null);
-  const enableNotifications = useCallback(async () => {
-    assertIsFeatureEnabled();
-    setError(null);
-    await togglePushNotification(true).catch(() => {
-      /* Do Nothing */
-    });
-    await enableNotificationsHelper().catch((e) => setError(e));
-  }, [togglePushNotification]);
+  const enableNotifications =
+    useCallback(async (): Promise<PushNotificationsEnableResult> => {
+      assertIsFeatureEnabled();
+      setError(null);
+      const pushResult = await togglePushNotification(true).catch((e) => {
+        Logger.error(e, 'Failed to enable push notifications');
+        return 'enable-failed' as const;
+      });
+      await enableNotificationsHelper().catch((e) => setError(e));
+      return pushResult === 'success' || pushResult === 'permission-denied'
+        ? pushResult
+        : 'enable-failed';
+    }, [togglePushNotification]);
 
   const contiguousLoading = useContiguousLoading(loading, pushLoading);
 
