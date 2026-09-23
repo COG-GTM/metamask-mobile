@@ -68,6 +68,10 @@ export const filterEligibleTokens = (
   return tokensCopy;
 };
 
+// Identity of an earn-eligible token for O(1) membership lookups.
+export const getEarnTokenKey = (symbol?: string, chainId?: string) =>
+  `${symbol}|${chainId}`;
+
 export const isSupportedLendingTokenByChainId = (
   tokenSymbol: string,
   chainId: string,
