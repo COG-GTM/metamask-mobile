@@ -28,6 +28,7 @@ import { isDefaultAccountName } from '../../../util/ENSUtils';
 import { strings } from '../../../../locales/i18n';
 import { AvatarVariant } from '../../../component-library/components/Avatars/Avatar/Avatar.types';
 import { Account, Assets } from '../../hooks/useAccounts';
+import { getAccountItemHeight } from '../../hooks/useAccounts/utils';
 import Engine from '../../../core/Engine';
 import { removeAccountsFromPermissions } from '../../../core/Permissions';
 import Routes from '../../../constants/navigation/Routes';
@@ -38,7 +39,10 @@ import styleSheet from './AccountSelectorList.styles';
 import { AccountListBottomSheetSelectorsIDs } from '../../../../e2e/selectors/wallet/AccountListBottomSheet.selectors';
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 import { RootState } from '../../../reducers';
-import { ACCOUNT_SELECTOR_LIST_TESTID } from './AccountSelectorList.constants';
+import {
+  ACCOUNT_SELECTOR_LIST_INITIAL_NUM_TO_RENDER,
+  ACCOUNT_SELECTOR_LIST_TESTID,
+} from './AccountSelectorList.constants';
 import { toHex } from '@metamask/controller-utils';
 
 const AccountSelectorList = ({
@@ -300,6 +304,16 @@ const AccountSelectorList = ({
     ],
   );
 
+  const getItemLayout = useCallback(
+    (data: ArrayLike<Account> | null | undefined, index: number) => {
+      const item = data?.[index];
+      const offset = item?.yOffset ?? 0;
+      const length = item ? getAccountItemHeight(item) : 0;
+      return { length, offset, index };
+    },
+    [],
+  );
+
   const onContentSizeChanged = useCallback(() => {
     // Handle auto scroll to account
     if (!accounts.length || !isAutoScrollEnabled) return;
@@ -333,8 +347,10 @@ const AccountSelectorList = ({
       data={accounts}
       keyExtractor={getKeyExtractor}
       renderItem={renderAccountItem}
-      // Increasing number of items at initial render fixes scroll issue.
-      initialNumToRender={999}
+      // getItemLayout lets the list compute offsets without laying out every
+      // row, so scrollToOffset still lands on the selected account.
+      getItemLayout={getItemLayout}
+      initialNumToRender={ACCOUNT_SELECTOR_LIST_INITIAL_NUM_TO_RENDER}
       testID={ACCOUNT_SELECTOR_LIST_TESTID}
       {...props}
     />

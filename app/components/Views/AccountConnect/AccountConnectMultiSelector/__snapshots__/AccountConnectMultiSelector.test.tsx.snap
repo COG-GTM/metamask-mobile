@@ -207,7 +207,8 @@ exports[`AccountConnectMultiSelector renders correctly 1`] = `
       }
       getItem={[Function]}
       getItemCount={[Function]}
-      initialNumToRender={999}
+      getItemLayout={[Function]}
+      initialNumToRender={10}
       keyExtractor={[Function]}
       onContentSizeChange={[Function]}
       onGestureHandlerEvent={[Function]}
@@ -229,7 +230,6 @@ exports[`AccountConnectMultiSelector renders correctly 1`] = `
       <View>
         <View
           onFocusCapture={[Function]}
-          onLayout={[Function]}
           style={null}
         >
           <TouchableOpacity
@@ -421,7 +421,6 @@ exports[`AccountConnectMultiSelector renders correctly 1`] = `
         </View>
         <View
           onFocusCapture={[Function]}
-          onLayout={[Function]}
           style={null}
         >
           <TouchableOpacity
