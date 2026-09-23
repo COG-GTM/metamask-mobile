@@ -252,7 +252,22 @@ const mockOrder3 = {
   } as DeepPartial<SellOrder>,
 } as FiatOrder;
 
-const mockedOrders = [mockOrder, mockOrder2, mockOrder3];
+const mockOrder4 = {
+  ...mockOrder,
+  id: 'test-id-4',
+  data: {
+    ...mockOrder.data,
+    cryptoCurrency: {
+      ...mockOrder.data?.cryptoCurrency,
+      network: {
+        ...mockOrder.data?.cryptoCurrency?.network,
+        chainId: 'not-a-chain-id',
+      },
+    },
+  } as DeepPartial<SellOrder>,
+} as FiatOrder;
+
+const mockedOrders = [mockOrder, mockOrder2, mockOrder3, mockOrder4];
 
 function render(Component: React.ComponentType, orders = mockedOrders) {
   return renderScreen(
@@ -325,6 +340,15 @@ jest.mock('react-redux', () => ({
 
 jest.mock('../../hooks/useAnalytics', () => () => mockTrackEvent);
 
+const mockTrackErrorAsAnalytics = jest.fn();
+jest.mock(
+  '../../../../../util/metrics/TrackError/trackErrorAsAnalytics',
+  () => ({
+    __esModule: true,
+    default: (...args: unknown[]) => mockTrackErrorAsAnalytics(...args),
+  }),
+);
+
 describe('SendTransaction View', () => {
   afterEach(() => {
     mockNavigate.mockClear();
@@ -335,6 +359,7 @@ describe('SendTransaction View', () => {
     mockDispatch.mockClear();
     mockTrackEvent.mockClear();
     mockAddTransaction.mockClear();
+    mockTrackErrorAsAnalytics.mockClear();
   });
 
   beforeEach(() => {
@@ -501,6 +526,36 @@ describe('SendTransaction View', () => {
             "type": "FIAT_SET_SELL_TX_HASH",
           },
         ],
+      ]
+    `);
+  });
+
+  it('calls analytics when the chain id cannot be converted to hex', async () => {
+    mockUseParamsValues = { orderId: 'test-id-4' };
+    render(SendTransaction);
+    const nextButton = screen.getByRole('button', { name: 'Next' });
+
+    await act(async () => fireEvent.press(nextButton));
+
+    expect(mockAddTransaction).not.toBeCalled();
+    expect(mockTrackErrorAsAnalytics).toBeCalledWith(
+      'OFFRAMP_SEND_TRANSACTION_REJECTED',
+      expect.any(String),
+      'chain_id_source: not-a-chain-id',
+    );
+    expect(mockTrackEvent.mock.lastCall).toMatchInlineSnapshot(`
+      [
+        "OFFRAMP_SEND_TRANSACTION_REJECTED",
+        {
+          "chain_id_source": "not-a-chain-id",
+          "crypto_amount": "0.012361263",
+          "currency_destination": "USD",
+          "currency_source": "ETH",
+          "fiat_out": 0,
+          "order_id": "test-id-4",
+          "payment_method_id": "/payments/instant-bank-transfer",
+          "provider_offramp": "Test (Staging)",
+        },
       ]
     `);
   });
