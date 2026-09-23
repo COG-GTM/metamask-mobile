@@ -464,10 +464,6 @@ class ApproveTransactionReview extends PureComponent {
       },
     });
 
-    const token = Object.values(tokenList).filter(
-      (token) => token.address === to,
-    );
-
     this.setState(
       {
         host,
@@ -480,7 +476,7 @@ class ApproveTransactionReview extends PureComponent {
           tokenValue: encodedDecimalAmount,
           tokenStandard,
           tokenBalance,
-          tokenImage: token[0]?.iconUrl,
+          tokenImage: contract?.address === to ? contract.iconUrl : undefined,
         },
         spenderAddress,
         encodedHexAmount,
