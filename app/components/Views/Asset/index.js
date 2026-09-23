@@ -59,7 +59,6 @@ import {
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { updateIncomingTransactions } from '../../../util/transaction-controller';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
-import { store } from '../../../store';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import {
   selectSwapsTransactions,
@@ -153,6 +152,10 @@ class Asset extends PureComponent {
      * The chain ID for the current selected network
      */
     chainId: PropTypes.string,
+    /**
+     * The network ID for the current selected network
+     */
+    networkId: PropTypes.string,
     /**
      * An array that represents the user transactions
      */
@@ -298,9 +301,20 @@ class Asset extends PureComponent {
         this.props.selectedInternalAccount?.address
     ) {
       this.showLoaderAndNormalize();
-    } else {
+    } else if (this.shouldNormalizeTransactions(prevProps)) {
       this.normalizeTransactions();
     }
+  }
+
+  shouldNormalizeTransactions(prevProps) {
+    return (
+      prevProps.transactions !== this.props.transactions ||
+      prevProps.tokens !== this.props.tokens ||
+      prevProps.swapsTransactions !== this.props.swapsTransactions ||
+      prevProps.selectedInternalAccount !==
+        this.props.selectedInternalAccount ||
+      prevProps.networkId !== this.props.networkId
+    );
   }
 
   showLoaderAndNormalize() {
@@ -317,8 +331,7 @@ class Asset extends PureComponent {
     this.txsPending.length !== newTxsPending.length;
 
   ethFilter = (tx) => {
-    const { networkId } = store.getState().inpageProvider;
-    const { chainId } = this.props;
+    const { chainId, networkId } = this.props;
     const {
       txParams: { from, to },
       isTransfer,
@@ -347,9 +360,7 @@ class Asset extends PureComponent {
   };
 
   noEthFilter = (tx) => {
-    const { networkId } = store.getState().inpageProvider;
-
-    const { chainId, swapsTransactions } = this.props;
+    const { chainId, networkId, swapsTransactions } = this.props;
     const {
       txParams: { to, from },
       isTransfer,
@@ -395,10 +406,12 @@ class Asset extends PureComponent {
 
     const { chainId, transactions } = this.props;
     if (transactions.length) {
-      const sortedTransactions = sortTransactions(transactions).filter(
-        (tx, index, self) =>
-          self.findIndex((_tx) => _tx.id === tx.id) === index,
-      );
+      const seenTransactionIds = new Set();
+      const sortedTransactions = sortTransactions(transactions).filter((tx) => {
+        if (seenTransactionIds.has(tx.id)) return false;
+        seenTransactionIds.add(tx.id);
+        return true;
+      });
       const filteredTransactions = sortedTransactions.filter((tx) => {
         const filterResult = this.filter(tx);
         if (filterResult) {
@@ -594,6 +607,7 @@ const mapStateToProps = (state, { route }) => ({
   currentCurrency: selectCurrentCurrency(state),
   selectedInternalAccount: selectSelectedInternalAccount(state),
   chainId: selectChainId(state),
+  networkId: state.inpageProvider.networkId,
   tokens: selectTokens(state),
   transactions: selectTransactions(state),
   rpcUrl: selectRpcUrl(state),
