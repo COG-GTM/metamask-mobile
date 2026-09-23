@@ -28,6 +28,7 @@ import { isDefaultAccountName } from '../../../util/ENSUtils';
 import { strings } from '../../../../locales/i18n';
 import { AvatarVariant } from '../../../component-library/components/Avatars/Avatar/Avatar.types';
 import { Account, Assets } from '../../hooks/useAccounts';
+import { getAccountCellHeight } from '../../hooks/useAccounts/useAccounts.utils';
 import Engine from '../../../core/Engine';
 import { removeAccountsFromPermissions } from '../../../core/Permissions';
 import Routes from '../../../constants/navigation/Routes';
@@ -300,27 +301,47 @@ const AccountSelectorList = ({
     ],
   );
 
+  // Each row height is computed from its own content so that layouts stay
+  // correct when callers render a filtered subset of the accounts.
+  const itemLayouts = useMemo(() => {
+    let offset = 0;
+    return (accounts ?? []).map((account, index) => {
+      const length = getAccountCellHeight(account);
+      const layout = { length, offset, index };
+      offset += length;
+      return layout;
+    });
+  }, [accounts]);
+
+  const getItemLayout = useCallback(
+    (_: ArrayLike<Account> | null | undefined, index: number) =>
+      itemLayouts[index] ?? { length: 0, offset: 0, index },
+    [itemLayouts],
+  );
+
   const onContentSizeChanged = useCallback(() => {
     // Handle auto scroll to account
     if (!accounts.length || !isAutoScrollEnabled) return;
     if (accountsLengthRef.current !== accounts.length) {
-      let selectedAccount: Account | undefined;
+      let selectedIndex = -1;
 
       if (selectedAddresses?.length) {
         const selectedAddressLower = selectedAddresses[0].toLowerCase();
-        selectedAccount = accounts.find(
+        selectedIndex = accounts.findIndex(
           (acc) => acc.address.toLowerCase() === selectedAddressLower,
         );
       }
       // Fall back to the account with isSelected flag if no override or match found
-      if (!selectedAccount) {
-        selectedAccount = accounts.find((acc) => acc.isSelected);
+      if (selectedIndex === -1) {
+        selectedIndex = accounts.findIndex((acc) => acc.isSelected);
       }
 
-      accountListRef?.current?.scrollToOffset({
-        offset: selectedAccount?.yOffset,
-        animated: false,
-      });
+      if (selectedIndex >= 0) {
+        accountListRef?.current?.scrollToIndex({
+          index: selectedIndex,
+          animated: false,
+        });
+      }
 
       accountsLengthRef.current = accounts.length;
     }
@@ -333,8 +354,7 @@ const AccountSelectorList = ({
       data={accounts}
       keyExtractor={getKeyExtractor}
       renderItem={renderAccountItem}
-      // Increasing number of items at initial render fixes scroll issue.
-      initialNumToRender={999}
+      getItemLayout={getItemLayout}
       testID={ACCOUNT_SELECTOR_LIST_TESTID}
       {...props}
     />
