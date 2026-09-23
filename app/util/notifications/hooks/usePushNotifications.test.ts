@@ -7,6 +7,7 @@ import * as Selectors from '../../../selectors/notifications';
 import { renderHookWithProvider } from '../../test/renderWithProvider';
 // eslint-disable-next-line import/no-namespace
 import * as NotificationServiceModule from '../services/NotificationService';
+import Logger from '../../Logger';
 import {
   usePushNotificationsToggle,
   UsePushNotificationsToggleProps,
@@ -22,22 +23,19 @@ describe('useNotifications - usePushNotificationsToggle()', () => {
       Selectors,
       'selectIsMetaMaskPushNotificationsEnabled',
     );
-    const mockRequestPermission = jest.spyOn(
-      NotificationServiceModule,
-      'requestPushPermissions',
-    );
-    const mockHasPermission = jest.spyOn(
-      NotificationServiceModule,
-      'hasPushPermission',
-    );
-    const mockEnablePushNotifications = jest.spyOn(
-      Actions,
-      'enablePushNotifications',
-    );
-    const mockDisablePushNotifications = jest.spyOn(
-      Actions,
-      'disablePushNotifications',
-    );
+    const mockRequestPermission = jest
+      .spyOn(NotificationServiceModule, 'requestPushPermissions')
+      .mockResolvedValue(true);
+    const mockHasPermission = jest
+      .spyOn(NotificationServiceModule, 'hasPushPermission')
+      .mockResolvedValue(true);
+    const mockEnablePushNotifications = jest
+      .spyOn(Actions, 'enablePushNotifications')
+      .mockResolvedValue(undefined);
+    const mockDisablePushNotifications = jest
+      .spyOn(Actions, 'disablePushNotifications')
+      .mockResolvedValue(undefined);
+    const mockLoggerError = jest.spyOn(Logger, 'error').mockImplementation();
 
     return {
       mockSelectEnabled,
@@ -45,8 +43,11 @@ describe('useNotifications - usePushNotificationsToggle()', () => {
       mockHasPermission,
       mockEnablePushNotifications,
       mockDisablePushNotifications,
+      mockLoggerError,
     };
   };
+
+  afterEach(() => jest.restoreAllMocks());
 
   type Mocks = ReturnType<typeof arrangeMocks>;
   const arrangeActEnableFlow = async (
@@ -61,13 +62,17 @@ describe('useNotifications - usePushNotificationsToggle()', () => {
     const hook = renderHookWithProvider(() =>
       usePushNotificationsToggle(state),
     );
-    await act(() => hook.result.current.togglePushNotification(true));
+    let result;
+    await act(async () => {
+      result = await hook.result.current.togglePushNotification(true);
+    });
 
-    return { mocks, hook };
+    return { mocks, hook, result };
   };
 
   it('enable push notifications successfully', async () => {
-    const { mocks } = await arrangeActEnableFlow();
+    const { mocks, result } = await arrangeActEnableFlow();
+    expect(result).toBe('success');
     await waitFor(() => expect(mocks.mockRequestPermission).toHaveBeenCalled());
     await waitFor(() =>
       expect(mocks.mockEnablePushNotifications).toHaveBeenCalled(),
@@ -76,24 +81,37 @@ describe('useNotifications - usePushNotificationsToggle()', () => {
     expect(mocks.mockDisablePushNotifications).not.toHaveBeenCalled();
   });
 
-  it('enable push notifications bails if fails to request push permissions', async () => {
-    const { mocks } = await arrangeActEnableFlow((m) =>
+  it('reports permission-denied and logs if requesting push permissions fails', async () => {
+    const { mocks, result } = await arrangeActEnableFlow((m) =>
       m.mockRequestPermission.mockRejectedValue(new Error('TEST ERROR')),
     );
+    expect(result).toBe('permission-denied');
     await waitFor(() => expect(mocks.mockRequestPermission).toHaveBeenCalled());
     await waitFor(() =>
       expect(mocks.mockEnablePushNotifications).not.toHaveBeenCalled(),
     );
+    expect(mocks.mockLoggerError).toHaveBeenCalled();
   });
 
-  it('silently fails if enable push notifications action fails', async () => {
-    const { mocks } = await arrangeActEnableFlow((m) =>
+  it('reports permission-denied if push permissions are not granted', async () => {
+    const { mocks, result } = await arrangeActEnableFlow((m) =>
+      m.mockRequestPermission.mockResolvedValue(false),
+    );
+    expect(result).toBe('permission-denied');
+    expect(mocks.mockEnablePushNotifications).not.toHaveBeenCalled();
+    expect(mocks.mockLoggerError).not.toHaveBeenCalled();
+  });
+
+  it('reports enable-failed and logs if enable push notifications action fails', async () => {
+    const { mocks, result } = await arrangeActEnableFlow((m) =>
       m.mockEnablePushNotifications.mockRejectedValue(new Error('TEST ERROR')),
     );
+    expect(result).toBe('enable-failed');
     await waitFor(() => expect(mocks.mockRequestPermission).toHaveBeenCalled());
     await waitFor(() =>
       expect(mocks.mockEnablePushNotifications).toHaveBeenCalled(),
     );
+    expect(mocks.mockLoggerError).toHaveBeenCalled();
   });
 
   it('does not nudge for push notifications enablement', async () => {
@@ -115,9 +133,12 @@ describe('useNotifications - usePushNotificationsToggle()', () => {
 
     // Act
     const hook = renderHookWithProvider(() => usePushNotificationsToggle());
-    await act(() => hook.result.current.togglePushNotification(false));
+    let result;
+    await act(async () => {
+      result = await hook.result.current.togglePushNotification(false);
+    });
 
-    return { mocks, hook };
+    return { mocks, hook, result };
   };
 
   it('disable push notifications successfully', async () => {
@@ -130,12 +151,14 @@ describe('useNotifications - usePushNotificationsToggle()', () => {
     expect(mocks.mockRequestPermission).not.toHaveBeenCalled();
   });
 
-  it('silently fails if disable push notifications action fails', async () => {
-    const { mocks } = await arrangeActDisableFlow((m) =>
+  it('reports disable-failed and logs if disable push notifications action fails', async () => {
+    const { mocks, result } = await arrangeActDisableFlow((m) =>
       m.mockDisablePushNotifications.mockRejectedValue(new Error('TEST ERROR')),
     );
+    expect(result).toBe('disable-failed');
     await waitFor(() =>
       expect(mocks.mockDisablePushNotifications).toHaveBeenCalled(),
     );
+    expect(mocks.mockLoggerError).toHaveBeenCalled();
   });
 });

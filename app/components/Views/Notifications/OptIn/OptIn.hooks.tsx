@@ -5,6 +5,13 @@ import { RootState } from '../../../../reducers';
 import Routes from '../../../../constants/navigation/Routes';
 import { IUseMetricsHook, MetaMetricsEvents } from '../../../hooks/useMetrics';
 import { selectIsBackupAndSyncEnabled } from '../../../../selectors/identity';
+import { PushNotificationsEnableResult } from '../../../../util/notifications/hooks/usePushNotifications';
+
+const PUSH_RESULT_ACTION_TYPE: Record<PushNotificationsEnableResult, string> = {
+  success: 'activated',
+  'permission-denied': 'permission_denied',
+  'enable-failed': 'activation_failed',
+};
 
 /**
  * Creating wallet notifications can take time, so we will use optimistic loader
@@ -48,7 +55,7 @@ export function useOptimisticNavigationEffect(props: {
 export function useHandleOptInClick(props: {
   navigation: NavigationProp<ParamListBase>;
   metrics: IUseMetricsHook;
-  enableNotifications: () => Promise<void>;
+  enableNotifications: () => Promise<PushNotificationsEnableResult>;
 }) {
   const { navigation, enableNotifications, metrics } = props;
   const { trackEvent, createEventBuilder } = metrics;
@@ -71,14 +78,14 @@ export function useHandleOptInClick(props: {
     }
 
     // Enable Notifications (+ push notifications)
-    await enableNotifications();
+    const pushResult = await enableNotifications();
 
     navigation.navigate(Routes.NOTIFICATIONS.VIEW);
 
     trackEvent(
       createEventBuilder(MetaMetricsEvents.NOTIFICATIONS_ACTIVATED)
         .addProperties({
-          action_type: 'activated',
+          action_type: PUSH_RESULT_ACTION_TYPE[pushResult],
           is_profile_syncing_enabled: isBackupAndSyncEnabled,
         })
         .build(),

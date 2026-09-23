@@ -10,6 +10,7 @@ import { renderHookWithProvider } from '../../../../util/test/renderWithProvider
 import { IUseMetricsHook, MetaMetricsEvents } from '../../../hooks/useMetrics';
 // eslint-disable-next-line import/no-namespace
 import * as Selectors from '../../../../selectors/identity';
+import { PushNotificationsEnableResult } from '../../../../util/notifications/hooks/usePushNotifications';
 
 describe('useOptimisticNavigationEffect', () => {
   jest.useFakeTimers();
@@ -82,7 +83,12 @@ describe('useOptimisticNavigationEffect', () => {
 });
 
 describe('useHandleOptInClick', () => {
-  const arrange = (props = { basicFunctionalityEnabled: true }) => {
+  const arrange = (
+    props: {
+      basicFunctionalityEnabled: boolean;
+      pushResult?: PushNotificationsEnableResult;
+    } = { basicFunctionalityEnabled: true },
+  ) => {
     // Mock Navigation
     const mockNavigate = jest.fn();
     const mockNavigation = {
@@ -90,9 +96,10 @@ describe('useHandleOptInClick', () => {
     } as unknown as NavigationProp<ParamListBase>;
 
     // Mock Metrics
+    const mockAddProperties = jest.fn().mockReturnThis();
     const mockTrackEvent = jest.fn();
     const mockCreateEventBuilder = jest.fn().mockReturnValue({
-      addProperties: jest.fn().mockReturnThis(),
+      addProperties: mockAddProperties,
       build: jest.fn().mockReturnValue({}),
     });
     const mockMetrics = {
@@ -100,7 +107,9 @@ describe('useHandleOptInClick', () => {
       createEventBuilder: mockCreateEventBuilder,
     } as unknown as IUseMetricsHook;
 
-    const mockEnableNotifications = jest.fn().mockImplementation(jest.fn());
+    const mockEnableNotifications = jest
+      .fn()
+      .mockResolvedValue(props.pushResult ?? 'success');
 
     const mockSelectIsBackupAndSyncEnabled = jest.spyOn(
       Selectors,
@@ -126,6 +135,7 @@ describe('useHandleOptInClick', () => {
     return {
       hook,
       mockNavigate,
+      mockAddProperties,
       mockTrackEvent,
       mockCreateEventBuilder,
       mockEnableNotifications,
@@ -168,6 +178,26 @@ describe('useHandleOptInClick', () => {
         .build(),
     );
   });
+
+  it.each([
+    ['success', 'activated'],
+    ['permission-denied', 'permission_denied'],
+    ['enable-failed', 'activation_failed'],
+  ] as [PushNotificationsEnableResult, string][])(
+    'tracks action_type %s as %s',
+    async (pushResult, actionType) => {
+      const { hook, mockAddProperties } = arrange({
+        basicFunctionalityEnabled: true,
+        pushResult,
+      });
+
+      await hook.result.current();
+
+      expect(mockAddProperties).toHaveBeenCalledWith(
+        expect.objectContaining({ action_type: actionType }),
+      );
+    },
+  );
 });
 
 describe('useHandleOptInCancel', () => {

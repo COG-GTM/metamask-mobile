@@ -13,6 +13,18 @@ import {
   hasPushPermission,
   requestPushPermissions,
 } from '../services/NotificationService';
+import Logger from '../../Logger';
+
+export type PushNotificationsEnableResult =
+  | 'success'
+  | 'permission-denied'
+  | 'enable-failed';
+
+export type PushNotificationsDisableResult = 'success' | 'disable-failed';
+
+export type PushNotificationsToggleResult =
+  | PushNotificationsEnableResult
+  | PushNotificationsDisableResult;
 
 export interface UsePushNotificationsToggleProps {
   // Depending on the instance, we may want to nudge to enable push notifications
@@ -26,31 +38,45 @@ export function usePushNotificationsToggle(
   const data = useSelector(selectIsMetaMaskPushNotificationsEnabled);
   const loading = useSelector(selectIsMetaMaskPushNotificationsLoading);
 
-  const enablePushNotifications = useCallback(async () => {
-    assertIsFeatureEnabled();
-    const pushPermCallback = props.nudgeEnablePush
-      ? requestPushPermissions
-      : hasPushPermission;
+  const enablePushNotifications =
+    useCallback(async (): Promise<PushNotificationsEnableResult> => {
+      assertIsFeatureEnabled();
+      const pushPermCallback = props.nudgeEnablePush
+        ? requestPushPermissions
+        : hasPushPermission;
 
-    const result = await pushPermCallback().catch(() => false);
-    if (!result) return;
+      const hasPermission = await pushPermCallback().catch((e) => {
+        Logger.error(e, 'Failed to request push notification permissions');
+        return false;
+      });
+      if (!hasPermission) {
+        return 'permission-denied';
+      }
 
-    await enablePushNotificationsHelper().catch(() => {
-      /* Do Nothing */
-    });
-  }, [props.nudgeEnablePush]);
+      try {
+        await enablePushNotificationsHelper();
+        return 'success';
+      } catch (e) {
+        Logger.error(e as Error, 'Failed to enable push notifications');
+        return 'enable-failed';
+      }
+    }, [props.nudgeEnablePush]);
 
-  const disablePushNotifications = useCallback(async () => {
-    assertIsFeatureEnabled();
-    await disablePushNotificationsHelper().catch(() => {
-      /* Do Nothing */
-    });
-  }, []);
+  const disablePushNotifications =
+    useCallback(async (): Promise<PushNotificationsDisableResult> => {
+      assertIsFeatureEnabled();
+      try {
+        await disablePushNotificationsHelper();
+        return 'success';
+      } catch (e) {
+        Logger.error(e as Error, 'Failed to disable push notifications');
+        return 'disable-failed';
+      }
+    }, []);
 
   const togglePushNotification = useCallback(
-    async (val: boolean) => {
-      val ? await enablePushNotifications() : await disablePushNotifications();
-    },
+    async (val: boolean): Promise<PushNotificationsToggleResult> =>
+      val ? await enablePushNotifications() : await disablePushNotifications(),
     [disablePushNotifications, enablePushNotifications],
   );
 
