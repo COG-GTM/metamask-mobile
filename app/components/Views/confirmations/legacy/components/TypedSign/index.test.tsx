@@ -15,6 +15,17 @@ import { fireEvent, waitFor } from '@testing-library/react-native';
 import { MetaMetrics } from '../../../../../../core/Analytics';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../../../util/test/accountsControllerTestUtils';
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
+import { parseAndSanitizeSignTypedData } from '../../../utils/signature';
+
+jest.mock('../../../utils/signature', () => {
+  const actual = jest.requireActual('../../../utils/signature');
+  return {
+    ...actual,
+    parseAndSanitizeSignTypedData: jest.fn(
+      actual.parseAndSanitizeSignTypedData,
+    ),
+  };
+});
 
 jest.mock('../../../../../../core/Analytics/MetaMetrics');
 
@@ -26,7 +37,9 @@ const mockMetrics = {
 
 jest.mock('../../../../../../core/Engine', () => {
   const { MOCK_ACCOUNTS_CONTROLLER_STATE: mockAccountsControllerState } =
-    jest.requireActual('../../../../../../util/test/accountsControllerTestUtils');
+    jest.requireActual(
+      '../../../../../../util/test/accountsControllerTestUtils',
+    );
   return {
     acceptPendingApproval: jest.fn(),
     rejectPendingApproval: jest.fn(),
@@ -340,6 +353,90 @@ describe('TypedSign', () => {
           },
         );
       });
+    });
+  });
+
+  describe('typed data parsing', () => {
+    const typedDataV4 = JSON.stringify({
+      domain: { name: 'Ether Mail', version: '1' },
+      primaryType: 'Mail',
+      types: {
+        EIP712Domain: [
+          { name: 'name', type: 'string' },
+          { name: 'version', type: 'string' },
+        ],
+        Mail: [{ name: 'contents', type: 'string' }],
+      },
+      message: { contents: 'Hello, Bob!' },
+    });
+
+    const renderTypedSign = (data: string) =>
+      renderWithProvider(
+        <TypedSign
+          currentPageInformation={{
+            title: 'title',
+            url: 'http://localhost:8545',
+          }}
+          messageParams={{ ...messageParamsMock, version: 'V4', data }}
+          onConfirm={mockConfirm}
+          onReject={mockReject}
+        />,
+        { state: initialState },
+      );
+
+    beforeEach(() => {
+      (parseAndSanitizeSignTypedData as jest.Mock).mockClear();
+    });
+
+    it('parses and sanitizes the data only once across re-renders', () => {
+      const { rerender } = renderTypedSign(typedDataV4);
+
+      expect(parseAndSanitizeSignTypedData).toHaveBeenCalledTimes(1);
+
+      rerender(
+        <TypedSign
+          currentPageInformation={{
+            title: 'other title',
+            url: 'http://localhost:8545',
+          }}
+          messageParams={{
+            ...messageParamsMock,
+            version: 'V4',
+            data: typedDataV4,
+          }}
+          onConfirm={mockConfirm}
+          onReject={mockReject}
+        />,
+      );
+
+      expect(parseAndSanitizeSignTypedData).toHaveBeenCalledTimes(1);
+    });
+
+    it('re-parses when the message data changes', () => {
+      const { rerender } = renderTypedSign(typedDataV4);
+
+      const otherData = JSON.stringify({
+        ...JSON.parse(typedDataV4),
+        message: { contents: 'Hello, Alice!' },
+      });
+
+      rerender(
+        <TypedSign
+          currentPageInformation={{
+            title: 'title',
+            url: 'http://localhost:8545',
+          }}
+          messageParams={{
+            ...messageParamsMock,
+            version: 'V4',
+            data: otherData,
+          }}
+          onConfirm={mockConfirm}
+          onReject={mockReject}
+        />,
+      );
+
+      expect(parseAndSanitizeSignTypedData).toHaveBeenCalledTimes(2);
     });
   });
 
