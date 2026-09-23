@@ -60,7 +60,10 @@ import {
   selectIpfsGateway,
   selectIsIpfsGatewayEnabled,
 } from '../../../selectors/preferencesController';
-import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
+import {
+  selectInternalAccounts,
+  selectSelectedInternalAccountFormattedAddress,
+} from '../../../selectors/accountsController';
 import useFavicon from '../../hooks/useFavicon/useFavicon';
 import {
   HOMEPAGE_HOST,
@@ -120,6 +123,24 @@ import {
   isProductSafetyDappScanningEnabled,
 } from '../../../util/phishingDetection';
 import { toHex } from '@metamask/controller-utils';
+import { createDeepEqualSelector } from '../../../selectors/util';
+
+/**
+ * Creates a memoized selector for the accounts permitted to a hostname.
+ * `selectInternalAccounts` is an input because permitted accounts are sorted
+ * by the accounts' `lastSelected` metadata. One instance per tab so that tabs
+ * on different hostnames don't evict each other's cached result.
+ */
+const makePermittedAccountsByHostnameSelector = () =>
+  createDeepEqualSelector(
+    [
+      selectPermissionControllerState,
+      selectInternalAccounts,
+      (_state: RootState, hostname: string) => hostname,
+    ],
+    (permissionsControllerState, _internalAccounts, hostname) =>
+      getPermittedAccountsByHostname(permissionsControllerState, hostname),
+  );
 
 /**
  * Tab component for the in-app browser
@@ -191,15 +212,28 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
   const searchEngine = useSelector(selectSearchEngine);
-  const permittedAccountsList = useSelector((state: RootState) => {
-    const permissionsControllerState = selectPermissionControllerState(state);
-    const hostname = new URLParse(resolvedUrlRef.current).hostname;
-    const permittedAcc = getPermittedAccountsByHostname(
-      permissionsControllerState,
-      hostname,
-    );
-    return permittedAcc;
-  }, isEqual);
+  // The resolved URL lives in a ref and only changes on navigation, so cache
+  // its parsed hostname instead of re-parsing it on every store dispatch.
+  const resolvedHostnameCacheRef = useRef({ url: '', hostname: '' });
+  const getResolvedHostname = useCallback(() => {
+    const url = resolvedUrlRef.current;
+    if (resolvedHostnameCacheRef.current.url !== url) {
+      resolvedHostnameCacheRef.current = {
+        url,
+        hostname: new URLParse(url).hostname,
+      };
+    }
+    return resolvedHostnameCacheRef.current.hostname;
+  }, []);
+  const selectPermittedAccountsByHostname = useMemo(
+    makePermittedAccountsByHostnameSelector,
+    [],
+  );
+  const permittedAccountsList = useSelector(
+    (state: RootState) =>
+      selectPermittedAccountsByHostname(state, getResolvedHostname()),
+    isEqual,
+  );
 
   const favicon = useFavicon(resolvedUrlRef.current);
   const { trackEvent, isEnabled, getMetaMetricsId, createEventBuilder } =
