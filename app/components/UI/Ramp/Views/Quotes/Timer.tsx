@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useStyles } from '../../../../hooks/useStyles';
 import { useRampSDK } from '../../sdk';
+import useInterval from '../../../../hooks/useInterval';
 
 import Text from '../../../../Base/Text';
 import styleSheet from './Quotes.styles';
@@ -11,14 +12,29 @@ import { strings } from '../../../../../../locales/i18n';
 const Timer = ({
   isFetchingQuotes,
   pollingCyclesLeft,
-  remainingTime,
+  expiresAt,
 }: {
   isFetchingQuotes: boolean;
   pollingCyclesLeft: number;
-  remainingTime: number;
+  expiresAt: number;
 }) => {
   const { appConfig } = useRampSDK();
   const { styles } = useStyles(styleSheet, {});
+
+  const getRemainingTime = useCallback(() => {
+    const remaining = Math.ceil((expiresAt - Date.now()) / 1000) * 1000;
+    return remaining > 0 ? remaining : appConfig.POLLING_INTERVAL;
+  }, [appConfig.POLLING_INTERVAL, expiresAt]);
+
+  const [remainingTime, setRemainingTime] = useState(getRemainingTime);
+
+  useEffect(() => {
+    setRemainingTime(getRemainingTime());
+  }, [getRemainingTime]);
+
+  useInterval(() => setRemainingTime(getRemainingTime()), {
+    delay: isFetchingQuotes ? null : 1000,
+  });
 
   return (
     <View style={styles.timerWrapper}>

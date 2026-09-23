@@ -115,8 +115,8 @@ function Quotes() {
   const [pollingCyclesLeft, setPollingCyclesLeft] = useState(
     appConfig.POLLING_CYCLES - 1,
   );
-  const [remainingTime, setRemainingTime] = useState(
-    appConfig.POLLING_INTERVAL,
+  const [expiresAt, setExpiresAt] = useState(
+    () => Date.now() + appConfig.POLLING_INTERVAL,
   );
   const { styles, theme } = useStyles(styleSheet, {});
 
@@ -178,7 +178,7 @@ function Quotes() {
     setIsLoading(true);
     setIsInPolling(true);
     setPollingCyclesLeft(appConfig.POLLING_CYCLES - 1);
-    setRemainingTime(appConfig.POLLING_INTERVAL);
+    setExpiresAt(Date.now() + appConfig.POLLING_INTERVAL);
     fetchQuotes();
 
     const payload = {
@@ -494,26 +494,24 @@ function Quotes() {
     ],
   );
 
+  const isCountingDown = isInPolling && !isFetchingQuotes;
+
   useInterval(
     () => {
-      setRemainingTime((prevRemainingTime) => {
-        const newRemainingTime = Number(prevRemainingTime - 1000);
-
-        if (newRemainingTime <= 0) {
-          setPollingCyclesLeft((cycles) => cycles - 1);
-          if (pollingCyclesLeft > 0) {
-            setProviderId(null);
-            fetchQuotes();
-          }
-        }
-
-        return newRemainingTime > 0
-          ? newRemainingTime
-          : appConfig.POLLING_INTERVAL;
-      });
+      setPollingCyclesLeft((cycles) => cycles - 1);
+      if (pollingCyclesLeft > 0) {
+        setProviderId(null);
+        fetchQuotes();
+      }
     },
-    { delay: isInPolling && !isFetchingQuotes ? 1000 : null },
+    { delay: isCountingDown ? appConfig.POLLING_INTERVAL : null },
   );
+
+  useEffect(() => {
+    if (isCountingDown) {
+      setExpiresAt(Date.now() + appConfig.POLLING_INTERVAL);
+    }
+  }, [appConfig.POLLING_INTERVAL, isCountingDown, pollingCyclesLeft]);
 
   useEffect(() => {
     if (
@@ -919,7 +917,7 @@ function Quotes() {
           <Timer
             pollingCyclesLeft={pollingCyclesLeft}
             isFetchingQuotes={isFetchingQuotes}
-            remainingTime={remainingTime}
+            expiresAt={expiresAt}
           />
         )}
         <ScreenLayout.Content style={styles.withoutTopPadding}>
@@ -1029,7 +1027,7 @@ function Quotes() {
             <Timer
               pollingCyclesLeft={pollingCyclesLeft}
               isFetchingQuotes={isFetchingQuotes}
-              remainingTime={remainingTime}
+              expiresAt={expiresAt}
             />
           )}
 
