@@ -5,12 +5,18 @@ import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsContr
 import BrowserTab from './BrowserTab';
 import AppConstants from '../../../core/AppConstants';
 
+const mockUnsubscribeByEvent: Record<string, jest.Mock> = {};
+
 const mockNavigation = {
   goBack: jest.fn(),
   goForward: jest.fn(),
   canGoBack: true,
   canGoForward: true,
-  addListener: jest.fn(),
+  addListener: jest.fn((event: string) => {
+    const unsubscribe = jest.fn();
+    mockUnsubscribeByEvent[event] = unsubscribe;
+    return unsubscribe;
+  }),
 };
 
 jest.mock('@react-navigation/native', () => {
@@ -77,5 +83,25 @@ describe('BrowserTab', () => {
       state: mockInitialState,
     });
     expect(toJSON()).toMatchSnapshot();
+  });
+
+  it('removes navigation focus and blur listeners on unmount', () => {
+    const { unmount } = renderWithProvider(<BrowserTab {...mockProps} />, {
+      state: mockInitialState,
+    });
+
+    expect(mockNavigation.addListener).toHaveBeenCalledWith(
+      'focus',
+      expect.any(Function),
+    );
+    expect(mockNavigation.addListener).toHaveBeenCalledWith(
+      'blur',
+      expect.any(Function),
+    );
+
+    unmount();
+
+    expect(mockUnsubscribeByEvent.focus).toHaveBeenCalled();
+    expect(mockUnsubscribeByEvent.blur).toHaveBeenCalled();
   });
 });
