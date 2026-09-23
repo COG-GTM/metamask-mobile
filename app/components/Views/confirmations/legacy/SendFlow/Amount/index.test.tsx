@@ -11,6 +11,7 @@ import { AmountViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendF
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import { setMaxValueMode } from '../../../../../../actions/transaction';
 import Routes from '../../../../../../constants/navigation/Routes';
+import Logger from '../../../../../../util/Logger';
 
 const mockTransactionTypes = TransactionTypes;
 
@@ -95,6 +96,13 @@ jest.mock('../../../../../../util/transaction-controller', () => ({
     }),
   ),
   addTransaction: jest.fn(),
+}));
+
+jest.mock('../../../../../../util/Logger', () => ({
+  __esModule: true,
+  default: {
+    error: jest.fn(),
+  },
 }));
 
 jest.mock('../../../../../../actions/transaction', () => ({
@@ -1271,5 +1279,96 @@ describe('Amount', () => {
         networkClientId: 'sepolia',
       },
     );
+  });
+
+  it('logs the error and clears the loading state if adding the redesigned transfer transaction fails', async () => {
+    mockSelectConfirmationRedesignFlags.mockReturnValue({
+      transfer: true,
+    } as ReturnType<typeof selectConfirmationRedesignFlags>);
+
+    const addTransactionError = new Error('add transaction failed');
+    (addTransaction as jest.Mock).mockRejectedValueOnce(addTransactionError);
+
+    const { getByTestId } = renderComponent({
+      ...initialState,
+      engine: {
+        ...initialState.engine,
+        backgroundState: {
+          ...initialState.engine.backgroundState,
+          CurrencyRateController: {
+            currentCurrency: 'usd',
+            currencyRates: {
+              ETH: {
+                conversionRate: 1,
+              },
+            },
+          },
+          AccountTrackerController: {
+            accountsByChainId: {
+              '0xaa36a7': {
+                [CURRENT_ACCOUNT]: {
+                  balance: '4563918244F40000',
+                },
+              },
+            },
+          },
+          AccountsController: {
+            internalAccounts: {
+              selectedAccount: CURRENT_ACCOUNT,
+              accounts: {
+                [CURRENT_ACCOUNT]: {
+                  address: CURRENT_ACCOUNT,
+                },
+              },
+            },
+          },
+          TokensController: {
+            allTokens: {
+              '0x1': {
+                [CURRENT_ACCOUNT]: [],
+              },
+            },
+          },
+        },
+      },
+      transaction: {
+        assetType: 'ETH',
+        selectedAsset: {
+          address: '',
+          isETH: true,
+          logo: '../images/eth-logo.png',
+          name: 'Ether',
+          symbol: 'ETH',
+        },
+        transaction: {
+          from: CURRENT_ACCOUNT,
+          to: RECEIVER_ACCOUNT,
+          value: '0xde0b6b3a7640000',
+          data: '0x',
+        },
+        transactionFromName: 'Account 1',
+        transactionTo: RECEIVER_ACCOUNT,
+        transactionToName: 'Account 2',
+      },
+    });
+
+    const nextButton = getByTestId(AmountViewSelectorsIDs.NEXT_BUTTON);
+    await waitFor(() => expect(nextButton.props.disabled).toStrictEqual(false));
+
+    const textInput = getByTestId(
+      AmountViewSelectorsIDs.TRANSACTION_AMOUNT_INPUT,
+    );
+    fireEvent.changeText(textInput, '1');
+
+    await act(() => fireEvent.press(nextButton));
+
+    expect(Logger.error).toHaveBeenCalledWith(
+      addTransactionError,
+      'redesigned transfer addTransaction failed',
+    );
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(
+      getByTestId(AmountViewSelectorsIDs.NEXT_BUTTON).props.disabled,
+    ).toStrictEqual(false);
   });
 });
