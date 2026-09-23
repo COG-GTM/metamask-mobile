@@ -4,7 +4,10 @@ import {
   DeepPartial,
   renderHookWithProvider,
 } from '../../../../util/test/renderWithProvider';
-import useEarnTokens from './useEarnTokens';
+import useEarnTokens, {
+  getEarnTokenKey,
+  useEarnTokenKeys,
+} from './useEarnTokens';
 import {
   MOCK_USDC_BASE_MAINNET_ASSET,
   MOCK_USDC_MAINNET_ASSET,
@@ -255,5 +258,49 @@ describe('useEarnTokens', () => {
     });
 
     expect(result.current.length).toBe(0);
+  });
+});
+
+describe('useEarnTokenKeys', () => {
+  beforeEach(() => {
+    resetMockedEarnFeatureFlagSelectors();
+  });
+
+  it('returns a key per eligible earn token', () => {
+    mockEarnFeatureFlagSelectors({
+      pooledStakingEnabledFlag: true,
+      stablecoinLendingEnabledFlag: true,
+    });
+
+    const { result } = renderHookWithProvider(() => useEarnTokenKeys(), {
+      state: initialState,
+    });
+
+    expect(result.current.size).toBe(5);
+
+    [
+      MOCK_ETH_MAINNET_ASSET,
+      MOCK_USDC_MAINNET_ASSET,
+      MOCK_USDT_MAINNET_ASSET,
+      MOCK_DAI_MAINNET_ASSET,
+      MOCK_USDC_BASE_MAINNET_ASSET,
+    ].forEach((token) => {
+      expect(
+        result.current.has(getEarnTokenKey(token.symbol, token.chainId)),
+      ).toBe(true);
+    });
+  });
+
+  it('returns no keys when pooled-staking and stablecoin lending are disabled', () => {
+    mockEarnFeatureFlagSelectors({
+      pooledStakingEnabledFlag: false,
+      stablecoinLendingEnabledFlag: false,
+    });
+
+    const { result } = renderHookWithProvider(() => useEarnTokenKeys(), {
+      state: mockState(),
+    });
+
+    expect(result.current.size).toBe(0);
   });
 });
