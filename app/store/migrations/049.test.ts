@@ -47,6 +47,30 @@ describe('Migration #49', () => {
     expect(await AsyncStorage.getAllKeys()).toEqual([]);
   });
 
+  it('keeps a key in AsyncStorage when its fallback read fails', async () => {
+    await AsyncStorage.setItem('unreadable', 'keepMe');
+    await AsyncStorage.setItem('readable', 'copyMe');
+    jest
+      .spyOn(AsyncStorage, 'multiGet')
+      .mockRejectedValueOnce(new Error('multiGet failed'));
+    const getItem = jest.spyOn(AsyncStorage, 'getItem');
+    getItem.mockImplementation(async (key) => {
+      if (key === 'unreadable') {
+        throw new Error('getItem failed');
+      }
+      return 'copyMe';
+    });
+
+    await expect(migrate({})).resolves.toEqual({});
+
+    expect(mmkvStorage.getString('readable')).toEqual('copyMe');
+    expect(mmkvStorage.getString('unreadable')).toBeUndefined();
+
+    getItem.mockRestore();
+    expect(await AsyncStorage.getAllKeys()).toEqual(['unreadable']);
+    await AsyncStorage.removeItem('unreadable');
+  });
+
   it('falls back to per-key removes when multiRemove rejects', async () => {
     await AsyncStorage.setItem('removeFail', 'x');
     jest
