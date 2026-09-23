@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { CURRENCY_SYMBOL_BY_CHAIN_ID } from '../../../constants/network';
 import { selectUseSafeChainsListValidation } from '../../../selectors/preferencesController';
 import axios from 'axios';
+import Logger from '../../../util/Logger';
 
 const CHAIN_ID_NETWORK_URL = 'https://chainid.network/chains.json';
 
@@ -62,17 +63,15 @@ function useIsOriginalNativeTokenSymbol(
         );
         return;
       } catch (err) {
+        Logger.error(
+          err as Error,
+          `useIsOriginalNativeTokenSymbol: failed to fetch ${CHAIN_ID_NETWORK_URL} for chainId ${networkId}`,
+        );
         setIsOriginalNativeSymbol(false);
       }
     }
     getNativeTokenSymbol(chainId);
-  }, [
-    isOriginalNativeSymbol,
-    chainId,
-    ticker,
-    type,
-    useSafeChainsListValidation,
-  ]);
+  }, [chainId, ticker, type, useSafeChainsListValidation]);
 
   return isOriginalNativeSymbol;
 }
