@@ -6,6 +6,9 @@ export enum NetworkSwitchErrorType {
   missingChainId = 'Missing chain id',
 }
 
+export const UNABLE_TO_FIND_NETWORK_ERROR_PREFIX =
+  'Unable to find network with chain id';
+
 // Transaction Errors
 export const NEGATIVE_TOKEN_DECIMALS = 'Token decimals can not be negative';
 export const NETWORK_ERROR_UNKNOWN_CHAIN_ID = 'Unknown chain id';

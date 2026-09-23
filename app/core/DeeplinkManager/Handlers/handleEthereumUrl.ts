@@ -4,15 +4,38 @@ import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import { ETH_ACTIONS } from '../../../constants/deeplinks';
 import formattedDeeplinkParsedValue from '../../../util/formattedDeeplinkParsedValue';
-import { NetworkSwitchErrorType } from '../../../constants/error';
+import {
+  NetworkSwitchErrorType,
+  UNABLE_TO_FIND_NETWORK_ERROR_PREFIX,
+} from '../../../constants/error';
 import { getDecimalChainId } from '../../../util/networks';
 import { MAINNET } from '../../../constants/network';
+import Logger from '../../../util/Logger';
 import Engine from '../../Engine';
 import DeeplinkManager from '../DeeplinkManager';
 import {
   addTransactionForDeeplink,
   isDeeplinkRedesignedConfirmationCompatible,
 } from '../../../components/Views/confirmations/utils/deeplink';
+
+const NETWORK_SWITCH_ERROR_PREFIXES = [
+  ...Object.values(NetworkSwitchErrorType),
+  UNABLE_TO_FIND_NETWORK_ERROR_PREFIX,
+];
+
+// Deeplink function names are attacker controlled, so only known values are reported
+const knownFunctionName = (functionName?: string) =>
+  Object.values(ETH_ACTIONS).includes(functionName as ETH_ACTIONS)
+    ? functionName
+    : 'other';
+
+const isNetworkSwitchError = (message?: string) =>
+  Boolean(
+    message &&
+      NETWORK_SWITCH_ERROR_PREFIXES.some((prefix) =>
+        message.startsWith(prefix),
+      ),
+  );
 
 async function handleEthereumUrl({
   deeplinkManager,
@@ -90,17 +113,30 @@ async function handleEthereumUrl({
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
-    let alertMessage;
-    switch (e.message) {
-      case NetworkSwitchErrorType.missingNetworkId:
-        alertMessage = strings('send.network_missing_id');
-        break;
-      default:
-        alertMessage = strings('send.network_not_found_description', {
+    Logger.error(e, {
+      message: 'Deeplink transaction failed',
+      origin: 'deeplink',
+      function_name: knownFunctionName(ethUrl.function_name),
+    });
+
+    if (e.message === NetworkSwitchErrorType.missingNetworkId) {
+      Alert.alert(
+        strings('send.network_not_found_title'),
+        strings('send.network_missing_id'),
+      );
+    } else if (isNetworkSwitchError(e.message)) {
+      Alert.alert(
+        strings('send.network_not_found_title'),
+        strings('send.network_not_found_description', {
           chain_id: getDecimalChainId(ethUrl.chain_id),
-        });
+        }),
+      );
+    } else {
+      Alert.alert(
+        strings('transaction.transaction_error'),
+        strings('send.deeplink_failure'),
+      );
     }
-    Alert.alert(strings('send.network_not_found_title'), alertMessage);
   }
 }
 

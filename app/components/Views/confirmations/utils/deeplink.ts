@@ -71,54 +71,58 @@ export async function addTransactionForDeeplink({
 
   isAddingDeeplinkTransaction = true;
 
-  const selectedAccountAddress =
-    AccountsController.getSelectedAccount().address;
+  try {
+    const selectedAccountAddress =
+      AccountsController.getSelectedAccount().address;
 
-  let chainId: Hex;
-  if (chain_id) {
-    chainId = toHex(chain_id as string);
-  } else {
-    // Deeplinks are fallback to mainnet rather than the selected network
-    chainId = CHAIN_IDS.MAINNET;
+    let chainId: Hex;
+    if (chain_id) {
+      chainId = toHex(chain_id as string);
+    } else {
+      // Deeplinks are fallback to mainnet rather than the selected network
+      chainId = CHAIN_IDS.MAINNET;
+    }
+
+    // This should be anything *except* 'MMM' (MetaMask Mobile) to avoid layout issues in redesigned confirmations
+    const origin = 'deeplink';
+    const networkClientId = getNetworkClientIdForChainId(chainId);
+    const from = safeToChecksumAddress(selectedAccountAddress) as string;
+    const to = safeToChecksumAddress(target_address);
+    const checkSummedParamAddress = safeToChecksumAddress(
+      parameters?.address ?? '',
+    );
+
+    if (function_name === ETH_ACTIONS.TRANSFER) {
+      // ERC20 transfer
+      const txParams: TransactionParams = {
+        from,
+        to,
+        data: generateTransferData('transfer', {
+          toAddress: checkSummedParamAddress,
+          amount: toHex(parameters?.uint256 as string),
+        }),
+      };
+
+      await addTransaction(txParams, {
+        networkClientId,
+        origin,
+        type: TransactionType.tokenMethodTransfer,
+      });
+    } else {
+      // Native transfer
+      const txParams: TransactionParams = {
+        from,
+        to,
+        value: toHex(parameters?.value as string),
+      };
+
+      await addTransaction(txParams, {
+        networkClientId,
+        origin,
+        type: TransactionType.simpleSend,
+      });
+    }
+  } finally {
+    isAddingDeeplinkTransaction = false;
   }
-
-  // This should be anything *except* 'MMM' (MetaMask Mobile) to avoid layout issues in redesigned confirmations
-  const origin = 'deeplink';
-  const networkClientId = getNetworkClientIdForChainId(chainId);
-  const from = safeToChecksumAddress(selectedAccountAddress) as string;
-  const to = safeToChecksumAddress(target_address);
-  const checkSummedParamAddress = safeToChecksumAddress(parameters?.address ?? '');
-
-  if (function_name === ETH_ACTIONS.TRANSFER) {
-    // ERC20 transfer
-    const txParams: TransactionParams = {
-      from,
-      to,
-      data: generateTransferData('transfer', {
-        toAddress: checkSummedParamAddress,
-        amount: toHex(parameters?.uint256 as string),
-      }),
-    };
-
-    await addTransaction(txParams, {
-      networkClientId,
-      origin,
-      type: TransactionType.tokenMethodTransfer,
-    });
-  } else {
-    // Native transfer
-    const txParams: TransactionParams = {
-      from,
-      to,
-      value: toHex(parameters?.value as string),
-    };
-
-    await addTransaction(txParams, {
-      networkClientId,
-      origin,
-      type: TransactionType.simpleSend,
-    });
-  }
-
-  isAddingDeeplinkTransaction = false;
 }
