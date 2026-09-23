@@ -24,8 +24,6 @@ import {
 } from '../../../reducers/collectibles';
 import { removeFavoriteCollectible } from '../../../actions/collectibles';
 import AppConstants from '../../../core/AppConstants';
-import { toLowerCaseEquals } from '../../../util/general';
-import { compareTokenIds } from '../../../util/tokens';
 import CollectibleDetectionModal from '../CollectibleDetectionModal';
 import { useTheme } from '../../../util/theme';
 import { MAINNET } from '../../../constants/network';
@@ -187,9 +185,39 @@ const CollectibleContracts = ({
     [allCollectibles, chainId, isAllNetworks],
   );
 
-  const collectibles = filteredCollectibles.filter(
-    (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+  const collectibles = useMemo(
+    () =>
+      filteredCollectibles.filter(
+        (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+      ),
+    [filteredCollectibles],
   );
+
+  const collectiblesByContractAddress = useMemo(() => {
+    const map = new Map();
+    collectibles.forEach((collectible) => {
+      const key = collectible.address?.toLowerCase();
+      if (!key) return;
+      const group = map.get(key);
+      if (group) {
+        group.push(collectible);
+      } else {
+        map.set(key, [collectible]);
+      }
+    });
+    return map;
+  }, [collectibles]);
+
+  const collectiblesByIdentity = useMemo(() => {
+    const map = new Map();
+    collectibles.forEach((collectible) => {
+      // favorites are matched against stringified token ids
+      if (typeof collectible.tokenId !== 'string') return;
+      const key = `${collectible.address}|${collectible.tokenId}`;
+      if (!map.has(key)) map.set(key, collectible);
+    });
+    return map;
+  }, [collectibles]);
 
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -338,9 +366,10 @@ const CollectibleContracts = ({
 
   const renderCollectibleContract = useCallback(
     (item, index) => {
-      const contractCollectibles = collectibles?.filter((collectible) =>
-        toLowerCaseEquals(collectible.address, item.address),
-      );
+      const contractAddress = item.address?.toLowerCase();
+      const contractCollectibles = contractAddress
+        ? collectiblesByContractAddress.get(contractAddress) ?? []
+        : [];
       return (
         <CollectibleContractElement
           onPress={onItemPress}
@@ -351,15 +380,20 @@ const CollectibleContracts = ({
         />
       );
     },
-    [collectibles, onItemPress],
+    [collectiblesByContractAddress, onItemPress],
   );
+
+  const renderItem = useCallback(
+    ({ item, index }) => renderCollectibleContract(item, index),
+    [renderCollectibleContract],
+  );
+
+  const keyExtractor = useCallback((_, index) => index.toString(), []);
 
   const renderFavoriteCollectibles = useCallback(() => {
     const filteredCollectibles = favoriteCollectibles.map((collectible) =>
-      collectibles.find(
-        ({ tokenId, address }) =>
-          compareTokenIds(collectible.tokenId, tokenId) &&
-          collectible.address === address,
+      collectiblesByIdentity.get(
+        `${collectible.address}|${String(collectible.tokenId)}`,
       ),
     );
     return (
@@ -373,7 +407,7 @@ const CollectibleContracts = ({
         />
       )
     );
-  }, [favoriteCollectibles, collectibles, onItemPress]);
+  }, [favoriteCollectibles, collectiblesByIdentity, onItemPress]);
 
   const getNftDetectionAnalyticsParams = useCallback((nft) => {
     try {
@@ -475,8 +509,8 @@ const CollectibleContracts = ({
           </>
         }
         data={filteredCollectibleContracts}
-        renderItem={({ item, index }) => renderCollectibleContract(item, index)}
-        keyExtractor={(_, index) => index.toString()}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
         testID={RefreshTestId}
         refreshControl={
           <RefreshControl
@@ -497,7 +531,8 @@ const CollectibleContracts = ({
       colors.icon.default,
       refreshing,
       onRefresh,
-      renderCollectibleContract,
+      renderItem,
+      keyExtractor,
       renderFooter,
       renderEmpty,
       isCollectionDetectionBannerVisible,
