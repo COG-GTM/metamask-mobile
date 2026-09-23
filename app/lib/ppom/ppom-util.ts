@@ -22,6 +22,13 @@ import {
   validateWithSecurityAlertsAPI,
 } from './security-alerts-api';
 import { PPOMController } from '@metamask/ppom-validator';
+import MetaMetrics from '../../core/Analytics/MetaMetrics';
+import { MetricsEventBuilder } from '../../core/Analytics/MetricsEventBuilder';
+import {
+  IMetaMetricsEvent,
+  JsonMap,
+} from '../../core/Analytics/MetaMetrics.types';
+import { CONFIRMATION_EVENTS } from '../../core/Analytics/events/confirmations';
 
 export interface PPOMRequest {
   method: string;
@@ -43,6 +50,8 @@ const CONFIRMATION_METHODS = Object.freeze([
   'eth_signTypedData_v4',
   'personal_sign',
 ]);
+
+const SECURITY_ALERTS_API_SOURCE = 'security_alerts_api';
 
 const SECURITY_ALERT_RESPONSE_FAILED = {
   result_type: ResultType.Failed,
@@ -162,17 +171,55 @@ async function validateWithAPI(
   chainId: string,
   request: PPOMRequest,
 ): Promise<SecurityAlertResponse> {
+  const startTime = Date.now();
+
   try {
     const response = await validateWithSecurityAlertsAPI(chainId, request);
+
+    trackSecurityAlertsAPIEvent(
+      CONFIRMATION_EVENTS.SECURITY_ALERTS_API_REQUEST_COMPLETED,
+      {
+        chain_id: chainId,
+        duration_ms: Date.now() - startTime,
+      },
+    );
 
     return {
       ...response,
       source: SecurityAlertSource.API,
     };
   } catch (e) {
-    Logger.log(`Error validating request with security alerts API: ${e}`);
+    const error = e as Error;
+
+    trackSecurityAlertsAPIEvent(
+      CONFIRMATION_EVENTS.SECURITY_ALERTS_API_REQUEST_FAILED,
+      {
+        chain_id: chainId,
+        duration_ms: Date.now() - startTime,
+        error_message: error.message,
+        fallback_to_local_validation: true,
+      },
+    );
+
+    Logger.error(error, {
+      message: 'Error validating request with security alerts API',
+      source: SECURITY_ALERTS_API_SOURCE,
+      chain_id: chainId,
+    });
+
     return await validateWithController(ppomController, request);
   }
+}
+
+function trackSecurityAlertsAPIEvent(
+  event: IMetaMetricsEvent,
+  properties: JsonMap,
+) {
+  MetaMetrics.getInstance().trackEvent(
+    MetricsEventBuilder.createEventBuilder(event)
+      .addProperties({ ...properties, source: SECURITY_ALERTS_API_SOURCE })
+      .build(),
+  );
 }
 
 function setSecurityAlertResponse(

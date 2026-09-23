@@ -22,6 +22,8 @@ import {
   SecurityAlertSource,
 } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 import Logger from '../../util/Logger';
+import MetaMetrics from '../../core/Analytics/MetaMetrics';
+import { CONFIRMATION_EVENTS } from '../../core/Analytics/events/confirmations';
 
 const CHAIN_ID_MOCK = '0x1';
 
@@ -31,6 +33,8 @@ const SIGN_TYPED_DATA_PARAMS_MOCK_2 =
 
 jest.mock('./security-alerts-api');
 jest.mock('../../util/blockaid');
+
+const mockTrackEvent = jest.fn();
 
 jest.mock('../../util/transaction-controller', () => ({
   __esModule: true,
@@ -170,6 +174,11 @@ describe('PPOM Utils', () => {
 
     normalizeTransactionParamsMock.mockImplementation((params) => params);
     mockIsBlockaidFeatureEnabled.mockResolvedValue(true);
+
+    jest.spyOn(MetaMetrics, 'getInstance').mockReturnValue({
+      trackEvent: mockTrackEvent,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   });
 
   afterEach(() => {
@@ -398,6 +407,56 @@ describe('PPOM Utils', () => {
         CHAIN_ID_MOCK,
         mockRequest,
       );
+    });
+
+    it('tracks a metric with the request duration if security alerts API succeeds', async () => {
+      isSecurityAlertsEnabledMock.mockReturnValue(true);
+      validateWithSecurityAlertsAPIMock.mockResolvedValue({
+        result_type: ResultType.Benign,
+        reason: Reason.notApplicable,
+      });
+
+      await PPOMUtil.validateRequest(mockRequest, CHAIN_ID_MOCK);
+
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+      expect(mockTrackEvent.mock.calls[0][0]).toMatchObject({
+        name: CONFIRMATION_EVENTS.SECURITY_ALERTS_API_REQUEST_COMPLETED
+          .category,
+        properties: {
+          chain_id: CHAIN_ID_MOCK,
+          duration_ms: expect.any(Number),
+          source: 'security_alerts_api',
+        },
+      });
+    });
+
+    it('tracks a metric and reports to Sentry if security alerts API throws', async () => {
+      isSecurityAlertsEnabledMock.mockReturnValue(true);
+
+      const error = new Error('Test Error');
+      validateWithSecurityAlertsAPIMock.mockRejectedValue(error);
+
+      const spyLoggerError = jest.spyOn(Logger, 'error');
+
+      await PPOMUtil.validateRequest(mockRequest, CHAIN_ID_MOCK);
+
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+      expect(mockTrackEvent.mock.calls[0][0]).toMatchObject({
+        name: CONFIRMATION_EVENTS.SECURITY_ALERTS_API_REQUEST_FAILED.category,
+        properties: {
+          chain_id: CHAIN_ID_MOCK,
+          duration_ms: expect.any(Number),
+          error_message: 'Test Error',
+          fallback_to_local_validation: true,
+          source: 'security_alerts_api',
+        },
+      });
+
+      expect(spyLoggerError).toHaveBeenCalledWith(error, {
+        message: 'Error validating request with security alerts API',
+        source: 'security_alerts_api',
+        chain_id: CHAIN_ID_MOCK,
+      });
     });
 
     it('validates correctly if security alerts API throws', async () => {
