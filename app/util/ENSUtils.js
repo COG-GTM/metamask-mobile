@@ -1,5 +1,6 @@
 import Engine from '../core/Engine';
 import ENS from 'ethjs-ens';
+import Logger from '../util/Logger';
 import { toLowerCaseEquals } from '../util/general';
 import {
   ChainId,
@@ -113,8 +114,15 @@ export async function doENSLookup(ensName, chainId) {
       const resolvedAddress = await this.ens.lookup(ensName);
       if (resolvedAddress === EMPTY_ADDRESS) return;
       return resolvedAddress;
-      // eslint-disable-next-line no-empty
-    } catch (e) {}
+    } catch (e) {
+      const message = e?.message ?? '';
+      const isNameNotFound =
+        message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
+        message.includes(INVALID_ENS_NAME_ERROR);
+      if (!isNameNotFound) {
+        Logger.error(e, { message: 'ENS lookup failed', chainId });
+      }
+    }
   }
 }
 
