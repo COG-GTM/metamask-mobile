@@ -236,6 +236,25 @@ describe('WalletConnect2Session', () => {
     expect(mockOnDisconnect).toHaveBeenCalled();
   });
 
+  it('unsubscribes from the store when removing listeners', async () => {
+    const unsubscribe = jest.fn();
+    (store.subscribe as jest.Mock).mockReturnValueOnce(unsubscribe);
+
+    const newSession = new WalletConnect2Session({
+      web3Wallet: mockClient,
+      session: mockSession,
+      channelId: 'test-channel',
+      deeplink: true,
+      navigation: mockNavigation,
+    });
+
+    await newSession.removeListeners();
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+
+    await newSession.removeListeners();
+    expect(unsubscribe).toHaveBeenCalledTimes(1);
+  });
+
   it('approves a request correctly', async () => {
     const mockRespondSessionRequest = jest
       .spyOn(mockClient, 'respondSessionRequest')
