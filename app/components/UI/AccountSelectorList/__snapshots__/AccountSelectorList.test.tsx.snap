@@ -35,7 +35,7 @@ exports[`AccountSelectorList renders all accounts with balances 1`] = `
   }
   getItem={[Function]}
   getItemCount={[Function]}
-  initialNumToRender={999}
+  getItemLayout={[Function]}
   keyExtractor={[Function]}
   onContentSizeChange={[Function]}
   onGestureHandlerEvent={[Function]}
@@ -57,7 +57,6 @@ exports[`AccountSelectorList renders all accounts with balances 1`] = `
   <View>
     <View
       onFocusCapture={[Function]}
-      onLayout={[Function]}
       style={null}
     >
       <View
@@ -466,7 +465,6 @@ exports[`AccountSelectorList renders all accounts with balances 1`] = `
     </View>
     <View
       onFocusCapture={[Function]}
-      onLayout={[Function]}
       style={null}
     >
       <View
@@ -884,7 +882,7 @@ exports[`AccountSelectorList renders all accounts with right accessory 1`] = `
   }
   getItem={[Function]}
   getItemCount={[Function]}
-  initialNumToRender={999}
+  getItemLayout={[Function]}
   keyExtractor={[Function]}
   onContentSizeChange={[Function]}
   onGestureHandlerEvent={[Function]}
@@ -906,7 +904,6 @@ exports[`AccountSelectorList renders all accounts with right accessory 1`] = `
   <View>
     <View
       onFocusCapture={[Function]}
-      onLayout={[Function]}
       style={null}
     >
       <View
@@ -1271,7 +1268,6 @@ exports[`AccountSelectorList renders all accounts with right accessory 1`] = `
     </View>
     <View
       onFocusCapture={[Function]}
-      onLayout={[Function]}
       style={null}
     >
       <View
@@ -1645,7 +1641,7 @@ exports[`AccountSelectorList renders correctly 1`] = `
   }
   getItem={[Function]}
   getItemCount={[Function]}
-  initialNumToRender={999}
+  getItemLayout={[Function]}
   keyExtractor={[Function]}
   onContentSizeChange={[Function]}
   onGestureHandlerEvent={[Function]}
@@ -1667,7 +1663,6 @@ exports[`AccountSelectorList renders correctly 1`] = `
   <View>
     <View
       onFocusCapture={[Function]}
-      onLayout={[Function]}
       style={null}
     >
       <View
@@ -2076,7 +2071,6 @@ exports[`AccountSelectorList renders correctly 1`] = `
     </View>
     <View
       onFocusCapture={[Function]}
-      onLayout={[Function]}
       style={null}
     >
       <View

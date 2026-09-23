@@ -51,6 +51,23 @@ jest.mock('../../../util/ENSUtils', () => ({
   isDefaultAccountName: jest.fn(),
 }));
 
+const mockScrollToIndex = jest.fn();
+
+jest.mock('react-native-gesture-handler', () => {
+  const actual = jest.requireActual('react-native-gesture-handler');
+  const ReactActual = jest.requireActual('react');
+  const MockFlatList = ReactActual.forwardRef(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (props: any, ref: any) => {
+      ReactActual.useImperativeHandle(ref, () => ({
+        scrollToIndex: mockScrollToIndex,
+      }));
+      return ReactActual.createElement(actual.FlatList, props);
+    },
+  );
+  return { ...actual, FlatList: MockFlatList };
+});
+
 const mockNavigate = jest.fn();
 
 jest.mock('@react-navigation/native', () => ({
@@ -1141,6 +1158,51 @@ describe('AccountSelectorList', () => {
 
     // Clean up the mock
     jest.spyOn(React, 'createRef').mockRestore();
+  });
+
+  it('provides item layouts derived from account yOffsets', () => {
+    setAccountsMock([
+      { ...defaultAccountsMock[0], yOffset: 0 },
+      { ...defaultAccountsMock[1], yOffset: 100 },
+    ]);
+
+    const { getByTestId } = renderComponent(initialState);
+    const flatList = getByTestId(ACCOUNT_SELECTOR_LIST_TESTID);
+
+    expect(flatList.props.getItemLayout(undefined, 0)).toEqual({
+      length: 100,
+      offset: 0,
+      index: 0,
+    });
+    // Last row falls back to the default cell height.
+    expect(flatList.props.getItemLayout(undefined, 1)).toEqual({
+      length: 78,
+      offset: 100,
+      index: 1,
+    });
+  });
+
+  it('does not eagerly render every account row', () => {
+    const { getByTestId } = renderComponent(initialState);
+    const flatList = getByTestId(ACCOUNT_SELECTOR_LIST_TESTID);
+
+    expect(flatList.props.initialNumToRender).not.toBe(999);
+  });
+
+  it('auto-scrolls to the selected account by index', () => {
+    mockScrollToIndex.mockClear();
+    setAccountsMock([
+      { ...defaultAccountsMock[0], isSelected: false },
+      { ...defaultAccountsMock[1], isSelected: true },
+    ]);
+
+    const { getByTestId } = renderComponent(initialState);
+    getByTestId(ACCOUNT_SELECTOR_LIST_TESTID).props.onContentSizeChange();
+
+    expect(mockScrollToIndex).toHaveBeenCalledWith({
+      index: 1,
+      animated: false,
+    });
   });
 
   it('should call onSelectAccount when an account is pressed', async () => {
