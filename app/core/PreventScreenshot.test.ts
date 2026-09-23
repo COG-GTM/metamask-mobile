@@ -14,6 +14,7 @@ describe('PreventScreenshot', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    (trackErrorAsAnalytics as jest.Mock).mockResolvedValue(undefined);
     Platform.OS = 'android';
     NativeModules.PreventScreenshot = {
       forbid: nativeForbid,
@@ -67,6 +68,21 @@ describe('PreventScreenshot', () => {
       message: 'PreventScreenshot.forbid failed',
       location: 'unknown',
     });
+  });
+
+  it('contains analytics reporting failures', async () => {
+    nativeForbid.mockRejectedValue(new Error('no current activity'));
+    (trackErrorAsAnalytics as jest.Mock).mockRejectedValue(
+      new Error('metrics id unavailable'),
+    );
+
+    await expect(PreventScreenshot.forbid('Onboarding')).resolves.toBe(false);
+    await Promise.resolve();
+
+    expect(Logger.error).toHaveBeenCalledWith(
+      new Error('metrics id unavailable'),
+      { message: 'PreventScreenshot.forbid failure reporting failed' },
+    );
   });
 
   it('is a no-op on iOS', async () => {
