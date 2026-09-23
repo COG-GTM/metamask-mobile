@@ -39,6 +39,9 @@ enum EVENT_NAME {
   // App
   APP_OPENED = 'App Opened',
 
+  // Deeplinks
+  DEEPLINK_TRANSACTION_FAILED = 'Deeplink Transaction Failed',
+
   // Error
   ERROR = 'Error occurred',
   ERROR_SCREEN_VIEWED = 'Error Screen Viewed',
@@ -466,6 +469,9 @@ enum ACTIONS {
 
 const events = {
   APP_OPENED: generateOpt(EVENT_NAME.APP_OPENED),
+  DEEPLINK_TRANSACTION_FAILED: generateOpt(
+    EVENT_NAME.DEEPLINK_TRANSACTION_FAILED,
+  ),
   ERROR_SCREEN_VIEWED: generateOpt(EVENT_NAME.ERROR_SCREEN_VIEWED),
   APPROVAL_STARTED: generateOpt(EVENT_NAME.APPROVAL_STARTED),
   APPROVAL_COMPLETED: generateOpt(EVENT_NAME.APPROVAL_COMPLETED),

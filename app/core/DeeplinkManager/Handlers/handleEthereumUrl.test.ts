@@ -11,8 +11,20 @@ import {
   addTransactionForDeeplink,
   isDeeplinkRedesignedConfirmationCompatible,
 } from '../../../components/Views/confirmations/utils/deeplink';
+import Logger from '../../../util/Logger';
+import { MetaMetricsEvents } from '../../Analytics/MetaMetrics.events';
 
 jest.mock('react-native');
+
+jest.mock('../../../util/Logger', () => ({
+  error: jest.fn(),
+}));
+
+const mockTrackEvent = jest.fn();
+
+jest.mock('../../Analytics/MetaMetrics', () => ({
+  getInstance: () => ({ trackEvent: mockTrackEvent }),
+}));
 
 jest.mock('eth-url-parser', () => ({
   parse: jest.fn(),
@@ -98,6 +110,85 @@ describe('handleEthereumUrl', () => {
       'deeplink.invalid',
       'Error: Invalid URL',
     );
+  });
+
+  it('logs to Sentry and tracks a metrics event when parsing fails', () => {
+    const url = 'invalid_url';
+    const origin = 'test_origin';
+    const error = new Error('Invalid URL');
+
+    mockParse.mockImplementation(() => {
+      throw error;
+    });
+
+    handleEthereumUrl({ deeplinkManager, url, origin });
+
+    expect(Logger.error).toHaveBeenCalledWith(error, {
+      location: 'handleEthereumUrl',
+      function_name: undefined,
+      chain_id: undefined,
+      origin,
+    });
+    expect(mockTrackEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: MetaMetricsEvents.DEEPLINK_TRANSACTION_FAILED.category,
+        properties: expect.objectContaining({
+          origin,
+          error_message: 'Invalid URL',
+        }),
+      }),
+    );
+  });
+
+  it('logs to Sentry and tracks a metrics event when deeplink setup fails', async () => {
+    const url = 'ethereum:approve';
+    const origin = 'test_origin';
+    const error = new Error('Approval process failed');
+
+    mockParse.mockReturnValue({
+      function_name: ETH_ACTIONS.APPROVE,
+      chain_id: 1,
+      parameters: {},
+    });
+
+    mockApproveTransaction.mockImplementation(() => {
+      throw error;
+    });
+
+    await handleEthereumUrl({ deeplinkManager, url, origin });
+
+    expect(Logger.error).toHaveBeenCalledWith(error, {
+      location: 'handleEthereumUrl',
+      function_name: ETH_ACTIONS.APPROVE,
+      chain_id: 1,
+      origin,
+    });
+    expect(mockTrackEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: MetaMetricsEvents.DEEPLINK_TRANSACTION_FAILED.category,
+        properties: expect.objectContaining({
+          function_name: ETH_ACTIONS.APPROVE,
+          chain_id: 1,
+          origin,
+          error_message: 'Approval process failed',
+        }),
+      }),
+    );
+  });
+
+  it('does not track a deeplink failure when handling succeeds', async () => {
+    const url = 'ethereum:transfer';
+    const origin = 'test_origin';
+
+    mockParse.mockReturnValue({
+      function_name: ETH_ACTIONS.TRANSFER,
+      chain_id: 1,
+    });
+
+    await handleEthereumUrl({ deeplinkManager, url, origin });
+
+    expect(Logger.error).not.toHaveBeenCalled();
+    expect(mockTrackEvent).not.toHaveBeenCalled();
   });
 
   it('shows deprecation modal if url is a goerli url', () => {

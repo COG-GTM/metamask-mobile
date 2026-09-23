@@ -8,6 +8,10 @@ import { NetworkSwitchErrorType } from '../../../constants/error';
 import { getDecimalChainId } from '../../../util/networks';
 import { MAINNET } from '../../../constants/network';
 import Engine from '../../Engine';
+import Logger from '../../../util/Logger';
+import MetaMetrics from '../../Analytics/MetaMetrics';
+import { MetaMetricsEvents } from '../../Analytics/MetaMetrics.events';
+import { MetricsEventBuilder } from '../../Analytics/MetricsEventBuilder';
 import DeeplinkManager from '../DeeplinkManager';
 import {
   addTransactionForDeeplink,
@@ -23,11 +27,44 @@ async function handleEthereumUrl({
   url: string;
   origin: string;
 }) {
+  const trackDeeplinkTransactionFailed = ({
+    error,
+    functionName,
+    chainId,
+  }: {
+    error: Error;
+    functionName?: string;
+    chainId?: string | number;
+  }) => {
+    Logger.error(error, {
+      location: 'handleEthereumUrl',
+      function_name: functionName,
+      chain_id: chainId,
+      origin,
+    });
+
+    MetaMetrics.getInstance().trackEvent(
+      MetricsEventBuilder.createEventBuilder(
+        MetaMetricsEvents.DEEPLINK_TRANSACTION_FAILED,
+      )
+        .addProperties({
+          function_name: functionName,
+          chain_id: chainId,
+          origin,
+          error_message: error.message,
+        })
+        .build(),
+    );
+  };
+
   let ethUrl: ParseOutput;
   try {
     ethUrl = parse(url);
   } catch (e) {
-    if (e) Alert.alert(strings('deeplink.invalid'), e.toString());
+    if (e) {
+      trackDeeplinkTransactionFailed({ error: e as Error });
+      Alert.alert(strings('deeplink.invalid'), e.toString());
+    }
     return;
   }
 
@@ -90,6 +127,12 @@ async function handleEthereumUrl({
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
+    trackDeeplinkTransactionFailed({
+      error: e,
+      functionName: ethUrl.function_name,
+      chainId: ethUrl.chain_id,
+    });
+
     let alertMessage;
     switch (e.message) {
       case NetworkSwitchErrorType.missingNetworkId:
