@@ -247,6 +247,38 @@ describe('UrlAutocomplete', () => {
     expect(await screen.findByText('Dogecoin', {includeHiddenElements: true})).toBeDefined();
   });
 
+  it('should deduplicate results per category, keep cross-category duplicates and limit recents', async () => {
+    mockUseTSDReturnValue({
+      results: [],
+      isLoading: false,
+      reset: jest.fn(),
+      searchTokens: jest.fn(),
+    });
+    const history = [1, 2, 3, 4, 5, 6].map((i) => ({
+      url: `https://www.recent${i}.com`,
+      name: `Recent${i}`,
+    }));
+    const state = {
+      ...defaultState,
+      browser: { history: [...history, history[0], history[1]] },
+      bookmarks: [{ url: history[0].url, name: 'SharedFavorite' }],
+    };
+    const ref = React.createRef<UrlAutocompleteRef>();
+    render(<UrlAutocomplete ref={ref} onSelect={noop} onDismiss={noop} />, {state});
+
+    act(() => {
+      ref.current?.search('');
+      jest.runAllTimers();
+    });
+
+    expect(await screen.findByText('SharedFavorite', {includeHiddenElements: true})).toBeDefined();
+    expect(screen.getAllByText('Recent1', {includeHiddenElements: true})).toHaveLength(1);
+    expect(screen.getAllByText('Recent2', {includeHiddenElements: true})).toHaveLength(1);
+    // History is shown newest-first, so after dedup the 6th unique recent is cut by MAX_RECENTS
+    expect(screen.getAllByText('Recent6', {includeHiddenElements: true})).toHaveLength(1);
+    expect(screen.queryByText('Recent3', {includeHiddenElements: true})).toBeNull();
+  });
+
   it('should swap a token when the swap button is pressed', async () => {
     mockUseTSDReturnValue({
       results: [
