@@ -187,8 +187,12 @@ const CollectibleContracts = ({
     [allCollectibles, chainId, isAllNetworks],
   );
 
-  const collectibles = filteredCollectibles.filter(
-    (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+  const collectibles = useMemo(
+    () =>
+      filteredCollectibles.filter(
+        (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+      ),
+    [filteredCollectibles],
   );
 
   const { colors } = useTheme();
