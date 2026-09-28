@@ -1,11 +1,12 @@
 # syntax=docker/dockerfile:1.4
-FROM node:20-bookworm
+FROM node:20-bookworm-slim
 
 RUN apt-get update \
   && apt-get install -y \
-    git curl jq time \
-    sudo locales \
-    build-essential ccache cmake cmake-format distcc \
+    ca-certificates git curl jq time \
+    sudo locales procps openssh-client unzip xz-utils \
+    build-essential ccache cmake cmake-format distcc pkg-config python3 \
+    libffi-dev libgdbm-dev libgmp-dev libncurses-dev libreadline-dev libssl-dev libyaml-dev zlib1g-dev \
   && sed -i '/en_US.UTF-8/s/^# //' /etc/locale.gen \
   && locale-gen
 
