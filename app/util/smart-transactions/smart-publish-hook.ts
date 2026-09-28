@@ -540,7 +540,12 @@ class SmartTransactionHook {
         async (smartTransaction: SmartTransaction) => {
           if (uuid === smartTransaction.uuid) {
             const { status, statusMetadata } = smartTransaction;
-            Logger.log(LOG_PREFIX, 'Smart Transaction: ', smartTransaction);
+            Logger.log(
+              LOG_PREFIX,
+              'Smart Transaction status update',
+              smartTransaction.uuid,
+              status,
+            );
             if (!status || status === SmartTransactionStatuses.PENDING) {
               return;
             }
