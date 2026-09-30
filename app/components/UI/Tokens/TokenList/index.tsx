@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react';
 import { View, RefreshControl, Dimensions } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useSelector } from 'react-redux';
@@ -18,12 +18,15 @@ import { TokenListItem } from './TokenListItem';
 import { WalletViewSelectorsIDs } from '../../../../../e2e/selectors/wallet/WalletView.selectors';
 import { useNavigation } from '@react-navigation/native';
 import Routes from '../../../../constants/navigation/Routes';
+import useEarnTokens from '../../Earn/hooks/useEarnTokens';
 
 export interface FlashListAssetKey {
   address: string;
   chainId: string | undefined;
   isStaked: boolean | undefined;
 }
+
+export type EarnTokenSymbolsByChainId = Map<string | undefined, Set<string>>;
 
 interface TokenListProps {
   tokenKeys: FlashListAssetKey[];
@@ -51,6 +54,17 @@ export const TokenList = ({
   const isTokenNetworkFilterEqualCurrentNetwork = useSelector(
     selectIsTokenNetworkFilterEqualCurrentNetwork,
   );
+
+  const earnTokens = useEarnTokens();
+  const earnTokenSymbolsByChainId = useMemo<EarnTokenSymbolsByChainId>(() => {
+    const symbolsByChainId: EarnTokenSymbolsByChainId = new Map();
+    for (const { chainId, symbol } of earnTokens) {
+      const symbols = symbolsByChainId.get(chainId) ?? new Set<string>();
+      symbols.add(symbol);
+      symbolsByChainId.set(chainId, symbols);
+    }
+    return symbolsByChainId;
+  }, [earnTokens]);
 
   const listRef = useRef<FlashList<FlashListAssetKey>>(null);
 
@@ -82,6 +96,7 @@ export const TokenList = ({
         setShowScamWarningModal={setShowScamWarningModal}
         privacyMode={privacyMode}
         showPercentageChange={showPercentageChange}
+        earnTokenSymbolsByChainId={earnTokenSymbolsByChainId}
       />
     ),
     [
@@ -89,6 +104,7 @@ export const TokenList = ({
       setShowScamWarningModal,
       privacyMode,
       showPercentageChange,
+      earnTokenSymbolsByChainId,
     ],
   );
 
