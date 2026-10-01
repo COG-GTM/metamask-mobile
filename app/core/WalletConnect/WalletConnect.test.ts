@@ -148,17 +148,20 @@ describe('WalletConnect', () => {
       mockAutoSign,
       'origin',
     );
+    const connector = WalletConnect.connectors().at(-1);
+    connector.walletConnector.session = {
+      peerMeta: { url: 'https://other.example' },
+    };
+    connector.backgroundBridge = { hostname: mockDappHost };
     MockLogger.log.mockClear();
 
-    await Promise.resolve(
-      handlers.call_request(null, {
-        id: 7,
-        method: 'eth_sendTransaction',
-        params: [
-          { from: mockAccount, to: mockAccount, value: '0x1', data: '0xab' },
-        ],
-      }),
-    ).catch(() => undefined);
+    await handlers.call_request(null, {
+      id: 7,
+      method: 'eth_sendTransaction',
+      params: [
+        { from: mockAccount, to: mockAccount, value: '0x1', data: '0xab' },
+      ],
+    });
     handlers.session_update(null, { params: [{ accounts: [mockAccount] }] });
     await flushPromises();
 

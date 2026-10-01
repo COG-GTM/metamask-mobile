@@ -294,8 +294,9 @@ const EVM_ADDRESS_PATTERN = new RegExp(
 );
 
 /**
- * Replaces every 0x-prefixed 40-hex-character EVM address in `text` with `**`.
- * Non-EVM addresses and addresses embedded in ABI-encoded calldata are not matched.
+ * Replaces every `0x` followed by 40 hex characters in `text` with `**`.
+ * Longer `0x` hex strings only have their first 40 hex characters replaced, so
+ * addresses embedded in ABI-encoded calldata and non-EVM addresses can remain.
  *
  * @param {string} text - The text to redact.
  * @returns {string} The redacted text.
