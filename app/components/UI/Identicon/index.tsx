@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { memo } from 'react';
-import { Image, ImageStyle, View } from 'react-native';
+import { Image, ImageStyle, StyleProp, View } from 'react-native';
 import { toDataUrl } from '../../../util/blockies';
 import FadeIn from 'react-native-fade-in-image';
 import Jazzicon from 'react-native-jazzicon';
@@ -20,7 +20,7 @@ interface IdenticonProps {
   /**
    * Custom style to apply to image
    */
-  customStyle?: ImageStyle;
+  customStyle?: StyleProp<ImageStyle>;
   /**
    * True if render is happening without fade in
    */
