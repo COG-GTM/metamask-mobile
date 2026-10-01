@@ -1,4 +1,4 @@
-import { WalletDevice } from '@metamask/transaction-controller';
+import { TransactionParams, WalletDevice } from '@metamask/transaction-controller';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { IWalletKit, WalletKitTypes } from '@reown/walletkit';
 import { SessionTypes } from '@walletconnect/types';
@@ -16,7 +16,9 @@ import { addTransaction } from '../../util/transaction-controller';
 import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
 import { Minimizer } from '../NativeModules';
 import { getPermittedAccounts } from '../Permissions';
-import getRpcMethodMiddleware from '../RPCMethods/RPCMethodMiddleware';
+import getRpcMethodMiddleware, {
+  RPCMethodsMiddleParameters,
+} from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { ERROR_MESSAGES } from './WalletConnectV2';
 import METHODS_TO_REDIRECT from './wc-config';
@@ -34,9 +36,36 @@ const ERROR_CODES = {
 const RPC_WALLET_SWITCHETHEREUMCHAIN = 'wallet_switchEthereumChain';
 const RPC_WALLET_ADDETHEREUMCHAIN = 'wallet_addEthereumChain';
 
+interface BackgroundBridgeOptions {
+  webview: null;
+  url: string;
+  isWalletConnect: boolean;
+  channelId: string;
+  wcRequestActions: {
+    approveRequest: WalletConnect2Session['approveRequest'];
+    rejectRequest: WalletConnect2Session['rejectRequest'];
+    updateSession: WalletConnect2Session['updateSession'];
+    emitEvent: WalletConnect2Session['emitEvent'];
+  };
+  getRpcMethodMiddleware: (params: {
+    hostname: string;
+    getProviderState: RPCMethodsMiddleParameters['getProviderState'];
+  }) => ReturnType<typeof getRpcMethodMiddleware>;
+  isMMSDK: boolean;
+  isMainFrame: boolean;
+  getApprovedHosts: undefined;
+  isRemoteConn: boolean;
+  sendMessage: undefined;
+  remoteConnHost: undefined;
+}
+
+// BackgroundBridge is an untyped JS module; expose a typed constructor.
+const TypedBackgroundBridge = BackgroundBridge as unknown as new (
+  options: BackgroundBridgeOptions,
+) => BackgroundBridge;
+
 interface BackgroundBridgeFactory {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  create: (options: any) => BackgroundBridge;
+  create: (options: BackgroundBridgeOptions) => BackgroundBridge;
 }
 
 class WalletConnect2Session {
@@ -65,8 +94,8 @@ class WalletConnect2Session {
     channelId,
     deeplink,
     backgroundBridgeFactory = {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      create: (options: any) => new BackgroundBridge(options),
+      create: (options: BackgroundBridgeOptions) =>
+        new TypedBackgroundBridge(options),
     },
   }: {
     web3Wallet: IWalletKit;
@@ -109,9 +138,7 @@ class WalletConnect2Session {
         getProviderState,
       }: {
         hostname: string;
-        // TODO: Replace 'any' with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        getProviderState: any;
+        getProviderState: RPCMethodsMiddleParameters['getProviderState'];
       }) =>
         getRpcMethodMiddleware({
           hostname: getHostname(url),
@@ -556,8 +583,7 @@ class WalletConnect2Session {
 
   private async handleSendTransaction(
     requestEvent: WalletKitTypes.SessionRequest,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    methodParams: any,
+    methodParams: TransactionParams[],
     origin: string,
   ) {
     try {
