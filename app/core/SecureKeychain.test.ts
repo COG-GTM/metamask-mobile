@@ -119,8 +119,8 @@ describe('SecureKeychain - setGenericPassword', () => {
     expect(Keychain.setGenericPassword).toHaveBeenCalledWith(
       'metamask-user',
       expect.any(String),
-      expect.not.objectContaining({
-        accessControl: expect.anything(),
+      expect.objectContaining({
+        accessControl: Keychain.ACCESS_CONTROL.DEVICE_PASSCODE,
       }),
     );
     expect(StorageWrapper.setItem).toHaveBeenCalledWith(
