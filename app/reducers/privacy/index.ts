@@ -1,9 +1,25 @@
-const initialState = {
+/* eslint-disable @typescript-eslint/default-param-last */
+
+export interface PrivacyState {
+  approvedHosts: Record<string, boolean>;
+  revealSRPTimestamps: number[];
+}
+
+const initialState: PrivacyState = {
   approvedHosts: {},
   revealSRPTimestamps: [],
 };
 
-const privacyReducer = (state = initialState, action) => {
+export type PrivacyAction =
+  | { type: 'APPROVE_HOST'; hostname: string }
+  | { type: 'REJECT_HOST'; hostname: string }
+  | { type: 'CLEAR_HOSTS' }
+  | { type: 'RECORD_SRP_REVEAL_TIMESTAMP'; timestamp: number };
+
+const privacyReducer = (
+  state: PrivacyState = initialState,
+  action: PrivacyAction,
+): PrivacyState => {
   const newHosts = { ...state.approvedHosts };
   switch (action.type) {
     case 'APPROVE_HOST':
@@ -34,5 +50,4 @@ const privacyReducer = (state = initialState, action) => {
       return state;
   }
 };
-
 export default privacyReducer;

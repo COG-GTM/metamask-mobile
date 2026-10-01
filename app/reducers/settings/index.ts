@@ -1,6 +1,20 @@
+/* eslint-disable @typescript-eslint/default-param-last */
 import AppConstants from '../../core/AppConstants';
 
-const initialState = {
+export interface SettingsState {
+  searchEngine: string;
+  primaryCurrency: string;
+  lockTime: number;
+  useBlockieIcon: boolean;
+  hideZeroBalanceTokens: boolean;
+  basicFunctionalityEnabled: boolean;
+  showHexData?: boolean;
+  showCustomNonce?: boolean;
+  showFiatOnTestnets?: boolean;
+  deviceNotificationEnabled?: boolean;
+}
+
+const initialState: SettingsState = {
   searchEngine: AppConstants.DEFAULT_SEARCH_ENGINE,
   primaryCurrency: 'ETH',
   lockTime: -1, // Disabled by default
@@ -9,7 +23,25 @@ const initialState = {
   basicFunctionalityEnabled: true,
 };
 
-const settingsReducer = (state = initialState, action) => {
+export type SettingsAction =
+  | { type: 'SET_SEARCH_ENGINE'; searchEngine: string }
+  | { type: 'SET_LOCK_TIME'; lockTime: number }
+  | { type: 'SET_SHOW_HEX_DATA'; showHexData: boolean }
+  | { type: 'SET_SHOW_CUSTOM_NONCE'; showCustomNonce: boolean }
+  | { type: 'SET_HIDE_ZERO_BALANCE_TOKENS'; hideZeroBalanceTokens: boolean }
+  | { type: 'SET_USE_BLOCKIE_ICON'; useBlockieIcon: boolean }
+  | { type: 'SET_PRIMARY_CURRENCY'; primaryCurrency: string }
+  | { type: 'SET_SHOW_FIAT_ON_TESTNETS'; showFiatOnTestnets: boolean }
+  | { type: 'TOGGLE_BASIC_FUNCTIONALITY'; basicFunctionalityEnabled: boolean }
+  | {
+      type: 'TOGGLE_DEVICE_NOTIFICATIONS';
+      deviceNotificationEnabled: boolean;
+    };
+
+const settingsReducer = (
+  state: SettingsState = initialState,
+  action: SettingsAction,
+): SettingsState => {
   switch (action.type) {
     case 'SET_SEARCH_ENGINE':
       return {
