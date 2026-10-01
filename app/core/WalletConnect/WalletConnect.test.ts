@@ -19,6 +19,10 @@ const mockSessionRequest = {
   ],
 };
 jest.mock('@walletconnect/client');
+jest.mock('../../util/Logger', () => ({
+  log: jest.fn(),
+  error: jest.fn(),
+}));
 jest.mock('../Engine', () => ({
   context: {
     KeyringController: {
@@ -94,6 +98,34 @@ describe('WalletConnect', () => {
     expect(spyApprovalControllerAdd).toHaveBeenCalledWith(
       expectedApprovalRequest,
     );
+  });
+  it('does not log WalletConnect session payloads', async () => {
+    // eslint-disable-next-line
+    const WalletConnect = require('./WalletConnect').default;
+    // eslint-disable-next-line
+    const MockLogger = jest.mocked(require('../../util/Logger'));
+    jest
+      // eslint-disable-next-line
+      .spyOn(require('@walletconnect/client').default.prototype, 'on')
+      .mockImplementationOnce((_, callback) => {
+        callback(null, mockSessionRequest);
+      });
+
+    await WalletConnect.init();
+    await WalletConnect.newSession(
+      'URI',
+      mockRedirectUrl,
+      mockAutoSign,
+      'origin',
+    );
+    await flushPromises();
+
+    expect(MockLogger.log).toHaveBeenCalledWith('WC session_request', {
+      id: undefined,
+    });
+    const logged = JSON.stringify(MockLogger.log.mock.calls);
+    expect(logged).not.toContain(mockDappUrl);
+    expect(logged).not.toContain('peerMeta');
   });
   it('should call rejectSession when user rejects wallet connect session', async () => {
     // eslint-disable-next-line

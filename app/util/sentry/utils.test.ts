@@ -7,6 +7,7 @@ import {
   maskObject,
   sentryStateMask,
   AllProperties,
+  rewriteBreadcrumb,
 } from './utils';
 import { DeepPartial } from '../test/renderWithProvider';
 import { RootState } from '../../reducers';
@@ -730,5 +731,38 @@ describe('captureSentryFeedback', () => {
         exampleObj: 'object',
       },
     });
+  });
+});
+
+describe('rewriteBreadcrumb', () => {
+  const addressA = '0x1234567890abcdef1234567890ABCDEF12345678';
+  const addressB = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd';
+
+  it('redacts every EVM address from the breadcrumb message', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      message: JSON.stringify([
+        'CALL_REQUEST',
+        { params: [{ from: addressA, to: addressB, value: '0x1' }] },
+        { accounts: [addressA] },
+      ]),
+    });
+
+    expect(breadcrumb.message).not.toContain(addressA);
+    expect(breadcrumb.message).not.toContain(addressB);
+    expect(breadcrumb.message).toContain('"value":"0x1"');
+  });
+
+  it('keeps messages without addresses unchanged', () => {
+    const message = JSON.stringify(['WC session_request', { id: 1 }]);
+
+    expect(rewriteBreadcrumb({ message }).message).toBe(message);
+  });
+
+  it('still reduces data urls to their protocol', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      data: { url: 'https://example.com/path', to: 'https://a.io/b' },
+    });
+
+    expect(breadcrumb.data).toEqual({ url: 'https:', to: 'https:' });
   });
 });

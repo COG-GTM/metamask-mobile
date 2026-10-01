@@ -114,7 +114,7 @@ class WalletConnect {
      *  Subscribe to session requests
      */
     this.walletConnector.on('session_request', async (error, payload) => {
-      Logger.log('WC session_request:', payload);
+      Logger.log('WC session_request', { id: payload?.id });
       if (error) {
         throw error;
       }
@@ -128,8 +128,6 @@ class WalletConnect {
           redirectUrl: this.redirectUrl,
           requestOriginatedFrom: this.requestOriginatedFrom,
         };
-
-        Logger.log('WC:', sessionData);
 
         await waitForInitialization();
         await this.sessionRequest(sessionData);
@@ -152,7 +150,7 @@ class WalletConnect {
 
       await waitForKeychainUnlocked();
 
-      Logger.log('CALL_REQUEST', error, payload);
+      Logger.log('CALL_REQUEST', { id: payload.id, method: payload.method });
       if (error) {
         throw error;
       }
@@ -252,8 +250,8 @@ class WalletConnect {
       persistSessions();
     });
 
-    this.walletConnector.on('session_update', (error, payload) => {
-      Logger.log('WC: Session update', payload);
+    this.walletConnector.on('session_update', (error) => {
+      Logger.log('WC: Session update');
       if (error) {
         throw error;
       }
