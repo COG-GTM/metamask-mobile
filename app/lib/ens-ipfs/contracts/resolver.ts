@@ -232,4 +232,4 @@ export default [
     name: 'ContenthashChanged',
     type: 'event',
   },
-];
+] as const;
