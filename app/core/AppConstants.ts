@@ -1,6 +1,7 @@
 import { CoreTypes } from '@walletconnect/types';
 import Device from '../util/device';
 import { DEFAULT_SERVER_URL } from '@metamask/sdk-communication-layer';
+import FIRST_PARTY_CONTRACT_NAMES from '../constants/first-party-contracts';
 
 const DEVELOPMENT = 'development';
 const PORTFOLIO_URL =
@@ -38,10 +39,7 @@ export default {
     MIN_DEPOSIT_ETH: 0.03,
     MAX_DEPOSIT_TOKEN: 30,
     BLOCKED_DEPOSIT_DURATION_MINUTES: 5,
-    CONTRACTS: {
-      4: '0x0Fa90eC3AC3245112c6955d8F9DD74Ec9D599996',
-      1: '0xdfa6edAe2EC0cF1d4A60542422724A48195A5071',
-    },
+    CONTRACTS: FIRST_PARTY_CONTRACT_NAMES['Connext'],
   },
   MM_UNIVERSAL_LINK_HOST: 'metamask.app.link',
   MM_DEEP_ITMS_APP_LINK: 'https://metamask.app.link/skAH3BaF99',
