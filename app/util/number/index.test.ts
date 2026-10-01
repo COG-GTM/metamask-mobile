@@ -419,7 +419,7 @@ describe('Number utils :: renderFromWei', () => {
 });
 
 describe('Number utils :: localizeLargeNumber', () => {
-  let i18n: { t: unknown };
+  let i18n: { t: jest.Mock };
 
   beforeEach(() => {
     i18n = {

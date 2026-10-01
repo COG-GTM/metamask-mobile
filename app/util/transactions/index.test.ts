@@ -42,7 +42,10 @@ import {
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
-import { TransactionType } from '@metamask/transaction-controller';
+import {
+  TransactionType,
+  type TransactionMeta,
+} from '@metamask/transaction-controller';
 import { Provider } from '@metamask/network-controller';
 import BigNumber from 'bignumber.js';
 
@@ -198,7 +201,7 @@ describe('Transactions utils :: parseTransactionLegacy', () => {
     selectedGasFee: 'average',
     multiLayerL1FeeTotal: '0x0',
     ticker: 'tBNB',
-  };
+  } as unknown as Parameters<typeof parseTransactionLegacy>[0];
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1213,8 +1216,8 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx1', value: '0x1' },
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
-    ];
-    
+    ] as unknown as TransactionMeta[];
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1222,7 +1225,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx2', mockTransactionController);
-    
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1231,8 +1234,8 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx1', value: '0x1' },
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
-    ];
-    
+    ] as unknown as TransactionMeta[];
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1240,7 +1243,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('nonexistent', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1255,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 });
