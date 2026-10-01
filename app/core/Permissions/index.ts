@@ -10,9 +10,7 @@ import { toHex } from '@metamask/controller-utils';
 
 const INTERNAL_ORIGINS = [process.env.MM_FOX_CODE, TransactionTypes.MMM];
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const Engine = ImportedEngine as any;
+const Engine = ImportedEngine;
 
 /**
  * Checks that all accounts referenced have a matching InternalAccount. Sends
@@ -38,9 +36,12 @@ const captureKeyringTypesWithMissingIdentities = (
 
   const internalAccountCount = internalAccounts.length;
 
-  const accountTrackerCount = Object.keys(
-    Engine.context.AccountTrackerController.state.accounts || {},
-  ).length;
+  const { accountsByChainId } = Engine.context.AccountTrackerController.state;
+  const accountTrackerCount = new Set(
+    Object.values(accountsByChainId || {}).flatMap((chainAccounts) =>
+      Object.keys(chainAccounts),
+    ),
+  ).size;
 
   captureException(
     new Error(
