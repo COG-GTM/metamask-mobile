@@ -64,8 +64,7 @@ const selectProviderNetworkName = createSelector(
     } else {
       const networkType = providerConfig.type;
       name =
-        // @ts-expect-error The utils/network file is still JS
-        NetworkList?.[networkType]?.name ||
+        (NetworkList as Record<string, { name?: string }>)?.[networkType]?.name ||
         NetworkList.rpc.name ||
         strings('network_information.unknown_network');
     }
@@ -108,8 +107,7 @@ export const makeSelectNetworkName = () =>
           ({ networkClientId }: { networkClientId: string }) =>
             networkClientId === relevantNetworkClientId,
         )?.name ||
-        // @ts-expect-error The utils/network file is still JS
-        NetworkList[relevantNetworkClientId]?.name
+        (NetworkList as Record<string, { name?: string }>)[relevantNetworkClientId]?.name
       );
     },
   );
@@ -141,11 +139,10 @@ export const makeSelectNetworkImageSource = () =>
       if (networkConfig) {
         return getNetworkImageSource({ chainId: networkConfig.chainId });
       }
+      const networkEntry = (NetworkList as Record<string, { networkType?: string; chainId?: string }>)[relevantNetworkClientId];
       return getNetworkImageSource({
-        // @ts-expect-error The utils/network file is still JS
-        networkType: NetworkList[relevantNetworkClientId]?.networkType,
-        // @ts-expect-error The utils/network file is still JS
-        chainId: NetworkList[relevantNetworkClientId]?.chainId,
+        networkType: networkEntry?.networkType,
+        chainId: networkEntry?.chainId,
       });
     },
   );
@@ -174,8 +171,7 @@ export const makeSelectChainId = () =>
 
       return (
         chainId ||
-        // @ts-expect-error The utils/network file is still JS
-        NetworkList[relevantNetworkClientId]?.chainId
+        (NetworkList as Record<string, { chainId?: string }>)[relevantNetworkClientId]?.chainId
       );
     },
   );

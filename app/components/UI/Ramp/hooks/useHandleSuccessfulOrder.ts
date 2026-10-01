@@ -79,8 +79,7 @@ function useHandleSuccessfulOrder() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await addTokenToTokensController((order as any)?.data?.cryptoCurrency);
       handleDispatchUserWalletProtection();
-      // @ts-expect-error navigation prop mismatch
-      navigation.dangerouslyGetParent()?.pop();
+      (navigation as unknown as { dangerouslyGetParent: () => { pop: () => void } | undefined }).dangerouslyGetParent()?.pop();
 
       dispatchThunk((_dispatch, getState) => {
         const state = getState();

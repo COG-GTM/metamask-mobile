@@ -102,8 +102,7 @@ export const wallet_watchAsset = async ({
     asset: {
       address,
       symbol: finalTokenSymbol,
-      // @ts-expect-error TODO: Fix decimal type
-      decimals: finalTokenDecimals,
+      decimals: finalTokenDecimals as number,
       image,
     },
     type,

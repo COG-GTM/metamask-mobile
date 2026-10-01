@@ -20,8 +20,6 @@ jest.mock('../../../../../selectors/preferencesController', () => ({
   selectIpfsGateway: jest.fn(),
 }));
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 (selectIpfsGateway as unknown as jest.Mock).mockReturnValue(
   'https://mock-ipfs-gateway.com',
 );
@@ -56,9 +54,7 @@ const mockQuote: QuoteResponse = {
   tags: { isBestRate: true, isMostReliable: true } as QuoteTags,
   amountOutInFiat: 98,
   isNativeApplePay: false,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  buy: () => undefined,
+  buy: (() => undefined) as QuoteResponse['buy'],
 };
 
 const mockSellQuote: SellQuoteResponse = {
@@ -69,9 +65,7 @@ const mockSellQuote: SellQuoteResponse = {
   },
   amountIn: 0.005,
   amountOut: 100,
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  sell: () => undefined,
+  sell: (() => undefined) as SellQuoteResponse['sell'],
 };
 
 const defaultState = {

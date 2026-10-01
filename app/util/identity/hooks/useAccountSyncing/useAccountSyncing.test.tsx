@@ -94,9 +94,7 @@ describe('useShouldDispatchAccountSyncing()', () => {
     expect(hook.result.current).toBe(true);
   });
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  it.each(testCases.failureStateCases)(
+  it.each(testCases.failureStateCases as ReadonlyArray<{ state: Record<string, boolean> }>)(
     'should return false if not all conditions are met [%s = false]',
     ({
       state: failureState,

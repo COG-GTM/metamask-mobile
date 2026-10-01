@@ -133,8 +133,6 @@ describe('PPOM Utils', () => {
 
     MockEngine.context.NetworkController = {
       getNetworkClientById: () => ({
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
         configuration: {
           rpcUrl: 'https://mainnet.infura.io/v3',
           chainId: CHAIN_ID_MOCK as Hex,

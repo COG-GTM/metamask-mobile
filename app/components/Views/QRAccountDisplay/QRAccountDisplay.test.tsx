@@ -40,8 +40,7 @@ describe('QRAccountDisplay', () => {
     const { toJSON } = renderScreen(
       () => <TestWrapper accountAddress={ACCOUNT} />,
       { name: 'QRAccountDisplay' },
-      // @ts-expect-error initialBackgroundState throws error
-      { state: initialState },
+      { state: initialState } as Parameters<typeof renderScreen>[2],
     );
     expect(toJSON()).toMatchSnapshot();
   });
@@ -50,8 +49,7 @@ describe('QRAccountDisplay', () => {
     const { getByTestId } = renderScreen(
       () => <TestWrapper accountAddress={ACCOUNT} />,
       { name: 'QRAccountDisplay' },
-      // @ts-expect-error initialBackgroundState throws error
-      { state: initialState },
+      { state: initialState } as Parameters<typeof renderScreen>[2],
     );
 
     const copyButton = getByTestId('qr-account-display-copy-button');
@@ -81,8 +79,7 @@ describe('QRAccountDisplay', () => {
     const { getByText, queryByText } = renderScreen(
       () => <TestWrapper accountAddress={MOCK_SOLANA_ACCOUNT.address} />,
       { name: 'QRAccountDisplay' },
-      // @ts-expect-error initialBackgroundState throws error
-      { state: stateWithSolanaAccount },
+      { state: stateWithSolanaAccount } as Parameters<typeof renderScreen>[2],
     );
 
     // Verify the component shows the account name

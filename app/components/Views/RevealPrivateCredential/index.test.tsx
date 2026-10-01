@@ -72,8 +72,7 @@ describe('RevealPrivateCredential', () => {
         }}
         navigation={null}
         cancel={() => null}
-        // @ts-expect-error - The error is ignored for testing purposes
-        credentialName={undefined}
+        credentialName={undefined as unknown as string}
       />,
     );
     expect(toJSON()).toMatchSnapshot();

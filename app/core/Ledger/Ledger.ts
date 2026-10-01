@@ -202,8 +202,7 @@ export const ledgerSignTypedMessage = async (
   return await keyringController.signTypedMessage(
     {
       from: messageParams.from,
-      // @ts-expect-error TODO: Fix types
-      data: messageParams.data,
+      data: messageParams.data as Parameters<typeof keyringController.signTypedMessage>[0]['data'],
     },
     version,
   );

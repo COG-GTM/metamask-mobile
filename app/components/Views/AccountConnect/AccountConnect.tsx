@@ -523,8 +523,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       const newNetworkAvatars = newSelectedChainIds.map(
         (newSelectedChainId) => ({
           size: AvatarSize.Xs,
-          // @ts-expect-error - networkConfigurations is not typed
-          name: networkConfigurations[newSelectedChainId]?.name || '',
+          name: (networkConfigurations as Record<string, { name?: string }>)[newSelectedChainId]?.name || '',
           imageSource: getNetworkImageSource({ chainId: newSelectedChainId }),
         }),
       );
@@ -679,8 +678,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       isAlreadyConnected: false,
       accountAddresses: selectedAddresses,
       accounts,
-      // @ts-expect-error imageSource not yet typed
-      networkAvatars: selectedNetworkAvatars,
+      networkAvatars: selectedNetworkAvatars as Parameters<typeof PermissionsSummary>[0]['networkAvatars'],
     };
     return <PermissionsSummary {...permissionsSummaryProps} />;
   }, [

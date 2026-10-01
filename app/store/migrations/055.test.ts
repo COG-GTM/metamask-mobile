@@ -150,9 +150,7 @@ describe(`migration #${version}`, () => {
     expectedNetwork.defaultRpcEndpointIndex =
       expectedNetwork.rpcEndpoints.push({
         networkClientId: customNetwork.id,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        name: customNetwork.nickname,
+        name: customNetwork.nickname as string,
         url: customNetwork.rpcUrl,
         type: 'custom',
       }) - 1;

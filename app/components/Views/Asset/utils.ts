@@ -13,8 +13,7 @@ import { RootState } from '../../../reducers';
 
 export const getSwapsIsLive = (state: RootState, chainId: Hex | CaipChainId) => {
   const evmSwapsIsLive = isPortfolioViewEnabled()
-    // @ts-expect-error issues with the type, it should have 2 args
-    ? swapsLivenessMultichainSelector(state, chainId)
+    ? (swapsLivenessMultichainSelector as (state: RootState, chainId: Hex | CaipChainId) => boolean)(state, chainId)
     : swapsLivenessSelector(state);
   let swapsIsLive = evmSwapsIsLive;
 

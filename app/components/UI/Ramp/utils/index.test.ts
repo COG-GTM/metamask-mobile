@@ -193,8 +193,7 @@ describe('isNetworkBuySupported', () => {
 
   it('should return false if network is the wrong format', () => {
     expect(
-      // @ts-expect-error Testing invalid input
-      isNetworkRampSupported(1, [
+      isNetworkRampSupported(1 as unknown as string, [
         {
           active: true,
           chainId: '1',
@@ -333,8 +332,7 @@ describe('isNetworkBuyNativeTokenSupported', () => {
 
   it('should return false if network is in the wrong format', () => {
     expect(
-      // @ts-expect-error Testing invalid input
-      isNetworkRampNativeTokenSupported(1, [
+      isNetworkRampNativeTokenSupported(1 as unknown as string, [
         {
           active: true,
           chainId: '1',
@@ -657,8 +655,7 @@ describe('sortQuotes', () => {
 
   it('should return quotes unsorted if no sortOrder is found', () => {
     const sortingArray: QuoteSortMetadata[] = [
-      // @ts-expect-error Testing invalid input on purpose
-      { sortBy: undefined, ids: ['provider-id-1', 'provider-id-2'] },
+      { sortBy: undefined as unknown as QuoteSortBy, ids: ['provider-id-1', 'provider-id-2'] },
     ];
     expect(sortQuotes(quotes, sortingArray, QuoteSortBy.price)).toEqual(quotes);
   });

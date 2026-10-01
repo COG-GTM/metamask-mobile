@@ -89,8 +89,7 @@ export default async function migrate(stateAsync: unknown) {
             )
           ) {
             newTokenListControllerState.tokensChainsCache[hexChainId] =
-              //@ts-expect-error Is verified on Line 508 that tokenChainsCache is a property
-              tokenListControllerState.tokensChainsCache[chainId];
+              (tokenListControllerState.tokensChainsCache as Record<string, unknown>)[chainId];
           }
 
           if (isObject(tokenListControllerState.tokensChainsCache)) {
@@ -127,19 +126,15 @@ export default async function migrate(stateAsync: unknown) {
       if (!isHexString(chainId)) {
         const hexChainId = toHex(chainId);
 
+        const exchangeRates = newTokenRatesControllerState.contractExchangeRatesByChainId as Record<string, unknown>;
         if (
           !Object.prototype.hasOwnProperty.call(
-            //@ts-expect-error At the time of that migrations assets controllers version had those properties, so those users will have that property on their phone storage, the migration was casted and that where it's wrong, we shouldn't cast migrations because the structure and property names change over time.
-            newTokenRatesControllerState.contractExchangeRatesByChainId,
+            exchangeRates,
             hexChainId,
           )
         ) {
-          //@ts-expect-error At the time of that migrations assets controllers version had those properties, so those users will have that property on their phone storage, the migration was casted and that where it's wrong, we shouldn't cast migrations because the structure and property names change over time.
-          newTokenRatesControllerState.contractExchangeRatesByChainId[
-            hexChainId
-          ] =
-            //@ts-expect-error Is verified on Line 558 that contractExchangeRatesByChainId is a property
-            tokenRatesControllerState.contractExchangeRatesByChainId[chainId];
+          exchangeRates[hexChainId] =
+            (tokenRatesControllerState.contractExchangeRatesByChainId as Record<string, unknown>)[chainId];
         }
 
         if (
@@ -194,8 +189,7 @@ export default async function migrate(stateAsync: unknown) {
           )
         ) {
           newTokensControllerState.allTokens[hexChainId] =
-            //@ts-expect-error Is verified on Line 613 that allTokens is a property
-            tokensControllerState.allTokens[chainId];
+            (tokensControllerState.allTokens as Record<string, unknown>)[chainId];
         }
         if (isObject(tokensControllerState.allTokens)) {
           delete tokensControllerState.allTokens[chainId];
@@ -229,8 +223,7 @@ export default async function migrate(stateAsync: unknown) {
           )
         ) {
           newTokensControllerState.allIgnoredTokens[hexChainId] =
-            //@ts-expect-error Is verified on Line 643 that allIgnoredTokens is a property
-            tokensControllerState.allIgnoredTokens[chainId];
+            (tokensControllerState.allIgnoredTokens as Record<string, unknown>)[chainId];
         }
         if (isObject(tokensControllerState.allIgnoredTokens)) {
           delete tokensControllerState.allIgnoredTokens[chainId];
@@ -264,8 +257,7 @@ export default async function migrate(stateAsync: unknown) {
           )
         ) {
           newTokensControllerState.allDetectedTokens[hexChainId] =
-            //@ts-expect-error Is verified on Line 671 that allIgnoredTokens is a property
-            tokensControllerState.allDetectedTokens[chainId];
+            (tokensControllerState.allDetectedTokens as Record<string, unknown>)[chainId];
         }
         if (isObject(tokensControllerState.allDetectedTokens)) {
           delete tokensControllerState.allDetectedTokens[chainId];

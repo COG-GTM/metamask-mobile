@@ -91,8 +91,7 @@ describe('Migration #45', () => {
     expect(newState).toStrictEqual(expectedNewState);
 
     expect(
-      // @ts-expect-error: ignore for testing purposes: new state is type unknown
-      newState.engine.backgroundState.GasFeeController.nonRPCGasFeeApisDisabled,
+      (newState as Record<string, Record<string, Record<string, Record<string, unknown>>>>).engine.backgroundState.GasFeeController.nonRPCGasFeeApisDisabled,
     ).toEqual(false);
   });
 });

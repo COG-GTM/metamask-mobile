@@ -96,8 +96,7 @@ describe('NetworkInfo', () => {
           throw new Error('Function not implemented.');
         }}
       />,
-      // @ts-expect-error - we do want to test the ticker be undefined on this unit test
-      { state: evmStateWithoutTicker },
+      { state: evmStateWithoutTicker } as Parameters<typeof renderWithProvider>[1],
     );
     expect(wrapper).toMatchSnapshot();
   });

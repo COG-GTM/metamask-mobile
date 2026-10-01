@@ -83,7 +83,6 @@ class QuickCryptoEncryptionLibrary implements EncryptionLibrary {
 
     const encryptedData = await Crypto.subtle.encrypt(
       { name: CipherAlgorithmQuickCrypto.Cbc, iv: ivBuffer },
-      // @ts-expect-error - This should be as CryptoKey but the type is not exported
       cryptoKey,
       dataBuffer
     );
@@ -104,7 +103,6 @@ class QuickCryptoEncryptionLibrary implements EncryptionLibrary {
 
     const decryptedData = await Crypto.subtle.decrypt(
       { name: CipherAlgorithmQuickCrypto.Cbc, iv: ivBuffer },
-      // @ts-expect-error - This should be CryptoKey but the type is not exported
       cryptoKey,
       dataBuffer,
     );
@@ -116,7 +114,7 @@ class QuickCryptoEncryptionLibrary implements EncryptionLibrary {
    * @param key - The key to import as a base64 string.
    * @returns A promise that resolves to the imported key.
    */
-  importKey = async (key: string): Promise<unknown> => {
+  importKey = async (key: string): Promise<CryptoKey> => {
     const keyBuffer = Buffer.from(key, 'base64');
     const importedKey = await Crypto.subtle.importKey(
       'raw',
@@ -125,7 +123,7 @@ class QuickCryptoEncryptionLibrary implements EncryptionLibrary {
       true,
       ['encrypt', 'decrypt'],
     );
-    return importedKey;
+    return importedKey as unknown as CryptoKey;
   };
 
   /**
@@ -134,8 +132,7 @@ class QuickCryptoEncryptionLibrary implements EncryptionLibrary {
    * @param key - The key to export.
    * @returns A promise that resolves to the exported key as a base64 string.
    */
-  exportKey = async (importFormat: 'raw' | 'jwk', key: unknown): Promise<string> => {
-    // @ts-expect-error - This should be as CryptoKey but the type is not exported
+  exportKey = async (importFormat: 'raw' | 'jwk', key: CryptoKey): Promise<string> => {
     const keyBuffer = await Crypto.subtle.exportKey(importFormat, key) as ArrayBuffer;
     const base64Key = Buffer.from(keyBuffer).toString('base64');
     return base64Key;
