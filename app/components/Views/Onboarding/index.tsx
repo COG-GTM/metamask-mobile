@@ -1,5 +1,4 @@
-import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
+import React, { PureComponent, ComponentType } from 'react';
 import {
   ActivityIndicator,
   BackHandler,
@@ -11,6 +10,9 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import type { Dispatch } from 'redux';
+import type { RootState } from '../../../reducers';
+import type { IWithMetricsAwarenessProps } from '../../hooks/useMetrics/withMetricsAwareness.types';
 import Text, {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
@@ -22,6 +24,7 @@ import {
   colors as importedColors,
 } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
+// @ts-expect-error - no types for @metamask/react-native-button
 import Button from '@metamask/react-native-button';
 import { connect } from 'react-redux';
 import FadeOutOverlay from '../../UI/FadeOutOverlay';
@@ -30,7 +33,7 @@ import {
   getTransparentOnboardingNavbarOptions,
 } from '../../UI/Navbar';
 import Device from '../../../util/device';
-import BaseNotification from '../../UI/Notification/BaseNotification';
+import BaseNotificationImport from '../../UI/Notification/BaseNotification';
 import ElevatedView from 'react-native-elevated-view';
 import { loadingSet, loadingUnset } from '../../../actions/user';
 import { storePrivacyPolicyClickedOrClosed as storePrivacyPolicyClickedOrClosedAction } from '../../../reducers/legalNotices';
@@ -50,7 +53,21 @@ import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboardi
 import { trace, TraceName, TraceOperation } from '../../../util/trace';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
 
-const createStyles = (colors) =>
+interface ThemeColors {
+  primary: { default: string };
+}
+
+const BaseNotification =
+  BaseNotificationImport as unknown as ComponentType<{
+    closeButtonDisabled?: boolean;
+    status?: string;
+    data?: { title?: string; description?: string };
+    onPress?: () => void;
+    onHide?: () => void;
+    autoDismiss?: boolean;
+  }>;
+
+const createStyles = (colors: ThemeColors) =>
   StyleSheet.create({
     scroll: {
       flex: 1,
@@ -134,52 +151,67 @@ const createStyles = (colors) =>
     },
   });
 
+interface OnboardingNavigation {
+  setOptions: (options: object) => void;
+  navigate: (route: string, params?: object) => void;
+  push: (route: string, params?: object) => void;
+  replace: (route: string, params?: object) => void;
+  goBack?: () => void;
+}
+
+interface OnboardingRoute {
+  params?: {
+    delete?: boolean;
+    [key: string]: unknown;
+  };
+}
+
+interface AccountState {
+  [address: string]: { balance?: string };
+}
+
+interface OwnProps {
+  navigation: OnboardingNavigation;
+  route: OnboardingRoute;
+}
+
+interface StateProps {
+  accounts: AccountState;
+  passwordSet: boolean;
+  loading: boolean;
+  loadingMsg: string;
+}
+
+interface DispatchProps {
+  setLoading: (msg: string) => void;
+  unsetLoading: () => void;
+  disableNewPrivacyPolicyToast: () => void;
+}
+
+type Props = OwnProps & StateProps & DispatchProps & IWithMetricsAwarenessProps;
+
+interface State {
+  warningModalVisible: boolean;
+  loading: boolean;
+  existingUser: boolean;
+}
+
 /**
  * View that is displayed to first time (new) users
  */
-class Onboarding extends PureComponent {
-  static propTypes = {
-    disableNewPrivacyPolicyToast: PropTypes.func,
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    /**
-     * redux flag that indicates if the user set a password
-     */
-    passwordSet: PropTypes.bool,
-    /**
-     * loading status
-     */
-    loading: PropTypes.bool,
-    /**
-     * set loading status
-     */
-    setLoading: PropTypes.func,
-    /**
-     * unset loading status
-     */
-    unsetLoading: PropTypes.func,
-    /**
-     * loadings msg
-     */
-    loadingMsg: PropTypes.string,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-    /**
-     * Metrics injected by withMetricsAwareness HOC
-     */
-    metrics: PropTypes.object,
-  };
+class Onboarding extends PureComponent<Props, State> {
+  static contextType = ThemeContext;
 
-  notificationAnimated = new Animated.Value(100);
-  detailsYAnimated = new Animated.Value(0);
-  actionXAnimated = new Animated.Value(0);
-  detailsAnimated = new Animated.Value(0);
 
-  animatedTimingStart = (animatedRef, toValue) => {
+  notificationAnimated: Animated.Value = new Animated.Value(100);
+  detailsYAnimated: Animated.Value = new Animated.Value(0);
+  actionXAnimated: Animated.Value = new Animated.Value(0);
+  detailsAnimated: Animated.Value = new Animated.Value(0);
+
+  animatedTimingStart = (
+    animatedRef: Animated.Value,
+    toValue: number,
+  ) => {
     Animated.timing(animatedRef, {
       toValue,
       duration: 500,
@@ -188,20 +220,20 @@ class Onboarding extends PureComponent {
     }).start();
   };
 
-  state = {
+  state: State = {
     warningModalVisible: false,
     loading: false,
     existingUser: false,
   };
 
-  seedwords = null;
-  importedAccounts = null;
-  channelName = null;
+  seedwords: string[] | null = null;
+  importedAccounts: unknown[] | null = null;
+  channelName: string | null = null;
   incomingDataStr = '';
-  dataToSync = null;
+  dataToSync: unknown = null;
   mounted = false;
 
-  warningCallback = () => true;
+  warningCallback: () => void = () => undefined;
 
   showNotification = () => {
     // show notification
@@ -221,7 +253,9 @@ class Onboarding extends PureComponent {
 
   updateNavBar = () => {
     const { route, navigation } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as { colors?: typeof mockTheme.colors })?.colors ||
+      mockTheme.colors;
     navigation.setOptions(
       route.params?.delete
         ? getTransparentOnboardingNavbarOptions(colors)
@@ -275,7 +309,7 @@ class Onboarding extends PureComponent {
     }
   };
 
-  handleExistingUser = (action) => {
+  handleExistingUser = (action: () => void) => {
     if (this.state.existingUser) {
       this.alertExistingUser(action);
     } else {
@@ -328,11 +362,11 @@ class Onboarding extends PureComponent {
     this.handleExistingUser(action);
   };
 
-  track = (event) => {
+  track = (event: Parameters<typeof MetricsEventBuilder.createEventBuilder>[0]) => {
     trackOnboarding(MetricsEventBuilder.createEventBuilder(event).build());
   };
 
-  alertExistingUser = (callback) => {
+  alertExistingUser = (callback: () => void) => {
     this.warningCallback = () => {
       callback();
       this.toggleWarningModal();
@@ -346,7 +380,9 @@ class Onboarding extends PureComponent {
   };
 
   renderLoader = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as { colors?: typeof mockTheme.colors })?.colors ||
+      mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -360,7 +396,9 @@ class Onboarding extends PureComponent {
   };
 
   renderContent() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as { colors?: typeof mockTheme.colors })?.colors ||
+      mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -412,7 +450,9 @@ class Onboarding extends PureComponent {
   }
 
   handleSimpleNotification = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as { colors?: typeof mockTheme.colors })?.colors ||
+      mockTheme.colors;
     const styles = createStyles(colors);
 
     if (!this.props.route.params?.delete) return;
@@ -440,7 +480,9 @@ class Onboarding extends PureComponent {
   render() {
     const { loading } = this.props;
     const { existingUser } = this.state;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as { colors?: typeof mockTheme.colors })?.colors ||
+      mockTheme.colors;
     const styles = createStyles(colors);
 
     return (
@@ -488,17 +530,15 @@ class Onboarding extends PureComponent {
   }
 }
 
-Onboarding.contextType = ThemeContext;
-
-const mapStateToProps = (state) => ({
-  accounts: selectAccounts(state),
+const mapStateToProps = (state: RootState): StateProps => ({
+  accounts: selectAccounts(state) as unknown as AccountState,
   passwordSet: state.user.passwordSet,
   loading: state.user.loadingSet,
   loadingMsg: state.user.loadingMsg,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  setLoading: (msg) => dispatch(loadingSet(msg)),
+const mapDispatchToProps = (dispatch: Dispatch): DispatchProps => ({
+  setLoading: (msg: string) => dispatch(loadingSet(msg)),
   unsetLoading: () => dispatch(loadingUnset()),
   disableNewPrivacyPolicyToast: () =>
     dispatch(storePrivacyPolicyClickedOrClosedAction()),
@@ -507,4 +547,8 @@ const mapDispatchToProps = (dispatch) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps,
-)(withMetricsAwareness(Onboarding));
+)(
+  withMetricsAwareness(
+    Onboarding as unknown as ComponentType<IWithMetricsAwarenessProps>,
+  ),
+);

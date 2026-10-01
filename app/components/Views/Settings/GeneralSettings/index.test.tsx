@@ -11,6 +11,7 @@ import { backgroundState } from '../../../../util/test/initial-root-state';
 import { MetaMetricsEvents } from '../../../../core/Analytics';
 import { UserProfileProperty } from '../../../../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
 import { MetricsEventBuilder } from '../../../../core/Analytics/MetricsEventBuilder';
+import type { IUseMetricsHook } from '../../../hooks/useMetrics/useMetrics.types';
 
 jest.mock('../../../../core/Analytics');
 
@@ -45,7 +46,7 @@ const mockMetrics = {
   addTraitsToUser: jest.fn(),
   trackEvent: jest.fn(),
   createEventBuilder: MetricsEventBuilder.createEventBuilder,
-};
+} as unknown as IUseMetricsHook;
 
 describe('updateUserTraitsWithCurrentCurrency', () => {
   afterEach(() => {

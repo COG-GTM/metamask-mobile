@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Appearance,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import FeatherIcons from 'react-native-vector-icons/Feather';
@@ -38,20 +37,44 @@ import { Authentication } from '../../../core';
 import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ManualBackUpSteps.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import type { RootState } from '../../../reducers';
+import type { AppThemeKey } from '../../../util/theme/models';
+import type {
+  NavigationProp,
+  ParamListBase,
+} from '@react-navigation/native';
+
+type BlurType = 'light' | 'dark' | 'xlight';
+
+interface OwnProps {
+  navigation?: NavigationProp<ParamListBase>;
+  route: {
+    params?: { words?: string[] };
+    name?: string;
+    key?: string;
+  };
+}
+
+interface StateProps {
+  appTheme: AppThemeKey;
+}
+
+type Props = OwnProps & StateProps;
 
 /**
  * View that's shown during the second step of
  * the backup seed phrase flow
  */
-const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
+const ManualBackupStep1 = ({ route, navigation, appTheme }: Props) => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);
 
-  const [password, setPassword] = useState(undefined);
-  const [warningIncorrectPassword, setWarningIncorrectPassword] =
-    useState(undefined);
+  const [password, setPassword] = useState<string | undefined>(undefined);
+  const [warningIncorrectPassword, setWarningIncorrectPassword] = useState<
+    string | undefined
+  >(undefined);
   const [ready, setReady] = useState(false);
-  const [view, setView] = useState(SEED_PHRASE);
-  const [words, setWords] = useState([]);
+  const [view, setView] = useState<string>(SEED_PHRASE);
+  const [words, setWords] = useState<string[]>([]);
 
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
@@ -60,13 +83,21 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
   const steps = MANUAL_BACKUP_STEPS;
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation?.setOptions(
+      getOnboardingNavbarOptions(
+        route,
+        { headerLeft: undefined },
+        colors,
+      ),
+    );
   }, [colors, navigation, route]);
 
-  const tryExportSeedPhrase = async (password) => {
+  const tryExportSeedPhrase = async (
+    passwordToUse: string,
+  ): Promise<string[]> => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
-      password,
+      passwordToUse,
     );
     return uint8ArrayToMnemonic(uint8ArrayMnemonic, wordlist).split(' ');
   };
@@ -101,12 +132,12 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     updateNavBar();
   }, [updateNavBar]);
 
-  const onPasswordChange = (password) => {
-    setPassword(password);
+  const onPasswordChange = (text: string) => {
+    setPassword(text);
   };
 
   const goNext = () => {
-    navigation.navigate('ManualBackupStep2', {
+    navigation?.navigate('ManualBackupStep2', {
       words,
       steps,
     });
@@ -121,16 +152,21 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     );
   };
 
-  const tryUnlockWithPassword = async (password) => {
+  const tryUnlockWithPassword = async (passwordToUse?: string) => {
     setReady(false);
     try {
-      const seedPhrase = await tryExportSeedPhrase(password);
+      if (!passwordToUse) {
+        throw new Error('Password is required');
+      }
+      const seedPhrase = await tryExportSeedPhrase(passwordToUse);
       setWords(seedPhrase);
       setView(SEED_PHRASE);
       setReady(true);
     } catch (e) {
       let msg = strings('reveal_credential.warning_incorrect_password');
-      if (e.toString().toLowerCase() !== WRONG_PASSWORD_ERROR.toLowerCase()) {
+      if (
+        String(e).toLowerCase() !== WRONG_PASSWORD_ERROR.toLowerCase()
+      ) {
         msg = strings('reveal_credential.unknown_error');
       }
       setWarningIncorrectPassword(msg);
@@ -142,8 +178,8 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     tryUnlockWithPassword(password);
   };
 
-  const getBlurType = () => {
-    let blurType = 'light';
+  const getBlurType = (): BlurType => {
+    let blurType: BlurType = 'light';
     switch (appTheme) {
       case 'light':
         blurType = 'light';
@@ -152,7 +188,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
         blurType = 'dark';
         break;
       case 'os':
-        blurType = Appearance.getColorScheme();
+        blurType = (Appearance.getColorScheme() as BlurType) ?? 'light';
         break;
       default:
         blurType = 'light';
@@ -174,7 +210,11 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
           <Text style={styles.watching}>
             {strings('manual_backup_step_1.watching')}
           </Text>
-          <View style={styles.viewButtonWrapper}>
+          <View
+            style={
+              (styles as Record<string, unknown>).viewButtonWrapper as object
+            }
+          >
             <StyledButton
               type={'onOverlay'}
               onPress={revealSeedPhrase}
@@ -224,7 +264,9 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
           </View>
           <View style={styles.buttonWrapper}>
             <StyledButton
-              containerStyle={styles.button}
+              containerStyle={
+                (styles as Record<string, unknown>).button as object
+              }
               type={'confirm'}
               onPress={tryUnlock}
               testID={ManualBackUpStepsSelectorsIDs.SUBMIT_BUTTON}
@@ -306,22 +348,7 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
   );
 };
 
-ManualBackupStep1.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Theme that app is set to
-   */
-  appTheme: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   appTheme: state.user.appTheme,
 });
 
