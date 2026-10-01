@@ -92,8 +92,7 @@ const createControllerMessenger = ({
 
   jest.spyOn(messenger, 'call').mockImplementation((...args) => {
     // This mock implementation does not have a nice discriminate union where types/parameters can be correctly inferred
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const [actionType, ...params]: any[] = args;
+    const [actionType, ...params]: [string, ...unknown[]] = args;
 
     switch (actionType) {
       case 'ApprovalController:startFlow':

@@ -1,5 +1,6 @@
 import {
   SubjectMetadataController,
+  SubjectMetadataControllerMessenger,
   SubjectType,
 } from '@metamask/permission-controller';
 import { KeyringRpcMethod } from '@metamask/keyring-api';
@@ -21,9 +22,7 @@ describe('keyringSnapPermissionsBuilder', () => {
       registerActionHandler: jest.fn(),
       registerInitialEventPayload: jest.fn(),
       publish: jest.fn(),
-      // TODO: Replace `any` with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any,
+    } as unknown as SubjectMetadataControllerMessenger,
     state: {},
   });
   mockController.addSubjectMetadata({
@@ -121,11 +120,7 @@ describe('keyringSnapPermissionsBuilder', () => {
     0,
     -1,
   ])('"%s" cannot call any methods', (origin: unknown) => {
-    const permissions = keyringSnapPermissionsBuilder(
-      // TODO: Replace `any` with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      origin as any,
-    );
+    const permissions = keyringSnapPermissionsBuilder(origin as string);
     expect(permissions()).toStrictEqual([]);
   });
 });
@@ -145,9 +140,7 @@ describe('isProtocolAllowed', () => {
     [1, false],
     [0, false],
     [-1, false],
-    // TODO: Replace `any` with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ])('"%s" cannot call any methods', (origin: any, expected: boolean) => {
-    expect(isProtocolAllowed(origin)).toBe(expected);
+  ])('"%s" cannot call any methods', (origin: unknown, expected: boolean) => {
+    expect(isProtocolAllowed(origin as string)).toBe(expected);
   });
 });
