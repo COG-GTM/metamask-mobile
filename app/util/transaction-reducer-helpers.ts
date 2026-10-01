@@ -1,7 +1,7 @@
 import { SecurityAlertResponse } from '@metamask/transaction-controller';
 import type BN from 'bnjs4';
 
-interface TxMeta {
+export interface TxMeta {
   data?: string;
   from?: string;
   gas?: BN;

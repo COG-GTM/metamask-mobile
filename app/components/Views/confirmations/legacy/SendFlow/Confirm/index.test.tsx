@@ -12,6 +12,10 @@ import Routes from '../../../../../../constants/navigation/Routes';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import { TESTID_ACCORDION_CONTENT } from '../../../../../../component-library/components/Accordions/Accordion/Accordion.constants';
 import { FALSE_POSITIVE_REPOST_LINE_TEST_ID } from '../../components/BlockaidBanner/BlockaidBanner.constants';
+import {
+  Reason,
+  ResultType,
+} from '../../components/BlockaidBanner/BlockaidBanner.types';
 import { createMockAccountsControllerState } from '../../../../../../util/test/accountsControllerTestUtils';
 import { RootState } from '../../../../../../reducers';
 import { RpcEndpointType } from '@metamask/network-controller';
@@ -83,8 +87,8 @@ const mockInitialState: DeepPartial<RootState> = {
   transaction: {
     securityAlertResponses: {
       1: {
-        result_type: 'Malicious',
-        reason: 'blur_farming',
+        result_type: ResultType.Malicious,
+        reason: Reason.blurFarming,
         providerRequestsCount: {},
         chainId: '0x1',
       },
