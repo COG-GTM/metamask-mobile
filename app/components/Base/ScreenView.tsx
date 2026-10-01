@@ -1,6 +1,11 @@
 import type { ThemeColors } from '@metamask/design-tokens';
 import React from 'react';
-import { SafeAreaView, StyleSheet, ScrollView } from 'react-native';
+import {
+  SafeAreaView,
+  StyleSheet,
+  ScrollView,
+  ScrollViewProps,
+} from 'react-native';
 import { useTheme } from '../../util/theme';
 
 const createStyles = (colors: ThemeColors) =>
@@ -11,7 +16,7 @@ const createStyles = (colors: ThemeColors) =>
     },
   });
 
-interface ScreenViewProps {
+interface ScreenViewProps extends ScrollViewProps {
   children: React.ReactNode;
 }
 

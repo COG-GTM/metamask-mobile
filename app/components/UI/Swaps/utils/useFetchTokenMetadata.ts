@@ -1,14 +1,32 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axios, { CancelTokenSource } from 'axios';
 import { swapsUtils } from '@metamask/swaps-controller';
+import { Hex } from '@metamask/utils';
 
-const defaultTokenMetadata = {
+export interface TokenMetadataData {
+  address?: string;
+  symbol?: string;
+  name?: string;
+  decimals?: number;
+  iconUrl?: string;
+}
+
+interface TokenMetadata {
+  valid: boolean | null;
+  error: boolean;
+  metadata: TokenMetadataData | null;
+}
+
+const defaultTokenMetadata: TokenMetadata = {
   valid: null,
   error: false,
   metadata: null,
 };
 
-function useFetchTokenMetadata(address, chainId) {
+function useFetchTokenMetadata(
+  address?: string | null,
+  chainId?: string,
+): [boolean, TokenMetadata] {
   const [isLoading, setIsLoading] = useState(false);
   const [tokenMetadata, setTokenMetadata] = useState(defaultTokenMetadata);
 
@@ -17,14 +35,14 @@ function useFetchTokenMetadata(address, chainId) {
       return;
     }
 
-    let cancelTokenSource;
+    let cancelTokenSource: CancelTokenSource | undefined;
     async function fetchTokenMetadata() {
       try {
         cancelTokenSource = axios.CancelToken.source();
         setTokenMetadata(defaultTokenMetadata);
         setIsLoading(true);
         const { data } = await axios.request({
-          url: swapsUtils.getTokenMetadataURL(chainId),
+          url: swapsUtils.getTokenMetadataURL(chainId as Hex),
           params: {
             address,
           },
@@ -33,7 +51,10 @@ function useFetchTokenMetadata(address, chainId) {
         setTokenMetadata({ error: false, valid: true, metadata: data });
       } catch (error) {
         // Address is not an ERC20
-        if (error?.response?.status === 422) {
+        if (
+          (error as { response?: { status?: number } })?.response?.status ===
+          422
+        ) {
           setTokenMetadata({ error: false, valid: false, metadata: null });
         } else {
           setTokenMetadata({ ...defaultTokenMetadata, error: true });
