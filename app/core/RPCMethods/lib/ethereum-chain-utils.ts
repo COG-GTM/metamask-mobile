@@ -1,6 +1,8 @@
 import { rpcErrors } from '@metamask/rpc-errors';
 import validUrl from 'valid-url';
 import { ApprovalType, isSafeChainId } from '@metamask/controller-utils';
+import { Hex } from '@metamask/utils';
+import { NetworkConfiguration } from '@metamask/network-controller';
 import { jsonRpcRequest } from '../../../util/jsonRpcRequest';
 import {
   getDecimalChainId,
@@ -9,21 +11,68 @@ import {
 } from '../../../util/networks';
 import {
   Caip25CaveatType,
+  Caip25CaveatValue,
   Caip25EndowmentPermissionName,
   getPermittedEthChainIds,
   setPermittedEthChainIds,
 } from '@metamask/chain-agnostic-permission';
+import { JsonMap } from '../../Analytics/MetaMetrics.types';
 import { MetaMetrics, MetaMetricsEvents } from '../../../core/Analytics';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
-import {
-  getDefaultCaip25CaveatValue,
-  getPermittedAccounts,
-} from '../../Permissions';
+import { getPermittedAccounts } from '../../Permissions';
 import Engine from '../../Engine';
 
 const EVM_NATIVE_TOKEN_DECIMALS = 18;
 
-export function validateChainId(chainId) {
+/**
+ * Network configuration enriched with legacy/optional fields that older
+ * network state shapes may still carry.
+ */
+type ExtendedNetworkConfiguration = NetworkConfiguration & {
+  chainName?: string;
+  nickname?: string;
+  shortName?: string;
+  ticker?: string;
+  color?: string;
+  networkType?: string;
+};
+
+/**
+ * A tuple of `[networkClientId, networkConfiguration]` describing an existing
+ * network entry.
+ */
+export type NetworkTuple = [string, ExtendedNetworkConfiguration];
+
+interface CaveatResult {
+  value: Caip25CaveatValue;
+}
+
+/**
+ * Hooks used by `switchToNetwork`.
+ */
+export interface SwitchToNetworkHooks {
+  getCaveat: (args: {
+    target: string;
+    caveatType: string;
+  }) => CaveatResult | undefined;
+  requestPermittedChainsPermissionIncrementalForOrigin: (args: {
+    origin: string;
+    chainId: Hex;
+    autoApprove: boolean;
+  }) => Promise<void>;
+  hasApprovalRequestsForOrigin?: () => boolean;
+  rejectApprovalRequestsForOrigin?: () => void;
+  toNetworkConfiguration?: unknown;
+  fromNetworkConfiguration?: unknown;
+}
+
+export type RequestUserApproval = (args: {
+  type?: string;
+  requestData?: object;
+  origin?: string;
+}) => Promise<unknown>;
+
+export function validateChainId(chainId: unknown): Hex {
   const _chainId = typeof chainId === 'string' && chainId.toLowerCase();
 
   if (!isPrefixedFormattedHexString(_chainId)) {
@@ -32,17 +81,27 @@ export function validateChainId(chainId) {
     );
   }
 
-  if (!isSafeChainId(_chainId)) {
+  if (!isSafeChainId(_chainId as Hex)) {
     throw rpcErrors.invalidParams(
       `Invalid chain ID "${_chainId}": numerical value greater than max safe value. Received:\n${chainId}`,
     );
   }
 
-  return _chainId;
+  return _chainId as Hex;
 }
 
-export function validateAddEthereumChainParams(params) {
-  if (!params || !params?.[0] || typeof params[0] !== 'object') {
+interface AddEthereumChainRawParams {
+  chainId?: unknown;
+  chainName?: unknown;
+  blockExplorerUrls?: unknown;
+  nativeCurrency?: unknown;
+  rpcUrls?: unknown;
+  iconUrls?: unknown;
+}
+
+export function validateAddEthereumChainParams(params: unknown) {
+  const firstParam = Array.isArray(params) ? params[0] : undefined;
+  if (!params || !firstParam || typeof firstParam !== 'object') {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
         params,
@@ -50,17 +109,15 @@ export function validateAddEthereumChainParams(params) {
     });
   }
 
-  const [
-    {
-      chainId,
-      chainName: rawChainName = null,
-      blockExplorerUrls = null,
-      nativeCurrency = null,
-      rpcUrls,
-    },
-  ] = params;
+  const {
+    chainId,
+    chainName: rawChainName = null,
+    blockExplorerUrls = null,
+    nativeCurrency = null,
+    rpcUrls,
+  } = firstParam as AddEthereumChainRawParams;
 
-  const allowedKeys = {
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
     chainName: true,
     blockExplorerUrls: true,
@@ -69,7 +126,7 @@ export function validateAddEthereumChainParams(params) {
     iconUrls: true,
   };
 
-  const extraKeys = Object.keys(params[0]).filter((key) => !allowedKeys[key]);
+  const extraKeys = Object.keys(firstParam).filter((key) => !allowedKeys[key]);
   if (extraKeys.length) {
     throw rpcErrors.invalidParams(
       `Received unexpected keys on object parameter. Unsupported keys:\n${extraKeys}`,
@@ -95,7 +152,7 @@ export function validateAddEthereumChainParams(params) {
   };
 }
 
-function validateRpcUrls(rpcUrls) {
+function validateRpcUrls(rpcUrls: unknown) {
   const dirtyFirstValidRPCUrl = Array.isArray(rpcUrls)
     ? rpcUrls.find((rpcUrl) => validUrl.isHttpsUri(rpcUrl))
     : null;
@@ -113,7 +170,7 @@ function validateRpcUrls(rpcUrls) {
   return firstValidRPCUrl;
 }
 
-function validateBlockExplorerUrls(blockExplorerUrls) {
+function validateBlockExplorerUrls(blockExplorerUrls: unknown) {
   const firstValidBlockExplorerUrl =
     blockExplorerUrls !== null && Array.isArray(blockExplorerUrls)
       ? blockExplorerUrls.find((blockExplorerUrl) =>
@@ -130,7 +187,7 @@ function validateBlockExplorerUrls(blockExplorerUrls) {
   return firstValidBlockExplorerUrl;
 }
 
-function validateChainName(rawChainName) {
+function validateChainName(rawChainName: unknown) {
   if (typeof rawChainName !== 'string' || !rawChainName) {
     throw rpcErrors.invalidParams({
       message: `Expected non-empty string 'chainName'. Received:\n${rawChainName}`,
@@ -141,26 +198,31 @@ function validateChainName(rawChainName) {
     : rawChainName;
 }
 
-function validateNativeCurrency(nativeCurrency) {
+function validateNativeCurrency(nativeCurrency: unknown) {
   if (nativeCurrency !== null) {
     if (typeof nativeCurrency !== 'object' || Array.isArray(nativeCurrency)) {
       throw rpcErrors.invalidParams({
         message: `Expected null or object 'nativeCurrency'. Received:\n${nativeCurrency}`,
       });
     }
-    if (nativeCurrency.decimals !== EVM_NATIVE_TOKEN_DECIMALS) {
+    const { decimals, symbol } = nativeCurrency as {
+      decimals?: unknown;
+      symbol?: unknown;
+    };
+    if (decimals !== EVM_NATIVE_TOKEN_DECIMALS) {
       throw rpcErrors.invalidParams({
-        message: `Expected the number 18 for 'nativeCurrency.decimals' when 'nativeCurrency' is provided. Received: ${nativeCurrency.decimals}`,
+        message: `Expected the number 18 for 'nativeCurrency.decimals' when 'nativeCurrency' is provided. Received: ${decimals}`,
       });
     }
 
-    if (!nativeCurrency.symbol || typeof nativeCurrency.symbol !== 'string') {
+    if (!symbol || typeof symbol !== 'string') {
       throw rpcErrors.invalidParams({
-        message: `Expected a string 'nativeCurrency.symbol'. Received: ${nativeCurrency.symbol}`,
+        message: `Expected a string 'nativeCurrency.symbol'. Received: ${symbol}`,
       });
     }
   }
-  const ticker = nativeCurrency?.symbol || 'ETH';
+  const ticker =
+    (nativeCurrency as { symbol?: string } | null)?.symbol || 'ETH';
 
   if (typeof ticker !== 'string' || ticker.length < 1 || ticker.length > 6) {
     throw rpcErrors.invalidParams({
@@ -171,7 +233,7 @@ function validateNativeCurrency(nativeCurrency) {
   return ticker;
 }
 
-export async function validateRpcEndpoint(rpcUrl, chainId) {
+export async function validateRpcEndpoint(rpcUrl: string, chainId: Hex) {
   let endpointChainId;
   try {
     endpointChainId = await jsonRpcRequest(rpcUrl, 'eth_chainId');
@@ -189,7 +251,10 @@ export async function validateRpcEndpoint(rpcUrl, chainId) {
   }
 }
 
-export function findExistingNetwork(chainId, networkConfigurations) {
+export function findExistingNetwork(
+  chainId: Hex,
+  networkConfigurations: Record<string, ExtendedNetworkConfiguration>,
+): NetworkTuple | undefined {
   const existingEntry = Object.entries(networkConfigurations).find(
     ([, networkConfiguration]) => networkConfiguration.chainId === chainId,
   );
@@ -201,22 +266,20 @@ export function findExistingNetwork(chainId, networkConfigurations) {
       ].networkClientId;
     return [networkConfigurationId, networkConfiguration];
   }
-  return;
+  return undefined;
 }
 
 /**
  * Switches the active network for the origin if already permitted
  * otherwise requests approval to update permission first.
  *
- * @param response - The JSON RPC request's response object.
- * @param end - The JSON RPC request's end callback.
- * @param {object} params.network - Network configuration of the chain being switched to.
- * @param {string} params.chainId - The network client being switched to.
- * @param {Function} params.requestUserApproval - The callback to trigger user approval flow.
- * @param {object} params.analytics - Analytics parameters to be passed when tracking event via `MetaMetrics`.
- * @param {string} params.origin - The origin sending this request.
- * @param {boolean} params.isAddNetworkFlow - Variable to check if its add flow.
- * @param {object} params.hooks - Method hooks passed to the method implementation.
+ * @param params.network - Network configuration of the chain being switched to.
+ * @param params.chainId - The network client being switched to.
+ * @param params.requestUserApproval - The callback to trigger user approval flow.
+ * @param params.analytics - Analytics parameters to be passed when tracking event via `MetaMetrics`.
+ * @param params.origin - The origin sending this request.
+ * @param params.isAddNetworkFlow - Variable to check if its add flow.
+ * @param params.hooks - Method hooks passed to the method implementation.
  * @returns a null response on success or an error if user rejects an approval when autoApprove is false or on unexpected errors.
  */
 export async function switchToNetwork({
@@ -227,6 +290,17 @@ export async function switchToNetwork({
   origin,
   isAddNetworkFlow = false,
   hooks,
+}: {
+  network: NetworkTuple;
+  chainId: Hex;
+  requestUserApproval: RequestUserApproval;
+  analytics?: JsonMap;
+  origin: string;
+  isAddNetworkFlow?: boolean;
+  hooks: SwitchToNetworkHooks;
+  // Accepted for backwards compatibility with existing callers; unused here.
+  controllers?: unknown;
+  autoApprove?: unknown;
 }) {
   const {
     getCaveat,
@@ -255,7 +329,7 @@ export async function switchToNetwork({
     caveatType: Caip25CaveatType,
   });
 
-  let ethChainIds;
+  let ethChainIds: Hex[] | undefined;
 
   if (caip25Caveat) {
     ethChainIds = getPermittedEthChainIds(caip25Caveat.value);
@@ -268,8 +342,7 @@ export async function switchToNetwork({
   }
 
   const shouldGrantPermissions =
-    chainPermissionsFeatureEnabled &&
-    (!ethChainIds || !ethChainIds.includes(chainId));
+    chainPermissionsFeatureEnabled && !ethChainIds?.includes(chainId);
 
   const requestModalType = isAddNetworkFlow ? 'new' : 'switch';
 
@@ -318,7 +391,7 @@ export async function switchToNetwork({
     }
   }
 
-  if (!shouldShowRequestModal && !ethChainIds.includes(chainId)) {
+  if (!shouldShowRequestModal && !ethChainIds?.includes(chainId)) {
     await requestPermittedChainsPermissionIncrementalForOrigin({
       origin,
       chainId,
@@ -342,11 +415,11 @@ export async function switchToNetwork({
   if (process.env.MM_PER_DAPP_SELECTED_NETWORK && originHasAccountsPermission) {
     SelectedNetworkController.setNetworkClientIdForDomain(
       origin,
-      networkConfigurationId || networkConfiguration.networkType,
+      networkConfigurationId || (networkConfiguration.networkType as string),
     );
   } else {
     await MultichainNetworkController.setActiveNetwork(
-      networkConfigurationId || networkConfiguration.networkType,
+      networkConfigurationId || (networkConfiguration.networkType as string),
     );
   }
 
