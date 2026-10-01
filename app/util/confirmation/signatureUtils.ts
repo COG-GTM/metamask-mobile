@@ -4,7 +4,7 @@ import { getAddressAccountType } from '../address';
 import NotificationManager from '../../core/NotificationManager';
 import { WALLET_CONNECT_ORIGIN } from '../walletconnect';
 import AppConstants from '../../core/AppConstants';
-import { InteractionManager } from 'react-native';
+import { InteractionManager, LayoutChangeEvent } from 'react-native';
 import { strings } from '../../../locales/i18n';
 import { selectEvmChainId } from '../../selectors/networkController';
 import { store } from '../../store';
@@ -20,25 +20,38 @@ export const typedSign = {
   V4: 'eth_signTypedData_v4',
 };
 
+interface MessageParams {
+  from?: string;
+  origin?: string;
+  version?: string;
+  currentPageInformation?: Record<string, unknown>;
+  meta?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+interface SecurityAlertResponse {
+  [key: string]: unknown;
+}
+
 export const getAnalyticsParams = (
-  messageParams,
-  signType,
-  securityAlertResponse,
-) => {
+  messageParams: MessageParams,
+  signType: string,
+  securityAlertResponse?: SecurityAlertResponse,
+): Record<string, unknown> => {
   if (!messageParams || typeof messageParams !== 'object') {
     throw new Error('Invalid messageParams provided');
   }
 
   const { currentPageInformation = {}, meta = {} } = messageParams;
-  const pageInfo = { ...currentPageInformation, ...meta };
+  const pageInfo = { ...currentPageInformation, ...meta } as Record<string, unknown>;
 
-  const analyticsParams = {
-    account_type: getAddressAccountType(messageParams.from),
+  const analyticsParams: Record<string, unknown> = {
+    account_type: getAddressAccountType(messageParams.from as string),
     dapp_host_name: 'N/A',
     chain_id: null,
     signature_type: signType,
     version: messageParams?.version || 'N/A',
-    ...pageInfo.analytics,
+    ...(pageInfo.analytics as Record<string, unknown>),
   };
 
   try {
@@ -46,7 +59,7 @@ export const getAnalyticsParams = (
     analyticsParams.chain_id = getDecimalChainId(chainId);
 
     if (pageInfo.url) {
-      const url = new URL(pageInfo.url);
+      const url = new URL(pageInfo.url as string);
       analyticsParams.dapp_host_name = url.host;
     }
 
@@ -55,13 +68,13 @@ export const getAnalyticsParams = (
       Object.assign(analyticsParams, blockaidParams);
     }
   } catch (error) {
-    Logger.error(error, 'Error processing analytics parameters:');
+    Logger.error(error as Error, 'Error processing analytics parameters:');
   }
 
   return analyticsParams;
 };
 
-export const walletConnectNotificationTitle = (confirmation, isError) => {
+export const walletConnectNotificationTitle = (confirmation: boolean, isError: boolean): string => {
   if (isError) return strings('notifications.wc_signed_failed_title');
   return confirmation
     ? strings('notifications.wc_signed_title')
@@ -69,15 +82,15 @@ export const walletConnectNotificationTitle = (confirmation, isError) => {
 };
 
 export const showWalletConnectNotification = (
-  messageParams = {},
+  messageParams: MessageParams = {},
   confirmation = false,
   isError = false,
-) => {
+): void => {
   InteractionManager.runAfterInteractions(() => {
     /**
      * FIXME: need to rewrite the way BackgroundBridge sets the origin.
      */
-    const origin = messageParams.origin.toLowerCase().replaceAll(':', '');
+    const origin = (messageParams.origin as string).toLowerCase().replaceAll(':', '');
     const isWCOrigin = origin.startsWith(
       WALLET_CONNECT_ORIGIN.replaceAll(':', '').toLowerCase(),
     );
@@ -97,12 +110,12 @@ export const showWalletConnectNotification = (
 };
 
 export const handleSignatureAction = async (
-  onAction,
-  messageParams,
-  signType,
-  securityAlertResponse,
-  confirmation,
-) => {
+  onAction: () => Promise<void>,
+  messageParams: MessageParams,
+  signType: string,
+  securityAlertResponse: SecurityAlertResponse | undefined,
+  confirmation: boolean,
+): Promise<void> => {
   await onAction();
   showWalletConnectNotification(messageParams, confirmation);
   MetaMetrics.getInstance().trackEvent(
@@ -118,21 +131,21 @@ export const handleSignatureAction = async (
   );
 };
 
-export const addSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const addSignatureErrorListener = (metamaskId: string, onSignatureError: (...args: unknown[]) => void): void => {
   Engine.context.SignatureController.hub.on(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const removeSignatureErrorListener = (metamaskId, onSignatureError) => {
+export const removeSignatureErrorListener = (metamaskId: string, onSignatureError: (...args: unknown[]) => void): void => {
   Engine.context.SignatureController.hub.removeListener(
     `${metamaskId}:signError`,
     onSignatureError,
   );
 };
 
-export const shouldTruncateMessage = (e) => {
+export const shouldTruncateMessage = (e: LayoutChangeEvent): boolean => {
   if (
     (Device.isIos() && e.nativeEvent.layout.height > 70) ||
     (Device.isAndroid() && e.nativeEvent.layout.height > 100)

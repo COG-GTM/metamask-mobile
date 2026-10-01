@@ -1,55 +1,81 @@
 import URL from 'url-parse';
-
-export const tlc = (str) => str?.toLowerCase?.();
+import { strings } from '../../../locales/i18n';
 
 /**
- * Fetch that fails after timeout
+ * Returns a string with the first letter in lower case
  *
- * @param url - Url to fetch
- * @param options - Options to send with the request
- * @param timeout - Timeout to fail request
- *
- * @returns - Promise resolving the request
+ * @param {string} str - String to lowercase the first letter
+ * @returns {string} - String with the first letter in lower case
  */
-export function timeoutFetch(url, options, timeout = 500) {
+export const tlc = (str: string): string | undefined => str?.toLowerCase?.();
+
+export function timeoutFetch(url: string, options?: RequestInit, timeout = 500): Promise<Response> {
   return Promise.race([
     fetch(url, options),
-    new Promise((_, reject) =>
+    new Promise<Response>((_resolve, reject) =>
       setTimeout(() => reject(new Error('timeout')), timeout),
     ),
   ]);
 }
 
-export function findRouteNameFromNavigatorState(routes) {
-  let route = routes?.[routes.length - 1];
-  if (route.state) {
+interface NavigatorState {
+  routes?: NavigatorState[];
+  routeName?: string;
+  name?: string;
+  state?: NavigatorState;
+  index?: number;
+}
+
+export function findRouteNameFromNavigatorState(routes: NavigatorState[]): string | undefined {
+  let route: NavigatorState | undefined = routes?.[routes.length - 1];
+  if (route?.state) {
     route = route.state;
   }
   while (route !== undefined && route.index !== undefined) {
     route = route?.routes?.[route.index];
-    if (route.state) {
+    if (route?.state) {
       route = route.state;
     }
   }
 
   let name = route?.name;
 
-  // For compatibility with the previous way on react navigation 4
   if (name === 'Main' || name === 'WalletTabHome' || name === 'Home')
     name = 'WalletView';
   if (name === 'TransactionsHome') name = 'TransactionsView';
 
   return name;
 }
-export const capitalize = (str) =>
+
+/**
+ * Returns the first letter of a string in upper case
+ *
+ * @param {string} str - String to capitalize
+ * @returns {string} - String with the first letter in upper case
+ */
+export const capitalize = (str: string): string | false =>
   (str && str.charAt(0).toUpperCase() + str.slice(1)) || false;
 
-export const toLowerCaseEquals = (a, b) => {
+/**
+ * Checks if two strings are equal ignoring case
+ *
+ * @param {string} value1 - First string
+ * @param {string} value2 - Second string
+ * @returns {boolean} - Whether the two strings are equal ignoring case
+ */
+export const toLowerCaseEquals = (a: string | null | undefined, b: string | null | undefined): boolean => {
   if (!a && !b) return false;
-  return tlc(a) === tlc(b);
+  return tlc(a as string) === tlc(b as string);
 };
 
-export const shallowEqual = (object1, object2) => {
+/**
+ * Performs a shallow equality check between two objects
+ *
+ * @param {Object} objA - First object
+ * @param {Object} objB - Second object
+ * @returns {boolean} - Whether the two objects are shallowly equal
+ */
+export const shallowEqual = (object1: Record<string, unknown>, object2: Record<string, unknown>): boolean => {
   const keys1 = Object.keys(object1);
   const keys2 = Object.keys(object2);
 
@@ -73,9 +99,8 @@ export const shallowEqual = (object1, object2) => {
  * @param chars - Number of characters to show at the end and beginning. Defaults to 4.
  * @returns String corresponding to short text format.
  */
-export const renderShortText = (text, chars = 4) => {
+export const renderShortText = (text: string, chars = 4): string => {
   try {
-    // The 5 constant represents the 2 extra chars and the 3 dots.
     if (text.length <= chars * 2 + 5) return text;
     return `${text.substr(0, chars + 2)}...${text.substr(-chars)}`;
   } catch {
@@ -84,11 +109,12 @@ export const renderShortText = (text, chars = 4) => {
 };
 
 /**
- * Method to retrieve the communication protocol from an URL.
- * @param {string} url - URL input.
- * @returns {string | undefined} string representing the protocol or 'undefined' if no protocol is extracted.
+ * Returns the url protocol
+ *
+ * @param {string} url - Url to get the protocol of
+ * @returns {string} - Protocol of the url
  */
-export const getURLProtocol = (url) => {
+export const getURLProtocol = (url: string): string | undefined => {
   try {
     const { protocol } = new URL(url);
     return protocol.replace(':', '');
@@ -98,15 +124,12 @@ export const getURLProtocol = (url) => {
 };
 
 /**
- * Method to verify if the uri is from ipfs or not
- * /ipfs/ -> true
- * ipfs:// -> true
- * ipfs://ipfs/ -> true
- * https:// -> false
- * @param {string | null | undefined} uri - string representing the source uri to the file
- * @returns true if it's an ipfs url
+ * Checks if a url is an IPFS URI
+ *
+ * @param {string} uri - URI to check
+ * @returns {boolean} - Whether the URI is an IPFS URI
  */
-export const isIPFSUri = (uri) => {
+export const isIPFSUri = (uri: string | null | undefined): boolean => {
   if (!uri?.length) return false;
   const ipfsUriRegex =
     /^(\/ipfs\/|ipfs:\/\/)(Qm[A-Za-z0-9]+|[bBfF][A-Za-z2-7]+)(\/|$)/;
@@ -125,22 +148,17 @@ export const isIPFSUri = (uri) => {
  * @param skipNumbers - Boolean to skip numbers
  * @returns - Parsed JSON object
  */
-export const deepJSONParse = ({ jsonString, skipNumbers = true }) => {
-  // Parse the initial JSON string
+export const deepJSONParse = ({ jsonString, skipNumbers = true }: { jsonString: string; skipNumbers?: boolean }): unknown => {
   const parsedObject = JSON.parse(jsonString);
 
-  // Function to recursively parse stringified properties
-  function parseProperties(obj) {
+  function parseProperties(obj: Record<string, unknown>): void {
     Object.keys(obj).forEach((key) => {
       if (typeof obj[key] === 'string') {
-        const isNumber = !isNaN(obj[key]);
-        // Only parse if value is not a number OR value is a number AND numbers are not skipped
+        const isNumber = !isNaN(obj[key] as unknown as number);
         if (!isNumber || (isNumber && !skipNumbers)) {
           try {
-            // Attempt to parse the string as JSON
-            const parsed = JSON.parse(obj[key]);
+            const parsed = JSON.parse(obj[key] as string);
             obj[key] = parsed;
-            // If the parsed value is an object, parse its properties too
             if (typeof parsed === 'object') {
               parseProperties(parsed);
             }
@@ -149,18 +167,23 @@ export const deepJSONParse = ({ jsonString, skipNumbers = true }) => {
           }
         }
       } else if (typeof obj[key] === 'object') {
-        // If it's an object, parse its properties
-        parseProperties(obj[key]);
+        parseProperties(obj[key] as Record<string, unknown>);
       }
     });
   }
 
-  // Start parsing from the root object
   parseProperties(parsedObject);
 
   return parsedObject;
 };
 
+/**
+ * Returns unique list of items based on a key
+ *
+ * @param {Array} list - List of items
+ * @param {string} key - Key to use for uniqueness
+ * @returns {Array} - Unique list of items
+ */
 /**
  * Generates an array of referentially unique items from a list of arrays.
  *
@@ -169,11 +192,10 @@ export const deepJSONParse = ({ jsonString, skipNumbers = true }) => {
  * @throws {Error} - Throws if arrays is not defined
  * @throws {TypeError} - Throws if any of the arguments is not an array
  */
-export const getUniqueList = (...arrays) => {
+export const getUniqueList = (...arrays: unknown[][]): unknown[] => {
   if (arrays.length === 0) {
     throw new Error('At least one array must be defined.');
   }
-  // Check if every argument is an array
   arrays.forEach((array, index) => {
     if (!Array.isArray(array)) {
       throw new TypeError(
@@ -182,10 +204,8 @@ export const getUniqueList = (...arrays) => {
     }
   });
 
-  // Flatten the arrays
   const flattenedArray = arrays.flat();
 
-  // Create array with unique items
   const uniqueArray = Array.from(new Set(flattenedArray));
 
   return uniqueArray;
