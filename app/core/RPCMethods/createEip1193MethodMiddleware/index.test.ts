@@ -1,12 +1,31 @@
-import { JsonRpcEngine } from '@metamask/json-rpc-engine';
+import {
+  AsyncJsonRpcEngineNextCallback,
+  JsonRpcEngine,
+  JsonRpcEngineEndCallback,
+} from '@metamask/json-rpc-engine';
 import {
   assertIsJsonRpcFailure,
   assertIsJsonRpcSuccess,
+  Json,
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
 } from '@metamask/utils';
 import { createEip1193MethodMiddleware } from '.';
 
+interface TestHandlerHooks {
+  hook1: () => number;
+  hook2: () => number;
+}
+
 const getHandler = () => ({
-  implementation: (req, res, _next, end, hooks) => {
+  implementation: (
+    req: JsonRpcRequest<JsonRpcParams>,
+    res: PendingJsonRpcResponse<Json>,
+    _next: AsyncJsonRpcEngineNextCallback,
+    end: JsonRpcEngineEndCallback,
+    hooks: TestHandlerHooks,
+  ) => {
     if (Array.isArray(req.params)) {
       switch (req.params[0]) {
         case 1:
@@ -144,7 +163,9 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as { cause: { message: string } }).cause.message,
+    ).toBe('test error');
   });
 
   it('should handle errors thrown by the implementation', async () => {
@@ -161,7 +182,9 @@ describe('createEip1193MethodMiddleware', () => {
     assertIsJsonRpcFailure(response);
 
     expect(response.error.message).toBe('test error');
-    expect(response.error.data.cause.message).toBe('test error');
+    expect(
+      (response.error.data as { cause: { message: string } }).cause.message,
+    ).toBe('test error');
   });
 
   it('should handle non-errors thrown by the implementation', async () => {
