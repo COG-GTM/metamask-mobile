@@ -26,7 +26,7 @@ export interface EditGasFee1559UpdateProps {
   /**
    * Option to display speed up/cancel view
    */
-  updateOption: RenderInputProps;
+  updateOption?: RenderInputProps['updateOption'];
   /**
    * If the values should animate upon update or not
    */
@@ -58,45 +58,45 @@ export interface EditGasFee1559UpdateProps {
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any;
+  error?: any;
   /**
    * Warning message to show
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warning: any;
+  warning?: any;
   /**
    * Boolean that specifies if the gas price was suggested by the dapp
    */
-  dappSuggestedGas: boolean | undefined;
+  dappSuggestedGas?: boolean | undefined;
   /**
    * An array of selected gas value and lower that should be ignored.
    */
-  ignoreOptions: string[] | undefined;
+  ignoreOptions?: string[] | undefined;
   /**
    * Extend options object. Object has option keys and properties will be spread
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extendOptions: any;
+  extendOptions?: any;
   /**
    * Recommended object with type and render function
    */
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  recommended: any;
+  recommended?: any;
   /**
    * Estimate option to compare with for too low warning
    */
-  warningMinimumEstimateOption: string;
+  warningMinimumEstimateOption?: string;
   /**
    * Suggested estimate option to show recommended values
    */
-  suggestedEstimateOption: string;
+  suggestedEstimateOption?: string;
   /**
    * Boolean to determine if the animation is happening
    */
-  isAnimating: boolean;
+  isAnimating?: boolean;
   /**
    * Extra analytics params to be send with the gas analytics
    */
@@ -118,4 +118,8 @@ export interface EditGasFee1559UpdateProps {
     suggestedGasLimit: string;
   };
   onlyGas?: boolean;
+  /**
+   * Analytics view identifier
+   */
+  view?: string;
 }
