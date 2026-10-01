@@ -37,7 +37,7 @@ export const regex: RegexTypes = {
   prefixedFormattedHexString: /^0x[1-9a-f][0-9a-f]*$/iu,
   privateCredentials: /"/g,
   protocol: /^[a-z]*:\/\//,
-  replaceNetworkErrorSentry: /0x[A-Fa-f0-9]{40}/gu,
+  replaceNetworkErrorSentry: /0x[A-Fa-f0-9]{40}/u,
   sanitizeUrl:
     /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gu,
   seedPhrase: /\w+/gu,

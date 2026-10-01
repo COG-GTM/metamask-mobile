@@ -139,6 +139,19 @@ describe('sanitizeUrlsFromErrorMessages', () => {
       'Origin ** failed, see https://etherscan.io/tx/1',
     );
   });
+
+  it('only allowlists URLs whose hostname is an allowlisted domain', () => {
+    const report = {
+      message:
+        'Failed https://dapp.example.com/?ref=etherscan.io and https://api.etherscan.io/api and https://etherscan.io.evil.com/',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe(
+      'Failed ** and https://api.etherscan.io/api and **',
+    );
+  });
 });
 
 describe('sanitizeAddressesFromErrorMessages', () => {

@@ -268,6 +268,8 @@ const ERROR_URL_ALLOWLIST = [
   'segment.io',
 ];
 
+const URL_HOSTNAME = /^https?:\/\/(?:[^@/?#]*@)?([^/?#:]+)/iu;
+
 /**
  * Capture Sentry user feedback and associate ID of captured exception
  *
@@ -486,7 +488,12 @@ export function sanitizeUrlsFromErrorMessages(report) {
     let sanitizedMessage = errorMessage;
 
     urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
+      const hostname = url.match(URL_HOSTNAME)?.[1]?.toLowerCase() ?? '';
+      const isAllowed = ERROR_URL_ALLOWLIST.some(
+        (allowedHost) =>
+          hostname === allowedHost || hostname.endsWith(`.${allowedHost}`),
+      );
+      if (!isAllowed) {
         sanitizedMessage = sanitizedMessage.replaceAll(url, '**');
       }
     });
@@ -497,7 +504,7 @@ export function sanitizeUrlsFromErrorMessages(report) {
 export function sanitizeAddressesFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const newErrorMessage = errorMessage.replace(
-      regex.replaceNetworkErrorSentry,
+      new RegExp(regex.replaceNetworkErrorSentry.source, 'gu'),
       '**',
     );
     return newErrorMessage;
