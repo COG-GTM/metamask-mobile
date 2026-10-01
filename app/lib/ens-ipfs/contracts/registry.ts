@@ -1,4 +1,20 @@
-export default [
+export interface AbiInput {
+  name: string;
+  type: string;
+  indexed?: boolean;
+}
+
+export interface AbiEntry {
+  constant?: boolean;
+  inputs: AbiInput[];
+  name: string;
+  outputs?: AbiInput[];
+  payable?: boolean;
+  anonymous?: boolean;
+  type: 'function' | 'event';
+}
+
+const abi: AbiEntry[] = [
   {
     constant: true,
     inputs: [{ name: 'node', type: 'bytes32' }],
@@ -106,3 +122,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default abi;

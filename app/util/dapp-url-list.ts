@@ -1,4 +1,9 @@
-export default [
+export interface DAppEntry {
+  url: string;
+  name: string;
+}
+
+const dappUrlList: DAppEntry[] = [
   {
     url: 'https://instant.airswap.io/',
     name: 'AirSwap',
@@ -480,3 +485,5 @@ export default [
     name: 'nft now',
   },
 ];
+
+export default dappUrlList;
