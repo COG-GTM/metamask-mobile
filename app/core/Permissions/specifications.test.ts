@@ -24,7 +24,10 @@ describe('PermissionController specifications', () => {
   };
   describe('caveat specifications', () => {
     it('getCaveatSpecifications returns the expected specifications object', () => {
-      const caveatSpecifications = getCaveatSpecifications({});
+      const caveatSpecifications = getCaveatSpecifications({
+        listAccounts: jest.fn(),
+        findNetworkClientIdByChainId: jest.fn(),
+      });
       expect(Object.keys(caveatSpecifications)).toHaveLength(13);
       expect(caveatSpecifications[Caip25CaveatType].type).toStrictEqual(
         Caip25CaveatType,
@@ -78,7 +81,7 @@ describe('PermissionController specifications', () => {
           })[Caip25CaveatType];
 
           [null, 'foo', {}, []].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() => validator({ type: Caip25CaveatType, value: invalidValue } as { type: string; value: unknown })).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
@@ -93,7 +96,7 @@ describe('PermissionController specifications', () => {
           })[Caip25CaveatType];
 
           [[{}], [[]], [null], ['']].forEach((invalidValue) => {
-            expect(() => validator({ value: invalidValue })).toThrow(
+            expect(() => validator({ type: Caip25CaveatType, value: invalidValue } as { type: string; value: unknown })).toThrow(
               `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
             );
           });
@@ -134,7 +137,7 @@ describe('PermissionController specifications', () => {
             findNetworkClientIdByChainId,
           })[Caip25CaveatType];
 
-          expect(() => validator({ value: caveatValues })).toThrow(
+          expect(() => validator({ type: Caip25CaveatType, value: caveatValues } as { type: string; value: unknown })).toThrow(
             `endowment:caip25 error: Received invalid value for caveat of type "${Caip25CaveatType}".`,
           );
         });
@@ -144,7 +147,7 @@ describe('PermissionController specifications', () => {
 
   describe('permission specifications', () => {
     it('getPermissionSpecifications returns the expected specifications object', () => {
-      const permissionSpecifications = getPermissionSpecifications({});
+      const permissionSpecifications = getPermissionSpecifications();
       expect(Object.keys(permissionSpecifications)).toHaveLength(1);
       expect(
         permissionSpecifications[Caip25EndowmentPermissionName].targetName,
