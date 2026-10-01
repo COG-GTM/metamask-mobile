@@ -113,20 +113,14 @@ describe('isHintSeedPhrase', () => {
     expect(isHintSeedPhrase('')).toBe(false);
   });
 
-  it('detects a checksum-valid SRP interleaved with labels', () => {
-    const labelled = (words: string[]) =>
-      words.map((word, i) => `zz${'q'.repeat(i)}: ${word}`).join(' ');
-    expect(
-      isHintSeedPhrase(labelled([...Array(11).fill('abandon'), 'about'])),
-    ).toBe(true);
-    expect(
-      isHintSeedPhrase(labelled([...Array(23).fill('abandon'), 'art'])),
-    ).toBe(true);
-  });
-
-  it('does not count words outside the BIP-39 list towards a run', () => {
+  it('detects SRP words interleaved with labels, valid checksum or not', () => {
+    const labelled = srp
+      .split(' ')
+      .map((word, i) => `pos ${i + 1} zz${'q'.repeat(i)}: ${word}`)
+      .join(' ');
+    expect(isHintSeedPhrase(labelled)).toBe(true);
     const words = srp.split(' ');
     words.splice(6, 0, 'notaword');
-    expect(isHintSeedPhrase(words.join(' '))).toBe(false);
+    expect(isHintSeedPhrase(words.join(' '))).toBe(true);
   });
 });

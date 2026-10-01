@@ -1,4 +1,3 @@
-import { validateMnemonic } from '@metamask/scure-bip39';
 import { wordlist as englishWordlist } from '@metamask/scure-bip39/dist/wordlists/english';
 
 /**
@@ -58,12 +57,11 @@ export const uint8ArrayToMnemonic = (
 
 const BIP39_WORDS = new Set(englishWordlist);
 const MIN_SRP_WORD_COUNT = 12;
-const SRP_WORD_COUNTS = [12, 15, 18, 21, 24];
 
 /**
- * Detects whether a password hint contains a Secret Recovery Phrase: either a run
- * of at least 12 consecutive BIP-39 words, or a checksum-valid mnemonic formed by
- * the hint's BIP-39 words once labels, numbering and punctuation are dropped.
+ * Detects whether a password hint could contain a Secret Recovery Phrase, i.e. it
+ * holds at least 12 BIP-39 words anywhere in the text (ignoring case, labels,
+ * numbering and punctuation).
  * @param hint - The hint entered by the user.
  * @returns Boolean indicating whether the hint must not be stored.
  */
@@ -72,18 +70,8 @@ export const isHintSeedPhrase = (hint: string): boolean => {
     String(hint)
       .toLowerCase()
       .match(/[a-z]+/g) ?? [];
-  let run = 0;
-  for (const token of tokens) {
-    run = BIP39_WORDS.has(token) ? run + 1 : 0;
-    if (run >= MIN_SRP_WORD_COUNT) return true;
-  }
-
-  const words = tokens.filter((token) => BIP39_WORDS.has(token));
-  return SRP_WORD_COUNTS.some((count) => {
-    for (let i = 0; i + count <= words.length; i++) {
-      const candidate = words.slice(i, i + count).join(' ');
-      if (validateMnemonic(candidate, englishWordlist)) return true;
-    }
-    return false;
-  });
+  return (
+    tokens.filter((token) => BIP39_WORDS.has(token)).length >=
+    MIN_SRP_WORD_COUNT
+  );
 };
