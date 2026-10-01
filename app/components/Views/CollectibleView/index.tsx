@@ -1,65 +1,102 @@
 import React, { PureComponent } from 'react';
-import { ScrollView, View, StyleSheet, Text, SafeAreaView } from 'react-native';
-import PropTypes from 'prop-types';
+import {
+  ScrollView,
+  View,
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
+import { Theme } from '@metamask/design-tokens';
 import CollectibleOverview from '../../UI/CollectibleOverview';
 import { getNetworkNavbarOptions } from '../../UI/Navbar';
 import StyledButton from '../../UI/StyledButton';
 import { strings } from '../../../../locales/i18n';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
-import collectiblesTransferInformation from '../../../util/collectibles-transfer';
+import { Dispatch } from 'redux';
+import collectiblesTransferInformationJson from '../../../util/collectibles-transfer.json';
 import { newAssetTransaction } from '../../../actions/transaction';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 
-const createStyles = (colors) =>
+interface Collectible {
+  address: string;
+  contractName?: string;
+  [key: string]: unknown;
+}
+
+interface CollectibleTransferInfo {
+  name: string;
+  tradable: boolean;
+  method?: string;
+}
+
+const collectiblesTransferInformation =
+  collectiblesTransferInformationJson as Record<
+    string,
+    CollectibleTransferInfo
+  >;
+
+interface CollectibleViewProps {
+  /**
+   * navigation object required to access the props
+   * passed by the parent component
+   */
+  navigation: NavigationProp<ParamListBase>;
+  /**
+   * Start transaction with asset
+   */
+  newAssetTransaction: (collectible: Collectible) => void;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: RouteProp<{ params: Collectible }, 'params'>;
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     root: {
       flex: 1,
       backgroundColor: colors.background.default,
-    },
+    } as ViewStyle,
     wrapper: {
       flex: 0.9,
-    },
+    } as ViewStyle,
     buttons: {
       paddingVertical: 15,
       flex: 0.1,
       height: 4,
-    },
+    } as ViewStyle,
     button: {
       marginHorizontal: 16,
       flexDirection: 'row',
-    },
+    } as ViewStyle,
     buttonText: {
       marginLeft: 8,
       fontSize: 15,
       color: colors.primary.inverse,
       ...fontStyles.bold,
-    },
+    } as TextStyle,
   });
 
 /**
  * View that displays a specific collectible asset
  */
-class CollectibleView extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to access the props
-    /* passed by the parent component
-    */
-    navigation: PropTypes.object,
-    /**
-     * Start transaction with asset
-     */
-    newAssetTransaction: PropTypes.func,
-    /**
-     * Object that represents the current route info like params passed to it
-     */
-    route: PropTypes.object,
-  };
+class CollectibleView extends PureComponent<CollectibleViewProps> {
+  static contextType = ThemeContext;
+
+  scrollViewRef: React.RefObject<ScrollView> | undefined;
 
   updateNavBar = () => {
     const { navigation, route } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     getNetworkNavbarOptions(
       route.params?.contractName ?? '',
       false,
@@ -90,8 +127,12 @@ class CollectibleView extends PureComponent {
       navigation,
     } = this.props;
     const collectible = params;
-    const colors = this.context.colors || mockTheme.colors;
-    const styles = createStyles(colors);
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
+    const styles = createStyles(colors) as ReturnType<typeof createStyles> & {
+      assetOverviewWrapper?: ViewStyle;
+      flexRow?: ViewStyle;
+    };
 
     const lowerAddress = collectible.address.toLowerCase();
     const tradable =
@@ -129,10 +170,8 @@ class CollectibleView extends PureComponent {
   }
 }
 
-CollectibleView.contextType = ThemeContext;
-
-const mapDispatchToProps = (dispatch) => ({
-  newAssetTransaction: (selectedAsset) =>
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  newAssetTransaction: (selectedAsset: Collectible) =>
     dispatch(newAssetTransaction(selectedAsset)),
 });
 

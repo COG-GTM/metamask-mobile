@@ -1,4 +1,3 @@
-/* eslint-disable import/no-commonjs */
 import React, { PureComponent } from 'react';
 import {
   StyleSheet,
@@ -6,11 +5,19 @@ import {
   Animated,
   View,
   AppState,
+  AppStateStatus,
   Appearance,
+  ViewStyle,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import LottieView from 'lottie-react-native';
+import {
+  CommonActions,
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
+import { Theme } from '@metamask/design-tokens';
 import { baseStyles } from '../../../styles/common';
 import Logger from '../../../util/Logger';
 import { Authentication } from '../../../core';
@@ -19,17 +26,22 @@ import {
   mockTheme,
   ThemeContext,
 } from '../../../util/theme';
+import { AppThemeKey } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import Routes from '../../../constants/navigation/Routes';
-import { CommonActions } from '@react-navigation/native';
 import trackErrorAsAnalytics from '../../../util/metrics/TrackError/trackErrorAsAnalytics';
+import wordmarkLight from '../../../animations/wordmark-light.json';
+import wordmarkDark from '../../../animations/wordmark-dark.json';
+import bounceAnimation from '../../../animations/bounce.json';
+import foxInAnimation from '../../../animations/fox-in.json';
 
 const LOGO_SIZE = 175;
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     container: {
       backgroundColor: colors.background.default,
       flex: 1,
-    },
+    } as ViewStyle,
     metamaskName: {
       marginTop: 10,
       height: 25,
@@ -37,63 +49,66 @@ const createStyles = (colors) =>
       alignSelf: 'center',
       alignItems: 'center',
       justifyContent: 'center',
-    },
+    } as ViewStyle,
     logoWrapper: {
       marginTop: Dimensions.get('window').height / 2 - LOGO_SIZE / 2,
       height: LOGO_SIZE,
-    },
+    } as ViewStyle,
     foxAndName: {
       alignSelf: 'center',
       alignItems: 'center',
       justifyContent: 'center',
-    },
+    } as ViewStyle,
     animation: {
       width: 110,
       height: 110,
       alignSelf: 'center',
       alignItems: 'center',
       justifyContent: 'center',
-    },
+    } as ViewStyle,
     fox: {
       width: 110,
       height: 110,
       alignSelf: 'center',
       alignItems: 'center',
       justifyContent: 'center',
-    },
+    } as ViewStyle,
   });
 
-const wordmarkLight = require('../../../animations/wordmark-light.json');
-const wordmarkDark = require('../../../animations/wordmark-dark.json');
+interface LockScreenProps {
+  /**
+   * The navigator object
+   */
+  navigation: NavigationProp<ParamListBase>;
+  appTheme: AppThemeKey;
+  /**
+   * ID associated with each biometric session.
+   * This is used by the biometric sagas to handle actions with the matching ID.
+   */
+  bioStateMachineId: string;
+}
+
+interface LockScreenState {
+  ready: boolean;
+}
 
 /**
  * Main view component for the Lock screen
  */
-class LockScreen extends PureComponent {
-  static propTypes = {
-    /**
-     * The navigator object
-     */
-    navigation: PropTypes.object,
-    appTheme: PropTypes.string,
-    /**
-     * ID associated with each biometric session.
-     * This is used by the biometric sagas to handle actions with the matching ID.
-     */
-    bioStateMachineId: PropTypes.string,
-  };
+class LockScreen extends PureComponent<LockScreenProps, LockScreenState> {
+  static contextType = ThemeContext;
 
-  state = {
+  state: LockScreenState = {
     ready: false,
   };
 
   locked = true;
   timedOut = false;
-  firstAnimation = React.createRef();
-  secondAnimation = React.createRef();
-  animationName = React.createRef();
+  firstAnimation: LottieView | null = null;
+  secondAnimation: LottieView | null = null;
+  animationName: LottieView | null = null;
   opacity = new Animated.Value(1);
-  appStateListener;
+  appStateListener?: ReturnType<typeof AppState.addEventListener>;
 
   componentDidMount() {
     this.appStateListener = AppState.addEventListener(
@@ -102,7 +117,7 @@ class LockScreen extends PureComponent {
     );
   }
 
-  handleAppStateChange = async (nextAppState) => {
+  handleAppStateChange = async (nextAppState: AppStateStatus) => {
     // Trigger biometrics
     if (nextAppState === 'active') {
       this.firstAnimation?.play();
@@ -145,7 +160,7 @@ class LockScreen extends PureComponent {
       this.lock();
       trackErrorAsAnalytics(
         'Lockscreen: Authentication failed',
-        error?.message,
+        (error as Error)?.message,
       );
     }
   }
@@ -166,7 +181,8 @@ class LockScreen extends PureComponent {
   };
 
   getStyles = () => {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme)?.colors || mockTheme.colors;
     return createStyles(colors);
   };
 
@@ -189,7 +205,7 @@ class LockScreen extends PureComponent {
             this.firstAnimation = animation;
           }}
           style={styles.animation}
-          source={require('../../../animations/bounce.json')}
+          source={bounceAnimation}
         />
       );
     }
@@ -203,7 +219,7 @@ class LockScreen extends PureComponent {
           }}
           style={styles.animation}
           loop={false}
-          source={require('../../../animations/fox-in.json')}
+          source={foxInAnimation}
           onAnimationFinish={this.onAnimationFinished}
         />
         <LottieView
@@ -232,16 +248,22 @@ class LockScreen extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   appTheme: state.user.appTheme,
 });
 
-LockScreen.contextType = ThemeContext;
-
 const ConnectedLockScreen = connect(mapStateToProps)(LockScreen);
 
+interface LockScreenFCWrapperProps {
+  /**
+   * Navigation object that holds params including bioStateMachineId.
+   */
+  route: RouteProp<{ params: { bioStateMachineId: string } }, 'params'>;
+  navigation: NavigationProp<ParamListBase>;
+}
+
 // Wrapper that forces LockScreen to re-render when bioStateMachineId changes.
-const LockScreenFCWrapper = (props) => {
+const LockScreenFCWrapper = (props: LockScreenFCWrapperProps) => {
   const { bioStateMachineId } = props.route.params;
   return (
     <ConnectedLockScreen
@@ -250,13 +272,6 @@ const LockScreenFCWrapper = (props) => {
       {...props}
     />
   );
-};
-
-LockScreenFCWrapper.propTypes = {
-  /**
-   * Navigation object that holds params including bioStateMachineId.
-   */
-  route: PropTypes.object,
 };
 
 export default LockScreenFCWrapper;

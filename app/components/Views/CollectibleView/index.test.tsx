@@ -1,6 +1,11 @@
 import React from 'react';
 import { fireEvent, render } from '@testing-library/react-native';
 import { Provider } from 'react-redux';
+import {
+  NavigationProp,
+  ParamListBase,
+  RouteProp,
+} from '@react-navigation/native';
 import CollectibleView from '.';
 import configureMockStore from 'redux-mock-store';
 import { backgroundState } from '../../../util/test/initial-root-state';
@@ -22,13 +27,13 @@ describe('CollectibleView Snapshot', () => {
     const props = {
       navigation: {
         navigate: jest.fn(),
-      },
+      } as unknown as NavigationProp<ParamListBase>,
       route: {
         params: {
           contractName: 'Test Collectible',
           address: '0xABCDEF',
         },
-      },
+      } as unknown as RouteProp<{ params: { address: string } }, 'params'>,
       newAssetTransaction: jest.fn(),
     };
 
@@ -47,13 +52,13 @@ describe('CollectibleView Snapshot', () => {
     const props = {
       navigation: {
         navigate: jest.fn(),
-      },
+      } as unknown as NavigationProp<ParamListBase>,
       route: {
         params: {
           contractName: 'Test Collectible',
           address: '0xABCDEF',
         },
-      },
+      } as unknown as RouteProp<{ params: { address: string } }, 'params'>,
       newAssetTransaction: jest.fn(),
     };
 

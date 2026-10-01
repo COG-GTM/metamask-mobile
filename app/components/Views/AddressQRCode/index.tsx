@@ -1,14 +1,16 @@
 import React, { PureComponent } from 'react';
-import PropTypes from 'prop-types';
 import {
   TouchableOpacity,
   Dimensions,
   StyleSheet,
   View,
   Text,
+  ViewStyle,
+  TextStyle,
 } from 'react-native';
 import { fontStyles } from '../../../styles/common';
 import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import QRCode from 'react-native-qrcode-svg';
 import { strings } from '../../../../locales/i18n';
 import IonicIcon from 'react-native-vector-icons/Ionicons';
@@ -18,22 +20,31 @@ import GlobalAlert from '../../UI/GlobalAlert';
 import { protectWalletModalVisible } from '../../../actions/user';
 import ClipboardManager from '../../../core/ClipboardManager';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 
 const WIDTH = Dimensions.get('window').width - 88;
 
-const createStyles = (theme) =>
+interface AlertConfig {
+  isVisible: boolean;
+  autodismiss: number;
+  content: string;
+  data: { msg: string };
+}
+
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     root: {
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       marginTop: Device.isSmallDevice() ? -30 : -50,
-    },
+    } as ViewStyle,
     wrapper: {
       flex: 1,
       alignItems: 'center',
-    },
+    } as ViewStyle,
     qrCodeContainer: {
       marginBottom: 16,
       alignItems: 'center',
@@ -41,11 +52,11 @@ const createStyles = (theme) =>
       padding: 28,
       backgroundColor: theme.colors.background.default,
       borderRadius: 8,
-    },
+    } as ViewStyle,
     qrCode: {
       padding: 8,
       backgroundColor: theme.brandColors.white,
-    },
+    } as ViewStyle,
     addressWrapper: {
       alignItems: 'center',
       justifyContent: 'center',
@@ -53,19 +64,19 @@ const createStyles = (theme) =>
       borderRadius: 8,
       backgroundColor: theme.colors.background.default,
       paddingVertical: 12,
-    },
+    } as ViewStyle,
     closeIcon: {
       width: WIDTH + 40,
       paddingBottom: Device.isSmallDevice() ? 30 : 50,
       flexDirection: 'row-reverse',
-    },
+    } as ViewStyle,
     addressTitle: {
       fontSize: 16,
       paddingHorizontal: 28,
       paddingVertical: 4,
       ...fontStyles.normal,
       color: theme.colors.text.default,
-    },
+    } as TextStyle,
     address: {
       ...fontStyles.normal,
       paddingHorizontal: 28,
@@ -73,36 +84,38 @@ const createStyles = (theme) =>
       fontSize: 16,
       textAlign: 'center',
       color: theme.colors.text.default,
-    },
+    } as TextStyle,
   });
+
+interface AddressQRCodeProps {
+  /**
+   * Selected address as string
+   */
+  selectedAddress?: string;
+  /**
+   * Triggers global alert
+   */
+  showAlert: (config: AlertConfig) => void;
+  /**
+   * Callback to close the modal
+   */
+  closeQrModal: () => void;
+  /**
+   * Prompts protect wallet modal
+   */
+  protectWalletModalVisible: () => void;
+  /**
+   * redux flag that indicates if the user
+   * completed the seed phrase backup flow
+   */
+  seedphraseBackedUp?: boolean;
+}
 
 /**
  * PureComponent that renders a public address view
  */
-class AddressQRCode extends PureComponent {
-  static propTypes = {
-    /**
-     * Selected address as string
-     */
-    selectedAddress: PropTypes.string,
-    /**
-    /* Triggers global alert
-    */
-    showAlert: PropTypes.func,
-    /**
-    /* Callback to close the modal
-    */
-    closeQrModal: PropTypes.func,
-    /**
-     * Prompts protect wallet modal
-     */
-    protectWalletModalVisible: PropTypes.func,
-    /**
-     * redux flag that indicates if the user
-     * completed the seed phrase backup flow
-     */
-    seedphraseBackedUp: PropTypes.bool,
-  };
+class AddressQRCode extends PureComponent<AddressQRCodeProps> {
+  static contextType = ThemeContext;
 
   /**
    * Closes QR code modal
@@ -115,7 +128,7 @@ class AddressQRCode extends PureComponent {
 
   copyAccountToClipboard = async () => {
     const { selectedAddress } = this.props;
-    await ClipboardManager.setString(selectedAddress);
+    await ClipboardManager.setString(selectedAddress ?? '');
     this.props.showAlert({
       isVisible: true,
       autodismiss: 1500,
@@ -126,15 +139,16 @@ class AddressQRCode extends PureComponent {
 
   processAddress = () => {
     const { selectedAddress } = this.props;
-    const processedAddress = `${selectedAddress.slice(0, 2)} ${selectedAddress
+    const address = selectedAddress ?? '';
+    const processedAddress = `${address.slice(0, 2)} ${address
       .slice(2)
       .match(/.{1,4}/g)
-      .join(' ')}`;
+      ?.join(' ')}`;
     return processedAddress;
   };
 
   render() {
-    const theme = this.context || mockTheme;
+    const theme = (this.context as Theme) || mockTheme;
     const colors = theme.colors;
     const styles = createStyles(theme);
 
@@ -174,16 +188,14 @@ class AddressQRCode extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
   seedphraseBackedUp: state.user.seedphraseBackedUp,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  showAlert: (config) => dispatch(showAlert(config)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  showAlert: (config: AlertConfig) => dispatch(showAlert(config)),
   protectWalletModalVisible: () => dispatch(protectWalletModalVisible()),
 });
-
-AddressQRCode.contextType = ThemeContext;
 
 export default connect(mapStateToProps, mapDispatchToProps)(AddressQRCode);
