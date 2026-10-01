@@ -1,5 +1,9 @@
 import { getGanachePort } from '../../../e2e/fixtures/utils';
-import ganache from 'ganache';
+import ganache, {
+  EthereumProvider,
+  Server,
+  ServerOptions,
+} from 'ganache';
 
 export const DEFAULT_GANACHE_PORT = 8545;
 
@@ -13,35 +17,45 @@ const defaultOptions = {
 };
 
 export default class Ganache {
-  async start(opts) {
+  #server: Server | undefined;
+
+  async start(opts: ServerOptions & { mnemonic?: string }): Promise<void> {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
     const options = { ...defaultOptions, ...opts, port: getGanachePort() };
     const { port } = options;
     try {
-      this._server = ganache.server(options);
-      await this._server.listen(port);
+      this.#server = ganache.server(options);
+      await this.#server.listen(port);
     } catch (error) {
       console.error(error);
       throw error;
     }
   }
 
-  getProvider() {
-    return this._server?.provider;
+  getProvider(): EthereumProvider | undefined {
+    return this.#server?.provider;
   }
 
-  async getAccounts() {
-    return await this.getProvider().request({
+  #getRunningProvider(): EthereumProvider {
+    const provider = this.getProvider();
+    if (!provider) {
+      throw new Error('Server not running yet');
+    }
+    return provider;
+  }
+
+  async getAccounts(): Promise<string[]> {
+    return await this.#getRunningProvider().request({
       method: 'eth_accounts',
       params: [],
     });
   }
 
-  async getBalance() {
+  async getBalance(): Promise<number | string> {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
+    const balanceHex = await this.#getRunningProvider().request({
       method: 'eth_getBalance',
       params: [accounts[0], 'latest'],
     });
@@ -53,11 +67,11 @@ export default class Ganache {
     return balanceFormatted;
   }
 
-  async quit() {
-    if (!this._server) {
+  async quit(): Promise<void> {
+    if (!this.#server) {
       throw new Error('Server not running yet');
     }
-    await this._server.close();
-    this._server = undefined;
+    await this.#server.close();
+    this.#server = undefined;
   }
 }
