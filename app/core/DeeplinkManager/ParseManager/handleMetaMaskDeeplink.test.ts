@@ -134,7 +134,7 @@ describe('handleMetaMaskProtocol', () => {
     beforeEach(() => {
       url = `${PREFIXES.METAMASK}${ACTIONS.CONNECT}`;
       params.comm = 'deeplinking';
-      params.channelId = 'test-channel-id';
+      params.channelId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
       params.pubkey = 'test-pubkey';
       params.originatorInfo = 'test-originator-info';
       params.request = 'test-request';
@@ -292,11 +292,34 @@ describe('handleMetaMaskProtocol', () => {
     });
 
 
+    it('should throw an error when channelId is not a UUID', () => {
+      // A non-UUID channelId could collide with an existing permission subject
+      // (an authorized web origin or an internal origin such as 'MetaMask
+      // Mobile') and silently alias its permitted accounts.
+      params.channelId = 'MetaMask Mobile';
+      params.redirect = '';
+
+      expect(() => {
+        handleMetaMaskDeeplink({
+          instance,
+          handled,
+          params,
+          url,
+          origin,
+          wcURL,
+        });
+      }).toThrow('DeepLinkManager failed to connect - Invalid channelId');
+
+      expect(mockHandleDeeplink).not.toHaveBeenCalled();
+    });
+
     it('should call handleDeeplink when channel exists and params.redirect is falsy', () => {
       origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
-      params.channelId = 'ABC';
+      params.channelId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
       params.redirect = '';
-      mockGetApprovedHosts.mockReturnValue({ ABC: true });
+      mockGetApprovedHosts.mockReturnValue({
+        'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee': true,
+      });
 
       handleMetaMaskDeeplink({
         instance,

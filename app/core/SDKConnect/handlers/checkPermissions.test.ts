@@ -99,7 +99,7 @@ describe('checkPermissions', () => {
     mockGetPermittedAccounts.mockReturnValue([]);
 
     connection = {
-      channelId: 'channelId',
+      channelId: '8e5cd5b9-1c0e-4f3a-9b2d-1234567890ab',
       isApproved: mockIsApproved,
       revalidate: mockRevalidate,
       initialConnection: true,
@@ -151,6 +151,41 @@ describe('checkPermissions', () => {
     mockGetPermittedAccounts.mockReturnValue(['0x123']);
     const result = await checkPermissions({ connection, engine });
     expect(result).toBe(true);
+  });
+
+  describe('channelId validation', () => {
+    it.each([
+      ['MetaMask Mobile'],
+      ['app.uniswap.org'],
+      ['channelId'],
+      [''],
+      ['not-a-uuid'],
+    ])(
+      'should throw and never evaluate permissions when channelId=%p is not a UUID',
+      async (invalidChannelId) => {
+        connection.channelId = invalidChannelId as string;
+        mockGetPermittedAccounts.mockReturnValue(['0x123']);
+
+        await expect(checkPermissions({ connection, engine })).rejects.toThrow(
+          /Invalid SDK channelId/,
+        );
+        // The attacker-controlled origin must never reach getPermittedAccounts
+        // or requestPermissions.
+        expect(mockGetPermittedAccounts).not.toHaveBeenCalled();
+        expect(requestPermissions).not.toHaveBeenCalled();
+      },
+    );
+
+    it('should still evaluate permissions for a valid UUID channelId', async () => {
+      connection.channelId = '8e5cd5b9-1c0e-4f3a-9b2d-1234567890ab';
+      mockGetPermittedAccounts.mockReturnValue(['0x123']);
+
+      const result = await checkPermissions({ connection, engine });
+      expect(result).toBe(true);
+      expect(mockGetPermittedAccounts).toHaveBeenCalledWith(
+        connection.channelId,
+      );
+    });
   });
 
   it('should return false if no permitted accounts exist and no approval promise', async () => {

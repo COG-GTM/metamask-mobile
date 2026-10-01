@@ -6,6 +6,7 @@ import AppConstants from '../../AppConstants';
 import SDKConnect from '../../SDKConnect/SDKConnect';
 import handleDeeplink from '../../SDKConnect/handlers/handleDeeplink';
 import DevLogger from '../../SDKConnect/utils/DevLogger';
+import { isUUID } from '../../SDKConnect/utils/isUUID';
 import WC2Manager from '../../WalletConnect/WalletConnectV2';
 import DeeplinkManager from '../DeeplinkManager';
 import parseOriginatorInfo from '../parseOriginatorInfo';
@@ -44,6 +45,20 @@ export function handleMetaMaskDeeplink({
         screen: Routes.SHEET.RETURN_TO_DAPP_MODAL,
       });
     } else if (params.channelId) {
+      // The channelId is propagated unchanged into the SDK connection layer
+      // where it is used as the permission subject (origin). It is fully
+      // attacker-controlled via the deeplink, so it must be a genuine
+      // MetaMask-generated SDK channel id (a UUID). Rejecting non-UUID values
+      // here prevents a malicious deeplink from picking a channelId that
+      // collides with an existing permission subject (e.g. an authorized web
+      // origin hostname or an internal origin such as 'MetaMask Mobile') and
+      // silently inheriting its permitted accounts without user consent.
+      if (!isUUID(params.channelId)) {
+        throw new Error(
+          `DeepLinkManager failed to connect - Invalid channelId`,
+        );
+      }
+
       // differentiate between  deeplink callback and socket connection
       if (params.comm === 'deeplinking') {
         if (!params.scheme) {
