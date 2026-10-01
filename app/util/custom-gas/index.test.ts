@@ -1,3 +1,4 @@
+import { TransactionParams } from '@metamask/transaction-controller';
 import { parseWaitTime, getGasLimit } from '.';
 
 jest.mock('../../util/transaction-controller', () => ({
@@ -37,12 +38,18 @@ describe('CustomGas utils :: parseWaitTime', () => {
 
 describe('CustomGas Util:: GetGasLimit', () => {
   it('should return passed gas value', async () => {
-    const estimate = await getGasLimit({ gas: '0x9fd2', gasPrice: '12' });
+    const estimate = await getGasLimit({
+      gas: '0x9fd2',
+      gasPrice: '12',
+    } as TransactionParams);
     expect(estimate.gas.toNumber()).toEqual(40914);
   });
 
   it('should fetch new estimated gas value', async () => {
-    const estimate = await getGasLimit({ gas: '0x9fd2', gasPrice: '12' }, true);
+    const estimate = await getGasLimit(
+      { gas: '0x9fd2', gasPrice: '12' } as TransactionParams,
+      true,
+    );
     expect(estimate.gas.toNumber()).toEqual(21000);
   });
 });
