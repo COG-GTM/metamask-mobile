@@ -43,7 +43,7 @@ import {
  */
 export interface AuthData {
   currentAuthType: AUTHENTICATION_TYPE; //Enum used to show type for authentication
-  availableBiometryType?: BIOMETRY_TYPE;
+  availableBiometryType?: BIOMETRY_TYPE | null;
 }
 
 class AuthenticationService {
@@ -67,9 +67,7 @@ class AuthenticationService {
    */
   private loginVaultCreation = async (password: string): Promise<void> => {
     // Restore vault with user entered password
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { KeyringController }: any = Engine.context;
+    const { KeyringController } = Engine.context;
     await KeyringController.submitPassword(password);
     password = this.wipeSensitiveData();
   };
@@ -85,8 +83,10 @@ class AuthenticationService {
     parsedSeed: string,
     clearEngine: boolean,
   ): Promise<void> => {
-    // Restore vault with user entered password
-    // TODO: Replace "any" with type
+    // Restore vault with user entered password.
+    // KeyringController.createNewVaultAndRestore's seed parameter is typed as
+    // Uint8Array by the controller, but this flow passes a parsed string seed;
+    // reconciling that signature mismatch is out of scope for this change.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { KeyringController }: any = Engine.context;
     if (clearEngine) await Engine.resetState();
@@ -113,9 +113,7 @@ class AuthenticationService {
   private createWalletVaultAndKeychain = async (
     password: string,
   ): Promise<void> => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { KeyringController }: any = Engine.context;
+    const { KeyringController } = Engine.context;
     await Engine.resetState();
     await KeyringController.createNewVaultAndKeychain(password);
 
@@ -148,9 +146,7 @@ class AuthenticationService {
    * @returns @AuthData
    */
   private checkAuthenticationMethod = async (): Promise<AuthData> => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const availableBiometryType: any =
+    const availableBiometryType =
       await SecureKeychain.getSupportedBiometryType();
     const biometryPreviouslyDisabled = await StorageWrapper.getItem(
       BIOMETRY_CHOICE_DISABLED,
@@ -195,9 +191,7 @@ class AuthenticationService {
    * Reset vault will empty password used to clear/reset vault upon errors during login/creation
    */
   resetVault = async (): Promise<void> => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { KeyringController }: any = Engine.context;
+    const { KeyringController } = Engine.context;
     // Restore vault with empty password
     await KeyringController.submitPassword('');
     await this.resetPassword();
@@ -279,9 +273,7 @@ class AuthenticationService {
     biometryChoice: boolean,
     rememberMe: boolean,
   ): Promise<AuthData> => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const availableBiometryType: any =
+    const availableBiometryType =
       await SecureKeychain.getSupportedBiometryType();
     const biometryPreviouslyDisabled = await StorageWrapper.getItem(
       BIOMETRY_CHOICE_DISABLED,
@@ -339,9 +331,7 @@ class AuthenticationService {
       await StorageWrapper.removeItem(SEED_PHRASE_HINTS);
       this.dispatchLogin();
       this.authData = authData;
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
+    } catch (e) {
       this.lockApp({ reset: false });
       throw new AuthenticationError(
         (e as Error).message,
@@ -372,9 +362,7 @@ class AuthenticationService {
       await StorageWrapper.removeItem(SEED_PHRASE_HINTS);
       this.dispatchLogin();
       this.authData = authData;
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
+    } catch (e) {
       this.lockApp({ reset: false });
       throw new AuthenticationError(
         (e as Error).message,
@@ -407,9 +395,7 @@ class AuthenticationService {
       this.dispatchLogin();
       this.authData = authData;
       this.dispatchPasswordSet();
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
+    } catch (e) {
       throw new AuthenticationError(
         (e as Error).message,
         AUTHENTICATION_FAILED_TO_LOGIN,
@@ -433,11 +419,9 @@ class AuthenticationService {
     const bioStateMachineId = options?.bioStateMachineId;
     const disableAutoLogout = options?.disableAutoLogout;
     try {
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const credentials: any = await SecureKeychain.getGenericPassword();
+      const credentials = await SecureKeychain.getGenericPassword();
 
-      const password = credentials?.password;
+      const password = credentials ? credentials.password : undefined;
       if (!password) {
         throw new AuthenticationError(
           AUTHENTICATION_APP_TRIGGERED_AUTH_NO_CREDENTIALS,
@@ -455,9 +439,7 @@ class AuthenticationService {
       this.dispatchLogin();
       ReduxService.store.dispatch(authSuccess(bioStateMachineId));
       this.dispatchPasswordSet();
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (e: any) {
+    } catch (e) {
       ReduxService.store.dispatch(authError(bioStateMachineId));
       !disableAutoLogout && this.lockApp({ reset: false });
       throw new AuthenticationError(

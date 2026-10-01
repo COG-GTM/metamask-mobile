@@ -50,7 +50,7 @@ const LoginOptionsSettings = ({
         const stateValue = Device.isAndroid()
           ? AUTHENTICATION_TYPE.BIOMETRIC
           : authType.availableBiometryType;
-        setBiometryType(stateValue);
+        setBiometryType(stateValue ?? undefined);
         setBiometryChoice(!(previouslyDisabled && previouslyDisabled === TRUE));
         setPasscodeChoice(
           !(passcodePreviouslyDisabled && passcodePreviouslyDisabled === TRUE),
@@ -60,7 +60,7 @@ const LoginOptionsSettings = ({
           Device.isAndroid() && authType.availableBiometryType
             ? AUTHENTICATION_TYPE.BIOMETRIC
             : authType.availableBiometryType;
-        setBiometryType(stateValue);
+        setBiometryType(stateValue ?? undefined);
       }
     };
     getOptions();
