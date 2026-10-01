@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import {
   StyleSheet,
   TextInput,
@@ -52,8 +51,43 @@ import { useTheme } from '../../../../util/theme';
 import { QuoteViewSelectorIDs } from '../../../../../e2e/selectors/swaps/QuoteView.selectors';
 import { getDecimalChainId } from '../../../../util/networks';
 import { getSortedTokensByFiatValue } from '../utils/token-list-utils';
+import { RootState } from '../../../../reducers';
+import { Theme } from '@metamask/design-tokens';
 
-const createStyles = (colors) =>
+interface SwapToken {
+  address: string;
+  symbol?: string;
+  decimals?: number;
+  name?: string;
+  iconUrl?: string;
+  occurrences?: number;
+  [key: string]: unknown;
+}
+
+interface StateProps {
+  accounts: Record<string, unknown>;
+  conversionRate: number;
+  currentCurrency: string;
+  selectedAddress: string;
+  tokenExchangeRates: Record<string, unknown>;
+  balances: Record<string, string>;
+  chainId: string;
+  networkConfigurations: Record<string, unknown>;
+}
+
+interface OwnProps {
+  isVisible?: boolean;
+  dismiss?: () => void;
+  title?: string;
+  tokens?: SwapToken[];
+  initialTokens?: SwapToken[];
+  onItemPress?: (item: SwapToken) => void;
+  excludeAddresses?: string[];
+}
+
+type TokenSelectModalProps = StateProps & OwnProps;
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     modal: {
       margin: 0,
@@ -146,7 +180,7 @@ function TokenSelectModal({
   chainId,
   networkConfigurations,
   balances,
-}) {
+}: TokenSelectModalProps) {
   const navigation = useNavigation();
   const { trackEvent, createEventBuilder } = useMetrics();
 
@@ -513,49 +547,8 @@ function TokenSelectModal({
   );
 }
 
-TokenSelectModal.propTypes = {
-  isVisible: PropTypes.bool,
-  dismiss: PropTypes.func,
-  title: PropTypes.string,
-  tokens: PropTypes.arrayOf(PropTypes.object),
-  initialTokens: PropTypes.arrayOf(PropTypes.object),
-  onItemPress: PropTypes.func,
-  excludeAddresses: PropTypes.arrayOf(PropTypes.string),
-  /**
-   * ETH to current currency conversion rate
-   */
-  conversionRate: PropTypes.number,
-  /**
-   * Map of accounts to information objects including balances
-   */
-  accounts: PropTypes.object,
-  /**
-   * Currency code of the currently-active currency
-   */
-  currentCurrency: PropTypes.string,
-  /**
-   * A string that represents the selected address
-   */
-  selectedAddress: PropTypes.string,
-  /**
-   * An object containing token balances for current account and network in the format address => balance
-   */
-  balances: PropTypes.object,
-  /**
-   * An object containing token exchange rates in the format address => exchangeRate
-   */
-  tokenExchangeRates: PropTypes.object,
-  /**
-   * Chain Id
-   */
-  chainId: PropTypes.string,
-  /**
-   * Network configurations
-   */
-  networkConfigurations: PropTypes.object,
-};
+const mapStateToProps = (state: RootState): StateProps => ({
 
-const mapStateToProps = (state) => ({
   accounts: selectAccounts(state),
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),

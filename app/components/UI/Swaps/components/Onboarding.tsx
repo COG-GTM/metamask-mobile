@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   StyleSheet,
@@ -23,7 +22,9 @@ const swapsAggregatorsLight = require('../../../../images/swaps_aggs-light.png')
 const swapsAggregatorsDark = require('../../../../images/swaps_aggs-dark.png');
 /* eslint-enable import/no-commonjs */
 
-const createStyles = (colors, bottomInset) =>
+import { Theme } from '@metamask/design-tokens';
+
+const createStyles = (colors: Theme['colors'], bottomInset: number) =>
   StyleSheet.create({
     screen: {
       flex: 1,
@@ -72,7 +73,11 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function Onboarding({ setHasOnboarded }) {
+interface OnboardingProps {
+  setHasOnboarded?: (value: boolean) => void;
+}
+
+function Onboarding({ setHasOnboarded }: OnboardingProps) {
   const navigation = useNavigation();
   const { colors } = useTheme();
   const { bottom: bottomInset } = useSafeAreaInsets();
@@ -144,9 +149,5 @@ function Onboarding({ setHasOnboarded }) {
     </View>
   );
 }
-
-Onboarding.propTypes = {
-  setHasOnboarded: PropTypes.func,
-};
 
 export default Onboarding;
