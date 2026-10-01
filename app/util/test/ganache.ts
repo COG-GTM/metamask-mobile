@@ -1,5 +1,5 @@
 import { getGanachePort } from '../../../e2e/fixtures/utils';
-import ganache from 'ganache';
+import ganache, { type Server, type ServerOptions } from 'ganache';
 
 export const DEFAULT_GANACHE_PORT = 8545;
 
@@ -12,16 +12,22 @@ const defaultOptions = {
   quiet: false,
 };
 
+type GanacheServerOptions = ServerOptions & {
+  mnemonic?: string;
+};
+
 export default class Ganache {
-  async start(opts) {
+  #server: Server | undefined;
+
+  async start(opts: GanacheServerOptions): Promise<void> {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
     const options = { ...defaultOptions, ...opts, port: getGanachePort() };
     const { port } = options;
     try {
-      this._server = ganache.server(options);
-      await this._server.listen(port);
+      this.#server = ganache.server(options);
+      await this.#server.listen(port);
     } catch (error) {
       console.error(error);
       throw error;
@@ -29,22 +35,26 @@ export default class Ganache {
   }
 
   getProvider() {
-    return this._server?.provider;
+    return this.#server?.provider;
   }
 
-  async getAccounts() {
-    return await this.getProvider().request({
+  async getAccounts(): Promise<string[] | undefined> {
+    return await this.getProvider()?.request({
       method: 'eth_accounts',
       params: [],
     });
   }
 
-  async getBalance() {
+  async getBalance(): Promise<number | string> {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
-      method: 'eth_getBalance',
-      params: [accounts[0], 'latest'],
-    });
+    if (!accounts?.length) {
+      return 0;
+    }
+    const balanceHex =
+      (await this.getProvider()?.request({
+        method: 'eth_getBalance',
+        params: [accounts[0], 'latest'],
+      })) ?? '0x0';
     const balanceInt = parseInt(balanceHex, 16) / 10 ** 18;
 
     const balanceFormatted =
@@ -53,11 +63,11 @@ export default class Ganache {
     return balanceFormatted;
   }
 
-  async quit() {
-    if (!this._server) {
+  async quit(): Promise<void> {
+    if (!this.#server) {
       throw new Error('Server not running yet');
     }
-    await this._server.close();
-    this._server = undefined;
+    await this.#server.close();
+    this.#server = undefined;
   }
 }
