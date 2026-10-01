@@ -11,13 +11,13 @@ import {
 import { strings } from '../../../../locales/i18n';
 import CheckBox from '@react-native-community/checkbox';
 import FeatherIcon from 'react-native-vector-icons/Feather';
-import PropTypes from 'prop-types';
+import { Theme } from '@metamask/design-tokens';
 import { fontStyles } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
 import generateTestId from '../../../../wdio/utils/generateTestId';
 import { SkipAccountSecurityModalSelectorsIDs } from '../../../../e2e/selectors/Onboarding/SkipAccountSecurityModal.selectors';
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     imageWarning: {
       alignSelf: 'center',
@@ -66,14 +66,23 @@ const createStyles = (colors) =>
     },
   });
 
+interface SkipAccountSecurityModalProps {
+  modalVisible?: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+  onPress?: () => void;
+  toggleSkipCheckbox: () => void;
+  skipCheckbox?: boolean;
+}
+
 const SkipAccountSecurityModal = ({
-  modalVisible,
+  modalVisible = false,
   onConfirm,
   onCancel,
   onPress,
   toggleSkipCheckbox,
-  skipCheckbox,
-}) => {
+  skipCheckbox = false,
+}: SkipAccountSecurityModalProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -142,22 +151,5 @@ const SkipAccountSecurityModal = ({
     </ActionModal>
   );
 };
-
-const propTypes = {
-  modalVisible: PropTypes.bool.isRequired,
-  onConfirm: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  onPress: PropTypes.func,
-  toggleSkipCheckbox: PropTypes.func.isRequired,
-  skipCheckbox: PropTypes.bool.isRequired,
-};
-
-const defaultProps = {
-  modalVisible: false,
-  skipCheckbox: false,
-};
-
-SkipAccountSecurityModal.propTypes = propTypes;
-SkipAccountSecurityModal.defaultProps = defaultProps;
 
 export default SkipAccountSecurityModal;
