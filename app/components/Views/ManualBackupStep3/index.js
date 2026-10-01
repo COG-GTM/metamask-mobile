@@ -22,6 +22,7 @@ import { ThemeContext, mockTheme } from '../../../util/theme';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import OnboardingSuccess from '../OnboardingSuccess';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { isHintSeedPhrase } from '../../../util/mnemonic';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -149,19 +150,10 @@ class ManualBackupStep3 extends PureComponent {
       },
     });
 
-  isHintSeedPhrase = (hintText) => {
-    const words = this.props.route.params?.words;
-    if (words) {
-      const lower = (string) => String(string).toLowerCase();
-      return lower(hintText) === lower(words.join(' '));
-    }
-    return false;
-  };
-
   saveHint = async () => {
     const { hintText } = this.state;
     if (!hintText) return;
-    if (this.isHintSeedPhrase(hintText)) {
+    if (isHintSeedPhrase(hintText)) {
       Alert.alert('Error!', strings('manual_backup_step_3.no_seedphrase'));
       return;
     }

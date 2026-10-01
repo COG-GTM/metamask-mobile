@@ -1,4 +1,9 @@
-import { shuffle, compareMnemonics, uint8ArrayToMnemonic } from '.';
+import {
+  shuffle,
+  compareMnemonics,
+  uint8ArrayToMnemonic,
+  isHintSeedPhrase,
+} from '.';
 
 const mockSRPArrayOne = [
   'ar9gx',
@@ -77,5 +82,45 @@ describe('mnemonic::uint8ArrayToMnemonic', () => {
     expect(() =>
       uint8ArrayToMnemonic(new Uint8Array([]), mockWordlist),
     ).toThrow('The method uint8ArrayToMnemonic expects a non-empty array');
+  });
+});
+
+describe('isHintSeedPhrase', () => {
+  const srp =
+    'abandon ability able about above absent absorb abstract absurd abuse access accident';
+
+  it('detects a 12-word Secret Recovery Phrase', () => {
+    expect(isHintSeedPhrase(srp)).toBe(true);
+  });
+
+  it('detects an SRP regardless of case, numbering, punctuation or surrounding text', () => {
+    const numbered = srp
+      .toUpperCase()
+      .split(' ')
+      .map((word, i) => `${i + 1}. ${word},`)
+      .join('\n');
+    expect(isHintSeedPhrase(numbered)).toBe(true);
+    expect(isHintSeedPhrase(`my srp is: ${srp} (keep safe)`)).toBe(true);
+  });
+
+  it('detects a 24-word SRP', () => {
+    expect(isHintSeedPhrase(`${srp} ${srp}`)).toBe(true);
+  });
+
+  it('allows ordinary hints and partial word lists', () => {
+    expect(isHintSeedPhrase('the blue notebook in my desk drawer')).toBe(false);
+    expect(isHintSeedPhrase(srp.split(' ').slice(0, 11).join(' '))).toBe(false);
+    expect(isHintSeedPhrase('')).toBe(false);
+  });
+
+  it('detects SRP words interleaved with labels, valid checksum or not', () => {
+    const labelled = srp
+      .split(' ')
+      .map((word, i) => `pos ${i + 1} zz${'q'.repeat(i)}: ${word}`)
+      .join(' ');
+    expect(isHintSeedPhrase(labelled)).toBe(true);
+    const words = srp.split(' ');
+    words.splice(6, 0, 'notaword');
+    expect(isHintSeedPhrase(words.join(' '))).toBe(true);
   });
 });

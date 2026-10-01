@@ -1,3 +1,5 @@
+import { wordlist as englishWordlist } from '@metamask/scure-bip39/dist/wordlists/english';
+
 /**
  * Method to shuffles an array of string.
  *
@@ -51,4 +53,25 @@ export const uint8ArrayToMnemonic = (
   );
 
   return recoveredIndices.map((i) => wordlist[i]).join(' ');
+};
+
+const BIP39_WORDS = new Set(englishWordlist);
+const MIN_SRP_WORD_COUNT = 12;
+
+/**
+ * Detects whether a password hint could contain a Secret Recovery Phrase, i.e. it
+ * holds at least 12 BIP-39 words anywhere in the text (ignoring case, labels,
+ * numbering and punctuation).
+ * @param hint - The hint entered by the user.
+ * @returns Boolean indicating whether the hint must not be stored.
+ */
+export const isHintSeedPhrase = (hint: string): boolean => {
+  const tokens =
+    String(hint)
+      .toLowerCase()
+      .match(/[a-z]+/g) ?? [];
+  return (
+    tokens.filter((token) => BIP39_WORDS.has(token)).length >=
+    MIN_SRP_WORD_COUNT
+  );
 };
