@@ -18,6 +18,7 @@ import {
 import { NavigationActionType } from '../../actions/navigation';
 import EngineService from '../../core/EngineService';
 import { AppStateEventProcessor } from '../../core/AppStateEventListener';
+import ClipboardManager from '../../core/ClipboardManager';
 
 const mockBioStateMachineId = '123';
 
@@ -42,6 +43,10 @@ jest.mock('../../core/AppStateEventListener', () => ({
   AppStateEventProcessor: {
     start: jest.fn(),
   },
+}));
+
+jest.mock('../../core/ClipboardManager', () => ({
+  handleStartup: jest.fn(),
 }));
 
 describe('authStateMachine', () => {
@@ -161,6 +166,7 @@ describe('startAppServices', () => {
     // Verify services are started
     expect(EngineService.start).toHaveBeenCalled();
     expect(AppStateEventProcessor.start).toHaveBeenCalled();
+    expect(ClipboardManager.handleStartup).toHaveBeenCalled();
   });
 
   it('should not start app services if navigation is not ready', async () => {
