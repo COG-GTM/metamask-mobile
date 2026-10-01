@@ -21,7 +21,7 @@ const Engine = ImportedEngine as any;
  * @param [internalAccounts] - The list of evm accounts the wallet knows about.
  * @param [accounts] - The list of evm accounts addresses that should exist.
  */
-const captureKeyringTypesWithMissingIdentities = (
+const captureKeyringTypesWithMissingIdentities = async (
   internalAccounts: InternalAccount[] = [],
   accounts: Hex[] = [],
 ) => {
@@ -31,9 +31,10 @@ const captureKeyringTypesWithMissingIdentities = (
         (account) => account.address.toLowerCase() === address.toLowerCase(),
       ),
   );
-  const keyringTypesWithMissingIdentities = accountsMissingIdentities.map(
-    (address) =>
+  const keyringTypesWithMissingIdentities = await Promise.all(
+    accountsMissingIdentities.map((address) =>
       Engine.context.KeyringController.getAccountKeyringType(address),
+    ),
   );
 
   const internalAccountCount = internalAccounts.length;
@@ -72,10 +73,16 @@ export const sortAccountsByLastSelected = (accounts: Hex[]) => {
     );
 
     if (!firstAccount) {
-      captureKeyringTypesWithMissingIdentities(internalAccounts, accounts);
+      captureKeyringTypesWithMissingIdentities(
+        internalAccounts,
+        accounts,
+      ).catch((error) => Logger.error(error));
       throw new Error(`Missing identity for address: "${firstAddress}".`);
     } else if (!secondAccount) {
-      captureKeyringTypesWithMissingIdentities(internalAccounts, accounts);
+      captureKeyringTypesWithMissingIdentities(
+        internalAccounts,
+        accounts,
+      ).catch((error) => Logger.error(error));
       throw new Error(`Missing identity for address: "${secondAddress}".`);
     } else if (
       firstAccount.metadata.lastSelected === secondAccount.metadata.lastSelected
