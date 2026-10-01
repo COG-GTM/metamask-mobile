@@ -1,4 +1,26 @@
-export const initialState = {
+/* eslint-disable @typescript-eslint/default-param-last */
+import {
+  OnboardNetworkAction,
+  NETWORK_ONBOARDED,
+  NETWORK_SWITCHED,
+  SHOW_NETWORK_ONBOARDING,
+} from '../../actions/onboardNetwork';
+
+export interface NetworkOnboardedState {
+  networkOnboardedState: { [chainId: string]: boolean };
+  networkState: {
+    showNetworkOnboarding: boolean;
+    nativeToken: string;
+    networkType: string;
+    networkUrl: string;
+  };
+  switchedNetwork: {
+    networkUrl: string;
+    networkStatus: boolean;
+  };
+}
+
+export const initialState: NetworkOnboardedState = {
   networkOnboardedState: {},
   networkState: {
     showNetworkOnboarding: false,
@@ -12,36 +34,12 @@ export const initialState = {
   },
 };
 
-/**
- *
- * Network onboarding reducer
- * @returns
- */
-
 function networkOnboardReducer(
-  state = initialState,
-  action: {
-    nativeToken: string;
-    networkType: string;
-    networkUrl: string;
-    networkStatus: boolean;
-    showNetworkOnboarding: boolean;
-    type: string;
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: any;
-  } = {
-    nativeToken: '',
-    networkType: '',
-    networkUrl: '',
-    networkStatus: false,
-    showNetworkOnboarding: false,
-    type: '',
-    payload: undefined,
-  },
-) {
+  state: NetworkOnboardedState = initialState,
+  action: OnboardNetworkAction,
+): NetworkOnboardedState {
   switch (action.type) {
-    case 'SHOW_NETWORK_ONBOARDING':
+    case SHOW_NETWORK_ONBOARDING:
       return {
         ...state,
         networkState: {
@@ -51,7 +49,7 @@ function networkOnboardReducer(
           networkUrl: action.networkUrl,
         },
       };
-    case 'NETWORK_SWITCHED':
+    case NETWORK_SWITCHED:
       return {
         ...state,
         switchedNetwork: {
@@ -59,7 +57,7 @@ function networkOnboardReducer(
           networkStatus: action.networkStatus,
         },
       };
-    case 'NETWORK_ONBOARDED':
+    case NETWORK_ONBOARDED:
       return {
         ...state,
         networkState: {
