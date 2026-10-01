@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import { RootState } from '../../../../reducers';
 import { StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import Modal from 'react-native-modal';
@@ -27,6 +27,29 @@ const styles = StyleSheet.create({
   },
 });
 
+interface SourceTokenInfo {
+  address?: string;
+  symbol?: string;
+  decimals?: number;
+  [key: string]: unknown;
+}
+
+interface OwnProps {
+  approvalTransaction?: Record<string, unknown>;
+  editQuoteTransactionsVisible?: boolean;
+  onCancelEditQuoteTransactions?: () => void;
+  setApprovalTransaction?: (tx: Record<string, unknown>) => void;
+  sourceToken?: SourceTokenInfo;
+  minimumSpendLimit: string;
+  chainId?: string;
+}
+
+interface StateProps {
+  originalApprovalTransaction?: Record<string, unknown>;
+}
+
+type Props = OwnProps & StateProps;
+
 function ApprovalTransactionEditionModal({
   originalApprovalTransaction,
   approvalTransaction,
@@ -36,7 +59,7 @@ function ApprovalTransactionEditionModal({
   sourceToken,
   minimumSpendLimit,
   chainId,
-}) {
+}: Props) {
   /* Approval transaction if any */
   const [customApprovalTransaction, setCustomApprovalTransaction] =
     useState(approvalTransaction);
@@ -153,18 +176,7 @@ function ApprovalTransactionEditionModal({
   );
 }
 
-ApprovalTransactionEditionModal.propTypes = {
-  approvalTransaction: PropTypes.object,
-  originalApprovalTransaction: PropTypes.object,
-  editQuoteTransactionsVisible: PropTypes.bool,
-  minimumSpendLimit: PropTypes.string.isRequired,
-  onCancelEditQuoteTransactions: PropTypes.func,
-  setApprovalTransaction: PropTypes.func,
-  sourceToken: PropTypes.object,
-  chainId: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState): StateProps => ({
   originalApprovalTransaction: selectSwapsApprovalTransaction(state),
 });
 

@@ -1,10 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet, View } from 'react-native';
+import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 
 import RemoteImage from '../../../Base/RemoteImage';
 import Text from '../../../Base/Text';
 import { useTheme } from '../../../../util/theme';
+import { Colors } from '../../../../util/theme/models';
 import imageIcons from '../../../../images/image-icons';
 
 /* eslint-disable import/no-commonjs */
@@ -20,7 +20,7 @@ const BIG_RADIUS = 25;
 const BIGGEST_SIZE = 70;
 const BIGGEST_RADIUS = 35;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Colors) =>
   StyleSheet.create({
     icon: {
       width: REGULAR_SIZE,
@@ -63,7 +63,16 @@ const createStyles = (colors) =>
     },
   });
 
-const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
+interface EmptyIconProps {
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+  children?: React.ReactNode;
+}
+
+const EmptyIcon = ({ medium, big, biggest, style, ...props }: EmptyIconProps) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
@@ -82,15 +91,17 @@ const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
   );
 };
 
-EmptyIcon.propTypes = {
-  medium: PropTypes.bool,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  testID: PropTypes.string,
-};
+interface TokenIconProps {
+  symbol?: string;
+  icon?: string;
+  medium?: boolean;
+  big?: boolean;
+  biggest?: boolean;
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
+}
 
-function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
+function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }: TokenIconProps) {
   const [showFallback, setShowFallback] = useState(false);
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -159,15 +170,5 @@ function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
 
   return <EmptyIcon medium={medium} style={style} />;
 }
-
-TokenIcon.propTypes = {
-  symbol: PropTypes.string,
-  icon: PropTypes.string,
-  medium: PropTypes.bool,
-  big: PropTypes.bool,
-  biggest: PropTypes.bool,
-  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-  testID: PropTypes.string,
-};
 
 export default TokenIcon;
