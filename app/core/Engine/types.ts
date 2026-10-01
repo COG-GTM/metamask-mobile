@@ -259,6 +259,12 @@ import {
   EarnControllerEvents,
   EarnControllerState,
 } from '@metamask/earn-controller';
+import type {
+  BitcoinController,
+  BitcoinControllerState,
+  BitcoinControllerActions,
+  BitcoinControllerEvents,
+} from './controllers/bitcoin-controller';
 import { Hex } from '@metamask/utils';
 
 import { CONTROLLER_MESSENGERS } from './messengers';
@@ -336,6 +342,7 @@ type GlobalActions =
   | MultichainAssetsRatesControllerActions
   | MultichainTransactionsControllerActions
   ///: END:ONLY_INCLUDE_IF
+  | BitcoinControllerActions
   | AccountsControllerActions
   | PreferencesControllerActions
   | PPOMControllerActions
@@ -384,6 +391,7 @@ type GlobalEvents =
   | MultichainAssetsRatesControllerEvents
   | MultichainTransactionsControllerEvents
   ///: END:ONLY_INCLUDE_IF
+  | BitcoinControllerEvents
   | SignatureControllerEvents
   | LoggingControllerEvents
   | PPOMControllerEvents
@@ -479,6 +487,7 @@ export type Controllers = {
   BridgeController: BridgeController;
   BridgeStatusController: BridgeStatusController;
   EarnController: EarnController;
+  BitcoinController: BitcoinController;
 };
 
 /**
@@ -542,6 +551,7 @@ export type EngineState = {
   BridgeController: BridgeControllerState;
   BridgeStatusController: BridgeStatusControllerState;
   EarnController: EarnControllerState;
+  BitcoinController: BitcoinControllerState;
 };
 
 /** Controller names */
@@ -593,7 +603,8 @@ export type ControllersToInitialize =
   | 'MultichainNetworkController'
   | 'TransactionController'
   | 'GasFeeController'
-  | 'SignatureController';
+  | 'SignatureController'
+  | 'BitcoinController';
 
 /**
  * Callback that returns a controller messenger for a specific controller.

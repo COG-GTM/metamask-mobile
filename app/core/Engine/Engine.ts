@@ -199,6 +199,7 @@ import { EarnController } from '@metamask/earn-controller';
 import { TransactionControllerInit } from './controllers/transaction-controller';
 import { SignatureControllerInit } from './controllers/signature-controller';
 import { GasFeeControllerInit } from './controllers/gas-fee-controller';
+import { bitcoinControllerInit } from './controllers/bitcoin-controller/bitcoin-controller-init';
 import I18n from '../../../locales/i18n';
 import { Platform } from '@metamask/profile-sync-controller/sdk';
 import { isProductSafetyDappScanningEnabled } from '../../util/phishingDetection';
@@ -1049,6 +1050,7 @@ export class Engine {
         MultichainBalancesController: multichainBalancesControllerInit,
         MultichainTransactionsController: multichainTransactionsControllerInit,
         ///: END:ONLY_INCLUDE_IF
+        BitcoinController: bitcoinControllerInit,
       },
       persistedState: initialState as EngineState,
       existingControllersByName,
@@ -1092,6 +1094,8 @@ export class Engine {
     const multichainTransactionsController =
       controllersByName.MultichainTransactionsController;
     ///: END:ONLY_INCLUDE_IF
+
+    const bitcoinController = controllersByName.BitcoinController;
 
     ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
     const multichainRatesControllerMessenger =
@@ -1401,6 +1405,7 @@ export class Engine {
       BridgeController: bridgeController,
       BridgeStatusController: bridgeStatusController,
       EarnController: earnController,
+      BitcoinController: bitcoinController,
     };
 
     const childControllers = Object.assign({}, this.context);

@@ -5,7 +5,6 @@ import { captureException } from '@sentry/react-native';
 import {
   BITCOIN_WALLET_SNAP_ID,
   BITCOIN_WALLET_NAME,
-  BitcoinWalletSnapSender,
 } from './BitcoinWalletSnap';
 import {
   SOLANA_WALLET_SNAP_ID,
@@ -237,6 +236,11 @@ export abstract class MultichainWalletSnapClient {
   }
 }
 
+/**
+ * @deprecated Bitcoin wallet functionality is being migrated to the native
+ * BitcoinController. This client is retained for backward compatibility
+ * during the migration period.
+ */
 export class BitcoinWalletSnapClient extends MultichainWalletSnapClient {
   constructor(snapKeyringOptions: SnapKeyringOptions) {
     super(BITCOIN_WALLET_SNAP_ID, BITCOIN_WALLET_NAME, snapKeyringOptions);
@@ -251,7 +255,15 @@ export class BitcoinWalletSnapClient extends MultichainWalletSnapClient {
   }
 
   protected getSnapSender(): Sender {
-    return new BitcoinWalletSnapSender();
+    // Native BitcoinController now handles Bitcoin operations.
+    // This sender stub is kept for interface compatibility during migration.
+    return {
+      send: async () => {
+        throw new Error(
+          'BitcoinWalletSnapSender is deprecated. Use BitcoinController for Bitcoin operations.',
+        );
+      },
+    };
   }
 }
 

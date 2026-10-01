@@ -454,6 +454,12 @@
     "events": {},
     "jobs": {}
   },
+  "BitcoinController": {
+    "accounts": {},
+    "feeEstimates": null,
+    "feeEstimatesLastUpdated": 0,
+    "isLoading": false
+  },
   "EarnController": {
     "lastUpdated": 0,
     "pooled_staking": {
