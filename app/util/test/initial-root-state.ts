@@ -38,7 +38,7 @@ const initialRootState: RootState = {
   navigation: initialNavigationState,
   networkOnboarded: undefined,
   security: initialSecurityState,
-  signatureRequest: undefined,
+  signatureRequest: {},
   sdk: {
     connections: {},
     approvedHosts: {},

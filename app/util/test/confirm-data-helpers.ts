@@ -17,6 +17,7 @@ import { Hex } from '@metamask/utils';
 import { merge } from 'lodash';
 import { backgroundState } from './initial-root-state';
 import { ApprovalRequest } from '@metamask/approval-controller';
+import { SecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 
 export const confirmationRedesignRemoteFlagsState = {
   remoteFeatureFlags: {
@@ -483,7 +484,7 @@ export const typedSignV4NFTConfirmationState = {
   },
 };
 
-export const securityAlertResponse = {
+export const securityAlertResponse: SecurityAlertResponse = {
   block: 21572398,
   result_type: 'Malicious',
   reason: 'permit_farming',
@@ -513,7 +514,7 @@ export const securityAlertResponse = {
     version: 'V4',
   },
   chainId: '0x1',
-};
+} as unknown as SecurityAlertResponse;
 
 const stakingConfirmationBaseState = {
   engine: {
