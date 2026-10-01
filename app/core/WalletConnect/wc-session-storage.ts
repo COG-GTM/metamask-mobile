@@ -63,14 +63,8 @@ const clearStoredSessions = async (): Promise<void> => {
   }
 };
 
-const readStored = async (): Promise<string | null> => {
-  try {
-    return await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
-  } catch (error) {
-    Logger.error(error as Error, 'WC: Failed to read stored sessions');
-    return null;
-  }
-};
+const readStored = (): Promise<string | null> =>
+  StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
 
 const isLegacyPlaintext = (stored: string): boolean => {
   try {
@@ -105,7 +99,7 @@ const loadStorageKeyWithRetry = async (): Promise<string> => {
 };
 
 /**
- * Set when stored ciphertext could not be decrypted on load because the
+ * Set when stored sessions could not be read on load because MMKV or the
  * Keychain was unavailable. The next write merges those sessions back in
  * instead of overwriting them.
  */
@@ -113,7 +107,13 @@ let restorePending = false;
 let writeQueue: Promise<void> = Promise.resolve();
 
 const discardLegacyPlaintext = async (): Promise<void> => {
-  const stored = await readStored();
+  let stored: string | null;
+  try {
+    stored = await readStored();
+  } catch (error) {
+    Logger.error(error as Error, 'WC: Failed to read stored sessions');
+    return;
+  }
   if (stored && isLegacyPlaintext(stored)) {
     await clearStoredSessions();
   }
@@ -133,7 +133,13 @@ const writeSessions = async (
 
   let toWrite = sessions;
   if (restorePending) {
-    const stored = await readStored();
+    let stored: string | null;
+    try {
+      stored = await readStored();
+    } catch (error) {
+      Logger.error(error as Error, 'WC: Failed to read stored sessions');
+      return;
+    }
     if (stored && !isLegacyPlaintext(stored)) {
       try {
         const unrestored = await decryptSessions(key, stored);
@@ -178,8 +184,9 @@ export const persistWalletConnectSessions = (
 /**
  * Reads and decrypts persisted WalletConnect v1 sessions.
  * Legacy plaintext data is re-written encrypted. Data that can no longer be
- * decrypted (e.g. Keychain key lost after a restore) is discarded. If the
- * Keychain is unavailable the ciphertext is kept for a later read or write.
+ * decrypted (e.g. Keychain key lost after a restore) is discarded. If storage
+ * or the Keychain is unavailable the ciphertext is kept for a later read or
+ * write.
  *
  * @returns The persisted sessions, or an empty list if none can be read.
  */
@@ -187,7 +194,14 @@ export const loadWalletConnectSessions = async (): Promise<
   WalletConnectSessionRecord[]
 > => {
   await writeQueue;
-  const stored = await readStored();
+  let stored: string | null;
+  try {
+    stored = await readStored();
+  } catch (error) {
+    Logger.error(error as Error, 'WC: Failed to read stored sessions');
+    restorePending = true;
+    return [];
+  }
   if (!stored) {
     return [];
   }

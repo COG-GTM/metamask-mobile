@@ -4,6 +4,7 @@ const mockStore = new Map<string, string>();
 const mockKeychain = new Map<string, string>();
 const mockKeychainState = { setFails: false, getFails: false };
 const mockEncryptDelays: number[] = [];
+const mockStoreState = { getFails: false };
 
 jest.mock('react-native-keychain', () => ({
   ACCESSIBLE: {
@@ -61,7 +62,10 @@ jest.mock('../Encryptor', () => {
 jest.mock('../../store/storage-wrapper', () => ({
   __esModule: true,
   default: {
-    getItem: async (key: string) => mockStore.get(key) ?? null,
+    getItem: async (key: string) => {
+      if (mockStoreState.getFails) throw new Error('storage unavailable');
+      return mockStore.get(key) ?? null;
+    },
     setItem: async (key: string, value: string) => {
       mockStore.set(key, value);
     },
@@ -95,6 +99,7 @@ describe('wc-session-storage', () => {
     mockKeychainState.setFails = false;
     mockKeychainState.getFails = false;
     mockEncryptDelays.length = 0;
+    mockStoreState.getFails = false;
   });
 
   it('never writes the session key to storage in plaintext', async () => {
@@ -210,6 +215,24 @@ describe('wc-session-storage', () => {
     mockKeychainState.getFails = false;
     await storage.persistWalletConnectSessions([other]);
 
+    expect(await loadModule().loadWalletConnectSessions()).toEqual([
+      other,
+      session,
+    ]);
+  });
+
+  it('does not overwrite sessions that could not be read from storage', async () => {
+    const other = { ...session, key: 'other-key', peerId: 'peer-2' };
+    await loadModule().persistWalletConnectSessions([session]);
+    const storage = loadModule();
+    mockStoreState.getFails = true;
+    expect(await storage.loadWalletConnectSessions()).toEqual([]);
+
+    await storage.persistWalletConnectSessions([other]);
+    mockStoreState.getFails = false;
+    expect(await loadModule().loadWalletConnectSessions()).toEqual([session]);
+
+    await storage.persistWalletConnectSessions([other]);
     expect(await loadModule().loadWalletConnectSessions()).toEqual([
       other,
       session,
