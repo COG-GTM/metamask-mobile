@@ -143,37 +143,87 @@ export const sanitizeParsedMessage = (
 };
 
 
-const REGEX_MESSAGE_VALUE_LARGE =
-  /"message"\s*:\s*\{[^}]*"value"\s*:\s*(\d{15,})/u;
+/**
+ * Rewrites every numeric literal in a JSON string as a quoted string while leaving
+ * the contents of string literals (including object keys) untouched. The structural
+ * shape of the JSON is preserved, so parsing the result yields the same object tree
+ * with every number replaced by its exact source digits as a string.
+ *
+ * This is used to recover full precision for integers that exceed
+ * Number.MAX_SAFE_INTEGER, which JSON.parse would otherwise coerce into lossy
+ * scientific notation (e.g. 3.000123123123121e+26).
+ */
+function stringifyJsonNumbersAsStrings(source: string): string {
+  let output = '';
+  let inString = false;
 
-/** Returns the value of the message if it is a digit greater than 15 digits */
-function extractLargeMessageValue(messageParamsData: string): string | undefined {
-  if (typeof messageParamsData !== 'string') {
-    return undefined;
+  for (let i = 0; i < source.length; i++) {
+    const char = source[i];
+
+    if (inString) {
+      output += char;
+      if (char === '\\') {
+        // Copy the escaped character verbatim so quotes/backslashes inside
+        // strings do not terminate the string early.
+        i += 1;
+        output += source[i] ?? '';
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      output += char;
+      continue;
+    }
+
+    // Outside of string literals, the only tokens that can begin with a digit or
+    // a minus sign are JSON numbers (keys are always quoted strings), so it is
+    // safe to quote them.
+    if (char === '-' || (char >= '0' && char <= '9')) {
+      let token = '';
+      while (i < source.length && /[-+0-9.eE]/u.test(source[i])) {
+        token += source[i];
+        i += 1;
+      }
+      i -= 1;
+      output += `"${token}"`;
+      continue;
+    }
+
+    output += char;
   }
-  return messageParamsData.match(REGEX_MESSAGE_VALUE_LARGE)?.[1];
+
+  return output;
 }
 
 /**
- * JSON.parse has a limitation which coerces values to scientific notation if numbers are greater than
- * Number.MAX_SAFE_INTEGER. This can cause a loss in precision.
- *
- * Aside from precision concerns, if the value returned was a large number greater than 15 digits,
- * e.g. 3.000123123123121e+26, passing the value to BigNumber will throw the error:
+ * JSON.parse coerces numbers greater than Number.MAX_SAFE_INTEGER into scientific
+ * notation, causing a loss in precision. Aside from precision concerns, passing
+ * such a value (e.g. 3.000123123123121e+26) to BigNumber throws:
  * Error: new BigNumber() number type has more than 15 significant digits
  *
- * Note that using JSON.parse reviver cannot help since the value will be coerced by the time it
- * reaches the reviver function.
- *
- * This function has a workaround to extract the large value from the message and replace
- * the message value with the string value.
+ * To preserve precision we re-parse the same payload with every numeric literal
+ * rewritten as a string, then read the displayed `message.value` from that
+ * structurally-identical parse. Deriving the value from a real parse (rather than
+ * a regex scan of the raw text) ensures the displayed amount always corresponds to
+ * the top-level `message.value` that is actually signed — it cannot be diverted by
+ * an attacker-supplied decoy field nested elsewhere in the message.
  */
 export const parseAndNormalizeSignTypedData = (messageParamsData: string) => {
   const result = JSON.parse(messageParamsData);
 
-  const largeMessageValue = extractLargeMessageValue(messageParamsData);
   if (result.message?.value) {
-    result.message.value = largeMessageValue || String(result.message.value);
+    const precisionPreservedValue = JSON.parse(
+      stringifyJsonNumbersAsStrings(messageParamsData),
+    )?.message?.value;
+
+    result.message.value =
+      precisionPreservedValue === undefined || precisionPreservedValue === null
+        ? String(result.message.value)
+        : String(precisionPreservedValue);
   }
 
   return result;

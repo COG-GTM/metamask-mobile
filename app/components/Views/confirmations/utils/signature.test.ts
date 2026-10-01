@@ -84,6 +84,34 @@ describe('Signature Utils', () => {
       expect(result.message.value).toBe(largeValue);
     });
 
+    it('preserves precision for a large numeric (unquoted) message value', () => {
+      const result = parseAndNormalizeSignTypedData(
+        '{"message":{"value":123456789012345678901234567890}}',
+      );
+      expect(result.message.value).toBe('123456789012345678901234567890');
+    });
+
+    it('uses the top-level message value and ignores a nested decoy value', () => {
+      const result = parseAndNormalizeSignTypedData(
+        '{"message":{"value":900000000000000000000,"a":{"value":100000000000000}}}',
+      );
+      expect(result.message.value).toBe('900000000000000000000');
+    });
+
+    it('uses the top-level message value even when a decoy value precedes it', () => {
+      const result = parseAndNormalizeSignTypedData(
+        '{"message":{"a":{"value":100000000000000},"value":900000000000000000000}}',
+      );
+      expect(result.message.value).toBe('900000000000000000000');
+    });
+
+    it('is not fooled by a decoy value embedded inside a string field', () => {
+      const result = parseAndNormalizeSignTypedData(
+        '{"message":{"note":"value: 100000000000000","value":900000000000000000000}}',
+      );
+      expect(result.message.value).toBe('900000000000000000000');
+    });
+
     it('throws an error for invalid typedDataMessage', () => {
       expect(() => {
         parseAndNormalizeSignTypedData('');
