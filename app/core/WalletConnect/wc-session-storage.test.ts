@@ -3,6 +3,7 @@ import { WALLETCONNECT_SESSIONS } from '../../constants/storage';
 const mockStore = new Map<string, string>();
 const mockKeychain = new Map<string, string>();
 const mockKeychainState = { setFails: false, getFails: false };
+const mockEncryptDelays: number[] = [];
 
 jest.mock('react-native-keychain', () => ({
   ACCESSIBLE: {
@@ -33,14 +34,17 @@ jest.mock('../../util/Logger', () => ({
 
 jest.mock('../Encryptor', () => {
   class MockEncryptor {
-    encrypt = async (password: string, data: unknown) =>
-      JSON.stringify({
+    encrypt = async (password: string, data: unknown) => {
+      const delay = mockEncryptDelays.shift() ?? 0;
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      return JSON.stringify({
         cipher: Buffer.from(JSON.stringify({ password, data })).toString(
           'base64',
         ),
         iv: 'iv',
         salt: 'salt',
       });
+    };
     decrypt = async (password: string, text: string) => {
       const payload = JSON.parse(
         Buffer.from(JSON.parse(text).cipher, 'base64').toString(),
@@ -90,6 +94,7 @@ describe('wc-session-storage', () => {
     mockKeychain.clear();
     mockKeychainState.setFails = false;
     mockKeychainState.getFails = false;
+    mockEncryptDelays.length = 0;
   });
 
   it('never writes the session key to storage in plaintext', async () => {
@@ -167,5 +172,47 @@ describe('wc-session-storage', () => {
 
     mockKeychainState.getFails = false;
     expect(await loadModule().loadWalletConnectSessions()).toEqual([session]);
+  });
+
+  it('keeps encrypted sessions when a later write cannot reach the Keychain', async () => {
+    await loadModule().persistWalletConnectSessions([session]);
+    const stored = mockStore.get(WALLETCONNECT_SESSIONS);
+    mockKeychainState.getFails = true;
+
+    await loadModule().persistWalletConnectSessions([]);
+
+    expect(mockStore.get(WALLETCONNECT_SESSIONS)).toBe(stored);
+  });
+
+  it('applies overlapping writes in call order', async () => {
+    const other = { ...session, key: 'other-key', peerId: 'peer-2' };
+    const storage = loadModule();
+    mockEncryptDelays.push(50, 0);
+
+    await Promise.all([
+      storage.persistWalletConnectSessions([session]),
+      storage.persistWalletConnectSessions([session, other]),
+    ]);
+
+    expect(await loadModule().loadWalletConnectSessions()).toEqual([
+      session,
+      other,
+    ]);
+  });
+
+  it('merges sessions that could not be restored into the next write', async () => {
+    const other = { ...session, key: 'other-key', peerId: 'peer-2' };
+    await loadModule().persistWalletConnectSessions([session]);
+    const storage = loadModule();
+    mockKeychainState.getFails = true;
+    expect(await storage.loadWalletConnectSessions()).toEqual([]);
+
+    mockKeychainState.getFails = false;
+    await storage.persistWalletConnectSessions([other]);
+
+    expect(await loadModule().loadWalletConnectSessions()).toEqual([
+      other,
+      session,
+    ]);
   });
 });
