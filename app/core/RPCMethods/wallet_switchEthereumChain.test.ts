@@ -1,4 +1,4 @@
-import { wallet_switchEthereumChain } from './wallet_switchEthereumChain';
+import { wallet_switchEthereumChain as wallet_switchEthereumChainTyped } from './wallet_switchEthereumChain';
 import Engine from '../Engine';
 import { mockNetworkState } from '../../util/test/network';
 import {
@@ -6,9 +6,18 @@ import {
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
 
+// The handler is invoked in this test with a legacy-shaped argument bag that
+// includes extra fields the strict TS type does not enumerate (e.g.
+// `switchCustomNetworkRequest`). Cast once at import time to a permissive
+// signature so individual call sites stay readable.
+const wallet_switchEthereumChain =
+  wallet_switchEthereumChainTyped as unknown as (
+    args: Record<string, unknown>,
+  ) => Promise<void>;
+
 const existingNetworkConfiguration = {
   id: 'test-network-configuration-id',
-  chainId: '0x64',
+  chainId: '0x64' as `0x${string}`,
   rpcUrl: 'https://rpc.test-chain.com',
   ticker: 'ETH',
   nickname: 'Gnosis Chain',
@@ -98,8 +107,8 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
-      expect(error.message).toContain('Expected single, object parameter.');
+    } catch (error: unknown) {
+      expect((error as Error).message).toContain('Expected single, object parameter.');
     }
   });
 
@@ -111,8 +120,8 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
-      expect(error.message).toContain(
+    } catch (error: unknown) {
+      expect((error as Error).message).toContain(
         'Received unexpected keys on object parameter. Unsupported keys',
       );
     }
@@ -126,8 +135,8 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
-      expect(error.message).toContain(
+    } catch (error: unknown) {
+      expect((error as Error).message).toContain(
         `Expected 0x-prefixed, unpadded, non-zero hexadecimal string 'chainId'.`,
       );
     }
@@ -141,8 +150,8 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         },
         ...otherOptions,
       });
-    } catch (error) {
-      expect(error.message).toContain(
+    } catch (error: unknown) {
+      expect((error as Error).message).toContain(
         'numerical value greater than max safe value.',
       );
     }
@@ -162,7 +171,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
       .mockReturnValue('mainnet');
     jest
       .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
-      .mockReturnValue({ configuration: { chainId: '0x1' } });
+      .mockReturnValue({ configuration: { chainId: '0x1' } } as unknown as ReturnType<typeof Engine.context.NetworkController.getNetworkClientById>);
     const spyOnSetActiveNetwork = jest.spyOn(
       Engine.context.MultichainNetworkController,
       'setActiveNetwork',
@@ -200,7 +209,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         .mockReturnValue('mainnet');
       jest
         .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
-        .mockReturnValue({ configuration: { chainId: '0x1' } });
+        .mockReturnValue({ configuration: { chainId: '0x1' } } as unknown as ReturnType<typeof Engine.context.NetworkController.getNetworkClientById>);
       otherOptions.hooks.getCaveat.mockReturnValue({
         type: Caip25CaveatType,
         value: {
@@ -247,7 +256,7 @@ describe('RPC Method - wallet_switchEthereumChain', () => {
         .mockReturnValue('mainnet');
       jest
         .spyOn(Engine.context.NetworkController, 'getNetworkClientById')
-        .mockReturnValue({ configuration: { chainId: '0x1' } });
+        .mockReturnValue({ configuration: { chainId: '0x1' } } as unknown as ReturnType<typeof Engine.context.NetworkController.getNetworkClientById>);
       const spyOnSetActiveNetwork = jest.spyOn(
         Engine.context.MultichainNetworkController,
         'setActiveNetwork',

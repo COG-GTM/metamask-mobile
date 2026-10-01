@@ -4,8 +4,16 @@ import {
   endowmentCaveatSpecifications as snapsEndowmentCaveatSpecifications,
 } from '@metamask/snaps-rpc-methods';
 ///: END:ONLY_INCLUDE_IF
-import {  RestrictedMethods } from './constants';
-import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCaip25Caveat } from '@metamask/chain-agnostic-permission';
+import { RestrictedMethods } from './constants';
+import {
+  caip25CaveatBuilder,
+  Caip25CaveatType,
+  caip25EndowmentBuilder,
+  createCaip25Caveat,
+} from '@metamask/chain-agnostic-permission';
+import type { InternalAccount } from '@metamask/keyring-internal-api';
+import type { NetworkClientId } from '@metamask/network-controller';
+import type { CaipChainId, Hex } from '@metamask/utils';
 
 /**
  * This file contains the specifications of the permissions and caveats
@@ -20,7 +28,7 @@ import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCa
 export const PermissionKeys = Object.freeze({
   ...RestrictedMethods,
   permittedChains: 'endowment:permitted-chains',
-});
+} as const);
 
 /**
  * Factory functions for all caveat types recognized by the
@@ -28,35 +36,39 @@ export const PermissionKeys = Object.freeze({
  */
 export const CaveatFactories = Object.freeze({
   [Caip25CaveatType]: createCaip25Caveat,
-});
+} as const);
 
 /**
- * A PreferencesController identity object.
- *
- * @typedef {Object} Identity
- * @property {string} address - The address of the identity.
- * @property {string} name - The name of the identity.
- * @property {number} [lastSelected] - Unix timestamp of when the identity was
- * last selected in the UI.
+ * Options accepted by {@link getCaveatSpecifications}. All fields are optional
+ * because some call sites (notably the unit tests) invoke the function with a
+ * partial set of hooks; runtime behaviour is preserved by forwarding whatever
+ * is provided to {@link caip25CaveatBuilder}.
  */
+interface CaveatSpecificationOptions {
+  listAccounts?: () => InternalAccount[];
+  findNetworkClientIdByChainId?: (chainId: Hex) => NetworkClientId;
+  isNonEvmScopeSupported?: (scope: CaipChainId) => boolean;
+  getNonEvmAccountAddresses?: (scope: CaipChainId) => string[];
+}
 
 /**
  * Gets the specifications for all caveats that will be recognized by the
  * PermissionController.
  *
- * @param {{
- * listAccounts: () => import('@metamask/keyring-api').InternalAccount[],
- * findNetworkClientIdByChainId: (chainId: `0x${string}`) => string,
- * }} options - Options bag.
+ * @param options - Options bag.
  */
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+  isNonEvmScopeSupported,
+  getNonEvmAccountAddresses,
+}: CaveatSpecificationOptions) => ({
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+    isNonEvmScopeSupported,
+    getNonEvmAccountAddresses,
+  } as Parameters<typeof caip25CaveatBuilder>[0]),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,
@@ -67,8 +79,10 @@ export const getCaveatSpecifications = ({
  * Gets the specifications for all permissions that will be recognized by the
  * PermissionController.
  *
+ * Accepts (and ignores) an options bag so that historical JS callers that
+ * pass `{}` continue to work after the .js -> .ts migration.
  */
-export const getPermissionSpecifications = () => ({
+export const getPermissionSpecifications = (_options?: unknown) => ({
   [caip25EndowmentBuilder.targetName]:
     caip25EndowmentBuilder.specificationBuilder({}),
 });
