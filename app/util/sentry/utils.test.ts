@@ -135,7 +135,7 @@ describe('captureSentryFeedback', () => {
   });
 
   describe('maskObject', () => {
-    const rootState: DeepPartial<RootState> = {
+    const rootState = {
       legalNotices: {
         newPrivacyPolicyToastClickedOrClosed: true,
         newPrivacyPolicyToastShownDate: null,
@@ -483,7 +483,7 @@ describe('captureSentryFeedback', () => {
       confirmationMetrics: {
         metricsById: {},
       },
-    };
+    } as DeepPartial<RootState>;
 
     it('masks initial root state fixture', () => {
       const maskedState = maskObject(rootState, sentryStateMask);

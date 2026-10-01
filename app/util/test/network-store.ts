@@ -1,5 +1,6 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { getFixturesServerPortInApp } from './utils';
+import type { RootState } from '../../reducers';
 
 const FETCH_TIMEOUT = 40000; // Timeout in milliseconds
 
@@ -10,8 +11,8 @@ axios.defaults.headers.common['Access-Control-Allow-Methods'] =
 axios.defaults.headers.common['Access-Control-Allow-Headers'] =
   'Origin, X-Requested-With, Content-Type, Accept';
 
-const fetchWithTimeout = (url) =>
-  new Promise((resolve, reject) => {
+const fetchWithTimeout = (url: string): Promise<AxiosResponse> =>
+  new Promise<AxiosResponse>((resolve, reject) => {
     axios
       .get(url)
       .then((response) => resolve(response))
@@ -26,10 +27,14 @@ const BROWSERSTACK_LOCALHOST = 'bs-local.com';
 const FIXTURE_SERVER_URL = `http://${FIXTURE_SERVER_HOST}:${getFixturesServerPortInApp()}/state.json`;
 
 class ReadOnlyNetworkStore {
+  _initialized: boolean;
+  _state: RootState | undefined;
+  _asyncState: Record<string, string>;
+
   constructor() {
     this._initialized = false;
     this._state = undefined;
-    this._asyncState = undefined;
+    this._asyncState = {};
   }
 
   // Redux Store
@@ -38,7 +43,7 @@ class ReadOnlyNetworkStore {
     return this._state;
   }
 
-  async setState(state) {
+  async setState(state: RootState) {
     if (!state) {
       throw new Error('MetaMask - updated state is missing');
     }
@@ -47,25 +52,25 @@ class ReadOnlyNetworkStore {
   }
 
   // Async Storage
-  async getString(key) {
+  async getString(key: string) {
     await this._initIfRequired();
     const value = this._asyncState[key];
     return value !== undefined ? value : null;
   }
 
-  async set(key, value) {
+  async set(key: string, value: string) {
     await this._initIfRequired();
     this._asyncState[key] = value;
   }
 
-  async delete(key) {
+  async delete(key: string) {
     await this._initIfRequired();
     delete this._asyncState[key];
   }
 
   async clearAll() {
     await this._initIfRequired();
-    delete this._asyncState;
+    this._asyncState = {};
   }
 
   async _initIfRequired() {
@@ -87,8 +92,9 @@ class ReadOnlyNetworkStore {
         try {
           const response = await fetchWithTimeout(url);
           if (response.status === 200) {
-            this._state = response.data?.state;
-            this._asyncState = response.data?.asyncState;
+            this._state = response.data?.state as RootState | undefined;
+            this._asyncState = (response.data?.asyncState ??
+              {}) as Record<string, string>;
             return;
           }
         } catch (error) {

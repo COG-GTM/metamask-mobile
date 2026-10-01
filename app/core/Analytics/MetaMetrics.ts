@@ -203,15 +203,16 @@ class MetaMetrics implements IMetaMetrics {
    * Retrieve the analytics deletion request date from the preference
    * @private
    */
-  #getDeleteRegulationDateFromPrefs = async (): Promise<string> =>
-    await StorageWrapper.getItem(ANALYTICS_DATA_DELETION_DATE);
+  #getDeleteRegulationDateFromPrefs = async (): Promise<string | undefined> =>
+    (await StorageWrapper.getItem(ANALYTICS_DATA_DELETION_DATE)) ?? undefined;
 
   /**
    * Retrieve the analytics deletion regulation ID from the preference
    * @private
    */
-  #getDeleteRegulationIdFromPrefs = async (): Promise<string> =>
-    await StorageWrapper.getItem(METAMETRICS_DELETION_REGULATION_ID);
+  #getDeleteRegulationIdFromPrefs = async (): Promise<string | undefined> =>
+    (await StorageWrapper.getItem(METAMETRICS_DELETION_REGULATION_ID)) ??
+    undefined;
 
   /**
    * Persist the analytics recording status
@@ -281,9 +282,8 @@ class MetaMetrics implements IMetaMetrics {
     }
 
     // look for a new Metametics ID and use it or generate a new one
-    const metametricsId: string | undefined = await StorageWrapper.getItem(
-      METAMETRICS_ID,
-    );
+    const metametricsId: string | undefined =
+      (await StorageWrapper.getItem(METAMETRICS_ID)) ?? undefined;
     if (!metametricsId) {
       // keep the id format compatible with MixPanel but base it on a UUIDv4
       this.metametricsId = uuidv4();

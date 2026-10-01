@@ -198,7 +198,7 @@ describe('Transactions utils :: parseTransactionLegacy', () => {
     selectedGasFee: 'average',
     multiLayerL1FeeTotal: '0x0',
     ticker: 'tBNB',
-  };
+  } as unknown as Parameters<typeof parseTransactionLegacy>[0];
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -608,7 +608,9 @@ describe('Transactions utils :: generateTxWithNewTokenAllowance', () => {
 
   const decodeAmount = (data: string): string => {
     const decode = decodeApproveData(data);
-    return BNToHex(decode.encodedAmount);
+    return BNToHex(
+      decode.encodedAmount as unknown as Parameters<typeof BNToHex>[0],
+    );
   };
 
   it('should encode a integer correctly and return a new transaction', () => {
@@ -763,7 +765,9 @@ describe('Transaction utils :: calculateEIP1559Times', () => {
     },
     networkCongestion: 0,
     priorityFeeTrend: 'level',
-  };
+  } as unknown as Parameters<
+    typeof calculateEIP1559Times
+  >[0]['gasFeeEstimates'];
 
   it('returns data for very large gas fees estimates', () => {
     const EIP1559Times = calculateEIP1559Times({
@@ -1214,7 +1218,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1222,7 +1226,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx2', mockTransactionController);
-    
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1232,7 +1236,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1240,7 +1244,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('nonexistent', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1256,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 });
