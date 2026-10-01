@@ -1,4 +1,5 @@
 import { NetworkType, toHex } from '@metamask/controller-utils';
+import { Hex } from '@metamask/utils';
 
 export const MAINNET = 'mainnet';
 export const HOMESTEAD = 'homestead';
@@ -15,9 +16,6 @@ export const PRIVATENETWORK = 'PRIVATENETWORK';
 export const DEFAULT_MAINNET_CUSTOM_NAME = 'Ethereum Main Custom';
 export const IPFS_DEFAULT_GATEWAY_URL = 'https://dweb.link/ipfs/';
 
-/**
- * @enum {string}
- */
 export const NETWORKS_CHAIN_ID = {
   MAINNET: toHex('1'),
   OPTIMISM: toHex('10'),
@@ -43,10 +41,13 @@ export const NETWORKS_CHAIN_ID = {
   BERACHAIN: toHex('80085'),
   METACHAIN_ONE: toHex('112358'),
   MEGAETH_TESTNET: toHex('6342'),
-};
+} as const;
+
+export type NetworksChainIdKey = keyof typeof NETWORKS_CHAIN_ID;
+export type NetworksChainIdValue = (typeof NETWORKS_CHAIN_ID)[NetworksChainIdKey];
 
 // To add a deprecation warning to a network, add it to the array
-export const DEPRECATED_NETWORKS = [
+export const DEPRECATED_NETWORKS: Hex[] = [
   NETWORKS_CHAIN_ID.GOERLI,
   NETWORKS_CHAIN_ID.ARBITRUM_GOERLI,
   NETWORKS_CHAIN_ID.OPTIMISM_GOERLI,
@@ -72,9 +73,12 @@ export const CHAINLIST_CURRENCY_SYMBOLS_MAP = {
   LINEA_MAINNET: 'ETH',
   ZKSYNC_ERA: 'ETH',
   MEGAETH_TESTNET: 'MegaETH',
-};
+} as const;
 
-export const CURRENCY_SYMBOL_BY_CHAIN_ID = {
+export type ChainlistCurrencySymbol =
+  (typeof CHAINLIST_CURRENCY_SYMBOLS_MAP)[keyof typeof CHAINLIST_CURRENCY_SYMBOLS_MAP];
+
+export const CURRENCY_SYMBOL_BY_CHAIN_ID: Record<string, string> = {
   [NETWORKS_CHAIN_ID.MAINNET]: CHAINLIST_CURRENCY_SYMBOLS_MAP.MAINNET,
   [NETWORKS_CHAIN_ID.OPTIMISM]: CHAINLIST_CURRENCY_SYMBOLS_MAP.OPTIMISM,
   [NETWORKS_CHAIN_ID.BSC]: CHAINLIST_CURRENCY_SYMBOLS_MAP.BNB,
@@ -93,13 +97,14 @@ export const CURRENCY_SYMBOL_BY_CHAIN_ID = {
   [NETWORKS_CHAIN_ID.LINEA_MAINNET]:
     CHAINLIST_CURRENCY_SYMBOLS_MAP.LINEA_MAINNET,
   [NETWORKS_CHAIN_ID.ZKSYNC_ERA]: CHAINLIST_CURRENCY_SYMBOLS_MAP.ZKSYNC_ERA,
-  [NETWORKS_CHAIN_ID.MEGAETH_TESTNET]: CHAINLIST_CURRENCY_SYMBOLS_MAP.MEGAETH_TESTNET,
+  [NETWORKS_CHAIN_ID.MEGAETH_TESTNET]:
+    CHAINLIST_CURRENCY_SYMBOLS_MAP.MEGAETH_TESTNET,
 };
 
-export const TEST_NETWORK_IDS = [
+export const TEST_NETWORK_IDS: Hex[] = [
   NETWORKS_CHAIN_ID.GOERLI,
   NETWORKS_CHAIN_ID.SEPOLIA,
   NETWORKS_CHAIN_ID.LINEA_GOERLI,
   NETWORKS_CHAIN_ID.LINEA_SEPOLIA,
-  NETWORKS_CHAIN_ID.MEGAETH_TESTNET
+  NETWORKS_CHAIN_ID.MEGAETH_TESTNET,
 ];
