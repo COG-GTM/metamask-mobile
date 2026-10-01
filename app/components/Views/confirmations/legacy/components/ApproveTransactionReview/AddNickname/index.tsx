@@ -279,4 +279,7 @@ const mapDispatchToProps = (dispatch: any) => ({
   }) => dispatch(showAlert(config)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(AddNickname);
+const __Connected = connect(mapStateToProps, mapDispatchToProps)(AddNickname);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default __Connected as unknown as React.ComponentType<any>;

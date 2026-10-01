@@ -1,34 +1,53 @@
+import type React from 'react';
+
+export interface LegacySelectedGasObject {
+  legacyGasLimit?: string;
+  suggestedGasPrice?: string;
+  suggestedMaxFeePerGas?: string;
+}
+
+export interface LegacyGasTxnSaveData {
+  totalMaxHex?: string;
+  totalHex?: string;
+  error?: string;
+  suggestedGasLimit?: string;
+  [key: string]: unknown;
+}
+
+export interface LegacyNewGasObject {
+  legacyGasLimit?: string;
+  suggestedGasPrice?: string;
+  suggestedMaxFeePerGas?: string;
+  suggestedMaxPriorityFeePerGas?: string;
+  suggestedGasLimit?: string;
+  maxFeePerGas?: string;
+  maxPriorityFeePerGas?: string;
+}
+
 export interface EditGasFeeLegacyUpdateProps {
   /**
    * Function called when user cancels
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onCancel: any;
+  onCancel: () => void;
   /**
    * Function called when user saves the new gas
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onSave: (gasTxn: any, newGasObject: any) => void;
+  onSave: (
+    gasTxn: LegacyGasTxnSaveData,
+    newGasObject: LegacyNewGasObject,
+  ) => void;
   /**
    * Error message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any;
+  error?: string | React.ReactNode;
   /**
    * Warning message to show
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warning?: any;
+  warning?: string | React.ReactNode;
   /**
    * Extend options object. Object has option keys and properties will be spread
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  extendOptions?: any;
+  extendOptions?: Record<string, unknown>;
   /**
    * Function to call when update animation starts
    */
@@ -48,14 +67,10 @@ export interface EditGasFeeLegacyUpdateProps {
   /**
    * Extra analytics params to be send with the gas analytics
    */
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  analyticsParams: any;
+  analyticsParams: Record<string, unknown>;
   view: string;
   onlyGas?: boolean;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectedGasObject: any;
+  selectedGasObject: LegacySelectedGasObject;
   hasDappSuggestedGas?: boolean;
   chainId: string;
 }
