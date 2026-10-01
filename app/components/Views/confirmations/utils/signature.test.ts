@@ -89,6 +89,48 @@ describe('Signature Utils', () => {
         parseAndNormalizeSignTypedData('');
       }).toThrow(new Error('Unexpected end of JSON input'));
     });
+
+    it('reads the top-level message.value even when it is not the first key (e.g. real permit ordering)', () => {
+      const data =
+        '{"primaryType":"Permit","message":{"owner":"0x1","spender":"0x2","value":900000000000000000000,"nonce":0,"deadline":50000000000}}';
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe('900000000000000000000');
+    });
+
+    it('is not fooled by a decoy nested value placed after the real top-level value', () => {
+      const data =
+        '{"primaryType":"Permit","message":{"value":900000000000000000000,"decoy":{"value":100000000000000}}}';
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe('900000000000000000000');
+    });
+
+    it('is not fooled by a decoy nested value placed before the real top-level value', () => {
+      const data =
+        '{"primaryType":"Permit","message":{"decoy":{"value":100000000000000},"value":900000000000000000000}}';
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe('900000000000000000000');
+    });
+
+    it('is not fooled by a value field declared in the types section', () => {
+      const data =
+        '{"types":{"Permit":[{"name":"value","type":"uint256"}]},"primaryType":"Permit","message":{"owner":"0x1","spender":"0x2","value":3000,"nonce":0,"deadline":50000000000}}';
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe('3000');
+    });
+
+    it('ignores a value field declared inside the domain', () => {
+      const data =
+        '{"domain":{"value":99},"primaryType":"Permit","message":{"owner":"0x1","value":7}}';
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe('7');
+    });
+
+    it('is not fooled by a brace or "value" substring inside a string field', () => {
+      const data =
+        '{"message":{"contents":"has } brace and \\"value\\": 5","value":42}}';
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe('42');
+    });
   });
 
   describe('isRecognizedPermit', () => {
