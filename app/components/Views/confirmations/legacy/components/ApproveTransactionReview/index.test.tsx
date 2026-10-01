@@ -1,10 +1,15 @@
+import React from 'react';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { cloneDeep } from 'lodash';
 import ApproveTransactionModal from '.';
 import { getTokenDetails } from '../../../../../../util/address';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
-import { renderScreen } from '../../../../../../util/test/renderWithProvider';
+import {
+  renderScreen,
+  DeepPartial,
+} from '../../../../../../util/test/renderWithProvider';
 import { SET_APPROVAL_FOR_ALL_SIGNATURE } from '../../../../../../util/transactions';
+import { RootState } from '../../../../../../reducers';
 
 jest.mock('../../../../../../util/address', () => ({
   ...jest.requireActual('../../../../../../util/address'),
@@ -43,6 +48,11 @@ jest.mock('../../../../../../core/Engine', () => {
     },
   };
 });
+
+const ApproveTransactionModalComponent =
+  ApproveTransactionModal as unknown as React.ComponentType<{
+    onConfirm?: () => void;
+  }>;
 
 const data = `0x${SET_APPROVAL_FOR_ALL_SIGNATURE}00000000000000000000000056ced0d816c668d7c0bcc3fbf0ab2c6896f589a00000000000000000000000000000000000000000000000000000000000000001`;
 const transaction = {
@@ -106,21 +116,27 @@ const initialState = {
 describe('ApproveTransactionModal', () => {
   it('render matches snapshot', () => {
     const { toJSON } = renderScreen(
-      ApproveTransactionModal,
+      ApproveTransactionModalComponent,
       { name: 'Approve' },
-      { state: initialState },
+      { state: initialState as unknown as DeepPartial<RootState> },
     );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('Approve button is enabled when standard is defined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({
       standard: 'ERC20',
     });
     const state = cloneDeep(initialState);
-    state.engine.backgroundState.AccountTrackerController.accounts = [];
-    state.engine.backgroundState.TokenListController = {
+    (
+      state.engine.backgroundState.AccountTrackerController as unknown as {
+        accounts: unknown[];
+      }
+    ).accounts = [];
+    (
+      state.engine.backgroundState as unknown as Record<string, unknown>
+    ).TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
@@ -159,12 +175,9 @@ describe('ApproveTransactionModal', () => {
     };
     const mockOnConfirm = jest.fn();
     const { getByTestId } = renderScreen(
-      () => (
-        // eslint-disable-next-line react/react-in-jsx-scope
-        <ApproveTransactionModal onConfirm={mockOnConfirm} />
-      ),
+      () => <ApproveTransactionModalComponent onConfirm={mockOnConfirm} />,
       { name: 'Approve' },
-      { state },
+      { state: state as unknown as DeepPartial<RootState> },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();
@@ -178,11 +191,17 @@ describe('ApproveTransactionModal', () => {
   });
 
   it('Approve button is disabled when standard is undefined', async () => {
-    const mockGetTokenDetails = getTokenDetails;
+    const mockGetTokenDetails = getTokenDetails as jest.Mock;
     mockGetTokenDetails.mockReturnValue({});
     const state = cloneDeep(initialState);
-    state.engine.backgroundState.AccountTrackerController.accounts = [];
-    state.engine.backgroundState.TokenListController = {
+    (
+      state.engine.backgroundState.AccountTrackerController as unknown as {
+        accounts: unknown[];
+      }
+    ).accounts = [];
+    (
+      state.engine.backgroundState as unknown as Record<string, unknown>
+    ).TokenListController = {
       tokensChainsCache: {
         '0x1': {
           data: [{
@@ -220,12 +239,9 @@ describe('ApproveTransactionModal', () => {
     };
     const mockOnConfirm = jest.fn();
     const { getByTestId } = renderScreen(
-      () => (
-        // eslint-disable-next-line react/react-in-jsx-scope
-        <ApproveTransactionModal onConfirm={mockOnConfirm} />
-      ),
+      () => <ApproveTransactionModalComponent onConfirm={mockOnConfirm} />,
       { name: 'Approve' },
-      { state },
+      { state: state as unknown as DeepPartial<RootState> },
     );
 
     expect(mockGetTokenDetails).toHaveBeenCalled();
