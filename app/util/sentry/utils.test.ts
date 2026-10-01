@@ -5,6 +5,7 @@ import {
   excludeEvents,
   captureSentryFeedback,
   maskObject,
+  rewriteReport,
   sentryStateMask,
   AllProperties,
 } from './utils';
@@ -730,5 +731,63 @@ describe('captureSentryFeedback', () => {
         exampleObj: 'object',
       },
     });
+  });
+});
+
+describe('rewriteReport', () => {
+  const buildReport = (message: string) => ({
+    message,
+    exception: { values: [{ value: message }] },
+    contexts: {},
+  });
+
+  it('redacts every non-allowlisted URL and keeps allowlisted ones', () => {
+    const report = rewriteReport(
+      buildReport(
+        'Failed https://mainnet.infura.io/v3/secret-key then https://api.etherscan.io/api and https://evil.app/dapp?x=1',
+      ),
+    );
+    const expected = 'Failed ** then https://api.etherscan.io/api and **';
+    expect(report.message).toBe(expected);
+    expect(report.exception.values[0].value).toBe(expected);
+  });
+
+  it.each([
+    ['https://rpc.example.technology/v3/private-key', '**'],
+    ['wss://mainnet.infura.io/ws/v3/secret-key', '**'],
+    ['http://localhost:8545/secret', '**'],
+    ['https://evil.app/?etherscan.io', '**'],
+    ['https://etherscan.io.evil.app/api', '**'],
+    ['https://user:pass@api.etherscan.io/api', '**'],
+    [
+      'https://api.etherscan.io/api?apikey=secret#x',
+      'https://api.etherscan.io/api',
+    ],
+    ['https://ETHERSCAN.IO:443/tx', 'https://ETHERSCAN.IO:443/tx'],
+    ['rpc_https://rpc.private.app/key', 'rpc_**'],
+    [
+      'https://etherscan.io/tx,https://rpc.private.app/key',
+      'https://etherscan.io/tx,**',
+    ],
+  ])('sanitizes %s', (url, expected) => {
+    expect(rewriteReport(buildReport(`Failed ${url} now`)).message).toBe(
+      `Failed ${expected} now`,
+    );
+  });
+
+  it('redacts every address in the message', () => {
+    const report = rewriteReport(
+      buildReport(
+        'from 0x1234567890ABCDEF1234567890ABCDEF12345678 to 0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+      ),
+    );
+    expect(report.message).toBe('from ** to **');
+    expect(report.exception.values[0].value).toBe('from ** to **');
+  });
+
+  it('redacts addresses consistently across repeated reports', () => {
+    const address = '0x1234567890ABCDEF1234567890ABCDEF12345678';
+    expect(rewriteReport(buildReport(address)).message).toBe('**');
+    expect(rewriteReport(buildReport(address)).message).toBe('**');
   });
 });

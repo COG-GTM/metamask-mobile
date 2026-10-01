@@ -419,7 +419,7 @@ export function maskObject(objectToMask, mask = {}) {
   }, {});
 }
 
-function rewriteReport(report) {
+export function rewriteReport(report) {
   try {
     // filter out SES from error stack trace
     removeSES(report);
@@ -480,16 +480,42 @@ export function excludeEvents(event) {
   return event;
 }
 
+/**
+ * Checks whether a host is, or is a subdomain of, an ERROR_URL_ALLOWLIST entry.
+ *
+ * @param {string} host - Lowercased hostname without port.
+ * @returns {boolean} True if the host is allowlisted.
+ */
+function isAllowlistedHost(host) {
+  return ERROR_URL_ALLOWLIST.some(
+    (allowedHost) => host === allowedHost || host.endsWith(`.${allowedHost}`),
+  );
+}
+
+/**
+ * Redacts a URL found in a Sentry error message.
+ *
+ * @param {string} url - URL matched by `regex.sanitizeUrl`.
+ * @returns {string} `**` unless the host is allowlisted and has no userinfo,
+ * in which case the origin and path are kept and the query and fragment dropped.
+ */
+function sanitizeErrorUrl(url) {
+  const [, origin = '', authority = '', path = ''] =
+    url.match(/^([a-z]+:\/\/([^/?#]*))([^?#]*)/iu) || [];
+  const host = authority.replace(/:\d+$/u, '').toLowerCase();
+  if (authority.includes('@') || !isAllowlistedHost(host)) {
+    return '**';
+  }
+  return origin + path;
+}
+
 function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
-    const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
-
-    urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
-        errorMessage.replace(url, '**');
-      }
-    });
-    return errorMessage;
+    const sanitizedErrorMessage = errorMessage.replace(
+      regex.sanitizeUrl,
+      sanitizeErrorUrl,
+    );
+    return sanitizedErrorMessage;
   });
 }
 
