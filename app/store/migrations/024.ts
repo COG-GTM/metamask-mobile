@@ -2,6 +2,12 @@ import { isObject } from '@metamask/utils';
 import { captureException } from '@sentry/react-native';
 import { NetworkStatus } from '@metamask/network-controller';
 
+interface Migration24State {
+  engine: {
+    backgroundState: Record<string, unknown>;
+  };
+}
+
 /**
  * Migrate NetworkController state, splitting old `network` property into
  * `networkId` and `networkStatus`. This is required to update to v8 of the
@@ -16,8 +22,10 @@ import { NetworkStatus } from '@metamask/network-controller';
  * redux-persist bug somehow.
  *
  **/
-export default function migrate(state) {
-  const networkControllerState = state.engine.backgroundState.NetworkController;
+export default function migrate(state: unknown) {
+  const typedState = state as Migration24State;
+  const networkControllerState =
+    typedState.engine.backgroundState.NetworkController;
 
   if (!isObject(networkControllerState)) {
     captureException(
@@ -25,14 +33,14 @@ export default function migrate(state) {
         `Migration 24: Invalid network controller state: '${typeof networkControllerState}'`,
       ),
     );
-    return state;
+    return typedState;
   } else if (typeof networkControllerState.network !== 'string') {
     captureException(
       new Error(
         `Migration 24: Invalid network state: '${typeof networkControllerState.network}'`,
       ),
     );
-    return state;
+    return typedState;
   }
 
   if (networkControllerState.network === 'loading') {
@@ -44,5 +52,5 @@ export default function migrate(state) {
   }
   delete networkControllerState.network;
 
-  return state;
+  return typedState;
 }

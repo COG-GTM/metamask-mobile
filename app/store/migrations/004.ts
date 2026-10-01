@@ -1,15 +1,37 @@
+// @ts-expect-error NetworksChainId is no longer exported from this module; retained to preserve original (legacy) migration behavior
 import { NetworksChainId } from '@metamask/controller-utils';
 
-export default function migrate(state) {
-  const { allTokens } = state.engine.backgroundState.TokensController;
-  const { allCollectibleContracts, allCollectibles } =
-    state.engine.backgroundState.CollectiblesController;
-  const { frequentRpcList } =
-    state.engine.backgroundState.PreferencesController;
+interface Migration4State {
+  engine: {
+    backgroundState: {
+      TokensController: {
+        allTokens: Record<string, Record<string, unknown>>;
+      };
+      CollectiblesController: {
+        allCollectibleContracts: Record<string, Record<string, unknown>>;
+        allCollectibles: Record<string, Record<string, unknown>>;
+      };
+      PreferencesController: {
+        frequentRpcList: { chainId: string }[];
+      };
+    };
+  };
+}
 
-  const newAllCollectibleContracts = {};
-  const newAllCollectibles = {};
-  const newAllTokens = {};
+export default function migrate(state: unknown) {
+  const typedState = state as Migration4State;
+  const { allTokens } = typedState.engine.backgroundState.TokensController;
+  const { allCollectibleContracts, allCollectibles } =
+    typedState.engine.backgroundState.CollectiblesController;
+  const { frequentRpcList } =
+    typedState.engine.backgroundState.PreferencesController;
+
+  const newAllCollectibleContracts: Record<
+    string,
+    Record<string, unknown>
+  > = {};
+  const newAllCollectibles: Record<string, Record<string, unknown>> = {};
+  const newAllTokens: Record<string, Record<string, unknown>> = {};
 
   Object.keys(allTokens).forEach((address) => {
     newAllTokens[address] = {};
@@ -55,14 +77,14 @@ export default function migrate(state) {
     });
   });
 
-  state.engine.backgroundState.TokensController = {
-    ...state.engine.backgroundState.TokensController,
+  typedState.engine.backgroundState.TokensController = {
+    ...typedState.engine.backgroundState.TokensController,
     allTokens: newAllTokens,
   };
-  state.engine.backgroundState.CollectiblesController = {
-    ...state.engine.backgroundState.CollectiblesController,
+  typedState.engine.backgroundState.CollectiblesController = {
+    ...typedState.engine.backgroundState.CollectiblesController,
     allCollectibles: newAllCollectibles,
     allCollectibleContracts: newAllCollectibleContracts,
   };
-  return state;
+  return typedState;
 }
