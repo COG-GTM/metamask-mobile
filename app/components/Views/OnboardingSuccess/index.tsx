@@ -2,6 +2,7 @@ import React, { useCallback, useLayoutEffect, useState } from 'react';
 import {
   ScrollView,
   View,
+  Alert,
   Linking,
   Keyboard,
   TouchableOpacity,
@@ -35,6 +36,7 @@ import { OnboardingSuccessSelectorIDs } from '../../../../e2e/selectors/Onboardi
 import styles from './index.styles';
 import importAdditionalAccounts from '../../../util/importAdditionalAccounts';
 import { setCompletedOnboarding } from '../../../actions/onboarding';
+import { isHintSeedPhrase } from '../../../util/mnemonic';
 
 interface OnboardingSuccessProps {
   onDone: () => void;
@@ -78,6 +80,10 @@ const OnboardingSuccess = ({
 
   const saveHint = async () => {
     if (!hintText) return;
+    if (isHintSeedPhrase(hintText)) {
+      Alert.alert('Error!', strings('manual_backup_step_3.no_seedphrase'));
+      return;
+    }
     setShowHint(false);
     const currentSeedphraseHints = await StorageWrapper.getItem(
       SEED_PHRASE_HINTS,

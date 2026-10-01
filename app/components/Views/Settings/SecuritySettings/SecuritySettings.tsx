@@ -30,6 +30,7 @@ import {
   SEED_PHRASE_HINTS,
 } from '../../../../constants/storage';
 import HintModal from '../../../UI/HintModal';
+import { isHintSeedPhrase } from '../../../../util/mnemonic';
 import { MetaMetricsEvents, useMetrics } from '../../../hooks/useMetrics';
 import { Authentication } from '../../../../core';
 import AUTHENTICATION_TYPE from '../../../../constants/userProperties';
@@ -241,6 +242,10 @@ const Settings: React.FC = () => {
 
   const saveHint = async () => {
     if (!hintText) return;
+    if (isHintSeedPhrase(hintText)) {
+      Alert.alert('Error!', strings('manual_backup_step_3.no_seedphrase'));
+      return;
+    }
     toggleHint();
     const currentSeedphraseHints = await StorageWrapper.getItem(
       SEED_PHRASE_HINTS,
