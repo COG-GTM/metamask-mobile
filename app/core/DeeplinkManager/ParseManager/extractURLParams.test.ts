@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import UrlParser from 'url-parse';
 import { strings } from '../../../../locales/i18n';
 import { PROTOCOLS } from '../../../constants/deeplinks';
+import Logger from '../../../util/Logger';
 import extractURLParams from './extractURLParams';
 
 jest.mock('qs', () => ({
@@ -17,6 +18,11 @@ jest.mock('url-parse', () => {
     default: mockUrlParser,
   };
 });
+
+jest.mock('../../../util/Logger', () => ({
+  __esModule: true,
+  default: { log: jest.fn(), error: jest.fn() },
+}));
 
 jest.mock('react-native', () => ({
   Alert: {
@@ -155,5 +161,24 @@ describe('extractURLParams', () => {
     const { params } = extractURLParams(url);
 
     expect(params).toEqual(expectedParams);
+  });
+
+  it('restores + in the SDK message param without logging its content', () => {
+    const url = `${PROTOCOLS.DAPP}/https://example.com?channelId=123&message=abc def`;
+    const secret = 'c2VjcmV0 cGF5bG9hZA==';
+
+    mockUrlParser.mockImplementation(
+      () =>
+        ({
+          query: `?channelId=123&message=${secret}`,
+        } as unknown as UrlParser<string>),
+    );
+
+    mockQs.parse.mockReturnValue({ channelId: '123', message: secret });
+
+    const { params } = extractURLParams(url);
+
+    expect(params.message).toBe('c2VjcmV0+cGF5bG9hZA==');
+    expect(Logger.log).not.toHaveBeenCalled();
   });
 });
