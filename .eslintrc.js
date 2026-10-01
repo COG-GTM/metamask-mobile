@@ -8,7 +8,7 @@ module.exports = {
   extends: [
     '@react-native',
     'eslint:recommended',
-    // '@metamask/eslint-config', // TODO: Enable when ready
+    // '@metamask/eslint-config', // TODO: Enable when ready — all files are now TS but this config adds many strict rules that need incremental adoption
     'plugin:import/warnings',
     'plugin:react/recommended',
   ],
