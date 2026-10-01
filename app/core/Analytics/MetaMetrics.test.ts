@@ -14,6 +14,8 @@ import {
   DataDeleteResponseStatus,
   DataDeleteStatus,
   ISegmentClient,
+  SegmentDeleteRegulationResponse,
+  SegmentRegulationStatusResponse,
 } from './MetaMetrics.types';
 import { MetricsEventBuilder } from './MetricsEventBuilder';
 
@@ -546,9 +548,7 @@ describe('MetaMetrics', () => {
         (axios as jest.MockedFunction<typeof axios>).mockResolvedValue({
           status: 200,
           data: { data: { regulateId: 'TWV0YU1hc2t1c2Vzbm9wb2ludCE' } },
-          // TODO: Replace "any" with type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as AxiosResponse<any>);
+        } as AxiosResponse<SegmentDeleteRegulationResponse>);
 
         const result = await metaMetrics.createDataDeletionTask();
 
@@ -715,9 +715,7 @@ describe('MetaMetrics', () => {
               },
             },
           },
-          // TODO: Replace "any" with type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as AxiosResponse<any>);
+        } as unknown as AxiosResponse<SegmentRegulationStatusResponse>);
 
         const {
           hasCollectedDataSinceDeletionRequest,
