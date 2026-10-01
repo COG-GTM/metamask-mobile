@@ -480,12 +480,25 @@ export function excludeEvents(event) {
   return event;
 }
 
+/**
+ * Checks whether a host is, or is a subdomain of, an ERROR_URL_ALLOWLIST entry.
+ *
+ * @param {string} host - Lowercased hostname without port.
+ * @returns {boolean} True if the host is allowlisted.
+ */
 function isAllowlistedHost(host) {
   return ERROR_URL_ALLOWLIST.some(
     (allowedHost) => host === allowedHost || host.endsWith(`.${allowedHost}`),
   );
 }
 
+/**
+ * Redacts a URL found in a Sentry error message.
+ *
+ * @param {string} url - URL matched by `regex.sanitizeUrl`.
+ * @returns {string} `**` unless the host is allowlisted and has no userinfo,
+ * in which case the origin and path are kept and the query and fragment dropped.
+ */
 function sanitizeErrorUrl(url) {
   const [, origin = '', authority = '', path = ''] =
     url.match(/^([a-z]+:\/\/([^/?#]*))([^?#]*)/iu) || [];

@@ -764,6 +764,11 @@ describe('rewriteReport', () => {
       'https://api.etherscan.io/api',
     ],
     ['https://ETHERSCAN.IO:443/tx', 'https://ETHERSCAN.IO:443/tx'],
+    ['rpc_https://rpc.private.app/key', 'rpc_**'],
+    [
+      'https://etherscan.io/tx,https://rpc.private.app/key',
+      'https://etherscan.io/tx,**',
+    ],
   ])('sanitizes %s', (url, expected) => {
     expect(rewriteReport(buildReport(`Failed ${url} now`)).message).toBe(
       `Failed ${expected} now`,
