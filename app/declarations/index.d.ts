@@ -6,6 +6,18 @@ declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
 declare module 'react-native-fade-in-image';
 
+declare module 'react-native/Libraries/Image/resolveAssetSource' {
+  import { ImageResolvedAssetSource, ImageSourcePropType } from 'react-native';
+
+  const resolveAssetSource: (
+    source: ImageSourcePropType,
+  ) => Omit<ImageResolvedAssetSource, 'uri'> & {
+    uri?: string;
+    __packager_asset?: boolean;
+  };
+  export default resolveAssetSource;
+}
+
 declare module 'react-native-fast-crypto';
 
 declare module 'react-native-minimizer';
