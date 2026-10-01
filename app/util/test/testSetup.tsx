@@ -1,4 +1,5 @@
-import { NativeModules } from 'react-native';
+import React from 'react';
+import { NativeModules, ViewProps } from 'react-native';
 import mockRNAsyncStorage from '@react-native-async-storage/async-storage/jest/async-storage-mock';
 import mockClipboard from '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
 /* eslint-disable import/no-namespace */
@@ -17,39 +18,31 @@ jest.mock('react-native-quick-crypto', () => ({
     return array;
   }),
   subtle: {
-    importKey: jest.fn((format, keyData, algorithm, extractable, keyUsages) => {
-      return Promise.resolve({
+    importKey: jest.fn((format, keyData, algorithm, extractable, keyUsages) => Promise.resolve({
         format,
         keyData,
         algorithm,
         extractable,
         keyUsages,
-      });
-    }),
-    deriveBits: jest.fn((algorithm, baseKey, length) => {
+      })),
+    deriveBits: jest.fn((_algorithm, _baseKey, length) => {
       const derivedBits = new Uint8Array(length);
       for (let i = 0; i < length; i++) {
         derivedBits[i] = Math.floor(Math.random() * 256);
       }
       return Promise.resolve(derivedBits);
     }),
-    exportKey: jest.fn((format, key) => {
-      return Promise.resolve(new Uint8Array([1, 2, 3, 4]));
-    }),
-    encrypt: jest.fn((algorithm, key, data) => {
-      return Promise.resolve(new Uint8Array([
+    exportKey: jest.fn((_format, _key) => Promise.resolve(new Uint8Array([1, 2, 3, 4]))),
+    encrypt: jest.fn((_algorithm, _key, _data) => Promise.resolve(new Uint8Array([
         123,  34, 116, 101, 115,
         116,  34,  58,  34, 100,
          97, 116,  97,  34, 125
-      ]));
-    }),
-    decrypt: jest.fn((algorithm, key, data) => {
-      return Promise.resolve(new Uint8Array([
+      ]))),
+    decrypt: jest.fn((_algorithm, _key, _data) => Promise.resolve(new Uint8Array([
         123,  34, 116, 101, 115,
         116,  34,  58,  34, 100,
          97, 116,  97,  34, 125
-      ]));
-    }),
+      ]))),
   },
 }));
 
@@ -69,9 +62,8 @@ jest.mock('react-native', () => {
  * More info on https://github.com/react-native-webview/react-native-webview/issues/2934
  */
 jest.mock('@metamask/react-native-webview', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-  const { View } = require('react-native');
-  const WebView = (props) => <View {...props} />;
+  const { View } = jest.requireActual('react-native');
+  const WebView = (props: ViewProps) => <View {...props} />;
 
   return {
     WebView,
@@ -157,14 +149,14 @@ jest.mock('../../core/NotificationManager', () => ({
   showSimpleNotification: jest.fn(),
 }));
 
-let mockState = {};
+let mockState: Record<string, unknown> = {};
 
 jest.mock('../../store', () => ({
   store: {
     getState: jest.fn().mockImplementation(() => mockState),
     dispatch: jest.fn(),
   },
-  _updateMockState: (state) => {
+  _updateMockState: (state: Record<string, unknown>) => {
     mockState = state;
   },
 }));
@@ -206,12 +198,12 @@ jest.mock('react-native-keychain', () => ({
   },
   getSupportedBiometryType: jest.fn().mockReturnValue('FaceID'),
   setInternetCredentials: jest
-    .fn(('server', 'username', 'password'))
+    .fn()
     .mockResolvedValue({ service: 'metamask', storage: 'storage' }),
   getInternetCredentials: jest
     .fn()
     .mockResolvedValue({ password: 'mock-credentials-password' }),
-  resetInternetCredentials: jest.fn().mockResolvedValue(),
+  resetInternetCredentials: jest.fn().mockResolvedValue(undefined),
   ACCESSIBLE: {
     WHEN_UNLOCKED: 'AccessibleWhenUnlocked',
     AFTER_FIRST_UNLOCK: 'AccessibleAfterFirstUnlock',
@@ -244,8 +236,7 @@ jest.mock('@react-native-cookies/cookies', () => 'RNCookies');
  * Issue: https://github.com/software-mansion/react-native-reanimated/issues/6645
  */
 jest.mock('react-native-reanimated', () =>
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require('react-native-reanimated/mock'),
+  jest.requireActual('react-native-reanimated/mock'),
 );
 
 NativeModules.RNGestureHandlerModule = {
@@ -324,10 +315,15 @@ jest.mock('../theme', () => ({
   useAppThemeFromContext: () => ({ ...mockTheme }),
 }));
 
-global.segmentMockClient = null;
+const testGlobal = global as typeof globalThis & {
+  segmentMockClient: Record<string, jest.Mock> | null;
+  __reanimatedWorkletInit: jest.Mock;
+};
+
+testGlobal.segmentMockClient = null;
 
 const initializeMockClient = () => {
-  global.segmentMockClient = {
+  testGlobal.segmentMockClient = {
     screen: jest.fn(),
     track: jest.fn(),
     identify: jest.fn(),
@@ -337,15 +333,15 @@ const initializeMockClient = () => {
     reset: jest.fn(),
     add: jest.fn(),
   };
-  return global.segmentMockClient;
+  return testGlobal.segmentMockClient;
 };
 
 jest.mock('@segment/analytics-react-native', () => {
   class Plugin {
     type = 'utility';
-    analytics = undefined;
+    analytics: unknown = undefined;
 
-    configure(analytics) {
+    configure(analytics: unknown) {
       this.analytics = analytics;
     }
   }
@@ -365,21 +361,20 @@ jest.mock('@segment/analytics-react-native', () => {
 });
 
 jest.mock('@notifee/react-native', () =>
-  require('@notifee/react-native/jest-mock'),
+  jest.requireActual('@notifee/react-native/jest-mock'),
 );
 
 jest.mock('react-native/Libraries/Image/resolveAssetSource', () => ({
   __esModule: true,
-  default: (source) => {
-    return { uri: source.uri };
-  },
+  default: (source: { uri: string }) => ({ uri: source.uri }),
 }));
 
 jest.mock('redux-persist', () => ({
   persistStore: jest.fn(),
-  persistReducer: (_, reducer) => {
-    return reducer || ((state) => state);
-  },
+  persistReducer: (
+    _: unknown,
+    reducer: ((state: unknown) => unknown) | undefined,
+  ) => reducer || ((state: unknown) => state),
   createTransform: jest.fn(),
   createMigrate: jest.fn(),
 }));
@@ -389,13 +384,12 @@ jest.mock('../../store/storage-wrapper', () => ({
   setItem: jest.fn(),
 }));
 
-// eslint-disable-next-line import/no-commonjs
-require('react-native-reanimated').setUpTests();
-global.__reanimatedWorkletInit = jest.fn();
-global.__DEV__ = false;
+jest.requireMock('react-native-reanimated').setUpTests();
+testGlobal.__reanimatedWorkletInit = jest.fn();
+(global as unknown as { __DEV__: boolean }).__DEV__ = false;
 
 jest.mock('../../core/Engine', () =>
-  require('../../core/__mocks__/MockedEngine'),
+  jest.requireActual('../../core/__mocks__/MockedEngine'),
 );
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -405,63 +399,57 @@ jest.mock('react-native-safe-area-context', () => ({
 
 afterEach(() => {
   jest.restoreAllMocks();
-  global.gc && global.gc(true);
+  global.gc && (global.gc as (options?: boolean) => void)(true);
 });
 
 global.crypto = {
-  getRandomValues: (arr) => {
+  getRandomValues: (arr: Uint8Array) => {
     const uint8Max = 255;
     for (let i = 0; i < arr.length; i++) {
       arr[i] = Math.floor(Math.random() * (uint8Max + 1));
     }
     return arr;
   },
-};
+} as unknown as Crypto;
 
 jest.mock('@react-native-firebase/messaging', () => {
-  const module = () => {
-    return {
-      getToken: jest.fn(() => Promise.resolve('fcmToken')),
-      deleteToken: jest.fn(() => Promise.resolve()),
-      subscribeToTopic: jest.fn(),
-      unsubscribeFromTopic: jest.fn(),
-      hasPermission: jest.fn(() =>
-        Promise.resolve(module.AuthorizationStatus.AUTHORIZED),
-      ),
-      requestPermission: jest.fn(() =>
-        Promise.resolve(module.AuthorizationStatus.AUTHORIZED),
-      ),
-      setBackgroundMessageHandler: jest.fn(() => Promise.resolve()),
-      isDeviceRegisteredForRemoteMessages: jest.fn(() =>
-        Promise.resolve(false),
-      ),
-      registerDeviceForRemoteMessages: jest.fn(() =>
-        Promise.resolve('registered'),
-      ),
-      unregisterDeviceForRemoteMessages: jest.fn(() =>
-        Promise.resolve('unregistered'),
-      ),
-      onMessage: jest.fn(),
-      onTokenRefresh: jest.fn(),
-    };
-  };
-
-  module.AuthorizationStatus = {
+  const AuthorizationStatus = {
     NOT_DETERMINED: -1,
     DENIED: 0,
     AUTHORIZED: 1,
     PROVISIONAL: 2,
   };
 
-  return module;
+  const messaging = () => ({
+    getToken: jest.fn(() => Promise.resolve('fcmToken')),
+    deleteToken: jest.fn(() => Promise.resolve()),
+    subscribeToTopic: jest.fn(),
+    unsubscribeFromTopic: jest.fn(),
+    hasPermission: jest.fn(() =>
+      Promise.resolve(AuthorizationStatus.AUTHORIZED),
+    ),
+    requestPermission: jest.fn(() =>
+      Promise.resolve(AuthorizationStatus.AUTHORIZED),
+    ),
+    setBackgroundMessageHandler: jest.fn(() => Promise.resolve()),
+    isDeviceRegisteredForRemoteMessages: jest.fn(() => Promise.resolve(false)),
+    registerDeviceForRemoteMessages: jest.fn(() =>
+      Promise.resolve('registered'),
+    ),
+    unregisterDeviceForRemoteMessages: jest.fn(() =>
+      Promise.resolve('unregistered'),
+    ),
+    onMessage: jest.fn(),
+    onTokenRefresh: jest.fn(),
+  });
+
+  return Object.assign(messaging, { AuthorizationStatus });
 });
 
-jest.mock('../../core/Analytics/MetaMetricsTestUtils', () => {
-  return {
+jest.mock('../../core/Analytics/MetaMetricsTestUtils', () => ({
     default: {
       getInstance: jest.fn().mockReturnValue({
         trackEvent: jest.fn(),
       }),
     },
-  };
-});
+  }));
