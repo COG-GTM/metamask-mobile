@@ -38,8 +38,7 @@ export const regex: RegexTypes = {
   privateCredentials: /"/g,
   protocol: /^[a-z]*:\/\//,
   replaceNetworkErrorSentry: /0x[A-Fa-f0-9]{40}/gu,
-  sanitizeUrl:
-    /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gu,
+  sanitizeUrl: /\b(?:https?|wss?):\/\/[^\s"'<>`]+/giu,
   seedPhrase: /\w+/gu,
   startUrl: /^www\./,
   trailingSlash: /\/+$/,

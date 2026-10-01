@@ -752,6 +752,24 @@ describe('rewriteReport', () => {
     expect(report.exception.values[0].value).toBe(expected);
   });
 
+  it.each([
+    ['https://rpc.example.technology/v3/private-key', '**'],
+    ['wss://mainnet.infura.io/ws/v3/secret-key', '**'],
+    ['http://localhost:8545/secret', '**'],
+    ['https://evil.app/?etherscan.io', '**'],
+    ['https://etherscan.io.evil.app/api', '**'],
+    ['https://user:pass@api.etherscan.io/api', '**'],
+    [
+      'https://api.etherscan.io/api?apikey=secret#x',
+      'https://api.etherscan.io/api',
+    ],
+    ['https://ETHERSCAN.IO:443/tx', 'https://ETHERSCAN.IO:443/tx'],
+  ])('sanitizes %s', (url, expected) => {
+    expect(rewriteReport(buildReport(`Failed ${url} now`)).message).toBe(
+      `Failed ${expected} now`,
+    );
+  });
+
   it('redacts every address in the message', () => {
     const report = rewriteReport(
       buildReport(

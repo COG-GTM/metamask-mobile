@@ -480,14 +480,27 @@ export function excludeEvents(event) {
   return event;
 }
 
+function isAllowlistedHost(host) {
+  return ERROR_URL_ALLOWLIST.some(
+    (allowedHost) => host === allowedHost || host.endsWith(`.${allowedHost}`),
+  );
+}
+
+function sanitizeErrorUrl(url) {
+  const [, origin = '', authority = '', path = ''] =
+    url.match(/^([a-z]+:\/\/([^/?#]*))([^?#]*)/iu) || [];
+  const host = authority.replace(/:\d+$/u, '').toLowerCase();
+  if (authority.includes('@') || !isAllowlistedHost(host)) {
+    return '**';
+  }
+  return origin + path;
+}
+
 function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const sanitizedErrorMessage = errorMessage.replace(
       regex.sanitizeUrl,
-      (url) =>
-        ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))
-          ? url
-          : '**',
+      sanitizeErrorUrl,
     );
     return sanitizedErrorMessage;
   });
