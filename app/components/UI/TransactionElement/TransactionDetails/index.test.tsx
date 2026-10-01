@@ -102,15 +102,19 @@ const renderComponent = ({
       <Stack.Screen name="Amount" options={{}}>
         {() => (
           <TransactionDetails
-            transactionObject={{
-              networkID: '1',
-              status,
-              transaction: {
-                nonce: '',
-              },
-              chainId: networkId,
-              ...(txParams ? { txParams } : {}),
-            }}
+            transactionObject={
+              {
+                networkID: '1',
+                status,
+                transaction: {
+                  nonce: '',
+                },
+                chainId: networkId,
+                ...(txParams ? { txParams } : {}),
+              } as unknown as React.ComponentProps<
+                typeof TransactionDetails
+              >['transactionObject']
+            }
             transactionDetails={{
               renderFrom: '0x0',
               renderTo: networkId,

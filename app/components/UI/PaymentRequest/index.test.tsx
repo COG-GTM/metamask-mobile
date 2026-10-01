@@ -116,13 +116,17 @@ const mockNavigation = {
   setParams: jest.fn(),
   navigate: jest.fn(),
   goBack: jest.fn(),
+  replace: jest.fn(),
 };
 
 const mockRoute = {
+  key: 'PaymentRequest',
+  name: 'PaymentRequest',
   params: {
     dispatch: jest.fn(),
   },
-};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any;
 
 const renderComponent = (props = {}) =>
   render(
