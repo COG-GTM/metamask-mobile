@@ -28,6 +28,7 @@ describe('CollectibleOverview', () => {
             externalLink: 'https://nft.example.com',
             tradable: true,
           }}
+          openLink={() => undefined}
         />
       </Provider>,
     );

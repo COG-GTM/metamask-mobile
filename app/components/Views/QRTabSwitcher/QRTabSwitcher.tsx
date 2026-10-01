@@ -132,15 +132,10 @@ const QRTabSwitcher = () => {
           }
         >
           {selectedIndex === QRTabSwitcherScreens.Receive ? (
-            // @ts-expect-error proptypes components requires ts-expect-error
             <NavbarTitle
-              // @ts-expect-error proptypes components requires ts-expect-error
               title={strings(`receive.title`)}
-              // @ts-expect-error proptypes components requires ts-expect-error
               translate={false}
-              // @ts-expect-error proptypes components requires ts-expect-error
               disableNetwork
-              // @ts-expect-error proptypes components requires ts-expect-error
               networkName={networkName}
             />
           ) : null}

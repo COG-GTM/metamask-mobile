@@ -86,6 +86,7 @@ describe('CollectibleContractOverview', () => {
             address: '',
             totalSupply: 1,
           }}
+          navigation={navigationMock}
         />
       </Provider>,
     );

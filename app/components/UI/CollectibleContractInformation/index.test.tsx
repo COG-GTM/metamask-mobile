@@ -39,6 +39,8 @@ describe('CollectibleContractInformation', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <CollectibleContractInformation
+          navigation={navigationMock}
+          onClose={onCloseMock}
           collectibleContract={{
             name: 'name',
             symbol: 'symbol',
