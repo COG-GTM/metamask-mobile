@@ -20,8 +20,14 @@ export default async (
 
   const onConfirmationComplete = async (confirmed: boolean) => {
     if (!confirmed) {
+      // @ts-expect-error Latent bug: the boolean is passed in the
+      // `securityAlertResponse` position and the `confirmation` arg is omitted.
+      // Preserving existing runtime behavior; see PR description.
       await handleSignatureAction(onReject, messageParams, signType, false);
     } else {
+      // @ts-expect-error Latent bug: the boolean is passed in the
+      // `securityAlertResponse` position and the `confirmation` arg is omitted.
+      // Preserving existing runtime behavior; see PR description.
       await handleSignatureAction(onConfirm, messageParams, signType, true);
     }
   };
