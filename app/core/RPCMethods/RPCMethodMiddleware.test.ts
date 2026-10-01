@@ -38,6 +38,7 @@ import {
 } from '@metamask/permission-controller';
 import PPOMUtil from '../../lib/ppom/ppom-util';
 import { backgroundState } from '../../util/test/initial-root-state';
+import { initialState as browserInitialState } from '../../reducers/browser';
 import { Store } from 'redux';
 import { RootState } from 'app/reducers';
 import { addTransaction } from '../../util/transaction-controller';
@@ -307,9 +308,10 @@ function setupGlobalState({
     .mockImplementation(() => ({
       browser: activeTab
         ? {
+          ...browserInitialState,
           activeTab,
         }
-        : {},
+        : browserInitialState,
       engine: {
         backgroundState: {
           ...backgroundState,

@@ -1,5 +1,5 @@
 export interface BrowserTab {
-  id: string;
+  id: string | number;
   url: string;
 }
 
