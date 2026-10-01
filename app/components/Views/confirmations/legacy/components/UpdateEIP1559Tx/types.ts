@@ -28,7 +28,7 @@ export interface UpdateEIP1559Props {
   /**
    * A string that represents the selected address
    */
-  selectedAddress: string;
+  selectedAddress: string | undefined;
   /**
    * A bool indicates whether tx is speed up/cancel
    */
