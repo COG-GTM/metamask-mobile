@@ -23,9 +23,9 @@ import { SDKConnect } from '../SDKConnect';
 
 import { KeyringController } from '@metamask/keyring-controller';
 
-import { PermissionController } from '@metamask/permission-controller';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import BatchRPCManager from '../BatchRPCManager';
+import { SDKMessage } from '../SDKConnect.types';
 import { DEFAULT_SESSION_TIMEOUT_MS } from '../SDKConnectConstants';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
@@ -265,13 +265,7 @@ export default class AndroidService extends EventEmitter2 {
     originatorInfo: OriginatorInfo;
     channelId: string;
   }): Promise<unknown> {
-    const permissionsController = (
-      Engine.context as {
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PermissionController: PermissionController<any, any>;
-      }
-    ).PermissionController;
+    const permissionsController = Engine.context.PermissionController;
 
     return permissionsController.requestPermissions(
       { origin: channelId },
@@ -314,9 +308,7 @@ export default class AndroidService extends EventEmitter2 {
 
         let sessionId: string,
           message: string,
-          // TODO: Replace "any" with type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          data: { id: string; jsonrpc: string; method: string; params: any };
+          data: { id: string; jsonrpc: string; method: string; params: unknown[] };
         try {
           parsedMsg = JSON.parse(jsonMessage); // handle message and redirect to corresponding bridge
           sessionId = parsedMsg.id;
@@ -494,9 +486,7 @@ export default class AndroidService extends EventEmitter2 {
     }
   }
 
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async sendMessage(message: any, forceRedirect?: boolean) {
+  async sendMessage(message: SDKMessage, forceRedirect?: boolean) {
     return sendMessage(this, message, forceRedirect);
   }
 }

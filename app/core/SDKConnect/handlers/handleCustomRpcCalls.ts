@@ -1,10 +1,10 @@
 import { Platform } from 'react-native';
 import Logger from '../../../util/Logger';
-import BatchRPCManager from '../BatchRPCManager';
+import BatchRPCManager, { RPCMethod } from '../BatchRPCManager';
 import { RPC_METHODS } from '../SDKConnectConstants';
 import DevLogger from '../utils/DevLogger';
 import { wait } from '../utils/wait.util';
-import overwriteRPCWith from './handleRpcOverwrite';
+import overwriteRPCWith, { OverwritableRpc } from './handleRpcOverwrite';
 import { NavigationContainerRef } from '@react-navigation/native';
 import Routes from '../../../constants/navigation/Routes';
 import handleSendMessage from './handleSendMessage';
@@ -22,16 +22,19 @@ export const handleCustomRpcCalls = async ({
   selectedAddress: string;
   selectedChainId: string;
   batchRPCManager: BatchRPCManager;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rpc: { id: string; method: string; params: any[] };
+  rpc: { id: string; method: string; params: unknown[] };
   store?: typeof import('../../../store').store;
   connection?: Connection;
   navigation?: NavigationContainerRef;
 }) => {
   const { id, method, params } = rpc;
   const lcMethod = method.toLowerCase();
-  const processedMessage = { method, id, params, jsonrpc: '2.0' };
+  const processedMessage: {
+    method: string;
+    id: string;
+    params: unknown;
+    jsonrpc: string;
+  } = { method, id, params, jsonrpc: '2.0' };
   DevLogger.log(
     `handleCustomRpcCalls selectedAddress=${selectedAddress} selectedChainId=${selectedChainId}`,
     processedMessage,
@@ -47,11 +50,9 @@ export const handleCustomRpcCalls = async ({
       await wait(1000);
     }
 
-    const targetRpc = params[0];
+    const targetRpc = params[0] as OverwritableRpc;
     const wrapedRpc = overwriteRPCWith({
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      rpc: targetRpc as any,
+      rpc: targetRpc,
       accountAddress: selectedAddress,
       selectedChainId,
     });
@@ -81,7 +82,7 @@ export const handleCustomRpcCalls = async ({
     if (!(Array.isArray(params) && params.length > 0)) {
       throw new Error('Invalid message format');
     }
-    const rpcs = params;
+    const rpcs = params as RPCMethod[];
     // Add rpcs to the batch manager
     batchRPCManager.add({ id, rpcs });
 
@@ -100,7 +101,11 @@ export const handleCustomRpcCalls = async ({
       throw new Error('Invalid message format');
     }
 
-    const { target } = params[0];
+    const { target } = params[0] as {
+      target?: string;
+      token?: unknown;
+      amount?: unknown;
+    };
     DevLogger.log(
       `handleCustomRpcCalls method=${method} id=${id} target=${target}`,
       navigation,
@@ -110,8 +115,8 @@ export const handleCustomRpcCalls = async ({
       // RampBuy
       // Set swap params
       // extract target token and amount
-      const targetToken = params[0].token;
-      const targetAmount = params[0].amount;
+      const targetToken = (params[0] as { token?: unknown }).token;
+      const targetAmount = (params[0] as { amount?: unknown }).amount;
       DevLogger.log(
         `[handleCustomRpcCalls] targetToken=${targetToken} amount=${targetAmount}`,
       );

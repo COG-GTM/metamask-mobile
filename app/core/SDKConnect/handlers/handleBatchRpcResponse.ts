@@ -1,5 +1,6 @@
 import BackgroundBridge from '../../BackgroundBridge/BackgroundBridge';
 import BatchRPCManager, { BatchRPCState } from '../BatchRPCManager';
+import { SDKMessage } from '../SDKConnect.types';
 import DevLogger from '../utils/DevLogger';
 import { wait } from '../utils/wait.util';
 
@@ -13,12 +14,8 @@ export const handleBatchRpcResponse = async ({
   chainRpcs: BatchRPCState;
   batchRPCManager: BatchRPCManager;
   backgroundBridge?: BackgroundBridge;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  sendMessage: ({ msg }: { msg: any }) => Promise<void>;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  msg: any;
+  sendMessage: ({ msg }: { msg: SDKMessage }) => Promise<void>;
+  msg: SDKMessage;
 }): Promise<boolean> => {
   const isLastRpc = chainRpcs.index === chainRpcs.rpcs.length - 1;
   const hasError = !!msg?.data?.error;

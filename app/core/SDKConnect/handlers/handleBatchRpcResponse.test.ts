@@ -1,5 +1,6 @@
 import BackgroundBridge from '../../BackgroundBridge/BackgroundBridge';
-import BatchRPCManager from '../BatchRPCManager';
+import BatchRPCManager, { BatchRPCState } from '../BatchRPCManager';
+import { SDKRpcMessageData } from '../SDKConnect.types';
 import { wait } from '../utils/wait.util';
 import handleBatchRpcResponse from './handleBatchRpcResponse';
 
@@ -11,12 +12,8 @@ jest.mock('../utils/wait.util');
 describe('handleBatchRpcResponse', () => {
   let batchRPCManager = {} as unknown as BatchRPCManager;
   let backgroundBridge = {} as unknown as BackgroundBridge;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let chainRpcs = {} as any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let msg = {} as any;
+  let chainRpcs = {} as unknown as BatchRPCState;
+  let msg: { data: SDKRpcMessageData } = { data: {} };
 
   const sendMessage = jest.fn();
   const mockOnMessage = jest.fn();
@@ -39,7 +36,7 @@ describe('handleBatchRpcResponse', () => {
         { method: 'method2' },
         { method: 'method3' },
       ],
-    };
+    } as unknown as BatchRPCState;
 
     msg = {
       data: { result: 'result2' },

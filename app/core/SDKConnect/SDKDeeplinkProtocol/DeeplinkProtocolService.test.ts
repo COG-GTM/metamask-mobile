@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Linking } from 'react-native';
 import Engine from '../../../core/Engine';
 import Logger from '../../../util/Logger';
@@ -10,6 +9,7 @@ import DevLogger from '../utils/DevLogger';
 import DeeplinkProtocolService from './DeeplinkProtocolService';
 import AppConstants from '../../AppConstants';
 import { DappClient } from '../AndroidSDK/dapp-sdk-types';
+import { SDKMessage } from '../SDKConnect.types';
 import { createMockInternalAccount } from '../../../util/test/accountsControllerTestUtils';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 
@@ -48,9 +48,7 @@ describe('DeeplinkProtocolService', () => {
       addDappConnection: jest.fn().mockResolvedValue(null),
     });
 
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (Engine.context as any) = {
+    (Engine.context as unknown) = {
       PermissionController: {
         requestPermissions: jest.fn().mockResolvedValue(null),
         getPermissions: jest
@@ -135,9 +133,7 @@ describe('DeeplinkProtocolService', () => {
         scheme: 'test',
       };
       service.bridgeByClientId.client1 = {} as BackgroundBridge;
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const setupBridgeSpy = jest.spyOn(service as any, 'setupBridge');
+      const setupBridgeSpy = jest.spyOn(service, 'setupBridge');
       service.setupBridge(clientInfo);
       expect(setupBridgeSpy).toHaveReturned();
     });
@@ -171,9 +167,7 @@ describe('DeeplinkProtocolService', () => {
         url: 'test-url',
         isRemoteConn: true,
         sendMessage: jest.fn(),
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      } as unknown as ConstructorParameters<typeof BackgroundBridge>[0]);
 
       await service.sendMessage(mockMessage, true);
       expect(handleBatchRpcResponse).toHaveBeenCalledWith(
@@ -206,9 +200,7 @@ describe('DeeplinkProtocolService', () => {
         url: 'test-url',
         isRemoteConn: true,
         sendMessage: jest.fn(),
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      } as unknown as ConstructorParameters<typeof BackgroundBridge>[0]);
 
       await service.sendMessage(mockMessage, true);
       expect(openDeeplinkSpy).toHaveBeenCalledWith({
@@ -257,9 +249,7 @@ describe('DeeplinkProtocolService', () => {
         url: 'test-url',
         isRemoteConn: true,
         sendMessage: jest.fn(),
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      } as unknown as ConstructorParameters<typeof BackgroundBridge>[0]);
 
       service.rpcQueueManager.remove = jest.fn();
 
@@ -315,7 +305,7 @@ describe('DeeplinkProtocolService', () => {
     it('should open a deeplink with the provided message', async () => {
       const spy = jest.spyOn(Linking, 'openURL');
       await service.openDeeplink({
-        message: { test: 'test' },
+        message: { name: 'test' } as SDKMessage,
         clientId: 'client1',
       });
       expect(spy).toHaveBeenCalled();
@@ -485,9 +475,9 @@ describe('DeeplinkProtocolService', () => {
         originatorInfo: 'info',
         request: JSON.stringify({ id: '1', method: 'test', params: [] }),
       };
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      service.bridgeByClientId.channel1 = { onMessage: jest.fn() } as any;
+      service.bridgeByClientId.channel1 = {
+        onMessage: jest.fn(),
+      } as unknown as BackgroundBridge;
       await service.processDappRpcRequest(params);
       expect(handleCustomRpcCalls).toHaveBeenCalled();
     });
@@ -512,9 +502,7 @@ describe('DeeplinkProtocolService', () => {
 
   describe('removeConnection', () => {
     it('should remove a connection', () => {
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      service.connections.channel1 = {} as any;
+      service.connections.channel1 = {} as unknown as DappClient;
       service.removeConnection('channel1');
       expect(service.connections.channel1).toBeUndefined();
     });

@@ -3,6 +3,12 @@ import { RPC_METHODS } from '../SDKConnectConstants';
 import handleCustomRpcCalls from './handleCustomRpcCalls';
 import overwriteRPCWith from './handleRpcOverwrite';
 
+interface TestRpc {
+  id: string;
+  method: string;
+  params: unknown[];
+}
+
 jest.mock('../BatchRPCManager');
 jest.mock('./handleRpcOverwrite');
 jest.mock('../utils/DevLogger');
@@ -16,16 +22,14 @@ describe('handleCustomRpcCalls', () => {
   let batchRPCManager = {} as unknown as BatchRPCManager;
   const selectedAddress = '0x123';
   const selectedChainId = '1';
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let rpc = {} as any;
+  let rpc: TestRpc = { id: '', method: '', params: [] };
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockOverwriteRPCWith.mockImplementation((params) => params as any);
+    mockOverwriteRPCWith.mockImplementation(
+      (params) => params as unknown as ReturnType<typeof overwriteRPCWith>,
+    );
 
     batchRPCManager = {
       add: jest.fn(),
@@ -53,8 +57,10 @@ describe('handleCustomRpcCalls', () => {
       throw new Error('result is undefined');
     }
 
-    expect(result.method).toBe(rpc.params[0].method);
-    expect(result.params).toEqual(rpc.params[0].params);
+    expect(result.method).toBe((rpc.params[0] as { method: string }).method);
+    expect(result.params).toEqual(
+      (rpc.params[0] as { params: unknown }).params,
+    );
   });
 
   it('should process metamask_connectSign RPC call', async () => {
@@ -98,8 +104,10 @@ describe('handleCustomRpcCalls', () => {
     if (!result) {
       throw new Error('result is undefined');
     }
-    expect(result.method).toBe(rpc.params[0].method);
-    expect(result.params).toEqual(rpc.params[0].params);
+    expect(result.method).toBe((rpc.params[0] as { method: string }).method);
+    expect(result.params).toEqual(
+      (rpc.params[0] as { params: unknown }).params,
+    );
   });
 
   it('should throw an error for invalid message format', async () => {

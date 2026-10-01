@@ -1,14 +1,22 @@
 import { RPC_METHODS } from '../SDKConnectConstants';
 import DevLogger from '../utils/DevLogger';
 
+export interface OverwritableRpc {
+  method: string;
+  params: unknown[];
+  [key: string]: unknown;
+}
+
+interface TypedDataParam {
+  domain: { chainId: string };
+}
+
 export const overwriteRPCWith = ({
   rpc,
   accountAddress,
   selectedChainId,
 }: {
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rpc: { method: string; params: any; [key: string]: any };
+  rpc: OverwritableRpc;
   accountAddress: string;
   selectedChainId: string;
 }) => {
@@ -20,13 +28,13 @@ export const overwriteRPCWith = ({
   } else if (
     rpc.method.toLowerCase() === RPC_METHODS.ETH_SENDTRANSACTION.toLowerCase()
   ) {
-    const originalParams = rpc.params[0];
+    const originalParams = rpc.params[0] as Record<string, unknown>;
     const { from, ...rest } = originalParams;
     rpc.params = [{ ...rest, from: accountAddress }];
   } else if (
     rpc.method.toLowerCase() === RPC_METHODS.ETH_SIGNTYPEDEATA.toLowerCase()
   ) {
-    const originalParams = rpc.params[1];
+    const originalParams = rpc.params[1] as TypedDataParam;
     // overwrite domain.chainId
     originalParams.domain.chainId = selectedChainId;
     rpc.params = [accountAddress, originalParams];
@@ -36,7 +44,7 @@ export const overwriteRPCWith = ({
       RPC_METHODS.ETH_SIGNTYPEDEATAV3.toLowerCase(),
     ].includes(rpc.method.toLowerCase())
   ) {
-    const originalParams = rpc.params[1];
+    const originalParams = rpc.params[1] as TypedDataParam;
     // overwrite domain.chainId
     originalParams.domain.chainId = selectedChainId;
     rpc.params = [accountAddress, JSON.stringify(originalParams)];

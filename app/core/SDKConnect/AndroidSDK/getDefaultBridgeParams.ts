@@ -1,6 +1,8 @@
 import { ImageSourcePropType } from 'react-native';
 import AppConstants from '../../AppConstants';
-import getRpcMethodMiddleware from '../../RPCMethods/RPCMethodMiddleware';
+import getRpcMethodMiddleware, {
+  RPCMethodsMiddleParameters,
+} from '../../RPCMethods/RPCMethodMiddleware';
 import { DappClient } from './dapp-sdk-types';
 
 const getDefaultBridgeParams = (clientInfo: DappClient) => ({
@@ -13,9 +15,7 @@ const getDefaultBridgeParams = (clientInfo: DappClient) => ({
     getProviderState,
   }: {
     hostname: string;
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getProviderState: any;
+    getProviderState: RPCMethodsMiddleParameters['getProviderState'];
   }) =>
     getRpcMethodMiddleware({
       hostname:

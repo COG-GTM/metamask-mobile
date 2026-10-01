@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { KeyringController } from '@metamask/keyring-controller';
 import { NetworkController } from '@metamask/network-controller';
 import {
@@ -160,8 +159,7 @@ describe('handleConnectionMessage', () => {
       );
     });
     it('should log and return on invalid messages', async () => {
-      // @ts-ignore
-      message.type = 'fsdfsdf';
+      message.type = 'fsdfsdf' as MessageType;
       message.method = '';
       message.id = '';
 

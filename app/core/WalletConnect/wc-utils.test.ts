@@ -90,8 +90,7 @@ jest.mock('@walletconnect/utils', () => ({
 
 describe('WalletConnect Utils', () => {
   let mockNavigation: jest.Mocked<NavigationContainerRef>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mockStore = (StoreModule as any).store;
+  const mockStore = StoreModule.store as unknown as { getState: jest.Mock };
 
   beforeEach(() => {
     mockNavigation = {

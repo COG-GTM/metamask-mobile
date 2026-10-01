@@ -1,5 +1,6 @@
 import { OriginatorInfo } from '@metamask/sdk-communication-layer';
 import StorageWrapper from '../../../store/storage-wrapper';
+import { ConnectionProps } from '../Connection';
 import SDKConnect from '../SDKConnect';
 import updateOriginatorInfos from './updateOriginatorInfos';
 
@@ -56,9 +57,7 @@ describe('updateOriginatorInfos', () => {
     const mockOriginatorInfo = {} as OriginatorInfo;
     mockInstance.state.connections[mockChannelId] = {
       originatorInfo: {} as OriginatorInfo,
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any;
+    } as unknown as ConnectionProps;
 
     updateOriginatorInfos({
       channelId: mockChannelId,
