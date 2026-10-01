@@ -83,6 +83,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useStyles } from '../../hooks/useStyles';
 import styleSheet from './styles';
 import { type RootState } from '../../../reducers';
+import { type Bookmark } from '../../../reducers/bookmarks';
 import { type Dispatch } from 'redux';
 import {
   type SessionENSNames,
@@ -567,7 +568,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    * Inject home page scripts to get the favourites and set analytics key
    */
   const injectHomePageScripts = useCallback(
-    async (injectedBookmarks?: string[]) => {
+    async (injectedBookmarks?: Bookmark[]) => {
       const { current } = webviewRef;
       const analyticsEnabled = isEnabled();
       const disctinctId = await getMetaMetricsId();
