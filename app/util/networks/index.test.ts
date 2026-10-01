@@ -1,4 +1,5 @@
 import { ChainId } from '@metamask/controller-utils';
+import { InternalAccount } from '@metamask/keyring-internal-api';
 import networksWithImages from 'images/image-icons';
 import NetworkList, {
   isMainNet,
@@ -567,7 +568,9 @@ describe('network-utils', () => {
         scopes: ['unknown:network'],
         address: 'invalidAddress123',
       };
-      const url = findBlockExplorerForNonEvmAccount(MOCK_INVALID_ACCOUNT);
+      const url = findBlockExplorerForNonEvmAccount(
+        MOCK_INVALID_ACCOUNT as unknown as InternalAccount,
+      );
       expect(url).toBe(undefined);
     });
 
