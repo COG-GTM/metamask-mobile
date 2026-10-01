@@ -1,6 +1,7 @@
 import { RootState } from '..';
 import { Action } from 'redux';
 import ACTIONS from './types';
+import { DAY } from '../../constants/time';
 
 const currentDate = new Date(Date.now());
 const newPrivacyPolicyDate = new Date('2024-06-18T12:00:00Z');
@@ -32,9 +33,8 @@ export const shouldShowNewPrivacyToastSelector = (
 
   const shownDate = new Date(newPrivacyPolicyToastShownDate);
 
-  const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
   const isRecent =
-    currentDate.getTime() - shownDate.getTime() < oneDayInMilliseconds;
+    currentDate.getTime() - shownDate.getTime() < DAY;
 
   return (
     currentDate.getTime() >= newPrivacyPolicyDate.getTime() &&

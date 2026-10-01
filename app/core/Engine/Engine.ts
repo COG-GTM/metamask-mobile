@@ -75,6 +75,7 @@ import {
   deprecatedGetNetworkId,
 } from '../../util/networks/engineNetworkUtils';
 import AppConstants from '../AppConstants';
+import { MINUTE } from '../../constants/time';
 import { store } from '../../store';
 import {
   renderFromTokenMinimalUnit,
@@ -1306,7 +1307,7 @@ export class Engine {
           ],
         }),
         tokenPricesService: codefiTokenApiV2,
-        interval: 30 * 60 * 1000,
+        interval: 30 * MINUTE,
         state: initialState.TokenRatesController || { marketData: {} },
       }),
       TransactionController: this.transactionController,
