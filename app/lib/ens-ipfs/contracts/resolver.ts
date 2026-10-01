@@ -1,4 +1,21 @@
-export default [
+interface EnsAbiParameter {
+  name: string;
+  type: string;
+  indexed?: boolean;
+}
+
+interface EnsAbiFragment {
+  constant?: boolean;
+  anonymous?: boolean;
+  inputs?: EnsAbiParameter[];
+  name?: string;
+  outputs?: EnsAbiParameter[];
+  payable?: boolean;
+  stateMutability?: string;
+  type: string;
+}
+
+const resolverAbi: EnsAbiFragment[] = [
   {
     constant: false,
     inputs: [
@@ -233,3 +250,5 @@ export default [
     type: 'event',
   },
 ];
+
+export default resolverAbi;
