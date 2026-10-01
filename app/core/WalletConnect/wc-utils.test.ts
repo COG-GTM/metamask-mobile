@@ -6,11 +6,13 @@ import {
   waitForNetworkModalOnboarding,
   getApprovedSessionMethods,
   getScopedPermissions,
+  getPermissionScopeHostname,
   checkWCPermissions,
   networkModalOnboardingConfig,
   onRequestUserApproval,
   getHostname,
 } from './wc-utils';
+import type { Verify } from '@walletconnect/types';
 import type { NavigationContainerRef } from '@react-navigation/native';
 import Routes from '../../../app/constants/navigation/Routes';
 // eslint-disable-next-line import/no-namespace
@@ -227,6 +229,72 @@ describe('WalletConnect Utils', () => {
     });
   });
 
+  describe('getPermissionScopeHostname', () => {
+    const buildVerifyContext = (
+      verified: Partial<Verify.Context['verified']>,
+    ): Verify.Context =>
+      ({
+        verified: {
+          verifyUrl: 'https://verify.walletconnect.com',
+          validation: 'VALID',
+          origin: 'https://dapp.example.com',
+          ...verified,
+        },
+      } as Verify.Context);
+
+    it('falls back to the self-asserted hostname when no verify context is provided', () => {
+      expect(
+        getPermissionScopeHostname({ origin: 'https://dapp.example.com' }),
+      ).toBe('dapp.example.com');
+    });
+
+    it('falls back to the self-asserted hostname when verify context has no origin', () => {
+      expect(
+        getPermissionScopeHostname({
+          origin: 'https://dapp.example.com',
+          verifyContext: buildVerifyContext({ origin: '' }),
+        }),
+      ).toBe('dapp.example.com');
+    });
+
+    it('prefers the attested verified origin over the self-asserted metadata url', () => {
+      // Attacker self-asserts a trusted hostname but the verify API attests the
+      // real (attacker) origin.
+      expect(
+        getPermissionScopeHostname({
+          origin: 'https://victim-trusted-dapp.com',
+          verifyContext: buildVerifyContext({
+            origin: 'https://attacker.example.com',
+          }),
+        }),
+      ).toBe('attacker.example.com');
+    });
+
+    it('returns null when the verify API marks the origin INVALID', () => {
+      expect(
+        getPermissionScopeHostname({
+          origin: 'https://victim-trusted-dapp.com',
+          verifyContext: buildVerifyContext({
+            origin: 'https://victim-trusted-dapp.com',
+            validation: 'INVALID',
+          }),
+        }),
+      ).toBeNull();
+    });
+
+    it('returns null when the verify API flags the origin as a scam', () => {
+      expect(
+        getPermissionScopeHostname({
+          origin: 'https://victim-trusted-dapp.com',
+          verifyContext: buildVerifyContext({
+            origin: 'https://victim-trusted-dapp.com',
+            isScam: true,
+          }),
+        }),
+      ).toBeNull();
+    });
+  });
+
   describe('getScopedPermissions', () => {
     it('returns correct scoped permissions', async () => {
       const result = await getScopedPermissions({ origin: 'test' });
@@ -236,6 +304,48 @@ describe('WalletConnect Utils', () => {
           methods: expect.any(Array),
           events: ['chainChanged', 'accountsChanged'],
           accounts: ['eip155:1:0x123'],
+        },
+      });
+    });
+
+    it('scopes permissions to the attested verified origin', async () => {
+      const getPermittedAccountsMock =
+        jest.requireMock('../Permissions').getPermittedAccounts;
+
+      await getScopedPermissions({
+        origin: 'https://victim-trusted-dapp.com',
+        verifyContext: {
+          verified: {
+            verifyUrl: 'https://verify.walletconnect.com',
+            validation: 'VALID',
+            origin: 'https://attacker.example.com',
+          },
+        } as Verify.Context,
+      });
+
+      expect(getPermittedAccountsMock).toHaveBeenCalledWith(
+        'attacker.example.com',
+      );
+    });
+
+    it('returns empty permissions when the verify API rejects the origin', async () => {
+      const result = await getScopedPermissions({
+        origin: 'https://victim-trusted-dapp.com',
+        verifyContext: {
+          verified: {
+            verifyUrl: 'https://verify.walletconnect.com',
+            validation: 'INVALID',
+            origin: 'https://victim-trusted-dapp.com',
+          },
+        } as Verify.Context,
+      });
+
+      expect(result).toEqual({
+        eip155: {
+          chains: [],
+          methods: [],
+          events: ['chainChanged', 'accountsChanged'],
+          accounts: [],
         },
       });
     });
@@ -260,6 +370,22 @@ describe('WalletConnect Utils', () => {
         checkWCPermissions({
           origin: 'test',
           caip2ChainId: 'eip155:2',
+        }),
+      ).rejects.toThrow('Invalid parameters');
+    });
+
+    it('throws when the verify API rejects the origin', async () => {
+      await expect(
+        checkWCPermissions({
+          origin: 'https://victim-trusted-dapp.com',
+          caip2ChainId: 'eip155:1',
+          verifyContext: {
+            verified: {
+              verifyUrl: 'https://verify.walletconnect.com',
+              validation: 'INVALID',
+              origin: 'https://victim-trusted-dapp.com',
+            },
+          } as Verify.Context,
         }),
       ).rejects.toThrow('Invalid parameters');
     });
