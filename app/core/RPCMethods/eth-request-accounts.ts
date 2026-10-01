@@ -1,8 +1,24 @@
+import type {
+  JsonRpcParams,
+  JsonRpcRequest,
+  PendingJsonRpcResponse,
+} from '@metamask/utils';
+import type {
+  JsonRpcEngineEndCallback,
+  JsonRpcEngineNextCallback,
+} from '@metamask/json-rpc-engine';
 import { rpcErrors } from '@metamask/rpc-errors';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
 import {
   trackDappViewedEvent,
 } from '../../util/metrics';
+
+interface RequestEthereumAccountsHooks {
+  getAccounts: (options: { ignoreLock: boolean }) => string[];
+  getUnlockPromise: (shouldShowUnlockRequest: boolean) => Promise<void>;
+  getCaip25PermissionFromLegacyPermissionsForOrigin: () => Promise<unknown>;
+  requestPermissionsForOrigin: (permission: unknown) => Promise<unknown>;
+}
 
 const requestEthereumAccounts = {
   methodNames: [MESSAGE_TYPE.ETH_REQUEST_ACCOUNTS],
@@ -17,7 +33,7 @@ const requestEthereumAccounts = {
 export default requestEthereumAccounts;
 
 // Used to rate-limit pending requests to one per origin
-const locks = new Set();
+const locks = new Set<string>();
 
 /**
  * This method attempts to retrieve the Ethereum accounts available to the
@@ -38,16 +54,16 @@ const locks = new Set();
  * @returns A promise that resolves to nothing
  */
 async function requestEthereumAccountsHandler(
-  req,
-  res,
-  _next,
-  end,
+  req: JsonRpcRequest<JsonRpcParams> & { origin: string },
+  res: PendingJsonRpcResponse<string[]>,
+  _next: JsonRpcEngineNextCallback,
+  end: JsonRpcEngineEndCallback,
   {
     getAccounts,
     getUnlockPromise,
     getCaip25PermissionFromLegacyPermissionsForOrigin,
     requestPermissionsForOrigin,
-  },
+  }: RequestEthereumAccountsHooks,
 ) {
   const { origin } = req;
   if (locks.has(origin)) {
@@ -87,7 +103,10 @@ async function requestEthereumAccountsHandler(
   // because the accounts will not be in order of lastSelected
   ethAccounts = getAccounts({ ignoreLock: true });
 
-  trackDappViewedEvent(origin, ethAccounts.length);
+  trackDappViewedEvent({
+    hostname: origin,
+    numberOfConnectedAccounts: ethAccounts.length,
+  });
 
   res.result = ethAccounts;
   return end();
