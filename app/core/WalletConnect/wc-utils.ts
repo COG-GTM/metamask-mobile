@@ -16,6 +16,7 @@ import { getPermittedAccounts, getPermittedChains, removePermittedChain, updateP
 import {
   findExistingNetwork,
   switchToNetwork,
+  SwitchNetworkConfiguration,
 } from '../RPCMethods/lib/ethereum-chain-utils';
 import { getRpcMethodMiddlewareHooks } from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
@@ -261,7 +262,10 @@ export const checkWCPermissions = async ({
 
   const existingNetwork = findExistingNetwork(
     hexChainIdString,
-    networkConfigurations,
+    networkConfigurations as unknown as Record<
+      string,
+      SwitchNetworkConfiguration
+    >,
   );
 
   if (!existingNetwork) {

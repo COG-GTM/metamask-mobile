@@ -1,13 +1,34 @@
 import Engine from '../Engine';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import { NetworkConfiguration } from '@metamask/network-controller';
+import { Hex, Json } from '@metamask/utils';
 import { selectEvmNetworkConfigurationsByChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import {
   validateChainId,
   findExistingNetwork,
   switchToNetwork,
+  SwitchNetworkConfiguration,
+  SwitchToNetworkHooks,
+  RequestUserApproval,
+  AnalyticsParams,
 } from './lib/ethereum-chain-utils';
 import { MESSAGE_TYPE } from '../createTracingMiddleware';
+
+export interface SwitchEthereumChainHooks extends SwitchToNetworkHooks {
+  getCurrentChainIdForDomain: (domain: string) => Hex;
+  getNetworkConfigurationByChainId: (
+    chainId: Hex,
+  ) => NetworkConfiguration | undefined;
+}
+
+export interface WalletSwitchEthereumChainParams {
+  req: { params?: unknown; origin?: string };
+  res: { result?: Json | null };
+  requestUserApproval: RequestUserApproval;
+  analytics?: AnalyticsParams;
+  hooks: SwitchEthereumChainHooks;
+}
 
 /**
  * Switch chain implementation to be used in JsonRpcEngine middleware.
@@ -25,15 +46,15 @@ export const wallet_switchEthereumChain = async ({
   requestUserApproval,
   analytics,
   hooks,
-}) => {
+}: WalletSwitchEthereumChainParams) => {
   const {
     CurrencyRateController,
     NetworkController,
     MultichainNetworkController,
     SelectedNetworkController,
   } = Engine.context;
-  const params = req.params?.[0];
-  const { origin } = req;
+  const params = (req.params as Record<string, unknown>[] | undefined)?.[0];
+  const origin = req.origin as string;
   if (!params || typeof params !== 'object') {
     throw rpcErrors.invalidParams({
       message: `Expected single, object parameter. Received:\n${JSON.stringify(
@@ -41,8 +62,8 @@ export const wallet_switchEthereumChain = async ({
       )}`,
     });
   }
-  const { chainId } = params;
-  const allowedKeys = {
+  const { chainId } = params as { chainId?: unknown };
+  const allowedKeys: Record<string, boolean> = {
     chainId: true,
   };
 
@@ -57,15 +78,19 @@ export const wallet_switchEthereumChain = async ({
   const networkConfigurations = selectEvmNetworkConfigurationsByChainId(
     store.getState(),
   );
-  const existingNetwork = findExistingNetwork(_chainId, networkConfigurations);
+  const existingNetwork = findExistingNetwork(
+    _chainId,
+    networkConfigurations as unknown as Record<
+      string,
+      SwitchNetworkConfiguration
+    >,
+  );
   if (existingNetwork) {
     const currentDomainSelectedNetworkClientId =
       SelectedNetworkController.getNetworkClientIdForDomain(origin);
-    const {
-      configuration: { chainId: currentDomainSelectedChainId },
-    } = NetworkController.getNetworkClientById(
+    const currentDomainSelectedChainId = NetworkController.getNetworkClientById(
       currentDomainSelectedNetworkClientId,
-    ) || { configuration: {} };
+    )?.configuration?.chainId;
 
     if (currentDomainSelectedChainId === _chainId) {
       res.result = null;
@@ -79,7 +104,7 @@ export const wallet_switchEthereumChain = async ({
     );
 
     const toNetworkConfiguration =
-      hooks.getNetworkConfigurationByChainId(chainId);
+      hooks.getNetworkConfigurationByChainId(chainId as Hex);
 
     await switchToNetwork({
       network: existingNetwork,

@@ -3,12 +3,19 @@ import Device from '../util/device';
 
 const EXPIRE_TIME_MS = 60000;
 
-const ClipboardManager = {
+interface ClipboardManagerType {
+  getString(): Promise<string>;
+  setString(string: string | null): Promise<void>;
+  expireTime: ReturnType<typeof setTimeout> | null;
+  setStringExpire(string: string): Promise<void>;
+}
+
+const ClipboardManager: ClipboardManagerType = {
   async getString() {
     return await Clipboard.getString();
   },
   async setString(string) {
-    await Clipboard.setString(string);
+    await Clipboard.setString(string as string);
   },
   expireTime: null,
   async setStringExpire(string) {
@@ -20,9 +27,9 @@ const ClipboardManager = {
         clearTimeout(this.expireTime);
       }
       this.expireTime = setTimeout(async () => {
-        const string = await this.getString();
+        const currentString = await this.getString();
 
-        if (!string) return;
+        if (!currentString) return;
 
         await Clipboard.clearString();
       }, EXPIRE_TIME_MS);

@@ -14,4 +14,4 @@ export const createEip1193MethodMiddleware = makeMethodMiddlewareMaker([
   getPermissionsHandler,
   requestPermissionsHandler,
   revokePermissionsHandler,
-]);
+] as unknown as Parameters<typeof makeMethodMiddlewareMaker>[0]);
