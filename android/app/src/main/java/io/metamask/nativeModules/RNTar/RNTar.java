@@ -85,8 +85,15 @@ public class RNTar extends ReactContextBaseJavaModule {
         TarArchiveEntry entry;
 
         // Loop through the entries in the .tgz file
+        String canonicalTarget = new File(outputPath).getCanonicalPath() + File.separator;
         while ((entry = (TarArchiveEntry) tarInputStream.getNextEntry()) != null) {
           File outputFile = new File(outputPath, entry.getName());
+
+          // Validate that the entry does not escape the target directory (Zip Slip protection)
+          String canonicalDest = outputFile.getCanonicalPath();
+          if (!canonicalDest.startsWith(canonicalTarget)) {
+            throw new SecurityException("Entry is outside of the target dir: " + entry.getName());
+          }
 
           // If it is a directory, create the output directory
           if (entry.isDirectory()) {
