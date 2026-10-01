@@ -1,4 +1,5 @@
 import { FeatureFlags, swapsUtils } from '@metamask/swaps-controller';
+import type { Hex } from '@metamask/utils';
 import { useCallback, useEffect } from 'react';
 import { selectEvmChainId } from '../../../selectors/networkController';
 import { AppState, AppStateStatus } from 'react-native';
@@ -19,8 +20,8 @@ function SwapLiveness() {
   const chainId = useSelector(selectEvmChainId);
   const dispatch = useDispatch();
   const setLiveness = useCallback(
-    (_chainId: string, featureFlags?: FeatureFlags | null) => {
-      dispatch(setSwapsLiveness(_chainId, featureFlags));
+    (_chainId: Hex, featureFlags?: FeatureFlags | null) => {
+      dispatch(setSwapsLiveness(_chainId, featureFlags ?? null));
     },
     [dispatch],
   );
