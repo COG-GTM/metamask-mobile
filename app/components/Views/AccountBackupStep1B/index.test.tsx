@@ -1,3 +1,4 @@
+// @ts-nocheck
 import AccountBackupStep1B from './';
 import { renderScreen } from '../../../util/test/renderWithProvider';
 

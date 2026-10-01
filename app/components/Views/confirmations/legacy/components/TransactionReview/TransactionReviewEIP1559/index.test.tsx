@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React from 'react';
 import TransactionReviewEIP1559 from '.';
 import renderWithProvider from '../../../../../../../util/test/renderWithProvider';

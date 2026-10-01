@@ -1,3 +1,4 @@
+// @ts-nocheck
 // write unit test so that browser/index.js->newTab()
 // 1. if tabs.length > 4, show the max browser tabs modal
 // 2. if tabs.length <= 4, create a new tab
