@@ -10,7 +10,11 @@ import {
   WALLET_CONNECT_ORIGIN,
 } from '../../util/walletconnect';
 import { WALLETCONNECT_SESSIONS } from '../../constants/storage';
-import { WalletDevice } from '@metamask/transaction-controller';
+import {
+  TransactionParams,
+  WalletDevice,
+} from '@metamask/transaction-controller';
+import { Hex, Json } from '@metamask/utils';
 import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
 import getRpcMethodMiddleware, {
   checkActiveAccountAndChainId,
@@ -23,18 +27,71 @@ import { strings } from '../../../locales/i18n';
 import NotificationManager from '../NotificationManager';
 import { msBetweenDates, msToHours } from '../../util/date';
 import { addTransaction } from '../../util/transaction-controller';
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 import { parseWalletConnectUri } from './wc-utils';
 import { store } from '../../store';
 import { selectEvmChainId } from '../../selectors/networkController';
 import ppomUtil from '../../../app/lib/ppom/ppom-util';
 
-const hub = new EventEmitter();
-let connectors = [];
-let initialized = false;
-const tempCallIds = [];
+interface WCPeerMeta {
+  url: string;
+  name?: string;
+  icons?: string[];
+  dappScheme?: string;
+}
 
-const METHODS_TO_REDIRECT = {
+interface WCSession {
+  peerMeta: WCPeerMeta;
+  peerId?: string;
+  handshakeTopic?: string;
+  key?: string;
+  redirectUrl?: string;
+  autosign?: boolean;
+  requestOriginatedFrom?: string;
+  lastTimeConnected?: string | number | Date;
+}
+
+interface WCPayloadParam {
+  chainId?: number;
+  from?: string;
+  to?: string;
+  value?: string;
+  data?: string;
+  peerMeta?: WCPeerMeta;
+}
+
+interface WCPayload {
+  id: number;
+  method: string;
+  params: WCPayloadParam[];
+}
+
+interface WCConnector {
+  connected: boolean;
+  session: WCSession;
+  on(
+    event: string,
+    handler: (error: Error | null, payload: WCPayload) => void,
+  ): void;
+  approveRequest(args: { id: number; result: unknown }): void;
+  rejectRequest(args: { id: number; error: unknown }): void;
+  updateSession(args: { chainId: number; accounts: string[] }): void;
+  approveSession(args: { chainId: number; accounts: string[] }): Promise<void>;
+  rejectSession(): void;
+  killSession(): void;
+}
+
+interface WalletConnectOptions {
+  uri?: string;
+  session: WCSession;
+}
+
+const hub = new EventEmitter();
+let connectors: WalletConnect[] = [];
+let initialized = false;
+const tempCallIds: number[] = [];
+
+const METHODS_TO_REDIRECT: { [method: string]: boolean } = {
   eth_requestAccounts: true,
   eth_sendTransaction: true,
   eth_signTransaction: true,
@@ -67,7 +124,7 @@ const persistSessions = async () => {
 const waitForInitialization = async () => {
   let i = 0;
   while (!initialized) {
-    await new Promise((res) => setTimeout(() => res(), 1000));
+    await new Promise<void>((res) => setTimeout(() => res(), 1000));
     if (i++ > 5) initialized = true;
   }
 };
@@ -76,24 +133,25 @@ const waitForKeychainUnlocked = async () => {
   let i = 0;
   const { KeyringController } = Engine.context;
   while (!KeyringController.isUnlocked()) {
-    await new Promise((res) => setTimeout(() => res(), 1000));
+    await new Promise<void>((res) => setTimeout(() => res(), 1000));
     if (i++ > 60) break;
   }
 };
 
 class WalletConnect {
-  redirectUrl = null;
+  redirectUrl: string | null = null;
   autosign = false;
-  backgroundBridge = null;
-  url = { current: null };
-  title = { current: null };
-  icon = { current: null };
-  dappScheme = { current: null };
-  requestsToRedirect = {};
-  hostname = null;
-  requestOriginatedFrom = null;
+  backgroundBridge: BackgroundBridge | null = null;
+  url: { current: string | null } = { current: null };
+  title: { current: string | null } = { current: null };
+  icon: { current: string | null } = { current: null };
+  dappScheme: { current: string | null } = { current: null };
+  requestsToRedirect: { [id: number]: boolean } = {};
+  hostname: string | null = null;
+  requestOriginatedFrom: string | null = null;
+  walletConnector: WCConnector;
 
-  constructor(options, existing) {
+  constructor(options: WalletConnectOptions, existing?: boolean) {
     if (options.session.redirectUrl) {
       this.redirectUrl = options.session.redirectUrl;
     }
@@ -109,10 +167,10 @@ class WalletConnect {
     this.walletConnector = new RNWalletConnect({
       ...options,
       ...CLIENT_OPTIONS,
-    });
-    /**
-     *  Subscribe to session requests
-     */
+    } as unknown as ConstructorParameters<
+      typeof RNWalletConnect
+    >[0]) as unknown as WCConnector;
+    // Subscribe to session requests
     this.walletConnector.on('session_request', async (error, payload) => {
       Logger.log('WC session_request:', payload);
       if (error) {
@@ -127,7 +185,7 @@ class WalletConnect {
           autosign: this.autosign,
           redirectUrl: this.redirectUrl,
           requestOriginatedFrom: this.requestOriginatedFrom,
-        };
+        } as unknown as WCSession;
 
         Logger.log('WC:', sessionData);
 
@@ -143,9 +201,7 @@ class WalletConnect {
       }
     });
 
-    /**
-     *  Subscribe to call requests
-     */
+    // Subscribe to call requests
     this.walletConnector.on('call_request', async (error, payload) => {
       if (tempCallIds.includes(payload.id)) return;
       tempCallIds.push(payload.id);
@@ -159,8 +215,8 @@ class WalletConnect {
 
       if (payload.method) {
         const payloadUrl = this.walletConnector.session.peerMeta.url;
-        const payloadHostname = new URL(payloadUrl).hostname;
-        if (payloadHostname === this.backgroundBridge.hostname) {
+        const payloadHostname = new URLParse(payloadUrl).hostname;
+        if (payloadHostname === this.backgroundBridge?.hostname) {
           if (METHODS_TO_REDIRECT[payload.method]) {
             this.requestsToRedirect[payload.id] = true;
           }
@@ -183,19 +239,24 @@ class WalletConnect {
                 isWalletConnect: true,
                 activeAccounts: [selectedAddress],
                 hostname: payloadHostname,
-              });
+              } as Parameters<typeof checkActiveAccountAndChainId>[0]);
 
               const { NetworkController } = Engine.context;
               const networkClientId =
-                NetworkController.findNetworkClientIdByChainId(chainId);
+                NetworkController.findNetworkClientIdByChainId(
+                  chainId as unknown as Hex,
+                );
 
-              const trx = await addTransaction(payload.params[0], {
-                deviceConfirmedOn: WalletDevice.MM_MOBILE,
-                networkClientId,
-                origin: this.url.current
-                  ? WALLET_CONNECT_ORIGIN + this.url.current
-                  : undefined,
-              });
+              const trx = await addTransaction(
+                payload.params[0] as unknown as TransactionParams,
+                {
+                  deviceConfirmedOn: WalletDevice.MM_MOBILE,
+                  networkClientId,
+                  origin: this.url.current
+                    ? WALLET_CONNECT_ORIGIN + this.url.current
+                    : undefined,
+                },
+              );
 
               const id = trx.transactionMeta.id;
               const reqObject = {
@@ -213,26 +274,31 @@ class WalletConnect {
                 ],
               };
 
-              ppomUtil.validateRequest(reqObject, id);
+              ppomUtil.validateRequest(
+                reqObject as unknown as Parameters<
+                  typeof ppomUtil.validateRequest
+                >[0],
+                id,
+              );
 
               const hash = await trx.result;
               this.approveRequest({
                 id: payload.id,
                 result: hash,
               });
-            } catch (error) {
+            } catch (txError) {
               this.rejectRequest({
                 id: payload.id,
-                error,
+                error: txError,
               });
             }
             return;
           }
 
-          this.backgroundBridge.onMessage({
+          this.backgroundBridge?.onMessage({
             name: 'walletconnect-provider',
             data: payload,
-            origin: this.hostname,
+            origin: this.hostname ?? undefined,
           });
         }
       }
@@ -241,9 +307,7 @@ class WalletConnect {
       tempCallIds.length = 0;
     });
 
-    /**
-     *	Subscribe to disconnect
-     */
+    // Subscribe to disconnect
     this.walletConnector.on('disconnect', (error) => {
       if (error) {
         throw error;
@@ -273,7 +337,7 @@ class WalletConnect {
         Linking.openURL(
           this.dappScheme.current
             ? `${this.dappScheme.current}://`
-            : this.redirectUrl,
+            : (this.redirectUrl as string),
         );
       } else {
         Minimizer.goBack();
@@ -281,14 +345,14 @@ class WalletConnect {
     }, 300);
   };
 
-  needsRedirect = (id) => {
+  needsRedirect = (id: number) => {
     if (this.requestsToRedirect[id]) {
       delete this.requestsToRedirect[id];
       this.redirect();
     }
   };
 
-  approveRequest = ({ id, result }) => {
+  approveRequest = ({ id, result }: { id: number; result: unknown }) => {
     this.walletConnector.approveRequest({
       id,
       result,
@@ -296,7 +360,7 @@ class WalletConnect {
     this.needsRedirect(id);
   };
 
-  rejectRequest = ({ id, error }) => {
+  rejectRequest = ({ id, error }: { id: number; error: unknown }) => {
     this.walletConnector.rejectRequest({
       id,
       error,
@@ -304,20 +368,26 @@ class WalletConnect {
     this.needsRedirect(id);
   };
 
-  updateSession = ({ chainId, accounts }) => {
+  updateSession = ({
+    chainId,
+    accounts,
+  }: {
+    chainId: number;
+    accounts: string[];
+  }) => {
     this.walletConnector.updateSession({
       chainId,
       accounts,
     });
   };
 
-  startSession = async (sessionData, existing) => {
+  startSession = async (sessionData: WCSession, existing?: boolean) => {
     const chainId = selectEvmChainId(store.getState());
     const selectedAddress =
       Engine.context.AccountsController.getSelectedAccount().address?.toLowerCase();
     const approveData = {
       chainId: parseInt(chainId, 10),
-      accounts: [selectedAddress],
+      accounts: [selectedAddress as string],
     };
     if (existing) {
       this.walletConnector.updateSession(approveData);
@@ -327,15 +397,15 @@ class WalletConnect {
     }
 
     this.url.current = sessionData.peerMeta.url;
-    this.title.current = sessionData.peerMeta?.name;
-    this.icon.current = sessionData.peerMeta?.icons?.[0];
-    this.dappScheme.current = sessionData.peerMeta?.dappScheme;
+    this.title.current = sessionData.peerMeta?.name ?? null;
+    this.icon.current = sessionData.peerMeta?.icons?.[0] ?? null;
+    this.dappScheme.current = sessionData.peerMeta?.dappScheme ?? null;
 
-    this.hostname = new URL(this.url.current).hostname;
+    this.hostname = new URLParse(this.url.current as string).hostname;
 
     this.backgroundBridge = new BackgroundBridge({
       webview: null,
-      url: this.url.current,
+      url: this.url.current as string,
       isWalletConnect: true,
       wcWalletConnector: this.walletConnector,
       wcRequestActions: {
@@ -343,7 +413,7 @@ class WalletConnect {
         rejectRequest: this.rejectRequest,
         updateSession: this.updateSession,
       },
-      getRpcMethodMiddleware: ({ hostname, getProviderState }) =>
+      getRpcMethodMiddleware: ({ getProviderState }) =>
         getRpcMethodMiddleware({
           hostname: WALLET_CONNECT_ORIGIN + this.hostname,
           getProviderState,
@@ -361,25 +431,25 @@ class WalletConnect {
           wizardScrollAdjusted: () => null,
           tabId: false,
           isWalletConnect: true,
-        }),
+        } as unknown as Parameters<typeof getRpcMethodMiddleware>[0]),
       isMainFrame: true,
     });
   };
 
   killSession = () => {
     this.backgroundBridge?.onDisconnect();
-    this.walletConnector && this.walletConnector.killSession();
-    this.walletConnector = null;
+    this.walletConnector?.killSession();
+    this.walletConnector = null as unknown as WCConnector;
   };
 
-  sessionRequest = async (peerInfo) => {
+  sessionRequest = async (peerInfo: WCSession) => {
     const { ApprovalController } = Engine.context;
     try {
-      const { host } = new URL(peerInfo.peerMeta.url);
+      const { host } = new URLParse(peerInfo.peerMeta.url);
       return await ApprovalController.add({
         id: random(),
         origin: host,
-        requestData: peerInfo,
+        requestData: peerInfo as unknown as Record<string, Json>,
         type: ApprovalTypes.WALLET_CONNECT,
       });
     } catch (error) {
@@ -392,7 +462,7 @@ const instance = {
   async init() {
     const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
     if (sessionData) {
-      const sessions = JSON.parse(sessionData);
+      const sessions: WCSession[] = JSON.parse(sessionData);
 
       sessions.forEach((session) => {
         if (session.lastTimeConnected) {
@@ -416,7 +486,12 @@ const instance = {
   connectors() {
     return connectors;
   },
-  async newSession(uri, redirectUrl, autosign, requestOriginatedFrom) {
+  async newSession(
+    uri: string,
+    redirectUrl?: string,
+    autosign?: boolean,
+    requestOriginatedFrom?: string,
+  ) {
     const alreadyConnected = this.isSessionConnected(uri);
     if (alreadyConnected) {
       NotificationManager.showSimpleNotification({
@@ -437,7 +512,7 @@ const instance = {
       await this.killSession(sessions[0].peerId);
     }
 
-    const data = { uri, session: {} };
+    const data: WalletConnectOptions = { uri, session: {} as WCSession };
     if (redirectUrl) {
       data.session.redirectUrl = redirectUrl;
     }
@@ -450,20 +525,18 @@ const instance = {
     connectors.push(new WalletConnect(data));
   },
   getSessions: async () => {
-    let sessions = [];
+    let sessions: WCSession[] = [];
     const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
     if (sessionData) {
       sessions = JSON.parse(sessionData);
     }
     return sessions;
   },
-  killSession: async (id) => {
+  killSession: async (id?: string) => {
     // 1) First kill the session
     const connectorToKill = connectors.find(
       (connector) =>
-        connector &&
-        connector.walletConnector &&
-        connector.walletConnector.session.peerId === id,
+        connector?.walletConnector?.session.peerId === id,
     );
     if (connectorToKill) {
       await connectorToKill.killSession();
@@ -471,27 +544,25 @@ const instance = {
     // 2) Remove from the list of connectors
     connectors = connectors.filter(
       (connector) =>
-        connector &&
-        connector.walletConnector &&
-        connector.walletConnector.connected &&
+        connector?.walletConnector?.connected &&
         connector.walletConnector.session.peerId !== id,
     );
     // 3) Persist the list
     await persistSessions();
   },
   hub,
-  isValidUri(uri) {
+  isValidUri(uri: string) {
     const result = parseWalletConnectUri(uri);
     if (!result.handshakeTopic || !result.bridge || !result.key) {
       return false;
     }
     return true;
   },
-  getValidUriFromDeeplink(uri) {
+  getValidUriFromDeeplink(uri: string) {
     const prefix = 'wc://wc?uri=';
     return uri.replace(prefix, '');
   },
-  isSessionConnected(uri) {
+  isSessionConnected(uri: string) {
     const wcUri = parseWalletConnectUri(uri);
     return connectors.some(({ walletConnector }) => {
       if (!walletConnector) {
