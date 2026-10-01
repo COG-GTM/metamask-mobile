@@ -424,7 +424,10 @@ export default class DeeplinkProtocolService {
       const deepLinkError = new Error(
         'DeeplinkProtocolService::handleConnection no originatorInfo',
       );
-      Logger.error(deepLinkError, params);
+      Logger.error(deepLinkError, {
+        channelId: params.channelId,
+        scheme: params.scheme,
+      });
 
       return;
     }
