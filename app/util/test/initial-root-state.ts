@@ -2,6 +2,7 @@ import type { RootState } from '../../reducers';
 import type { EngineState } from '../../core/Engine';
 import { initialState as initialFiatOrdersState } from '../../reducers/fiatOrders';
 import { initialState as initialSecurityState } from '../../reducers/security';
+import { initialState as initialLegalNoticesState } from '../../reducers/legalNotices';
 import { initialState as initialInpageProvider } from '../../core/redux/slices/inpageProvider';
 import { initialState as confirmationMetrics } from '../../core/redux/slices/confirmationMetrics';
 import { initialState as originThrottling } from '../../core/redux/slices/originThrottling';
@@ -18,7 +19,7 @@ export const backgroundState: EngineState =
   initialBackgroundState as unknown as EngineState;
 
 const initialRootState: RootState = {
-  legalNotices: undefined,
+  legalNotices: initialLegalNoticesState,
   collectibles: undefined,
   engine: { backgroundState },
   privacy: undefined,
