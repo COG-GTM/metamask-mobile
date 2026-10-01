@@ -1,5 +1,7 @@
 import * as Keychain from 'react-native-keychain'; // eslint-disable-line import/no-namespace
+import { bytesToHex, remove0x } from '@metamask/utils';
 import { Encryptor, LEGACY_DERIVATION_OPTIONS } from './Encryptor';
+import { getRandomBytes } from './Encryptor/bytes';
 import { strings } from '../../locales/i18n';
 import StorageWrapper from '../store/storage-wrapper';
 import { Platform } from 'react-native';
@@ -17,6 +19,42 @@ const privates = new WeakMap();
 const encryptor = new Encryptor({
   keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
 });
+
+// Length (in bytes) of the per-device random key used to wrap secrets before
+// they are written to the OS keychain.
+const DEVICE_ENCRYPTION_KEY_BYTES = 32;
+// Dedicated keychain entry that stores the per-device random wrapping key,
+// kept separate from the wrapped secret itself.
+const DEVICE_ENCRYPTION_KEY_OPTIONS = {
+  service: 'com.metamask.deviceEncryptionKey',
+};
+
+/**
+ * Returns the per-device random key used to wrap secrets before they are
+ * written to the OS keychain. The key is generated once per install and
+ * persisted in a dedicated, hardware-backed (where available) keychain entry.
+ *
+ * Unlike the legacy build-time constant (foxCode), this key is unique per
+ * device and is never embedded in the shipped app binary, so the wrapping is
+ * real encryption rather than obfuscation.
+ *
+ * @returns {Promise<string>} The hex-encoded device encryption key.
+ */
+async function getOrCreateDeviceEncryptionKey() {
+  const existing = await Keychain.getGenericPassword(
+    DEVICE_ENCRYPTION_KEY_OPTIONS,
+  );
+  if (existing && existing.password) {
+    return existing.password;
+  }
+
+  const key = remove0x(bytesToHex(getRandomBytes(DEVICE_ENCRYPTION_KEY_BYTES)));
+  await Keychain.setGenericPassword('metamask-device-key', key, {
+    ...DEVICE_ENCRYPTION_KEY_OPTIONS,
+    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  });
+  return key;
+}
 const defaultOptions = {
   service: 'com.metamask',
   authenticationPromptTitle: strings('authentication.auth_prompt_title'),
@@ -34,7 +72,11 @@ import { MetricsEventBuilder } from './Analytics/MetricsEventBuilder';
  * Class that wraps Keychain from react-native-keychain
  * abstracting metamask specific functionality and settings
  * and also adding an extra layer of encryption before writing into
- * the phone's keychain
+ * the phone's keychain.
+ *
+ * The wrapping key is a per-device random secret (see
+ * {@link getOrCreateDeviceEncryptionKey}) rather than a build-time constant,
+ * so the extra layer provides genuine, device-specific encryption.
  */
 class SecureKeychain {
   isAuthenticating = false;
@@ -48,12 +90,23 @@ class SecureKeychain {
     return SecureKeychain.instance;
   }
 
-  encryptPassword(password) {
-    return encryptor.encrypt(privates.get(this).code, { password });
+  async encryptPassword(password) {
+    const key = await getOrCreateDeviceEncryptionKey();
+    return encryptor.encrypt(key, { password });
   }
 
-  decryptPassword(str) {
-    return encryptor.decrypt(privates.get(this).code, str);
+  async decryptPassword(str) {
+    const key = await getOrCreateDeviceEncryptionKey();
+    try {
+      return await encryptor.decrypt(key, str);
+    } catch {
+      // Backwards compatibility: secrets persisted by older versions were
+      // wrapped with the legacy build-time constant. Fall back to it so
+      // existing users are not locked out; the secret is re-wrapped with the
+      // device key the next time it is written.
+      const legacyKey = privates.get(this).code;
+      return encryptor.decrypt(legacyKey, str);
+    }
   }
 }
 let instance;
