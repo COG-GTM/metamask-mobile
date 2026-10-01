@@ -39,6 +39,12 @@ import {
   weiToFiatNumber,
 } from './';
 
+interface BNInternals {
+  words: number[];
+  negative: number;
+  length: number;
+}
+
 describe('Number utils :: BNToHex', () => {
   it('BNToHex', () => {
     expect(BNToHex(new BN5('1337'))).toEqual('0x539');
@@ -194,9 +200,7 @@ describe('Number utils :: fromTokenMinimalUnit', () => {
 
 describe('Number utils :: fromTokenMinimalUnitString', () => {
   it('fromTokenMinimalUnit using number', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const wrongTypeInput = 1337 as any;
+    const wrongTypeInput = 1337 as unknown as string;
     expect(() => fromTokenMinimalUnitString(wrongTypeInput, 6)).toThrow();
     expect(() => fromTokenMinimalUnitString(wrongTypeInput, 0)).toThrow();
     expect(() => fromTokenMinimalUnitString(wrongTypeInput, 18)).toThrow();
@@ -694,12 +698,8 @@ describe('Number utils :: fastSplit', () => {
 
 describe('Number utils :: safeNumberToBN', () => {
   it('should safe convert a string type positive decimal number to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('1650000007.7');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('1650000007');
+    const result = safeNumberToBN('1650000007.7') as unknown as BNInternals;
+    const expected = new BN4('1650000007') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -707,12 +707,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a number type positive decimal number to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN(1650000007.7);
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('1650000007');
+    const result = safeNumberToBN(1650000007.7) as unknown as BNInternals;
+    const expected = new BN4('1650000007') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -720,12 +716,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a string type positive integer to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('16500');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('16500');
+    const result = safeNumberToBN('16500') as unknown as BNInternals;
+    const expected = new BN4('16500') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -733,12 +725,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a number type positive integer to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN(16500);
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('16500');
+    const result = safeNumberToBN(16500) as unknown as BNInternals;
+    const expected = new BN4('16500') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -746,12 +734,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a string type negative decimal number to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('-1650000007.7');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('-1650000007');
+    const result = safeNumberToBN('-1650000007.7') as unknown as BNInternals;
+    const expected = new BN4('-1650000007') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -759,12 +743,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a number type negative decimal number to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN(-1650000007.7);
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('-1650000007');
+    const result = safeNumberToBN(-1650000007.7) as unknown as BNInternals;
+    const expected = new BN4('-1650000007') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -772,12 +752,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a string type negative integer to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('-16500');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('-16500');
+    const result = safeNumberToBN('-16500') as unknown as BNInternals;
+    const expected = new BN4('-16500') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -785,12 +761,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a number type negative integer to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN(-16500);
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('-16500');
+    const result = safeNumberToBN(-16500) as unknown as BNInternals;
+    const expected = new BN4('-16500') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -798,12 +770,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a positive hex to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('75BCD15');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('123456789');
+    const result = safeNumberToBN('75BCD15') as unknown as BNInternals;
+    const expected = new BN4('123456789') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -811,12 +779,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a positive hex with 0x prefix to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('0x75BCD15');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('123456789');
+    const result = safeNumberToBN('0x75BCD15') as unknown as BNInternals;
+    const expected = new BN4('123456789') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -824,12 +788,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a negative hex to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('-75BCD15');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('-123456789');
+    const result = safeNumberToBN('-75BCD15') as unknown as BNInternals;
+    const expected = new BN4('-123456789') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -837,12 +797,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a negative hex with 0x prefix to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('-0x75BCD15');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('-123456789');
+    const result = safeNumberToBN('-0x75BCD15') as unknown as BNInternals;
+    const expected = new BN4('-123456789') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -850,12 +806,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a decimal zero to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('0');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('0');
+    const result = safeNumberToBN('0') as unknown as BNInternals;
+    const expected = new BN4('0') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -863,12 +815,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a hex zero to BN', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('0x0');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('0');
+    const result = safeNumberToBN('0x0') as unknown as BNInternals;
+    const expected = new BN4('0') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -876,12 +824,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert an invalid hex string to zero', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN('0xNaN');
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('0');
+    const result = safeNumberToBN('0xNaN') as unknown as BNInternals;
+    const expected = new BN4('0') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -889,12 +833,8 @@ describe('Number utils :: safeNumberToBN', () => {
   });
 
   it('should safe convert a NaN object', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result: any = safeNumberToBN(NaN);
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const expected: any = new BN4('0');
+    const result = safeNumberToBN(NaN) as unknown as BNInternals;
+    const expected = new BN4('0') as unknown as BNInternals;
     expect(result.words[0]).toEqual(expected.words[0]);
     expect(result.words[1]).toEqual(expected.words[1]);
     expect(result.negative).toEqual(expected.negative);
@@ -993,24 +933,16 @@ describe('Number utils :: isNumberScientificNotationWhenString', () => {
   });
 
   it('isNumberScientificNotationWhenString should be false when non number is passed', () => {
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(isNumberScientificNotationWhenString('1.337e-6' as any)).toEqual(
+    expect(isNumberScientificNotationWhenString('1.337e-6' as unknown as number)).toEqual(
       false,
     );
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(isNumberScientificNotationWhenString('1.337e-7' as any)).toEqual(
+    expect(isNumberScientificNotationWhenString('1.337e-7' as unknown as number)).toEqual(
       false,
     );
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(isNumberScientificNotationWhenString('1.337e20' as any)).toEqual(
+    expect(isNumberScientificNotationWhenString('1.337e20' as unknown as number)).toEqual(
       false,
     );
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(isNumberScientificNotationWhenString('1.337e21' as any)).toEqual(
+    expect(isNumberScientificNotationWhenString('1.337e21' as unknown as number)).toEqual(
       false,
     );
   });
