@@ -421,7 +421,10 @@ describe('Migration #042', () => {
     };
     migrate(oldState);
     expect(mockedCaptureException.mock.calls[0][0].message).toBe(
-      'Migration 42: selectedAccount will be undefined because newSelectedAccountId is undefined. selectedAddress: undefined, addressMap[selectedAddress]: undefined',
+      'Migration 42: selectedAccount will be undefined because newSelectedAccountId is undefined. hasSelectedAddress: false, accountCount: 0',
+    );
+    expect(mockedCaptureException.mock.calls[0][0].message).not.toMatch(
+      /0x[A-Fa-f0-9]{40}/u,
     );
   });
 
