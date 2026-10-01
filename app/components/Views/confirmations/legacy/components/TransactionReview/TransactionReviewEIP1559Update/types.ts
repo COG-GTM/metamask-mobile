@@ -1,3 +1,5 @@
+import { Insets, TextStyle, ViewStyle } from 'react-native';
+
 export interface TransactionEIP1559UpdateProps {
   /**
    * Selected primary currency
@@ -74,6 +76,48 @@ export interface TransactionEIP1559UpdateProps {
   updateTransactionState: any;
   onlyGas: boolean;
   multiLayerL1FeeTotal?: string;
+}
+
+/**
+ * Shape of the renderable gas data returned by the useGasTransaction hook
+ * for this component. The hook returns a broad union; the fields below are
+ * the string values this component consumes.
+ */
+export interface TransactionReviewGasData {
+  gasFeeMaxNative: string;
+  renderableGasFeeMinNative: string;
+  renderableGasFeeMinConversion: string;
+  renderableGasFeeMaxNative: string;
+  renderableTotalMinNative: string;
+  renderableTotalMinConversion: string;
+  renderableTotalMaxNative: string;
+  renderableGasFeeMaxConversion: string;
+  timeEstimateColor: string;
+  timeEstimate: string;
+  timeEstimateId: string;
+  transactionFee: string;
+  transactionFeeFiat: string;
+  transactionTotalAmount: string;
+  transactionTotalAmountFiat: string;
+  suggestedGasLimit: string;
+}
+
+/**
+ * Shape of the styles object produced by createStyles in ./styles.
+ * overview and gasInfoIcon are function-style members.
+ */
+export interface TransactionReviewStyles {
+  overview: (noMargin: boolean) => ViewStyle;
+  valuesContainer: ViewStyle;
+  gasInfoContainer: ViewStyle;
+  gasInfoIcon: (hasOrigin: string) => TextStyle;
+  amountContainer: ViewStyle;
+  gasRowContainer: ViewStyle;
+  gasBottomRowContainer: ViewStyle;
+  hitSlop: Insets;
+  redInfo: TextStyle;
+  timeEstimateContainer: ViewStyle;
+  flex: ViewStyle;
 }
 
 export interface SkeletonProps {
