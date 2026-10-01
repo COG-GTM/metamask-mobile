@@ -12,15 +12,26 @@ const defaultOptions = {
   quiet: false,
 };
 
+type GanacheServer = ReturnType<typeof ganache.server>;
+
+interface GanacheStartOptions {
+  mnemonic?: string;
+  [key: string]: unknown;
+}
+
 export default class Ganache {
-  async start(opts) {
+  private _server?: GanacheServer;
+
+  async start(opts: GanacheStartOptions) {
     if (!opts.mnemonic) {
       throw new Error('Missing required mnemonic');
     }
     const options = { ...defaultOptions, ...opts, port: getGanachePort() };
     const { port } = options;
     try {
-      this._server = ganache.server(options);
+      this._server = ganache.server(
+        options as unknown as Parameters<typeof ganache.server>[0],
+      );
       await this._server.listen(port);
     } catch (error) {
       console.error(error);
@@ -33,18 +44,18 @@ export default class Ganache {
   }
 
   async getAccounts() {
-    return await this.getProvider().request({
+    return (await this.getProvider()?.request({
       method: 'eth_accounts',
       params: [],
-    });
+    })) as string[] | undefined;
   }
 
   async getBalance() {
     const accounts = await this.getAccounts();
-    const balanceHex = await this.getProvider().request({
+    const balanceHex = (await this.getProvider()?.request({
       method: 'eth_getBalance',
-      params: [accounts[0], 'latest'],
-    });
+      params: [accounts?.[0], 'latest'],
+    })) as string;
     const balanceInt = parseInt(balanceHex, 16) / 10 ** 18;
 
     const balanceFormatted =
