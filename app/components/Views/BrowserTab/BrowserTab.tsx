@@ -34,6 +34,7 @@ import {
 import {
   SPA_urlChangeListener,
   JS_DESELECT_TEXT,
+  safeStringifyForScript,
 } from '../../../util/browserScripts';
 import resolveEnsToIpfsContentId from '../../../lib/ens-ipfs/resolver';
 import { strings } from '../../../../locales/i18n';
@@ -572,13 +573,15 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       const analyticsEnabled = isEnabled();
       const disctinctId = await getMetaMetricsId();
       const homepageScripts = `
-              window.__mmFavorites = ${JSON.stringify(
+              window.__mmFavorites = ${safeStringifyForScript(
                 injectedBookmarks || bookmarks,
               )};
               window.__mmSearchEngine = "${searchEngine}";
               window.__mmMetametrics = ${analyticsEnabled};
               window.__mmDistinctId = "${disctinctId}";
-              window.__mmMixpanelToken = "${MM_MIXPANEL_TOKEN}";
+              window.__mmMixpanelToken = ${safeStringifyForScript(
+                MM_MIXPANEL_TOKEN,
+              )};
               (function () {
                   try {
                       window.dispatchEvent(new Event('metamask_onHomepageScriptsInjected'));
