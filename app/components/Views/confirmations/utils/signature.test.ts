@@ -84,6 +84,29 @@ describe('Signature Utils', () => {
       expect(result.message.value).toBe(largeValue);
     });
 
+    it('extracts the top-level message.value, not a nested struct value, for large numbers', () => {
+      const topLevelValue = '1000000000000000000000';
+      const nestedValue = '1';
+      const data = `{"types":{},"primaryType":"Order","message":{"details":{"value":${nestedValue}},"value":${topLevelValue}}}`;
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe(topLevelValue);
+    });
+
+    it('does not capture a nested value when the top-level value precedes nested structs', () => {
+      const topLevelValue = '2000000000000000000000';
+      const nestedValue = '999';
+      const data = `{"message":{"value":${topLevelValue},"details":{"value":${nestedValue}}}}`;
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe(topLevelValue);
+    });
+
+    it('does not extract a nested large value when the top-level value is small', () => {
+      const nestedValue = '123456789012345678901234567890';
+      const data = `{"message":{"value":3000123,"details":{"value":${nestedValue}}}}`;
+      const result = parseAndNormalizeSignTypedData(data);
+      expect(result.message.value).toBe('3000123');
+    });
+
     it('throws an error for invalid typedDataMessage', () => {
       expect(() => {
         parseAndNormalizeSignTypedData('');

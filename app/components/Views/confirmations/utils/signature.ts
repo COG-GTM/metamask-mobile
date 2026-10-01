@@ -143,15 +143,233 @@ export const sanitizeParsedMessage = (
 };
 
 
-const REGEX_MESSAGE_VALUE_LARGE =
-  /"message"\s*:\s*\{[^}]*"value"\s*:\s*(\d{15,})/u;
+const LARGE_NUMBER_MIN_DIGITS = 15;
 
-/** Returns the value of the message if it is a digit greater than 15 digits */
-function extractLargeMessageValue(messageParamsData: string): string | undefined {
+/**
+ * Extracts the raw digits of the top-level `message.value` directly from the
+ * EIP-712 JSON text, preserving full numeric precision.
+ *
+ * A regex cannot reliably do this: `value` fields can appear inside nested
+ * structs, and a regex has no notion of object nesting, so it can capture a
+ * nested `value` instead of the intended top-level `message.value`. That
+ * mismatch would make the displayed amount diverge from the signed amount.
+ *
+ * Instead this walks the JSON with a small, brace-aware scanner and returns the
+ * literal only when `value` is a *direct* child of the top-level `message`
+ * object and is an unquoted integer with at least 15 digits (the case where
+ * `JSON.parse` would otherwise lose precision). All other cases return
+ * `undefined` so the caller falls back to the parsed value.
+ */
+function extractLargeMessageValue(
+  messageParamsData: string,
+): string | undefined {
   if (typeof messageParamsData !== 'string') {
     return undefined;
   }
-  return messageParamsData.match(REGEX_MESSAGE_VALUE_LARGE)?.[1];
+
+  const text = messageParamsData;
+  let pos = 0;
+
+  const isWhitespace = (ch: string): boolean =>
+    ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r';
+
+  const skipWhitespace = (): void => {
+    while (pos < text.length && isWhitespace(text[pos])) {
+      pos++;
+    }
+  };
+
+  // Reads a JSON string starting at the opening quote, advancing `pos` past the
+  // closing quote and returning its decoded value.
+  const readString = (): string => {
+    pos++; // opening quote
+    let out = '';
+    while (pos < text.length) {
+      const ch = text[pos];
+      if (ch === '\\') {
+        const next = text[pos + 1];
+        switch (next) {
+          case '"':
+            out += '"';
+            break;
+          case '\\':
+            out += '\\';
+            break;
+          case '/':
+            out += '/';
+            break;
+          case 'b':
+            out += '\b';
+            break;
+          case 'f':
+            out += '\f';
+            break;
+          case 'n':
+            out += '\n';
+            break;
+          case 'r':
+            out += '\r';
+            break;
+          case 't':
+            out += '\t';
+            break;
+          case 'u':
+            out += String.fromCharCode(
+              parseInt(text.substr(pos + 2, 4), 16),
+            );
+            pos += 4;
+            break;
+          default:
+            out += next ?? '';
+        }
+        pos += 2;
+      } else if (ch === '"') {
+        pos++;
+        return out;
+      } else {
+        out += ch;
+        pos++;
+      }
+    }
+    throw new Error('Unterminated string');
+  };
+
+  // Skips a single JSON value (string, object, array, number, or literal).
+  function skipValue(): void {
+    skipWhitespace();
+    const ch = text[pos];
+    if (ch === '"') {
+      readString();
+    } else if (ch === '{') {
+      skipObject();
+    } else if (ch === '[') {
+      skipArray();
+    } else {
+      while (
+        pos < text.length &&
+        !isWhitespace(text[pos]) &&
+        text[pos] !== ',' &&
+        text[pos] !== '}' &&
+        text[pos] !== ']'
+      ) {
+        pos++;
+      }
+    }
+  }
+
+  function skipArray(): void {
+    pos++; // [
+    skipWhitespace();
+    if (text[pos] === ']') {
+      pos++;
+      return;
+    }
+    for (;;) {
+      skipValue();
+      skipWhitespace();
+      if (text[pos] === ',') {
+        pos++;
+        continue;
+      }
+      if (text[pos] === ']') {
+        pos++;
+        return;
+      }
+      throw new Error('Malformed array');
+    }
+  }
+
+  function skipObject(): void {
+    pos++; // {
+    skipWhitespace();
+    if (text[pos] === '}') {
+      pos++;
+      return;
+    }
+    for (;;) {
+      skipWhitespace();
+      readString(); // key
+      skipWhitespace();
+      pos++; // :
+      skipValue();
+      skipWhitespace();
+      if (text[pos] === ',') {
+        pos++;
+        continue;
+      }
+      if (text[pos] === '}') {
+        pos++;
+        return;
+      }
+      throw new Error('Malformed object');
+    }
+  }
+
+  // Positions `pos` at the value of `targetKey` among the direct children of the
+  // object whose opening brace is at `pos`. Returns true if found (with `pos` at
+  // the value), false otherwise (with `pos` past the object's closing brace).
+  const enterObjectAndFindKey = (targetKey: string): boolean => {
+    skipWhitespace();
+    if (text[pos] !== '{') {
+      return false;
+    }
+    pos++; // {
+    skipWhitespace();
+    if (text[pos] === '}') {
+      pos++;
+      return false;
+    }
+    for (;;) {
+      skipWhitespace();
+      const key = readString();
+      skipWhitespace();
+      pos++; // :
+      if (key === targetKey) {
+        skipWhitespace();
+        return true;
+      }
+      skipValue();
+      skipWhitespace();
+      if (text[pos] === ',') {
+        pos++;
+        continue;
+      }
+      return false;
+    }
+  };
+
+  try {
+    if (!enterObjectAndFindKey('message')) {
+      return undefined;
+    }
+    if (!enterObjectAndFindKey('value')) {
+      return undefined;
+    }
+    // `pos` is now at the start of the top-level message.value literal.
+    if (
+      text[pos] === '"' ||
+      text[pos] === '{' ||
+      text[pos] === '['
+    ) {
+      return undefined;
+    }
+    const start = pos;
+    while (
+      pos < text.length &&
+      !isWhitespace(text[pos]) &&
+      text[pos] !== ',' &&
+      text[pos] !== '}' &&
+      text[pos] !== ']'
+    ) {
+      pos++;
+    }
+    const raw = text.slice(start, pos);
+    return new RegExp(`^\\d{${LARGE_NUMBER_MIN_DIGITS},}$`, 'u').test(raw)
+      ? raw
+      : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
