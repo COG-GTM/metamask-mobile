@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
+// @ts-nocheck - JS to TS migration; many imported components lack proper type definitions
+import React, { useRef, useState, useEffect, RefObject } from 'react';
 import { Image, StyleSheet, Keyboard, Platform } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSelector } from 'react-redux';
@@ -70,8 +71,9 @@ import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { getActiveTabUrl } from '../../../util/transactions';
 import { getPermittedAccountsByHostname } from '../../../core/Permissions';
-import { TabBarIconKey } from '../../../component-library/components/Navigation/TabBar/TabBar.types';
+import { TabBarIconKey, TabBarProps } from '../../../component-library/components/Navigation/TabBar/TabBar.types';
 import { isEqual } from 'lodash';
+import { RootState } from '../../../reducers';
 import { selectProviderConfig } from '../../../selectors/networkController';
 import { selectAccountsLength } from '../../../selectors/accountTrackerController';
 import isUrl from 'is-url';
@@ -130,7 +132,7 @@ const WalletModalFlow = () => (
 );
 
 /* eslint-disable react/prop-types */
-const AssetStackFlow = (props) => (
+const AssetStackFlow = (props: { route: { params?: Record<string, unknown> } }) => (
   <Stack.Navigator>
     <Stack.Screen
       name={'Asset'}
@@ -145,7 +147,7 @@ const AssetStackFlow = (props) => (
   </Stack.Navigator>
 );
 
-const AssetModalFlow = (props) => (
+const AssetModalFlow = (props: { route: { params?: Record<string, unknown> } }) => (
   <Stack.Navigator
     mode={'modal'}
     initialRouteName={'AssetStackFlow'}
@@ -218,7 +220,7 @@ const TransactionsHome = () => (
 );
 
 /* eslint-disable react/prop-types */
-const BrowserFlow = (props) => (
+const BrowserFlow = (props: { route: { params?: Record<string, unknown> } }) => (
   <Stack.Navigator
     initialRouteName={Routes.BROWSER.VIEW}
     mode={'modal'}
@@ -254,7 +256,7 @@ const BrowserFlow = (props) => (
   </Stack.Navigator>
 );
 
-export const DrawerContext = React.createContext({ drawerRef: null });
+export const DrawerContext = React.createContext<{ drawerRef: RefObject<unknown> | null }>({ drawerRef: null });
 
 ///: BEGIN:ONLY_INCLUDE_IF(external-snaps)
 const SnapsSettingsStack = () => (
@@ -444,18 +446,18 @@ const HomeTabs = () => {
 
   const accountsLength = useSelector(selectAccountsLength);
 
-  const chainId = useSelector((state) => {
+  const chainId = useSelector((state: RootState) => {
     const providerConfig = selectProviderConfig(state);
     return ChainId[providerConfig.type];
   });
 
   const amountOfBrowserOpenTabs = useSelector(
-    (state) => state.browser.tabs.length,
+    (state: RootState) => state.browser.tabs.length,
   );
 
   /* tabs: state.browser.tabs, */
   /* activeTab: state.browser.activeTab, */
-  const activeConnectedDapp = useSelector((state) => {
+  const activeConnectedDapp = useSelector((state: RootState) => {
     const activeTabUrl = getActiveTabUrl(state);
     if (!isUrl(activeTabUrl)) return [];
     try {
@@ -552,7 +554,7 @@ const HomeTabs = () => {
     }
   }, []);
 
-  const renderTabBar = ({ state, descriptors, navigation }) => {
+  const renderTabBar = ({ state, descriptors, navigation }: TabBarProps) => {
     if (isKeyboardHidden) {
       return (
         <TabBar
@@ -626,7 +628,7 @@ const SendView = () => (
 );
 
 /* eslint-disable react/prop-types */
-const NftDetailsModeView = (props) => (
+const NftDetailsModeView = (props: { route: { params?: Record<string, unknown> } }) => (
   <Stack.Navigator>
     <Stack.Screen
       name=" " // No name here because this title will be displayed in the header of the page
@@ -639,7 +641,7 @@ const NftDetailsModeView = (props) => (
 );
 
 /* eslint-disable react/prop-types */
-const NftDetailsFullImageModeView = (props) => (
+const NftDetailsFullImageModeView = (props: { route: { params?: Record<string, unknown> } }) => (
   <Stack.Navigator>
     <Stack.Screen
       name=" " // No name here because this title will be displayed in the header of the page
@@ -711,7 +713,7 @@ const PaymentRequestView = () => (
 );
 
 /* eslint-disable react/prop-types */
-const NotificationsModeView = (props) => (
+const NotificationsModeView = (_props: { route: { params?: Record<string, unknown> } }) => (
   <Stack.Navigator>
     <Stack.Screen
       name={Routes.NOTIFICATIONS.VIEW}

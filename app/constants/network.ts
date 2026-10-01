@@ -43,7 +43,7 @@ export const NETWORKS_CHAIN_ID = {
   BERACHAIN: toHex('80085'),
   METACHAIN_ONE: toHex('112358'),
   MEGAETH_TESTNET: toHex('6342'),
-};
+} as const;
 
 // To add a deprecation warning to a network, add it to the array
 export const DEPRECATED_NETWORKS = [
@@ -72,7 +72,7 @@ export const CHAINLIST_CURRENCY_SYMBOLS_MAP = {
   LINEA_MAINNET: 'ETH',
   ZKSYNC_ERA: 'ETH',
   MEGAETH_TESTNET: 'MegaETH',
-};
+} as const;
 
 export const CURRENCY_SYMBOL_BY_CHAIN_ID = {
   [NETWORKS_CHAIN_ID.MAINNET]: CHAINLIST_CURRENCY_SYMBOLS_MAP.MAINNET,

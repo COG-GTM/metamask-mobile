@@ -4,7 +4,7 @@ module.exports = {
   entry: './src/blockaid-version.js',
   output: {
     path: path.resolve(__dirname, '../app/lib/ppom'),
-    filename: 'blockaid-version.js',
+    filename: 'blockaid-version.ts',
     library: {
       type: 'module',
     },

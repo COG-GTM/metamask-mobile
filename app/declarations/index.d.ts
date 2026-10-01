@@ -4,6 +4,58 @@ declare module '*.mp4';
 
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
+declare module 'eth-ens-namehash' {
+  const namehash: {
+    hash(name: string): string;
+    normalize(name: string): string;
+  };
+  export default namehash;
+}
+
+declare module '@metamask/ethjs-query' {
+  class Eth {
+    constructor(provider: unknown);
+  }
+  export default Eth;
+}
+
+declare module '@metamask/ethjs-contract' {
+  interface ContractInstance {
+    resolver(hash: string): Promise<string[]>;
+    contenthash(hash: string): Promise<string[]>;
+    content(hash: string): Promise<string[]>;
+    supportsInterface(interfaceId: string): Promise<boolean[]>;
+  }
+
+  interface ContractFactory {
+    at(address: string): ContractInstance;
+  }
+
+  type EthContractConstructor = new (eth: unknown) => (abi: readonly Record<string, unknown>[]) => ContractFactory;
+
+  const EthContract: EthContractConstructor;
+  export default EthContract;
+}
+
+declare module 'content-hash' {
+  const contentHash: {
+    decode(hash: string): string;
+    encode(codec: string, value: string): string;
+    getCodec(hash: string): string;
+  };
+  export default contentHash;
+}
+
+declare module 'multihashes' {
+  const multihash: {
+    fromHexString(hex: string): Uint8Array;
+    toB58String(hash: Uint8Array): string;
+    encode(digest: Uint8Array, code: string | number): Uint8Array;
+    decode(buf: Uint8Array): { code: number; name: string; length: number; digest: Uint8Array };
+  };
+  export default multihash;
+}
+
 declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';
