@@ -67,7 +67,7 @@ const useStakingGasFee = (depositValueWei: string): StakingGasFee => {
           break;
       }
 
-      const weiGasPrice = hexToBN(decGWEIToHexWEI(gasPrice));
+      const weiGasPrice = hexToBN(decGWEIToHexWEI(gasPrice) as string);
       const estimatedGasFee = weiGasPrice.muln(gasLimitWithBuffer);
 
       setEstimatedGasFeeWei(estimatedGasFee);
