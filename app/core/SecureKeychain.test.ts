@@ -11,6 +11,9 @@ import {
 } from '../constants/storage';
 import { UserProfileProperty } from '../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
 import AUTHENTICATION_TYPE from '../constants/userProperties';
+import { Encryptor, LEGACY_DERIVATION_OPTIONS } from './Encryptor';
+import { QuickCryptoLib } from './Encryptor/lib';
+import { KeyDerivationIteration } from './Encryptor/constants';
 
 jest.mock('../../locales/i18n', () => ({
   strings: jest.fn((key) => key),
@@ -88,6 +91,60 @@ describe('SecureKeychain - setGenericPassword', () => {
           AUTHENTICATION_TYPE.BIOMETRIC,
       }),
     );
+  });
+
+  it('should encrypt the stored password with the OWASP 2023 KDF iterations', async () => {
+    await SecureKeychain.setGenericPassword(
+      mockPassword,
+      SecureKeychain.TYPES.BIOMETRICS,
+    );
+
+    const encryptedPassword = (Keychain.setGenericPassword as jest.Mock).mock
+      .calls[0][1];
+    const { keyMetadata } = JSON.parse(encryptedPassword);
+    expect(keyMetadata.params.iterations).toBe(
+      KeyDerivationIteration.OWASP2023Default,
+    );
+  });
+
+  it('should still decrypt a password encrypted with the legacy 5,000-iteration KDF', async () => {
+    const legacyEncryptor = new Encryptor({
+      keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
+    });
+    const legacyEncryptedPassword = await legacyEncryptor.encrypt('test_salt', {
+      password: mockPassword,
+    });
+
+    const { keyMetadata } = JSON.parse(legacyEncryptedPassword);
+    expect(keyMetadata.params.iterations).toBe(
+      KeyDerivationIteration.Legacy5000,
+    );
+
+    const deriveKeySpy = jest.spyOn(QuickCryptoLib, 'deriveKey');
+    const decryptSpy = jest
+      .spyOn(QuickCryptoLib, 'decrypt')
+      .mockResolvedValue(JSON.stringify({ password: mockPassword }));
+    (Keychain.getGenericPassword as jest.Mock).mockResolvedValueOnce({
+      password: legacyEncryptedPassword,
+    });
+
+    try {
+      const result = await SecureKeychain.getGenericPassword();
+
+      // Decryption must honor the iteration count embedded in the legacy
+      // payload (5,000), not the encryptor's configured OWASP 2023 default.
+      expect(deriveKeySpy).toHaveBeenCalledWith(
+        'test_salt',
+        expect.any(String),
+        expect.objectContaining({
+          params: { iterations: KeyDerivationIteration.Legacy5000 },
+        }),
+      );
+      expect(result?.password).toBe(mockPassword);
+    } finally {
+      deriveKeySpy.mockRestore();
+      decryptSpy.mockRestore();
+    }
   });
 
   it('should set passcode authentication correctly', async () => {
