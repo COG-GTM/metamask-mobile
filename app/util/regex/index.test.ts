@@ -66,7 +66,9 @@ describe('REGEX :: REGEX_6400_USD', () => {
 describe('REGEX :: regex.accountBalance', () => {
   it(`should match "${AccountListBottomSheetSelectorsIDs.ACCOUNT_BALANCE_BY_ADDRESS_TEST_ID}"`, () => {
     expect(
-      regex.accountBalance.test(AccountListBottomSheetSelectorsIDs.ACCOUNT_BALANCE_BY_ADDRESS_TEST_ID),
+      regex.accountBalance.test(
+        AccountListBottomSheetSelectorsIDs.ACCOUNT_BALANCE_BY_ADDRESS_TEST_ID,
+      ),
     ).toEqual(true);
   });
 
@@ -334,6 +336,14 @@ describe('REGEX :: regex.replaceNetworkErrorSentry', () => {
         'Error occurred at 1234567890ABCDEF1234567890ABCDEF12345678',
       ),
     ).toEqual(false);
+  });
+  it('should replace every 40-character hexadecimal value in a string', () => {
+    expect(
+      'a 0x1111111111111111111111111111111111111111 b 0x2222222222222222222222222222222222222222'.replace(
+        regex.replaceNetworkErrorSentry,
+        '**',
+      ),
+    ).toEqual('a ** b **');
   });
 });
 

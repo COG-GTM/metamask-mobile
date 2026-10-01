@@ -7,6 +7,8 @@ import {
   maskObject,
   sentryStateMask,
   AllProperties,
+  sanitizeUrlsFromErrorMessages,
+  sanitizeAddressesFromErrorMessages,
 } from './utils';
 import { DeepPartial } from '../test/renderWithProvider';
 import { RootState } from '../../reducers';
@@ -112,6 +114,52 @@ describe('deriveSentryEnvironment', () => {
   it('returns performance event null if empty', async () => {
     const eventExcluded = excludeEvents(null);
     expect(eventExcluded).toBe(null);
+  });
+});
+
+describe('sanitizeUrlsFromErrorMessages', () => {
+  it('replaces every non-allowlisted URL in the message and exception values', () => {
+    const report = {
+      message:
+        'Failed https://dapp.example.com/path and https://dapp.example.com/path',
+      exception: {
+        values: [
+          {
+            value:
+              'Origin https://evil.example.org failed, see https://etherscan.io/tx/1',
+          },
+        ],
+      },
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed ** and **');
+    expect(report.exception.values[0].value).toBe(
+      'Origin ** failed, see https://etherscan.io/tx/1',
+    );
+  });
+});
+
+describe('sanitizeAddressesFromErrorMessages', () => {
+  it('replaces every address in the message and exception values', () => {
+    const report = {
+      message:
+        'Accounts 0x1111111111111111111111111111111111111111,0x2222222222222222222222222222222222222222',
+      exception: {
+        values: [
+          {
+            value:
+              '["0xAbCdEf0123456789abcdef0123456789ABCDEF01","0x3333333333333333333333333333333333333333"]',
+          },
+        ],
+      },
+    };
+
+    sanitizeAddressesFromErrorMessages(report);
+
+    expect(report.message).toBe('Accounts **,**');
+    expect(report.exception.values[0].value).toBe('["**","**"]');
   });
 });
 

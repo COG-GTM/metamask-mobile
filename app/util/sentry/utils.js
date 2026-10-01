@@ -480,20 +480,21 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
+export function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
+    let sanitizedMessage = errorMessage;
 
     urlsInMessage?.forEach((url) => {
       if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
-        errorMessage.replace(url, '**');
+        sanitizedMessage = sanitizedMessage.replaceAll(url, '**');
       }
     });
-    return errorMessage;
+    return sanitizedMessage;
   });
 }
 
-function sanitizeAddressesFromErrorMessages(report) {
+export function sanitizeAddressesFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const newErrorMessage = errorMessage.replace(
       regex.replaceNetworkErrorSentry,
