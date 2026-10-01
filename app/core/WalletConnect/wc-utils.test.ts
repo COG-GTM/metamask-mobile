@@ -10,6 +10,9 @@ import {
   networkModalOnboardingConfig,
   onRequestUserApproval,
   getHostname,
+  getWalletConnectPermissionSubject,
+  isUntrustedWalletConnectOrigin,
+  WALLET_CONNECT_ORIGIN_PREFIX,
 } from './wc-utils';
 import type { NavigationContainerRef } from '@react-navigation/native';
 import Routes from '../../../app/constants/navigation/Routes';
@@ -239,6 +242,22 @@ describe('WalletConnect Utils', () => {
         },
       });
     });
+
+    it('looks up permissions using the namespaced WalletConnect subject', async () => {
+      const mockGetPermittedAccounts =
+        jest.requireMock('../Permissions').getPermittedAccounts;
+      const mockGetPermittedChains =
+        jest.requireMock('../Permissions').getPermittedChains;
+
+      await getScopedPermissions({ origin: 'https://app.uniswap.org' });
+
+      expect(mockGetPermittedAccounts).toHaveBeenCalledWith(
+        'walletconnect://app.uniswap.org',
+      );
+      expect(mockGetPermittedChains).toHaveBeenCalledWith(
+        'walletconnect://app.uniswap.org',
+      );
+    });
   });
 
   describe('checkWCPermissions', () => {
@@ -300,9 +319,10 @@ describe('WalletConnect Utils', () => {
         allowSwitchingToNewChain: true,
       });
 
-      // Verify addPermittedChain was called with the right parameters
+      // Verify addPermittedChain was called with the namespaced subject so
+      // WalletConnect grants never collide with the in-app browser namespace.
       expect(mockUpdatePermittedChain).toHaveBeenCalledWith(
-        'test-dapp.com',
+        'walletconnect://test-dapp.com',
         ['0x3']
       );
       expect(switchToNetwork).toHaveBeenCalled();
@@ -425,6 +445,75 @@ describe('WalletConnect Utils', () => {
     it('returns original URI when no protocol separator is found', () => {
       const noProtocolUri = 'example-with-no-protocol';
       expect(getHostname(noProtocolUri)).toBe(noProtocolUri);
+    });
+  });
+
+  describe('getWalletConnectPermissionSubject', () => {
+    it('namespaces the hostname with the WalletConnect prefix', () => {
+      expect(
+        getWalletConnectPermissionSubject('https://app.uniswap.org'),
+      ).toBe('walletconnect://app.uniswap.org');
+    });
+
+    it('collapses scheme/port/path but keeps the WalletConnect namespace', () => {
+      expect(
+        getWalletConnectPermissionSubject('http://app.uniswap.org:8080/swap'),
+      ).toBe('walletconnect://app.uniswap.org');
+      expect(getWalletConnectPermissionSubject('app.uniswap.org')).toBe(
+        'walletconnect://app.uniswap.org',
+      );
+    });
+
+    it('is idempotent for already-namespaced subjects', () => {
+      const subject = getWalletConnectPermissionSubject(
+        'https://app.uniswap.org',
+      );
+      expect(getWalletConnectPermissionSubject(subject)).toBe(subject);
+    });
+
+    it('never collides with the bare in-app-browser hostname', () => {
+      const browserSubject = getHostname('https://app.uniswap.org');
+      const wcSubject = getWalletConnectPermissionSubject(
+        'https://app.uniswap.org',
+      );
+      expect(browserSubject).toBe('app.uniswap.org');
+      expect(wcSubject).not.toBe(browserSubject);
+      expect(wcSubject.startsWith(WALLET_CONNECT_ORIGIN_PREFIX)).toBe(true);
+    });
+
+    it('returns empty string when no hostname can be derived', () => {
+      expect(getWalletConnectPermissionSubject('')).toBe('');
+    });
+  });
+
+  describe('isUntrustedWalletConnectOrigin', () => {
+    it('returns true for scam origins', () => {
+      expect(
+        isUntrustedWalletConnectOrigin({ validation: 'VALID', isScam: true }),
+      ).toBe(true);
+    });
+
+    it('returns true for INVALID validation', () => {
+      expect(isUntrustedWalletConnectOrigin({ validation: 'INVALID' })).toBe(
+        true,
+      );
+    });
+
+    it('returns false for VALID/UNKNOWN/non-scam origins', () => {
+      expect(isUntrustedWalletConnectOrigin({ validation: 'VALID' })).toBe(
+        false,
+      );
+      expect(isUntrustedWalletConnectOrigin({ validation: 'UNKNOWN' })).toBe(
+        false,
+      );
+      expect(
+        isUntrustedWalletConnectOrigin({ validation: 'VALID', isScam: false }),
+      ).toBe(false);
+    });
+
+    it('returns false for missing verify context', () => {
+      expect(isUntrustedWalletConnectOrigin()).toBe(false);
+      expect(isUntrustedWalletConnectOrigin(null)).toBe(false);
     });
   });
 });

@@ -24,6 +24,7 @@ import {
   checkWCPermissions,
   getHostname,
   getScopedPermissions,
+  getWalletConnectPermissionSubject,
   hideWCLoadingState,
 } from './wc-utils';
 
@@ -392,13 +393,15 @@ class WalletConnect2Session {
       // const origin = normalizeOrigin(this.session.peer.metadata.url);
       const origin = this.session.peer.metadata.url;
       const hostname = getHostname(origin);
+      // Namespaced subject, isolated from in-app-browser permission origins.
+      const subject = getWalletConnectPermissionSubject(origin);
 
       DevLogger.log(
-        `WC2::updateSession origin=${origin} hostname=${hostname} - chainId=${chainId} - accounts=${accounts}`,
+        `WC2::updateSession origin=${origin} hostname=${hostname} subject=${subject} - chainId=${chainId} - accounts=${accounts}`,
       );
 
       if (accounts.length === 0) {
-        const approvedAccounts = getPermittedAccounts(hostname);
+        const approvedAccounts = getPermittedAccounts(subject);
         if (approvedAccounts.length > 0) {
           DevLogger.log(
             `WC2::updateSession found approved accounts`,
