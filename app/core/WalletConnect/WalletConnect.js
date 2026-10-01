@@ -4,12 +4,10 @@ import Engine from '../Engine';
 import Logger from '../../util/Logger';
 // eslint-disable-next-line import/no-nodejs-modules
 import { EventEmitter } from 'events';
-import StorageWrapper from '../../store/storage-wrapper';
 import {
   CLIENT_OPTIONS,
   WALLET_CONNECT_ORIGIN,
 } from '../../util/walletconnect';
-import { WALLETCONNECT_SESSIONS } from '../../constants/storage';
 import { WalletDevice } from '@metamask/transaction-controller';
 import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
 import getRpcMethodMiddleware, {
@@ -28,6 +26,10 @@ import { parseWalletConnectUri } from './wc-utils';
 import { store } from '../../store';
 import { selectEvmChainId } from '../../selectors/networkController';
 import ppomUtil from '../../../app/lib/ppom/ppom-util';
+import {
+  loadWalletConnectSessions,
+  persistWalletConnectSessions,
+} from './wc-session-storage';
 
 const hub = new EventEmitter();
 let connectors = [];
@@ -58,10 +60,7 @@ const persistSessions = async () => {
       lastTimeConnected: new Date(),
     }));
 
-  await StorageWrapper.setItem(
-    WALLETCONNECT_SESSIONS,
-    JSON.stringify(sessions),
-  );
+  await persistWalletConnectSessions(sessions);
 };
 
 const waitForInitialization = async () => {
@@ -390,27 +389,23 @@ class WalletConnect {
 
 const instance = {
   async init() {
-    const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
-    if (sessionData) {
-      const sessions = JSON.parse(sessionData);
+    const sessions = await loadWalletConnectSessions();
+    sessions.forEach((session) => {
+      if (session.lastTimeConnected) {
+        const sessionDate = new Date(session.lastTimeConnected);
+        const diffBetweenDatesInMs = msBetweenDates(sessionDate);
+        const diffInHours = msToHours(diffBetweenDatesInMs);
 
-      sessions.forEach((session) => {
-        if (session.lastTimeConnected) {
-          const sessionDate = new Date(session.lastTimeConnected);
-          const diffBetweenDatesInMs = msBetweenDates(sessionDate);
-          const diffInHours = msToHours(diffBetweenDatesInMs);
-
-          if (diffInHours <= AppConstants.WALLET_CONNECT.SESSION_LIFETIME) {
-            connectors.push(new WalletConnect({ session }, true));
-          } else {
-            const connector = new WalletConnect({ session }, true);
-            connector.killSession();
-          }
-        } else {
+        if (diffInHours <= AppConstants.WALLET_CONNECT.SESSION_LIFETIME) {
           connectors.push(new WalletConnect({ session }, true));
+        } else {
+          const connector = new WalletConnect({ session }, true);
+          connector.killSession();
         }
-      });
-    }
+      } else {
+        connectors.push(new WalletConnect({ session }, true));
+      }
+    });
     initialized = true;
   },
   connectors() {
@@ -449,14 +444,7 @@ const instance = {
     }
     connectors.push(new WalletConnect(data));
   },
-  getSessions: async () => {
-    let sessions = [];
-    const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
-    if (sessionData) {
-      sessions = JSON.parse(sessionData);
-    }
-    return sessions;
-  },
+  getSessions: () => loadWalletConnectSessions(),
   killSession: async (id) => {
     // 1) First kill the session
     const connectorToKill = connectors.find(

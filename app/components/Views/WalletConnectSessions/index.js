@@ -12,11 +12,9 @@ import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import { getNavigationOptionsTitle } from '../../UI/Navbar';
 import WebsiteIcon from '../../UI/WebsiteIcon';
-import StorageWrapper from '../../../store/storage-wrapper';
 import ActionSheet from '@metamask/react-native-actionsheet';
 import WalletConnect from '../../../core/WalletConnect/WalletConnect';
 import Logger from '../../../util/Logger';
-import { WALLETCONNECT_SESSIONS } from '../../../constants/storage';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import PropTypes from 'prop-types';
 import WC2Manager, {
@@ -114,13 +112,9 @@ export default class WalletConnectSessions extends PureComponent {
   };
 
   loadSessions = async () => {
-    let sessions = [];
     let sessionsV2 = [];
 
-    const sessionData = await StorageWrapper.getItem(WALLETCONNECT_SESSIONS);
-    if (sessionData) {
-      sessions = JSON.parse(sessionData);
-    }
+    const sessions = await WalletConnect.getSessions();
 
     if (isWC2Enabled) {
       // Add wallet connect v2 sessions to the list
