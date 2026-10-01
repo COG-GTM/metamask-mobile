@@ -7,6 +7,8 @@ import { backgroundState } from '../../../util/test/initial-root-state';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { act, render } from '@testing-library/react-native';
 import Engine from '../../../core/Engine';
+import { ParamListBase } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 jest.mock('../../../core/Engine', () => ({
   context: {
@@ -45,7 +47,7 @@ jest.mock('@react-navigation/native', () => {
 const navigationMock = {
   navigate: jest.fn(),
   push: jest.fn(),
-};
+} as unknown as StackNavigationProp<ParamListBase>;
 
 const defaultCollectibleContract = {
   address: '0x1',
