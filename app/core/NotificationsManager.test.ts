@@ -93,7 +93,7 @@ describe('NotificationManager', () => {
   });
 
   it('calling NotificationManager.getTransactionToView should be truthy if setTransactionToView was called before', () => {
-    NotificationManager.setTransactionToView(1);
+    NotificationManager.setTransactionToView('1');
     expect(NotificationManager.getTransactionToView()).toBeTruthy();
   });
 
