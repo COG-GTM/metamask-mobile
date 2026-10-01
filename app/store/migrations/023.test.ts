@@ -229,7 +229,10 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      engine: { backgroundState: unknown };
+      user: unknown;
+    };
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(
@@ -315,7 +318,10 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      engine: { backgroundState: unknown };
+      user: unknown;
+    };
 
     expect(newState.user).toStrictEqual(
       merge({}, userInitialState, {
@@ -402,7 +408,10 @@ describe('Migration #23', () => {
       },
     });
 
-    const newState = migrate(state);
+    const newState = migrate(state) as {
+      engine: { backgroundState: unknown };
+      user: unknown;
+    };
 
     expect(newState.user).toStrictEqual(userInitialState);
     expect(newState.engine.backgroundState).toStrictEqual(
