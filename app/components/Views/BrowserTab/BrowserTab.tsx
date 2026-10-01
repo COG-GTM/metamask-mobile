@@ -620,7 +620,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           ),
         });
 
-      Logger.log(webViewError);
+      Logger.log(
+        `WEBVIEW ERROR: ${JSON.stringify({
+          domain: webViewError.domain,
+          code: webViewError.code,
+        })}`,
+      );
     },
     [
       setConnectionType,

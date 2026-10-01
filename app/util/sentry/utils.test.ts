@@ -758,6 +758,15 @@ describe('rewriteBreadcrumb', () => {
     expect(breadcrumb.message).toBe('from http: to https:');
   });
 
+  it('masks localhost, IP and long-TLD URLs', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      message:
+        'a http://localhost:8545/rpc b https://192.168.1.10/x?y=1 c https://shop.example.photography/cart',
+    });
+
+    expect(breadcrumb.message).toBe('a http: b https: c https:');
+  });
+
   it('leaves messages without URLs unchanged', () => {
     const breadcrumb = rewriteBreadcrumb({ message: 'Protocol not allowed' });
 
