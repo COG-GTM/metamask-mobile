@@ -11,6 +11,7 @@ import { buildControllerInitRequestMock } from '../../utils/test-utils';
 import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenger';
 import { KeyringControllerGetKeyringsByTypeAction } from '@metamask/keyring-controller';
 import { store } from '../../../../store';
+import { initialState as initialSettingsState } from '../../../../reducers/settings';
 
 jest.mock('@metamask/snaps-controllers');
 
@@ -129,6 +130,7 @@ describe('SnapControllerInit', () => {
       // @ts-expect-error: Partial mock.
       jest.mocked(store.getState).mockReturnValue({
         settings: {
+          ...initialSettingsState,
           basicFunctionalityEnabled: true,
         },
       });
