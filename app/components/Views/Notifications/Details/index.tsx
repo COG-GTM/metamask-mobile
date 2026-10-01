@@ -81,7 +81,7 @@ const NotificationsDetails = ({ route, navigation }: Props) => {
     () => (
       <Header
         title={state?.title ?? ''}
-        subtitle={toLocaleDate(state?.createdAt)}
+        subtitle={toLocaleDate(state?.createdAt ?? '')}
       />
     ),
     [state?.title, state?.createdAt],
