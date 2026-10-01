@@ -21,7 +21,9 @@ describe('ChoosePassword', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ChoosePassword />
+        <ChoosePassword
+          {...({} as unknown as React.ComponentProps<typeof ChoosePassword>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

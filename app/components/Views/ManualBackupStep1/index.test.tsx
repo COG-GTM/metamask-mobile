@@ -16,9 +16,10 @@ describe('ManualBackupStep1', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <ManualBackupStep1
-          route={{
-            params: {
-              words: [
+          {...({
+            route: {
+              params: {
+                words: [
                 'abstract',
                 'accident',
                 'acoustic',
@@ -33,7 +34,8 @@ describe('ManualBackupStep1', () => {
                 'cinnamon',
               ],
             },
-          }}
+          },
+        } as unknown as React.ComponentProps<typeof ManualBackupStep1>)}
         />
       </Provider>,
     );

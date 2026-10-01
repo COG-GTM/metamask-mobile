@@ -12,7 +12,9 @@ describe('ManualBackupStep3', () => {
   it('should render correctly', () => {
     const wrapper = shallow(
       <Provider store={store}>
-        <ManualBackupStep3 />
+        <ManualBackupStep3
+          {...({} as unknown as React.ComponentProps<typeof ManualBackupStep3>)}
+        />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();

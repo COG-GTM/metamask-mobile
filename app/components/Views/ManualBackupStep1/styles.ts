@@ -90,6 +90,8 @@ export const createStyles = (colors: any) =>
       width: 155,
       padding: 12,
     },
+    viewButtonWrapper: {},
+    button: {},
     seedPhraseWrapper: {
       backgroundColor: colors.background.default,
       borderRadius: 8,

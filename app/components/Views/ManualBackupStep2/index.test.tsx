@@ -18,25 +18,27 @@ describe('ManualBackupStep2', () => {
     const wrapper = shallow(
       <Provider store={store}>
         <ManualBackupStep2
-          route={{
-            params: {
-              words: [
-                'abstract',
-                'accident',
-                'acoustic',
-                'announce',
-                'artefact',
-                'attitude',
-                'bachelor',
-                'broccoli',
-                'business',
-                'category',
-                'champion',
-                'cinnamon',
-              ],
-              steps: ['one', 'two', 'three'],
+          {...({
+            route: {
+              params: {
+                words: [
+                  'abstract',
+                  'accident',
+                  'acoustic',
+                  'announce',
+                  'artefact',
+                  'attitude',
+                  'bachelor',
+                  'broccoli',
+                  'business',
+                  'category',
+                  'champion',
+                  'cinnamon',
+                ],
+                steps: ['one', 'two', 'three'],
+              },
             },
-          }}
+          } as unknown as React.ComponentProps<typeof ManualBackupStep2>)}
         />
       </Provider>,
     );

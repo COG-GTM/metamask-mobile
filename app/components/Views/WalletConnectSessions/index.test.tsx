@@ -1,3 +1,4 @@
+import React from 'react';
 import { waitFor } from '@testing-library/react-native';
 import WalletConnectSessions from './';
 import StorageWrapper from '../../../store/storage-wrapper';
@@ -14,18 +15,24 @@ jest.mock('../../../core/WalletConnect/WalletConnectV2', () => ({
 
 describe('WalletConnectSessions', () => {
   it('does not render when not ready', () => {
-    const { toJSON } = renderScreen(WalletConnectSessions, {
-      name: Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW,
-    });
+    const { toJSON } = renderScreen(
+      WalletConnectSessions as unknown as React.ComponentType,
+      {
+        name: Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW,
+      },
+    );
     expect(toJSON()).toMatchSnapshot();
   });
 
   it('renders empty component with no active sessions', async () => {
     jest.spyOn(StorageWrapper, 'getItem').mockResolvedValue(null);
 
-    const { getByTestId, toJSON } = renderScreen(WalletConnectSessions, {
-      name: Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW,
-    });
+    const { getByTestId, toJSON } = renderScreen(
+      WalletConnectSessions as unknown as React.ComponentType,
+      {
+        name: Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW,
+      },
+    );
 
     // Wait for the component to be ready and render the empty state
     await waitFor(() => {
@@ -51,9 +58,12 @@ describe('WalletConnectSessions', () => {
       .spyOn(StorageWrapper, 'getItem')
       .mockResolvedValue(JSON.stringify(sessions));
 
-    const { getByTestId, toJSON } = renderScreen(WalletConnectSessions, {
-      name: Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW,
-    });
+    const { getByTestId, toJSON } = renderScreen(
+      WalletConnectSessions as unknown as React.ComponentType,
+      {
+        name: Routes.WALLET.WALLET_CONNECT_SESSIONS_VIEW,
+      },
+    );
 
     await waitFor(() => {
       const viewID = getByTestId(ExperimentalSelectorsIDs.CONTAINER);

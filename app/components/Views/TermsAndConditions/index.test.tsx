@@ -5,7 +5,11 @@ import TermsAndConditions from './';
 describe('TermsAndConditions', () => {
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(
-      <TermsAndConditions action="import" />,
+      <TermsAndConditions
+        {...({ action: 'import' } as unknown as React.ComponentProps<
+          typeof TermsAndConditions
+        >)}
+      />,
     );
     expect(toJSON()).toMatchSnapshot();
   });
