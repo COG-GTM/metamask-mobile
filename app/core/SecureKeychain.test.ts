@@ -200,3 +200,93 @@ describe('SecureKeychain - setGenericPassword', () => {
     });
   });
 });
+
+const WRAPPING_KEY_SERVICE = 'com.metamask.SecureKeychainWrappingKey';
+
+describe('SecureKeychain - per-install wrapping key', () => {
+  let FreshSecureKeychain: typeof import('./SecureKeychain').default;
+  let FreshKeychain: typeof import('react-native-keychain');
+
+  beforeEach(async () => {
+    jest.resetModules();
+    jest.clearAllMocks();
+    FreshKeychain = await import('react-native-keychain');
+    FreshSecureKeychain = (await import('./SecureKeychain')).default;
+  });
+
+  it('generates and persists a random device-only wrapping key when none exists', async () => {
+    (FreshKeychain.getGenericPassword as jest.Mock).mockResolvedValue(false);
+
+    FreshSecureKeychain.init('static-fox-code');
+    await FreshSecureKeychain.setGenericPassword(
+      'login-password',
+      FreshSecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    expect(FreshKeychain.setGenericPassword).toHaveBeenCalledWith(
+      WRAPPING_KEY_SERVICE,
+      expect.any(String),
+      expect.objectContaining({
+        service: WRAPPING_KEY_SERVICE,
+        accessible: FreshKeychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      }),
+    );
+  });
+
+  it('does not use the static foxCode as the encryption key', async () => {
+    (FreshKeychain.getGenericPassword as jest.Mock).mockResolvedValue(false);
+
+    const foxCode = 'static-fox-code';
+    FreshSecureKeychain.init(foxCode);
+    await FreshSecureKeychain.setGenericPassword(
+      'login-password',
+      FreshSecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    const wrappingCall = (
+      FreshKeychain.setGenericPassword as jest.Mock
+    ).mock.calls.find(([account]) => account === WRAPPING_KEY_SERVICE);
+    const generatedKey = wrappingCall?.[1];
+    expect(generatedKey).toEqual(expect.any(String));
+    expect(generatedKey).not.toEqual(foxCode);
+  });
+
+  it('encrypts the stored password with the OWASP2023 KDF (not legacy 5000 iterations)', async () => {
+    (FreshKeychain.getGenericPassword as jest.Mock).mockResolvedValue(false);
+
+    FreshSecureKeychain.init('static-fox-code');
+    await FreshSecureKeychain.setGenericPassword(
+      'login-password',
+      FreshSecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    const loginCall = (
+      FreshKeychain.setGenericPassword as jest.Mock
+    ).mock.calls.find(([account]) => account === 'metamask-user');
+    const blob = JSON.parse(loginCall?.[1]);
+    expect(blob.keyMetadata.params.iterations).toBe(900000);
+    expect(blob.keyMetadata.params.iterations).not.toBe(5000);
+  });
+
+  it('reuses an existing wrapping key instead of creating a new one', async () => {
+    (FreshKeychain.getGenericPassword as jest.Mock).mockImplementation(
+      async (options) => {
+        if (options?.service === WRAPPING_KEY_SERVICE) {
+          return { username: WRAPPING_KEY_SERVICE, password: 'existing-key' };
+        }
+        return false;
+      },
+    );
+
+    FreshSecureKeychain.init('static-fox-code');
+    await FreshSecureKeychain.setGenericPassword(
+      'login-password',
+      FreshSecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    const wrappingWrites = (
+      FreshKeychain.setGenericPassword as jest.Mock
+    ).mock.calls.filter(([account]) => account === WRAPPING_KEY_SERVICE);
+    expect(wrappingWrites).toHaveLength(0);
+  });
+});

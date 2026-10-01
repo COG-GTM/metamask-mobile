@@ -1,5 +1,5 @@
 import * as Keychain from 'react-native-keychain'; // eslint-disable-line import/no-namespace
-import { Encryptor, LEGACY_DERIVATION_OPTIONS } from './Encryptor';
+import { Encryptor, DERIVATION_OPTIONS_DEFAULT_OWASP2023 } from './Encryptor';
 import { strings } from '../../locales/i18n';
 import StorageWrapper from '../store/storage-wrapper';
 import { Platform } from 'react-native';
@@ -15,8 +15,16 @@ import Device from '../util/device';
 
 const privates = new WeakMap();
 const encryptor = new Encryptor({
-  keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
+  keyDerivationOptions: DERIVATION_OPTIONS_DEFAULT_OWASP2023,
 });
+
+// Keychain service that holds the per-install random key used to wrap the
+// login password. This entry is device-only (excluded from backups) so the
+// wrapping key never leaves the device and is never derivable from the app
+// bundle (unlike the legacy build-wide `foxCode`).
+const WRAPPING_KEY_SERVICE = 'com.metamask.SecureKeychainWrappingKey';
+// Number of random bytes used for the per-install wrapping key.
+const WRAPPING_KEY_BYTES = 32;
 const defaultOptions = {
   service: 'com.metamask',
   authenticationPromptTitle: strings('authentication.auth_prompt_title'),
@@ -48,12 +56,55 @@ class SecureKeychain {
     return SecureKeychain.instance;
   }
 
-  encryptPassword(password) {
-    return encryptor.encrypt(privates.get(this).code, { password });
+  /**
+   * Returns the per-install random key used to encrypt the login password
+   * before it is written to the OS keychain. The key is generated once and
+   * persisted in the keychain itself (device-only). Concurrent callers share
+   * a single load/creation promise so only one key is ever created.
+   *
+   * @returns {Promise<string>} The base64-encoded wrapping key.
+   */
+  getWrappingKey() {
+    const state = privates.get(this);
+    if (!state.wrappingKeyPromise) {
+      state.wrappingKeyPromise = (async () => {
+        const stored = await Keychain.getGenericPassword({
+          service: WRAPPING_KEY_SERVICE,
+        });
+        if (stored && stored.password) {
+          return stored.password;
+        }
+        const wrappingKey = encryptor.generateSalt(WRAPPING_KEY_BYTES);
+        await Keychain.setGenericPassword(WRAPPING_KEY_SERVICE, wrappingKey, {
+          service: WRAPPING_KEY_SERVICE,
+          accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+        });
+        return wrappingKey;
+      })().catch((error) => {
+        // Reset so a transient keychain failure can be retried on next call.
+        state.wrappingKeyPromise = undefined;
+        throw error;
+      });
+    }
+    return state.wrappingKeyPromise;
   }
 
-  decryptPassword(str) {
-    return encryptor.decrypt(privates.get(this).code, str);
+  async encryptPassword(password) {
+    const wrappingKey = await this.getWrappingKey();
+    return encryptor.encrypt(wrappingKey, { password });
+  }
+
+  async decryptPassword(str) {
+    const wrappingKey = await this.getWrappingKey();
+    try {
+      return await encryptor.decrypt(wrappingKey, str);
+    } catch {
+      // Backwards compatibility: passwords stored before the per-install
+      // wrapping key was introduced were encrypted with the static build-wide
+      // `code` (foxCode). Fall back to it so existing users are not locked out;
+      // the entry is re-encrypted with the wrapping key on the next save.
+      return encryptor.decrypt(privates.get(this).code, str);
+    }
   }
 }
 let instance;
