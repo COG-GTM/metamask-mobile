@@ -419,7 +419,7 @@ export function maskObject(objectToMask, mask = {}) {
   }, {});
 }
 
-function rewriteReport(report) {
+export function rewriteReport(report) {
   try {
     // filter out SES from error stack trace
     removeSES(report);
@@ -482,14 +482,14 @@ export function excludeEvents(event) {
 
 function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
-    const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
-
-    urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
-        errorMessage.replace(url, '**');
-      }
-    });
-    return errorMessage;
+    const sanitizedErrorMessage = errorMessage.replace(
+      regex.sanitizeUrl,
+      (url) =>
+        ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))
+          ? url
+          : '**',
+    );
+    return sanitizedErrorMessage;
   });
 }
 

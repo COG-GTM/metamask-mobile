@@ -5,6 +5,7 @@ import {
   excludeEvents,
   captureSentryFeedback,
   maskObject,
+  rewriteReport,
   sentryStateMask,
   AllProperties,
 } from './utils';
@@ -730,5 +731,40 @@ describe('captureSentryFeedback', () => {
         exampleObj: 'object',
       },
     });
+  });
+});
+
+describe('rewriteReport', () => {
+  const buildReport = (message: string) => ({
+    message,
+    exception: { values: [{ value: message }] },
+    contexts: {},
+  });
+
+  it('redacts every non-allowlisted URL and keeps allowlisted ones', () => {
+    const report = rewriteReport(
+      buildReport(
+        'Failed https://mainnet.infura.io/v3/secret-key then https://api.etherscan.io/api and https://evil.app/dapp?x=1',
+      ),
+    );
+    const expected = 'Failed ** then https://api.etherscan.io/api and **';
+    expect(report.message).toBe(expected);
+    expect(report.exception.values[0].value).toBe(expected);
+  });
+
+  it('redacts every address in the message', () => {
+    const report = rewriteReport(
+      buildReport(
+        'from 0x1234567890ABCDEF1234567890ABCDEF12345678 to 0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+      ),
+    );
+    expect(report.message).toBe('from ** to **');
+    expect(report.exception.values[0].value).toBe('from ** to **');
+  });
+
+  it('redacts addresses consistently across repeated reports', () => {
+    const address = '0x1234567890ABCDEF1234567890ABCDEF12345678';
+    expect(rewriteReport(buildReport(address)).message).toBe('**');
+    expect(rewriteReport(buildReport(address)).message).toBe('**');
   });
 });
