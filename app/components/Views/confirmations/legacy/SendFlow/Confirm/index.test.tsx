@@ -26,7 +26,7 @@ const MOCK_ACCOUNTS_CONTROLLER_STATE = createMockAccountsControllerState([
   MOCK_ADDRESS,
 ]);
 
-const mockInitialState: DeepPartial<RootState> = {
+const mockInitialState = {
   engine: {
     backgroundState: {
       ...backgroundState,
@@ -107,7 +107,7 @@ const mockInitialState: DeepPartial<RootState> = {
       },
     ],
   },
-};
+} as unknown as DeepPartial<RootState>;
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),

@@ -183,7 +183,8 @@ function getSmartTransactionCommonParams(state: RootState, chainId?: Hex) {
 
   return {
     shouldUseSmartTransaction,
-    featureFlags,
+    featureFlags:
+      featureFlags as unknown as SubmitSmartTransactionRequest['featureFlags'],
   };
 }
 
