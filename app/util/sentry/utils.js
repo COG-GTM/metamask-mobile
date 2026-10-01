@@ -288,7 +288,24 @@ function getProtocolFromURL(url) {
   return new URL(url).protocol;
 }
 
-function rewriteBreadcrumb(breadcrumb) {
+const URL_IN_TEXT = /\bhttps?:\/\/[^\s"'\\<>]+/giu;
+
+/**
+ * Replaces every http(s) URL in the given text with its scheme only.
+ *
+ * @param {string} text - Free-form text, e.g. a breadcrumb message.
+ * @returns {string} The text with URLs reduced to `http:` / `https:`.
+ */
+function maskUrlsInText(text) {
+  return text.replace(URL_IN_TEXT, (url) =>
+    url.slice(0, url.indexOf(':') + 1).toLowerCase(),
+  );
+}
+
+export function rewriteBreadcrumb(breadcrumb) {
+  if (typeof breadcrumb.message === 'string') {
+    breadcrumb.message = maskUrlsInText(breadcrumb.message);
+  }
   if (breadcrumb.data?.url) {
     breadcrumb.data.url = getProtocolFromURL(breadcrumb.data.url);
   }

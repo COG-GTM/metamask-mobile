@@ -7,6 +7,7 @@ import {
   maskObject,
   sentryStateMask,
   AllProperties,
+  rewriteBreadcrumb,
 } from './utils';
 import { DeepPartial } from '../test/renderWithProvider';
 import { RootState } from '../../reducers';
@@ -729,6 +730,62 @@ describe('captureSentryFeedback', () => {
         data: 'null',
         exampleObj: 'object',
       },
+    });
+  });
+});
+
+describe('rewriteBreadcrumb', () => {
+  it('masks URLs embedded in the breadcrumb message', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      message: JSON.stringify([
+        `WEBVIEW NAVIGATING: onLoadEnd \n Values: ${JSON.stringify({
+          url: 'https://app.uniswap.org/swap?recipient=0xabc&token=secret',
+          title: 'Uniswap',
+        })}`,
+      ]),
+    });
+
+    expect(breadcrumb.message).not.toContain('uniswap.org');
+    expect(breadcrumb.message).not.toContain('token=secret');
+    expect(breadcrumb.message).toContain('https:');
+  });
+
+  it('masks every URL in the message', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      message: 'from http://www.example.com/a?b=1 to https://foo.io/c',
+    });
+
+    expect(breadcrumb.message).toBe('from http: to https:');
+  });
+
+  it('masks localhost, IP and long-TLD URLs', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      message:
+        'a http://localhost:8545/rpc b https://192.168.1.10/x?y=1 c https://shop.example.photography/cart',
+    });
+
+    expect(breadcrumb.message).toBe('a http: b https: c https:');
+  });
+
+  it('leaves messages without URLs unchanged', () => {
+    const breadcrumb = rewriteBreadcrumb({ message: 'Protocol not allowed' });
+
+    expect(breadcrumb.message).toBe('Protocol not allowed');
+  });
+
+  it('still reduces data.url, data.to and data.from to the protocol', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      data: {
+        url: 'https://example.com/path?q=1',
+        to: 'http://example.org/x',
+        from: 'https://example.net/y',
+      },
+    });
+
+    expect(breadcrumb.data).toEqual({
+      url: 'https:',
+      to: 'http:',
+      from: 'https:',
     });
   });
 });

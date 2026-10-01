@@ -620,7 +620,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           ),
         });
 
-      Logger.log(webViewError);
+      Logger.log(
+        `WEBVIEW ERROR: ${JSON.stringify({
+          domain: webViewError.domain,
+          code: webViewError.code,
+        })}`,
+      );
     },
     [
       setConnectionType,
@@ -1285,9 +1290,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           }
         };
 
+        const { loading, canGoBack, canGoForward } = syntheticEvent.nativeEvent;
         Logger.log(
           `WEBVIEW NAVIGATING: ${mappingEventNameString()} \n Values: ${JSON.stringify(
-            syntheticEvent.nativeEvent,
+            { loading, canGoBack, canGoForward },
           )}`,
         );
 
@@ -1322,7 +1328,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       } = event;
       Logger.log(
         `WEBVIEW NAVIGATING: OnNavigationStateChange \n Values: ${JSON.stringify(
-          event,
+          { loading: event.loading, canGoBack, canGoForward, navigationType },
         )}`,
       );
       // Handles force resolves url when going back since the behavior slightly differs that results in onLoadEnd not being called
