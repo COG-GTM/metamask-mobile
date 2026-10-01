@@ -1,6 +1,7 @@
-import URL from 'url-parse';
+import URLParse from 'url-parse';
 
-export const tlc = (str) => str?.toLowerCase?.();
+export const tlc = (str: unknown): string | undefined =>
+  (str as string | undefined)?.toLowerCase?.();
 
 /**
  * Fetch that fails after timeout
@@ -11,23 +12,36 @@ export const tlc = (str) => str?.toLowerCase?.();
  *
  * @returns - Promise resolving the request
  */
-export function timeoutFetch(url, options, timeout = 500) {
+export function timeoutFetch(
+  url: string,
+  options?: RequestInit,
+  timeout = 500,
+): Promise<Response> {
   return Promise.race([
     fetch(url, options),
-    new Promise((_, reject) =>
+    new Promise<Response>((_, reject) =>
       setTimeout(() => reject(new Error('timeout')), timeout),
     ),
   ]);
 }
 
-export function findRouteNameFromNavigatorState(routes) {
-  let route = routes?.[routes.length - 1];
-  if (route.state) {
+interface PartialRoute {
+  name?: string;
+  index?: number;
+  state?: PartialRoute;
+  routes?: PartialRoute[];
+}
+
+export function findRouteNameFromNavigatorState(
+  routes: PartialRoute[],
+): string {
+  let route: PartialRoute | undefined = routes?.[routes.length - 1];
+  if (route?.state) {
     route = route.state;
   }
-  while (route !== undefined && route.index !== undefined) {
-    route = route?.routes?.[route.index];
-    if (route.state) {
+  while (route?.index !== undefined) {
+    route = route.routes?.[route.index];
+    if (route?.state) {
       route = route.state;
     }
   }
@@ -39,17 +53,20 @@ export function findRouteNameFromNavigatorState(routes) {
     name = 'WalletView';
   if (name === 'TransactionsHome') name = 'TransactionsView';
 
-  return name;
+  return name as string;
 }
-export const capitalize = (str) =>
+export const capitalize = (str: string | null | undefined): string | false =>
   (str && str.charAt(0).toUpperCase() + str.slice(1)) || false;
 
-export const toLowerCaseEquals = (a, b) => {
+export const toLowerCaseEquals = (a: unknown, b: unknown): boolean => {
   if (!a && !b) return false;
   return tlc(a) === tlc(b);
 };
 
-export const shallowEqual = (object1, object2) => {
+export const shallowEqual = (
+  object1: Record<string, unknown>,
+  object2: Record<string, unknown>,
+): boolean => {
   const keys1 = Object.keys(object1);
   const keys2 = Object.keys(object2);
 
@@ -73,7 +90,7 @@ export const shallowEqual = (object1, object2) => {
  * @param chars - Number of characters to show at the end and beginning. Defaults to 4.
  * @returns String corresponding to short text format.
  */
-export const renderShortText = (text, chars = 4) => {
+export const renderShortText = (text: string, chars = 4): string => {
   try {
     // The 5 constant represents the 2 extra chars and the 3 dots.
     if (text.length <= chars * 2 + 5) return text;
@@ -88,9 +105,9 @@ export const renderShortText = (text, chars = 4) => {
  * @param {string} url - URL input.
  * @returns {string | undefined} string representing the protocol or 'undefined' if no protocol is extracted.
  */
-export const getURLProtocol = (url) => {
+export const getURLProtocol = (url: string): string | undefined => {
   try {
-    const { protocol } = new URL(url);
+    const { protocol } = new URLParse(url);
     return protocol.replace(':', '');
   } catch {
     return;
@@ -106,7 +123,7 @@ export const getURLProtocol = (url) => {
  * @param {string | null | undefined} uri - string representing the source uri to the file
  * @returns true if it's an ipfs url
  */
-export const isIPFSUri = (uri) => {
+export const isIPFSUri = (uri: string | null | undefined): boolean => {
   if (!uri?.length) return false;
   const ipfsUriRegex =
     /^(\/ipfs\/|ipfs:\/\/)(Qm[A-Za-z0-9]+|[bBfF][A-Za-z2-7]+)(\/|$)/;
@@ -125,20 +142,27 @@ export const isIPFSUri = (uri) => {
  * @param skipNumbers - Boolean to skip numbers
  * @returns - Parsed JSON object
  */
-export const deepJSONParse = ({ jsonString, skipNumbers = true }) => {
+export const deepJSONParse = ({
+  jsonString,
+  skipNumbers = true,
+}: {
+  jsonString: string;
+  skipNumbers?: boolean;
+}): Record<string, unknown> => {
   // Parse the initial JSON string
   const parsedObject = JSON.parse(jsonString);
 
   // Function to recursively parse stringified properties
-  function parseProperties(obj) {
+  function parseProperties(obj: Record<string, unknown>) {
     Object.keys(obj).forEach((key) => {
-      if (typeof obj[key] === 'string') {
-        const isNumber = !isNaN(obj[key]);
+      const value = obj[key];
+      if (typeof value === 'string') {
+        const isNumber = !isNaN(value as unknown as number);
         // Only parse if value is not a number OR value is a number AND numbers are not skipped
         if (!isNumber || (isNumber && !skipNumbers)) {
           try {
             // Attempt to parse the string as JSON
-            const parsed = JSON.parse(obj[key]);
+            const parsed = JSON.parse(value);
             obj[key] = parsed;
             // If the parsed value is an object, parse its properties too
             if (typeof parsed === 'object') {
@@ -148,9 +172,9 @@ export const deepJSONParse = ({ jsonString, skipNumbers = true }) => {
             // If parsing throws, it's not a JSON string, so do nothing
           }
         }
-      } else if (typeof obj[key] === 'object') {
+      } else if (typeof value === 'object' && value !== null) {
         // If it's an object, parse its properties
-        parseProperties(obj[key]);
+        parseProperties(value as Record<string, unknown>);
       }
     });
   }
@@ -169,7 +193,7 @@ export const deepJSONParse = ({ jsonString, skipNumbers = true }) => {
  * @throws {Error} - Throws if arrays is not defined
  * @throws {TypeError} - Throws if any of the arguments is not an array
  */
-export const getUniqueList = (...arrays) => {
+export const getUniqueList = <T>(...arrays: T[][]): T[] => {
   if (arrays.length === 0) {
     throw new Error('At least one array must be defined.');
   }
