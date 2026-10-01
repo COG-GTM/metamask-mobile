@@ -191,6 +191,7 @@ describe('handleUniversalLinks', () => {
         context: 'deeplink_universal',
         url: 'test-url',
         protocolVersion: 1,
+        originatorInfoVerified: false,
 
         otherPublicKey: '',
         sdkConnect: {
@@ -201,6 +202,45 @@ describe('handleUniversalLinks', () => {
           bindAndroidSDK: mockBindAndroidSDK,
         },
       });
+    });
+
+    it('should forward deeplink-supplied originatorInfo as unverified', () => {
+      const originatorInfo = {
+        url: 'https://trusted-dapp.example',
+        title: 'Trusted Dapp',
+        platform: 'web',
+        dappId: 'trusted-dapp.example',
+      };
+      const base64OriginatorInfo = Buffer.from(
+        JSON.stringify(originatorInfo),
+        'utf-8',
+      ).toString('base64');
+
+      urlObj = {
+        hostname: AppConstants.MM_UNIVERSAL_LINK_HOST,
+        pathname: `/${ACTIONS.CONNECT}/additional/path`,
+      } as ReturnType<typeof extractURLParams>['urlObj'];
+
+      params.channelId = 'test-channel-id';
+      params.originatorInfo = base64OriginatorInfo;
+
+      handleUniversalLink({
+        instance,
+        handled,
+        urlObj,
+        params,
+        browserCallBack: mockBrowserCallBack,
+        origin,
+        wcURL,
+        url,
+      });
+
+      expect(mockHandleDeeplink).toHaveBeenCalledWith(
+        expect.objectContaining({
+          originatorInfo,
+          originatorInfoVerified: false,
+        }),
+      );
     });
   });
 

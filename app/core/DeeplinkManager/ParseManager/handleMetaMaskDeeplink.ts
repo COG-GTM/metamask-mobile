@@ -80,6 +80,10 @@ export function handleMetaMaskDeeplink({
           protocolVersion,
           context: 'deeplink_scheme',
           originatorInfo,
+          // originatorInfo arrives from an attacker-controllable deeplink
+          // query parameter, so it is unverified and must not be shown as an
+          // authoritative dApp identity in the connection consent prompt.
+          originatorInfoVerified: false,
           rpc: params.rpc,
           otherPublicKey: params.pubkey,
           sdkConnect: SDKConnect.getInstance(),

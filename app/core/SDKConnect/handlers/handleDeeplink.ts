@@ -20,6 +20,7 @@ const handleDeeplink = async ({
   origin,
   url,
   originatorInfo,
+  originatorInfoVerified = false,
   rpc,
   protocolVersion,
   otherPublicKey,
@@ -30,6 +31,10 @@ const handleDeeplink = async ({
   origin: string;
   url: string;
   originatorInfo?: OriginatorInfo;
+  // Deeplink-supplied originatorInfo is attacker-controllable and therefore
+  // unverified by default. Only originatorInfo received over the encrypted
+  // channel should be treated as verified.
+  originatorInfoVerified?: boolean;
   rpc?: string;
   protocolVersion: number;
   otherPublicKey: string;
@@ -165,6 +170,7 @@ const handleDeeplink = async ({
         id: channelId,
         origin,
         originatorInfo,
+        originatorInfoVerified,
         initialConnection: true,
         protocolVersion,
         trigger,

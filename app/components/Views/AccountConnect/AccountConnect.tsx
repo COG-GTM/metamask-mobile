@@ -178,8 +178,17 @@ const AccountConnect = (props: AccountConnectProps) => {
   const isOriginWalletConnect =
     !isOriginMMSDKRemoteConn && wc2Metadata?.id && wc2Metadata?.id.length > 0;
 
-  const dappIconUrl = sdkConnection?.originatorInfo?.icon;
-  const dappUrl = sdkConnection?.originatorInfo?.url ?? '';
+  // originatorInfo supplied over an unauthenticated deeplink is spoofable, so it
+  // must not be presented as an authoritative dApp identity. Only trust the
+  // identity (url/icon) once it has been received over the encrypted channel.
+  const isOriginatorInfoVerified =
+    sdkConnection?.originatorInfoVerified === true;
+  const dappIconUrl = isOriginatorInfoVerified
+    ? sdkConnection?.originatorInfo?.icon
+    : undefined;
+  const dappUrl = isOriginatorInfoVerified
+    ? sdkConnection?.originatorInfo?.url ?? ''
+    : '';
 
   const [isSdkUrlUnknown, setIsSdkUrlUnknown] = useState(false);
 

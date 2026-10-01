@@ -79,6 +79,10 @@ function handleUniversalLink({
           url,
           rpc: params.rpc,
           originatorInfo,
+          // originatorInfo arrives from an attacker-controllable universal-link
+          // query parameter, so it is unverified and must not be shown as an
+          // authoritative dApp identity in the connection consent prompt.
+          originatorInfoVerified: false,
           otherPublicKey: params.pubkey,
           sdkConnect: SDKConnect.getInstance(),
         }).catch((err: unknown) => {

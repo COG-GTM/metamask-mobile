@@ -315,6 +315,7 @@ describe('handleMetaMaskProtocol', () => {
         otherPublicKey: params.pubkey,
         protocolVersion: 1,
         originatorInfo: undefined,
+        originatorInfoVerified: false,
         rpc: undefined,
         sdkConnect: {
           getConnections: mockGetConnections,
