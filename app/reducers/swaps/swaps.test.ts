@@ -10,6 +10,7 @@ import reducer, {
   selectSwapsChainFeatureFlags,
 } from './index';
 import { NetworkClientType } from '@metamask/network-controller';
+import type { RootState } from '..';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
@@ -72,6 +73,7 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
+          // @ts-ignore
           featureFlags: DEFAULT_FEATURE_FLAGS,
           chainId: '0x1',
         },
@@ -104,6 +106,7 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
+          // @ts-ignore
           featureFlags,
           chainId: '0x1',
         },
@@ -136,6 +139,7 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
+          // @ts-ignore
           featureFlags,
           chainId: '0x1',
         },
@@ -168,6 +172,7 @@ describe('swaps reducer', () => {
       const liveState = reducer(initalState, {
         type: SWAPS_SET_LIVENESS,
         payload: {
+          // @ts-ignore
           featureFlags,
           chainId: '0x1',
         },
@@ -226,6 +231,7 @@ describe('swaps reducer', () => {
             mobileActiveAndroid: true,
           },
         },
+        // @ts-ignore
         '0x1': {
           // @ts-ignore
           featureFlags: {
@@ -281,6 +287,7 @@ describe('swaps reducer', () => {
             mobileActiveAndroid: false,
           },
         },
+        // @ts-ignore
         '0x1': {
           // @ts-ignore
           featureFlags: {
@@ -358,7 +365,7 @@ describe('swaps reducer', () => {
           {}
         ),
       },
-    });
+    } as unknown as RootState);
 
     it('should return chain feature flags with merged smartTransactions from global flags', () => {
       const globalFlags = {
@@ -368,7 +375,7 @@ describe('swaps reducer', () => {
           globalSetting: true,
         },
       };
-      
+
       const chainFlags = {
         '0x1': {
           fallbackToV1: false,
@@ -378,12 +385,12 @@ describe('swaps reducer', () => {
           },
         },
       };
-      
+
       const rootState = createTestState({
         globalFeatureFlags: globalFlags,
         chainFeatureFlags: chainFlags,
       });
-      
+
       const result = selectSwapsChainFeatureFlags(rootState);
       expect(result).toEqual({
         fallbackToV1: false,
@@ -502,6 +509,7 @@ describe('swaps reducer', () => {
           },
         },
       };
+      // @ts-ignore
       expect(swapsTokensObjectSelector(state)).toStrictEqual({
         '0x0000000000000000000000000000000000000000': undefined,
         '0x0000000000000000000000000000000000000001': undefined,
@@ -521,6 +529,7 @@ describe('swaps reducer', () => {
           },
         },
       };
+      // @ts-ignore
       expect(swapsTokensObjectSelector(state)).toStrictEqual({});
     });
   });
