@@ -288,7 +288,16 @@ function getProtocolFromURL(url) {
   return new URL(url).protocol;
 }
 
-function rewriteBreadcrumb(breadcrumb) {
+function maskUrlsInText(text) {
+  return text.replace(regex.sanitizeUrl, (url) =>
+    url.slice(0, url.indexOf(':') + 1),
+  );
+}
+
+export function rewriteBreadcrumb(breadcrumb) {
+  if (typeof breadcrumb.message === 'string') {
+    breadcrumb.message = maskUrlsInText(breadcrumb.message);
+  }
   if (breadcrumb.data?.url) {
     breadcrumb.data.url = getProtocolFromURL(breadcrumb.data.url);
   }
