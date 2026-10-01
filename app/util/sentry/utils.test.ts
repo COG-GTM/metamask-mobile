@@ -143,13 +143,13 @@ describe('sanitizeUrlsFromErrorMessages', () => {
   it('only allowlists URLs whose hostname is an allowlisted domain', () => {
     const report = {
       message:
-        'Failed https://dapp.example.com/?ref=etherscan.io and https://api.etherscan.io/api and https://etherscan.io.evil.com/',
+        'Failed https://dapp.example.com/?ref=etherscan.io and https://api.etherscan.io/api and https://etherscan.io.evil.com/ and https://etherscan.io./tx/1 and https://etherscan.io:443@dapp.example.com/ and https://etherscan%2eio.io/',
     };
 
     sanitizeUrlsFromErrorMessages(report);
 
     expect(report.message).toBe(
-      'Failed ** and https://api.etherscan.io/api and **',
+      'Failed ** and https://api.etherscan.io/api and ** and https://etherscan.io./tx/1 and ** and **',
     );
   });
 });

@@ -269,6 +269,7 @@ const ERROR_URL_ALLOWLIST = [
 ];
 
 const URL_HOSTNAME = /^https?:\/\/(?:[^@/?#]*@)?([^/?#:]+)/iu;
+const PLAIN_HOSTNAME = /^[a-z0-9.-]+$/u;
 
 /**
  * Capture Sentry user feedback and associate ID of captured exception
@@ -488,11 +489,15 @@ export function sanitizeUrlsFromErrorMessages(report) {
     let sanitizedMessage = errorMessage;
 
     urlsInMessage?.forEach((url) => {
-      const hostname = url.match(URL_HOSTNAME)?.[1]?.toLowerCase() ?? '';
-      const isAllowed = ERROR_URL_ALLOWLIST.some(
-        (allowedHost) =>
-          hostname === allowedHost || hostname.endsWith(`.${allowedHost}`),
-      );
+      const hostname = (url.match(URL_HOSTNAME)?.[1] ?? '')
+        .toLowerCase()
+        .replace(/\.$/u, '');
+      const isAllowed =
+        PLAIN_HOSTNAME.test(hostname) &&
+        ERROR_URL_ALLOWLIST.some(
+          (allowedHost) =>
+            hostname === allowedHost || hostname.endsWith(`.${allowedHost}`),
+        );
       if (!isAllowed) {
         sanitizedMessage = sanitizedMessage.replaceAll(url, '**');
       }
