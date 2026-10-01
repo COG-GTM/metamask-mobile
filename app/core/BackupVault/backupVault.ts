@@ -6,7 +6,9 @@ import {
   resetInternetCredentials,
   Options,
   ACCESSIBLE,
+  ACCESS_CONTROL,
 } from 'react-native-keychain';
+import { strings } from '../../../locales/i18n';
 import {
   VAULT_BACKUP_FAILED,
   VAULT_FAILED_TO_GET_VAULT_FROM_BACKUP,
@@ -15,8 +17,18 @@ import {
   TEMP_VAULT_BACKUP_FAILED,
 } from './constants';
 
+// The vault backup contains crown-jewel keyring material (encrypted SRP/keys).
+// Gate it behind biometric/passcode access control so a device-local attacker
+// cannot read the backup ciphertext without fresh user presence, even while the
+// device is unlocked. BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE requires biometrics
+// when available and falls back to the device passcode otherwise, avoiding
+// lockout on devices without enrolled biometrics.
 const options: Options = {
   accessible: ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+  accessControl: ACCESS_CONTROL.BIOMETRY_CURRENT_SET_OR_DEVICE_PASSCODE,
+  authenticationPrompt: {
+    title: strings('authentication.auth_prompt_title'),
+  },
 };
 
 interface KeyringBackupResponse {
@@ -65,7 +77,10 @@ export async function backupVault(
 
   try {
     // Does a primary backup exist?
-    const existingBackup = await getInternetCredentials(VAULT_BACKUP_KEY);
+    const existingBackup = await getInternetCredentials(
+      VAULT_BACKUP_KEY,
+      options,
+    );
 
     // An existing backup exists, backup it to the temp key
     if (existingBackup && existingBackup.password) {
@@ -132,12 +147,14 @@ export async function backupVault(
 export async function getVaultFromBackup(): Promise<KeyringBackupResponse> {
   const primaryVaultCredentials = await getInternetCredentials(
     VAULT_BACKUP_KEY,
+    options,
   );
   if (primaryVaultCredentials) {
     return { success: true, vault: primaryVaultCredentials.password };
   }
   const temporaryVaultCredentials = await getInternetCredentials(
     VAULT_BACKUP_TEMP_KEY,
+    options,
   );
   if (temporaryVaultCredentials) {
     return { success: true, vault: temporaryVaultCredentials.password };
