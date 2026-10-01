@@ -1,12 +1,30 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import { Buffer } from 'buffer';
-import { Duplex } from 'readable-stream';
+
+// readable-stream v2 has no type declarations
+// eslint-disable-next-line @typescript-eslint/no-var-requires, import/no-commonjs
+const { Duplex } = require('readable-stream');
 
 // eslint-disable-next-line no-empty-function
 const noop = () => {};
 
+interface Port {
+  addListener(event: string, listener: (...args: never[]) => void): void;
+  postMessage(msg: unknown, url: string): void;
+  emit(event: string, ...args: unknown[]): void;
+  name?: string;
+}
+
+interface BufferMessage {
+  _isBuffer?: boolean;
+  [key: string]: unknown;
+}
+
 export default class PortDuplexStream extends Duplex {
-  constructor(port, url) {
+  _port: Port;
+  _url: string;
+
+  constructor(port: Port, url: string) {
     super({
       objectMode: true,
     });
@@ -23,7 +41,7 @@ export default class PortDuplexStream extends Duplex {
    * @private
    * @param {Object} msg - Payload from the onMessage listener of Port
    */
-  _onMessage = function (msg) {
+  _onMessage = function (this: PortDuplexStream, msg: BufferMessage) {
     if (Buffer.isBuffer(msg)) {
       delete msg._isBuffer;
       const data = new Buffer(msg);
@@ -39,8 +57,8 @@ export default class PortDuplexStream extends Duplex {
    *
    * @private
    */
-  _onDisconnect = function () {
-    this.destroy && this.destroy();
+  _onDisconnect = function (this: PortDuplexStream) {
+    this.destroy?.();
   };
 
   /**
@@ -57,10 +75,15 @@ export default class PortDuplexStream extends Duplex {
    * @param {string} encoding Encoding to use when writing payload
    * @param {Function} cb Called when writing is complete or an error occurs
    */
-  _write = function (msg, encoding, cb) {
+  _write = function (
+    this: PortDuplexStream,
+    msg: BufferMessage,
+    _encoding: string,
+    cb: (error?: Error | null) => void,
+  ) {
     try {
       if (Buffer.isBuffer(msg)) {
-        const data = msg.toJSON();
+        const data: BufferMessage = (msg as Buffer).toJSON() as BufferMessage;
         data._isBuffer = true;
         this._port.postMessage(data, this._url);
       } else {
