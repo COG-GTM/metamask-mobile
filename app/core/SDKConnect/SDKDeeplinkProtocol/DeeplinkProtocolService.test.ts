@@ -357,6 +357,28 @@ describe('DeeplinkProtocolService', () => {
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
     });
+
+    it('reports a missing originatorInfo without the dapp url or request', async () => {
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'https://dapp.example/path?token=secret',
+        scheme: 'scheme',
+        channelId: 'channel1',
+        request: JSON.stringify({
+          id: '1',
+          method: 'personal_sign',
+          params: ['0xdeadbeef', '0x1234567890abcdef1234567890abcdef12345678'],
+        }),
+      });
+
+      expect(Logger.error).toHaveBeenCalledWith(
+        new Error(
+          'DeeplinkProtocolService::handleConnection no originatorInfo',
+        ),
+        { channelId: 'channel1', scheme: 'scheme' },
+      );
+      expect(service.connections.channel1).toBeUndefined();
+    });
   });
 
   describe('handleConnectionEventAsync', () => {
