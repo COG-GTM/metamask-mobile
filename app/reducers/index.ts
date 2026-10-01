@@ -20,7 +20,9 @@ import navigationReducer, { NavigationState } from './navigation';
 import networkOnboardReducer from './networkSelector';
 import securityReducer, { SecurityState } from './security';
 import { combineReducers, Reducer } from 'redux';
-import experimentalSettingsReducer from './experimentalSettings';
+import experimentalSettingsReducer, {
+  ExperimentalSettingsState,
+} from './experimentalSettings';
 import { EngineState } from '../core/Engine';
 import rpcEventReducer from './rpcEvents';
 import accountsReducer from './accounts';
@@ -104,10 +106,7 @@ export interface RootState {
   networkOnboarded: any;
   security: SecurityState;
   sdk: StateFromReducer<typeof sdkReducer>;
-  // The experimentalSettings reducer is TypeScript but not yet a valid reducer
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  experimentalSettings: any;
+  experimentalSettings: ExperimentalSettingsState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   signatureRequest: any;
