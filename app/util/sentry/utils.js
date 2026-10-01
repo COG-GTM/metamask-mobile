@@ -293,6 +293,13 @@ const EVM_ADDRESS_PATTERN = new RegExp(
   'gu',
 );
 
+/**
+ * Replaces every 0x-prefixed 40-hex-character EVM address in `text` with `**`.
+ * Non-EVM addresses and addresses embedded in ABI-encoded calldata are not matched.
+ *
+ * @param {string} text - The text to redact.
+ * @returns {string} The redacted text.
+ */
 function redactAddresses(text) {
   return text.replace(EVM_ADDRESS_PATTERN, '**');
 }

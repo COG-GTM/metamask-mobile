@@ -108,7 +108,7 @@ describe('WalletConnect', () => {
       // eslint-disable-next-line
       .spyOn(require('@walletconnect/client').default.prototype, 'on')
       .mockImplementationOnce((_, callback) => {
-        callback(null, mockSessionRequest);
+        (callback as (...args: unknown[]) => void)(null, mockSessionRequest);
       });
 
     await WalletConnect.init();
@@ -126,6 +126,50 @@ describe('WalletConnect', () => {
     const logged = JSON.stringify(MockLogger.log.mock.calls);
     expect(logged).not.toContain(mockDappUrl);
     expect(logged).not.toContain('peerMeta');
+  });
+  it('does not log call_request or session_update payloads', async () => {
+    const mockAccount = '0x1234567890abcdef1234567890abcdef12345678';
+    // eslint-disable-next-line
+    const WalletConnect = require('./WalletConnect').default;
+    // eslint-disable-next-line
+    const MockLogger = jest.mocked(require('../../util/Logger'));
+    const handlers: Record<string, (...args: unknown[]) => unknown> = {};
+    jest
+      // eslint-disable-next-line
+      .spyOn(require('@walletconnect/client').default.prototype, 'on')
+      .mockImplementation((event, callback) => {
+        handlers[event as string] = callback as (...args: unknown[]) => unknown;
+      });
+
+    await WalletConnect.init();
+    await WalletConnect.newSession(
+      'URI',
+      mockRedirectUrl,
+      mockAutoSign,
+      'origin',
+    );
+    MockLogger.log.mockClear();
+
+    await Promise.resolve(
+      handlers.call_request(null, {
+        id: 7,
+        method: 'eth_sendTransaction',
+        params: [
+          { from: mockAccount, to: mockAccount, value: '0x1', data: '0xab' },
+        ],
+      }),
+    ).catch(() => undefined);
+    handlers.session_update(null, { params: [{ accounts: [mockAccount] }] });
+    await flushPromises();
+
+    expect(MockLogger.log).toHaveBeenCalledWith('CALL_REQUEST', {
+      id: 7,
+      method: 'eth_sendTransaction',
+    });
+    expect(MockLogger.log).toHaveBeenCalledWith('WC: Session update');
+    expect(JSON.stringify(MockLogger.log.mock.calls)).not.toContain(
+      mockAccount,
+    );
   });
   it('should call rejectSession when user rejects wallet connect session', async () => {
     // eslint-disable-next-line
