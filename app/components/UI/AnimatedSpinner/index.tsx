@@ -1,16 +1,36 @@
-/* eslint-disable react/prop-types */
 import React, { PureComponent } from 'react';
 import { View, Animated, Easing, StyleSheet } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import { Colors } from '../../../util/theme/models';
+import { Theme } from '@metamask/design-tokens';
 
 export const SpinnerSize = {
   MD: 'MD',
   SM: 'SM',
-};
+} as const;
 
-const measures = {
+export type SpinnerSizeType = (typeof SpinnerSize)[keyof typeof SpinnerSize];
+
+interface SpinnerMeasure {
+  Android: {
+    height: number;
+    width: number;
+  };
+  iOS: {
+    height: number;
+    width: number;
+  };
+  static: {
+    borderRadius: number;
+    width: number;
+    height: number;
+    iconSize: number;
+  };
+}
+
+const measures: Record<SpinnerSizeType, SpinnerMeasure> = {
   [SpinnerSize.SM]: {
     Android: {
       height: 30.5,
@@ -45,30 +65,50 @@ const measures = {
   },
 };
 
-const createStyles = (colors, measures) =>
+const createStyles = (colors: Colors, measure: SpinnerMeasure) =>
   StyleSheet.create({
     view: {
       position: 'relative',
       height: Device.isAndroid()
-        ? measures.Android.height
-        : measures.iOS.height,
-      width: Device.isAndroid() ? measures.Android.width : measures.iOS.width,
+        ? measure.Android.height
+        : measure.iOS.height,
+      width: Device.isAndroid() ? measure.Android.width : measure.iOS.width,
       top: Device.isAndroid() ? -6 : -5.5,
       left: Device.isAndroid() ? -6 : -5.5,
     },
     static: {
       borderWidth: 3.5,
       borderColor: colors.background.alternative,
-      borderRadius: measures.static.borderRadius,
-      width: measures.static.width,
-      height: measures.static.height,
+      borderRadius: measure.static.borderRadius,
+      width: measure.static.width,
+      height: measure.static.height,
     },
   });
 
-export default class AnimatedSpinner extends PureComponent {
+interface AnimatedSpinnerProps {
+  /**
+   * Size of the spinner
+   */
+  size?: SpinnerSizeType;
+  /**
+   * ID of the element to be used on e2e tests
+   */
+  testID?: string;
+}
+
+interface AnimatedSpinnerState {
+  spinning: boolean;
+}
+
+export default class AnimatedSpinner extends PureComponent<
+  AnimatedSpinnerProps,
+  AnimatedSpinnerState
+> {
+  mounted = false;
+
   spinValue = new Animated.Value(0);
 
-  state = {
+  state: AnimatedSpinnerState = {
     spinning: false,
   };
 
@@ -112,7 +152,8 @@ export default class AnimatedSpinner extends PureComponent {
 
   render() {
     const { size = SpinnerSize.MD } = this.props;
-    const colors = this.context.colors || mockTheme.colors;
+    const colors =
+      (this.context as unknown as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors, measures[size]);
     const spin = this.spinValue.interpolate({
       inputRange: [0, 1],
