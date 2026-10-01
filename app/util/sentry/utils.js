@@ -268,6 +268,9 @@ const ERROR_URL_ALLOWLIST = [
   'segment.io',
 ];
 
+const URL_HOSTNAME = /^https?:\/\/(?:[^@/?#]*@)?([^/?#:]+)/iu;
+const PLAIN_HOSTNAME = /^[a-z0-9.-]+$/u;
+
 /**
  * Capture Sentry user feedback and associate ID of captured exception
  *
@@ -480,23 +483,33 @@ export function excludeEvents(event) {
   return event;
 }
 
-function sanitizeUrlsFromErrorMessages(report) {
+export function sanitizeUrlsFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const urlsInMessage = errorMessage.match(regex.sanitizeUrl);
+    let sanitizedMessage = errorMessage;
 
     urlsInMessage?.forEach((url) => {
-      if (!ERROR_URL_ALLOWLIST.some((allowedUrl) => url.match(allowedUrl))) {
-        errorMessage.replace(url, '**');
+      const hostname = (url.match(URL_HOSTNAME)?.[1] ?? '')
+        .toLowerCase()
+        .replace(/\.$/u, '');
+      const isAllowed =
+        PLAIN_HOSTNAME.test(hostname) &&
+        ERROR_URL_ALLOWLIST.some(
+          (allowedHost) =>
+            hostname === allowedHost || hostname.endsWith(`.${allowedHost}`),
+        );
+      if (!isAllowed) {
+        sanitizedMessage = sanitizedMessage.replaceAll(url, '**');
       }
     });
-    return errorMessage;
+    return sanitizedMessage;
   });
 }
 
-function sanitizeAddressesFromErrorMessages(report) {
+export function sanitizeAddressesFromErrorMessages(report) {
   rewriteErrorMessages(report, (errorMessage) => {
     const newErrorMessage = errorMessage.replace(
-      regex.replaceNetworkErrorSentry,
+      new RegExp(regex.replaceNetworkErrorSentry.source, 'gu'),
       '**',
     );
     return newErrorMessage;

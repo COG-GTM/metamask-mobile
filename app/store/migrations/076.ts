@@ -264,7 +264,7 @@ export default function migrate(oldState: unknown) {
     if (!isObject(subject)) {
       captureException(
         new Error(
-          `Migration ${version}: Invalid subject for origin "${origin}" of type ${typeof subject}`,
+          `Migration ${version}: Invalid subject of type ${typeof subject}`,
         ),
       );
       return oldState;
@@ -276,7 +276,7 @@ export default function migrate(oldState: unknown) {
     ) {
       captureException(
         new Error(
-          `Migration ${version}: Invalid permissions for origin "${origin}" of type ${typeof subject.permissions}`,
+          `Migration ${version}: Invalid subject permissions of type ${typeof subject.permissions}`,
         ),
       );
       return oldState;
@@ -300,8 +300,9 @@ export default function migrate(oldState: unknown) {
     if (!isPermissionConstraint(ethAccountsPermission)) {
       captureException(
         new Error(
-          `Migration ${version}: Invalid state.PermissionController.subjects[${origin}].permissions[${PermissionNames.eth_accounts
-          }]: ${JSON.stringify(ethAccountsPermission)}`,
+          `Migration ${version}: Invalid state.PermissionController.subjects[*].permissions[${
+            PermissionNames.eth_accounts
+          }] of type ${typeof ethAccountsPermission}`,
         ),
       );
       return oldState;
@@ -310,7 +311,8 @@ export default function migrate(oldState: unknown) {
     if (!isNonEmptyArrayOfStrings(accountsCaveatValue)) {
       captureException(
         new Error(
-          `Migration ${version}: Invalid state.PermissionController.subjects[${origin}].permissions[${PermissionNames.eth_accounts
+          `Migration ${version}: Invalid state.PermissionController.subjects[*].permissions[${
+            PermissionNames.eth_accounts
           }].caveats[0].value of type ${typeof ethAccountsPermission
             .caveats?.[0]?.value}`,
         ),
@@ -328,8 +330,9 @@ export default function migrate(oldState: unknown) {
       if (!isPermissionConstraint(permittedChainsPermission)) {
         captureException(
           new Error(
-            `Migration ${version}: Invalid state.PermissionController.subjects[${origin}].permissions[${PermissionNames.permittedChains
-            }]: ${JSON.stringify(permittedChainsPermission)}`,
+            `Migration ${version}: Invalid state.PermissionController.subjects[*].permissions[${
+              PermissionNames.permittedChains
+            }] of type ${typeof permittedChainsPermission}`,
           ),
         );
         return oldState;
@@ -338,7 +341,8 @@ export default function migrate(oldState: unknown) {
       if (!isNonEmptyArrayOfStrings(chainsCaveatValue)) {
         captureException(
           new Error(
-            `Migration ${version}: Invalid state.PermissionController.subjects[${origin}].permissions[${PermissionNames.permittedChains
+            `Migration ${version}: Invalid state.PermissionController.subjects[*].permissions[${
+              PermissionNames.permittedChains
             }].caveats[0].value of type ${typeof permittedChainsPermission
               .caveats?.[0]?.value}`,
           ),

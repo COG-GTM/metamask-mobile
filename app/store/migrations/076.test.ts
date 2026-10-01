@@ -391,9 +391,7 @@ describe('Migration: transform "eth_accounts" and "endowment:permitted-chains" i
     const newStorage = migrate(oldStorage);
 
     expect(mockedCaptureException).toHaveBeenCalledWith(
-      new Error(
-        `Migration ${version}: Invalid subject for origin "test.com" of type string`,
-      ),
+      new Error(`Migration ${version}: Invalid subject of type string`),
     );
     expect(newStorage).toStrictEqual(oldStorage);
   });
@@ -424,11 +422,87 @@ describe('Migration: transform "eth_accounts" and "endowment:permitted-chains" i
 
     expect(mockedCaptureException).toHaveBeenCalledWith(
       new Error(
-        `Migration ${version}: Invalid permissions for origin "test.com" of type string`,
+        `Migration ${version}: Invalid subject permissions of type string`,
       ),
     );
     expect(newStorage).toStrictEqual(oldStorage);
   });
+
+  it.each([
+    [
+      PermissionNames.eth_accounts,
+      {
+        [PermissionNames.eth_accounts]: {
+          invoker: 'https://dapp.example.com',
+          caveats: [
+            {
+              type: 'restrictReturnedAccounts',
+              value: [
+                '0x1111111111111111111111111111111111111111',
+                '0x2222222222222222222222222222222222222222',
+              ],
+            },
+          ],
+        },
+      },
+    ],
+    [
+      PermissionNames.permittedChains,
+      {
+        [PermissionNames.eth_accounts]: {
+          id: '1',
+          date: 2,
+          invoker: 'https://dapp.example.com',
+          parentCapability: PermissionNames.eth_accounts,
+          caveats: [
+            {
+              type: 'restrictReturnedAccounts',
+              value: ['0x1111111111111111111111111111111111111111'],
+            },
+          ],
+        },
+        [PermissionNames.permittedChains]: {
+          invoker: 'https://dapp.example.com',
+          caveats: [{ type: 'restrictNetworkSwitching', value: ['0x1'] }],
+        },
+      },
+    ],
+  ])(
+    'does not include the origin or permission contents in the error when the %s permission is invalid',
+    (permissionName, permissions) => {
+      const oldStorage = {
+        engine: {
+          backgroundState: {
+            NetworkController: {
+              selectedNetworkClientId: 'mainnet',
+              networkConfigurationsByChainId: {},
+            },
+            SelectedNetworkController: {
+              domains: {},
+            },
+            PermissionController: {
+              subjects: {
+                'https://dapp.example.com': { permissions },
+              },
+            },
+          },
+        },
+      };
+
+      const newStorage = migrate(oldStorage);
+
+      expect(mockedCaptureException).toHaveBeenCalledWith(
+        new Error(
+          `Migration ${version}: Invalid state.PermissionController.subjects[*].permissions[${permissionName}] of type object`,
+        ),
+      );
+      const [error] = mockedCaptureException.mock.calls[0];
+      expect((error as Error).message).not.toMatch(
+        /dapp\.example\.com|0x1111/u,
+      );
+      expect(newStorage).toStrictEqual(oldStorage);
+    },
+  );
 
   it('deletes the permittedChains permission if eth_accounts has not been granted and the permittedChains permissions has been granted', () => {
     const oldStorage = {

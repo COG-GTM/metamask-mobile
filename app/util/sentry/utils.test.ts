@@ -7,6 +7,8 @@ import {
   maskObject,
   sentryStateMask,
   AllProperties,
+  sanitizeUrlsFromErrorMessages,
+  sanitizeAddressesFromErrorMessages,
 } from './utils';
 import { DeepPartial } from '../test/renderWithProvider';
 import { RootState } from '../../reducers';
@@ -112,6 +114,65 @@ describe('deriveSentryEnvironment', () => {
   it('returns performance event null if empty', async () => {
     const eventExcluded = excludeEvents(null);
     expect(eventExcluded).toBe(null);
+  });
+});
+
+describe('sanitizeUrlsFromErrorMessages', () => {
+  it('replaces every non-allowlisted URL in the message and exception values', () => {
+    const report = {
+      message:
+        'Failed https://dapp.example.com/path and https://dapp.example.com/path',
+      exception: {
+        values: [
+          {
+            value:
+              'Origin https://evil.example.org failed, see https://etherscan.io/tx/1',
+          },
+        ],
+      },
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe('Failed ** and **');
+    expect(report.exception.values[0].value).toBe(
+      'Origin ** failed, see https://etherscan.io/tx/1',
+    );
+  });
+
+  it('only allowlists URLs whose hostname is an allowlisted domain', () => {
+    const report = {
+      message:
+        'Failed https://dapp.example.com/?ref=etherscan.io and https://api.etherscan.io/api and https://etherscan.io.evil.com/ and https://etherscan.io./tx/1 and https://etherscan.io:443@dapp.example.com/ and https://etherscan%2eio.io/',
+    };
+
+    sanitizeUrlsFromErrorMessages(report);
+
+    expect(report.message).toBe(
+      'Failed ** and https://api.etherscan.io/api and ** and https://etherscan.io./tx/1 and ** and **',
+    );
+  });
+});
+
+describe('sanitizeAddressesFromErrorMessages', () => {
+  it('replaces every address in the message and exception values', () => {
+    const report = {
+      message:
+        'Accounts 0x1111111111111111111111111111111111111111,0x2222222222222222222222222222222222222222',
+      exception: {
+        values: [
+          {
+            value:
+              '["0xAbCdEf0123456789abcdef0123456789ABCDEF01","0x3333333333333333333333333333333333333333"]',
+          },
+        ],
+      },
+    };
+
+    sanitizeAddressesFromErrorMessages(report);
+
+    expect(report.message).toBe('Accounts **,**');
+    expect(report.exception.values[0].value).toBe('["**","**"]');
   });
 });
 
