@@ -1,5 +1,5 @@
 import bookmarksReducer from './bookmarks';
-import browserReducer from './browser';
+import browserReducer, { BrowserState } from './browser';
 import engineReducer from '../core/redux/slices/engine';
 import privacyReducer from './privacy';
 import modalsReducer from './modals';
@@ -67,9 +67,7 @@ export interface RootState {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bookmarks: any;
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  browser: any;
+  browser: BrowserState;
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   modals: any;
