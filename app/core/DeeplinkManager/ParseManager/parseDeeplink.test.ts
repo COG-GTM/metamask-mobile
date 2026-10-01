@@ -4,7 +4,8 @@ import handleDappUrl from './handleDappUrl';
 import handleMetaMaskDeeplink from './handleMetaMaskDeeplink';
 import handleUniversalLink from './handleUniversalLink';
 import connectWithWC from './connectWithWC';
-import parseDeeplink from './parseDeeplink';
+import Logger from '../../../util/Logger';
+import parseDeeplink, { isValidPrivateKey } from './parseDeeplink';
 
 jest.mock('../../../constants/deeplinks');
 jest.mock('../../../util/Logger');
@@ -191,6 +192,101 @@ describe('parseDeeplink', () => {
     });
 
     expect(result).toBe(true);
+  });
+
+  describe('isValidPrivateKey', () => {
+    const validKey = 'a'.repeat(64);
+
+    it('accepts 64 lowercase hex characters', () => {
+      expect(isValidPrivateKey(validKey)).toBe(true);
+    });
+
+    it('accepts 64 mixed-case hex characters', () => {
+      expect(
+        isValidPrivateKey(
+          '0123456789abcdefABCDEF0123456789abcdefABCDEF0123456789abcdef0123',
+        ),
+      ).toBe(true);
+    });
+
+    it('accepts a 64 hex character key with a 0x prefix', () => {
+      expect(isValidPrivateKey(`0x${validKey}`)).toBe(true);
+    });
+
+    it('rejects a 64 character string containing non-hex characters', () => {
+      expect(isValidPrivateKey('z'.repeat(64))).toBe(false);
+    });
+
+    it('rejects strings of the wrong length', () => {
+      expect(isValidPrivateKey('a'.repeat(63))).toBe(false);
+      expect(isValidPrivateKey('a'.repeat(65))).toBe(false);
+    });
+  });
+
+  describe('private key handling in the catch block', () => {
+    it('does not log or alert when the value is a valid hex private key (no 0x)', () => {
+      const privateKey = 'a'.repeat(64);
+
+      const result = parseDeeplink({
+        deeplinkManager: instance,
+        url: privateKey,
+        origin: 'testOrigin',
+        browserCallBack: mockBrowserCallBack,
+        onHandled: mockOnHandled,
+      });
+
+      expect(result).toBe(false);
+      expect(Logger.error).not.toHaveBeenCalled();
+    });
+
+    it('does not log the raw value when the key has a 0x prefix', () => {
+      const privateKey = `0x${'b'.repeat(64)}`;
+
+      const result = parseDeeplink({
+        deeplinkManager: instance,
+        url: privateKey,
+        origin: 'testOrigin',
+        browserCallBack: mockBrowserCallBack,
+        onHandled: mockOnHandled,
+      });
+
+      expect(result).toBe(false);
+      expect(Logger.error).not.toHaveBeenCalled();
+    });
+
+    it('treats a 64 char non-hex string as an invalid URL (logs + does not suppress)', () => {
+      const notAKey = 'z'.repeat(64);
+
+      const result = parseDeeplink({
+        deeplinkManager: instance,
+        url: notAKey,
+        origin: 'testOrigin',
+        browserCallBack: mockBrowserCallBack,
+        onHandled: mockOnHandled,
+      });
+
+      expect(result).toBe(false);
+      expect(Logger.error).toHaveBeenCalled();
+    });
+
+    it('never passes the raw private key value to Logger', () => {
+      const privateKey = 'c'.repeat(64);
+
+      parseDeeplink({
+        deeplinkManager: instance,
+        url: privateKey,
+        origin: 'testOrigin',
+        browserCallBack: mockBrowserCallBack,
+        onHandled: mockOnHandled,
+      });
+
+      const loggerCalls = [
+        ...(Logger.error as jest.Mock).mock.calls,
+        ...(Logger.log as jest.Mock).mock.calls,
+      ];
+      const serialized = JSON.stringify(loggerCalls);
+      expect(serialized).not.toContain(privateKey);
+    });
   });
 
   invalidUrls.forEach((url) => {

@@ -210,6 +210,13 @@ const RevealPrivateCredential = ({
     const unlockWithBiometrics = async () => {
       // Try to use biometrics to unlock
       const { availableBiometryType } = await Authentication.getType();
+      // Empty-password export is only attempted in the pre-password onboarding
+      // state (`passwordSet === false`), where the vault is still encrypted
+      // with an empty password. Once a password is set we take the biometrics/
+      // real-password branch below. As defense-in-depth, even if this ran with
+      // a password set, `KeyringController.exportSeedPhrase`/`exportAccount`
+      // call `verifyPassword` first and reject the empty password, so secrets
+      // cannot be exported.
       if (!passwordSet) {
         tryUnlockWithPassword('');
       } else if (availableBiometryType) {

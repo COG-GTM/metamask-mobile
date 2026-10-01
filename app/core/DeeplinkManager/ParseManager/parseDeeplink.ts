@@ -12,6 +12,25 @@ import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
+/**
+ * Matches a 32-byte (64 hex character) private key, with an optional `0x`
+ * prefix. Anchored on both ends so the entire string must be valid hex.
+ */
+const PRIVATE_KEY_HEX_REGEX = /^(0x)?[0-9a-fA-F]{64}$/;
+
+/**
+ * Returns whether the provided value is a syntactically valid hex private key
+ * (exactly 64 hex characters, with an optional `0x` prefix → 32 bytes).
+ *
+ * This only validates the encoding; it never imports, logs, or otherwise
+ * consumes the value. Callers use it to decide whether a string that failed
+ * URL parsing should be treated as a private key rather than surfaced as an
+ * "invalid URL" (which would log/alert the raw secret).
+ */
+export function isValidPrivateKey(value: string): boolean {
+  return typeof value === 'string' && PRIVATE_KEY_HEX_REGEX.test(value);
+}
+
 function parseDeeplink({
   deeplinkManager: instance,
   url,
@@ -93,7 +112,11 @@ function parseDeeplink({
 
     return true;
   } catch (error) {
-    const isPrivateKey = url.length === 64;
+    // A bare private key fails URL parsing. Detect it by validating that the
+    // value is actually hex (not just 64 chars long) so we never log or alert
+    // the raw secret. Anything that is 64 chars but not valid hex falls through
+    // to normal invalid-URL handling.
+    const isPrivateKey = isValidPrivateKey(url);
     if (error && !isPrivateKey) {
       Logger.error(
         error as Error,

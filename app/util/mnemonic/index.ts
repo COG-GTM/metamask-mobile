@@ -4,6 +4,11 @@
  * The previous method was replaced according to the following tutorial.
  * https://javascript.info/array-methods#shuffle-an-array
  *
+ * Security note: this is used ONLY to randomize the display ordering of the
+ * SRP words on the SRP-confirmation UI (see ManualBackupStep2). It does not
+ * generate entropy, derive keys, or feed any security decision, so a
+ * non-cryptographic `Math.random()` is acceptable here.
+ *
  * @param array - Array of string.
  * @returns Array of string.
  */

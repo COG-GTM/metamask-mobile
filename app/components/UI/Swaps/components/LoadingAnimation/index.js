@@ -153,6 +153,9 @@ function LoadingAnimation({
     () =>
       headPan
         ? metadata.reduce((acc, curr, index) => {
+            // Non-security: Math.random() in this block only randomizes the
+            // visual position/rotation of the loading animation and does not
+            // affect any security decision, so a CSPRNG is not required.
             // Vertical position is random and is in range [-0.6, 0.6]
             // making the head not look so steep up/down
             const y = Math.random() * 0.6 * (Math.random() < 0.5 ? -1 : 1);

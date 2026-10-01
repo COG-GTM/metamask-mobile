@@ -2,13 +2,18 @@ import Logger from '../util/Logger';
 import Engine from './Engine';
 import { withLedgerKeyring } from './Ledger/Ledger';
 
-import { restoreLedgerKeyring, restoreQRKeyring } from './Vault';
+import {
+  restoreLedgerKeyring,
+  restoreQRKeyring,
+  getSeedPhrase,
+} from './Vault';
 
 jest.mock('./Engine', () => ({
   context: {
     KeyringController: {
       restoreQRKeyring: jest.fn(),
       withKeyring: jest.fn(),
+      exportSeedPhrase: jest.fn(),
     },
   },
 }));
@@ -27,6 +32,48 @@ describe('Vault', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
+  describe('getSeedPhrase', () => {
+    it('exports the seed phrase using the password it is given', async () => {
+      const { KeyringController } = MockEngine.context;
+      const mockSeed = new Uint8Array([1, 2, 3]);
+      KeyringController.exportSeedPhrase.mockResolvedValue(mockSeed);
+
+      const result = await getSeedPhrase('user-password');
+
+      expect(KeyringController.exportSeedPhrase).toHaveBeenCalledWith(
+        'user-password',
+      );
+      expect(result).toBe(mockSeed);
+    });
+
+    // Security regression: the empty-password export path must only succeed in
+    // the pre-password onboarding state. Once a real password is configured,
+    // KeyringController.exportSeedPhrase verifies the password first and throws
+    // on an empty/incorrect one, so getSeedPhrase('') cannot reveal the SRP.
+    it('rejects an empty-password export once a password has been set', async () => {
+      const { KeyringController } = MockEngine.context;
+      const SET_PASSWORD = 'user-password';
+      KeyringController.exportSeedPhrase.mockImplementation(
+        async (password: string) => {
+          if (password !== SET_PASSWORD) {
+            throw new Error('Incorrect password');
+          }
+          return new Uint8Array([1, 2, 3]);
+        },
+      );
+
+      // Default empty password (and an explicit '') are rejected.
+      await expect(getSeedPhrase()).rejects.toThrow('Incorrect password');
+      await expect(getSeedPhrase('')).rejects.toThrow('Incorrect password');
+      expect(KeyringController.exportSeedPhrase).toHaveBeenCalledWith('');
+
+      // The correct password still exports, so legitimate flows are intact.
+      await expect(getSeedPhrase(SET_PASSWORD)).resolves.toBeInstanceOf(
+        Uint8Array,
+      );
+    });
+  });
+
   describe('restoreQRKeyring', () => {
     it('should restore QR keyring if it exists', async () => {
       const { KeyringController } = MockEngine.context;
