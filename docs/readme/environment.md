@@ -93,9 +93,10 @@ Ensure you are using the correct yarn version (yarn v1) as noted in the `package
 
 ## Android
 
-Install [Android Studio](https://developer.android.com/studio)
+Install [Android Studio](https://developer.android.com/studio) (Ladybug 2024.2.1 or newer required for Java 21)
 
-- Set environment variable `JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home` to use the Java version shipped with Android Studio
+- Set environment variable `JAVA_HOME=/Applications/Android Studio.app/Contents/jbr/Contents/Home` to use the Java 21 runtime shipped with Android Studio
+- Verify your Java version by running: `$JAVA_HOME/bin/java -version` (should report version 21)
 - Go to Settings > Languages & Frameworks > Android SDK
 - Shortcut: Selecting `More Actions` > `SDK Manager` from the "Welcome to Android Studio" page will also bring you here.
   - Select `SDK Tools` tab
