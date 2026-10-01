@@ -288,7 +288,27 @@ function getProtocolFromURL(url) {
   return new URL(url).protocol;
 }
 
-function rewriteBreadcrumb(breadcrumb) {
+const EVM_ADDRESS_PATTERN = new RegExp(
+  regex.replaceNetworkErrorSentry.source,
+  'gu',
+);
+
+/**
+ * Replaces every `0x` followed by 40 hex characters in `text` with `**`.
+ * Longer `0x` hex strings only have their first 40 hex characters replaced, so
+ * addresses embedded in ABI-encoded calldata and non-EVM addresses can remain.
+ *
+ * @param {string} text - The text to redact.
+ * @returns {string} The redacted text.
+ */
+function redactAddresses(text) {
+  return text.replace(EVM_ADDRESS_PATTERN, '**');
+}
+
+export function rewriteBreadcrumb(breadcrumb) {
+  if (typeof breadcrumb.message === 'string') {
+    breadcrumb.message = redactAddresses(breadcrumb.message);
+  }
   if (breadcrumb.data?.url) {
     breadcrumb.data.url = getProtocolFromURL(breadcrumb.data.url);
   }
@@ -494,13 +514,7 @@ function sanitizeUrlsFromErrorMessages(report) {
 }
 
 function sanitizeAddressesFromErrorMessages(report) {
-  rewriteErrorMessages(report, (errorMessage) => {
-    const newErrorMessage = errorMessage.replace(
-      regex.replaceNetworkErrorSentry,
-      '**',
-    );
-    return newErrorMessage;
-  });
+  rewriteErrorMessages(report, redactAddresses);
 }
 
 /**
