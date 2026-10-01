@@ -15,7 +15,7 @@ import * as tokensControllerSelectors from '../../selectors/tokensController';
 
 jest.mock('../../selectors/tokensController');
 
-const emptyAction = { type: null };
+const emptyAction = { type: null } as unknown as Parameters<typeof reducer>[1];
 
 const DEFAULT_FEATURE_FLAGS = {
   ethereum: {
@@ -76,6 +76,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
+      // @ts-expect-error SwapsState index signature returns union type
       expect(liveState['0x1'].isLive).toBe(true);
     });
     it('should set isLive to false for iOS when flag is false', () => {
@@ -108,6 +109,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
+      // @ts-expect-error SwapsState index signature returns union type
       expect(liveState['0x1'].isLive).toBe(false);
     });
     it('should set isLive to true for Android when flag is true', () => {
@@ -140,6 +142,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
+      // @ts-expect-error SwapsState index signature returns union type
       expect(liveState['0x1'].isLive).toBe(true);
     });
     it('should set isLive to false for Android when flag is false', () => {
@@ -172,6 +175,7 @@ describe('swaps reducer', () => {
           chainId: '0x1',
         },
       });
+      // @ts-expect-error SwapsState index signature returns union type
       expect(liveState['0x1'].isLive).toBe(false);
     });
   });
