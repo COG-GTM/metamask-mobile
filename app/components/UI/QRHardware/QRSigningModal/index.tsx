@@ -45,7 +45,7 @@ const QRSigningModal = ({
   const dispatch = useDispatch();
   const styles = createStyles(colors);
   const [isModalCompleteShow, setModalCompleteShow] = useState(false);
-  const { from } = useSelector(getNormalizedTxState);
+  const { from } = useSelector(getNormalizedTxState) ?? {};
 
   const handleCancel = () => {
     onCancel?.();
@@ -91,7 +91,7 @@ const QRSigningModal = ({
           cancelCallback={handleCancel}
           failureCallback={handleFailure}
           bypassAndroidCameraAccessCheck={false}
-          fromAddress={from}
+          fromAddress={from ?? ''}
         />
       </View>
     </Modal>

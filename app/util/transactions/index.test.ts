@@ -195,7 +195,7 @@ describe('Transactions utils :: parseTransactionLegacy', () => {
     },
     conversionRate: 1,
     currentCurrency: 'USD',
-    selectedGasFee: 'average',
+    selectedGasFee: 'average' as unknown as { suggestedGasLimit: string },
     multiLayerL1FeeTotal: '0x0',
     ticker: 'tBNB',
   };
@@ -1214,15 +1214,20 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
       },
     };
 
-    const result = getTransactionById('tx2', mockTransactionController);
-    
+    const result = getTransactionById(
+      'tx2',
+      mockTransactionController as unknown as Parameters<
+        typeof getTransactionById
+      >[1],
+    );
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1232,15 +1237,20 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
       },
     };
 
-    const result = getTransactionById('nonexistent', mockTransactionController);
-    
+    const result = getTransactionById(
+      'nonexistent',
+      mockTransactionController as unknown as Parameters<
+        typeof getTransactionById
+      >[1],
+    );
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1262,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 });
