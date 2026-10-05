@@ -6,7 +6,7 @@ import {
   SendCallsResult,
 } from '@metamask/eth-json-rpc-middleware';
 import { Hex, JsonRpcRequest } from '@metamask/utils';
-import { JsonRpcError, rpcErrors } from '@metamask/rpc-errors';
+import { JsonRpcError, providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Log,
@@ -20,6 +20,7 @@ import { NetworkControllerGetNetworkClientByIdAction } from '@metamask/network-c
 
 import ppomUtil from '../../lib/ppom/ppom-util';
 import Engine from '../Engine';
+import { getPermittedAccounts } from '../Permissions';
 
 const VERSION = '2.0.0';
 
@@ -35,11 +36,8 @@ type JSONRPCRequest = JsonRpcRequest & {
   origin?: string;
 };
 
-export const getAccounts = async () => {
-  const { AccountsController } = Engine.context;
-  const selectedAddress = AccountsController.getSelectedAccount()?.address;
-  return Promise.resolve(selectedAddress ? [selectedAddress] : []);
-};
+export const getAccounts = async (origin: string): Promise<string[]> =>
+  getPermittedAccounts(origin);
 
 function validateSendCallsVersion(sendCalls: SendCalls) {
   const { version } = sendCalls;
@@ -54,8 +52,9 @@ function validateSendCallsVersion(sendCalls: SendCalls) {
 async function validateSendCallsChainId(
   sendCalls: SendCalls,
   req: JSONRPCRequest,
+  from: Hex,
 ) {
-  const { TransactionController, AccountsController } = Engine.context;
+  const { TransactionController } = Engine.context;
   const { chainId } = sendCalls;
   const { networkClientId } = req;
 
@@ -69,9 +68,6 @@ async function validateSendCallsChainId(
       `Chain ID must match the dApp selected network: Got ${chainId}, expected ${dappChainId}`,
     );
   }
-
-  const from =
-    sendCalls.from ?? (AccountsController.getSelectedAccount()?.address as Hex);
 
   const batchSupport = await TransactionController.isAtomicBatchSupported({
     address: from,
@@ -116,34 +112,48 @@ function validateCapabilities(sendCalls: SendCalls) {
   }
 }
 
-async function validateSendCalls(sendCalls: SendCalls, req: JSONRPCRequest) {
+async function validateSendCalls(
+  sendCalls: SendCalls,
+  req: JSONRPCRequest,
+  from: Hex,
+) {
   validateSendCallsVersion(sendCalls);
-  await validateSendCallsChainId(sendCalls, req);
+  await validateSendCallsChainId(sendCalls, req, from);
   validateCapabilities(sendCalls);
 }
 
 export async function processSendCalls(
   params: SendCalls,
   req: JsonRpcRequest,
+  origin: string,
 ): Promise<SendCallsResult> {
-  const { TransactionController, AccountsController } = Engine.context;
+  const { TransactionController } = Engine.context;
   const { calls, from: paramFrom } = params;
-  const { networkClientId, origin } = req as JsonRpcRequest & {
+  const { networkClientId, origin: requestOrigin } = req as JsonRpcRequest & {
     networkClientId: string;
     origin?: string;
   };
   const transactions = calls.map((call) => ({ params: call }));
 
-  await validateSendCalls(params, req as JSONRPCRequest);
+  const permittedAccounts = await getAccounts(origin);
+  const from = (paramFrom ?? permittedAccounts[0]) as Hex | undefined;
 
-  const from =
-    paramFrom ?? (AccountsController.getSelectedAccount()?.address as Hex);
+  if (
+    !from ||
+    !permittedAccounts.some(
+      (account) => account.toLowerCase() === from.toLowerCase(),
+    )
+  ) {
+    throw providerErrors.unauthorized();
+  }
+
+  await validateSendCalls(params, req as JSONRPCRequest, from);
   const securityAlertId = uuidv4();
 
   const { batchId: id } = await TransactionController.addTransactionBatch({
     from,
     networkClientId,
-    origin,
+    origin: requestOrigin,
     securityAlertId,
     transactions,
     validateSecurity:
