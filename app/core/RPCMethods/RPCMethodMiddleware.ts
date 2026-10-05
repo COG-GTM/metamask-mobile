@@ -1046,7 +1046,7 @@ export const getRpcMethodMiddleware = ({
         throw error;
       }
     }),
-    createAsyncWalletMiddleware(),
+    createAsyncWalletMiddleware(origin),
   ]);
 };
 export default getRpcMethodMiddleware;

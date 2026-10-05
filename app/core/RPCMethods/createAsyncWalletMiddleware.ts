@@ -5,12 +5,11 @@ import { Json } from '@metamask/utils';
 
 import { getAccounts, processSendCalls, getCallsStatus } from './eip5792';
 
-export const createAsyncWalletMiddleware = (): JsonRpcMiddleware<
-  JsonRpcParams,
-  Json
-> =>
+export const createAsyncWalletMiddleware = (
+  origin: string,
+): JsonRpcMiddleware<JsonRpcParams, Json> =>
   createWalletMiddleware({
-    getAccounts,
-    processSendCalls,
+    getAccounts: () => getAccounts(origin),
+    processSendCalls: (params, req) => processSendCalls(params, req, origin),
     getCallsStatus,
   }) as JsonRpcMiddleware<JsonRpcParams, Json>;
