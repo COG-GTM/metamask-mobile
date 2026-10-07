@@ -15,10 +15,12 @@ public typealias Closure = (Double) -> Void
 enum UntarError: Error, LocalizedError {
   case notFound(file: String)
   case corruptFile(type: UnicodeScalar)
+  case unsafeEntry(name: String)
   public var errorDescription: String? {
     switch self {
     case let .notFound(file: file): return "Source file \(file) not found"
     case let .corruptFile(type: type): return "Invalid block type \(type) found"
+    case let .unsafeEntry(name: name): return "Unsafe archive entry \(name) rejected"
     }
   }
 }
@@ -46,7 +48,7 @@ public extension FileManager {
       switch type {
       case "0": // File
         let name = self.name(object: tarObject, offset: location)
-        let filePath = URL(fileURLWithPath: path).appendingPathComponent(name).path
+        let filePath = try safeEntryPath(base: path, name: name)
         let size = self.size(object: tarObject, offset: location)
         if size == 0 { try "".write(toFile: filePath, atomically: true, encoding: .utf8) } else {
           blockCount += (size - 1) / FileManager.tarBlockSize + 1 // size / tarBlockSize rounded up
@@ -55,13 +57,13 @@ public extension FileManager {
         }
       case "5": // Directory
         let name = self.name(object: tarObject, offset: location)
-        let directoryPath = URL(fileURLWithPath: path).appendingPathComponent(name).path
+        let directoryPath = try safeEntryPath(base: path, name: name)
         try createDirectory(atPath: directoryPath, withIntermediateDirectories: true,
                             attributes: nil)
       case "\0": break // Null block
       case "x": blockCount += 1 // Extra header block
-      case "1": fallthrough
-      case "2": fallthrough
+      case "1", "2": // Hard link, symbolic link
+        throw UntarError.unsafeEntry(name: self.name(object: tarObject, offset: location))
       case "3": fallthrough
       case "4": fallthrough
       case "6": fallthrough
@@ -74,6 +76,20 @@ public extension FileManager {
       location += blockCount * FileManager.tarBlockSize
     }
     return true
+  }
+
+  private func safeEntryPath(base: String, name: String) throws -> String {
+    if name.hasPrefix("/") { throw UntarError.unsafeEntry(name: name) }
+    let baseURL = URL(fileURLWithPath: base, isDirectory: true).standardizedFileURL
+      .resolvingSymlinksInPath()
+    let entryPath = baseURL.appendingPathComponent(name).standardizedFileURL
+      .resolvingSymlinksInPath().path
+    let basePath = baseURL.path
+    let basePrefix = basePath.hasSuffix("/") ? basePath : basePath + "/"
+    guard entryPath == basePath || entryPath.hasPrefix(basePrefix) else {
+      throw UntarError.unsafeEntry(name: name)
+    }
+    return entryPath
   }
 
   private func type(object: Any, offset: UInt64) -> UnicodeScalar {
@@ -164,10 +180,9 @@ public extension FileManager {
       let attributes = try fileManager.attributesOfItem(atPath: tarPath)
       let size = attributes[.size] as! UInt64
       let fileHandle = FileHandle(forReadingAtPath: tarPath)!
-      let result = try createFilesAndDirectories(path: path, tarObject: fileHandle, size: size,
-                                                 progress: progress)
-      fileHandle.closeFile()
-      return result
+      defer { fileHandle.closeFile() }
+      return try createFilesAndDirectories(path: path, tarObject: fileHandle, size: size,
+                                           progress: progress)
     }
 
     throw UntarError.notFound(file: tarPath)
