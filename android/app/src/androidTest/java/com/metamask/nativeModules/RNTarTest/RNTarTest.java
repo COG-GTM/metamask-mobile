@@ -5,6 +5,7 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import org.junit.Before;
 import org.junit.Test;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import org.junit.runner.RunWith;
@@ -21,7 +22,9 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import java.nio.file.StandardCopyOption;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -87,4 +90,35 @@ public class RNTarTest {
     }
   }
 
+  @Test
+  public void testUnTar_rejectsPathTraversalEntry() throws IOException, InterruptedException {
+    // Archive contains "package/test.txt" and "package/../../traversal.txt"
+    InputStream tgzResource = Thread.currentThread().getContextClassLoader().getResourceAsStream("pathTraversalTestTGZFile.tgz");
+    CountDownLatch latch = new CountDownLatch(1);
+
+    try {
+      File tgzFile = new File(reactContext.getCacheDir(), "pathTraversalTestTGZFile.tgz");
+      Files.copy(tgzResource, tgzFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      File outputDir = new File(reactContext.getCacheDir(), "traversal/output");
+      File escapedFile = new File(outputDir.getParentFile(), "traversal.txt");
+      escapedFile.delete();
+
+      doAnswer(invocation -> {
+        latch.countDown();
+        return null;
+      }).when(promise).reject(anyString(), any(Throwable.class));
+
+      tar.unTar(tgzFile.getAbsolutePath(), outputDir.getAbsolutePath(), promise);
+
+      if (!latch.await(5, TimeUnit.SECONDS)) {
+        fail("Timed out waiting for unTar operation to reject");
+      }
+
+      verify(promise).reject(anyString(), any(Throwable.class));
+      verify(promise, never()).resolve(any());
+      assertFalse("Entry escaped the output directory: " + escapedFile.getAbsolutePath(), escapedFile.exists());
+    } finally {
+      tgzResource.close();
+    }
+  }
 }

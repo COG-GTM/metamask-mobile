@@ -62,6 +62,24 @@ public class RNTar extends ReactContextBaseJavaModule {
     }
   }
 
+  private File resolveEntryFile(File outputDir, TarArchiveEntry entry) throws IOException {
+    String name = entry.getName();
+    if (entry.isSymbolicLink() || entry.isLink()) {
+      throw new IOException("Archive entry is a link and is not allowed: " + name);
+    }
+    if (name.startsWith("/") || name.startsWith("\\") || new File(name).isAbsolute()) {
+      throw new IOException("Archive entry has an absolute path: " + name);
+    }
+    String canonicalOutputDir = outputDir.getCanonicalPath();
+    File outputFile = new File(canonicalOutputDir, name);
+    String canonicalOutputFile = outputFile.getCanonicalPath();
+    if (!canonicalOutputFile.equals(canonicalOutputDir)
+        && !canonicalOutputFile.startsWith(canonicalOutputDir + File.separator)) {
+      throw new IOException("Archive entry is outside of the target directory: " + name);
+    }
+    return new File(canonicalOutputFile);
+  }
+
   private String extractTgzFile(String tgzPath, String outputPath) throws IOException {
     try {
       // Check if .tgz file exists
@@ -83,10 +101,11 @@ public class RNTar extends ReactContextBaseJavaModule {
            TarArchiveInputStream tarInputStream = new TarArchiveInputStream(new BufferedInputStream(gzipInputStream))) {
 
         TarArchiveEntry entry;
+        File outputDir = new File(outputPath);
 
         // Loop through the entries in the .tgz file
         while ((entry = (TarArchiveEntry) tarInputStream.getNextEntry()) != null) {
-          File outputFile = new File(outputPath, entry.getName());
+          File outputFile = resolveEntryFile(outputDir, entry);
 
           // If it is a directory, create the output directory
           if (entry.isDirectory()) {
