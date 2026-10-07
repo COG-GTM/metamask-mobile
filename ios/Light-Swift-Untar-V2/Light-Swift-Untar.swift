@@ -82,7 +82,8 @@ public extension FileManager {
     if name.hasPrefix("/") { throw UntarError.unsafeEntry(name: name) }
     let baseURL = URL(fileURLWithPath: base, isDirectory: true).standardizedFileURL
       .resolvingSymlinksInPath()
-    let entryPath = baseURL.appendingPathComponent(name).standardizedFileURL.path
+    let entryPath = baseURL.appendingPathComponent(name).standardizedFileURL
+      .resolvingSymlinksInPath().path
     let basePath = baseURL.path
     let basePrefix = basePath.hasSuffix("/") ? basePath : basePath + "/"
     guard entryPath == basePath || entryPath.hasPrefix(basePrefix) else {
@@ -179,10 +180,9 @@ public extension FileManager {
       let attributes = try fileManager.attributesOfItem(atPath: tarPath)
       let size = attributes[.size] as! UInt64
       let fileHandle = FileHandle(forReadingAtPath: tarPath)!
-      let result = try createFilesAndDirectories(path: path, tarObject: fileHandle, size: size,
-                                                 progress: progress)
-      fileHandle.closeFile()
-      return result
+      defer { fileHandle.closeFile() }
+      return try createFilesAndDirectories(path: path, tarObject: fileHandle, size: size,
+                                           progress: progress)
     }
 
     throw UntarError.notFound(file: tarPath)

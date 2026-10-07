@@ -121,4 +121,34 @@ public class RNTarTest {
       tgzResource.close();
     }
   }
+
+  @Test
+  public void testUnTar_rejectsSymlinkEntry() throws IOException, InterruptedException {
+    // Archive contains a symbolic link entry "package/link" -> "/data"
+    InputStream tgzResource = Thread.currentThread().getContextClassLoader().getResourceAsStream("symlinkTestTGZFile.tgz");
+    CountDownLatch latch = new CountDownLatch(1);
+
+    try {
+      File tgzFile = new File(reactContext.getCacheDir(), "symlinkTestTGZFile.tgz");
+      Files.copy(tgzResource, tgzFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      File outputDir = new File(reactContext.getCacheDir(), "symlink/output");
+
+      doAnswer(invocation -> {
+        latch.countDown();
+        return null;
+      }).when(promise).reject(anyString(), any(Throwable.class));
+
+      tar.unTar(tgzFile.getAbsolutePath(), outputDir.getAbsolutePath(), promise);
+
+      if (!latch.await(5, TimeUnit.SECONDS)) {
+        fail("Timed out waiting for unTar operation to reject");
+      }
+
+      verify(promise).reject(anyString(), any(Throwable.class));
+      verify(promise, never()).resolve(any());
+      assertFalse("Link entry was extracted", new File(outputDir, "package/link").exists());
+    } finally {
+      tgzResource.close();
+    }
+  }
 }
