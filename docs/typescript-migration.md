@@ -30,7 +30,7 @@ Baseline after setup on main@6876455: lint 0 errors / 74 warnings, `tsc` 0 error
 - **Snapshots**: Jest names snapshot files after the test file, so `git mv __snapshots__/Foo.test.js.snap __snapshots__/Foo.test.tsx.snap` together with the test. Run the tests with `--ci` so Jest fails instead of silently writing a new snapshot. Only regenerate (`-u`) when the resulting diff is limited to the rename/header line. Any change to the rendered output is a behaviour change: fix the types, not the snapshot.
 - **Imports**: imports are extensionless, so callers usually need no change. Fix any import that spells out `.js`.
 - **No new JS in `app/`**: the TS app gate fails a PR that _creates_ a `.js`/`.jsx` file under `app/` (`APP_FOLDER_JS_REGEX` in `.github/scripts/fitness-functions/common/constants.ts`). A rename to `.ts` is fine.
-- **No new `enzyme` imports**: the same gate fails if a PR adds `from 'enzyme'` occurrences. Moving an existing enzyme test counts as an addition when git sees it as a new file, so keep the rename detectable (`git mv`, small diff) or port the test to `@testing-library/react-native`.
+- **No new enzyme imports**: the same gate's _blacklisted code blocks_ rule (`prevent-code-blocks.ts`) fails a PR that adds new imports from the `enzyme` package. It scans every added file outside `.github/`, docs included. Moving an existing enzyme test counts as an addition when git sees it as a new file, so keep the rename detectable (`git mv`, small diff) or port the test to `@testing-library/react-native`.
 
 ## 3. Behaviour: types only
 
