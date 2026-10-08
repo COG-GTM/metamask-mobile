@@ -12,6 +12,8 @@ To learn how to develop MetaMask-compatible applications, visit our [Developer D
 
 To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs](https://github.com/MetaMask/contributor-docs).
 
+Migrating JavaScript files in `app/` to TypeScript? Follow the [TypeScript migration conventions](./docs/typescript-migration.md).
+
 ## Documentation
 
 - [Architecture](./docs/readme/architecture.md)
@@ -19,6 +21,7 @@ To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs
 - [Native Development Environment Setup](./docs/readme/environment.md)
 - [Build Troubleshooting](./docs/readme/troubleshooting.md)
 - [Testing](./docs/readme/testing.md)
+- [TypeScript Migration Conventions](./docs/typescript-migration.md)
 - [Debugging](./docs/readme/debugging.md)
 - [API Call Logging for Debugging](./docs/readme/api-logging.md)
 - [Storybook](./docs/readme/storybook.md)
