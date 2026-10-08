@@ -30,7 +30,7 @@ Baseline after setup on main@6876455: lint 0 errors / 74 warnings, `tsc` 0 error
 - **Snapshots**: Jest names snapshot files after the test file, so `git mv __snapshots__/Foo.test.js.snap __snapshots__/Foo.test.tsx.snap` together with the test. Run the tests with `--ci` so Jest fails instead of silently writing a new snapshot. Only regenerate (`-u`) when the resulting diff is limited to the rename/header line. Any change to the rendered output is a behaviour change: fix the types, not the snapshot.
 - **Imports**: imports are extensionless, so callers usually need no change. Fix any import that spells out `.js`.
 - **No new JS in `app/`**: the TS app gate fails a PR that _creates_ a `.js`/`.jsx` file under `app/` (`APP_FOLDER_JS_REGEX` in `.github/scripts/fitness-functions/common/constants.ts`). A rename to `.ts` is fine.
-- **No new enzyme imports**: the same gate's _blacklisted code blocks_ rule (`prevent-code-blocks.ts`) fails a PR that adds new imports from the `enzyme` package. It scans every added file outside `.github/`, docs included. Moving an existing enzyme test counts as an addition when git sees it as a new file, so keep the rename detectable (`git mv`, small diff) or port the test to `@testing-library/react-native`.
+- **No new enzyme imports**: the same gate's _blacklisted code blocks_ rule (`prevent-code-blocks.ts`) fails a PR when a newly created file (outside `.github/`, docs included) adds imports from the `enzyme` package. It only looks at new files, so imports added to existing files are not caught. Treat it as a rule anyway: don't add enzyme imports anywhere. Moving an existing enzyme test counts as a new file when git can't detect the rename, so keep the rename detectable (`git mv`, small diff) or port the test to `@testing-library/react-native`.
 
 ## 3. Behaviour: types only
 
@@ -84,7 +84,7 @@ git diff origin/main...HEAD | grep -c '^+.*TODO(ts-migration)'
 - **Title**: `chore(js-ts): migrate <area> to TypeScript`, for example `chore(js-ts): migrate app/actions to TypeScript`. The PR-title check (`amannn/action-semantic-pull-request`) needs a Conventional Commit type; `chore(js-ts):` is the prefix the earlier migration PRs and this board use.
 - **Branch from `main` on the fork and open the PR against `COG-GTM/metamask-mobile`, never against upstream `MetaMask/metamask-mobile`.**
 - **Description**: link the ticket; list the files migrated; list new `TODO(ts-migration)` suppressions; paste the validation output from section 7; say whether the device-QA rule applies.
-- **CI**: only `lint`, `lint:tsc`, the PR-title check and Fitness Functions need to be green. About ten other jobs already fail on `main` for infrastructure reasons (missing `LABEL_TOKEN`/`GH_TOKEN`, macOS runners, CLA, `audit:ci`, `rn-nodeify` peer conflict). Don't try to fix those in a migration PR.
+- **CI**: only `lint`, `lint:tsc`, the PR-title check and Fitness Functions need to be green. About ten other jobs already fail on `main` and on merged PRs for infrastructure reasons: `check-diff` (no Ruby on the macOS runner), `check-pr-labels` and the label bots (missing `LABEL_TOKEN`/`GH_TOKEN`), CLA, `audit:ci`, `js-bundle-size-check`, `docker`. Because of these, the aggregate `Check all jobs pass` job is red on every PR, and the fork's `main` does not require it for merge. Don't try to fix those in a migration PR; just say in the PR description that the remaining failures are the known infrastructure ones.
 
 ## 7. Validation for every PR
 
