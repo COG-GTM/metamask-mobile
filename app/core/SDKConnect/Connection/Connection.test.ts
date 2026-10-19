@@ -1,6 +1,10 @@
 import { NavigationContainerRef } from '@react-navigation/native';
 import { Connection } from './Connection';
-import { OriginatorInfo } from '@metamask/sdk-communication-layer';
+import {
+  OriginatorInfo,
+  RemoteCommunication,
+} from '@metamask/sdk-communication-layer';
+import { MetaMetrics } from '../../Analytics';
 import RPCQueueManager from '../RPCQueueManager';
 import sendAuthorized from './Auth/sendAuthorized';
 import {
@@ -23,6 +27,11 @@ jest.mock('./Auth/sendAuthorized');
 jest.mock('./ConnectionLifecycle');
 jest.mock('./EventListenersHandlers');
 jest.mock('../../BackgroundBridge/BackgroundBridge');
+jest.mock('../../Analytics', () => ({
+  MetaMetrics: {
+    getInstance: jest.fn().mockReturnValue({ isEnabled: () => false }),
+  },
+}));
 
 describe('Connection', () => {
   let connection: Connection;
@@ -98,6 +107,13 @@ describe('Connection', () => {
   });
 
   describe('constructor', () => {
+    it('disables relay analytics when MetaMetrics is disabled', () => {
+      expect(MetaMetrics.getInstance).toHaveBeenCalled();
+      expect(RemoteCommunication).toHaveBeenCalledWith(
+        expect.objectContaining({ analytics: false }),
+      );
+    });
+
     it('should initialize the connection with provided parameters', () => {
       expect(connection).toBeDefined();
       expect(connection.channelId).toBe(mockId);

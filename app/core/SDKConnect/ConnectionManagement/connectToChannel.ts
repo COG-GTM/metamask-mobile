@@ -9,6 +9,7 @@ import Routes from '../../../constants/navigation/Routes';
 import { selectEvmChainId } from '../../../selectors/networkController';
 import Logger from '../../../util/Logger';
 import AppConstants from '../../AppConstants';
+import { MetaMetrics } from '../../Analytics';
 import Engine from '../../Engine';
 import { getPermittedAccounts } from '../../Permissions';
 import { Connection, ConnectionProps } from '../Connection';
@@ -172,12 +173,14 @@ async function connectToChannel({
         // first needs to connect without key exchange to send the event
         await instance.state.connected[id].remote.reject({ channelId: id });
         // Send rejection event without awaiting
-        SendAnalytics(
-          { id, event: TrackingEvents.REJECTED, ...originatorInfo },
-          instance.state.socketServerUrl,
-        ).catch((err: Error) => {
-          Logger.error(err, 'SendAnalytics failed');
-        });
+        if (MetaMetrics.getInstance().isEnabled()) {
+          SendAnalytics(
+            { id, event: TrackingEvents.REJECTED, ...originatorInfo },
+            instance.state.socketServerUrl,
+          ).catch((err: Error) => {
+            Logger.error(err, 'SendAnalytics failed');
+          });
+        }
 
         instance.removeChannel({ channelId: id, sendTerminate: true });
         // cleanup connection

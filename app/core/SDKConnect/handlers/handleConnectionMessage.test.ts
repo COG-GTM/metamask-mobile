@@ -4,7 +4,9 @@ import { NetworkController } from '@metamask/network-controller';
 import {
   CommunicationLayerMessage,
   MessageType,
+  SendAnalytics,
 } from '@metamask/sdk-communication-layer';
+import { MetaMetrics } from '../../Analytics';
 import Engine from '../../Engine';
 import { Connection } from '../Connection';
 import DevLogger from '../utils/DevLogger';
@@ -33,6 +35,11 @@ jest.mock('../utils/wait.util');
 jest.mock('./checkPermissions');
 jest.mock('./handleCustomRpcCalls');
 jest.mock('./handleSendMessage');
+jest.mock('../../Analytics', () => ({
+  MetaMetrics: {
+    getInstance: jest.fn().mockReturnValue({ isEnabled: () => false }),
+  },
+}));
 
 const MOCK_ADDRESS = '0xc4955c0d639d99699bfd7ec54d9fafee40e4d272';
 const MOCK_INTERNAL_ACCOUNT = createMockInternalAccount(
@@ -343,6 +350,44 @@ describe('handleConnectionMessage', () => {
         data: processedRpc,
         origin: 'sdk',
       });
+    });
+  });
+  describe('SDK relay analytics', () => {
+    const mockIsEnabled = jest.fn();
+    const mockSendAnalytics = SendAnalytics as jest.MockedFunction<
+      typeof SendAnalytics
+    >;
+
+    beforeEach(() => {
+      (MetaMetrics.getInstance as jest.Mock).mockReturnValue({
+        isEnabled: mockIsEnabled,
+      });
+      mockSendAnalytics.mockResolvedValue(undefined);
+      message.method = 'eth_sendTransaction';
+    });
+
+    it('does not send relay analytics when MetaMetrics is disabled', async () => {
+      mockIsEnabled.mockReturnValue(false);
+
+      await handleConnectionMessage({
+        message,
+        engine: Engine,
+        connection,
+      });
+
+      expect(mockSendAnalytics).not.toHaveBeenCalled();
+    });
+
+    it('sends relay analytics when MetaMetrics is enabled', async () => {
+      mockIsEnabled.mockReturnValue(true);
+
+      await handleConnectionMessage({
+        message,
+        engine: Engine,
+        connection,
+      });
+
+      expect(mockSendAnalytics).toHaveBeenCalledTimes(1);
     });
   });
 });
