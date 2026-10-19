@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-nodejs-modules
 import fs from 'fs';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import simpleGit from 'simple-git';
+import { simpleGit } from 'simple-git';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Octokit } from '@octokit/rest';
 
