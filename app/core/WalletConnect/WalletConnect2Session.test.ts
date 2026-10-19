@@ -757,6 +757,9 @@ describe('WalletConnect2Session', () => {
       );
 
       expect(addTransaction).not.toHaveBeenCalled();
+      expect(jest.requireMock('./wc-utils').getHostname).toHaveBeenCalledWith(
+        mockSession.peer.metadata.url,
+      );
       expect(rejectRequestSpy).toHaveBeenCalledWith({
         id: '7',
         error: expect.objectContaining({

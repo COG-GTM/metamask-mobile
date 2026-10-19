@@ -564,9 +564,9 @@ class WalletConnect2Session {
   ) {
     try {
       const from = safeToChecksumAddress(methodParams?.[0]?.from);
-      const permittedAccounts = getPermittedAccounts(getHostname(origin)).map(
-        (account) => safeToChecksumAddress(account),
-      );
+      const permittedAccounts = getPermittedAccounts(
+        getHostname(this.session.peer.metadata.url),
+      ).map((account) => safeToChecksumAddress(account));
       if (!from || !permittedAccounts.includes(from)) {
         throw rpcErrors.invalidParams({
           message: `Invalid parameters: must provide a permitted Ethereum address.`,
