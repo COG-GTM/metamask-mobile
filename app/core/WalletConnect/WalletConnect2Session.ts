@@ -16,6 +16,8 @@ import { addTransaction } from '../../util/transaction-controller';
 import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
 import { Minimizer } from '../NativeModules';
 import { getPermittedAccounts } from '../Permissions';
+import { safeToChecksumAddress } from '../../util/address';
+import { rpcErrors } from '@metamask/rpc-errors';
 import getRpcMethodMiddleware from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { ERROR_MESSAGES } from './WalletConnectV2';
@@ -561,6 +563,21 @@ class WalletConnect2Session {
     origin: string,
   ) {
     try {
+      const from = safeToChecksumAddress(methodParams?.[0]?.from);
+      const isPermittedFor = (url: string) =>
+        getPermittedAccounts(getHostname(url))
+          .map((account) => safeToChecksumAddress(account))
+          .includes(from);
+      if (
+        !from ||
+        !isPermittedFor(this.session.peer.metadata.url) ||
+        !isPermittedFor(origin)
+      ) {
+        throw rpcErrors.invalidParams({
+          message: `Invalid parameters: must provide a permitted Ethereum address.`,
+        });
+      }
+
       const networkClientId = getGlobalNetworkClientId();
 
       const trx = await addTransaction(methodParams[0], {

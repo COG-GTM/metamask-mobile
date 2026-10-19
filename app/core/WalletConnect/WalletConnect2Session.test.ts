@@ -94,6 +94,16 @@ jest.mock('./wc-utils', () => ({
   normalizeOrigin: jest.fn().mockImplementation((url) => url),
   getHostname: jest.fn().mockReturnValue('example.com'),
 }));
+jest.mock('../../util/transaction-controller', () => ({
+  addTransaction: jest.fn(),
+}));
+jest.mock('../../../app/lib/ppom/ppom-util', () => ({
+  __esModule: true,
+  default: { validateRequest: jest.fn() },
+}));
+jest.mock('../../util/networks/global-network', () => ({
+  getGlobalNetworkClientId: jest.fn().mockReturnValue('mainnet'),
+}));
 jest.mock('../../selectors/networkController', () => ({
   selectEvmChainId: jest.fn(),
 }));
@@ -708,6 +718,105 @@ describe('WalletConnect2Session', () => {
     expect(approveRequestSpy).toHaveBeenCalledWith({
       id: switchChainRequest.id + '',
       result: true,
+    });
+  });
+  describe('eth_sendTransaction permitted accounts', () => {
+    const permittedAddress = '0x1234567890abcdef1234567890abcdef12345678';
+    const permittedAddressUpperCase =
+      '0x1234567890ABCDEF1234567890ABCDEF12345678';
+    const unpermittedAddress = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd';
+
+    const buildSendTxRequest = (from: string) => ({
+      id: '7',
+      topic: mockSession.topic,
+      params: {
+        chainId: 'eip155:1',
+        request: {
+          method: 'eth_sendTransaction',
+          params: [{ from, to: permittedAddress, value: '0x0' }],
+        },
+      },
+      verifyContext: { verified: { origin: 'https://example.com' } },
+    });
+
+    beforeEach(() => {
+      const { getPermittedAccounts } = jest.requireMock('../Permissions');
+      getPermittedAccounts.mockReturnValue([permittedAddress]);
+    });
+
+    it('rejects eth_sendTransaction from an account not permitted for the origin', async () => {
+      const { addTransaction } = jest.requireMock(
+        '../../util/transaction-controller',
+      );
+      const rejectRequestSpy = jest
+        .spyOn(session, 'rejectRequest')
+        .mockResolvedValue(undefined);
+
+      await session.handleRequest(
+        buildSendTxRequest(unpermittedAddress) as any,
+      );
+
+      expect(addTransaction).not.toHaveBeenCalled();
+      expect(jest.requireMock('./wc-utils').getHostname).toHaveBeenCalledWith(
+        mockSession.peer.metadata.url,
+      );
+      expect(rejectRequestSpy).toHaveBeenCalledWith({
+        id: '7',
+        error: expect.objectContaining({
+          message:
+            'Invalid parameters: must provide a permitted Ethereum address.',
+        }),
+      });
+    });
+
+    it('rejects eth_sendTransaction when from is not permitted for the verified origin', async () => {
+      const { getHostname } = jest.requireMock('./wc-utils');
+      const { getPermittedAccounts } = jest.requireMock('../Permissions');
+      const { addTransaction } = jest.requireMock(
+        '../../util/transaction-controller',
+      );
+      getHostname.mockImplementation((url: string) =>
+        url.includes('other.example') ? 'other.example' : 'example.com',
+      );
+      getPermittedAccounts.mockImplementation((hostname: string) =>
+        hostname === 'example.com' ? [permittedAddress] : [],
+      );
+      const rejectRequestSpy = jest
+        .spyOn(session, 'rejectRequest')
+        .mockResolvedValue(undefined);
+      const request = buildSendTxRequest(permittedAddress);
+      request.verifyContext.verified.origin = 'https://other.example';
+
+      await session.handleRequest(request as any);
+
+      expect(addTransaction).not.toHaveBeenCalled();
+      expect(rejectRequestSpy).toHaveBeenCalled();
+      getHostname.mockReset();
+      getHostname.mockReturnValue('example.com');
+      getPermittedAccounts.mockReset();
+    });
+
+    it('adds the transaction when from is a permitted account', async () => {
+      const { addTransaction } = jest.requireMock(
+        '../../util/transaction-controller',
+      );
+      addTransaction.mockResolvedValue({
+        transactionMeta: { id: 'tx-1' },
+        result: Promise.resolve('0xhash'),
+      });
+      const approveRequestSpy = jest
+        .spyOn(session, 'approveRequest')
+        .mockResolvedValue(undefined);
+
+      await session.handleRequest(
+        buildSendTxRequest(permittedAddressUpperCase) as any,
+      );
+
+      expect(addTransaction).toHaveBeenCalledTimes(1);
+      expect(approveRequestSpy).toHaveBeenCalledWith({
+        id: '7',
+        result: '0xhash',
+      });
     });
   });
 });
