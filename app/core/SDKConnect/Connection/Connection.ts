@@ -7,6 +7,7 @@ import {
 import { NavigationContainerRef } from '@react-navigation/native';
 import { EventEmitter2 } from 'eventemitter2';
 import AppConstants from '../../AppConstants';
+import { MetaMetrics } from '../../Analytics';
 import BackgroundBridge from '../../BackgroundBridge/BackgroundBridge';
 import BatchRPCManager from '../BatchRPCManager';
 import RPCQueueManager from '../RPCQueueManager';
@@ -214,7 +215,7 @@ export class Connection extends EventEmitter2 {
         privateKey,
       },
       context: AppConstants.MM_SDK.PLATFORM,
-      analytics: true,
+      analytics: MetaMetrics.getInstance().isEnabled(),
       logging: {
         eciesLayer: false,
         keyExchangeLayer: true,
@@ -227,6 +228,15 @@ export class Connection extends EventEmitter2 {
         enabled: false,
       },
     });
+
+    if (this.remote?.state) {
+      Object.defineProperty(this.remote.state, 'analytics', {
+        configurable: true,
+        enumerable: true,
+        get: () => MetaMetrics.getInstance().isEnabled(),
+        set: () => undefined,
+      });
+    }
 
     // if relayPersistence is true, automatically setup background bridge
     if (originatorInfo) {

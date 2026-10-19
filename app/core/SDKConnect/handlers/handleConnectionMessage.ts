@@ -9,6 +9,7 @@ import {
   TrackingEvents,
 } from '@metamask/sdk-communication-layer';
 import Logger from '../../../util/Logger';
+import { MetaMetrics } from '../../Analytics';
 import Engine from '../../Engine';
 import { getPermittedAccounts } from '../../Permissions';
 import { Connection } from '../Connection';
@@ -78,7 +79,10 @@ export const handleConnectionMessage = async ({
 
   connection.setLoading(false);
 
-  if (lcLogguedRPCs.includes(message.method.toLowerCase())) {
+  if (
+    MetaMetrics.getInstance().isEnabled() &&
+    lcLogguedRPCs.includes(message.method.toLowerCase())
+  ) {
     // Save analytics data on tracked methods
     SendAnalytics(
       {
