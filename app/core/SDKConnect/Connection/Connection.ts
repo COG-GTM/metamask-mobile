@@ -229,6 +229,15 @@ export class Connection extends EventEmitter2 {
       },
     });
 
+    if (this.remote?.state) {
+      Object.defineProperty(this.remote.state, 'analytics', {
+        configurable: true,
+        enumerable: true,
+        get: () => MetaMetrics.getInstance().isEnabled(),
+        set: () => undefined,
+      });
+    }
+
     // if relayPersistence is true, automatically setup background bridge
     if (originatorInfo) {
       this.backgroundBridge = setupBridge({

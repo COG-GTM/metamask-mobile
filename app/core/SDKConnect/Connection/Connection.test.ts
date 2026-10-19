@@ -107,6 +107,42 @@ describe('Connection', () => {
   });
 
   describe('constructor', () => {
+    it('re-evaluates the MetaMetrics opt-in for each relay analytics read', () => {
+      const isEnabled = jest.fn().mockReturnValue(true);
+      (MetaMetrics.getInstance as jest.Mock).mockReturnValue({ isEnabled });
+      const state = { analytics: true } as { analytics: boolean };
+      (RemoteCommunication as unknown as jest.Mock).mockImplementationOnce(
+        () => ({ state, on: jest.fn() }),
+      );
+      const conn = new Connection({
+        id: 'analytics-channel',
+        otherPublicKey: mockOtherPublicKey,
+        origin: mockOrigin,
+        reconnect: mockReconnect,
+        initialConnection: mockInitialConnection,
+        lastAuthorized: mockLastAuthorized,
+        navigation: mockNavigation,
+        originatorInfo: mockOriginatorInfo,
+        trigger: mockTrigger,
+        onTerminate: mockOnTerminate,
+        isApproved: mockIsApproved,
+        approveHost: mockApproveHost,
+        disapprove: mockDisapprove,
+        getApprovedHosts: mockGetApprovedHosts,
+        revalidate: mockRevalidate,
+        updateOriginatorInfos: mockUpdateOriginatorInfos,
+        socketServerUrl: mockSocketServerUrl,
+        rpcQueueManager: mockRpcManager,
+      });
+
+      expect(conn.remote.state.analytics).toBe(true);
+      isEnabled.mockReturnValue(false);
+      expect(conn.remote.state.analytics).toBe(false);
+      (MetaMetrics.getInstance as jest.Mock).mockReturnValue({
+        isEnabled: () => false,
+      });
+    });
+
     it('disables relay analytics when MetaMetrics is disabled', () => {
       expect(MetaMetrics.getInstance).toHaveBeenCalled();
       expect(RemoteCommunication).toHaveBeenCalledWith(
