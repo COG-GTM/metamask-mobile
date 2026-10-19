@@ -769,6 +769,33 @@ describe('WalletConnect2Session', () => {
       });
     });
 
+    it('rejects eth_sendTransaction when from is not permitted for the verified origin', async () => {
+      const { getHostname } = jest.requireMock('./wc-utils');
+      const { getPermittedAccounts } = jest.requireMock('../Permissions');
+      const { addTransaction } = jest.requireMock(
+        '../../util/transaction-controller',
+      );
+      getHostname.mockImplementation((url: string) =>
+        url.includes('other.example') ? 'other.example' : 'example.com',
+      );
+      getPermittedAccounts.mockImplementation((hostname: string) =>
+        hostname === 'example.com' ? [permittedAddress] : [],
+      );
+      const rejectRequestSpy = jest
+        .spyOn(session, 'rejectRequest')
+        .mockResolvedValue(undefined);
+      const request = buildSendTxRequest(permittedAddress);
+      request.verifyContext.verified.origin = 'https://other.example';
+
+      await session.handleRequest(request as any);
+
+      expect(addTransaction).not.toHaveBeenCalled();
+      expect(rejectRequestSpy).toHaveBeenCalled();
+      getHostname.mockReset();
+      getHostname.mockReturnValue('example.com');
+      getPermittedAccounts.mockReset();
+    });
+
     it('adds the transaction when from is a permitted account', async () => {
       const { addTransaction } = jest.requireMock(
         '../../util/transaction-controller',
