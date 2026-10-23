@@ -1,5 +1,5 @@
 import { RPCStageTypes } from '../../reducers/rpcEvents';
-import { Action } from 'redux';
+import type { Action as ReduxAction } from 'redux';
 
 /**
  * Deference action types available for different RPC event flow
@@ -13,11 +13,28 @@ export enum ActionType {
 /**
  * Extend redux Action interface to add rpcName, eventStage and error properties
  */
-export interface iEventAction extends Action {
+export interface iEventAction extends ReduxAction {
   rpcName: string;
   eventStage?: string;
   error?: Error | unknown;
 }
+
+export interface SetEventStageAction extends iEventAction {
+  type: ActionType.SET_EVENT_STAGE;
+}
+
+export interface ResetEventStageAction extends iEventAction {
+  type: ActionType.RESET_EVENT_STATE;
+}
+
+export interface SetEventErrorAction extends iEventAction {
+  type: ActionType.SET_EVENT_ERROR;
+}
+
+export type Action =
+  | SetEventStageAction
+  | ResetEventStageAction
+  | SetEventErrorAction;
 
 /**
  * Set the new RPC event stage.
