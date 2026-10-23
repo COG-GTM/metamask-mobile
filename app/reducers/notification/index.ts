@@ -62,13 +62,28 @@ export const currentNotificationSelector = createSelector(
     (notifications as NotificationItem[])[0] || ({} as NotificationItem),
 );
 
+/**
+ * Finds a queued notification by id.
+ *
+ * @param notifications - The notification queue.
+ * @param notificationId - The id to look up (strict equality).
+ * @returns The index of the first match, or -1 when no entry matches.
+ */
 const findIndexById = (
   notifications: NotificationItem[],
   notificationId: NotificationId,
 ) => notifications.findIndex(({ id }) => id === notificationId);
 
-// Legacy case reducers always returned a new state object for these updates,
-// even when values were unchanged; callers observe that reference change.
+/**
+ * Returns a new queue with the entry at `index` replaced; the input is not modified.
+ * Legacy case reducers always returned a new state object for these updates,
+ * even when values were unchanged; callers observe that reference change.
+ *
+ * @param notifications - The notification queue.
+ * @param index - Position of the entry to replace.
+ * @param notification - The replacement entry.
+ * @returns A new notification queue.
+ */
 const replaceAt = (
   notifications: NotificationItem[],
   index: number,
