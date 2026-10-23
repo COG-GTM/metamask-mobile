@@ -19,6 +19,9 @@ export enum ActionType {
 
 export type NotificationId = string | number | undefined;
 
+/** Milliseconds before auto-dismiss; falsy values fall back to the UI default (callers pass `false`). */
+export type NotificationAutodismiss = number | boolean | null;
+
 /** Transaction attached to a transaction notification; only `id` is read by the reducer. */
 export interface NotificationTransaction {
   id?: NotificationId;
@@ -41,7 +44,7 @@ export interface HideNotificationByIdAction
 
 export interface ModifyOrShowTransactionNotificationAction
   extends ReduxAction<ActionType.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION> {
-  autodismiss?: number;
+  autodismiss?: NotificationAutodismiss;
   transaction: NotificationTransaction;
   status?: string;
   id?: NotificationId;
@@ -49,7 +52,7 @@ export interface ModifyOrShowTransactionNotificationAction
 
 export interface ModifyOrShowSimpleNotificationAction
   extends ReduxAction<ActionType.MODIFY_OR_SHOW_SIMPLE_NOTIFICATION> {
-  autodismiss?: number;
+  autodismiss?: NotificationAutodismiss;
   title?: string;
   description?: string;
   status?: string;
@@ -73,7 +76,7 @@ export type RemoveCurrentNotificationAction =
 export interface ShowSimpleNotificationAction
   extends ReduxAction<ActionType.SHOW_SIMPLE_NOTIFICATION> {
   id: NotificationId;
-  autodismiss?: number;
+  autodismiss?: NotificationAutodismiss;
   title?: string;
   description?: string;
   status?: string;
@@ -81,7 +84,7 @@ export interface ShowSimpleNotificationAction
 
 export interface ShowTransactionNotificationAction
   extends ReduxAction<ActionType.SHOW_TRANSACTION_NOTIFICATION> {
-  autodismiss?: number;
+  autodismiss?: NotificationAutodismiss;
   transaction: NotificationTransaction;
   status?: string;
 }
@@ -121,7 +124,7 @@ export function modifyOrShowTransactionNotificationById({
   transaction,
   status,
 }: {
-  autodismiss?: number;
+  autodismiss?: NotificationAutodismiss;
   transaction: NotificationTransaction;
   status?: string;
 }): ModifyOrShowTransactionNotificationAction {
@@ -139,7 +142,7 @@ export function modifyOrShowSimpleNotificationById({
   description,
   status,
 }: {
-  autodismiss?: number;
+  autodismiss?: NotificationAutodismiss;
   title?: string;
   description?: string;
   status?: string;
@@ -185,7 +188,7 @@ export function showSimpleNotification({
   status,
   id,
 }: {
-  autodismiss?: number;
+  autodismiss?: NotificationAutodismiss;
   title?: string;
   description?: string;
   status?: string;
@@ -206,7 +209,7 @@ export function showTransactionNotification({
   transaction,
   status,
 }: {
-  autodismiss?: number;
+  autodismiss?: NotificationAutodismiss;
   transaction: NotificationTransaction;
   status?: string;
 }): ShowTransactionNotificationAction {

@@ -8,6 +8,7 @@ import {
   type HideNotificationByIdAction,
   type ModifyOrShowSimpleNotificationAction,
   type ModifyOrShowTransactionNotificationAction,
+  type NotificationAutodismiss,
   type NotificationId,
   type NotificationLike,
   type NotificationTransaction,
@@ -23,7 +24,7 @@ const { TRANSACTION, SIMPLE } = NotificationTypes;
 export interface NotificationItem extends NotificationLike {
   id?: NotificationId;
   isVisible?: boolean;
-  autodismiss?: number;
+  autodismiss?: NotificationAutodismiss;
   status?: string;
   type?: string;
   title?: string;
