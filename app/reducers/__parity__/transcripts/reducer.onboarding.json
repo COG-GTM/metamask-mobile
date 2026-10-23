@@ -1,0 +1,158 @@
+{
+  "kind": "reducer",
+  "reducerKey": "onboarding",
+  "source": "app/reducers/onboarding",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "events": [],
+            "completedOnboarding": false
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "mid onboarding",
+      "seed": {
+        "events": [
+          [
+            {
+              "category": "Onboarding Started"
+            }
+          ]
+        ],
+        "completedOnboarding": false
+      },
+      "steps": [
+        {
+          "label": "save onboarding event",
+          "creator": "actions/onboarding.saveOnboardingEvent",
+          "args": [
+            [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          ],
+          "action": {
+            "type": "SAVE_EVENT",
+            "event": [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          },
+          "state": {
+            "events": [
+              [
+                {
+                  "category": "Onboarding Started"
+                }
+              ],
+              [
+                {
+                  "category": "Wallet Created",
+                  "properties": {
+                    "biometrics_enabled": false
+                  }
+                }
+              ]
+            ],
+            "completedOnboarding": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set completed onboarding",
+          "creator": "actions/onboarding.setCompletedOnboarding",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_COMPLETED_ONBOARDING",
+            "completedOnboarding": true
+          },
+          "state": {
+            "events": [
+              [
+                {
+                  "category": "Onboarding Started"
+                }
+              ],
+              [
+                {
+                  "category": "Wallet Created",
+                  "properties": {
+                    "biometrics_enabled": false
+                  }
+                }
+              ]
+            ],
+            "completedOnboarding": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "clear onboarding events",
+          "creator": "actions/onboarding.clearOnboardingEvents",
+          "args": [],
+          "action": {
+            "type": "CLEAR_EVENTS"
+          },
+          "state": {
+            "events": [],
+            "completedOnboarding": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "events": [],
+            "completedOnboarding": true
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "events": [],
+            "completedOnboarding": true
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

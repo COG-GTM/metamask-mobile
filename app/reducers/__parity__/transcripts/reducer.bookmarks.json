@@ -1,0 +1,142 @@
+{
+  "kind": "reducer",
+  "reducerKey": "bookmarks",
+  "source": "app/reducers/bookmarks",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": [],
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "one bookmark",
+      "seed": [
+        {
+          "name": "Uniswap",
+          "url": "https://app.uniswap.org"
+        }
+      ],
+      "steps": [
+        {
+          "label": "add bookmark",
+          "creator": "actions/bookmarks.addBookmark",
+          "args": [
+            {
+              "name": "OpenSea",
+              "url": "https://opensea.io"
+            }
+          ],
+          "action": {
+            "type": "ADD_BOOKMARK",
+            "bookmark": {
+              "name": "OpenSea",
+              "url": "https://opensea.io"
+            }
+          },
+          "state": [
+            {
+              "name": "Uniswap",
+              "url": "https://app.uniswap.org"
+            },
+            {
+              "name": "OpenSea",
+              "url": "https://opensea.io"
+            }
+          ],
+          "sameRef": false
+        },
+        {
+          "label": "remove bookmark",
+          "creator": "actions/bookmarks.removeBookmark",
+          "args": [
+            {
+              "name": "Uniswap",
+              "url": "https://app.uniswap.org"
+            }
+          ],
+          "action": {
+            "type": "REMOVE_BOOKMARK",
+            "bookmark": {
+              "name": "Uniswap",
+              "url": "https://app.uniswap.org"
+            }
+          },
+          "state": [
+            {
+              "name": "OpenSea",
+              "url": "https://opensea.io"
+            }
+          ],
+          "sameRef": false
+        },
+        {
+          "label": "remove missing bookmark",
+          "creator": "actions/bookmarks.removeBookmark",
+          "args": [
+            {
+              "url": "https://missing.example"
+            }
+          ],
+          "action": {
+            "type": "REMOVE_BOOKMARK",
+            "bookmark": {
+              "url": "https://missing.example"
+            }
+          },
+          "state": [
+            {
+              "name": "OpenSea",
+              "url": "https://opensea.io"
+            }
+          ],
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": [
+            {
+              "name": "OpenSea",
+              "url": "https://opensea.io"
+            }
+          ],
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": [
+            {
+              "name": "OpenSea",
+              "url": "https://opensea.io"
+            }
+          ],
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

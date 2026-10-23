@@ -1,0 +1,350 @@
+{
+  "kind": "reducer",
+  "reducerKey": "settings",
+  "source": "app/reducers/settings",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "searchEngine": "Google",
+            "primaryCurrency": "ETH",
+            "lockTime": -1,
+            "useBlockieIcon": true,
+            "hideZeroBalanceTokens": false,
+            "basicFunctionalityEnabled": true
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "configured user",
+      "seed": {
+        "searchEngine": "Google",
+        "primaryCurrency": "ETH",
+        "lockTime": -1,
+        "useBlockieIcon": true,
+        "hideZeroBalanceTokens": false,
+        "basicFunctionalityEnabled": true,
+        "showHexData": false
+      },
+      "steps": [
+        {
+          "label": "set search engine",
+          "creator": "actions/settings.setSearchEngine",
+          "args": [
+            "DuckDuckGo"
+          ],
+          "action": {
+            "type": "SET_SEARCH_ENGINE",
+            "searchEngine": "DuckDuckGo"
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "ETH",
+            "lockTime": -1,
+            "useBlockieIcon": true,
+            "hideZeroBalanceTokens": false,
+            "basicFunctionalityEnabled": true,
+            "showHexData": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set show hex data",
+          "creator": "actions/settings.setShowHexData",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_SHOW_HEX_DATA",
+            "showHexData": true
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "ETH",
+            "lockTime": -1,
+            "useBlockieIcon": true,
+            "hideZeroBalanceTokens": false,
+            "basicFunctionalityEnabled": true,
+            "showHexData": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set show custom nonce",
+          "creator": "actions/settings.setShowCustomNonce",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_SHOW_CUSTOM_NONCE",
+            "showCustomNonce": true
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "ETH",
+            "lockTime": -1,
+            "useBlockieIcon": true,
+            "hideZeroBalanceTokens": false,
+            "basicFunctionalityEnabled": true,
+            "showHexData": true,
+            "showCustomNonce": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set show fiat on testnets",
+          "creator": "actions/settings.setShowFiatOnTestnets",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_SHOW_FIAT_ON_TESTNETS",
+            "showFiatOnTestnets": true
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "ETH",
+            "lockTime": -1,
+            "useBlockieIcon": true,
+            "hideZeroBalanceTokens": false,
+            "basicFunctionalityEnabled": true,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set hide zero balance tokens",
+          "creator": "actions/settings.setHideZeroBalanceTokens",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_HIDE_ZERO_BALANCE_TOKENS",
+            "hideZeroBalanceTokens": true
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "ETH",
+            "lockTime": -1,
+            "useBlockieIcon": true,
+            "hideZeroBalanceTokens": true,
+            "basicFunctionalityEnabled": true,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set lock time",
+          "creator": "actions/settings.setLockTime",
+          "args": [
+            30000
+          ],
+          "action": {
+            "type": "SET_LOCK_TIME",
+            "lockTime": 30000
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "ETH",
+            "lockTime": 30000,
+            "useBlockieIcon": true,
+            "hideZeroBalanceTokens": true,
+            "basicFunctionalityEnabled": true,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set primary currency",
+          "creator": "actions/settings.setPrimaryCurrency",
+          "args": [
+            "Fiat"
+          ],
+          "action": {
+            "type": "SET_PRIMARY_CURRENCY",
+            "primaryCurrency": "Fiat"
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "Fiat",
+            "lockTime": 30000,
+            "useBlockieIcon": true,
+            "hideZeroBalanceTokens": true,
+            "basicFunctionalityEnabled": true,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set use blockie icon",
+          "creator": "actions/settings.setUseBlockieIcon",
+          "args": [
+            false
+          ],
+          "action": {
+            "type": "SET_USE_BLOCKIE_ICON",
+            "useBlockieIcon": false
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "Fiat",
+            "lockTime": 30000,
+            "useBlockieIcon": false,
+            "hideZeroBalanceTokens": true,
+            "basicFunctionalityEnabled": true,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle basic functionality off",
+          "creator": "actions/settings.toggleBasicFunctionality",
+          "args": [
+            false
+          ],
+          "action": {
+            "type": "TOGGLE_BASIC_FUNCTIONALITY",
+            "basicFunctionalityEnabled": false
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "Fiat",
+            "lockTime": 30000,
+            "useBlockieIcon": false,
+            "hideZeroBalanceTokens": true,
+            "basicFunctionalityEnabled": false,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle device notifications",
+          "creator": "actions/settings.toggleDeviceNotification",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "TOGGLE_DEVICE_NOTIFICATIONS",
+            "deviceNotificationEnabled": true
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "Fiat",
+            "lockTime": 30000,
+            "useBlockieIcon": false,
+            "hideZeroBalanceTokens": true,
+            "basicFunctionalityEnabled": false,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true,
+            "deviceNotificationEnabled": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set token sort config (unhandled)",
+          "creator": "actions/settings.setTokenSortConfig",
+          "args": [
+            {
+              "key": "tokenFiatAmount",
+              "order": "dsc"
+            }
+          ],
+          "action": {
+            "type": "SET_TOKEN_SORT_CONFIG",
+            "tokenSortConfig": {
+              "key": "tokenFiatAmount",
+              "order": "dsc"
+            }
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "Fiat",
+            "lockTime": 30000,
+            "useBlockieIcon": false,
+            "hideZeroBalanceTokens": true,
+            "basicFunctionalityEnabled": false,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true,
+            "deviceNotificationEnabled": true
+          },
+          "sameRef": true
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "Fiat",
+            "lockTime": 30000,
+            "useBlockieIcon": false,
+            "hideZeroBalanceTokens": true,
+            "basicFunctionalityEnabled": false,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true,
+            "deviceNotificationEnabled": true
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {
+              "settings": {
+                "lockTime": 0
+              }
+            },
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "searchEngine": "DuckDuckGo",
+            "primaryCurrency": "Fiat",
+            "lockTime": 30000,
+            "useBlockieIcon": false,
+            "hideZeroBalanceTokens": true,
+            "basicFunctionalityEnabled": false,
+            "showHexData": true,
+            "showCustomNonce": true,
+            "showFiatOnTestnets": true,
+            "deviceNotificationEnabled": true
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

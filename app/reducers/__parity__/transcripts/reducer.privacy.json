@@ -1,0 +1,173 @@
+{
+  "kind": "reducer",
+  "reducerKey": "privacy",
+  "source": "app/reducers/privacy",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "approvedHosts": {},
+            "revealSRPTimestamps": []
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "approved hosts",
+      "seed": {
+        "approvedHosts": {
+          "app.uniswap.org": true
+        },
+        "revealSRPTimestamps": [
+          1729651199000
+        ]
+      },
+      "steps": [
+        {
+          "label": "approve host",
+          "creator": "actions/privacy.approveHost",
+          "args": [
+            "opensea.io"
+          ],
+          "action": {
+            "type": "APPROVE_HOST",
+            "hostname": "opensea.io"
+          },
+          "state": {
+            "approvedHosts": {
+              "app.uniswap.org": true,
+              "opensea.io": true
+            },
+            "revealSRPTimestamps": [
+              1729651199000
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "reject host",
+          "creator": "actions/privacy.rejectHost",
+          "args": [
+            "app.uniswap.org"
+          ],
+          "action": {
+            "type": "REJECT_HOST",
+            "hostname": "app.uniswap.org"
+          },
+          "state": {
+            "approvedHosts": {
+              "opensea.io": true
+            },
+            "revealSRPTimestamps": [
+              1729651199000
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "reject unknown host",
+          "creator": "actions/privacy.rejectHost",
+          "args": [
+            "missing.example"
+          ],
+          "action": {
+            "type": "REJECT_HOST",
+            "hostname": "missing.example"
+          },
+          "state": {
+            "approvedHosts": {
+              "opensea.io": true
+            },
+            "revealSRPTimestamps": [
+              1729651199000
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "record SRP reveal timestamp",
+          "creator": "actions/privacy.recordSRPRevealTimestamp",
+          "args": [
+            1729651200000
+          ],
+          "action": {
+            "type": "RECORD_SRP_REVEAL_TIMESTAMP",
+            "timestamp": 1729651200000
+          },
+          "state": {
+            "approvedHosts": {
+              "opensea.io": true
+            },
+            "revealSRPTimestamps": [
+              1729651199000,
+              1729651200000
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "clear hosts",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "CLEAR_HOSTS"
+          },
+          "state": {
+            "approvedHosts": {},
+            "revealSRPTimestamps": [
+              1729651199000,
+              1729651200000
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "approvedHosts": {},
+            "revealSRPTimestamps": [
+              1729651199000,
+              1729651200000
+            ]
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "approvedHosts": {},
+            "revealSRPTimestamps": [
+              1729651199000,
+              1729651200000
+            ]
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1727 @@
+{
+  "kind": "reducer",
+  "reducerKey": "transaction",
+  "source": "app/reducers/transaction",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "ensRecipient": "__PARITY_UNDEFINED__",
+            "assetType": "__PARITY_UNDEFINED__",
+            "selectedAsset": {},
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "__PARITY_UNDEFINED__",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "__PARITY_UNDEFINED__",
+            "transactionToName": "__PARITY_UNDEFINED__",
+            "transactionFromName": "__PARITY_UNDEFINED__",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "send in progress",
+      "seed": {
+        "ensRecipient": "__PARITY_UNDEFINED__",
+        "assetType": "ETH",
+        "selectedAsset": {
+          "isETH": true,
+          "symbol": "ETH",
+          "decimals": 18
+        },
+        "transaction": {
+          "data": "__PARITY_UNDEFINED__",
+          "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+          "gas": "0x5208",
+          "gasPrice": "__PARITY_UNDEFINED__",
+          "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+          "value": "0x0",
+          "maxFeePerGas": "__PARITY_UNDEFINED__",
+          "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+        },
+        "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+        "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+        "transactionToName": "__PARITY_UNDEFINED__",
+        "transactionFromName": "Account 1",
+        "transactionValue": "__PARITY_UNDEFINED__",
+        "symbol": "ETH",
+        "paymentRequest": "__PARITY_UNDEFINED__",
+        "readableValue": "__PARITY_UNDEFINED__",
+        "id": "tx-eth-0",
+        "type": "__PARITY_UNDEFINED__",
+        "proposedNonce": 5,
+        "nonce": 5,
+        "securityAlertResponses": {
+          "tx-eth-0": {
+            "reason": "transfer_farming",
+            "result_type": "Malicious",
+            "features": [
+              "Interaction with a known malicious address"
+            ],
+            "providerRequestsCount": {
+              "eth_getCode": 1
+            }
+          }
+        },
+        "useMax": false
+      },
+      "steps": [
+        {
+          "label": "reset transaction",
+          "creator": "actions/transaction.resetTransaction",
+          "args": [],
+          "action": {
+            "type": "RESET_TRANSACTION"
+          },
+          "state": {
+            "ensRecipient": "__PARITY_UNDEFINED__",
+            "assetType": "__PARITY_UNDEFINED__",
+            "selectedAsset": {},
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "__PARITY_UNDEFINED__",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "__PARITY_UNDEFINED__",
+            "transactionToName": "__PARITY_UNDEFINED__",
+            "transactionFromName": "__PARITY_UNDEFINED__",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "new ETH asset transaction",
+          "creator": "actions/transaction.newAssetTransaction",
+          "args": [
+            {
+              "isETH": true,
+              "symbol": "ETH",
+              "decimals": 18
+            }
+          ],
+          "action": {
+            "type": "NEW_ASSET_TRANSACTION",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH",
+              "decimals": 18
+            },
+            "assetType": "ETH"
+          },
+          "state": {
+            "ensRecipient": "__PARITY_UNDEFINED__",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH",
+              "decimals": 18
+            },
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "__PARITY_UNDEFINED__",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "__PARITY_UNDEFINED__",
+            "transactionToName": "__PARITY_UNDEFINED__",
+            "transactionFromName": "__PARITY_UNDEFINED__",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "new ERC20 asset transaction",
+          "creator": "actions/transaction.newAssetTransaction",
+          "args": [
+            {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            }
+          ],
+          "action": {
+            "type": "NEW_ASSET_TRANSACTION",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            },
+            "assetType": "ERC20"
+          },
+          "state": {
+            "ensRecipient": "__PARITY_UNDEFINED__",
+            "assetType": "ERC20",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            },
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "__PARITY_UNDEFINED__",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "__PARITY_UNDEFINED__",
+            "transactionToName": "__PARITY_UNDEFINED__",
+            "transactionFromName": "__PARITY_UNDEFINED__",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "new ERC721 asset transaction",
+          "creator": "actions/transaction.newAssetTransaction",
+          "args": [
+            {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            }
+          ],
+          "action": {
+            "type": "NEW_ASSET_TRANSACTION",
+            "selectedAsset": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            },
+            "assetType": "ERC721"
+          },
+          "state": {
+            "ensRecipient": "__PARITY_UNDEFINED__",
+            "assetType": "ERC721",
+            "selectedAsset": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            },
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "__PARITY_UNDEFINED__",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "__PARITY_UNDEFINED__",
+            "transactionToName": "__PARITY_UNDEFINED__",
+            "transactionFromName": "__PARITY_UNDEFINED__",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set recipient",
+          "creator": "actions/transaction.setRecipient",
+          "args": [
+            "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+            "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "vitalik.eth",
+            "Vitalik",
+            "Account 1"
+          ],
+          "action": {
+            "type": "SET_RECIPIENT",
+            "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+            "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "ensRecipient": "vitalik.eth",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1"
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ERC721",
+            "selectedAsset": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            },
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set selected asset (ETH)",
+          "creator": "actions/transaction.setSelectedAsset",
+          "args": [
+            {
+              "isETH": true,
+              "symbol": "ETH",
+              "decimals": 18
+            }
+          ],
+          "action": {
+            "type": "SET_SELECTED_ASSET",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH",
+              "decimals": 18
+            },
+            "assetType": "ETH"
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH",
+              "decimals": 18
+            },
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set selected asset (ERC20)",
+          "creator": "actions/transaction.setSelectedAsset",
+          "args": [
+            {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            }
+          ],
+          "action": {
+            "type": "SET_SELECTED_ASSET",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            },
+            "assetType": "ERC20"
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ERC20",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            },
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set selected asset without assetType (ERC721)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "SET_SELECTED_ASSET",
+            "selectedAsset": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ERC721",
+            "selectedAsset": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            },
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set selected asset without assetType (ETH)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "SET_SELECTED_ASSET",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH",
+              "decimals": 18
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH",
+              "decimals": 18
+            },
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set selected asset without assetType (ERC20)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "SET_SELECTED_ASSET",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ERC20",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            },
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set selected asset undefined",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "SET_SELECTED_ASSET",
+            "selectedAsset": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "__PARITY_UNDEFINED__",
+            "selectedAsset": "__PARITY_UNDEFINED__",
+            "transaction": {
+              "data": "__PARITY_UNDEFINED__",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "__PARITY_UNDEFINED__",
+              "gasPrice": "__PARITY_UNDEFINED__",
+              "to": "__PARITY_UNDEFINED__",
+              "value": "__PARITY_UNDEFINED__",
+              "maxFeePerGas": "__PARITY_UNDEFINED__",
+              "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "prepare transaction",
+          "creator": "actions/transaction.prepareTransaction",
+          "args": [
+            {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x0",
+              "data": "0x"
+            }
+          ],
+          "action": {
+            "type": "PREPARE_TRANSACTION",
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x0",
+              "data": "0x"
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "__PARITY_UNDEFINED__",
+            "selectedAsset": "__PARITY_UNDEFINED__",
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x0",
+              "data": "0x"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {},
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set security alert response",
+          "creator": "actions/transaction.setTransactionSecurityAlertResponse",
+          "args": [
+            "tx-eth-1",
+            {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            }
+          ],
+          "action": {
+            "type": "SET_TRANSACTION_SECURITY_ALERT_RESPONSE",
+            "transactionId": "tx-eth-1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "__PARITY_UNDEFINED__",
+            "selectedAsset": "__PARITY_UNDEFINED__",
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x0",
+              "data": "0x"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "__PARITY_UNDEFINED__",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set transaction object with selectedAsset",
+          "creator": "actions/transaction.setTransactionObject",
+          "args": [
+            {
+              "id": "tx-eth-1",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "gas": "0x5208",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "chainId": "0x1",
+              "selectedAsset": {
+                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+                "symbol": "DAI",
+                "decimals": 18
+              },
+              "data": "0xa9059cbb",
+              "securityAlertResponse": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            }
+          ],
+          "action": {
+            "type": "SET_TRANSACTION_OBJECT",
+            "transaction": {
+              "id": "tx-eth-1",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "gas": "0x5208",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "chainId": "0x1",
+              "selectedAsset": {
+                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+                "symbol": "DAI",
+                "decimals": 18
+              },
+              "data": "0xa9059cbb",
+              "securityAlertResponse": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ERC20",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "data": "0xa9059cbb",
+              "gas": "0x5208",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "securityAlertResponse": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "__PARITY_UNDEFINED__",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-1",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            }
+          },
+          "sameRef": false,
+          "actionAfter": {
+            "type": "SET_TRANSACTION_OBJECT",
+            "transaction": {
+              "id": "tx-eth-1",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "gas": "0x5208",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "chainId": "0x1",
+              "selectedAsset": {
+                "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+                "symbol": "DAI",
+                "decimals": 18
+              },
+              "data": "0xa9059cbb",
+              "securityAlertResponse": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              },
+              "assetType": "ERC20"
+            }
+          }
+        },
+        {
+          "label": "set transaction object without selectedAsset",
+          "creator": "actions/transaction.setTransactionObject",
+          "args": [
+            {
+              "gas": "0x7530",
+              "origin": "metamask",
+              "symbol": "ETH"
+            }
+          ],
+          "action": {
+            "type": "SET_TRANSACTION_OBJECT",
+            "transaction": {
+              "gas": "0x7530",
+              "origin": "metamask",
+              "symbol": "ETH"
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ERC20",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "data": "0xa9059cbb",
+              "gas": "0x7530",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "securityAlertResponse": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-1",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "metamask"
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set transaction id",
+          "creator": "actions/transaction.setTransactionId",
+          "args": [
+            "tx-eth-2"
+          ],
+          "action": {
+            "type": "SET_TRANSACTION_ID",
+            "transactionId": "tx-eth-2"
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ERC20",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "data": "0xa9059cbb",
+              "gas": "0x7530",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "securityAlertResponse": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-2",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "metamask"
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set tokens transaction (ERC20)",
+          "creator": "actions/transaction.setTokensTransaction",
+          "args": [
+            {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            }
+          ],
+          "action": {
+            "type": "SET_TOKENS_TRANSACTION",
+            "asset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ERC20",
+            "selectedAsset": {
+              "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+              "symbol": "DAI",
+              "decimals": 18
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "data": "0xa9059cbb",
+              "gas": "0x7530",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "securityAlertResponse": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-2",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "metamask"
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set tokens transaction (ERC721)",
+          "creator": "actions/transaction.setTokensTransaction",
+          "args": [
+            {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            }
+          ],
+          "action": {
+            "type": "SET_TOKENS_TRANSACTION",
+            "asset": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ERC721",
+            "selectedAsset": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "data": "0xa9059cbb",
+              "gas": "0x7530",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "securityAlertResponse": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-2",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "metamask"
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set ether transaction",
+          "creator": "actions/transaction.setEtherTransaction",
+          "args": [
+            {
+              "id": "tx-eth-1",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "gas": "0x5208",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "chainId": "0x1",
+              "origin": "https://app.uniswap.org",
+              "ensRecipient": "vitalik.eth"
+            }
+          ],
+          "action": {
+            "type": "SET_ETHER_TRANSACTION",
+            "transaction": {
+              "id": "tx-eth-1",
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "gas": "0x5208",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00",
+              "chainId": "0x1",
+              "origin": "https://app.uniswap.org",
+              "ensRecipient": "vitalik.eth"
+            }
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH"
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "0x5208",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-1",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": "__PARITY_UNDEFINED__",
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "https://app.uniswap.org"
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set nonce",
+          "creator": "actions/transaction.setNonce",
+          "args": [
+            42
+          ],
+          "action": {
+            "type": "SET_NONCE",
+            "nonce": 42
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH"
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "0x5208",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-1",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": "__PARITY_UNDEFINED__",
+            "nonce": 42,
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "https://app.uniswap.org"
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set proposed nonce",
+          "creator": "actions/transaction.setProposedNonce",
+          "args": [
+            43
+          ],
+          "action": {
+            "type": "SET_PROPOSED_NONCE",
+            "proposedNonce": 43
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH"
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "0x5208",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-1",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": 43,
+            "nonce": 42,
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "https://app.uniswap.org"
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set max value mode",
+          "creator": "actions/transaction.setMaxValueMode",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_MAX_VALUE_MODE",
+            "maxValueMode": true
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH"
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "0x5208",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x2386f26fc10000",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-1",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": 43,
+            "nonce": 42,
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "https://app.uniswap.org",
+            "maxValueMode": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set transaction value",
+          "creator": "actions/transaction.setTransactionValue",
+          "args": [
+            "0x16345785d8a0000"
+          ],
+          "action": {
+            "type": "SET_TRANSACTION_VALUE",
+            "value": "0x16345785d8a0000"
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH"
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "0x5208",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x16345785d8a0000",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-1",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": 43,
+            "nonce": 42,
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "https://app.uniswap.org",
+            "maxValueMode": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH"
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "0x5208",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x16345785d8a0000",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-1",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": 43,
+            "nonce": 42,
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "https://app.uniswap.org",
+            "maxValueMode": true
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {
+              "transaction": {
+                "nonce": 7
+              }
+            },
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "ensRecipient": "vitalik.eth",
+            "assetType": "ETH",
+            "selectedAsset": {
+              "isETH": true,
+              "symbol": "ETH"
+            },
+            "transaction": {
+              "from": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+              "gas": "0x5208",
+              "to": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+              "value": "0x16345785d8a0000",
+              "maxFeePerGas": "0x59682f00",
+              "maxPriorityFeePerGas": "0x3b9aca00"
+            },
+            "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+            "transactionTo": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "transactionToName": "Vitalik",
+            "transactionFromName": "Account 1",
+            "transactionValue": "__PARITY_UNDEFINED__",
+            "symbol": "ETH",
+            "paymentRequest": "__PARITY_UNDEFINED__",
+            "readableValue": "__PARITY_UNDEFINED__",
+            "id": "tx-eth-1",
+            "type": "__PARITY_UNDEFINED__",
+            "proposedNonce": 43,
+            "nonce": 42,
+            "securityAlertResponses": {
+              "tx-eth-1": {
+                "reason": "transfer_farming",
+                "result_type": "Malicious",
+                "features": [
+                  "Interaction with a known malicious address"
+                ],
+                "providerRequestsCount": {
+                  "eth_getCode": 1
+                }
+              }
+            },
+            "useMax": false,
+            "chainId": "0x1",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            },
+            "origin": "https://app.uniswap.org",
+            "maxValueMode": true
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

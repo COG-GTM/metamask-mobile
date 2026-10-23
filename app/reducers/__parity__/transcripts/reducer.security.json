@@ -1,0 +1,223 @@
+{
+  "kind": "reducer",
+  "reducerKey": "security",
+  "source": "app/reducers/security",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "allowLoginWithRememberMe": false,
+            "automaticSecurityChecksEnabled": false,
+            "hasUserSelectedAutomaticSecurityCheckOption": false,
+            "isAutomaticSecurityChecksModalOpen": false,
+            "dataCollectionForMarketing": null,
+            "isNFTAutoDetectionModalViewed": false
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "returning user",
+      "seed": {
+        "allowLoginWithRememberMe": false,
+        "automaticSecurityChecksEnabled": false,
+        "hasUserSelectedAutomaticSecurityCheckOption": false,
+        "isAutomaticSecurityChecksModalOpen": false,
+        "dataCollectionForMarketing": null,
+        "isNFTAutoDetectionModalViewed": false
+      },
+      "steps": [
+        {
+          "label": "allow login with remember me",
+          "creator": "actions/security.setAllowLoginWithRememberMe",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_ALLOW_LOGIN_WITH_REMEMBER_ME",
+            "enabled": true
+          },
+          "state": {
+            "allowLoginWithRememberMe": true,
+            "automaticSecurityChecksEnabled": false,
+            "hasUserSelectedAutomaticSecurityCheckOption": false,
+            "isAutomaticSecurityChecksModalOpen": false,
+            "dataCollectionForMarketing": null,
+            "isNFTAutoDetectionModalViewed": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "automatic security checks on",
+          "creator": "actions/security.setAutomaticSecurityChecks",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_AUTOMATIC_SECURITY_CHECKS",
+            "enabled": true
+          },
+          "state": {
+            "allowLoginWithRememberMe": true,
+            "automaticSecurityChecksEnabled": true,
+            "hasUserSelectedAutomaticSecurityCheckOption": false,
+            "isAutomaticSecurityChecksModalOpen": false,
+            "dataCollectionForMarketing": null,
+            "isNFTAutoDetectionModalViewed": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "user selected automatic security checks option",
+          "creator": "actions/security.userSelectedAutomaticSecurityChecksOptions",
+          "args": [],
+          "action": {
+            "type": "USER_SELECTED_AUTOMATIC_SECURITY_CHECKS_OPTION",
+            "selected": true
+          },
+          "state": {
+            "allowLoginWithRememberMe": true,
+            "automaticSecurityChecksEnabled": true,
+            "hasUserSelectedAutomaticSecurityCheckOption": true,
+            "isAutomaticSecurityChecksModalOpen": false,
+            "dataCollectionForMarketing": null,
+            "isNFTAutoDetectionModalViewed": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "automatic security checks modal open",
+          "creator": "actions/security.setAutomaticSecurityChecksModalOpen",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_AUTOMATIC_SECURITY_CHECKS_MODAL_OPEN",
+            "open": true
+          },
+          "state": {
+            "allowLoginWithRememberMe": true,
+            "automaticSecurityChecksEnabled": true,
+            "hasUserSelectedAutomaticSecurityCheckOption": true,
+            "isAutomaticSecurityChecksModalOpen": true,
+            "dataCollectionForMarketing": null,
+            "isNFTAutoDetectionModalViewed": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "NFT auto detection modal open",
+          "creator": "actions/security.setNftAutoDetectionModalOpen",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_NFT_AUTO_DETECTION_MODAL_OPEN",
+            "open": true
+          },
+          "state": {
+            "allowLoginWithRememberMe": true,
+            "automaticSecurityChecksEnabled": true,
+            "hasUserSelectedAutomaticSecurityCheckOption": true,
+            "isAutomaticSecurityChecksModalOpen": true,
+            "dataCollectionForMarketing": null,
+            "isNFTAutoDetectionModalViewed": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "multi RPC migration modal open (unhandled)",
+          "creator": "actions/security.setMultiRpcMigrationModalOpen",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_MULTI_RPC_MIGRATION_MODAL_OPEN",
+            "open": true
+          },
+          "state": {
+            "allowLoginWithRememberMe": true,
+            "automaticSecurityChecksEnabled": true,
+            "hasUserSelectedAutomaticSecurityCheckOption": true,
+            "isAutomaticSecurityChecksModalOpen": true,
+            "dataCollectionForMarketing": null,
+            "isNFTAutoDetectionModalViewed": true
+          },
+          "sameRef": true
+        },
+        {
+          "label": "data collection for marketing",
+          "creator": "actions/security.setDataCollectionForMarketing",
+          "args": [
+            false
+          ],
+          "action": {
+            "type": "SET_DATA_COLLECTION_FOR_MARKETING",
+            "enabled": false
+          },
+          "state": {
+            "allowLoginWithRememberMe": true,
+            "automaticSecurityChecksEnabled": true,
+            "hasUserSelectedAutomaticSecurityCheckOption": true,
+            "isAutomaticSecurityChecksModalOpen": true,
+            "dataCollectionForMarketing": false,
+            "isNFTAutoDetectionModalViewed": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "allowLoginWithRememberMe": true,
+            "automaticSecurityChecksEnabled": true,
+            "hasUserSelectedAutomaticSecurityCheckOption": true,
+            "isAutomaticSecurityChecksModalOpen": true,
+            "dataCollectionForMarketing": false,
+            "isNFTAutoDetectionModalViewed": true
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {
+              "security": {
+                "allowLoginWithRememberMe": true
+              }
+            },
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "allowLoginWithRememberMe": true,
+            "automaticSecurityChecksEnabled": true,
+            "hasUserSelectedAutomaticSecurityCheckOption": true,
+            "isAutomaticSecurityChecksModalOpen": true,
+            "dataCollectionForMarketing": false,
+            "isNFTAutoDetectionModalViewed": true
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1028 @@
+{
+  "kind": "reducer",
+  "reducerKey": "notification",
+  "source": "app/reducers/notification",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "notifications": []
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "empty queue",
+      "seed": {
+        "notifications": []
+      },
+      "steps": [
+        {
+          "label": "hide current notification (empty)",
+          "creator": "actions/notification.hideCurrentNotification",
+          "args": [],
+          "action": {
+            "type": "HIDE_CURRENT_NOTIFICATION"
+          },
+          "state": {
+            "notifications": []
+          },
+          "sameRef": true
+        },
+        {
+          "label": "remove current notification (empty)",
+          "creator": "actions/notification.removeCurrentNotification",
+          "args": [],
+          "action": {
+            "type": "REMOVE_CURRENT_NOTIFICATION"
+          },
+          "state": {
+            "notifications": []
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "queued notifications",
+      "seed": {
+        "notifications": [
+          {
+            "id": "tx-1",
+            "isVisible": true,
+            "autodismiss": 5000,
+            "transaction": {
+              "id": "tx-1"
+            },
+            "status": "pending",
+            "type": "transaction"
+          },
+          {
+            "id": "simple-1",
+            "isVisible": false,
+            "autodismiss": 5000,
+            "title": "Hello",
+            "description": "World",
+            "status": "simple_notification",
+            "type": "simple"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "label": "hide current notification",
+          "creator": "actions/notification.hideCurrentNotification",
+          "args": [],
+          "action": {
+            "type": "HIDE_CURRENT_NOTIFICATION"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "show simple notification",
+          "creator": "actions/notification.showSimpleNotification",
+          "args": [
+            {
+              "id": "simple-2",
+              "title": "Copied",
+              "description": "Address copied to clipboard",
+              "status": "simple_notification",
+              "autodismiss": "__PARITY_UNDEFINED__"
+            }
+          ],
+          "action": {
+            "id": "simple-2",
+            "type": "SHOW_SIMPLE_NOTIFICATION",
+            "autodismiss": "__PARITY_UNDEFINED__",
+            "title": "Copied",
+            "description": "Address copied to clipboard",
+            "status": "simple_notification"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "title": "Copied",
+                "description": "Address copied to clipboard",
+                "status": "simple_notification",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "show transaction notification",
+          "creator": "actions/notification.showTransactionNotification",
+          "args": [
+            {
+              "transaction": {
+                "id": "tx-2"
+              },
+              "status": "pending",
+              "autodismiss": 3000
+            }
+          ],
+          "action": {
+            "type": "SHOW_TRANSACTION_NOTIFICATION",
+            "autodismiss": 3000,
+            "transaction": {
+              "id": "tx-2"
+            },
+            "status": "pending"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "title": "Copied",
+                "description": "Address copied to clipboard",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 3000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "pending",
+                "type": "transaction"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "modify or show transaction notification (no id: enqueue or match id-less)",
+          "creator": "actions/notification.modifyOrShowTransactionNotificationById",
+          "args": [
+            {
+              "transaction": {
+                "id": "tx-2"
+              },
+              "status": "success",
+              "autodismiss": 5000
+            }
+          ],
+          "action": {
+            "type": "MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION",
+            "autodismiss": 5000,
+            "transaction": {
+              "id": "tx-2"
+            },
+            "status": "success"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "title": "Copied",
+                "description": "Address copied to clipboard",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 3000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "success",
+                "type": "transaction"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "modify or show transaction notification (existing id)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION",
+            "id": "tx-1",
+            "transaction": {
+              "id": "tx-1"
+            },
+            "status": "success",
+            "autodismiss": 1500
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": true,
+                "autodismiss": 1500,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "title": "Copied",
+                "description": "Address copied to clipboard",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 3000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "success",
+                "type": "transaction"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "modify or show simple notification (no id)",
+          "creator": "actions/notification.modifyOrShowSimpleNotificationById",
+          "args": [
+            {
+              "title": "Network added",
+              "description": "Polygon",
+              "status": "success",
+              "autodismiss": 2000
+            }
+          ],
+          "action": {
+            "type": "MODIFY_OR_SHOW_SIMPLE_NOTIFICATION",
+            "autodismiss": 2000,
+            "title": "Network added",
+            "description": "Polygon",
+            "status": "success"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": true,
+                "autodismiss": 1500,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "title": "Copied",
+                "description": "Address copied to clipboard",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 3000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": true,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "modify or show simple notification (existing id)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "MODIFY_OR_SHOW_SIMPLE_NOTIFICATION",
+            "id": "simple-2",
+            "title": "Updated",
+            "description": "Updated description",
+            "status": "success",
+            "autodismiss": 1000
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": true,
+                "autodismiss": 1500,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": true,
+                "autodismiss": 1000,
+                "title": "Updated",
+                "description": "Updated description",
+                "status": "success",
+                "type": "simple"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 3000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": true,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "hide notification by id",
+          "creator": "actions/notification.hideNotificationById",
+          "args": [
+            "simple-2"
+          ],
+          "action": {
+            "type": "HIDE_NOTIFICATION_BY_ID",
+            "id": "simple-2"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": true,
+                "autodismiss": 1500,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": false,
+                "autodismiss": 1000,
+                "title": "Updated",
+                "description": "Updated description",
+                "status": "success",
+                "type": "simple"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 3000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": true,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "hide notification by unknown id",
+          "creator": "actions/notification.hideNotificationById",
+          "args": [
+            "missing"
+          ],
+          "action": {
+            "type": "HIDE_NOTIFICATION_BY_ID",
+            "id": "missing"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": true,
+                "autodismiss": 1500,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": false,
+                "autodismiss": 1000,
+                "title": "Updated",
+                "description": "Updated description",
+                "status": "success",
+                "type": "simple"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 3000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "pending",
+                "type": "transaction"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": true,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": true
+        },
+        {
+          "label": "replace notification by id",
+          "creator": "actions/notification.replaceNotificationById",
+          "args": [
+            {
+              "id": "tx-2",
+              "isVisible": true,
+              "type": "transaction",
+              "status": "confirmed",
+              "transaction": {
+                "id": "tx-2"
+              }
+            }
+          ],
+          "action": {
+            "type": "REPLACE_NOTIFICATION_BY_ID",
+            "notification": {
+              "id": "tx-2",
+              "isVisible": true,
+              "type": "transaction",
+              "status": "confirmed",
+              "transaction": {
+                "id": "tx-2"
+              }
+            },
+            "id": "tx-2"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": true,
+                "autodismiss": 1500,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": false,
+                "autodismiss": 1000,
+                "title": "Updated",
+                "description": "Updated description",
+                "status": "success",
+                "type": "simple"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "type": "transaction",
+                "status": "confirmed",
+                "transaction": {
+                  "id": "tx-2"
+                }
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": true,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "replace notification by unknown id",
+          "creator": "actions/notification.replaceNotificationById",
+          "args": [
+            {
+              "id": "missing",
+              "isVisible": true
+            }
+          ],
+          "action": {
+            "type": "REPLACE_NOTIFICATION_BY_ID",
+            "notification": {
+              "id": "missing",
+              "isVisible": true
+            },
+            "id": "missing"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": true,
+                "autodismiss": 1500,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "simple-1",
+                "isVisible": false,
+                "autodismiss": 5000,
+                "title": "Hello",
+                "description": "World",
+                "status": "simple_notification",
+                "type": "simple"
+              },
+              {
+                "id": "simple-2",
+                "isVisible": false,
+                "autodismiss": 1000,
+                "title": "Updated",
+                "description": "Updated description",
+                "status": "success",
+                "type": "simple"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "type": "transaction",
+                "status": "confirmed",
+                "transaction": {
+                  "id": "tx-2"
+                }
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": true,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": true
+        },
+        {
+          "label": "remove not visible notifications",
+          "creator": "actions/notification.removeNotVisibleNotifications",
+          "args": [],
+          "action": {
+            "type": "REMOVE_NOT_VISIBLE_NOTIFICATIONS"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": true,
+                "autodismiss": 1500,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "type": "transaction",
+                "status": "confirmed",
+                "transaction": {
+                  "id": "tx-2"
+                }
+              },
+              {
+                "id": "tx-2",
+                "isVisible": true,
+                "autodismiss": 5000,
+                "transaction": {
+                  "id": "tx-2"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": true,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "remove notification by id",
+          "creator": "actions/notification.removeNotificationById",
+          "args": [
+            "tx-2"
+          ],
+          "action": {
+            "type": "REMOVE_NOTIFICATION_BY_ID",
+            "id": "tx-2"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "tx-1",
+                "isVisible": true,
+                "autodismiss": 1500,
+                "transaction": {
+                  "id": "tx-1"
+                },
+                "status": "success",
+                "type": "transaction"
+              },
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": true,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "remove current notification",
+          "creator": "actions/notification.removeCurrentNotification",
+          "args": [],
+          "action": {
+            "type": "REMOVE_CURRENT_NOTIFICATION"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": true,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "hide current notification",
+          "creator": "actions/notification.hideCurrentNotification",
+          "args": [],
+          "action": {
+            "type": "HIDE_CURRENT_NOTIFICATION"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": false,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": false,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {
+              "notification": {
+                "notifications": []
+              }
+            },
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "notifications": [
+              {
+                "id": "__PARITY_UNDEFINED__",
+                "isVisible": false,
+                "autodismiss": 2000,
+                "title": "Network added",
+                "description": "Polygon",
+                "status": "success",
+                "type": "simple"
+              }
+            ]
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

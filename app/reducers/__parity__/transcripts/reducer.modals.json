@@ -1,0 +1,327 @@
+{
+  "kind": "reducer",
+  "reducerKey": "modals",
+  "source": "app/reducers/modals",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": true,
+            "collectibleContractModalVisible": false,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "defaults",
+      "seed": {
+        "networkModalVisible": false,
+        "shouldNetworkSwitchPopToWallet": true,
+        "collectibleContractModalVisible": false,
+        "dappTransactionModalVisible": false,
+        "signMessageModalVisible": true
+      },
+      "steps": [
+        {
+          "label": "toggle network modal (default arg)",
+          "creator": "actions/modals.toggleNetworkModal",
+          "args": [],
+          "action": {
+            "type": "TOGGLE_NETWORK_MODAL",
+            "shouldNetworkSwitchPopToWallet": true
+          },
+          "state": {
+            "networkModalVisible": true,
+            "shouldNetworkSwitchPopToWallet": true,
+            "collectibleContractModalVisible": false,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle network modal (no pop)",
+          "creator": "actions/modals.toggleNetworkModal",
+          "args": [
+            false
+          ],
+          "action": {
+            "type": "TOGGLE_NETWORK_MODAL",
+            "shouldNetworkSwitchPopToWallet": false
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": false,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle collectible contract modal",
+          "creator": "actions/modals.toggleCollectibleContractModal",
+          "args": [],
+          "action": {
+            "type": "TOGGLE_COLLECTIBLE_CONTRACT_MODAL"
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle dapp tx modal (true)",
+          "creator": "actions/modals.toggleDappTransactionModal",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "TOGGLE_DAPP_TRANSACTION_MODAL",
+            "show": true
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": true,
+            "signMessageModalVisible": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle dapp tx modal (null)",
+          "creator": "actions/modals.toggleDappTransactionModal",
+          "args": [
+            null
+          ],
+          "action": {
+            "type": "TOGGLE_DAPP_TRANSACTION_MODAL",
+            "show": null
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle dapp tx modal (undefined)",
+          "creator": "actions/modals.toggleDappTransactionModal",
+          "args": [
+            "__PARITY_UNDEFINED__"
+          ],
+          "action": {
+            "type": "TOGGLE_DAPP_TRANSACTION_MODAL",
+            "show": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": "__PARITY_UNDEFINED__",
+            "signMessageModalVisible": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle dapp tx modal (false)",
+          "creator": "actions/modals.toggleDappTransactionModal",
+          "args": [
+            false
+          ],
+          "action": {
+            "type": "TOGGLE_DAPP_TRANSACTION_MODAL",
+            "show": false
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle info network modal (undefined)",
+          "creator": "actions/modals.toggleInfoNetworkModal",
+          "args": [
+            "__PARITY_UNDEFINED__"
+          ],
+          "action": {
+            "type": "TOGGLE_INFO_NETWORK_MODAL",
+            "show": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true,
+            "infoNetworkModalVisible": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle info network modal (true)",
+          "creator": "actions/modals.toggleInfoNetworkModal",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "TOGGLE_INFO_NETWORK_MODAL",
+            "show": true
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true,
+            "infoNetworkModalVisible": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle info network modal (false)",
+          "creator": "actions/modals.toggleInfoNetworkModal",
+          "args": [
+            false
+          ],
+          "action": {
+            "type": "TOGGLE_INFO_NETWORK_MODAL",
+            "show": false
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true,
+            "infoNetworkModalVisible": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle sign modal (undefined)",
+          "creator": "actions/modals.toggleSignModal",
+          "args": [
+            "__PARITY_UNDEFINED__"
+          ],
+          "action": {
+            "type": "TOGGLE_SIGN_MODAL",
+            "show": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": false,
+            "infoNetworkModalVisible": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle sign modal (true)",
+          "creator": "actions/modals.toggleSignModal",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "TOGGLE_SIGN_MODAL",
+            "show": true
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": true,
+            "infoNetworkModalVisible": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "toggle sign modal (false)",
+          "creator": "actions/modals.toggleSignModal",
+          "args": [
+            false
+          ],
+          "action": {
+            "type": "TOGGLE_SIGN_MODAL",
+            "show": false
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": false,
+            "infoNetworkModalVisible": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": false,
+            "infoNetworkModalVisible": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "networkModalVisible": false,
+            "shouldNetworkSwitchPopToWallet": false,
+            "collectibleContractModalVisible": true,
+            "dappTransactionModalVisible": false,
+            "signMessageModalVisible": false,
+            "infoNetworkModalVisible": false
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

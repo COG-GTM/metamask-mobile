@@ -1,0 +1,126 @@
+{
+  "kind": "reducer",
+  "reducerKey": "alert",
+  "source": "app/reducers/alert",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "isVisible": false,
+            "autodismiss": null,
+            "content": null,
+            "data": null
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "hidden",
+      "seed": {
+        "isVisible": false,
+        "autodismiss": null,
+        "content": null,
+        "data": null
+      },
+      "steps": [
+        {
+          "label": "show alert",
+          "creator": "actions/alertActions.showAlert",
+          "args": [
+            {
+              "isVisible": true,
+              "autodismiss": 1500,
+              "content": "clipboard-alert",
+              "data": {
+                "msg": "Public address copied to clipboard"
+              }
+            }
+          ],
+          "action": {
+            "type": "SHOW_ALERT",
+            "isVisible": true,
+            "autodismiss": 1500,
+            "content": "clipboard-alert",
+            "data": {
+              "msg": "Public address copied to clipboard"
+            }
+          },
+          "state": {
+            "isVisible": true,
+            "autodismiss": 1500,
+            "content": "clipboard-alert",
+            "data": {
+              "msg": "Public address copied to clipboard"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "dismiss alert",
+          "creator": "actions/alertActions.dismissAlert",
+          "args": [],
+          "action": {
+            "type": "HIDE_ALERT"
+          },
+          "state": {
+            "isVisible": false,
+            "autodismiss": null,
+            "content": "clipboard-alert",
+            "data": {
+              "msg": "Public address copied to clipboard"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "isVisible": false,
+            "autodismiss": null,
+            "content": "clipboard-alert",
+            "data": {
+              "msg": "Public address copied to clipboard"
+            }
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "isVisible": false,
+            "autodismiss": null,
+            "content": "clipboard-alert",
+            "data": {
+              "msg": "Public address copied to clipboard"
+            }
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

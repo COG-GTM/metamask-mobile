@@ -1,0 +1,319 @@
+{
+  "kind": "reducer",
+  "reducerKey": "collectibles",
+  "source": "app/reducers/collectibles",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "favorites": {},
+            "isNftFetchingProgress": false
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "one favourite",
+      "seed": {
+        "favorites": {
+          "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272": {
+            "0x1": [
+              {
+                "tokenId": "1",
+                "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+              }
+            ]
+          }
+        },
+        "isNftFetchingProgress": false
+      },
+      "steps": [
+        {
+          "label": "add favourite (existing chain)",
+          "creator": "actions/collectibles.addFavoriteCollectible",
+          "args": [
+            "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+            "0x1",
+            {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            }
+          ],
+          "action": {
+            "type": "ADD_FAVORITE_COLLECTIBLE",
+            "selectedAddress": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+            "chainId": "0x1",
+            "collectible": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "1773",
+              "name": "CryptoKitty 1773"
+            }
+          },
+          "state": {
+            "favorites": {
+              "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272": {
+                "0x1": [
+                  {
+                    "tokenId": "1",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  },
+                  {
+                    "tokenId": "1773",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              }
+            },
+            "isNftFetchingProgress": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "add favourite (new address)",
+          "creator": "actions/collectibles.addFavoriteCollectible",
+          "args": [
+            "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "0x89",
+            {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "7",
+              "name": "CryptoKitty 1773"
+            }
+          ],
+          "action": {
+            "type": "ADD_FAVORITE_COLLECTIBLE",
+            "selectedAddress": "0xd018538C87232FF95acbCe4870629b75640a78E7",
+            "chainId": "0x89",
+            "collectible": {
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d",
+              "tokenId": "7",
+              "name": "CryptoKitty 1773"
+            }
+          },
+          "state": {
+            "favorites": {
+              "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272": {
+                "0x1": [
+                  {
+                    "tokenId": "1",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  },
+                  {
+                    "tokenId": "1773",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              },
+              "0xd018538C87232FF95acbCe4870629b75640a78E7": {
+                "0x89": [
+                  {
+                    "tokenId": "7",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              }
+            },
+            "isNftFetchingProgress": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "remove favourite",
+          "creator": "actions/collectibles.removeFavoriteCollectible",
+          "args": [
+            "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+            "0x1",
+            {
+              "tokenId": "1",
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+            }
+          ],
+          "action": {
+            "type": "REMOVE_FAVORITE_COLLECTIBLE",
+            "selectedAddress": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+            "chainId": "0x1",
+            "collectible": {
+              "tokenId": "1",
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+            }
+          },
+          "state": {
+            "favorites": {
+              "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272": {
+                "0x1": [
+                  {
+                    "tokenId": "1773",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              },
+              "0xd018538C87232FF95acbCe4870629b75640a78E7": {
+                "0x89": [
+                  {
+                    "tokenId": "7",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              }
+            },
+            "isNftFetchingProgress": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "remove missing favourite (splice -1 quirk)",
+          "creator": "actions/collectibles.removeFavoriteCollectible",
+          "args": [
+            "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+            "0x1",
+            {
+              "tokenId": "999",
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+            }
+          ],
+          "action": {
+            "type": "REMOVE_FAVORITE_COLLECTIBLE",
+            "selectedAddress": "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272",
+            "chainId": "0x1",
+            "collectible": {
+              "tokenId": "999",
+              "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+            }
+          },
+          "state": {
+            "favorites": {
+              "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272": {
+                "0x1": []
+              },
+              "0xd018538C87232FF95acbCe4870629b75640a78E7": {
+                "0x89": [
+                  {
+                    "tokenId": "7",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              }
+            },
+            "isNftFetchingProgress": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "show NFT fetching loader",
+          "creator": "reducers/collectibles.showNftFetchingLoadingIndicator",
+          "args": [],
+          "action": {
+            "type": "SHOW_NFT_FETCHING_LOADER"
+          },
+          "state": {
+            "favorites": {
+              "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272": {
+                "0x1": []
+              },
+              "0xd018538C87232FF95acbCe4870629b75640a78E7": {
+                "0x89": [
+                  {
+                    "tokenId": "7",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              }
+            },
+            "isNftFetchingProgress": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "hide NFT fetching loader",
+          "creator": "reducers/collectibles.hideNftFetchingLoadingIndicator",
+          "args": [],
+          "action": {
+            "type": "HIDE_NFT_FETCHING_LOADER"
+          },
+          "state": {
+            "favorites": {
+              "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272": {
+                "0x1": []
+              },
+              "0xd018538C87232FF95acbCe4870629b75640a78E7": {
+                "0x89": [
+                  {
+                    "tokenId": "7",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              }
+            },
+            "isNftFetchingProgress": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "favorites": {
+              "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272": {
+                "0x1": []
+              },
+              "0xd018538C87232FF95acbCe4870629b75640a78E7": {
+                "0x89": [
+                  {
+                    "tokenId": "7",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              }
+            },
+            "isNftFetchingProgress": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "favorites": {
+              "0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272": {
+                "0x1": []
+              },
+              "0xd018538C87232FF95acbCe4870629b75640a78E7": {
+                "0x89": [
+                  {
+                    "tokenId": "7",
+                    "address": "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"
+                  }
+                ]
+              }
+            },
+            "isNftFetchingProgress": false
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

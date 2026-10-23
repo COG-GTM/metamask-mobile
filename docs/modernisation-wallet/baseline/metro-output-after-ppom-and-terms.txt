@@ -1,0 +1,29 @@
+warn =================================================================================================
+warn From React Native 0.73, your project's Metro config should extend '@react-native/metro-config'
+warn or it will fail to build. Please copy the template at:
+warn https://github.com/react-native-community/template/blob/main/template/metro.config.js
+warn This warning will be removed in future (https://github.com/facebook/metro/issues/1018).
+warn =================================================================================================
+                Welcome to Metro v0.81.1
+              Fast - Scalable - Integrated
+
+
+error While trying to resolve module `multiformats` from file `node_modules/@metamask/assets-controllers/dist/assetsUtil.cjs`, the package `node_modules/@metamask/assets-controllers/node_modules/multiformats/package.json` was successfully found. However, this package itself specifies a `main` module field that could not be resolved (`node_modules/@metamask/assets-controllers/node_modules/multiformats/index`. Indeed, none of these files exist:
+
+  * node_modules/@metamask/assets-controllers/node_modules/multiformats/index(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css|.android.svg|.native.svg|.svg|.android.cjs|.native.cjs|.cjs|.android.mjs|.native.mjs|.mjs)
+  * node_modules/@metamask/assets-controllers/node_modules/multiformats/index/index(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css|.android.svg|.native.svg|.svg|.android.cjs|.native.cjs|.cjs|.android.mjs|.native.mjs|.mjs).
+Error: While trying to resolve module `multiformats` from file `node_modules/@metamask/assets-controllers/dist/assetsUtil.cjs`, the package `node_modules/@metamask/assets-controllers/node_modules/multiformats/package.json` was successfully found. However, this package itself specifies a `main` module field that could not be resolved (`node_modules/@metamask/assets-controllers/node_modules/multiformats/index`. Indeed, none of these files exist:
+
+  * node_modules/@metamask/assets-controllers/node_modules/multiformats/index(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css|.android.svg|.native.svg|.svg|.android.cjs|.native.cjs|.cjs|.android.mjs|.native.mjs|.mjs)
+  * node_modules/@metamask/assets-controllers/node_modules/multiformats/index/index(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css|.android.svg|.native.svg|.svg|.android.cjs|.native.cjs|.cjs|.android.mjs|.native.mjs|.mjs)
+    at DependencyGraph.resolveDependency (node_modules/metro/src/node-haste/DependencyGraph.js:248:17)
+    at node_modules/metro/src/lib/transformHelpers.js:165:21
+    at resolveDependencies (node_modules/metro/src/DeltaBundler/buildSubgraph.js:42:25)
+    at visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:83:30)
+    at async Promise.all (index 10)
+    at async visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:92:5)
+    at async Promise.all (index 9)
+    at async visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:92:5)
+    at async Promise.all (index 3)
+    at async visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:92:5)
+info Run CLI with --verbose flag for more details.

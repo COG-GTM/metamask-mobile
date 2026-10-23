@@ -1,0 +1,203 @@
+{
+  "kind": "reducer",
+  "reducerKey": "networkOnboarded",
+  "source": "app/reducers/networkSelector",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "networkOnboardedState": {},
+            "networkState": {
+              "showNetworkOnboarding": false,
+              "nativeToken": "",
+              "networkType": "",
+              "networkUrl": ""
+            },
+            "switchedNetwork": {
+              "networkUrl": "",
+              "networkStatus": false
+            }
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "mainnet onboarded",
+      "seed": {
+        "networkOnboardedState": {
+          "0x1": true
+        },
+        "networkState": {
+          "showNetworkOnboarding": false,
+          "nativeToken": "",
+          "networkType": "",
+          "networkUrl": ""
+        },
+        "switchedNetwork": {
+          "networkUrl": "",
+          "networkStatus": false
+        }
+      },
+      "steps": [
+        {
+          "label": "show network onboarding",
+          "creator": "actions/onboardNetwork.showNetworkOnboardingAction",
+          "args": [
+            {
+              "networkUrl": "https://polygon-rpc.com",
+              "networkType": "rpc",
+              "nativeToken": "POL",
+              "showNetworkOnboarding": true
+            }
+          ],
+          "action": {
+            "type": "SHOW_NETWORK_ONBOARDING",
+            "networkUrl": "https://polygon-rpc.com",
+            "networkType": "rpc",
+            "nativeToken": "POL",
+            "showNetworkOnboarding": true
+          },
+          "state": {
+            "networkOnboardedState": {
+              "0x1": true
+            },
+            "networkState": {
+              "showNetworkOnboarding": true,
+              "nativeToken": "POL",
+              "networkType": "rpc",
+              "networkUrl": "https://polygon-rpc.com"
+            },
+            "switchedNetwork": {
+              "networkUrl": "",
+              "networkStatus": false
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "network switched",
+          "creator": "actions/onboardNetwork.networkSwitched",
+          "args": [
+            {
+              "networkUrl": "https://polygon-rpc.com",
+              "networkStatus": true
+            }
+          ],
+          "action": {
+            "type": "NETWORK_SWITCHED",
+            "networkUrl": "https://polygon-rpc.com",
+            "networkStatus": true
+          },
+          "state": {
+            "networkOnboardedState": {
+              "0x1": true
+            },
+            "networkState": {
+              "showNetworkOnboarding": true,
+              "nativeToken": "POL",
+              "networkType": "rpc",
+              "networkUrl": "https://polygon-rpc.com"
+            },
+            "switchedNetwork": {
+              "networkUrl": "https://polygon-rpc.com",
+              "networkStatus": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "network onboarded",
+          "creator": "actions/onboardNetwork.onboardNetworkAction",
+          "args": [
+            "0x89"
+          ],
+          "action": {
+            "type": "NETWORK_ONBOARDED",
+            "payload": "0x89"
+          },
+          "state": {
+            "networkOnboardedState": {
+              "0x1": true,
+              "0x89": true
+            },
+            "networkState": {
+              "showNetworkOnboarding": false,
+              "nativeToken": "",
+              "networkType": "",
+              "networkUrl": ""
+            },
+            "switchedNetwork": {
+              "networkUrl": "https://polygon-rpc.com",
+              "networkStatus": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "networkOnboardedState": {
+              "0x1": true,
+              "0x89": true
+            },
+            "networkState": {
+              "showNetworkOnboarding": false,
+              "nativeToken": "",
+              "networkType": "",
+              "networkUrl": ""
+            },
+            "switchedNetwork": {
+              "networkUrl": "https://polygon-rpc.com",
+              "networkStatus": true
+            }
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "networkOnboardedState": {
+              "0x1": true,
+              "0x89": true
+            },
+            "networkState": {
+              "showNetworkOnboarding": false,
+              "nativeToken": "",
+              "networkType": "",
+              "networkUrl": ""
+            },
+            "switchedNetwork": {
+              "networkUrl": "https://polygon-rpc.com",
+              "networkStatus": true
+            }
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

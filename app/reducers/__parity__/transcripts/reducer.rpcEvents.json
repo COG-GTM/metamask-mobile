@@ -1,0 +1,211 @@
+{
+  "kind": "reducer",
+  "reducerKey": "rpcEvents",
+  "source": "app/reducers/rpcEvents",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "signingEvent": {
+              "eventStage": "idle",
+              "rpcName": ""
+            }
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "idle",
+      "seed": {
+        "signingEvent": {
+          "eventStage": "idle",
+          "rpcName": ""
+        }
+      },
+      "steps": [
+        {
+          "label": "set event stage (personal_sign request)",
+          "creator": "actions/rpcEvents.setEventStage",
+          "args": [
+            "personal_sign",
+            "request_send"
+          ],
+          "action": {
+            "rpcName": "personal_sign",
+            "type": "SET_EVENT_STAGE",
+            "eventStage": "request_send"
+          },
+          "state": {
+            "signingEvent": {
+              "eventStage": "request_send",
+              "rpcName": "personal_sign",
+              "error": "__PARITY_UNDEFINED__"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set event stage (eth_signTypedData_v4 complete)",
+          "creator": "actions/rpcEvents.setEventStage",
+          "args": [
+            "eth_signTypedData_v4",
+            "complete"
+          ],
+          "action": {
+            "rpcName": "eth_signTypedData_v4",
+            "type": "SET_EVENT_STAGE",
+            "eventStage": "complete"
+          },
+          "state": {
+            "signingEvent": {
+              "eventStage": "complete",
+              "rpcName": "eth_signTypedData_v4",
+              "error": "__PARITY_UNDEFINED__"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set event stage (non-whitelisted rpc)",
+          "creator": "actions/rpcEvents.setEventStage",
+          "args": [
+            "eth_sendTransaction",
+            "request_send"
+          ],
+          "action": {
+            "rpcName": "eth_sendTransaction",
+            "type": "SET_EVENT_STAGE",
+            "eventStage": "request_send"
+          },
+          "state": {
+            "signingEvent": {
+              "eventStage": "complete",
+              "rpcName": "eth_signTypedData_v4",
+              "error": "__PARITY_UNDEFINED__"
+            }
+          },
+          "sameRef": true
+        },
+        {
+          "label": "set event error",
+          "creator": "actions/rpcEvents.setEventStageError",
+          "args": [
+            "eth_signTypedData_v3",
+            {
+              "__PARITY_ERROR__": {
+                "name": "Error",
+                "message": "User rejected the request."
+              }
+            }
+          ],
+          "action": {
+            "type": "SET_EVENT_ERROR",
+            "rpcName": "eth_signTypedData_v3",
+            "eventStage": "error",
+            "error": {
+              "__PARITY_ERROR__": {
+                "name": "Error",
+                "message": "User rejected the request."
+              }
+            }
+          },
+          "state": {
+            "signingEvent": {
+              "eventStage": "error",
+              "rpcName": "eth_signTypedData_v3",
+              "error": {
+                "__PARITY_ERROR__": {
+                  "name": "Error",
+                  "message": "User rejected the request."
+                }
+              }
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "reset event stage",
+          "creator": "actions/rpcEvents.resetEventStage",
+          "args": [
+            "eth_signTypedData"
+          ],
+          "action": {
+            "type": "RESET_EVENT_STATE",
+            "rpcName": "eth_signTypedData"
+          },
+          "state": {
+            "signingEvent": {
+              "eventStage": "idle",
+              "rpcName": "",
+              "error": "__PARITY_UNDEFINED__"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "whitelisted rpc with unknown type",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "SOMETHING_ELSE",
+            "rpcName": "personal_sign"
+          },
+          "state": {
+            "signingEvent": {
+              "eventStage": "idle",
+              "rpcName": "",
+              "error": "__PARITY_UNDEFINED__"
+            }
+          },
+          "sameRef": true
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "signingEvent": {
+              "eventStage": "idle",
+              "rpcName": "",
+              "error": "__PARITY_UNDEFINED__"
+            }
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "signingEvent": {
+              "eventStage": "idle",
+              "rpcName": "",
+              "error": "__PARITY_UNDEFINED__"
+            }
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

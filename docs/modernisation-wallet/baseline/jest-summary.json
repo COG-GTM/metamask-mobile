@@ -1,0 +1,1333 @@
+{
+  "commit": "687645507a988caba704751354554147e419f21d",
+  "command": "jest ./app/ ./locales/ --ci --coverage=false --json --outputFile=... (4 parallel --shard=i/4 processes) + jest app/reducers/__parity__ --ci --coverage=false --json",
+  "node": "v20.20.2",
+  "totals": {
+    "numTotalTestSuites": 1214,
+    "numPassedTestSuites": 1005,
+    "numFailedTestSuites": 209,
+    "numPendingTestSuites": 0,
+    "numRuntimeErrorTestSuites": 154,
+    "numTotalTests": 7237,
+    "numPassedTests": 7055,
+    "numFailedTests": 182,
+    "numPendingTests": 0,
+    "numTodoTests": 0
+  },
+  "snapshots": {
+    "added": 0,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 499,
+    "total": 499,
+    "unchecked": 0,
+    "unmatched": 0,
+    "updated": 0
+  },
+  "shardWallSeconds": 251.1,
+  "paritySuiteWallSeconds": 19.0,
+  "runs": [
+    {
+      "file": "jest-shard1.json",
+      "suites": 304,
+      "tests": 1909,
+      "startTime": 1792728189831,
+      "endTime": 1792728440884,
+      "wallSeconds": 251.1
+    },
+    {
+      "file": "jest-shard2.json",
+      "suites": 303,
+      "tests": 1759,
+      "startTime": 1792728190059,
+      "endTime": 1792728435405,
+      "wallSeconds": 245.3
+    },
+    {
+      "file": "jest-shard3.json",
+      "suites": 303,
+      "tests": 1854,
+      "startTime": 1792728190058,
+      "endTime": 1792728433422,
+      "wallSeconds": 243.4
+    },
+    {
+      "file": "jest-shard4.json",
+      "suites": 303,
+      "tests": 1678,
+      "startTime": 1792728190062,
+      "endTime": 1792728426968,
+      "wallSeconds": 236.9
+    },
+    {
+      "file": "jest-parity.json",
+      "suites": 1,
+      "tests": 37,
+      "startTime": 1792728525034,
+      "endTime": 1792728544032,
+      "wallSeconds": 19.0
+    }
+  ],
+  "tsvRowStatusCounts": {
+    "passed": 7055,
+    "failed": 336
+  },
+  "failedSuites": [
+    {
+      "file": "app/component-library/components/Navigation/TabBar/TabBar.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Approvals/ApprovalModal/ApprovalModal.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Approvals/ConnectApproval/ConnectApproval.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Approvals/InstallSnapApproval/test/InstallSnapApproval.test.tsx",
+      "failedTests": 6,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Approvals/SignatureApproval/SignatureApproval.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Approvals/SnapAccountCustomNameApproval/test/SnapAccountCustomNameApproval.test.tsx",
+      "failedTests": 8,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Approvals/SwitchChainApproval/SwitchChainApproval.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Approvals/TemplateConfirmationModal/TemplateConfirmationModal.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Approvals/TransactionApproval/TransactionApproval.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Approvals/WalletConnectApproval/WalletConnectApproval.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Approvals/WatchAssetApproval/WatchAssetApproval.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Nav/App/App.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/Nav/Main/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Snaps/SnapDialogApproval/SnapDialogApproval.test.tsx",
+      "failedTests": 4,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIAddressInput/SnapUIAddressInput.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "RangeError: Invalid array length"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIInfoRow/SnapUIInfoRow.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/address.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/asset-selector.test.ts",
+      "failedTests": 5,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/banner.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/box.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/card.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/container.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/footer.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/form.test.ts",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/link.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/skeleton.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/text.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/components/tooltip.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUIRenderer/utils.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Snaps/SnapUITooltip/SnapUITooltip.test.tsx",
+      "failedTests": 4,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/UI/AccountApproval/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/AccountFromToInfoCard/AccountFromToInfoCard.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/ActionModal/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/ActionView/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/AddCustomCollectible/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/AddToAddressBookWrapper/AddToAddressBookWrapper.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/AddressInputs/index.test.jsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/AssetList/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/AssetOverview/AssetOverview.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/UI/BlockingActionModal/index.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/UI/CollectibleModal/CollectibleModal.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/CollectibleOverview/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/ConfirmAddAsset/ConfirmAddAsset.test.tsx",
+      "failedTests": 4,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/UI/CustomAlert/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/DeleteWalletModal/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'style')"
+    },
+    {
+      "file": "app/components/UI/DrawerView/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/EditGasFee1559/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/EditGasFeeLegacy/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/GlobalAlert/index.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/UI/HintModal/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Identity/BackupAndSyncToggle/BackupAndSyncToggle.test.tsx",
+      "failedTests": 5,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/UI/LedgerModals/LedgerConfirmationModal.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/LedgerModals/LedgerMessageSignModal.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/LedgerModals/Steps/ConfirmationStep.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/LedgerModals/Steps/ErrorStep.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/LedgerModals/Steps/OpenETHAppStep.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/MultichainTransactionDetailsModal/MultichainTransactionDetailsModal.test.tsx",
+      "failedTests": 5,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/UI/NetworkInfo/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/NetworkModal/index.test.tsx",
+      "failedTests": 6,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/Coachmark/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/Step1/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/Step2/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/Step3/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/Step4/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/Step5/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/Step6/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/Step7/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/OnboardingWizard/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/PaymentRequest/AssetList/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/PaymentRequest/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/PermissionsSummary/PermissionsSummary.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Ramp/Views/BuildQuote/BuildQuote.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Ramp/Views/GetStarted/GetStarted.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Ramp/Views/NetworkSwitcher/NetworkSwitcher.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Ramp/Views/OrderDetails/OrderDetails.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Ramp/Views/OrdersList/OrdersList.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Ramp/Views/Quotes/Quotes.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Ramp/Views/Regions/Regions.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Ramp/components/CustomAction/CustomAction.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Ramp/components/Quote/Quote.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/ReceiveRequest/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/UI/SeedphraseModal/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/SelectComponent/index.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/UI/SkipAccountSecurityModal/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/StyledButton/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Swaps/QuotesView.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Swaps/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/SwitchCustomNetwork/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/TimeEstimateInfoModal/index.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/UI/TransactionElement/TransactionDetails/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/TransactionElement/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/Transactions/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/UI/WhatsNewModal/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/AccountActions/AccountActions.test.tsx",
+      "failedTests": 20,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/AccountBackupStep1/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/AccountBackupStep1B/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/AccountConnect/AccountConnect.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/AccountPermissions/AccountPermissions.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/ActivityView/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/AddAsset/AddAsset.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/AddAsset/components/NetworkFilterBottomSheet.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/AddBookmark/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Asset/index.test.js",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/Views/Browser/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/BrowserTab/components/PhishingModal/index.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/BrowserTab/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/ChoosePassword/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Collectible/index.test.tsx",
+      "failedTests": 2,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/CollectibleView/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/ConnectQRHardware/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/DetectedTokens/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/EnterPasswordSimple/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/ErrorBoundary/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/Views/GasEducationCarousel/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Identity/TurnOnBackupAndSync/TurnOnBackupAndSync.test.tsx",
+      "failedTests": 3,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/ImportFromSecretRecoveryPhrase/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'style')"
+    },
+    {
+      "file": "app/components/Views/ImportNewSecretRecoveryPhrase/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/ImportPrivateKey/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/LedgerConnect/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/LedgerSelectAccount/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Login/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/Views/ManualBackupStep1/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/ManualBackupStep2/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/ManualBackupStep3/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/NetworkSelector/NetworkSelector.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Views/NftDetails/NftDetails.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Notifications/OptIn/index.test.tsx",
+      "failedTests": 4,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/OfflineMode/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Onboarding/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/OnboardingCarousel/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/OnboardingSuccess/OnboardingGeneralSettings/index.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/OnboardingSuccess/index.test.js",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/ResetPassword/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/RevealPrivateCredential/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/Views/Root/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/Views/Settings/AdvancedSettings/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Settings/Contacts/ContactForm/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Settings/Contacts/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Settings/IPFSGatewaySettings/index.test.tsx",
+      "failedTests": 6,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/Settings/Identity/BackupAndSyncSettings.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/Settings/NetworksSettings/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Settings/NotificationsSettings/index.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/Settings/SecuritySettings/SecuritySettings.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/TransactionsView/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/Wallet/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/WalletActions/WalletActions.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/UI/Tooltip/Tooltip.test.tsx",
+      "failedTests": 2,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/UI/bottom-modal/bottom-modal.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/UI/expandable/expandable.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/UI/text-with-tooltip/text-with-tooltip.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/confirm/confirm-component.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/footer/footer.test.tsx",
+      "failedTests": 3,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info-root/info-root.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/contract-interaction/contract-interaction.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/personal-sign/personal-sign.test.tsx",
+      "failedTests": 2,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/transfer/transfer.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/typed-sign-v1/typed-sign-v1.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/typed-sign-v3v4/info-section-origin-and-details/info-section-origin-and-details.test.tsx",
+      "failedTests": 4,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/typed-sign-v3v4/message.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/components/native-value-display/native-value-display.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/simulation.test.tsx",
+      "failedTests": 4,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/static/static.test.tsx",
+      "failedTests": 3,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/typed-sign-decoded/typed-sign-decoded.test.tsx",
+      "failedTests": 9,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/typed-sign-permit/typed-sign-permit.test.tsx",
+      "failedTests": 4,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/info/typed-sign-v3v4/typed-sign-v3v4.test.tsx",
+      "failedTests": 3,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/modals/alert-modal/alert-modal.test.tsx",
+      "failedTests": 15,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/modals/confirm-alert-modal/confirm-alert-modal.test.tsx",
+      "failedTests": 6,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/modals/ledger-sign-modal/ledger-sign-modal.test.tsx",
+      "failedTests": 3,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/modals/multiple-alert-modal/multiple-alert-modal.test.tsx",
+      "failedTests": 6,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/qr-info/qr-info.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'source')"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/rows/origin-row/origin-row.test.tsx",
+      "failedTests": 2,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/rows/transactions/gas-fee-details/gas-fee-details.test.tsx",
+      "failedTests": 5,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/rows/transactions/token-hero/token-hero.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/components/signature-message-section/signature-message-section.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/context/alert-system-context/alert-system-context.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/context/qr-hardware-context/qr-hardware-context.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/external/staking/components/staking-details/staking-details.test.tsx",
+      "failedTests": 2,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/external/staking/info/staking-claim/staking-claim.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/external/staking/info/staking-deposit/staking-deposit.test.tsx",
+      "failedTests": 2,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/external/staking/info/staking-withdrawal/staking-withdrawal.test.tsx",
+      "failedTests": 2,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/hooks/useConfirmActions.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/Approval/components/TransactionEditor/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/Approval/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/Approve/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/ApproveView/Approve/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/Send/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/AddressFrom/AddressFrom.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/AddressTo/AddressTo.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/Amount/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/Confirm/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/SendTo/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/SendFlow/components/CustomNonceModal/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/Approval/TemplateConfirmation/TemplateConfirmation.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/Approval/TemplateConfirmation/Templates/ApprovalResult.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/Approval/TemplateConfirmation/util.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/ApproveTransactionReview/index.test.jsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/EditGasFeeLegacyUpdate/EditGasFeeLegacyUpdate.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/PersonalSign/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/SignatureRequest/Root/Root.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/SignatureRequest/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559/index.test.tsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/index.test.jsx",
+      "failedTests": 1,
+      "runtimeError": false,
+      "firstError": "TypeError: _reactNative.DeviceEventEmitter.removeListener is not a function"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewInformation/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TransactionReview/index.test.jsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/TypedSign/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/components/Views/confirmations/legacy/components/WatchAssetRequest/index.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "TypeError: Cannot read properties of undefined (reading 'allowFontScaling')"
+    },
+    {
+      "file": "app/core/Engine/Engine.test.ts",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    },
+    {
+      "file": "app/lib/ppom/PPOMView.test.tsx",
+      "failedTests": 0,
+      "runtimeError": true,
+      "firstError": "Cannot find module './ppom.html.js' from 'app/lib/ppom/PPOMView.tsx'"
+    }
+  ]
+}
