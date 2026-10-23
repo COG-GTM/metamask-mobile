@@ -1,27 +1,35 @@
 import { ITrackingEvent } from '../../core/Analytics/MetaMetrics.types';
 
-export const SAVE_EVENT = 'SAVE_EVENT';
-export const CLEAR_EVENTS = 'CLEAR_EVENTS';
-export const SET_COMPLETED_ONBOARDING = 'SET_COMPLETED_ONBOARDING';
+export enum ActionType {
+  SAVE_EVENT = 'SAVE_EVENT',
+  CLEAR_EVENTS = 'CLEAR_EVENTS',
+  SET_COMPLETED_ONBOARDING = 'SET_COMPLETED_ONBOARDING',
+}
 
-interface SaveEventAction {
+export const SAVE_EVENT = ActionType.SAVE_EVENT;
+export const CLEAR_EVENTS = ActionType.CLEAR_EVENTS;
+export const SET_COMPLETED_ONBOARDING = ActionType.SET_COMPLETED_ONBOARDING;
+
+export interface SaveEventAction {
   type: typeof SAVE_EVENT;
   event: [ITrackingEvent];
 }
 
-interface ClearEventsAction {
+export interface ClearEventsAction {
   type: typeof CLEAR_EVENTS;
 }
 
-interface SetCompletedOnboardingAction {
+export interface SetCompletedOnboardingAction {
   type: typeof SET_COMPLETED_ONBOARDING;
   completedOnboarding: boolean;
 }
 
-export type OnboardingActionTypes =
+export type Action =
   | SaveEventAction
   | ClearEventsAction
   | SetCompletedOnboardingAction;
+
+export type OnboardingActionTypes = Action;
 
 export function saveOnboardingEvent(
   eventArgs: [ITrackingEvent],
