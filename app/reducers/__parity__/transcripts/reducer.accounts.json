@@ -1,0 +1,91 @@
+{
+  "kind": "reducer",
+  "reducerKey": "accounts",
+  "source": "app/reducers/accounts",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "reloadAccounts": false
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "idle",
+      "seed": {
+        "reloadAccounts": false
+      },
+      "steps": [
+        {
+          "label": "set reload accounts true",
+          "creator": "actions/accounts.setReloadAccounts",
+          "args": [
+            true
+          ],
+          "action": {
+            "type": "SET_RELOAD_ACCOUNTS",
+            "reloadAccounts": true
+          },
+          "state": {
+            "reloadAccounts": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set reload accounts false",
+          "creator": "actions/accounts.setReloadAccounts",
+          "args": [
+            false
+          ],
+          "action": {
+            "type": "SET_RELOAD_ACCOUNTS",
+            "reloadAccounts": false
+          },
+          "state": {
+            "reloadAccounts": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "reloadAccounts": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "reloadAccounts": false
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

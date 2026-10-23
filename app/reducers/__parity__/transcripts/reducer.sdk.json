@@ -1,0 +1,1296 @@
+{
+  "kind": "reducer",
+  "reducerKey": "sdk",
+  "source": "app/reducers/sdk",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "connections": {},
+            "approvedHosts": {},
+            "dappConnections": {},
+            "wc2Metadata": "__PARITY_UNDEFINED__"
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "one SDK connection",
+      "seed": {
+        "connections": {
+          "channel-1": {
+            "id": "channel-1",
+            "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+            "origin": "qrcode",
+            "protocolVersion": 2,
+            "connected": true,
+            "validUntil": 1729737600000,
+            "originatorInfo": {
+              "url": "https://app.uniswap.org",
+              "title": "Uniswap",
+              "platform": "web-desktop",
+              "dappId": "app.uniswap.org"
+            }
+          }
+        },
+        "approvedHosts": {
+          "channel-1": 1729651201000
+        },
+        "dappConnections": {
+          "dapp-1": {
+            "id": "dapp-1",
+            "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+            "origin": "qrcode",
+            "protocolVersion": 2,
+            "connected": true,
+            "validUntil": 1729737600000,
+            "originatorInfo": {
+              "url": "https://app.uniswap.org",
+              "title": "Uniswap",
+              "platform": "web-desktop",
+              "dappId": "app.uniswap.org"
+            }
+          }
+        },
+        "wc2Metadata": "__PARITY_UNDEFINED__"
+      },
+      "steps": [
+        {
+          "label": "update WC2 metadata",
+          "creator": "actions/sdk.updateWC2Metadata",
+          "args": [
+            {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          ],
+          "action": {
+            "type": "WC2_METADATA",
+            "metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-1": 1729651201000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "add connection",
+          "creator": "actions/sdk.addConnection",
+          "args": [
+            "channel-2",
+            {
+              "id": "channel-2",
+              "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+              "origin": "qrcode",
+              "protocolVersion": 2,
+              "connected": true,
+              "validUntil": 1729737600000,
+              "originatorInfo": {
+                "url": "https://app.uniswap.org",
+                "title": "Uniswap",
+                "platform": "web-desktop",
+                "dappId": "app.uniswap.org"
+              }
+            }
+          ],
+          "action": {
+            "type": "ADD_CONNECTION",
+            "channelId": "channel-2",
+            "connection": {
+              "id": "channel-2",
+              "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+              "origin": "qrcode",
+              "protocolVersion": 2,
+              "connected": true,
+              "validUntil": 1729737600000,
+              "originatorInfo": {
+                "url": "https://app.uniswap.org",
+                "title": "Uniswap",
+                "platform": "web-desktop",
+                "dappId": "app.uniswap.org"
+              }
+            }
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-1": 1729651201000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "update connection",
+          "creator": "actions/sdk.updateConnection",
+          "args": [
+            "channel-1",
+            {
+              "id": "channel-1",
+              "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+              "origin": "qrcode",
+              "protocolVersion": 2,
+              "connected": true,
+              "validUntil": 1729737600000,
+              "originatorInfo": {
+                "url": "https://app.uniswap.org",
+                "title": "Uniswap",
+                "platform": "web-desktop",
+                "dappId": "app.uniswap.org"
+              },
+              "lastAuthorized": 1729651200000
+            }
+          ],
+          "action": {
+            "type": "UPDATE_CONNECTION",
+            "channelId": "channel-1",
+            "connection": {
+              "id": "channel-1",
+              "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+              "origin": "qrcode",
+              "protocolVersion": 2,
+              "connected": true,
+              "validUntil": 1729737600000,
+              "originatorInfo": {
+                "url": "https://app.uniswap.org",
+                "title": "Uniswap",
+                "platform": "web-desktop",
+                "dappId": "app.uniswap.org"
+              },
+              "lastAuthorized": 1729651200000
+            }
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-1": 1729651201000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set connected (known channel)",
+          "creator": "actions/sdk.setConnected",
+          "args": [
+            "channel-1",
+            false
+          ],
+          "action": {
+            "type": "SET_CONNECTED",
+            "channelId": "channel-1",
+            "connected": false
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-1": 1729651201000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set connected (unknown channel)",
+          "creator": "actions/sdk.setConnected",
+          "args": [
+            "missing",
+            true
+          ],
+          "action": {
+            "type": "SET_CONNECTED",
+            "channelId": "missing",
+            "connected": true
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-1": 1729651201000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": true
+        },
+        {
+          "label": "disconnect all",
+          "creator": "actions/sdk.disconnectAll",
+          "args": [],
+          "action": {
+            "type": "DISCONNECT_ALL"
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-1": 1729651201000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set approved host",
+          "creator": "actions/sdk.setApprovedHost",
+          "args": [
+            "channel-2",
+            1729654800000
+          ],
+          "action": {
+            "type": "SET_APPROVED_HOST",
+            "channelId": "channel-2",
+            "validUntil": 1729654800000
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-1": 1729651201000,
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "remove approved host",
+          "creator": "actions/sdk.removeApprovedHost",
+          "args": [
+            "channel-1"
+          ],
+          "action": {
+            "type": "REMOVE_APPROVWED_HOST",
+            "channelId": "channel-1"
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "reset approved hosts (unhandled)",
+          "creator": "actions/sdk.resetApprovedHosts",
+          "args": [
+            {
+              "channel-9": 1729651200000
+            }
+          ],
+          "action": {
+            "type": "RESET_APPROVED_HOSTS",
+            "approvedHosts": {
+              "channel-9": 1729651200000
+            }
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": true
+        },
+        {
+          "label": "update dapp connection",
+          "creator": "actions/sdk.updateDappConnection",
+          "args": [
+            "dapp-2",
+            {
+              "id": "dapp-2",
+              "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+              "origin": "deeplink",
+              "protocolVersion": 2,
+              "connected": true,
+              "validUntil": 1729737600000,
+              "originatorInfo": {
+                "url": "https://app.uniswap.org",
+                "title": "Uniswap",
+                "platform": "web-desktop",
+                "dappId": "app.uniswap.org"
+              }
+            }
+          ],
+          "action": {
+            "type": "UPDATE_DAPP_CONNECTION",
+            "channelId": "dapp-2",
+            "connection": {
+              "id": "dapp-2",
+              "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+              "origin": "deeplink",
+              "protocolVersion": 2,
+              "connected": true,
+              "validUntil": 1729737600000,
+              "originatorInfo": {
+                "url": "https://app.uniswap.org",
+                "title": "Uniswap",
+                "platform": "web-desktop",
+                "dappId": "app.uniswap.org"
+              }
+            }
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-1": {
+                "id": "dapp-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              },
+              "dapp-2": {
+                "id": "dapp-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "deeplink",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "remove dapp connection",
+          "creator": "actions/sdk.removeDappConnection",
+          "args": [
+            "dapp-1"
+          ],
+          "action": {
+            "type": "REMOVE_DAPP_CONNECTION",
+            "channelId": "dapp-1"
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-2": {
+                "id": "dapp-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "deeplink",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "reset dapp connections",
+          "creator": "actions/sdk.resetDappConnections",
+          "args": [
+            {
+              "dapp-3": {
+                "id": "dapp-3",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            }
+          ],
+          "action": {
+            "type": "RESET_DAPP_CONNECTIONS",
+            "connections": {
+              "dapp-3": {
+                "id": "dapp-3",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            }
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              },
+              "channel-2": {
+                "id": "channel-2",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-3": {
+                "id": "dapp-3",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "remove connection",
+          "creator": "actions/sdk.removeConnection",
+          "args": [
+            "channel-2"
+          ],
+          "action": {
+            "type": "REMOVE_CONNECTION",
+            "channelId": "channel-2"
+          },
+          "state": {
+            "connections": {
+              "channel-1": {
+                "id": "channel-1",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": false,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                },
+                "lastAuthorized": 1729651200000
+              }
+            },
+            "approvedHosts": {
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-3": {
+                "id": "dapp-3",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "reset connections",
+          "creator": "actions/sdk.resetConnections",
+          "args": [
+            {
+              "channel-4": {
+                "id": "channel-4",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            }
+          ],
+          "action": {
+            "type": "RESET_CONNECTIONS",
+            "connections": {
+              "channel-4": {
+                "id": "channel-4",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            }
+          },
+          "state": {
+            "connections": {
+              "channel-4": {
+                "id": "channel-4",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-3": {
+                "id": "dapp-3",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "connections": {
+              "channel-4": {
+                "id": "channel-4",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-3": {
+                "id": "dapp-3",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {
+              "sdk": {
+                "connections": {}
+              }
+            },
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "connections": {
+              "channel-4": {
+                "id": "channel-4",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "approvedHosts": {
+              "channel-2": 1729654800000
+            },
+            "dappConnections": {
+              "dapp-3": {
+                "id": "dapp-3",
+                "otherPublicKey": "02bf6b8a1f2c8c1c0e8c6b0d2a3f4e5d6c7b8a9f0e1d2c3b4a5968778695a4b3c2",
+                "origin": "qrcode",
+                "protocolVersion": 2,
+                "connected": true,
+                "validUntil": 1729737600000,
+                "originatorInfo": {
+                  "url": "https://app.uniswap.org",
+                  "title": "Uniswap",
+                  "platform": "web-desktop",
+                  "dappId": "app.uniswap.org"
+                }
+              }
+            },
+            "wc2Metadata": {
+              "id": "wc2-session-1",
+              "url": "https://opensea.io",
+              "name": "OpenSea",
+              "icon": "https://opensea.io/favicon.ico"
+            }
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

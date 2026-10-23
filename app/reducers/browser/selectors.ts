@@ -1,6 +1,8 @@
 import { RootState } from '..';
+import { BrowserHistoryEntry } from '.';
 
-export const selectBrowserHistory = (state: RootState) => state.browser.history;
+export const selectBrowserHistory = (state: RootState): BrowserHistoryEntry[] =>
+  state.browser.history;
 
 /**
  * Gets the selected search engine from the Redux state

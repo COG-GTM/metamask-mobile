@@ -1,0 +1,25 @@
+jest-haste-map: duplicate manual mock found: mockData
+  The following files share their name; please delete one of them:
+    * <rootDir>/app/components/UI/Earn/__mocks__/mockData.ts
+    * <rootDir>/app/components/UI/Stake/__mocks__/mockData.ts
+
+
+
+#
+# Fatal error in , line 0
+# Fatal JavaScript invalid size error 174895934 (see crbug.com/1201626)
+#
+#
+#
+#FailureMessage Object: 0x7ffc22f87450
+----- Native stack trace -----
+
+ 1: 0xd32b41  [node]
+ 2: 0x214a881 V8_Fatal(char const*, ...) [node]
+ 3: 0x10b8098  [node]
+ 4: 0x1297ecf  [node]
+ 5: 0x129806a  [node]
+ 6: 0x15129a6 v8::internal::Runtime_GrowArrayElements(int, unsigned long*, v8::internal::Isolate*) [node]
+ 7: 0x7ab7bde9a476 
+Trace/breakpoint trap (core dumped)
+exit snapui 133

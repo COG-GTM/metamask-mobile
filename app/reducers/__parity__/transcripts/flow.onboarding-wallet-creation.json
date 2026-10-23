@@ -1,0 +1,3803 @@
+{
+  "kind": "flow",
+  "name": "onboarding-wallet-creation",
+  "description": "New user creates a wallet: password, SRP backup, metrics consent, onboarding complete, first login.",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "seed": {
+    "legalNotices": {
+      "newPrivacyPolicyToastClickedOrClosed": false,
+      "newPrivacyPolicyToastShownDate": null
+    },
+    "collectibles": {
+      "favorites": {},
+      "isNftFetchingProgress": false
+    },
+    "privacy": {
+      "approvedHosts": {},
+      "revealSRPTimestamps": []
+    },
+    "bookmarks": [],
+    "browser": {
+      "history": [],
+      "whitelist": [],
+      "tabs": [],
+      "favicons": [],
+      "activeTab": null,
+      "visitedDappsByHostname": {}
+    },
+    "modals": {
+      "networkModalVisible": false,
+      "shouldNetworkSwitchPopToWallet": true,
+      "collectibleContractModalVisible": false,
+      "dappTransactionModalVisible": false,
+      "signMessageModalVisible": true
+    },
+    "settings": {
+      "searchEngine": "Google",
+      "primaryCurrency": "ETH",
+      "lockTime": -1,
+      "useBlockieIcon": true,
+      "hideZeroBalanceTokens": false,
+      "basicFunctionalityEnabled": true
+    },
+    "alert": {
+      "isVisible": false,
+      "autodismiss": null,
+      "content": null,
+      "data": null
+    },
+    "transaction": {
+      "ensRecipient": "__PARITY_UNDEFINED__",
+      "assetType": "__PARITY_UNDEFINED__",
+      "selectedAsset": {},
+      "transaction": {
+        "data": "__PARITY_UNDEFINED__",
+        "from": "__PARITY_UNDEFINED__",
+        "gas": "__PARITY_UNDEFINED__",
+        "gasPrice": "__PARITY_UNDEFINED__",
+        "to": "__PARITY_UNDEFINED__",
+        "value": "__PARITY_UNDEFINED__",
+        "maxFeePerGas": "__PARITY_UNDEFINED__",
+        "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+      },
+      "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+      "transactionTo": "__PARITY_UNDEFINED__",
+      "transactionToName": "__PARITY_UNDEFINED__",
+      "transactionFromName": "__PARITY_UNDEFINED__",
+      "transactionValue": "__PARITY_UNDEFINED__",
+      "symbol": "__PARITY_UNDEFINED__",
+      "paymentRequest": "__PARITY_UNDEFINED__",
+      "readableValue": "__PARITY_UNDEFINED__",
+      "id": "__PARITY_UNDEFINED__",
+      "type": "__PARITY_UNDEFINED__",
+      "proposedNonce": "__PARITY_UNDEFINED__",
+      "nonce": "__PARITY_UNDEFINED__",
+      "securityAlertResponses": {},
+      "useMax": false
+    },
+    "user": {
+      "loadingMsg": "",
+      "loadingSet": false,
+      "passwordSet": false,
+      "seedphraseBackedUp": false,
+      "backUpSeedphraseVisible": false,
+      "protectWalletModalVisible": false,
+      "gasEducationCarouselSeen": false,
+      "userLoggedIn": false,
+      "isAuthChecked": false,
+      "initialScreen": "",
+      "appTheme": "os",
+      "ambiguousAddressEntries": {},
+      "appServicesReady": false
+    },
+    "wizard": {
+      "step": 0
+    },
+    "onboarding": {
+      "events": [],
+      "completedOnboarding": false
+    },
+    "notification": {
+      "notifications": []
+    },
+    "signatureRequest": {
+      "securityAlertResponse": "__PARITY_UNDEFINED__"
+    },
+    "swaps": {
+      "isLive": true,
+      "hasOnboarded": true,
+      "featureFlags": "__PARITY_UNDEFINED__",
+      "0x1": {
+        "isLive": true,
+        "featureFlags": "__PARITY_UNDEFINED__"
+      }
+    },
+    "fiatOrders": {
+      "orders": [],
+      "customOrderIds": [],
+      "networks": [],
+      "selectedRegionAgg": null,
+      "selectedPaymentMethodAgg": null,
+      "getStartedAgg": false,
+      "getStartedSell": false,
+      "authenticationUrls": [],
+      "activationKeys": []
+    },
+    "infuraAvailability": {
+      "isBlocked": false
+    },
+    "navigation": {
+      "currentRoute": "WalletView",
+      "currentBottomNavRoute": "Wallet"
+    },
+    "networkOnboarded": {
+      "networkOnboardedState": {},
+      "networkState": {
+        "showNetworkOnboarding": false,
+        "nativeToken": "",
+        "networkType": "",
+        "networkUrl": ""
+      },
+      "switchedNetwork": {
+        "networkUrl": "",
+        "networkStatus": false
+      }
+    },
+    "security": {
+      "allowLoginWithRememberMe": false,
+      "automaticSecurityChecksEnabled": false,
+      "hasUserSelectedAutomaticSecurityCheckOption": false,
+      "isAutomaticSecurityChecksModalOpen": false,
+      "dataCollectionForMarketing": null,
+      "isNFTAutoDetectionModalViewed": false
+    },
+    "sdk": {
+      "connections": {},
+      "approvedHosts": {},
+      "dappConnections": {}
+    },
+    "experimentalSettings": {
+      "securityAlertsEnabled": true
+    },
+    "rpcEvents": {
+      "signingEvent": {
+        "eventStage": "idle",
+        "rpcName": ""
+      }
+    },
+    "accounts": {
+      "reloadAccounts": false
+    },
+    "inpageProvider": {
+      "networkId": "loading"
+    },
+    "originThrottling": {
+      "origins": {}
+    },
+    "notifications": {},
+    "bridge": {
+      "sourceAmount": "__PARITY_UNDEFINED__",
+      "destAmount": "__PARITY_UNDEFINED__",
+      "sourceToken": "__PARITY_UNDEFINED__",
+      "destToken": "__PARITY_UNDEFINED__",
+      "destAddress": "__PARITY_UNDEFINED__",
+      "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+      "selectedDestChainId": "__PARITY_UNDEFINED__",
+      "slippage": "0.5",
+      "isSubmittingTx": false
+    },
+    "banners": {
+      "dismissedBanners": []
+    },
+    "confirmationMetrics": {
+      "metricsById": {}
+    },
+    "performance": {
+      "sessionId": "",
+      "startTime": 0,
+      "metrics": [],
+      "environment": {
+        "branch": "",
+        "commitHash": "",
+        "platform": "",
+        "appVersion": ""
+      },
+      "activeTraceBySessionId": {},
+      "isInitialized": false
+    }
+  },
+  "steps": [
+    {
+      "label": "track onboarding started",
+      "creator": "actions/onboarding.saveOnboardingEvent",
+      "args": [
+        [
+          {
+            "category": "Onboarding Started"
+          }
+        ]
+      ],
+      "action": {
+        "type": "SAVE_EVENT",
+        "event": [
+          {
+            "category": "Onboarding Started"
+          }
+        ]
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "",
+          "loadingSet": false,
+          "passwordSet": false,
+          "seedphraseBackedUp": false,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ]
+          ],
+          "completedOnboarding": false
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": null,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "metrics opt-in",
+      "creator": "actions/security.setDataCollectionForMarketing",
+      "args": [
+        true
+      ],
+      "action": {
+        "type": "SET_DATA_COLLECTION_FOR_MARKETING",
+        "enabled": true
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "",
+          "loadingSet": false,
+          "passwordSet": false,
+          "seedphraseBackedUp": false,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ]
+          ],
+          "completedOnboarding": false
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "creating wallet spinner",
+      "creator": "actions/user.loadingSet",
+      "args": [
+        "Creating your wallet..."
+      ],
+      "action": {
+        "type": "LOADING_SET",
+        "loadingMsg": "Creating your wallet..."
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": true,
+          "passwordSet": false,
+          "seedphraseBackedUp": false,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ]
+          ],
+          "completedOnboarding": false
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "password set",
+      "creator": "actions/user.passwordSet",
+      "args": [],
+      "action": {
+        "type": "PASSWORD_SET"
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": true,
+          "passwordSet": true,
+          "seedphraseBackedUp": false,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ]
+          ],
+          "completedOnboarding": false
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "seedphrase not backed up yet",
+      "creator": "actions/user.seedphraseNotBackedUp",
+      "args": [],
+      "action": {
+        "type": "SEEDPHRASE_NOT_BACKED_UP"
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": true,
+          "passwordSet": true,
+          "seedphraseBackedUp": false,
+          "backUpSeedphraseVisible": true,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ]
+          ],
+          "completedOnboarding": false
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "loading done",
+      "creator": "actions/user.loadingUnset",
+      "args": [],
+      "action": {
+        "type": "LOADING_UNSET"
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": false,
+          "backUpSeedphraseVisible": true,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ]
+          ],
+          "completedOnboarding": false
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "track wallet created",
+      "creator": "actions/onboarding.saveOnboardingEvent",
+      "args": [
+        [
+          {
+            "category": "Wallet Created",
+            "properties": {
+              "biometrics_enabled": false
+            }
+          }
+        ]
+      ],
+      "action": {
+        "type": "SAVE_EVENT",
+        "event": [
+          {
+            "category": "Wallet Created",
+            "properties": {
+              "biometrics_enabled": false
+            }
+          }
+        ]
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": false,
+          "backUpSeedphraseVisible": true,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ],
+            [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          ],
+          "completedOnboarding": false
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "seedphrase backed up",
+      "creator": "actions/user.seedphraseBackedUp",
+      "args": [],
+      "action": {
+        "type": "SEEDPHRASE_BACKED_UP"
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": true,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ],
+            [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          ],
+          "completedOnboarding": false
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "allow remember me",
+      "creator": "actions/security.setAllowLoginWithRememberMe",
+      "args": [
+        false
+      ],
+      "action": {
+        "type": "SET_ALLOW_LOGIN_WITH_REMEMBER_ME",
+        "enabled": false
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": true,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ],
+            [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          ],
+          "completedOnboarding": false
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "onboarding completed",
+      "creator": "actions/onboarding.setCompletedOnboarding",
+      "args": [
+        true
+      ],
+      "action": {
+        "type": "SET_COMPLETED_ONBOARDING",
+        "completedOnboarding": true
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": true,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ],
+            [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          ],
+          "completedOnboarding": true
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "wizard step 1",
+      "creator": "actions/wizard.default",
+      "args": [
+        1
+      ],
+      "action": {
+        "type": "SET_ONBOARDING_WIZARD_STEP",
+        "step": 1
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": true,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": false,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 1
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ],
+            [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          ],
+          "completedOnboarding": true
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "log in",
+      "creator": "actions/user.logIn",
+      "args": [],
+      "action": {
+        "type": "LOGIN"
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": true,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": true,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 1
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ],
+            [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          ],
+          "completedOnboarding": true
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": false
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "reload accounts",
+      "creator": "actions/accounts.setReloadAccounts",
+      "args": [
+        true
+      ],
+      "action": {
+        "type": "SET_RELOAD_ACCOUNTS",
+        "reloadAccounts": true
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": true,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": true,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 1
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ],
+            [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          ],
+          "completedOnboarding": true
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": true
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "wizard dismissed",
+      "creator": "actions/wizard.default",
+      "args": [
+        0
+      ],
+      "action": {
+        "type": "SET_ONBOARDING_WIZARD_STEP",
+        "step": 0
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": true,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": true,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [
+            [
+              {
+                "category": "Onboarding Started"
+              }
+            ],
+            [
+              {
+                "category": "Wallet Created",
+                "properties": {
+                  "biometrics_enabled": false
+                }
+              }
+            ]
+          ],
+          "completedOnboarding": true
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": true
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "clear onboarding events",
+      "creator": "actions/onboarding.clearOnboardingEvents",
+      "args": [],
+      "action": {
+        "type": "CLEAR_EVENTS"
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": true,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": true,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [],
+          "completedOnboarding": true
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": false
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": true
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    },
+    {
+      "label": "NFT auto-detection modal shown",
+      "creator": "actions/security.setNftAutoDetectionModalOpen",
+      "args": [
+        true
+      ],
+      "action": {
+        "type": "SET_NFT_AUTO_DETECTION_MODAL_OPEN",
+        "open": true
+      },
+      "state": {
+        "legalNotices": {
+          "newPrivacyPolicyToastClickedOrClosed": false,
+          "newPrivacyPolicyToastShownDate": null
+        },
+        "collectibles": {
+          "favorites": {},
+          "isNftFetchingProgress": false
+        },
+        "privacy": {
+          "approvedHosts": {},
+          "revealSRPTimestamps": []
+        },
+        "bookmarks": [],
+        "browser": {
+          "history": [],
+          "whitelist": [],
+          "tabs": [],
+          "favicons": [],
+          "activeTab": null,
+          "visitedDappsByHostname": {}
+        },
+        "modals": {
+          "networkModalVisible": false,
+          "shouldNetworkSwitchPopToWallet": true,
+          "collectibleContractModalVisible": false,
+          "dappTransactionModalVisible": false,
+          "signMessageModalVisible": true
+        },
+        "settings": {
+          "searchEngine": "Google",
+          "primaryCurrency": "ETH",
+          "lockTime": -1,
+          "useBlockieIcon": true,
+          "hideZeroBalanceTokens": false,
+          "basicFunctionalityEnabled": true
+        },
+        "alert": {
+          "isVisible": false,
+          "autodismiss": null,
+          "content": null,
+          "data": null
+        },
+        "transaction": {
+          "ensRecipient": "__PARITY_UNDEFINED__",
+          "assetType": "__PARITY_UNDEFINED__",
+          "selectedAsset": {},
+          "transaction": {
+            "data": "__PARITY_UNDEFINED__",
+            "from": "__PARITY_UNDEFINED__",
+            "gas": "__PARITY_UNDEFINED__",
+            "gasPrice": "__PARITY_UNDEFINED__",
+            "to": "__PARITY_UNDEFINED__",
+            "value": "__PARITY_UNDEFINED__",
+            "maxFeePerGas": "__PARITY_UNDEFINED__",
+            "maxPriorityFeePerGas": "__PARITY_UNDEFINED__"
+          },
+          "warningGasPriceHigh": "__PARITY_UNDEFINED__",
+          "transactionTo": "__PARITY_UNDEFINED__",
+          "transactionToName": "__PARITY_UNDEFINED__",
+          "transactionFromName": "__PARITY_UNDEFINED__",
+          "transactionValue": "__PARITY_UNDEFINED__",
+          "symbol": "__PARITY_UNDEFINED__",
+          "paymentRequest": "__PARITY_UNDEFINED__",
+          "readableValue": "__PARITY_UNDEFINED__",
+          "id": "__PARITY_UNDEFINED__",
+          "type": "__PARITY_UNDEFINED__",
+          "proposedNonce": "__PARITY_UNDEFINED__",
+          "nonce": "__PARITY_UNDEFINED__",
+          "securityAlertResponses": {},
+          "useMax": false
+        },
+        "user": {
+          "loadingMsg": "Creating your wallet...",
+          "loadingSet": false,
+          "passwordSet": true,
+          "seedphraseBackedUp": true,
+          "backUpSeedphraseVisible": false,
+          "protectWalletModalVisible": false,
+          "gasEducationCarouselSeen": false,
+          "userLoggedIn": true,
+          "isAuthChecked": false,
+          "initialScreen": "",
+          "appTheme": "os",
+          "ambiguousAddressEntries": {},
+          "appServicesReady": false
+        },
+        "wizard": {
+          "step": 0
+        },
+        "onboarding": {
+          "events": [],
+          "completedOnboarding": true
+        },
+        "notification": {
+          "notifications": []
+        },
+        "signatureRequest": {
+          "securityAlertResponse": "__PARITY_UNDEFINED__"
+        },
+        "swaps": {
+          "isLive": true,
+          "hasOnboarded": true,
+          "featureFlags": "__PARITY_UNDEFINED__",
+          "0x1": {
+            "isLive": true,
+            "featureFlags": "__PARITY_UNDEFINED__"
+          }
+        },
+        "fiatOrders": {
+          "orders": [],
+          "customOrderIds": [],
+          "networks": [],
+          "selectedRegionAgg": null,
+          "selectedPaymentMethodAgg": null,
+          "getStartedAgg": false,
+          "getStartedSell": false,
+          "authenticationUrls": [],
+          "activationKeys": []
+        },
+        "infuraAvailability": {
+          "isBlocked": false
+        },
+        "navigation": {
+          "currentRoute": "WalletView",
+          "currentBottomNavRoute": "Wallet"
+        },
+        "networkOnboarded": {
+          "networkOnboardedState": {},
+          "networkState": {
+            "showNetworkOnboarding": false,
+            "nativeToken": "",
+            "networkType": "",
+            "networkUrl": ""
+          },
+          "switchedNetwork": {
+            "networkUrl": "",
+            "networkStatus": false
+          }
+        },
+        "security": {
+          "allowLoginWithRememberMe": false,
+          "automaticSecurityChecksEnabled": false,
+          "hasUserSelectedAutomaticSecurityCheckOption": false,
+          "isAutomaticSecurityChecksModalOpen": false,
+          "dataCollectionForMarketing": true,
+          "isNFTAutoDetectionModalViewed": true
+        },
+        "sdk": {
+          "connections": {},
+          "approvedHosts": {},
+          "dappConnections": {}
+        },
+        "experimentalSettings": {
+          "securityAlertsEnabled": true
+        },
+        "rpcEvents": {
+          "signingEvent": {
+            "eventStage": "idle",
+            "rpcName": ""
+          }
+        },
+        "accounts": {
+          "reloadAccounts": true
+        },
+        "inpageProvider": {
+          "networkId": "loading"
+        },
+        "originThrottling": {
+          "origins": {}
+        },
+        "notifications": {},
+        "bridge": {
+          "sourceAmount": "__PARITY_UNDEFINED__",
+          "destAmount": "__PARITY_UNDEFINED__",
+          "sourceToken": "__PARITY_UNDEFINED__",
+          "destToken": "__PARITY_UNDEFINED__",
+          "destAddress": "__PARITY_UNDEFINED__",
+          "selectedSourceChainIds": "__PARITY_UNDEFINED__",
+          "selectedDestChainId": "__PARITY_UNDEFINED__",
+          "slippage": "0.5",
+          "isSubmittingTx": false
+        },
+        "banners": {
+          "dismissedBanners": []
+        },
+        "confirmationMetrics": {
+          "metricsById": {}
+        },
+        "performance": {
+          "sessionId": "",
+          "startTime": 0,
+          "metrics": [],
+          "environment": {
+            "branch": "",
+            "commitHash": "",
+            "platform": "",
+            "appVersion": ""
+          },
+          "activeTraceBySessionId": {},
+          "isInitialized": false
+        }
+      },
+      "sameRef": false
+    }
+  ]
+}

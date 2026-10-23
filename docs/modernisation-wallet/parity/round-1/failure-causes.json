@@ -1,0 +1,1678 @@
+{
+ "legacy": {
+  "app/components/Views/confirmations/legacy/SendFlow/Amount/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/TransactionReview/index.test.jsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/SnapAccountCustomNameApproval/test/SnapAccountCustomNameApproval.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/AccountPermissions/AccountPermissions.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/footer/footer.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Browser/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/InstallSnapApproval/test/InstallSnapApproval.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/Ramp/Views/GetStarted/GetStarted.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/MultichainTransactionDetailsModal/MultichainTransactionDetailsModal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/context/qr-hardware-context/qr-hardware-context.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/NftDetails/NftDetails.test.ts": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/Send/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Notifications/OptIn/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/address.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/simulation.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/TransactionsView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/utils.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/AddressInputs/index.test.jsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/Approval/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/typed-sign-v3v4.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/NetworkInfo/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/OnboardingSuccess/index.test.js": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/PermissionsSummary/PermissionsSummary.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/components/CustomNonceModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/BrowserTab/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/CollectibleView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/ConnectApproval/ConnectApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ErrorBoundary/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/info-section-origin-and-details/info-section-origin-and-details.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/components/Approval/TemplateConfirmation/Templates/ApprovalResult.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/ManualBackupStep1/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewInformation/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/Identity/BackupAndSyncSettings.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/Approval/components/TransactionEditor/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/PaymentRequest/AssetList/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/StyledButton/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/LedgerModals/Steps/ConfirmationStep.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/SignatureRequest/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/LedgerModals/LedgerMessageSignModal.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ImportFromSecretRecoveryPhrase/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'style')"
+  ],
+  "app/components/Views/ManualBackupStep3/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step3/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Coachmark/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/Ramp/Views/Quotes/Quotes.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/NetworkSelector/NetworkSelector.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/WalletActions/WalletActions.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/AccountActions/AccountActions.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/AssetOverview/AssetOverview.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/UI/Swaps/QuotesView.test.ts": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/LedgerConnect/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/Confirm/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/PersonalSign/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/NetworkModal/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/Ramp/Views/Regions/Regions.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/Ramp/components/Quote/Quote.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/Approve/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/PaymentRequest/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/external/staking/info/staking-deposit/staking-deposit.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/DetectedTokens/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/AddAsset/AddAsset.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/TransactionApproval/TransactionApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/footer.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/AddToAddressBookWrapper/AddToAddressBookWrapper.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/external/staking/info/staking-withdrawal/staking-withdrawal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/component-library/components/Navigation/TabBar/TabBar.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/banner.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Snaps/SnapUIInfoRow/SnapUIInfoRow.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/container.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/modals/ledger-sign-modal/ledger-sign-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/AddressFrom/AddressFrom.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/OnboardingCarousel/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Root/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/legacy/components/EditGasFeeLegacyUpdate/EditGasFeeLegacyUpdate.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/index.test.jsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/LedgerSelectAccount/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/info-root/info-root.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/Approval/TemplateConfirmation/TemplateConfirmation.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/card.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/BrowserTab/components/PhishingModal/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/signature-message-section/signature-message-section.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Settings/NotificationsSettings/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/Swaps/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/EnterPasswordSimple/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/LedgerModals/Steps/OpenETHAppStep.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/rows/origin-row/origin-row.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/CollectibleOverview/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/AddBookmark/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/Contacts/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step2/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/HintModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step7/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/ActionView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step6/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/AssetList/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/BlockingActionModal/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/GasEducationCarousel/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step1/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/TimeEstimateInfoModal/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/ImportPrivateKey/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/SeedphraseModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/OfflineMode/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/TypedSign/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/TransactionElement/TransactionDetails/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/hooks/useConfirmActions.test.ts": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/AccountConnect/AccountConnect.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ImportNewSecretRecoveryPhrase/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/AccountFromToInfoCard/AccountFromToInfoCard.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Wallet/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/asset-selector.test.ts": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/RevealPrivateCredential/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/components/qr-info/qr-info.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Nav/Main/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/ConfirmAddAsset/ConfirmAddAsset.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Asset/index.test.js": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/AddAsset/components/NetworkFilterBottomSheet.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/SecuritySettings/SecuritySettings.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/SwitchChainApproval/SwitchChainApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/IPFSGatewaySettings/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Identity/TurnOnBackupAndSync/TurnOnBackupAndSync.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/box.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/typed-sign-permit/typed-sign-permit.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/transfer/transfer.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/AdvancedSettings/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/AccountApproval/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/DeleteWalletModal/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'style')"
+  ],
+  "app/components/UI/CollectibleModal/CollectibleModal.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUITooltip/SnapUITooltip.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Approvals/TemplateConfirmationModal/TemplateConfirmationModal.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/ReceiveRequest/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Approvals/WatchAssetApproval/WatchAssetApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/TransactionElement/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/UI/expandable/expandable.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/message.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/rows/transactions/token-hero/token-hero.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/skeleton.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v1/typed-sign-v1.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/static/static.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/ManualBackupStep2/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ChoosePassword/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Login/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/legacy/components/WatchAssetRequest/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/AddCustomCollectible/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/Contacts/ContactForm/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Onboarding/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step5/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/SkipAccountSecurityModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/EditGasFeeLegacy/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/UI/bottom-modal/bottom-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/CustomAlert/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/lib/ppom/PPOMView.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/Ramp/Views/BuildQuote/BuildQuote.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/core/Engine/Engine.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/Ramp/Views/OrderDetails/OrderDetails.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/LedgerModals/LedgerConfirmationModal.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/Ramp/Views/NetworkSwitcher/NetworkSwitcher.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/confirm/confirm-component.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/modals/alert-modal/alert-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/typed-sign-decoded/typed-sign-decoded.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/ApproveView/Approve/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ConnectQRHardware/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/ApproveTransactionReview/index.test.jsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/form.test.ts": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/tooltip.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/Identity/BackupAndSyncToggle/BackupAndSyncToggle.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/Ramp/components/CustomAction/CustomAction.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/context/alert-system-context/alert-system-context.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/Ramp/Views/OrdersList/OrdersList.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/modals/confirm-alert-modal/confirm-alert-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/link.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/modals/multiple-alert-modal/multiple-alert-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/contract-interaction/contract-interaction.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/DrawerView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/rows/transactions/gas-fee-details/gas-fee-details.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapDialogApproval/SnapDialogApproval.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/text.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/legacy/components/SignatureRequest/Root/Root.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/Approval/TemplateConfirmation/util.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/external/staking/components/staking-details/staking-details.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Collectible/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/personal-sign/personal-sign.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Nav/App/App.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/external/staking/info/staking-claim/staking-claim.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/LedgerModals/Steps/ErrorStep.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/SendTo/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/WalletConnectApproval/WalletConnectApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/SwitchCustomNetwork/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/SignatureApproval/SignatureApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/Transactions/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/AddressTo/AddressTo.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/WhatsNewModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/components/native-value-display/native-value-display.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/OnboardingSuccess/OnboardingGeneralSettings/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/UI/Tooltip/Tooltip.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/ActivityView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/UI/text-with-tooltip/text-with-tooltip.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/AccountBackupStep1/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ResetPassword/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/SelectComponent/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Settings/NetworksSettings/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/AccountBackupStep1B/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/EditGasFee1559/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step4/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/ApprovalModal/ApprovalModal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/GlobalAlert/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/ActionModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIAddressInput/SnapUIAddressInput.test.tsx": [
+   "runtime",
+   "V8 Fatal \"invalid size error\" (exit 133) crashes the Jest worker"
+  ]
+ },
+ "migrated": {
+  "app/components/Views/confirmations/legacy/SendFlow/Amount/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/TransactionReview/index.test.jsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/SnapAccountCustomNameApproval/test/SnapAccountCustomNameApproval.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/AccountPermissions/AccountPermissions.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/footer/footer.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Approvals/InstallSnapApproval/test/InstallSnapApproval.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Browser/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/Ramp/Views/GetStarted/GetStarted.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/MultichainTransactionDetailsModal/MultichainTransactionDetailsModal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/context/qr-hardware-context/qr-hardware-context.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/NftDetails/NftDetails.test.ts": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/Send/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Notifications/OptIn/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/address.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/simulation.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/TransactionsView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/utils.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/AddressInputs/index.test.jsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/Approval/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/typed-sign-v3v4.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/NetworkInfo/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/OnboardingSuccess/index.test.js": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/PermissionsSummary/PermissionsSummary.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/components/CustomNonceModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/BrowserTab/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/CollectibleView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/ConnectApproval/ConnectApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ErrorBoundary/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/info-section-origin-and-details/info-section-origin-and-details.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/components/Approval/TemplateConfirmation/Templates/ApprovalResult.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/ManualBackupStep1/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewInformation/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/Identity/BackupAndSyncSettings.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/Approval/components/TransactionEditor/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/PaymentRequest/AssetList/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/StyledButton/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/LedgerModals/Steps/ConfirmationStep.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/SignatureRequest/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ImportFromSecretRecoveryPhrase/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'style')"
+  ],
+  "app/components/UI/LedgerModals/LedgerMessageSignModal.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ManualBackupStep3/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step3/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Coachmark/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/Ramp/Views/Quotes/Quotes.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/NetworkSelector/NetworkSelector.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/WalletActions/WalletActions.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/AccountActions/AccountActions.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/AssetOverview/AssetOverview.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/UI/Swaps/QuotesView.test.ts": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/LedgerConnect/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/Confirm/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/PersonalSign/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/NetworkModal/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/Ramp/Views/Regions/Regions.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/Ramp/components/Quote/Quote.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/Approve/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/PaymentRequest/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/external/staking/info/staking-deposit/staking-deposit.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/DetectedTokens/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/AddAsset/AddAsset.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/TransactionApproval/TransactionApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/footer.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/AddToAddressBookWrapper/AddToAddressBookWrapper.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/external/staking/info/staking-withdrawal/staking-withdrawal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/component-library/components/Navigation/TabBar/TabBar.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/banner.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Snaps/SnapUIInfoRow/SnapUIInfoRow.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/container.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/modals/ledger-sign-modal/ledger-sign-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/AddressFrom/AddressFrom.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/OnboardingCarousel/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Root/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/legacy/components/EditGasFeeLegacyUpdate/EditGasFeeLegacyUpdate.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559Update/index.test.jsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/LedgerSelectAccount/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/info-root/info-root.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/Approval/TemplateConfirmation/TemplateConfirmation.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/card.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/BrowserTab/components/PhishingModal/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/signature-message-section/signature-message-section.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Settings/NotificationsSettings/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/Swaps/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/EnterPasswordSimple/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/LedgerModals/Steps/OpenETHAppStep.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/rows/origin-row/origin-row.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/CollectibleOverview/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/AddBookmark/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/Contacts/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step2/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/HintModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step7/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/ActionView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step6/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/AssetList/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/BlockingActionModal/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/GasEducationCarousel/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step1/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/TimeEstimateInfoModal/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/ImportPrivateKey/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/SeedphraseModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/OfflineMode/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/TypedSign/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/TransactionElement/TransactionDetails/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/hooks/useConfirmActions.test.ts": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/AccountConnect/AccountConnect.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ImportNewSecretRecoveryPhrase/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/AccountFromToInfoCard/AccountFromToInfoCard.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Wallet/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/asset-selector.test.ts": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/RevealPrivateCredential/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/components/qr-info/qr-info.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Nav/Main/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/ConfirmAddAsset/ConfirmAddAsset.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Asset/index.test.js": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/AddAsset/components/NetworkFilterBottomSheet.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/SecuritySettings/SecuritySettings.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/SwitchChainApproval/SwitchChainApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/IPFSGatewaySettings/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/Confirm/components/CustomGasModal/CustomGasModal.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Identity/TurnOnBackupAndSync/TurnOnBackupAndSync.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/box.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/typed-sign-permit/typed-sign-permit.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/transfer/transfer.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/AdvancedSettings/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/AccountApproval/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/DeleteWalletModal/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'style')"
+  ],
+  "app/components/UI/CollectibleModal/CollectibleModal.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUITooltip/SnapUITooltip.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Approvals/TemplateConfirmationModal/TemplateConfirmationModal.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/ReceiveRequest/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Approvals/WatchAssetApproval/WatchAssetApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/TransactionElement/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/UI/expandable/expandable.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/message.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/rows/transactions/token-hero/token-hero.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/skeleton.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v1/typed-sign-v1.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/static/static.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/ManualBackupStep2/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ChoosePassword/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Login/index.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/legacy/components/WatchAssetRequest/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/AddCustomCollectible/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Settings/Contacts/ContactForm/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/Onboarding/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/OnboardingWizard/Step5/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/SkipAccountSecurityModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/EditGasFeeLegacy/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/UI/bottom-modal/bottom-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/CustomAlert/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/lib/ppom/PPOMView.test.tsx": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/Ramp/Views/BuildQuote/BuildQuote.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/core/Engine/Engine.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/Ramp/Views/OrderDetails/OrderDetails.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/LedgerModals/LedgerConfirmationModal.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/Ramp/Views/NetworkSwitcher/NetworkSwitcher.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/confirm/confirm-component.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/typed-sign-decoded/typed-sign-decoded.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/modals/alert-modal/alert-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/ApproveView/Approve/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ConnectQRHardware/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/ApproveTransactionReview/index.test.jsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/form.test.ts": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/tooltip.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/UI/Identity/BackupAndSyncToggle/BackupAndSyncToggle.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/Ramp/components/CustomAction/CustomAction.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/context/alert-system-context/alert-system-context.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/Ramp/Views/OrdersList/OrdersList.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/modals/confirm-alert-modal/confirm-alert-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/link.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/components/modals/multiple-alert-modal/multiple-alert-modal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/contract-interaction/contract-interaction.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/DrawerView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/rows/transactions/gas-fee-details/gas-fee-details.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapDialogApproval/SnapDialogApproval.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Snaps/SnapUIRenderer/components/text.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/legacy/components/SignatureRequest/Root/Root.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/components/Approval/TemplateConfirmation/util.test.ts": [
+   "runtime",
+   "Cannot find module './ppom.html.js' (generated file, needs yarn setup)"
+  ],
+  "app/components/Views/confirmations/external/staking/components/staking-details/staking-details.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Collectible/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/info/personal-sign/personal-sign.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Nav/App/App.test.tsx": [
+   "runtime",
+   "Cannot read properties of undefined (reading 'source')"
+  ],
+  "app/components/Views/confirmations/external/staking/info/staking-claim/staking-claim.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/LedgerModals/Steps/ErrorStep.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/SendTo/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/WalletConnectApproval/WalletConnectApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/SwitchCustomNetwork/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/SignatureApproval/SignatureApproval.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/Transactions/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/legacy/SendFlow/AddressTo/AddressTo.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/WhatsNewModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/info/typed-sign-v3v4/simulation/components/native-value-display/native-value-display.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/OnboardingSuccess/OnboardingGeneralSettings/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/components/UI/Tooltip/Tooltip.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/ActivityView/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/confirmations/components/UI/text-with-tooltip/text-with-tooltip.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/AccountBackupStep1/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/ResetPassword/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/SelectComponent/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/confirmations/legacy/components/TransactionReview/TransactionReviewEIP1559/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/Views/Settings/NetworksSettings/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/EditGasFee1559/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Views/AccountBackupStep1B/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Approvals/ApprovalModal/ApprovalModal.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/OnboardingWizard/Step4/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/UI/GlobalAlert/index.test.tsx": [
+   "assertion",
+   "DeviceEventEmitter.removeListener is not a function"
+  ],
+  "app/components/UI/ActionModal/index.test.tsx": [
+   "runtime",
+   "react-native mock: Cannot read properties of undefined (reading 'allowFontScaling')"
+  ],
+  "app/components/Snaps/SnapUIAddressInput/SnapUIAddressInput.test.tsx": [
+   "runtime",
+   "V8 Fatal \"invalid size error\" (exit 133) crashes the Jest worker"
+  ]
+ }
+}

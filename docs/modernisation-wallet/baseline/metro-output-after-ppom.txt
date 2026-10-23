@@ -1,0 +1,45 @@
+warn =================================================================================================
+warn From React Native 0.73, your project's Metro config should extend '@react-native/metro-config'
+warn or it will fail to build. Please copy the template at:
+warn https://github.com/react-native-community/template/blob/main/template/metro.config.js
+warn This warning will be removed in future (https://github.com/facebook/metro/issues/1018).
+warn =================================================================================================
+                Welcome to Metro v0.81.1
+              Fast - Scalable - Integrated
+
+
+error Unable to resolve module ./termsOfUseContent from app/util/termsOfUse/termsOfUse.ts: 
+
+None of these files exist:
+  * app/util/termsOfUse/termsOfUseContent(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css|.android.svg|.native.svg|.svg|.android.cjs|.native.cjs|.cjs|.android.mjs|.native.mjs|.mjs)
+  * app/util/termsOfUse/termsOfUseContent
+[0m [90m  6 |[39m [36mimport[39m { [33mTermsOfUseModalSelectorsIDs[39m } [36mfrom[39m [32m'../../../e2e/selectors/Onboarding/TermsOfUseModal.selectors'[39m[33m;[39m
+ [90m  7 |[39m [36mimport[39m [33mStorageWrapper[39m [36mfrom[39m [32m'../../store/storage-wrapper'[39m[33m;[39m
+[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m termsOfUse [36mfrom[39m [32m'./termsOfUseContent'[39m[33m;[39m
+ [90m    |[39m                         [31m[1m^[22m[39m
+ [90m  9 |[39m
+ [90m 10 |[39m [36minterface[39m [33mTermsOfUseParamsI[39m {
+ [90m 11 |[39m   screen[33m:[39m string[33m;[39m[0m.
+Error: Unable to resolve module ./termsOfUseContent from app/util/termsOfUse/termsOfUse.ts: 
+
+None of these files exist:
+  * app/util/termsOfUse/termsOfUseContent(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css|.android.svg|.native.svg|.svg|.android.cjs|.native.cjs|.cjs|.android.mjs|.native.mjs|.mjs)
+  * app/util/termsOfUse/termsOfUseContent
+[0m [90m  6 |[39m [36mimport[39m { [33mTermsOfUseModalSelectorsIDs[39m } [36mfrom[39m [32m'../../../e2e/selectors/Onboarding/TermsOfUseModal.selectors'[39m[33m;[39m
+ [90m  7 |[39m [36mimport[39m [33mStorageWrapper[39m [36mfrom[39m [32m'../../store/storage-wrapper'[39m[33m;[39m
+[31m[1m>[22m[39m[90m  8 |[39m [36mimport[39m termsOfUse [36mfrom[39m [32m'./termsOfUseContent'[39m[33m;[39m
+ [90m    |[39m                         [31m[1m^[22m[39m
+ [90m  9 |[39m
+ [90m 10 |[39m [36minterface[39m [33mTermsOfUseParamsI[39m {
+ [90m 11 |[39m   screen[33m:[39m string[33m;[39m[0m
+    at ModuleResolver.resolveDependency (node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:112:15)
+    at DependencyGraph.resolveDependency (node_modules/metro/src/node-haste/DependencyGraph.js:236:43)
+    at node_modules/metro/src/lib/transformHelpers.js:165:21
+    at resolveDependencies (node_modules/metro/src/DeltaBundler/buildSubgraph.js:42:25)
+    at visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:83:30)
+    at async Promise.all (index 23)
+    at async visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:92:5)
+    at async Promise.all (index 10)
+    at async visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:92:5)
+    at async Promise.all (index 1)
+info Run CLI with --verbose flag for more details.

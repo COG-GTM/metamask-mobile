@@ -1,0 +1,263 @@
+{
+  "legacy": {
+    "sha": "86884c59947115d264b49475870f47dc58df7404",
+    "suites": 1214,
+    "suites_passed": 1005,
+    "suites_failed": 209,
+    "tests": 7237,
+    "passed": 7055,
+    "failed": 182,
+    "skipped": 0,
+    "todo": 0,
+    "snapshots_total": 499,
+    "snapshots_passed": 499,
+    "snapshots_failed": 0,
+    "snapshots_written": 0,
+    "snapshots_added": 0,
+    "snapshots_updated": 0,
+    "crashed_suites": [
+      "app/components/Snaps/SnapUIAddressInput/SnapUIAddressInput.test.tsx"
+    ],
+    "tsc_errors": 55,
+    "metro_bundle_bytes": 0,
+    "metro_ok": false,
+    "metro_first_error": "error app/selectors/accountsController.ts: MetaMask build: Lint errors encountered for transformed file \"app/selectors/accountsController.ts\":",
+    "metro_first_error_with_eslint_rule_disabled": "While trying to resolve module `multiformats` from file `node_modules/@metamask/assets-controllers/dist/assetsUtil.cjs`, the package `node_modules/@metamask/assets-controllers/node_modules/multiformats/package.json` was successfully found. However, this package itself specifies a `main` module field that could not be resolved (`",
+    "eslint_changed_files": {
+      "files": 51,
+      "errors": 26,
+      "warnings": 0,
+      "exit": 1,
+      "exit_with_rule_off": 0
+    },
+    "ts_app_gate": "exit 0 (no check-ts-app-gate script at this SHA; fallback `npx ts-node fitness-functions/index.ts ci <diff 86884c5..HEAD>`, empty diff)"
+  },
+  "migrated": {
+    "sha": "f8b96ff9722baaa8f25b96274882e88e32d6fa89",
+    "suites": 1214,
+    "suites_passed": 1005,
+    "suites_failed": 209,
+    "tests": 7237,
+    "passed": 7055,
+    "failed": 182,
+    "skipped": 0,
+    "todo": 0,
+    "snapshots_total": 499,
+    "snapshots_passed": 499,
+    "snapshots_failed": 0,
+    "snapshots_written": 0,
+    "snapshots_added": 0,
+    "snapshots_updated": 0,
+    "crashed_suites": [
+      "app/components/Snaps/SnapUIAddressInput/SnapUIAddressInput.test.tsx"
+    ],
+    "tsc_errors": 55,
+    "metro_bundle_bytes": 0,
+    "metro_ok": false,
+    "metro_first_error": "error While trying to resolve module `multiformats` from file `node_modules/@metamask/assets-controllers/dist/assetsUtil.cjs`, the package `node_modules/@metamask/assets-controllers/node_modules/multiformats/package.json` was successfully found. However, this package itself specifies a `main` module field that could not be resol",
+    "eslint_changed_files": {
+      "files": 52,
+      "errors": 0,
+      "warnings": 1,
+      "exit": 0
+    },
+    "ts_app_gate": "exit 0 (`yarn run check-ts-app-gate 86884c59947115d264b49475870f47dc58df7404` in .github/scripts)"
+  },
+  "transcripts": {
+    "total": 35,
+    "identical": 35,
+    "diffs": [],
+    "committed_replay": "37/37 passed on both sides",
+    "rerecorded_byte_identical": true,
+    "rerecord_equals_committed_fixtures": true,
+    "real_rehydrate_replay_identical": true
+  },
+  "persisted_state_identical": true,
+  "test_diff": {
+    "compared_by": "file + full test name (multiset, duplicate names kept)",
+    "differing": 0,
+    "regressions": 0,
+    "baseline_passing_now_failing": 0,
+    "flaky": 0,
+    "pre_existing_failures": 336
+  },
+  "differences": [
+    {
+      "id": "D1",
+      "kind": "tsc-message-text",
+      "legacy": "55 error lines; NFTAutoDetectionModal.test.tsx(77,40),(111,45),(131,45) TS2345 target type shows `legalNotices?: any; collectibles?: any`",
+      "migrated": "55 error lines, same files:lines and codes; target type now shows `legalNotices?: { newPrivacyPolicyToastClickedOrClosed?: boolean ...}` and typed collectibles",
+      "root_cause": "RootState entries typed by the migration: app/reducers/index.ts:63-64 (`legalNotices: LegalNoticesState; collectibles: CollectiblesState;`) vs legacy app/reducers/index.ts:59,62 (`any`). Only the printed type in 3 pre-existing errors changes; count unchanged (logs/tsc-*.log line 39,43,44).",
+      "classification": "EXPECTED"
+    },
+    {
+      "id": "D2",
+      "kind": "eslint-changed-files",
+      "legacy": "exit 1: 26 errors, all \"Definition for rule '@typescript-eslint/no-parameter-properties' was not found\" (config error, not code); exit 0 with --rule '@typescript-eslint/no-parameter-properties: off'",
+      "migrated": "exit 0: 0 errors, 1 warning (.github/scripts/check-ts-app-gate.ts \"File ignored by default\")",
+      "root_cause": "Legacy .eslintrc.js:39 area has no override for the rule removed in typescript-eslint v6 but still enabled by @metamask/eslint-config-typescript; parity-fix round added .eslintrc.js:40-43 on migrated (`no-parameter-properties: off`, `parameter-properties: error`). Lint config fix, not application behaviour.",
+      "classification": "EXPECTED"
+    },
+    {
+      "id": "D3",
+      "kind": "metro-android-production-bundle",
+      "legacy": "FAIL after 93s at metro.transform.js:89 lintTransformedFile: \"Lint errors encountered for transformed file app/selectors/accountsController.ts\" (missing ESLint rule)",
+      "migrated": "FAIL after 93s: \"While trying to resolve module `multiformats` from node_modules/@metamask/assets-controllers/dist/assetsUtil.cjs ... `main` module field that could not be resolved\"",
+      "root_cause": "Both fail; no bundle on either side. Legacy stops earlier because the Metro fence-lint transform (metro.transform.js:89) hits the same missing ESLint rule as D2. Re-running legacy with only that rule disabled (temporary, reverted, logs/metro-legacy-eslintfix.log) reaches the identical multiformats error as migrated. The multiformats failure is the documented baseline blocker (docs/modernisation-wallet/baseline/metro.md:10-12), a node_modules resolution issue, not reducer code.",
+      "classification": "PRE-EXISTING"
+    },
+    {
+      "id": "D4",
+      "kind": "ts-app-gate-command",
+      "legacy": "no `check-ts-app-gate` script in .github/scripts/package.json; fallback fitness-functions on 86884c5..HEAD (empty) -> exit 0",
+      "migrated": ".github/scripts/package.json:7 `check-ts-app-gate` -> `yarn run check-ts-app-gate 86884c5` -> exit 0 (all rules OK)",
+      "root_cause": "Gate script added on the integration branch by the parity-fix round; both pass.",
+      "classification": "EXPECTED"
+    }
+  ],
+  "pre_existing": [
+    "209 failed suites / 182 failed tests identical on both sides (336 failing rows in test-diff.tsv, every one failed 3/3 reruns on both sides = deterministic, 0 flaky). Top causes: react-native mock: Cannot read properties of undefined (reading 'allowFontScaling') (123 suites); DeviceEventEmitter.removeListener is not a function (55 suites); Cannot find module './ppom.html.js' (generated file, needs yarn setup) (18 suites); Cannot read properties of undefined (reading 'source') (10 suites); Cannot read properties of undefined (reading 'style') (2 suites)",
+    "app/components/Snaps/SnapUIAddressInput/SnapUIAddressInput.test.tsx crashes V8 (\"Fatal JavaScript invalid size error\", exit 133) on both sides, 3/3 reruns; counted as 1 failed suite.",
+    "tsc: 55 error lines on both sides (incl. missing generated app/util/termsOfUse/termsOfUseContent).",
+    "Metro android production bundle cannot be built on either side (multiformats resolution under @metamask/assets-controllers); see D3."
+  ],
+  "ticket_prs": [
+    {
+      "number": 1984,
+      "ticket": "MW-09",
+      "title": "[Wallet RTK MW-09] modals + alert + wizard reducers + actions -> RTK slices",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-09-modals-alert-wizard",
+      "merged_at": "2026-10-23T06:08:12Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1984"
+    },
+    {
+      "number": 1985,
+      "ticket": "MW-07",
+      "title": "[Wallet RTK MW-07] notification reducer + actions -> RTK slice",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-07-notification",
+      "merged_at": "2026-10-23T06:08:12Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1985"
+    },
+    {
+      "number": 1986,
+      "ticket": "MW-06",
+      "title": "[Wallet RTK MW-06] browser + bookmarks reducers + actions -> RTK slices",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-06-browser-bookmarks",
+      "merged_at": "2026-10-23T06:08:11Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1986"
+    },
+    {
+      "number": 1987,
+      "ticket": "MW-04",
+      "title": "[Wallet RTK MW-04] user reducer + actions -> RTK slice",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-04-user",
+      "merged_at": "2026-10-23T06:08:11Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1987"
+    },
+    {
+      "number": 1988,
+      "ticket": "MW-10",
+      "title": "[Wallet RTK MW-10] privacy + infuraAvailability + legalNotices + signatureRequest -> RTK slices",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-10-privacy-infura-legal-signature",
+      "merged_at": "2026-10-23T06:08:12Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1988"
+    },
+    {
+      "number": 1989,
+      "ticket": "MW-12",
+      "title": "[Wallet RTK MW-12] networkSelector + experimentalSettings + navigation -> RTK slices",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-12-networkselector-experimental-navigation",
+      "merged_at": "2026-10-23T06:08:12Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1989"
+    },
+    {
+      "number": 1990,
+      "ticket": "MW-08",
+      "title": "[Wallet RTK MW-08] collectibles reducer + actions -> RTK slice",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-08-collectibles",
+      "merged_at": "2026-10-23T06:08:12Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1990"
+    },
+    {
+      "number": 1991,
+      "ticket": "MW-02",
+      "title": "[Wallet RTK MW-02] security + accounts reducers + actions -> RTK slices",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-02-security-accounts",
+      "merged_at": "2026-10-23T06:08:11Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1991"
+    },
+    {
+      "number": 1992,
+      "ticket": "MW-11",
+      "title": "[Wallet RTK MW-11] rpcEvents + sdk reducers + actions -> RTK slices",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-11-rpcevents-sdk",
+      "merged_at": "2026-10-23T06:08:11Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1992"
+    },
+    {
+      "number": 1993,
+      "ticket": "MW-03",
+      "title": "[Wallet RTK MW-03] settings reducer + actions -> RTK slice",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-03-settings",
+      "merged_at": "2026-10-23T06:08:12Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1993"
+    },
+    {
+      "number": 1994,
+      "ticket": "MW-05",
+      "title": "[Wallet RTK MW-05] onboarding reducer + actions -> RTK slice",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-05-onboarding",
+      "merged_at": "2026-10-23T06:08:12Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1994"
+    },
+    {
+      "number": 1995,
+      "ticket": "MW-01",
+      "title": "[Wallet RTK MW-01] transaction reducer + actions -> RTK slice",
+      "state": "MERGED",
+      "base": "devin/modernisation-wallet",
+      "head": "devin/modernisation-wallet-mw-01-transaction",
+      "merged_at": "2026-10-23T06:08:11Z",
+      "url": "https://github.com/COG-GTM/metamask-mobile/pull/1995"
+    }
+  ],
+  "umbrella_pr": {
+    "baseRefName": "main",
+    "headRefName": "devin/modernisation-wallet-integrated",
+    "isDraft": true,
+    "number": 1983,
+    "state": "OPEN",
+    "title": "[Wallet RTK] Umbrella: legacy Redux reducers -> Redux Toolkit slices (draft, do not merge)",
+    "url": "https://github.com/COG-GTM/metamask-mobile/pull/1983"
+  },
+  "environment": {
+    "node": "v20.20.2",
+    "jest": "--ci --coverage=false --json, 4 shards x 2 workers, SnapUIAddressInput run separately",
+    "node_modules": "both worktrees symlink the same /home/ubuntu/repos/metamask-mobile/node_modules",
+    "generated_stubs": "gitignored app/lib/ppom/ppom.html.js, app/util/termsOfUse/termsOfUseContent.ts and .js.env stubbed identically on both sides for Metro only",
+    "metro_config_wrapper": "scripts/metro.parity.config.js adds the real node_modules as watchFolder (Metro does not crawl symlinks outside projectRoot); no repo config changed"
+  },
+  "verdict": "parity"
+}

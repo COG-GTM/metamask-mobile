@@ -1,0 +1,624 @@
+{
+  "kind": "reducer",
+  "reducerKey": "browser",
+  "source": "app/reducers/browser",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "history": [],
+            "whitelist": [],
+            "tabs": [],
+            "favicons": [],
+            "activeTab": null,
+            "visitedDappsByHostname": {}
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "two open tabs",
+      "seed": {
+        "history": [
+          {
+            "url": "https://metamask.io",
+            "name": "MetaMask"
+          }
+        ],
+        "whitelist": [],
+        "tabs": [
+          {
+            "url": "https://metamask.io",
+            "id": 1
+          },
+          {
+            "url": "https://app.uniswap.org",
+            "id": 2
+          }
+        ],
+        "favicons": [],
+        "activeTab": 1,
+        "visitedDappsByHostname": {
+          "metamask.io": true
+        }
+      },
+      "steps": [
+        {
+          "label": "add to viewed dapp",
+          "creator": "actions/browser.addToViewedDapp",
+          "args": [
+            "app.uniswap.org"
+          ],
+          "action": {
+            "type": "ADD_TO_VIEWED_DAPP",
+            "hostname": "app.uniswap.org"
+          },
+          "state": {
+            "history": [
+              {
+                "url": "https://metamask.io",
+                "name": "MetaMask"
+              }
+            ],
+            "whitelist": [],
+            "tabs": [
+              {
+                "url": "https://metamask.io",
+                "id": 1
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "id": 2
+              }
+            ],
+            "favicons": [],
+            "activeTab": 1,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "add to history",
+          "creator": "actions/browser.addToHistory",
+          "args": [
+            {
+              "url": "https://app.uniswap.org",
+              "name": "Uniswap"
+            }
+          ],
+          "action": {
+            "type": "ADD_TO_BROWSER_HISTORY",
+            "url": "https://app.uniswap.org",
+            "name": "Uniswap"
+          },
+          "state": {
+            "history": [
+              {
+                "url": "https://metamask.io",
+                "name": "MetaMask"
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "name": "Uniswap"
+              }
+            ],
+            "whitelist": [],
+            "tabs": [
+              {
+                "url": "https://metamask.io",
+                "id": 1
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "id": 2
+              }
+            ],
+            "favicons": [],
+            "activeTab": 1,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "add to whitelist",
+          "creator": "actions/browser.addToWhitelist",
+          "args": [
+            "https://phishing-reviewed.example"
+          ],
+          "action": {
+            "type": "ADD_TO_BROWSER_WHITELIST",
+            "url": "https://phishing-reviewed.example"
+          },
+          "state": {
+            "history": [
+              {
+                "url": "https://metamask.io",
+                "name": "MetaMask"
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "name": "Uniswap"
+              }
+            ],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [
+              {
+                "url": "https://metamask.io",
+                "id": 1
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "id": 2
+              }
+            ],
+            "favicons": [],
+            "activeTab": 1,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "create new tab",
+          "creator": "actions/browser.createNewTab",
+          "args": [
+            "https://opensea.io",
+            "__PARITY_UNDEFINED__"
+          ],
+          "action": {
+            "type": "CREATE_NEW_TAB",
+            "url": "https://opensea.io",
+            "linkType": "__PARITY_UNDEFINED__",
+            "id": 1729651200000
+          },
+          "state": {
+            "history": [
+              {
+                "url": "https://metamask.io",
+                "name": "MetaMask"
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "name": "Uniswap"
+              }
+            ],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [
+              {
+                "url": "https://metamask.io",
+                "id": 1
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "id": 2
+              },
+              {
+                "url": "https://opensea.io",
+                "id": 1729651200000
+              }
+            ],
+            "favicons": [],
+            "activeTab": 1,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "create new tab with link type",
+          "creator": "actions/browser.createNewTab",
+          "args": [
+            "https://portfolio.metamask.io",
+            "deeplink"
+          ],
+          "action": {
+            "type": "CREATE_NEW_TAB",
+            "url": "https://portfolio.metamask.io",
+            "linkType": "deeplink",
+            "id": 1729651200000
+          },
+          "state": {
+            "history": [
+              {
+                "url": "https://metamask.io",
+                "name": "MetaMask"
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "name": "Uniswap"
+              }
+            ],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [
+              {
+                "url": "https://metamask.io",
+                "id": 1
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "id": 2
+              },
+              {
+                "url": "https://opensea.io",
+                "id": 1729651200000
+              },
+              {
+                "url": "https://portfolio.metamask.io",
+                "linkType": "deeplink",
+                "id": 1729651200000
+              }
+            ],
+            "favicons": [],
+            "activeTab": 1,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set active tab",
+          "creator": "actions/browser.setActiveTab",
+          "args": [
+            1729651200000
+          ],
+          "action": {
+            "type": "SET_ACTIVE_TAB",
+            "id": 1729651200000
+          },
+          "state": {
+            "history": [
+              {
+                "url": "https://metamask.io",
+                "name": "MetaMask"
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "name": "Uniswap"
+              }
+            ],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [
+              {
+                "url": "https://metamask.io",
+                "id": 1
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "id": 2
+              },
+              {
+                "url": "https://opensea.io",
+                "id": 1729651200000
+              },
+              {
+                "url": "https://portfolio.metamask.io",
+                "linkType": "deeplink",
+                "id": 1729651200000
+              }
+            ],
+            "favicons": [],
+            "activeTab": 1729651200000,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "update tab",
+          "creator": "actions/browser.updateTab",
+          "args": [
+            1,
+            {
+              "url": "https://app.aave.com",
+              "isArchived": true
+            }
+          ],
+          "action": {
+            "type": "UPDATE_TAB",
+            "id": 1,
+            "data": {
+              "url": "https://app.aave.com",
+              "isArchived": true
+            }
+          },
+          "state": {
+            "history": [
+              {
+                "url": "https://metamask.io",
+                "name": "MetaMask"
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "name": "Uniswap"
+              }
+            ],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [
+              {
+                "url": "https://app.aave.com",
+                "id": 1,
+                "isArchived": true
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "id": 2
+              },
+              {
+                "url": "https://opensea.io",
+                "id": 1729651200000
+              },
+              {
+                "url": "https://portfolio.metamask.io",
+                "linkType": "deeplink",
+                "id": 1729651200000
+              }
+            ],
+            "favicons": [],
+            "activeTab": 1729651200000,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "store favicon",
+          "creator": "actions/browser.storeFavicon",
+          "args": [
+            {
+              "origin": "https://app.uniswap.org",
+              "url": "https://app.uniswap.org/favicon.png"
+            }
+          ],
+          "action": {
+            "type": "STORE_FAVICON_URL",
+            "origin": "https://app.uniswap.org",
+            "url": "https://app.uniswap.org/favicon.png"
+          },
+          "state": {
+            "history": [
+              {
+                "url": "https://metamask.io",
+                "name": "MetaMask"
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "name": "Uniswap"
+              }
+            ],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [
+              {
+                "url": "https://app.aave.com",
+                "id": 1,
+                "isArchived": true
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "id": 2
+              },
+              {
+                "url": "https://opensea.io",
+                "id": 1729651200000
+              },
+              {
+                "url": "https://portfolio.metamask.io",
+                "linkType": "deeplink",
+                "id": 1729651200000
+              }
+            ],
+            "favicons": [
+              {
+                "origin": "https://app.uniswap.org",
+                "url": "https://app.uniswap.org/favicon.png"
+              }
+            ],
+            "activeTab": 1729651200000,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "close tab",
+          "creator": "actions/browser.closeTab",
+          "args": [
+            1
+          ],
+          "action": {
+            "type": "CLOSE_TAB",
+            "id": 1
+          },
+          "state": {
+            "history": [
+              {
+                "url": "https://metamask.io",
+                "name": "MetaMask"
+              },
+              {
+                "url": "https://app.uniswap.org",
+                "name": "Uniswap"
+              }
+            ],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [
+              {
+                "url": "https://app.uniswap.org",
+                "id": 2
+              },
+              {
+                "url": "https://opensea.io",
+                "id": 1729651200000
+              },
+              {
+                "url": "https://portfolio.metamask.io",
+                "linkType": "deeplink",
+                "id": 1729651200000
+              }
+            ],
+            "favicons": [
+              {
+                "origin": "https://app.uniswap.org",
+                "url": "https://app.uniswap.org/favicon.png"
+              }
+            ],
+            "activeTab": 1729651200000,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "clear history",
+          "creator": "actions/browser.clearHistory",
+          "args": [
+            true,
+            false
+          ],
+          "action": {
+            "type": "CLEAR_BROWSER_HISTORY",
+            "id": 1729651200000,
+            "metricsEnabled": true,
+            "marketingEnabled": false
+          },
+          "state": {
+            "history": [],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [
+              {
+                "url": "https://portfolio.metamask.io/explore?MetaMaskEntry=mobile%2F&metricsEnabled=true&marketingEnabled=false",
+                "id": 1729651200000
+              }
+            ],
+            "favicons": [],
+            "activeTab": 1729651200000,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "close all tabs",
+          "creator": "actions/browser.closeAllTabs",
+          "args": [],
+          "action": {
+            "type": "CLOSE_ALL_TABS"
+          },
+          "state": {
+            "history": [],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [],
+            "favicons": [],
+            "activeTab": 1729651200000,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "history": [],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [],
+            "favicons": [],
+            "activeTab": 1729651200000,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {
+              "browser": {
+                "tabs": []
+              }
+            },
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "history": [],
+            "whitelist": [
+              "https://phishing-reviewed.example"
+            ],
+            "tabs": [],
+            "favicons": [],
+            "activeTab": 1729651200000,
+            "visitedDappsByHostname": {
+              "metamask.io": true,
+              "app.uniswap.org": true
+            }
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

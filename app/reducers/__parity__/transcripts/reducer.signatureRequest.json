@@ -1,0 +1,118 @@
+{
+  "kind": "reducer",
+  "reducerKey": "signatureRequest",
+  "source": "app/reducers/signatureRequest",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "securityAlertResponse": "__PARITY_UNDEFINED__"
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "no alert",
+      "seed": {
+        "securityAlertResponse": "__PARITY_UNDEFINED__"
+      },
+      "steps": [
+        {
+          "label": "set signature security alert response",
+          "creator": "actions/signatureRequest.default",
+          "args": [
+            {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            }
+          ],
+          "action": {
+            "type": "SET_SIGNATURE_REQUEST_SECURITY_ALERT_RESPONSE",
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            }
+          },
+          "state": {
+            "securityAlertResponse": {
+              "reason": "transfer_farming",
+              "result_type": "Malicious",
+              "features": [
+                "Interaction with a known malicious address"
+              ],
+              "providerRequestsCount": {
+                "eth_getCode": 1
+              }
+            }
+          },
+          "sameRef": false
+        },
+        {
+          "label": "clear signature security alert response",
+          "creator": "actions/signatureRequest.default",
+          "args": [
+            "__PARITY_UNDEFINED__"
+          ],
+          "action": {
+            "type": "SET_SIGNATURE_REQUEST_SECURITY_ALERT_RESPONSE",
+            "securityAlertResponse": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "securityAlertResponse": "__PARITY_UNDEFINED__"
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "securityAlertResponse": "__PARITY_UNDEFINED__"
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "securityAlertResponse": "__PARITY_UNDEFINED__"
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

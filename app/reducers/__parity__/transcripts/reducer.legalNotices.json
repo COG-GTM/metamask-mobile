@@ -1,0 +1,110 @@
+{
+  "kind": "reducer",
+  "reducerKey": "legalNotices",
+  "source": "app/reducers/legalNotices",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "newPrivacyPolicyToastClickedOrClosed": false,
+            "newPrivacyPolicyToastShownDate": null
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "toast never shown",
+      "seed": {
+        "newPrivacyPolicyToastClickedOrClosed": false,
+        "newPrivacyPolicyToastShownDate": null
+      },
+      "steps": [
+        {
+          "label": "store privacy policy shown date",
+          "creator": "reducers/legalNotices.storePrivacyPolicyShownDate",
+          "args": [
+            1729651200000
+          ],
+          "action": {
+            "type": "STORE_PRIVACY_POLICY_SHOWN_DATE",
+            "payload": 1729651200000
+          },
+          "state": {
+            "newPrivacyPolicyToastClickedOrClosed": false,
+            "newPrivacyPolicyToastShownDate": 1729651200000
+          },
+          "sameRef": false
+        },
+        {
+          "label": "store privacy policy shown date again (no-op)",
+          "creator": "reducers/legalNotices.storePrivacyPolicyShownDate",
+          "args": [
+            1729651200001
+          ],
+          "action": {
+            "type": "STORE_PRIVACY_POLICY_SHOWN_DATE",
+            "payload": 1729651200001
+          },
+          "state": {
+            "newPrivacyPolicyToastClickedOrClosed": false,
+            "newPrivacyPolicyToastShownDate": 1729651200000
+          },
+          "sameRef": true
+        },
+        {
+          "label": "privacy policy clicked or closed",
+          "creator": "reducers/legalNotices.storePrivacyPolicyClickedOrClosed",
+          "args": [],
+          "action": {
+            "type": "STORE_PRIVACY_POLICY_CLICKED_OR_CLOSED"
+          },
+          "state": {
+            "newPrivacyPolicyToastClickedOrClosed": true,
+            "newPrivacyPolicyToastShownDate": 1729651200000
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "newPrivacyPolicyToastClickedOrClosed": true,
+            "newPrivacyPolicyToastShownDate": 1729651200000
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {},
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "newPrivacyPolicyToastClickedOrClosed": true,
+            "newPrivacyPolicyToastShownDate": 1729651200000
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

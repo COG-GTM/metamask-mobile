@@ -1,0 +1,83 @@
+exit 1
+
+/home/ubuntu/parity/legacy/app/actions/accounts/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/actions/experimental/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/actions/navigation/types.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/actions/onboardNetwork/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/actions/onboarding/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/actions/rpcEvents/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/actions/security/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/actions/signatureRequest/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/actions/user/types.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/core/SDKConnect/InitializationManagement/asyncInit.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/accounts/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/browser/selectors.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/experimentalSettings/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/legalNotices/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/legalNotices/types.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/navigation/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/navigation/types.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/networkSelector/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/onboarding/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/rpcEvents/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/sdk/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/security/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/signatureRequest/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/reducers/user/index.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+/home/ubuntu/parity/legacy/app/util/test/initial-root-state.ts
+  1:1  error  Definition for rule '@typescript-eslint/no-parameter-properties' was not found  @typescript-eslint/no-parameter-properties
+
+✖ 26 problems (26 errors, 0 warnings)
+
+exit(stylish) 1

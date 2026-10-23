@@ -11,7 +11,13 @@
  * if your RPC didn't belong to any event group, just use RPC name as event group name for that RPC. (**Causion**: please make sure the RPC name is unique)
  */
 
-import { ActionType, iEventAction } from '../../actions/rpcEvents';
+import { createSlice } from '@reduxjs/toolkit';
+import {
+  ActionType,
+  type ResetEventStageAction,
+  type SetEventErrorAction,
+  type SetEventStageAction,
+} from '../../actions/rpcEvents';
 
 /**
  * Mapping of RPC name to supported event group name
@@ -62,10 +68,12 @@ export interface iEventGroup {
   signingEvent: iEventStage;
 }
 
+export type RpcEventsState = iEventGroup;
+
 /**
  * Initial state of the RPC event flow
  */
-const initialState: Readonly<iEventGroup> = {
+export const initialState: Readonly<RpcEventsState> = {
   signingEvent: {
     eventStage: RPCStageTypes.IDLE,
     rpcName: '',
@@ -73,56 +81,76 @@ const initialState: Readonly<iEventGroup> = {
 };
 
 /**
- * Reducer to set the RPC event stage in store
- * @param {iRPCFlowStage} state - the state of the RPC event flow, default to initialState
- * @param {iEventAction} action - the action object contain type and payload to change state.
- * @returns {iRPCFlowStage} - the new state of the sign message flow
+ * Resolve the event group an action targets. Returns undefined when the RPC
+ * is not whitelisted or the group is missing from state, in which case the
+ * state is left untouched (same reference).
  */
-const signMessageReducer = (
-  state = initialState,
-  action: iEventAction = {
-    type: '',
-    rpcName: '',
-  },
-) => {
-  const eventGroup: string | undefined = rpcToEventGroupMap.get(action.rpcName);
-
-  if (!eventGroup || !state[eventGroup as keyof iEventGroup]) {
-    return state;
+const getTargetEventGroup = (
+  state: RpcEventsState,
+  rpcName: string,
+): keyof RpcEventsState | undefined => {
+  const eventGroup = rpcToEventGroupMap.get(rpcName) as
+    | keyof RpcEventsState
+    | undefined;
+  if (!eventGroup || !state[eventGroup]) {
+    return undefined;
   }
-
-  switch (action.type) {
-    case ActionType.SET_EVENT_STAGE:
-      return {
-        ...state,
-        [eventGroup]: {
-          eventStage: action.eventStage,
-          rpcName: action.rpcName,
-          error: undefined,
-        },
-      };
-
-    case ActionType.RESET_EVENT_STATE:
-      return {
-        ...state,
-        [eventGroup]: {
-          eventStage: RPCStageTypes.IDLE,
-          rpcName: '',
-          error: undefined,
-        },
-      };
-    case ActionType.SET_EVENT_ERROR:
-      return {
-        ...state,
-        [eventGroup]: {
-          eventStage: RPCStageTypes.ERROR,
-          rpcName: action.rpcName,
-          error: action.error,
-        },
-      };
-    default:
-      return state;
-  }
+  return eventGroup;
 };
 
-export default signMessageReducer;
+/**
+ * Slice to set the RPC event stage in store. Legacy action types are handled
+ * in extraReducers so that existing action creators keep their shape.
+ */
+const slice = createSlice({
+  name: 'rpcEvents',
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(
+        ActionType.SET_EVENT_STAGE,
+        (state, action: SetEventStageAction) => {
+          const eventGroup = getTargetEventGroup(state, action.rpcName);
+          if (!eventGroup) {
+            return state;
+          }
+          state[eventGroup] = {
+            eventStage: action.eventStage as string,
+            rpcName: action.rpcName,
+            error: undefined,
+          };
+        },
+      )
+      .addCase(
+        ActionType.RESET_EVENT_STATE,
+        (state, action: ResetEventStageAction) => {
+          const eventGroup = getTargetEventGroup(state, action.rpcName);
+          if (!eventGroup) {
+            return state;
+          }
+          state[eventGroup] = {
+            eventStage: RPCStageTypes.IDLE,
+            rpcName: '',
+            error: undefined,
+          };
+        },
+      )
+      .addCase(
+        ActionType.SET_EVENT_ERROR,
+        (state, action: SetEventErrorAction) => {
+          const eventGroup = getTargetEventGroup(state, action.rpcName);
+          if (!eventGroup) {
+            return state;
+          }
+          state[eventGroup] = {
+            eventStage: RPCStageTypes.ERROR,
+            rpcName: action.rpcName,
+            error: action.error as Error | undefined,
+          };
+        },
+      );
+  },
+});
+
+export default slice.reducer;

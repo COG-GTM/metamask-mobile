@@ -1,0 +1,29 @@
+{
+  "suites": {
+    "total": 1214,
+    "passed": 1005,
+    "failed": 209,
+    "runtime_error": 154
+  },
+  "tests": {
+    "total": 7237,
+    "passed": 7055,
+    "failed": 182,
+    "skipped": 0,
+    "todo": 0
+  },
+  "snapshots_total": 499,
+  "snapshots_passed": 499,
+  "snapshots_failed": 0,
+  "snapshots_written": 0,
+  "snapshots_added": 0,
+  "snapshots_updated": 0,
+  "snapshots_unchecked": 0,
+  "snapshots_filesRemoved": 0,
+  "missing_json": [
+    "snapui.json"
+  ],
+  "crashed_suites": [
+    "app/components/Snaps/SnapUIAddressInput/SnapUIAddressInput.test.tsx"
+  ]
+}

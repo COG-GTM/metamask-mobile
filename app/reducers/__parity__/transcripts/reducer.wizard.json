@@ -1,0 +1,80 @@
+{
+  "kind": "reducer",
+  "reducerKey": "wizard",
+  "source": "app/reducers/wizard",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "step": 0
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "step 2",
+      "seed": {
+        "step": 2
+      },
+      "steps": [
+        {
+          "label": "set onboarding wizard step",
+          "creator": "actions/wizard.default",
+          "args": [
+            3
+          ],
+          "action": {
+            "type": "SET_ONBOARDING_WIZARD_STEP",
+            "step": 3
+          },
+          "state": {
+            "step": 3
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "step": 3
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {
+              "wizard": {
+                "step": 5
+              }
+            },
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "step": 3
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

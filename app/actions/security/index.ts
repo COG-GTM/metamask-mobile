@@ -96,7 +96,9 @@ export const setMultiRpcMigrationModalOpen = (
   open,
 });
 
-export const setDataCollectionForMarketing = (enabled: boolean) => ({
+export const setDataCollectionForMarketing = (
+  enabled: boolean,
+): SetDataCollectionForMarketing => ({
   type: ActionType.SET_DATA_COLLECTION_FOR_MARKETING,
   enabled,
 });

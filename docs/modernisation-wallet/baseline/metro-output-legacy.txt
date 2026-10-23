@@ -1,0 +1,45 @@
+warn =================================================================================================
+warn From React Native 0.73, your project's Metro config should extend '@react-native/metro-config'
+warn or it will fail to build. Please copy the template at:
+warn https://github.com/react-native-community/template/blob/main/template/metro.config.js
+warn This warning will be removed in future (https://github.com/facebook/metro/issues/1018).
+warn =================================================================================================
+                Welcome to Metro v0.81.1
+              Fast - Scalable - Integrated
+
+
+error Unable to resolve module ./ppom.html.js from app/lib/ppom/PPOMView.tsx: 
+
+None of these files exist:
+  * app/lib/ppom/ppom.html.js(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css|.android.svg|.native.svg|.svg|.android.cjs|.native.cjs|.cjs|.android.mjs|.native.mjs|.mjs)
+  * app/lib/ppom/ppom.html.js
+[0m [90m  9 |[39m [90m// eslint-disable-next-line @typescript-eslint/ban-ts-comment[39m
+ [90m 10 |[39m [90m// @ts-ignore[39m
+[31m[1m>[22m[39m[90m 11 |[39m [36mimport[39m { html } [36mfrom[39m [32m'./ppom.html.js'[39m[33m;[39m
+ [90m    |[39m                       [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m [36mconst[39m styles [33m=[39m [33mStyleSheet[39m[33m.[39mcreate({
+ [90m 14 |[39m   webViewContainer[33m:[39m {[0m.
+Error: Unable to resolve module ./ppom.html.js from app/lib/ppom/PPOMView.tsx: 
+
+None of these files exist:
+  * app/lib/ppom/ppom.html.js(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css|.android.svg|.native.svg|.svg|.android.cjs|.native.cjs|.cjs|.android.mjs|.native.mjs|.mjs)
+  * app/lib/ppom/ppom.html.js
+[0m [90m  9 |[39m [90m// eslint-disable-next-line @typescript-eslint/ban-ts-comment[39m
+ [90m 10 |[39m [90m// @ts-ignore[39m
+[31m[1m>[22m[39m[90m 11 |[39m [36mimport[39m { html } [36mfrom[39m [32m'./ppom.html.js'[39m[33m;[39m
+ [90m    |[39m                       [31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m [36mconst[39m styles [33m=[39m [33mStyleSheet[39m[33m.[39mcreate({
+ [90m 14 |[39m   webViewContainer[33m:[39m {[0m
+    at ModuleResolver.resolveDependency (node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:112:15)
+    at DependencyGraph.resolveDependency (node_modules/metro/src/node-haste/DependencyGraph.js:236:43)
+    at node_modules/metro/src/lib/transformHelpers.js:165:21
+    at resolveDependencies (node_modules/metro/src/DeltaBundler/buildSubgraph.js:42:25)
+    at visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:83:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Promise.all (index 121)
+    at async visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:92:5)
+    at async Promise.all (index 1)
+    at async visit (node_modules/metro/src/DeltaBundler/buildSubgraph.js:92:5)
+info Run CLI with --verbose flag for more details.

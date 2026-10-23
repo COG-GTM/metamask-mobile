@@ -1,0 +1,9 @@
+yarn run v1.22.22
+$ ts-node ./check-ts-app-gate.ts 86884c59947115d264b49475870f47dc58df7404
+TypeScript app gate: diff 86884c599471..HEAD
+Checking rule "Check for blacklisted code blocks"...
+...OK
+Checking rule "Check for js or jsx file being added"...
+...OK
+Done in 1.85s.
+exit 0

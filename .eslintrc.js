@@ -37,6 +37,10 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'error',
         // Under discussion
         '@typescript-eslint/no-duplicate-enum-values': 'off',
+        // Removed in typescript-eslint v6 (repo uses v7) but still enabled by
+        // @metamask/eslint-config-typescript@9; superseded by parameter-properties.
+        '@typescript-eslint/no-parameter-properties': 'off',
+        '@typescript-eslint/parameter-properties': 'error',
       },
     },
     {

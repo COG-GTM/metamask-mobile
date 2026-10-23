@@ -1,0 +1,664 @@
+{
+  "kind": "reducer",
+  "reducerKey": "user",
+  "source": "app/reducers/user",
+  "recordedAt": "2026-10-23 @ 687645507a988caba704751354554147e419f21d",
+  "segments": [
+    {
+      "label": "initial state",
+      "seed": "__PARITY_UNDEFINED__",
+      "steps": [
+        {
+          "label": "init (undefined state)",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/INIT"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        }
+      ]
+    },
+    {
+      "label": "onboarded, locked",
+      "seed": {
+        "loadingMsg": "",
+        "loadingSet": false,
+        "passwordSet": true,
+        "seedphraseBackedUp": false,
+        "backUpSeedphraseVisible": false,
+        "protectWalletModalVisible": false,
+        "gasEducationCarouselSeen": false,
+        "userLoggedIn": false,
+        "isAuthChecked": false,
+        "initialScreen": "",
+        "appTheme": "os",
+        "ambiguousAddressEntries": {},
+        "appServicesReady": false
+      },
+      "steps": [
+        {
+          "label": "interrupt biometrics",
+          "creator": "actions/user.interruptBiometrics",
+          "args": [],
+          "action": {
+            "type": "INTERRUPT_BIOMETRICS"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": true,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "lock app",
+          "creator": "actions/user.lockApp",
+          "args": [],
+          "action": {
+            "type": "LOCKED_APP"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": true,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "auth success",
+          "creator": "actions/user.authSuccess",
+          "args": [
+            "bio-1"
+          ],
+          "action": {
+            "type": "AUTH_SUCCESS",
+            "payload": {
+              "bioStateMachineId": "bio-1"
+            }
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": true,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "auth error",
+          "creator": "actions/user.authError",
+          "args": [
+            "bio-2"
+          ],
+          "action": {
+            "type": "AUTH_ERROR",
+            "payload": {
+              "bioStateMachineId": "bio-2"
+            }
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": true,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "password set",
+          "creator": "actions/user.passwordSet",
+          "args": [],
+          "action": {
+            "type": "PASSWORD_SET"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": true,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "password unset",
+          "creator": "actions/user.passwordUnset",
+          "args": [],
+          "action": {
+            "type": "PASSWORD_UNSET"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "seedphrase not backed up",
+          "creator": "actions/user.seedphraseNotBackedUp",
+          "args": [],
+          "action": {
+            "type": "SEEDPHRASE_NOT_BACKED_UP"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": true,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "protect wallet modal visible (not backed up)",
+          "creator": "actions/user.protectWalletModalVisible",
+          "args": [],
+          "action": {
+            "type": "PROTECT_MODAL_VISIBLE"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": true,
+            "protectWalletModalVisible": true,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "protect wallet modal not visible",
+          "creator": "actions/user.protectWalletModalNotVisible",
+          "args": [],
+          "action": {
+            "type": "PROTECT_MODAL_NOT_VISIBLE"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": false,
+            "backUpSeedphraseVisible": true,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "seedphrase backed up",
+          "creator": "actions/user.seedphraseBackedUp",
+          "args": [],
+          "action": {
+            "type": "SEEDPHRASE_BACKED_UP"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "protect wallet modal visible (backed up: no-op)",
+          "creator": "actions/user.protectWalletModalVisible",
+          "args": [],
+          "action": {
+            "type": "PROTECT_MODAL_VISIBLE"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "back up seedphrase alert visible",
+          "creator": "actions/user.backUpSeedphraseAlertVisible",
+          "args": [],
+          "action": {
+            "type": "BACK_UP_SEEDPHRASE_VISIBLE"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": true,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "back up seedphrase alert not visible",
+          "creator": "actions/user.backUpSeedphraseAlertNotVisible",
+          "args": [],
+          "action": {
+            "type": "BACK_UP_SEEDPHRASE_NOT_VISIBLE"
+          },
+          "state": {
+            "loadingMsg": "",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "loading set",
+          "creator": "actions/user.loadingSet",
+          "args": [
+            "Creating your wallet"
+          ],
+          "action": {
+            "type": "LOADING_SET",
+            "loadingMsg": "Creating your wallet"
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": true,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "loading unset",
+          "creator": "actions/user.loadingUnset",
+          "args": [],
+          "action": {
+            "type": "LOADING_UNSET"
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": false,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "gas education carousel seen",
+          "creator": "actions/user.setGasEducationCarouselSeen",
+          "args": [],
+          "action": {
+            "type": "SET_GAS_EDUCATION_CAROUSEL_SEEN"
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": true,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "log in",
+          "creator": "actions/user.logIn",
+          "args": [],
+          "action": {
+            "type": "LOGIN"
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": true,
+            "userLoggedIn": true,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "log out",
+          "creator": "actions/user.logOut",
+          "args": [],
+          "action": {
+            "type": "LOGOUT"
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": true,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "os",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "set app theme",
+          "creator": "actions/user.setAppTheme",
+          "args": [
+            "dark"
+          ],
+          "action": {
+            "type": "SET_APP_THEME",
+            "payload": {
+              "theme": "dark"
+            }
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": true,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "dark",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": false
+        },
+        {
+          "label": "checked auth (unhandled)",
+          "creator": "actions/user.checkedAuth",
+          "args": [
+            "login"
+          ],
+          "action": {
+            "type": "CHECKED_AUTH",
+            "payload": {
+              "initialScreen": "login"
+            }
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": true,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "dark",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "persisted data loaded (unhandled)",
+          "creator": "actions/user.onPersistedDataLoaded",
+          "args": [],
+          "action": {
+            "type": "ON_PERSISTED_DATA_LOADED"
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": true,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "dark",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": false
+          },
+          "sameRef": true
+        },
+        {
+          "label": "app services ready",
+          "creator": "actions/user.setAppServicesReady",
+          "args": [],
+          "action": {
+            "type": "SET_APP_SERVICES_READY"
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": true,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "dark",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": true
+          },
+          "sameRef": false
+        },
+        {
+          "label": "unknown action",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "@@parity/UNKNOWN_ACTION"
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": true,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "dark",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": true
+          },
+          "sameRef": true
+        },
+        {
+          "label": "redux-persist REHYDRATE",
+          "creator": "raw",
+          "args": [],
+          "action": {
+            "type": "persist/REHYDRATE",
+            "key": "root",
+            "payload": {
+              "user": {
+                "userLoggedIn": true
+              }
+            },
+            "err": "__PARITY_UNDEFINED__"
+          },
+          "state": {
+            "loadingMsg": "Creating your wallet",
+            "loadingSet": false,
+            "passwordSet": false,
+            "seedphraseBackedUp": true,
+            "backUpSeedphraseVisible": false,
+            "protectWalletModalVisible": false,
+            "gasEducationCarouselSeen": true,
+            "userLoggedIn": false,
+            "isAuthChecked": false,
+            "initialScreen": "",
+            "appTheme": "dark",
+            "ambiguousAddressEntries": {},
+            "appServicesReady": true
+          },
+          "sameRef": true
+        }
+      ]
+    }
+  ]
+}

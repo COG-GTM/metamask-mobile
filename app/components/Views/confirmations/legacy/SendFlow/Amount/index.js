@@ -647,7 +647,6 @@ class Amount extends PureComponent {
       navigation,
       selectedAsset,
       setSelectedAsset,
-      transactionState: { transaction },
       providerType,
       onConfirm,
       globalNetworkClientId,
@@ -696,7 +695,7 @@ class Amount extends PureComponent {
       }
     }
 
-    await this.prepareTransaction(value);
+    const preparedTransaction = await this.prepareTransaction(value);
 
     this.props.metrics.trackEvent(
       this.props.metrics
@@ -709,29 +708,29 @@ class Amount extends PureComponent {
     if (onConfirm) {
       onConfirm();
     } else if (isRedesignedTransferConfirmationEnabled) {
-        this.setState({ isRedesignedTransferTransactionLoading: true });
+      this.setState({ isRedesignedTransferTransactionLoading: true });
 
-        const transactionParams = {
-          data: transaction.data,
-          from: transaction.from,
-          to: transaction.to,
-          value:
-            typeof transaction.value === 'string'
-              ? transaction.value
-              : BNToHex(transaction.value),
-        };
+      const transactionParams = {
+        data: preparedTransaction.data,
+        from: preparedTransaction.from,
+        to: preparedTransaction.to,
+        value:
+          typeof preparedTransaction.value === 'string'
+            ? preparedTransaction.value
+            : BNToHex(preparedTransaction.value),
+      };
 
-        await addTransaction(transactionParams, {
-          origin: MMM_ORIGIN,
-          networkClientId: globalNetworkClientId,
-        });
-        this.setState({ isRedesignedTransferTransactionLoading: false });
-        navigation.navigate('SendFlowView', {
-          screen: Routes.STANDALONE_CONFIRMATIONS.TRANSFER,
-        });
-      } else {
-        navigation.navigate(Routes.SEND_FLOW.CONFIRM);
-      }
+      await addTransaction(transactionParams, {
+        origin: MMM_ORIGIN,
+        networkClientId: globalNetworkClientId,
+      });
+      this.setState({ isRedesignedTransferTransactionLoading: false });
+      navigation.navigate('SendFlowView', {
+        screen: Routes.STANDALONE_CONFIRMATIONS.TRANSFER,
+      });
+    } else {
+      navigation.navigate(Routes.SEND_FLOW.CONFIRM);
+    }
   };
 
   getCollectibleTranferTransactionProperties() {
@@ -779,8 +778,9 @@ class Amount extends PureComponent {
     const {
       prepareTransaction,
       selectedAsset,
-      transactionState: { transaction, transactionTo },
+      transactionState: { transactionTo },
     } = this.props;
+    const transaction = { ...this.props.transactionState.transaction };
 
     if (isNativeToken(selectedAsset)) {
       transaction.data = '0x';
@@ -802,6 +802,7 @@ class Amount extends PureComponent {
       transaction.value = '0x0';
     }
     prepareTransaction(transaction);
+    return transaction;
   };
 
   /**
@@ -894,7 +895,9 @@ class Amount extends PureComponent {
       const balanceBN = hexToBN(accounts[selectedAddress].balance);
       const realMaxValue = balanceBN.sub(estimatedTotalGas);
       const maxValue =
-        balanceBN.isZero() || realMaxValue.isNeg() ? hexToBN('0x0') : realMaxValue;
+        balanceBN.isZero() || realMaxValue.isNeg()
+          ? hexToBN('0x0')
+          : realMaxValue;
       if (internalPrimaryCurrencyIsCrypto) {
         input = fromWei(maxValue);
       } else {
