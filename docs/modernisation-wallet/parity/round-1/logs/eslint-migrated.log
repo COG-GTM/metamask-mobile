@@ -1,0 +1,8 @@
+exit 0
+
+/home/ubuntu/parity/migrated/.github/scripts/check-ts-app-gate.ts
+  0:0  warning  File ignored by default.  Use a negated ignore pattern (like "--ignore-pattern '!<relative/path/to/filename>'") to override
+
+✖ 1 problem (0 errors, 1 warning)
+
+exit(stylish) 0

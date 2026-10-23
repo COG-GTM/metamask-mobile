@@ -1,0 +1,203 @@
+{
+  "alert": {
+    "isVisible": false,
+    "autodismiss": null,
+    "content": null,
+    "data": null
+  },
+  "banners": {
+    "dismissedBanners": []
+  },
+  "bookmarks": [],
+  "bridge": {
+    "slippage": "0.5",
+    "isSubmittingTx": false
+  },
+  "browser": {
+    "history": [],
+    "whitelist": [
+      "https://phishing-reviewed.example"
+    ],
+    "tabs": [],
+    "favicons": [],
+    "activeTab": 1729651200000,
+    "visitedDappsByHostname": {
+      "app.uniswap.org": true
+    }
+  },
+  "collectibles": {
+    "favorites": {},
+    "isNftFetchingProgress": false
+  },
+  "engine": {
+    "backgroundState": {
+      "KeyringController": {},
+      "LoggingController": {},
+      "AccountTrackerController": {},
+      "AccountsController": {},
+      "AddressBookController": {},
+      "AppMetadataController": {},
+      "NftController": {},
+      "TokensController": {},
+      "TokenListController": {},
+      "PPOMController": {},
+      "CurrencyRateController": {},
+      "NetworkController": {},
+      "PhishingController": {},
+      "PreferencesController": {},
+      "TokenBalancesController": {},
+      "TokenRatesController": {},
+      "TokenSearchDiscoveryController": {},
+      "TokenSearchDiscoveryDataController": {},
+      "TransactionController": {},
+      "SmartTransactionsController": {},
+      "SnapController": {},
+      "SnapInterfaceController": {},
+      "SnapsRegistry": {},
+      "SubjectMetadataController": {},
+      "SwapsController": {},
+      "GasFeeController": {},
+      "ApprovalController": {},
+      "PermissionController": {},
+      "RemoteFeatureFlagController": {},
+      "SelectedNetworkController": {},
+      "SignatureController": {},
+      "AuthenticationController": {},
+      "NotificationServicesController": {},
+      "NotificationServicesPushController": {},
+      "UserStorageController": {},
+      "MultichainBalancesController": {},
+      "RatesController": {},
+      "MultichainNetworkController": {},
+      "MultichainTransactionsController": {},
+      "MultichainAssetsController": {},
+      "BridgeController": {},
+      "BridgeStatusController": {},
+      "MultichainAssetsRatesController": {},
+      "CronjobController": {},
+      "EarnController": {}
+    }
+  },
+  "experimentalSettings": {
+    "securityAlertsEnabled": true
+  },
+  "fiatOrders": {
+    "orders": [],
+    "customOrderIds": [],
+    "networks": [],
+    "selectedRegionAgg": null,
+    "selectedPaymentMethodAgg": null,
+    "getStartedAgg": false,
+    "getStartedSell": false,
+    "authenticationUrls": [],
+    "activationKeys": []
+  },
+  "infuraAvailability": {
+    "isBlocked": false
+  },
+  "inpageProvider": {
+    "networkId": "loading"
+  },
+  "legalNotices": {
+    "newPrivacyPolicyToastClickedOrClosed": false,
+    "newPrivacyPolicyToastShownDate": null
+  },
+  "modals": {
+    "networkModalVisible": false,
+    "shouldNetworkSwitchPopToWallet": true,
+    "collectibleContractModalVisible": false,
+    "dappTransactionModalVisible": false,
+    "signMessageModalVisible": true
+  },
+  "navigation": {
+    "currentRoute": "WalletView",
+    "currentBottomNavRoute": "Browser"
+  },
+  "networkOnboarded": {
+    "networkOnboardedState": {},
+    "networkState": {
+      "showNetworkOnboarding": false,
+      "nativeToken": "",
+      "networkType": "",
+      "networkUrl": ""
+    },
+    "switchedNetwork": {
+      "networkUrl": "",
+      "networkStatus": false
+    }
+  },
+  "notification": {
+    "notifications": []
+  },
+  "notifications": {},
+  "originThrottling": {
+    "origins": {}
+  },
+  "performance": {
+    "sessionId": "",
+    "startTime": 0,
+    "metrics": [],
+    "environment": {
+      "branch": "",
+      "commitHash": "",
+      "platform": "",
+      "appVersion": ""
+    },
+    "activeTraceBySessionId": {},
+    "isInitialized": false
+  },
+  "privacy": {
+    "approvedHosts": {},
+    "revealSRPTimestamps": []
+  },
+  "sdk": {
+    "connections": {},
+    "approvedHosts": {},
+    "dappConnections": {}
+  },
+  "security": {
+    "allowLoginWithRememberMe": false,
+    "automaticSecurityChecksEnabled": false,
+    "hasUserSelectedAutomaticSecurityCheckOption": false,
+    "isAutomaticSecurityChecksModalOpen": false,
+    "dataCollectionForMarketing": null,
+    "isNFTAutoDetectionModalViewed": false
+  },
+  "settings": {
+    "searchEngine": "Google",
+    "primaryCurrency": "ETH",
+    "lockTime": -1,
+    "useBlockieIcon": true,
+    "hideZeroBalanceTokens": false,
+    "basicFunctionalityEnabled": true
+  },
+  "signatureRequest": {},
+  "swaps": {
+    "isLive": true,
+    "hasOnboarded": true,
+    "0x1": {
+      "isLive": true
+    }
+  },
+  "transaction": {
+    "selectedAsset": {},
+    "transaction": {},
+    "securityAlertResponses": {},
+    "useMax": false
+  },
+  "user": {
+    "loadingMsg": "",
+    "loadingSet": false,
+    "passwordSet": false,
+    "seedphraseBackedUp": false,
+    "backUpSeedphraseVisible": false,
+    "protectWalletModalVisible": false,
+    "gasEducationCarouselSeen": false,
+    "userLoggedIn": false,
+    "appTheme": "os",
+    "ambiguousAddressEntries": {}
+  },
+  "wizard": {
+    "step": 0
+  }
+}

@@ -1,0 +1,17 @@
+jest-haste-map: duplicate manual mock found: mockData
+  The following files share their name; please delete one of them:
+    * <rootDir>/app/components/UI/Earn/__mocks__/mockData.ts
+    * <rootDir>/app/components/UI/Stake/__mocks__/mockData.ts
+
+PASS app/reducers/__parity__/zz-real-rehydrate.tmp.test.ts (30.772 s)
+  ✓ replays every transcript scenario with real redux-persist REHYDRATE (15053 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        30.801 s
+Ran all test suites matching /app\/reducers\/__parity__\/zz-real-rehydrate.tmp.test.ts/i.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?
+exit 0
+?? .github/scripts/node_modules
+?? node_modules

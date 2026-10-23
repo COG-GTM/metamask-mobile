@@ -1,0 +1,29 @@
+warn =================================================================================================
+warn From React Native 0.73, your project's Metro config should extend '@react-native/metro-config'
+warn or it will fail to build. Please copy the template at:
+warn https://github.com/react-native-community/template/blob/main/template/metro.config.js
+warn This warning will be removed in future (https://github.com/facebook/metro/issues/1018).
+warn =================================================================================================
+ WARN  the transform cache was reset.
+                Welcome to Metro v0.81.1
+              Fast - Scalable - Integrated
+
+
+error app/selectors/accountsController.ts: MetaMask build: Lint errors encountered for transformed file "app/selectors/accountsController.ts":
+
+    @typescript-eslint/no-parameter-properties
+    Definition for rule '@typescript-eslint/no-parameter-properties' was not found.
+
+.
+Error: MetaMask build: Lint errors encountered for transformed file "app/selectors/accountsController.ts":
+
+    @typescript-eslint/no-parameter-properties
+    Definition for rule '@typescript-eslint/no-parameter-properties' was not found.
+
+
+    at /home/ubuntu/repos/metamask-mobile/node_modules/@metamask/build-utils/dist/transforms/utils.js:55:15
+    at Generator.next (<anonymous>)
+    at fulfilled (/home/ubuntu/repos/metamask-mobile/node_modules/@metamask/build-utils/dist/transforms/utils.js:5:58)
+info Run CLI with --verbose flag for more details.
+exit 1 wall 93s
+ls: cannot access '/home/ubuntu/parity/out/legacy/android.bundle': No such file or directory

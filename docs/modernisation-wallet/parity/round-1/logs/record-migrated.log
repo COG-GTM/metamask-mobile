@@ -1,0 +1,88 @@
+jest-haste-map: duplicate manual mock found: mockData
+  The following files share their name; please delete one of them:
+    * <rootDir>/app/components/UI/Earn/__mocks__/mockData.ts
+    * <rootDir>/app/components/UI/Stake/__mocks__/mockData.ts
+
+PASS app/reducers/__parity__/transcripts.parity.test.ts (16.988 s)
+  reducer parity transcripts
+    ✓ serialises undefined values and errors losslessly (4 ms)
+    ✓ has exactly one transcript file per scenario
+    reducer transaction
+      ✓ replays the legacy transcript identically (10 ms)
+    reducer security
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer accounts
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer settings
+      ✓ replays the legacy transcript identically (2 ms)
+    reducer user
+      ✓ replays the legacy transcript identically (2 ms)
+    reducer onboarding
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer browser
+      ✓ replays the legacy transcript identically (4 ms)
+    reducer bookmarks
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer notification
+      ✓ replays the legacy transcript identically (5 ms)
+    reducer collectibles
+      ✓ replays the legacy transcript identically (2 ms)
+    reducer modals
+      ✓ replays the legacy transcript identically (2 ms)
+    reducer alert
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer wizard
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer privacy
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer infuraAvailability
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer legalNotices
+      ✓ replays the legacy transcript identically
+    reducer signatureRequest
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer rpcEvents
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer sdk
+      ✓ replays the legacy transcript identically (4 ms)
+    reducer networkOnboarded
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer experimentalSettings
+      ✓ replays the legacy transcript identically (1 ms)
+    reducer navigation
+      ✓ replays the legacy transcript identically
+    user flow app-start-rehydrate
+      ✓ replays the legacy transcript through the root reducer identically (3 ms)
+    user flow onboarding-wallet-creation
+      ✓ replays the legacy transcript through the root reducer identically (7 ms)
+    user flow lock-unlock-login
+      ✓ replays the legacy transcript through the root reducer identically (5 ms)
+    user flow settings-currency-privacy-basic-functionality
+      ✓ replays the legacy transcript through the root reducer identically (8 ms)
+    user flow browser-tab-bookmark
+      ✓ replays the legacy transcript through the root reducer identically (6 ms)
+    user flow send-eth-transaction-lifecycle
+      ✓ replays the legacy transcript through the root reducer identically (8 ms)
+    user flow security-alerts
+      ✓ replays the legacy transcript through the root reducer identically (5 ms)
+    user flow notifications
+      ✓ replays the legacy transcript through the root reducer identically (5 ms)
+    user flow network-selector-onboarding
+      ✓ replays the legacy transcript through the root reducer identically (4 ms)
+    user flow sdk-walletconnect-connections
+      ✓ replays the legacy transcript through the root reducer identically (5 ms)
+    user flow rpc-events
+      ✓ replays the legacy transcript through the root reducer identically (3 ms)
+    user flow legal-notices
+      ✓ replays the legacy transcript through the root reducer identically (2 ms)
+    user flow modals-alerts-collectibles
+      ✓ replays the legacy transcript through the root reducer identically (6 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       37 passed, 37 total
+Snapshots:   0 total
+Time:        17.011 s
+Ran all test suites matching /app\/reducers\/__parity__\/transcripts.parity.test.ts/i.
+Test results written to: ../out/migrated/record.json
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?
+exit 0

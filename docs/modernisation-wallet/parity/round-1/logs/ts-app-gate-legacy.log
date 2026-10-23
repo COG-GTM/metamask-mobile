@@ -1,0 +1,6 @@
+NO check-ts-app-gate script in .github/scripts/package.json
+Checking rule "Check for blacklisted code blocks"...
+...OK
+Checking rule "Check for js or jsx file being added"...
+...OK
+exit 0

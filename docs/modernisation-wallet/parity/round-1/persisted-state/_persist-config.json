@@ -1,0 +1,11 @@
+{
+  "key": "root",
+  "version": 75,
+  "blacklist": [
+    "onboarding",
+    "rpcEvents",
+    "accounts",
+    "confirmationMetrics"
+  ],
+  "transforms": 2
+}
