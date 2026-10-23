@@ -1,5 +1,5 @@
 import { type AppThemeKey } from '../../util/theme/models';
-import { type Action } from 'redux';
+import { type Action as ReduxAction } from 'redux';
 
 // Action type enum
 export enum UserActionType {
@@ -27,67 +27,67 @@ export enum UserActionType {
 }
 
 // User actions
-export type LockAppAction = Action<UserActionType.LOCKED_APP>;
+export type LockAppAction = ReduxAction<UserActionType.LOCKED_APP>;
 
-export type AuthSuccessAction = Action<UserActionType.AUTH_SUCCESS> & {
+export type AuthSuccessAction = ReduxAction<UserActionType.AUTH_SUCCESS> & {
   payload: { bioStateMachineId?: string };
 };
 
-export type AuthErrorAction = Action<UserActionType.AUTH_ERROR> & {
+export type AuthErrorAction = ReduxAction<UserActionType.AUTH_ERROR> & {
   payload: { bioStateMachineId?: string };
 };
 
 export type InterruptBiometricsAction =
-  Action<UserActionType.INTERRUPT_BIOMETRICS>;
+  ReduxAction<UserActionType.INTERRUPT_BIOMETRICS>;
 
-export type LoginAction = Action<UserActionType.LOGIN>;
+export type LoginAction = ReduxAction<UserActionType.LOGIN>;
 
-export type LogoutAction = Action<UserActionType.LOGOUT>;
+export type LogoutAction = ReduxAction<UserActionType.LOGOUT>;
 
 export type PersistedDataLoadedAction =
-  Action<UserActionType.ON_PERSISTED_DATA_LOADED>;
+  ReduxAction<UserActionType.ON_PERSISTED_DATA_LOADED>;
 
-export type PasswordSetAction = Action<UserActionType.PASSWORD_SET>;
+export type PasswordSetAction = ReduxAction<UserActionType.PASSWORD_SET>;
 
-export type PasswordUnsetAction = Action<UserActionType.PASSWORD_UNSET>;
+export type PasswordUnsetAction = ReduxAction<UserActionType.PASSWORD_UNSET>;
 
 export type SeedphraseBackedUpAction =
-  Action<UserActionType.SEEDPHRASE_BACKED_UP>;
+  ReduxAction<UserActionType.SEEDPHRASE_BACKED_UP>;
 
 export type SeedphraseNotBackedUpAction =
-  Action<UserActionType.SEEDPHRASE_NOT_BACKED_UP>;
+  ReduxAction<UserActionType.SEEDPHRASE_NOT_BACKED_UP>;
 
 export type BackUpSeedphraseVisibleAction =
-  Action<UserActionType.BACK_UP_SEEDPHRASE_VISIBLE>;
+  ReduxAction<UserActionType.BACK_UP_SEEDPHRASE_VISIBLE>;
 
 export type BackUpSeedphraseNotVisibleAction =
-  Action<UserActionType.BACK_UP_SEEDPHRASE_NOT_VISIBLE>;
+  ReduxAction<UserActionType.BACK_UP_SEEDPHRASE_NOT_VISIBLE>;
 
 export type ProtectModalVisibleAction =
-  Action<UserActionType.PROTECT_MODAL_VISIBLE>;
+  ReduxAction<UserActionType.PROTECT_MODAL_VISIBLE>;
 
 export type ProtectModalNotVisibleAction =
-  Action<UserActionType.PROTECT_MODAL_NOT_VISIBLE>;
+  ReduxAction<UserActionType.PROTECT_MODAL_NOT_VISIBLE>;
 
-export type LoadingSetAction = Action<UserActionType.LOADING_SET> & {
+export type LoadingSetAction = ReduxAction<UserActionType.LOADING_SET> & {
   loadingMsg: string;
 };
 
-export type LoadingUnsetAction = Action<UserActionType.LOADING_UNSET>;
+export type LoadingUnsetAction = ReduxAction<UserActionType.LOADING_UNSET>;
 
 export type SetGasEducationCarouselSeenAction =
-  Action<UserActionType.SET_GAS_EDUCATION_CAROUSEL_SEEN>;
+  ReduxAction<UserActionType.SET_GAS_EDUCATION_CAROUSEL_SEEN>;
 
-export type SetAppThemeAction = Action<UserActionType.SET_APP_THEME> & {
+export type SetAppThemeAction = ReduxAction<UserActionType.SET_APP_THEME> & {
   payload: { theme: AppThemeKey };
 };
 
-export type CheckedAuthAction = Action<UserActionType.CHECKED_AUTH> & {
+export type CheckedAuthAction = ReduxAction<UserActionType.CHECKED_AUTH> & {
   payload: { initialScreen: string };
 };
 
 export type SetAppServicesReadyAction =
-  Action<UserActionType.SET_APP_SERVICES_READY>;
+  ReduxAction<UserActionType.SET_APP_SERVICES_READY>;
 
 /**
  * User actions union type
@@ -114,3 +114,9 @@ export type UserAction =
   | SetAppThemeAction
   | CheckedAuthAction
   | SetAppServicesReadyAction;
+
+/**
+ * Convention aliases shared by the migrated RTK slices.
+ */
+export { UserActionType as ActionType };
+export type Action = UserAction;
