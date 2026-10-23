@@ -1,4 +1,26 @@
-export const initialState = {
+import { createSlice } from '@reduxjs/toolkit';
+import {
+  ActionType,
+  type NetworkSwitchedAction,
+  type OnboardNetworkAction,
+  type ShowNetworkOnboardingAction,
+} from '../../actions/onboardNetwork';
+
+export interface NetworkOnboardedState {
+  networkOnboardedState: Record<string, boolean>;
+  networkState: {
+    showNetworkOnboarding: boolean;
+    nativeToken: string;
+    networkType: string;
+    networkUrl: string;
+  };
+  switchedNetwork: {
+    networkUrl: string;
+    networkStatus: boolean;
+  };
+}
+
+export const initialState: NetworkOnboardedState = {
   networkOnboardedState: {},
   networkState: {
     showNetworkOnboarding: false,
@@ -13,69 +35,57 @@ export const initialState = {
 };
 
 /**
- *
- * Network onboarding reducer
- * @returns
+ * Network onboarding slice. Handles the legacy action types dispatched by
+ * app/actions/onboardNetwork, so action shapes stay unchanged.
  */
-
-function networkOnboardReducer(
-  state = initialState,
-  action: {
-    nativeToken: string;
-    networkType: string;
-    networkUrl: string;
-    networkStatus: boolean;
-    showNetworkOnboarding: boolean;
-    type: string;
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    payload: any;
-  } = {
-    nativeToken: '',
-    networkType: '',
-    networkUrl: '',
-    networkStatus: false,
-    showNetworkOnboarding: false,
-    type: '',
-    payload: undefined,
+const networkOnboardedSlice = createSlice({
+  name: 'networkOnboarded',
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(
+        ActionType.SHOW_NETWORK_ONBOARDING,
+        (state, action: ShowNetworkOnboardingAction) => ({
+          ...state,
+          networkState: {
+            showNetworkOnboarding: action.showNetworkOnboarding,
+            nativeToken: action.nativeToken,
+            networkType: action.networkType,
+            networkUrl: action.networkUrl,
+          },
+        }),
+      )
+      .addCase(
+        ActionType.NETWORK_SWITCHED,
+        (state, action: NetworkSwitchedAction) => ({
+          ...state,
+          switchedNetwork: {
+            networkUrl: action.networkUrl,
+            networkStatus: action.networkStatus,
+          },
+        }),
+      )
+      .addCase(
+        ActionType.NETWORK_ONBOARDED,
+        (state, action: OnboardNetworkAction) => ({
+          ...state,
+          networkState: {
+            showNetworkOnboarding: false,
+            nativeToken: '',
+            networkType: '',
+            networkUrl: '',
+          },
+          networkOnboardedState: {
+            ...state.networkOnboardedState,
+            [action.payload]: true,
+          },
+        }),
+      );
   },
-) {
-  switch (action.type) {
-    case 'SHOW_NETWORK_ONBOARDING':
-      return {
-        ...state,
-        networkState: {
-          showNetworkOnboarding: action.showNetworkOnboarding,
-          nativeToken: action.nativeToken,
-          networkType: action.networkType,
-          networkUrl: action.networkUrl,
-        },
-      };
-    case 'NETWORK_SWITCHED':
-      return {
-        ...state,
-        switchedNetwork: {
-          networkUrl: action.networkUrl,
-          networkStatus: action.networkStatus,
-        },
-      };
-    case 'NETWORK_ONBOARDED':
-      return {
-        ...state,
-        networkState: {
-          showNetworkOnboarding: false,
-          nativeToken: '',
-          networkType: '',
-          networkUrl: '',
-        },
-        networkOnboardedState: {
-          ...state.networkOnboardedState,
-          [action.payload]: true,
-        },
-      };
-    default:
-      return state;
-  }
-}
+});
 
-export default networkOnboardReducer;
+/**
+ * Network onboarding reducer
+ */
+export default networkOnboardedSlice.reducer;
