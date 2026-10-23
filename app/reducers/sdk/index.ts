@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, isDraft, original, type Draft } from '@reduxjs/toolkit';
 import type { SDKState } from '../../actions/sdk/state';
 import {
   ActionType,
@@ -36,9 +36,6 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> => {
 
 /**
  * Structural copy of plain objects and arrays (other values are kept as-is).
- * Payloads are copied before entering state so that Immer's auto-freeze does
- * not freeze objects the caller still owns (SDKConnect passes its live
- * `instance.state.connections` map and mutates it afterwards).
  */
 const copyPayload = <T>(value: T): T => {
   if (Array.isArray(value)) {
@@ -55,9 +52,22 @@ const copyPayload = <T>(value: T): T => {
 };
 
 /**
- * Case reducers return fresh objects (as the legacy switch reducer did) so
- * that every handled action yields a new state reference.
+ * Wraps a legacy-style pure case reducer so that Immer's auto-freeze never
+ * reaches objects SDKConnect still holds and mutates. The legacy function runs
+ * on the plain (non-draft) state, and its result is copied in full before it is
+ * returned. That way only reducer-private copies get frozen: action payloads,
+ * and maps that were shared with the live SDKConnect instance after rehydration
+ * (e.g. `dappConnections` in asyncInit), are never frozen. When the legacy
+ * reducer returns the input state unchanged, the same reference is returned.
  */
+const legacyCase =
+  <A>(reduce: (state: SdkState, action: A) => SdkState) =>
+  (draft: Draft<SdkState>, action: A): SdkState | Draft<SdkState> => {
+    const state = (isDraft(draft) ? original(draft) : draft) as SdkState;
+    const next = reduce(state, action);
+    return next === state ? draft : copyPayload(next);
+  };
+
 const slice = createSlice({
   name: 'sdk',
   initialState: initialState as SdkState,
@@ -66,119 +76,131 @@ const slice = createSlice({
     builder
       .addCase(
         ActionType.WC2_METADATA,
-        (state, action: UpdateWC2Metadata) => ({
+        legacyCase((state, action: UpdateWC2Metadata) => ({
           ...state,
-          wc2Metadata: copyPayload(action.metadata),
-        }),
+          wc2Metadata: action.metadata,
+        })),
       )
-      .addCase(ActionType.DISCONNECT_ALL, (state) => ({
-        ...state,
-        // Set connected: false to all connections
-        connections: Object.keys(state.connections).reduce(
-          (acc, channelId) => ({
-            ...acc,
-            [channelId]: { ...state.connections[channelId], connected: false },
-          }),
-          {},
-        ),
-      }))
+      .addCase(
+        ActionType.DISCONNECT_ALL,
+        legacyCase((state) => ({
+          ...state,
+          // Set connected: false to all connections
+          connections: Object.keys(state.connections).reduce(
+            (acc, channelId) => ({
+              ...acc,
+              [channelId]: {
+                ...state.connections[channelId],
+                connected: false,
+              },
+            }),
+            {},
+          ),
+        })),
+      )
       .addCase(
         ActionType.UPDATE_CONNECTION,
-        (state, action: UpdateConnection) => ({
+        legacyCase((state, action: UpdateConnection) => ({
           ...state,
           connections: {
             ...state.connections,
-            [action.channelId]: copyPayload(action.connection),
+            [action.channelId]: action.connection,
           },
-        }),
+        })),
       )
       .addCase(
         ActionType.REMOVE_CONNECTION,
-        (state, action: RemoveConnection) => {
+        legacyCase((state, action: RemoveConnection) => {
           const { [action.channelId]: _, ...connections } = state.connections;
           return {
             ...state,
             connections,
           };
-        },
-      )
-      .addCase(ActionType.ADD_CONNECTION, (state, action: AddConnection) => ({
-        ...state,
-        connections: {
-          ...state.connections,
-          [action.channelId]: copyPayload(action.connection),
-        },
-      }))
-      .addCase(
-        ActionType.RESET_CONNECTIONS,
-        (state, action: ResetConnection) => ({
-          ...state,
-          connections: copyPayload(action.connections),
         }),
       )
-      .addCase(ActionType.SET_CONNECTED, (state, action: SetConnected) => {
-        if (!state.connections[action.channelId]) {
-          return state;
-        }
-        return {
+      .addCase(
+        ActionType.ADD_CONNECTION,
+        legacyCase((state, action: AddConnection) => ({
           ...state,
           connections: {
             ...state.connections,
-            [action.channelId]: {
-              ...state.connections[action.channelId],
-              connected: action.connected,
-            },
+            [action.channelId]: action.connection,
           },
-        };
-      })
+        })),
+      )
+      .addCase(
+        ActionType.RESET_CONNECTIONS,
+        legacyCase((state, action: ResetConnection) => ({
+          ...state,
+          connections: action.connections,
+        })),
+      )
+      .addCase(
+        ActionType.SET_CONNECTED,
+        legacyCase((state, action: SetConnected) => {
+          if (!state.connections[action.channelId]) {
+            return state;
+          }
+          return {
+            ...state,
+            connections: {
+              ...state.connections,
+              [action.channelId]: {
+                ...state.connections[action.channelId],
+                connected: action.connected,
+              },
+            },
+          };
+        }),
+      )
       .addCase(
         ActionType.REMOVE_APPROVED_HOST,
-        (state, action: RemoveApprovedHost) => {
+        legacyCase((state, action: RemoveApprovedHost) => {
           const { [action.channelId]: _, ...approvedHosts } =
             state.approvedHosts;
           return {
             ...state,
             approvedHosts,
           };
-        },
+        }),
       )
       .addCase(
         ActionType.SET_APPROVED_HOST,
-        (state, action: SetApprovedHost) => ({
+        legacyCase((state, action: SetApprovedHost) => ({
           ...state,
           approvedHosts: {
             ...state.approvedHosts,
             [action.channelId]: action.validUntil,
           },
-        }),
+        })),
       )
       .addCase(
         ActionType.UPDATE_DAPP_CONNECTION,
-        (state, action: UpdateDappConnection) => ({
+        legacyCase((state, action: UpdateDappConnection) => ({
           ...state,
           dappConnections: {
             ...state.dappConnections,
-            [action.channelId]: copyPayload(action.connection),
+            [action.channelId]: action.connection,
           },
-        }),
+        })),
       )
       .addCase(
         ActionType.REMOVE_DAPP_CONNECTION,
-        (state, action: RemoveDappConnection) => {
+        legacyCase((state, action: RemoveDappConnection) => {
           const { [action.channelId]: _, ...dappConnections } =
             state.dappConnections;
           return {
             ...state,
             dappConnections,
           };
-        },
+        }),
       )
       .addCase(
         ActionType.RESET_DAPP_CONNECTIONS,
-        (state, action: ResetDappConnections) => ({
+        legacyCase((state, action: ResetDappConnections) => ({
           ...state,
-          dappConnections: copyPayload(action.connections),
-        }),
+          dappConnections: action.connections,
+        })),
       );
   },
 });
