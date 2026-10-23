@@ -47,6 +47,10 @@ const config = {
     '\\webview/index.html': '<rootDir>/app/__mocks__/htmlMock.ts',
     '^@expo/vector-icons@expo/vector-icons$': 'react-native-vector-icons',
     '^@expo/vector-icons/(.*)': 'react-native-vector-icons/$1',
+    // The collectibles reducer moved from index.js to index.ts; keep explicit
+    // `collectibles/index.js` import specifiers resolving to the TS module.
+    '^(.*)/reducers/collectibles/index\\.js$':
+      '<rootDir>/app/reducers/collectibles/index.ts',
   },
   // Disable jest cache
   cache: false,
