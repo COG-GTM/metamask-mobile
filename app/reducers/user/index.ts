@@ -1,4 +1,9 @@
-import { UserAction, UserActionType } from '../../actions/user/types';
+import { createSlice } from '@reduxjs/toolkit';
+import {
+  UserActionType,
+  type LoadingSetAction,
+  type SetAppThemeAction,
+} from '../../actions/user/types';
 import { AppThemeKey } from '../../util/theme/models';
 import { UserState } from './types';
 
@@ -25,98 +30,99 @@ export const userInitialState: UserState = {
   appServicesReady: false,
 };
 
+export const initialState = userInitialState;
+
 /**
- * User reducer
+ * User slice. Legacy action types are handled in `extraReducers` so the
+ * existing action creators in `app/actions/user` keep their exact shape.
+ * Case reducers return a new object (as the legacy switch did) so reference
+ * semantics stay identical.
  */
-/* eslint-disable @typescript-eslint/default-param-last */
-const userReducer = (
-  state: UserState = userInitialState,
-  action: UserAction,
-): UserState => {
-  switch (action.type) {
-    case UserActionType.LOGIN:
-      return {
+const userSlice = createSlice({
+  name: 'user',
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(UserActionType.LOGIN, (state) => ({
         ...state,
         userLoggedIn: true,
-      };
-    case UserActionType.LOGOUT:
-      return {
+      }))
+      .addCase(UserActionType.LOGOUT, (state) => ({
         ...state,
         userLoggedIn: false,
-      };
-    case UserActionType.LOADING_SET:
-      return {
-        ...state,
-        loadingSet: true,
-        loadingMsg: action.loadingMsg,
-      };
-    case UserActionType.LOADING_UNSET:
-      return {
+      }))
+      .addCase(
+        UserActionType.LOADING_SET,
+        (state, action: LoadingSetAction) => ({
+          ...state,
+          loadingSet: true,
+          loadingMsg: action.loadingMsg,
+        }),
+      )
+      .addCase(UserActionType.LOADING_UNSET, (state) => ({
         ...state,
         loadingSet: false,
-      };
-    case UserActionType.PASSWORD_SET:
-      return {
+      }))
+      .addCase(UserActionType.PASSWORD_SET, (state) => ({
         ...state,
         passwordSet: true,
-      };
-    case UserActionType.PASSWORD_UNSET:
-      return {
+      }))
+      .addCase(UserActionType.PASSWORD_UNSET, (state) => ({
         ...state,
         passwordSet: false,
-      };
-    case UserActionType.SEEDPHRASE_NOT_BACKED_UP:
-      return {
+      }))
+      .addCase(UserActionType.SEEDPHRASE_NOT_BACKED_UP, (state) => ({
         ...state,
         seedphraseBackedUp: false,
         backUpSeedphraseVisible: true,
-      };
-    case UserActionType.SEEDPHRASE_BACKED_UP:
-      return {
+      }))
+      .addCase(UserActionType.SEEDPHRASE_BACKED_UP, (state) => ({
         ...state,
         seedphraseBackedUp: true,
         backUpSeedphraseVisible: false,
-      };
-    case UserActionType.BACK_UP_SEEDPHRASE_VISIBLE:
-      return {
+      }))
+      .addCase(UserActionType.BACK_UP_SEEDPHRASE_VISIBLE, (state) => ({
         ...state,
         backUpSeedphraseVisible: true,
-      };
-    case UserActionType.BACK_UP_SEEDPHRASE_NOT_VISIBLE:
-      return {
+      }))
+      .addCase(UserActionType.BACK_UP_SEEDPHRASE_NOT_VISIBLE, (state) => ({
         ...state,
         backUpSeedphraseVisible: false,
-      };
-    case UserActionType.PROTECT_MODAL_VISIBLE:
-      if (!state.seedphraseBackedUp) {
-        return {
-          ...state,
-          protectWalletModalVisible: true,
-        };
-      }
-      return state;
-    case UserActionType.PROTECT_MODAL_NOT_VISIBLE:
-      return {
+      }))
+      .addCase(UserActionType.PROTECT_MODAL_VISIBLE, (state) => {
+        if (!state.seedphraseBackedUp) {
+          return {
+            ...state,
+            protectWalletModalVisible: true,
+          };
+        }
+        return state;
+      })
+      .addCase(UserActionType.PROTECT_MODAL_NOT_VISIBLE, (state) => ({
         ...state,
         protectWalletModalVisible: false,
-      };
-    case UserActionType.SET_GAS_EDUCATION_CAROUSEL_SEEN:
-      return {
+      }))
+      .addCase(UserActionType.SET_GAS_EDUCATION_CAROUSEL_SEEN, (state) => ({
         ...state,
         gasEducationCarouselSeen: true,
-      };
-    case UserActionType.SET_APP_THEME:
-      return {
-        ...state,
-        appTheme: action.payload.theme,
-      };
-    case UserActionType.SET_APP_SERVICES_READY:
-      return {
+      }))
+      .addCase(
+        UserActionType.SET_APP_THEME,
+        (state, action: SetAppThemeAction) => ({
+          ...state,
+          appTheme: action.payload.theme,
+        }),
+      )
+      .addCase(UserActionType.SET_APP_SERVICES_READY, (state) => ({
         ...state,
         appServicesReady: true,
-      };
-    default:
-      return state;
-  }
-};
+      }));
+  },
+});
+
+/**
+ * User reducer
+ */
+const userReducer = userSlice.reducer;
 export default userReducer;
