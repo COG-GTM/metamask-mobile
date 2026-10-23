@@ -1,29 +1,30 @@
+import { createSlice } from '@reduxjs/toolkit';
 import { SecurityAlertResponse } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
+import {
+  ActionType,
+  type SetSignatureRequestSecurityAlertResponseAction,
+} from '../../actions/signatureRequest';
 
-interface StateType {
+export interface SignatureRequestState {
   securityAlertResponse?: SecurityAlertResponse;
 }
 
-interface ActionType {
-  type: string;
-  securityAlertResponse?: SecurityAlertResponse;
-}
-
-const initialState: StateType = {
+export const initialState: SignatureRequestState = {
   securityAlertResponse: undefined,
 };
 
-const signatureRequestReducer = (
-  state: StateType = initialState,
-  action: ActionType = { type: 'NONE' },
-) => {
-  switch (action.type) {
-    case 'SET_SIGNATURE_REQUEST_SECURITY_ALERT_RESPONSE':
-      return {
+const signatureRequestSlice = createSlice({
+  name: 'signatureRequest',
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(
+      ActionType.SET_SIGNATURE_REQUEST_SECURITY_ALERT_RESPONSE,
+      (_state, action: SetSignatureRequestSecurityAlertResponseAction) => ({
         securityAlertResponse: action.securityAlertResponse,
-      };
-    default:
-      return state;
-  }
-};
-export default signatureRequestReducer;
+      }),
+    );
+  },
+});
+
+export default signatureRequestSlice.reducer;
