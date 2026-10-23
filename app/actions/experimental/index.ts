@@ -1,4 +1,4 @@
-import type { Action } from 'redux';
+import type { Action as ReduxAction } from 'redux';
 
 export enum ActionType {
   SET_SECURITY_ALERTS_ENABLED = 'SET_SECURITY_ALERTS_ENABLED',
@@ -6,6 +6,11 @@ export enum ActionType {
 }
 
 export interface SetSecurityAlertsEnabled
-  extends Action<ActionType.SET_SECURITY_ALERTS_ENABLED> {
+  extends ReduxAction<ActionType.SET_SECURITY_ALERTS_ENABLED> {
   securityAlertsEnabled: boolean;
 }
+
+export type SetPPOMInitializationStatus =
+  ReduxAction<ActionType.SET_PPOM_INITIALIZATION_STATUS>;
+
+export type Action = SetSecurityAlertsEnabled | SetPPOMInitializationStatus;

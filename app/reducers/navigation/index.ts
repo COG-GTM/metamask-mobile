@@ -1,6 +1,8 @@
+import { createSlice } from '@reduxjs/toolkit';
 import {
-  type NavigationAction,
   NavigationActionType,
+  type SetCurrentBottomNavRouteAction,
+  type SetCurrentRouteAction,
 } from '../../actions/navigation/types';
 import { NavigationState } from './types';
 
@@ -16,29 +18,35 @@ export const initialNavigationState: NavigationState = {
   currentBottomNavRoute: 'Wallet',
 };
 
+export const initialState = initialNavigationState;
+
+const navigationSlice = createSlice({
+  name: 'navigation',
+  initialState: initialNavigationState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+      .addCase(
+        NavigationActionType.SET_CURRENT_ROUTE,
+        (state, action: SetCurrentRouteAction) => ({
+          ...state,
+          currentRoute: action.payload.route,
+        }),
+      )
+      .addCase(
+        NavigationActionType.SET_CURRENT_BOTTOM_NAV_ROUTE,
+        (state, action: SetCurrentBottomNavRouteAction) => ({
+          ...state,
+          currentBottomNavRoute: action.payload.route,
+        }),
+      );
+  },
+});
+
 /**
  * Navigation reducer
  */
-/* eslint-disable @typescript-eslint/default-param-last */
-const navigationReducer = (
-  state: NavigationState = initialNavigationState,
-  action: NavigationAction,
-): NavigationState => {
-  switch (action.type) {
-    case NavigationActionType.SET_CURRENT_ROUTE:
-      return {
-        ...state,
-        currentRoute: action.payload.route,
-      };
-    case NavigationActionType.SET_CURRENT_BOTTOM_NAV_ROUTE:
-      return {
-        ...state,
-        currentBottomNavRoute: action.payload.route,
-      };
-    default:
-      return state;
-  }
-};
+const navigationReducer = navigationSlice.reducer;
 
 /**
  * Selectors
