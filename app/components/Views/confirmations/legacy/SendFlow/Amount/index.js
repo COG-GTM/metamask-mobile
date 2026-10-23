@@ -647,7 +647,6 @@ class Amount extends PureComponent {
       navigation,
       selectedAsset,
       setSelectedAsset,
-      transactionState: { transaction },
       providerType,
       onConfirm,
       globalNetworkClientId,
@@ -696,7 +695,7 @@ class Amount extends PureComponent {
       }
     }
 
-    await this.prepareTransaction(value);
+    const preparedTransaction = await this.prepareTransaction(value);
 
     this.props.metrics.trackEvent(
       this.props.metrics
@@ -712,13 +711,13 @@ class Amount extends PureComponent {
       this.setState({ isRedesignedTransferTransactionLoading: true });
 
       const transactionParams = {
-        data: transaction.data,
-        from: transaction.from,
-        to: transaction.to,
+        data: preparedTransaction.data,
+        from: preparedTransaction.from,
+        to: preparedTransaction.to,
         value:
-          typeof transaction.value === 'string'
-            ? transaction.value
-            : BNToHex(transaction.value),
+          typeof preparedTransaction.value === 'string'
+            ? preparedTransaction.value
+            : BNToHex(preparedTransaction.value),
       };
 
       await addTransaction(transactionParams, {
@@ -803,6 +802,7 @@ class Amount extends PureComponent {
       transaction.value = '0x0';
     }
     prepareTransaction(transaction);
+    return transaction;
   };
 
   /**
