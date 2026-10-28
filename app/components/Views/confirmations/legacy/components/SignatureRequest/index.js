@@ -401,7 +401,6 @@ class SignatureRequest extends PureComponent {
 
 const mapStateToProps = (state) => ({
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
-  securityAlertResponse: state.signatureRequest.securityAlertResponse,
 });
 
 SignatureRequest.contextType = ThemeContext;

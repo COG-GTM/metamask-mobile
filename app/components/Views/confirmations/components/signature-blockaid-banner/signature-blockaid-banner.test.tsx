@@ -1,8 +1,10 @@
 import React from 'react';
+import { merge } from 'lodash';
 import { fireEvent } from '@testing-library/react-native';
 
 import renderWithProvider from '../../../../../util/test/renderWithProvider';
 import {
+  getSignatureSecurityAlertState,
   securityAlertResponse,
   typedSignV1ConfirmationState,
 } from '../../../../../util/test/confirm-data-helpers';
@@ -30,10 +32,14 @@ jest.mock('../../../../../util/confirmation/signatureUtils', () => ({
   getAnalyticsParams: () => ({}),
 }));
 
-const typedSignV1ConfirmationStateWithBlockaidResponse = {
-  ...typedSignV1ConfirmationState,
-  signatureRequest: { securityAlertResponse },
-};
+const typedSignV1ConfirmationStateWithBlockaidResponse = merge(
+  {},
+  typedSignV1ConfirmationState,
+  getSignatureSecurityAlertState(
+    '7e62bcb1-a4e9-11ef-9b51-ddf21c91a998',
+    securityAlertResponse,
+  ),
+);
 
 describe('Confirm', () => {
   it('should return null if request does not have securityAlertResponse', async () => {

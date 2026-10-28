@@ -1,9 +1,11 @@
+import { merge } from 'lodash';
 import { useNavigation } from '@react-navigation/native';
 
 import Engine from '../../../../core/Engine';
 import Routes from '../../../../constants/navigation/Routes';
 import { renderHookWithProvider } from '../../../../util/test/renderWithProvider';
 import {
+  getSignatureSecurityAlertState,
   personalSignatureConfirmationState,
   stakingDepositConfirmationState,
 } from '../../../../util/test/confirm-data-helpers';
@@ -122,13 +124,24 @@ describe('useConfirmAction', () => {
       'clearSignatureSecurityAlertResponse',
     );
     const { result } = renderHookWithProvider(() => useConfirmActions(), {
-      state: personalSignatureConfirmationState,
+      state: merge(
+        {},
+        personalSignatureConfirmationState,
+        getSignatureSecurityAlertState(
+          '76b33b40-7b5c-11ef-bc0a-25bce29dbc09',
+          undefined,
+          'personal-sign-alert-id',
+        ),
+      ),
     });
     result?.current?.onConfirm();
     expect(Engine.acceptPendingApproval).toHaveBeenCalledTimes(1);
     await flushPromises();
     expect(mockCaptureSignatureMetrics).toHaveBeenCalledTimes(1);
     expect(clearSecurityAlertResponseSpy).toHaveBeenCalledTimes(1);
+    expect(clearSecurityAlertResponseSpy).toHaveBeenCalledWith(
+      'personal-sign-alert-id',
+    );
     expect(mockOpenLedgerSignModal).not.toHaveBeenCalled();
   });
 

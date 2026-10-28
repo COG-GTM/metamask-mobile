@@ -1,4 +1,6 @@
-import setSignatureRequestSecurityAlertResponse from '../../actions/signatureRequest';
+import setSignatureRequestSecurityAlertResponse, {
+  clearSignatureRequestSecurityAlertResponse,
+} from '../../actions/signatureRequest';
 import { setTransactionSecurityAlertResponse } from '../../actions/transaction';
 import {
   Reason,
@@ -22,11 +24,18 @@ import {
   validateWithSecurityAlertsAPI,
 } from './security-alerts-api';
 import { PPOMController } from '@metamask/ppom-validator';
+import { ApprovalType } from '@metamask/controller-utils';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface PPOMRequest {
   method: string;
   params: unknown[];
   origin?: string;
+  /**
+   * Read by SignatureController when the signature request is created and stored on it,
+   * which binds the request to its security alert result via `securityAlertId`.
+   */
+  securityAlertResponse?: Record<string, unknown>;
 }
 
 const TRANSACTION_METHOD = 'eth_sendTransaction';
@@ -56,11 +65,104 @@ const SECURITY_ALERT_RESPONSE_IN_PROGRESS = {
   description: 'Validating the confirmation in progress.',
 };
 
+/** Number of running validations per signature securityAlertId. */
+const pendingSignatureValidations = new Map<string, number>();
+
+/**
+ * Ids of signature requests that were approved or rejected while still being validated.
+ * Their late results must not be written back, or the entry would be orphaned in persisted
+ * state. Entries are removed once the last validation for the id settles.
+ */
+const completedSignatureSecurityAlertIds = new Set<string>();
+
+const SIGNATURE_APPROVAL_TYPES: Record<string, ApprovalType> = {
+  personal_sign: ApprovalType.PersonalSign,
+  eth_signTypedData: ApprovalType.EthSignTypedData,
+  eth_signTypedData_v1: ApprovalType.EthSignTypedData,
+  eth_signTypedData_v3: ApprovalType.EthSignTypedData,
+  eth_signTypedData_v4: ApprovalType.EthSignTypedData,
+};
+
+/**
+ * Attaches a securityAlertId to a signature request so its validation result can only be
+ * shown on the confirmation for that request. Must run synchronously before the request is
+ * passed to SignatureController, which copies `req.securityAlertResponse` onto the request.
+ */
+function bindSignatureSecurityAlertId(
+  req: PPOMRequest,
+  securityAlertId?: string,
+): string {
+  const existingId = req.securityAlertResponse?.securityAlertId;
+  if (typeof existingId === 'string' && existingId) {
+    return existingId;
+  }
+  const id = securityAlertId ?? uuidv4();
+  req.securityAlertResponse = { securityAlertId: id };
+  return id;
+}
+
+/**
+ * ApprovalController rejects a signature request when the same origin already has a pending
+ * approval of the same type, so such a request will never be shown and must not be validated.
+ */
+function isRejectedDuplicateSignatureRequest(req: PPOMRequest): boolean {
+  const type = SIGNATURE_APPROVAL_TYPES[req.method];
+  if (!type || typeof req.origin !== 'string' || !req.origin) {
+    return false;
+  }
+  try {
+    return Boolean(
+      Engine.context.ApprovalController?.has({ origin: req.origin, type }),
+    );
+  } catch (e) {
+    Logger.log(`Error checking pending approvals for PPOM: ${e}`);
+    return false;
+  }
+}
+
 async function validateRequest(
   req: PPOMRequest,
   transactionId?: string,
   securityAlertId?: string,
 ) {
+  const isConfirmationMethod = CONFIRMATION_METHODS.includes(req.method);
+  const isTransaction = isTransactionRequest(req);
+
+  if (isConfirmationMethod && !isTransaction) {
+    // Both steps must happen before the first await, i.e. before the request
+    // reaches SignatureController / ApprovalController.
+    if (isRejectedDuplicateSignatureRequest(req)) {
+      return;
+    }
+    const id = bindSignatureSecurityAlertId(req, securityAlertId);
+    pendingSignatureValidations.set(
+      id,
+      (pendingSignatureValidations.get(id) ?? 0) + 1,
+    );
+    try {
+      return await runValidation(req, transactionId, id);
+    } finally {
+      const remaining = (pendingSignatureValidations.get(id) ?? 1) - 1;
+      if (remaining > 0) {
+        pendingSignatureValidations.set(id, remaining);
+      } else {
+        pendingSignatureValidations.delete(id);
+        completedSignatureSecurityAlertIds.delete(id);
+      }
+    }
+  }
+
+  return runValidation(req, transactionId, securityAlertId);
+}
+
+async function runValidation(
+  req: PPOMRequest,
+  transactionId?: string,
+  securityAlertId?: string,
+) {
+  const isConfirmationMethod = CONFIRMATION_METHODS.includes(req.method);
+  const isTransaction = isTransactionRequest(req);
+
   const {
     AccountsController,
     NetworkController,
@@ -72,7 +174,6 @@ async function validateRequest(
   } = NetworkController.getNetworkClientById(
     NetworkController.state?.selectedNetworkClientId,
   );
-  const isConfirmationMethod = CONFIRMATION_METHODS.includes(req.method);
   const isBlockaidFeatEnabled = await isBlockaidFeatureEnabled();
   if (!ppomController || !isBlockaidFeatEnabled || !isConfirmationMethod) {
     return;
@@ -94,7 +195,6 @@ async function validateRequest(
     }
   }
 
-  const isTransaction = isTransactionRequest(req);
   let securityAlertResponse: SecurityAlertResponse | undefined;
 
   try {
@@ -196,8 +296,16 @@ function setSecurityAlertResponse(
         { ...response, securityAlertId } as any,
       );
     }
-  } else {
-    store.dispatch(setSignatureRequestSecurityAlertResponse(response));
+  } else if (
+    securityAlertId &&
+    !completedSignatureSecurityAlertIds.has(securityAlertId)
+  ) {
+    store.dispatch(
+      setSignatureRequestSecurityAlertResponse(securityAlertId, {
+        ...response,
+        securityAlertId,
+      } as SecurityAlertResponse),
+    );
   }
 }
 
@@ -239,8 +347,11 @@ function normalizeRequest(request: PPOMRequest): PPOMRequest {
   };
 }
 
-function clearSignatureSecurityAlertResponse() {
-  store.dispatch(setSignatureRequestSecurityAlertResponse());
+function clearSignatureSecurityAlertResponse(securityAlertId?: string) {
+  if (securityAlertId && pendingSignatureValidations.has(securityAlertId)) {
+    completedSignatureSecurityAlertIds.add(securityAlertId);
+  }
+  store.dispatch(clearSignatureRequestSecurityAlertResponse(securityAlertId));
 }
 
 function createValidatorForSecurityAlertId(securityAlertId: string) {

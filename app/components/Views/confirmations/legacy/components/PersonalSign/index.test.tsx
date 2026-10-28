@@ -112,13 +112,26 @@ describe('PersonalSign', () => {
 
     useSelectorMock.mockImplementationOnce((callback) =>
       callback({
+        engine: {
+          backgroundState: {
+            SignatureController: {
+              signatureRequests: {
+                [messageParamsMock.metamaskId]: {
+                  securityAlertResponse: { securityAlertId: 'alert-id' },
+                },
+              },
+            },
+          },
+        },
         signatureRequest: {
-          securityAlertResponse: {
-            description: '',
-            features: [],
-            providerRequestsCount: { eth_chainId: 1 },
-            reason: '',
-            result_type: 'Benign',
+          securityAlertResponses: {
+            'alert-id': {
+              description: '',
+              features: [],
+              providerRequestsCount: { eth_chainId: 1 },
+              reason: '',
+              result_type: 'Benign',
+            },
           },
         },
       }),

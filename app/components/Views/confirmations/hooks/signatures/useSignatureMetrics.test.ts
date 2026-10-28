@@ -1,5 +1,7 @@
+import { merge } from 'lodash';
 import { MetaMetricsEvents } from '../../../../../core/Analytics';
 import {
+  getSignatureSecurityAlertState,
   securityAlertResponse,
   typedSignV4ConfirmationState,
   typedSignV4SignatureRequest,
@@ -8,9 +10,13 @@ import { renderHookWithProvider } from '../../../../../util/test/renderWithProvi
 import { useSignatureMetrics } from './useSignatureMetrics';
 import { ResultType, Reason, SecurityAlertSource } from '../../../../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 
+const mockSecurityAlertId = 'signature-security-alert-id';
 const mockTypedSignV4SignatureRequest = typedSignV4SignatureRequest;
 jest.mock('./useSignatureRequest', () => ({
-  useSignatureRequest: () => mockTypedSignV4SignatureRequest,
+  useSignatureRequest: () => ({
+    ...mockTypedSignV4SignatureRequest,
+    securityAlertResponse: { securityAlertId: mockSecurityAlertId },
+  }),
 }));
 
 jest.mock('../../../../../util/address', () => ({
@@ -96,10 +102,15 @@ describe('useSignatureMetrics', () => {
 
   it('should capture metrics events correctly', async () => {
     const { result } = renderHookWithProvider(() => useSignatureMetrics(), {
-      state: {
-        ...typedSignV4ConfirmationState,
-        signatureRequest: { securityAlertResponse },
-      },
+      state: merge(
+        {},
+        typedSignV4ConfirmationState,
+        getSignatureSecurityAlertState(
+          'fb2029e1-b0ab-11ef-9227-05a11087c334',
+          securityAlertResponse,
+          mockSecurityAlertId,
+        ),
+      ),
     });
     // first call for 'SIGNATURE_REQUESTED' event
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
@@ -118,10 +129,15 @@ describe('useSignatureMetrics', () => {
 
   it('captures metrics events correctly with loading security alert response', async () => {
     const { result } = renderHookWithProvider(() => useSignatureMetrics(), {
-      state: {
-        ...typedSignV4ConfirmationState,
-        signatureRequest: { securityAlertResponse: securityAlertResponseLoading },
-      },
+      state: merge(
+        {},
+        typedSignV4ConfirmationState,
+        getSignatureSecurityAlertState(
+          'fb2029e1-b0ab-11ef-9227-05a11087c334',
+          securityAlertResponseLoading,
+          mockSecurityAlertId,
+        ),
+      ),
     });
 
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
@@ -140,10 +156,15 @@ describe('useSignatureMetrics', () => {
 
   it('captures metrics events correctly with undefined security alert response', async () => {
     const { result } = renderHookWithProvider(() => useSignatureMetrics(), {
-      state: {
-        ...typedSignV4ConfirmationState,
-        signatureRequest: { securityAlertResponse: securityAlertResponseUndefined },
-      },
+      state: merge(
+        {},
+        typedSignV4ConfirmationState,
+        getSignatureSecurityAlertState(
+          'fb2029e1-b0ab-11ef-9227-05a11087c334',
+          securityAlertResponseUndefined,
+          mockSecurityAlertId,
+        ),
+      ),
     });
 
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);

@@ -515,6 +515,30 @@ export const securityAlertResponse = {
   chainId: '0x1',
 };
 
+/**
+ * Partial root state binding `response` to the signature request `signatureRequestId`
+ * through `securityAlertId`, as ppom-util and SignatureController do at runtime.
+ */
+export const getSignatureSecurityAlertState = (
+  signatureRequestId: string,
+  response: Record<string, unknown> | undefined,
+  securityAlertId = (response?.securityAlertId as string) ??
+    'signature-security-alert-id',
+) => ({
+  engine: {
+    backgroundState: {
+      SignatureController: {
+        signatureRequests: {
+          [signatureRequestId]: { securityAlertResponse: { securityAlertId } },
+        },
+      },
+    },
+  },
+  signatureRequest: {
+    securityAlertResponses: response ? { [securityAlertId]: response } : {},
+  },
+});
+
 const stakingConfirmationBaseState = {
   engine: {
     backgroundState: {
