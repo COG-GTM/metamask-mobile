@@ -4,6 +4,7 @@ import { IWalletKit, WalletKitTypes } from '@reown/walletkit';
 import { SessionTypes } from '@walletconnect/types';
 import { ImageSourcePropType, Linking, Platform } from 'react-native';
 
+import { rpcErrors } from '@metamask/rpc-errors';
 import { CaipChainId } from '@metamask/utils';
 import Routes from '../../../app/constants/navigation/Routes';
 import ppomUtil from '../../../app/lib/ppom/ppom-util';
@@ -16,7 +17,9 @@ import { addTransaction } from '../../util/transaction-controller';
 import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
 import { Minimizer } from '../NativeModules';
 import { getPermittedAccounts } from '../Permissions';
-import getRpcMethodMiddleware from '../RPCMethods/RPCMethodMiddleware';
+import getRpcMethodMiddleware, {
+  checkActiveAccountAndChainId,
+} from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { ERROR_MESSAGES } from './WalletConnectV2';
 import METHODS_TO_REDIRECT from './wc-config';
@@ -561,6 +564,19 @@ class WalletConnect2Session {
     origin: string,
   ) {
     try {
+      const from = methodParams?.[0]?.from;
+      if (typeof from !== 'string' || !from) {
+        throw rpcErrors.invalidParams({
+          message: 'Invalid parameters: must provide an Ethereum address.',
+        });
+      }
+
+      await checkActiveAccountAndChainId({
+        address: from,
+        hostname: getHostname(origin),
+        isWalletConnect: true,
+      });
+
       const networkClientId = getGlobalNetworkClientId();
 
       const trx = await addTransaction(methodParams[0], {

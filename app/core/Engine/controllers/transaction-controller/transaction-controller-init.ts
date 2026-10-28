@@ -9,11 +9,18 @@ import {
 } from '@metamask/transaction-controller';
 import { SmartTransactionStatuses } from '@metamask/smart-transactions-controller/dist/types';
 import { hasProperty, Hex } from '@metamask/utils';
+import {
+  Caip25CaveatType,
+  Caip25CaveatValue,
+  Caip25EndowmentPermissionName,
+  getEthAccounts,
+} from '@metamask/chain-agnostic-permission';
 import { ApprovalController } from '@metamask/approval-controller';
 import { NetworkController } from '@metamask/network-controller';
 import { PreferencesController } from '@metamask/preferences-controller';
 import SmartTransactionsController from '@metamask/smart-transactions-controller';
 
+import { INTERNAL_ORIGINS } from '../../../../constants/transaction';
 import { REDESIGNED_TRANSACTION_TYPES } from '../../../../components/Views/confirmations/constants/confirmations';
 import { selectSwapsChainFeatureFlags } from '../../../../reducers/swaps';
 import { selectShouldUseSmartTransaction } from '../../../../selectors/smartTransactionsController';
@@ -59,6 +66,7 @@ export const TransactionControllerInit: ControllerInitFunction<
     gasFeeController,
     keyringController,
     networkController,
+    permissionController,
     preferencesController,
     smartTransactionsController,
   } = getControllers(request);
@@ -85,6 +93,9 @@ export const TransactionControllerInit: ControllerInitFunction<
         getNetworkClientRegistry: (...args) =>
           networkController.getNetworkClientRegistry(...args),
         getNetworkState: () => networkController.state,
+        // @ts-expect-error - Controller skips the origin check when undefined is returned, but its type only allows string[]
+        getPermittedAccounts: async (origin?: string) =>
+          getDappPermittedAccounts(permissionController, origin),
         hooks: {
           // @ts-expect-error - TransactionController actually sends a signedTx as a second argument, but its type doesn't reflect that.
           publish: (transactionMeta: TransactionMeta, signedTransactionInHex: Hex) =>
@@ -255,6 +266,66 @@ function isIncomingTransactionsEnabled(
   );
 }
 
+function getOriginHostname(origin: string): string | undefined {
+  if (!origin.includes('://')) {
+    return undefined;
+  }
+  try {
+    return new URL(origin).hostname || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Returns the accounts a dapp origin was granted, so the TransactionController
+ * rejects dapp transactions whose `from` is not one of them. Returns undefined
+ * (no restriction) for internal origins and origins without a CAIP-25
+ * permission, e.g. MetaMask SDK requests whose subject is the channel id.
+ *
+ * @param permissionController - The PermissionController instance.
+ * @param origin - The transaction origin (hostname or full URL).
+ * @returns Lowercased permitted addresses, or undefined.
+ */
+export function getDappPermittedAccounts(
+  permissionController: ReturnType<
+    typeof getControllers
+  >['permissionController'],
+  origin?: string,
+): string[] | undefined {
+  if (!origin || INTERNAL_ORIGINS.includes(origin)) {
+    return undefined;
+  }
+
+  const hostname = getOriginHostname(origin);
+  const subject = [origin, hostname].find(
+    (candidate): candidate is string =>
+      Boolean(candidate) &&
+      permissionController.hasPermission(
+        candidate as string,
+        Caip25EndowmentPermissionName,
+      ),
+  );
+
+  if (!subject) {
+    return undefined;
+  }
+
+  const caveat = permissionController.getCaveat(
+    subject,
+    Caip25EndowmentPermissionName,
+    Caip25CaveatType,
+  );
+
+  if (!caveat) {
+    return [];
+  }
+
+  return getEthAccounts(caveat.value as Caip25CaveatValue).map((address) =>
+    address.toLowerCase(),
+  );
+}
+
 function getControllers(
   request: ControllerInitRequest<
     TransactionControllerMessenger,
@@ -266,6 +337,7 @@ function getControllers(
     gasFeeController: request.getController('GasFeeController'),
     keyringController: request.getController('KeyringController'),
     networkController: request.getController('NetworkController'),
+    permissionController: request.getController('PermissionController'),
     preferencesController: request.getController('PreferencesController'),
     smartTransactionsController: request.getController(
       'SmartTransactionsController',

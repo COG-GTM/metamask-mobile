@@ -1015,6 +1015,7 @@ export class Engine {
       ApprovalController: approvalController,
       KeyringController: this.keyringController,
       NetworkController: networkController,
+      PermissionController: permissionController,
       PreferencesController: preferencesController,
       SmartTransactionsController: this.smartTransactionsController,
     };
