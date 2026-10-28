@@ -3305,7 +3305,9 @@
   },
   "download_files": {
     "error": "Failed to download attachment.",
-    "unknownError": "Unknown error occurred"
+    "unknownError": "Unknown error occurred",
+    "wallet_pass_alert": "This website ({{host}}) wants to open an Apple Wallet pass outside MetaMask. Only allow this if you trust the site.",
+    "wallet_pass_declined": "Opening the Apple Wallet pass was cancelled."
   },
   "remember_me": {
     "enable_remember_me": "Turn on Remember me",
