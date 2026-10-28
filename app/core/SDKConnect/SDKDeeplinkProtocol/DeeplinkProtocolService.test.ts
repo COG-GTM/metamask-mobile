@@ -7,6 +7,7 @@ import SDKConnect from '../SDKConnect';
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import DeeplinkProtocolService from './DeeplinkProtocolService';
 import AppConstants from '../../AppConstants';
 import { DappClient } from '../AndroidSDK/dapp-sdk-types';
@@ -20,6 +21,14 @@ jest.mock('../utils/DevLogger');
 jest.mock('../../../util/Logger');
 jest.mock('../handlers/handleCustomRpcCalls');
 jest.mock('../handlers/handleBatchRpcResponse');
+jest.mock('../utils/wait.util', () => {
+  const actual = jest.requireActual('../utils/wait.util');
+  return {
+    ...actual,
+    wait: jest.fn(actual.wait),
+    waitForKeychainUnlocked: jest.fn(actual.waitForKeychainUnlocked),
+  };
+});
 jest.mock('../../Permissions', () => ({
   ...jest.requireActual('../../Permissions'),
   getPermittedAccounts: jest.fn().mockReturnValue([]),
@@ -98,6 +107,25 @@ describe('DeeplinkProtocolService', () => {
     it('should initialize with raw connections', async () => {
       await service.init();
       expect(service.connections.connection1).toBeDefined();
+    });
+
+    it('restores the dapp public key bound to each stored session', async () => {
+      (
+        SDKConnect.getInstance().loadDappConnections as jest.Mock
+      ).mockResolvedValue({
+        connection1: {
+          id: 'connection1',
+          originatorInfo: { url: 'test.com', title: 'Test' },
+          validUntil: Date.now() + 60_000,
+          scheme: 'scheme1',
+          otherPublicKey: 'stored-key',
+        },
+      });
+
+      service.isInitialized = false;
+      await service.init();
+
+      expect(service.dappPublicKeyByClientId.connection1).toBe('stored-key');
     });
   });
 
@@ -301,9 +329,10 @@ describe('DeeplinkProtocolService', () => {
           dappId: 'dappId',
         },
         connected: false,
-        validUntil: Date.now(),
+        validUntil: Date.now() + 60_000,
         scheme: 'scheme',
       };
+      service.dappPublicKeyByClientId.channel1 = 'key';
 
       await service.handleConnection(connectionParams);
 
@@ -356,6 +385,180 @@ describe('DeeplinkProtocolService', () => {
       };
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
+    });
+  });
+
+  describe('handleConnection on an existing session', () => {
+    const originatorInfo = Buffer.from(
+      JSON.stringify({
+        originatorInfo: { url: 'mallory.example', title: 'Mallory' },
+      }),
+    ).toString('base64');
+    const request = JSON.stringify({
+      id: '1',
+      method: 'eth_sendTransaction',
+      params: [],
+    });
+    let onMessage: jest.Mock;
+
+    const flush = () => new Promise((resolve) => setImmediate(resolve));
+
+    beforeEach(() => {
+      onMessage = jest.fn();
+      service.connections.acme = {
+        clientId: 'acme',
+        originatorInfo: {
+          url: 'acme.example',
+          title: 'Acme Swap',
+          platform: 'ios',
+          dappId: 'acme',
+        },
+        connected: false,
+        validUntil: Date.now() + 60_000,
+        scheme: 'acmeswap',
+      };
+      service.dappPublicKeyByClientId.acme = 'acme-key';
+      service.bridgeByClientId.acme = {
+        onMessage,
+      } as unknown as BackgroundBridge;
+      (handleCustomRpcCalls as jest.Mock).mockImplementation(
+        async ({ rpc }) => rpc,
+      );
+      (
+        Engine.context as unknown as {
+          KeyringController: { isUnlocked: () => boolean };
+        }
+      ).KeyringController.isUnlocked = () => true;
+    });
+
+    it('does not run a request or replace the key when the public key differs', async () => {
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'mallory-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.dappPublicKeyByClientId.acme).toBe('acme-key');
+      expect(service.connections.acme.scheme).toBe('acmeswap');
+      expect(service.connections.acme.originatorInfo.title).toBe('Acme Swap');
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalled();
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(Linking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('does not run a request when the return scheme differs', async () => {
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'mallory',
+        dappPublicKey: 'acme-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.connections.acme.scheme).toBe('acmeswap');
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalled();
+      expect(Linking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('does not rebind an expired session to a different public key', async () => {
+      service.connections.acme.validUntil = Date.now() - 1;
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'mallory-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.dappPublicKeyByClientId.acme).toBe('acme-key');
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('requires re-approval when the session has expired', async () => {
+      service.connections.acme.validUntil = Date.now() - 1;
+      (
+        Engine.context.PermissionController.requestPermissions as jest.Mock
+      ).mockRejectedValue(new Error('User rejected'));
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'acme-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).toHaveBeenCalledWith({ origin: 'acme' }, expect.any(Object));
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+    });
+
+    it('renews an expired session and runs the request once the user re-approves', async () => {
+      service.connections.acme.validUntil = Date.now() - 1;
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'acme-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(service.dappPublicKeyByClientId.acme).toBe('acme-key');
+      expect(service.connections.acme.originatorInfo.title).toBe('Acme Swap');
+      expect(service.connections.acme.validUntil).toBeGreaterThan(Date.now());
+      expect(SDKConnect.getInstance().addDappConnection).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'acme',
+          otherPublicKey: 'acme-key',
+          scheme: 'acmeswap',
+          originatorInfo: expect.objectContaining({ title: 'Acme Swap' }),
+        }),
+      );
+      expect(onMessage).toHaveBeenCalledWith({
+        name: 'metamask-provider',
+        data: expect.objectContaining({ method: 'eth_sendTransaction' }),
+      });
+    });
+
+    it('runs the request without a prompt when key, scheme and expiry match', async () => {
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'acme-key',
+        originatorInfo,
+        request,
+      });
+
+      expect(onMessage).toHaveBeenCalledTimes(1);
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -507,6 +710,80 @@ describe('DeeplinkProtocolService', () => {
       };
       service.handleMessage(params);
       expect(DevLogger.log).toHaveBeenCalled();
+    });
+  });
+
+  describe('handleMessage on an existing session', () => {
+    let onMessage: jest.Mock;
+    const message = Buffer.from(
+      JSON.stringify({ id: '1', method: 'personal_sign', params: [] }),
+    ).toString('base64');
+    const account = `${toChecksumHexAddress(MOCK_ADDRESS)}@0x1`;
+
+    beforeEach(() => {
+      (wait as jest.Mock).mockResolvedValueOnce(undefined);
+      (waitForKeychainUnlocked as jest.Mock).mockResolvedValueOnce(true);
+      onMessage = jest.fn();
+      service.connections.acme = {
+        clientId: 'acme',
+        originatorInfo: {
+          url: 'acme.example',
+          title: 'Acme Swap',
+          platform: 'ios',
+          dappId: 'acme',
+        },
+        connected: false,
+        validUntil: Date.now() + 60_000,
+        scheme: 'acmeswap',
+      };
+      service.dappPublicKeyByClientId.acme = 'acme-key';
+      service.bridgeByClientId.acme = {
+        onMessage,
+      } as unknown as BackgroundBridge;
+      (handleCustomRpcCalls as jest.Mock).mockImplementation(
+        async ({ rpc }) => rpc,
+      );
+    });
+
+    const send = async (overrides: {
+      dappPublicKey?: string;
+      scheme?: string;
+    }) => {
+      service.handleMessage({
+        channelId: 'acme',
+        url: 'url',
+        message,
+        account,
+        dappPublicKey: 'acme-key',
+        scheme: 'acmeswap',
+        ...overrides,
+      } as Parameters<DeeplinkProtocolService['handleMessage']>[0]);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    };
+
+    it('forwards messages from the bound dapp', async () => {
+      await send({});
+      expect(onMessage).toHaveBeenCalledTimes(1);
+    });
+
+    it('drops messages carrying a different public key', async () => {
+      await send({ dappPublicKey: 'mallory-key' });
+      expect(onMessage).not.toHaveBeenCalled();
+    });
+
+    it('drops messages with a different scheme without opening it', async () => {
+      await send({ scheme: 'mallory' });
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(Linking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('rejects messages on an expired session', async () => {
+      service.connections.acme.validUntil = Date.now() - 1;
+      await send({});
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(Linking.openURL).toHaveBeenCalledWith(
+        expect.stringMatching(/^acmeswap:\/\/mmsdk\?message=/),
+      );
     });
   });
 
