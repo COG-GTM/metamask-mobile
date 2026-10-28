@@ -31,7 +31,6 @@ import {
 } from '../../../selectors/networkController';
 import { selectTokens } from '../../../selectors/tokensController';
 import { sortTransactions } from '../../../util/activity';
-import { safeToChecksumAddress } from '../../../util/address';
 import { toLowerCaseEquals } from '../../../util/general';
 import {
   findBlockExplorerForNonEvmChainId,
@@ -59,7 +58,6 @@ import {
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { updateIncomingTransactions } from '../../../util/transaction-controller';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
-import { store } from '../../../store';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import {
   selectSwapsTransactions,
@@ -161,6 +159,10 @@ class Asset extends PureComponent {
      * Array of ERC20 assets
      */
     tokens: PropTypes.array,
+    /**
+     * Network ID of the in-page provider, used to match legacy txs without chainId
+     */
+    networkId: PropTypes.string,
     swapsIsLive: PropTypes.bool,
     swapsTokens: PropTypes.object,
     searchDiscoverySwapsTokens: PropTypes.array,
@@ -204,6 +206,10 @@ class Asset extends PureComponent {
   selectedAddress = toChecksumHexAddress(
     this.props.selectedInternalAccount?.address,
   );
+  selectedAddressLowerCase = this.selectedAddress?.toLowerCase();
+
+  isSelectedAddress = (address) =>
+    Boolean(address) && address.toLowerCase() === this.selectedAddressLowerCase;
 
   updateNavBar = (contentOffset = 0) => {
     const {
@@ -298,7 +304,12 @@ class Asset extends PureComponent {
         this.props.selectedInternalAccount?.address
     ) {
       this.showLoaderAndNormalize();
-    } else {
+    } else if (
+      prevProps.transactions !== this.props.transactions ||
+      prevProps.swapsTransactions !== this.props.swapsTransactions ||
+      prevProps.tokens !== this.props.tokens ||
+      prevProps.networkId !== this.props.networkId
+    ) {
       this.normalizeTransactions();
     }
   }
@@ -317,8 +328,7 @@ class Asset extends PureComponent {
     this.txsPending.length !== newTxsPending.length;
 
   ethFilter = (tx) => {
-    const { networkId } = store.getState().inpageProvider;
-    const { chainId } = this.props;
+    const { chainId, networkId } = this.props;
     const {
       txParams: { from, to },
       isTransfer,
@@ -327,8 +337,7 @@ class Asset extends PureComponent {
     } = tx;
 
     if (
-      (safeToChecksumAddress(from) === this.selectedAddress ||
-        safeToChecksumAddress(to) === this.selectedAddress) &&
+      (this.isSelectedAddress(from) || this.isSelectedAddress(to)) &&
       (chainId === tx.chainId || (!tx.chainId && networkId === tx.networkID)) &&
       tx.status !== 'unapproved'
     ) {
@@ -347,17 +356,14 @@ class Asset extends PureComponent {
   };
 
   noEthFilter = (tx) => {
-    const { networkId } = store.getState().inpageProvider;
-
-    const { chainId, swapsTransactions } = this.props;
+    const { chainId, networkId, swapsTransactions } = this.props;
     const {
       txParams: { to, from },
       isTransfer,
       transferInformation,
     } = tx;
     if (
-      (safeToChecksumAddress(from) === this.selectedAddress ||
-        safeToChecksumAddress(to) === this.selectedAddress) &&
+      (this.isSelectedAddress(from) || this.isSelectedAddress(to)) &&
       (chainId === tx.chainId || (!tx.chainId && networkId === tx.networkID)) &&
       tx.status !== 'unapproved'
     ) {
@@ -391,14 +397,15 @@ class Asset extends PureComponent {
     let submittedTxs = [];
     const newPendingTxs = [];
     const confirmedTxs = [];
-    const submittedNonces = [];
 
     const { chainId, transactions } = this.props;
     if (transactions.length) {
-      const sortedTransactions = sortTransactions(transactions).filter(
-        (tx, index, self) =>
-          self.findIndex((_tx) => _tx.id === tx.id) === index,
-      );
+      const seenIds = new Set();
+      const sortedTransactions = sortTransactions(transactions).filter((tx) => {
+        if (seenIds.has(tx.id)) return false;
+        seenIds.add(tx.id);
+        return true;
+      });
       const filteredTransactions = sortedTransactions.filter((tx) => {
         const filterResult = this.filter(tx);
         if (filterResult) {
@@ -425,22 +432,22 @@ class Asset extends PureComponent {
         return filterResult;
       });
 
+      const confirmedNonces = new Set();
+      confirmedTxs.forEach(({ txParams }) => {
+        if (this.isSelectedAddress(txParams.from)) {
+          confirmedNonces.add(txParams.nonce);
+        }
+      });
+      const submittedNonces = new Set();
       submittedTxs = submittedTxs.filter(({ txParams: { from, nonce } }) => {
         if (!toLowerCaseEquals(from, this.selectedAddress)) {
           return false;
         }
-        const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTxs.find(
-          (confirmedTransaction) =>
-            toLowerCaseEquals(
-              safeToChecksumAddress(confirmedTransaction.txParams.from),
-              this.selectedAddress,
-            ) && confirmedTransaction.txParams.nonce === nonce,
-        );
-        if (alreadyConfirmed) {
+        if (confirmedNonces.has(nonce)) {
           return false;
         }
-        submittedNonces.push(nonce);
+        const alreadySubmitted = submittedNonces.has(nonce);
+        submittedNonces.add(nonce);
         return !alreadySubmitted;
       });
 
@@ -607,6 +614,7 @@ const mapStateToProps = (state, { route }) => ({
     getRampNetworks(state),
   ),
   networkClientId: selectNetworkClientId(state),
+  networkId: state.inpageProvider.networkId,
 });
 
 const mapDispatchToProps = (dispatch) => ({
