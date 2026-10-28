@@ -78,6 +78,19 @@ jest.mock('../../store', () => ({
 jest.mock('../RPCMethods/RPCMethodMiddleware', () => ({
   __esModule: true,
   default: () => () => ({ acknowledged: () => Promise.resolve() }),
+  checkActiveAccountAndChainId: jest.requireActual(
+    '../RPCMethods/RPCMethodMiddleware',
+  ).checkActiveAccountAndChainId,
+}));
+jest.mock('../../util/transaction-controller', () => ({
+  addTransaction: jest.fn(),
+}));
+jest.mock('../../util/networks/global-network', () => ({
+  getGlobalNetworkClientId: jest.fn().mockReturnValue('mainnet'),
+}));
+jest.mock('../../../app/lib/ppom/ppom-util', () => ({
+  __esModule: true,
+  default: { validateRequest: jest.fn() },
 }));
 jest.mock('./wc-utils', () => ({
   hideWCLoadingState: jest.fn(),
@@ -708,6 +721,121 @@ describe('WalletConnect2Session', () => {
     expect(approveRequestSpy).toHaveBeenCalledWith({
       id: switchChainRequest.id + '',
       result: true,
+    });
+  });
+
+  describe('eth_sendTransaction', () => {
+    const PERMITTED_ACCOUNT = '0x1234567890abcdef1234567890abcdef12345678';
+    const UNPERMITTED_ACCOUNT = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd';
+
+    const buildSendTransactionRequest = (
+      txParams: Record<string, unknown>,
+    ) => ({
+      id: '7',
+      topic: 'test-topic',
+      params: {
+        chainId: 'eip155:1',
+        request: {
+          method: 'eth_sendTransaction',
+          params: [txParams],
+        },
+      },
+      verifyContext: { verified: { origin: 'https://example.com' } },
+    });
+
+    let addTransactionMock: jest.Mock;
+    let getPermittedAccountsMock: jest.Mock;
+
+    beforeEach(() => {
+      addTransactionMock = jest.requireMock(
+        '../../util/transaction-controller',
+      ).addTransaction;
+      addTransactionMock.mockReset();
+      addTransactionMock.mockResolvedValue({
+        transactionMeta: { id: 'tx-1' },
+        result: Promise.resolve('0xhash'),
+      });
+
+      getPermittedAccountsMock =
+        jest.requireMock('../Permissions').getPermittedAccounts;
+      getPermittedAccountsMock.mockReset();
+      getPermittedAccountsMock.mockReturnValue([PERMITTED_ACCOUNT]);
+
+      (session as any).topicByRequestId['7'] = mockSession.topic;
+    });
+
+    it('rejects the request and does not add a transaction when from is not a permitted account', async () => {
+      const rejectRequestSpy = jest.spyOn(session, 'rejectRequest');
+
+      await session.handleRequest(
+        buildSendTransactionRequest({
+          from: UNPERMITTED_ACCOUNT,
+          to: PERMITTED_ACCOUNT,
+          value: '0x1',
+        }) as any,
+      );
+
+      expect(getPermittedAccountsMock).toHaveBeenCalledWith('example.com');
+      expect(addTransactionMock).not.toHaveBeenCalled();
+      expect(rejectRequestSpy).toHaveBeenCalledWith({
+        id: '7',
+        error: expect.objectContaining({
+          message:
+            'Invalid parameters: must provide a permitted Ethereum address.',
+        }),
+      });
+    });
+
+    it('rejects the request when the dapp has no permitted accounts', async () => {
+      getPermittedAccountsMock.mockReturnValue([]);
+      const rejectRequestSpy = jest.spyOn(session, 'rejectRequest');
+
+      await session.handleRequest(
+        buildSendTransactionRequest({ from: PERMITTED_ACCOUNT }) as any,
+      );
+
+      expect(addTransactionMock).not.toHaveBeenCalled();
+      expect(rejectRequestSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ id: '7' }),
+      );
+    });
+
+    it('rejects the request when from is missing', async () => {
+      const rejectRequestSpy = jest.spyOn(session, 'rejectRequest');
+
+      await session.handleRequest(
+        buildSendTransactionRequest({ to: PERMITTED_ACCOUNT }) as any,
+      );
+
+      expect(addTransactionMock).not.toHaveBeenCalled();
+      expect(rejectRequestSpy).toHaveBeenCalledWith({
+        id: '7',
+        error: expect.objectContaining({
+          message: 'Invalid parameters: must provide an Ethereum address.',
+        }),
+      });
+    });
+
+    it('adds the transaction and approves the request when from is a permitted account', async () => {
+      const approveRequestSpy = jest.spyOn(session, 'approveRequest');
+      const rejectRequestSpy = jest.spyOn(session, 'rejectRequest');
+      const txParams = {
+        from: PERMITTED_ACCOUNT.toUpperCase().replace('0X', '0x'),
+        to: UNPERMITTED_ACCOUNT,
+        value: '0x1',
+      };
+
+      await session.handleRequest(buildSendTransactionRequest(txParams) as any);
+
+      expect(addTransactionMock).toHaveBeenCalledWith(
+        txParams,
+        expect.objectContaining({ origin: 'https://example.com' }),
+      );
+      expect(rejectRequestSpy).not.toHaveBeenCalled();
+      expect(approveRequestSpy).toHaveBeenCalledWith({
+        id: '7',
+        result: '0xhash',
+      });
     });
   });
 });

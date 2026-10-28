@@ -17,7 +17,10 @@ import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenge
 import { buildControllerInitRequestMock } from '../../utils/test-utils';
 import { TransactionControllerInitMessenger } from '../../messengers/transaction-controller-messenger';
 import { ControllerInitRequest } from '../../types';
-import { TransactionControllerInit } from './transaction-controller-init';
+import {
+  getDappPermittedAccounts,
+  TransactionControllerInit,
+} from './transaction-controller-init';
 import {
   handleTransactionAddedEventForMetrics,
   handleTransactionApprovedEventForMetrics,
@@ -465,6 +468,69 @@ describe('Transaction Controller Init', () => {
     eventHandlerMap.forEach(({ event, handler, payload, expectedArgs }) => {
       subscribeCallbacks[event](payload);
       expect(handler).toHaveBeenCalledWith(...expectedArgs);
+    });
+  });
+
+  describe('getPermittedAccounts', () => {
+    const PERMITTED = '0x1234567890ABCDEF1234567890abcdef12345678';
+    const caveat = {
+      type: 'authorizedScopes',
+      value: {
+        requiredScopes: {},
+        optionalScopes: {
+          'eip155:1': { accounts: [`eip155:1:${PERMITTED}`] },
+        },
+        sessionProperties: {},
+        isMultichainOrigin: false,
+      },
+    };
+
+    function buildPermissionController(subjects: string[]) {
+      return {
+        hasPermission: jest.fn((origin: string) => subjects.includes(origin)),
+        getCaveat: jest.fn(() => caveat),
+      } as unknown as Parameters<typeof getDappPermittedAccounts>[0];
+    }
+
+    it('is passed to the controller and reads the PermissionController', async () => {
+      const permissionController = buildPermissionController(['example.com']);
+      const getPermittedAccounts = testConstructorOption(
+        'getPermittedAccounts',
+        permissionController as unknown as Record<string, unknown>,
+      );
+
+      expect(await getPermittedAccounts?.('example.com')).toStrictEqual([
+        PERMITTED.toLowerCase(),
+      ]);
+    });
+
+    it('resolves a full WalletConnect URL origin to its hostname subject', () => {
+      const permissionController = buildPermissionController(['example.com']);
+
+      expect(
+        getDappPermittedAccounts(permissionController, 'https://example.com'),
+      ).toStrictEqual([PERMITTED.toLowerCase()]);
+    });
+
+    it('returns undefined for origins without a permission so the controller does not restrict them', () => {
+      const permissionController = buildPermissionController(['example.com']);
+
+      expect(
+        getDappPermittedAccounts(permissionController, 'some-sdk-channel-id'),
+      ).toBeUndefined();
+      expect(
+        getDappPermittedAccounts(permissionController, 'https://other.com'),
+      ).toBeUndefined();
+    });
+
+    it('returns undefined for internal origins', () => {
+      const permissionController = buildPermissionController(['metamask']);
+
+      expect(
+        getDappPermittedAccounts(permissionController, 'metamask'),
+      ).toBeUndefined();
+      expect(getDappPermittedAccounts(permissionController)).toBeUndefined();
+      expect(permissionController.hasPermission).not.toHaveBeenCalled();
     });
   });
 });
