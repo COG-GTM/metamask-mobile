@@ -67,6 +67,8 @@ const longestBip39Run = (tokens: string[]): number => {
   let longest = 0;
   let current = 0;
   for (const token of tokens) {
+    // BIP-39 words have at least 3 letters; shorter tokens are list markers.
+    if (token.length < 3) continue;
     current = BIP39_WORDS.has(token) ? current + 1 : 0;
     longest = Math.max(longest, current);
   }

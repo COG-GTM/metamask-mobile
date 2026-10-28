@@ -101,6 +101,10 @@ describe('mnemonic::isHintSeedPhrase', () => {
       .join('\n');
     expect(isHintSeedPhrase(numbered)).toBe(true);
     expect(isHintSeedPhrase(`my phrase: ${srp} (keep safe)`)).toBe(true);
+    const lettered = srpWords
+      .map((word, i) => `${String.fromCharCode(97 + i)}) ${word}`)
+      .join(' ');
+    expect(isHintSeedPhrase(lettered)).toBe(true);
   });
 
   it('rejects a 24-word SRP', () => {
