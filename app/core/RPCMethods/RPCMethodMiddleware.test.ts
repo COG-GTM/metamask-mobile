@@ -37,6 +37,7 @@ import {
   ValidPermission,
 } from '@metamask/permission-controller';
 import PPOMUtil from '../../lib/ppom/ppom-util';
+import Routes from '../../constants/navigation/Routes';
 import { backgroundState } from '../../util/test/initial-root-state';
 import { Store } from 'redux';
 import { RootState } from 'app/reducers';
@@ -1699,6 +1700,98 @@ describe('getRpcMethodMiddleware', () => {
       const spy = jest.spyOn(PPOMUtil, 'validateRequest');
       await sendRequest();
       expect(spy).toBeCalledTimes(1);
+    });
+  });
+
+  describe('wallet_scanQRCode', () => {
+    const scanMnemonic =
+      'verb middle giant soon wage common wide tool gentle garlic issue nut';
+    const scanPrivateKey =
+      '4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318';
+
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    type ScannerParams = any;
+
+    function setupScan(params: JsonRpcParams = []) {
+      setupGlobalState({ activeTab: 1, selectedNetworkClientId: 'mainnet' });
+      const navigate = jest.fn();
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalBrowserOptions(),
+        hostname: hostMock,
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        navigation: { navigate } as any,
+      });
+      const responsePromise = callMiddleware({
+        middleware,
+        request: { jsonrpc, id: 1, method: 'wallet_scanQRCode', params },
+      });
+      const getScannerParams = async (): Promise<ScannerParams> => {
+        await new Promise((resolve) => setImmediate(resolve));
+        return navigate.mock.calls[0]?.[1];
+      };
+      return { navigate, responsePromise, getScannerParams };
+    }
+
+    it('opens the scanner in dapp mode for the requesting origin', async () => {
+      const { navigate, responsePromise, getScannerParams } = setupScan();
+      const scannerParams = await getScannerParams();
+
+      expect(navigate).toHaveBeenCalledWith(
+        Routes.QR_TAB_SWITCHER,
+        expect.objectContaining({ dappOrigin: hostMock, disableTabber: true }),
+      );
+      scannerParams.onScanSuccess({ content: 'hello' }, 'hello');
+      const response = await responsePromise;
+      expect((response as JsonRpcSuccess<string>).result).toBe('hello');
+    });
+
+    it.each([
+      ['a seed object', { seed: scanMnemonic }, scanMnemonic],
+      ['a private key object', { private_key: scanPrivateKey }, scanPrivateKey],
+      ['raw mnemonic text', { content: scanMnemonic }, scanMnemonic],
+    ])(
+      'returns an error instead of %s when called with empty params',
+      async (_, data, content) => {
+        const { responsePromise, getScannerParams } = setupScan([]);
+        (await getScannerParams()).onScanSuccess(data, content);
+        const response = await responsePromise;
+
+        expect((response as JsonRpcSuccess<Json>).result).toBeUndefined();
+        expect((response as JsonRpcFailure).error.code).toBe(4100);
+        expect(JSON.stringify(response)).not.toContain('verb middle');
+        expect(JSON.stringify(response)).not.toContain(scanPrivateKey);
+      },
+    );
+
+    it('returns an error when the scanner blocks wallet-only content', async () => {
+      const { responsePromise, getScannerParams } = setupScan();
+      (await getScannerParams()).onScanError('DAPP_SCAN_WALLET_ONLY_CONTENT');
+      const response = await responsePromise;
+      expect((response as JsonRpcFailure).error.code).toBe(4100);
+    });
+
+    it('returns a user rejection when the scan is cancelled', async () => {
+      const { responsePromise, getScannerParams } = setupScan();
+      (await getScannerParams()).onScanError('USER_CANCELLED');
+      const response = await responsePromise;
+      expect((response as JsonRpcFailure).error.code).toBe(4001);
+    });
+
+    it('rejects a non-matching scan without echoing the content', async () => {
+      const { responsePromise, getScannerParams } = setupScan(['^0x']);
+      (await getScannerParams()).onScanSuccess({ content: 'hello' }, 'hello');
+      const response = await responsePromise;
+      expect((response as JsonRpcFailure).error.message).toBe('NO_REGEX_MATCH');
+      expect(JSON.stringify(response)).not.toContain('hello');
+    });
+
+    it('rejects a non-string pattern before opening the scanner', async () => {
+      const { navigate, responsePromise } = setupScan([{ source: '.*' }]);
+      const response = await responsePromise;
+      expect((response as JsonRpcFailure).error.code).toBe(-32602);
+      expect(navigate).not.toHaveBeenCalled();
     });
   });
 

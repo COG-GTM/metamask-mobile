@@ -43,3 +43,46 @@ export const parseSeedPhrase = (seedPhrase: string): string =>
   '';
 
 export const { isValidMnemonic } = ethers.utils;
+
+const RAW_PRIVATE_KEY_REGEX = /^(0x)?[0-9a-f]{64}$/iu;
+const EXTENDED_PRIVATE_KEY_REGEX = /^[tuvxyz]prv[1-9A-HJ-NP-Za-km-z]{100,}$/u;
+const NUMBER_ONLY_REGEX = /^\d+$/u;
+
+/**
+ * Whether QR content is secret key material: a Secret Recovery Phrase
+ * (optionally numbered or oddly spaced), a raw private key or an extended private key.
+ *
+ * @param content - Raw scanned text.
+ * @returns True if the content must be treated as a wallet secret.
+ */
+export const isSecretKeyMaterial = (content: string): boolean => {
+  if (typeof content !== 'string') {
+    return false;
+  }
+  const trimmed = content.trim();
+  if (
+    RAW_PRIVATE_KEY_REGEX.test(trimmed) ||
+    EXTENDED_PRIVATE_KEY_REGEX.test(trimmed)
+  ) {
+    return true;
+  }
+  const words = parseSeedPhrase(trimmed)
+    .split(' ')
+    .filter((word) => !NUMBER_ONLY_REGEX.test(word))
+    .join(' ');
+  return !failedSeedPhraseRequirements(words) && isValidMnemonic(words);
+};
+
+/**
+ * Whether QR content is only meant for the wallet itself and must never be
+ * returned to a dapp: secret key material, WalletConnect pairing URIs (which
+ * carry the pairing symKey) or extension sync payloads.
+ *
+ * @param content - Raw scanned text.
+ * @returns True if the content must not leave the wallet.
+ */
+export const isWalletOnlyQRContent = (content: string): boolean =>
+  typeof content === 'string' &&
+  (isSecretKeyMaterial(content) ||
+    content.split('wc:').length > 1 ||
+    content.split('metamask-sync:').length > 1);
