@@ -34,6 +34,7 @@ import {
 import {
   SPA_urlChangeListener,
   JS_DESELECT_TEXT,
+  isValidPostMessageOrigin,
 } from '../../../util/browserScripts';
 import resolveEnsToIpfsContentId from '../../../lib/ens-ipfs/resolver';
 import { strings } from '../../../../locales/i18n';
@@ -898,6 +899,11 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       // First disconnect and reset bridge
       backgroundBridgeRef.current?.onDisconnect();
       backgroundBridgeRef.current = undefined;
+
+      if (!isValidPostMessageOrigin(urlBridge)) {
+        Logger.log('Not connecting BackgroundBridge: invalid origin');
+        return;
+      }
 
       //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
