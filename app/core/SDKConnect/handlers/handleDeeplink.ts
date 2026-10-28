@@ -107,6 +107,9 @@ const handleDeeplink = async ({
       }
       channelExists = false;
       peerKeyChanged = true;
+      // QR-origin initial connections are authorized without a prompt; the
+      // deeplink origin goes through checkPermissions.
+      origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
     }
 
     if (channelExists) {

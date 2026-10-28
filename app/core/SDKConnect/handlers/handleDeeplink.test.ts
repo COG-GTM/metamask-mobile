@@ -365,6 +365,34 @@ describe('handleDeeplink', () => {
       expect(handleConnectionMessage).not.toHaveBeenCalled();
     });
 
+    it('uses the deeplink origin for a key change on a QR-code link so approval is required', async () => {
+      const connections: Record<string, { otherPublicKey: string }> = {
+        [channelId]: { otherPublicKey: approvedPublicKey },
+      };
+      mockGetConnections.mockReturnValue(connections);
+      mockRemoveChannel.mockImplementation(async () => {
+        delete connections[channelId];
+        return true;
+      });
+
+      await handleDeeplink({
+        sdkConnect,
+        channelId,
+        origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+        url: `${url}&t=q`,
+        otherPublicKey: attackerPublicKey,
+        protocolVersion,
+        context,
+      });
+
+      expect(mockConnectToChannel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          initialConnection: true,
+          origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+        }),
+      );
+    });
+
     it('treats a key on a channel with no stored key as a key change', async () => {
       const connections: Record<string, object> = { [channelId]: {} };
       mockGetConnections.mockReturnValue(connections);
