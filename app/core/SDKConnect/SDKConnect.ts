@@ -262,14 +262,17 @@ export class SDKConnect {
   public removeChannel({
     channelId,
     sendTerminate,
+    force,
   }: {
     channelId: string;
     sendTerminate?: boolean;
+    force?: boolean;
   }) {
     return removeChannel({
       channelId,
       engine: Engine,
       sendTerminate,
+      force,
       instance: this,
     });
   }

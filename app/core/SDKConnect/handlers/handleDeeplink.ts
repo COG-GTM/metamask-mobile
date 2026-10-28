@@ -79,6 +79,7 @@ const handleDeeplink = async ({
   let channelExists = connections[channelId] !== undefined;
   const approvedPublicKey = connections[channelId]?.otherPublicKey;
   let peerKeyChanged = false;
+  let resetFromQrCode = false;
 
   DevLogger.log(
     `handleDeeplink:: channel=${channelId} exists=${channelExists}`,
@@ -98,6 +99,7 @@ const handleDeeplink = async ({
       const removed = await sdkConnect.removeChannel({
         channelId,
         sendTerminate: true,
+        force: true,
       });
       if (!removed || sdkConnect.getConnections()[channelId] !== undefined) {
         Logger.log(
@@ -107,6 +109,7 @@ const handleDeeplink = async ({
       }
       channelExists = false;
       peerKeyChanged = true;
+      resetFromQrCode = origin === AppConstants.DEEPLINKS.ORIGIN_QR_CODE;
       // QR-origin initial connections are authorized without a prompt; the
       // deeplink origin goes through checkPermissions.
       origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
@@ -188,10 +191,12 @@ const handleDeeplink = async ({
         });
       }
     } else {
+      // No trigger for a QR scan reset: there is no external dapp to return to.
       const trigger =
-        rpc !== undefined &&
-        !peerKeyChanged &&
-        origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK
+        resetFromQrCode ||
+        (rpc !== undefined &&
+          !peerKeyChanged &&
+          origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK)
           ? undefined // temporarily unset trigger on android to prevent goBack after connection approval
           : 'deeplink';
 

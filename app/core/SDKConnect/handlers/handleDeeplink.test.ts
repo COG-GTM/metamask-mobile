@@ -350,6 +350,7 @@ describe('handleDeeplink', () => {
       expect(mockRemoveChannel).toHaveBeenCalledWith({
         channelId,
         sendTerminate: true,
+        force: true,
       });
       // Handled as a brand-new connection so the user must approve it again.
       expect(mockConnectToChannel).toHaveBeenCalledWith({
@@ -389,6 +390,36 @@ describe('handleDeeplink', () => {
         expect.objectContaining({
           initialConnection: true,
           origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+          trigger: undefined,
+        }),
+      );
+    });
+
+    it('requires approval without a return-to-dapp trigger for a key change from an in-app QR scan', async () => {
+      const connections: Record<string, { otherPublicKey: string }> = {
+        [channelId]: { otherPublicKey: approvedPublicKey },
+      };
+      mockGetConnections.mockReturnValue(connections);
+      mockRemoveChannel.mockImplementation(async () => {
+        delete connections[channelId];
+        return true;
+      });
+
+      await handleDeeplink({
+        sdkConnect,
+        channelId,
+        origin: AppConstants.DEEPLINKS.ORIGIN_QR_CODE,
+        url,
+        otherPublicKey: attackerPublicKey,
+        protocolVersion,
+        context,
+      });
+
+      expect(mockConnectToChannel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          initialConnection: true,
+          origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+          trigger: undefined,
         }),
       );
     });

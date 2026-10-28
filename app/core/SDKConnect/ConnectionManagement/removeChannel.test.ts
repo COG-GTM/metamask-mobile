@@ -115,6 +115,52 @@ describe('removeChannel', () => {
     });
   });
 
+  describe('Removing a channel whose peer cannot be notified', () => {
+    const mockChannelId = 'mockChannelId';
+    let mockRemoteDisconnect: jest.Mock;
+    let mockBridgeDisconnect: jest.Mock;
+
+    beforeEach(() => {
+      mockRemoteDisconnect = jest.fn();
+      mockBridgeDisconnect = jest.fn();
+      mockInstance.state.connected[mockChannelId] = {
+        removeConnection: jest.fn().mockResolvedValue(false),
+        remote: { disconnect: mockRemoteDisconnect },
+        backgroundBridge: { onDisconnect: mockBridgeDisconnect },
+      } as unknown as SDKConnect['state']['connected'][string];
+      mockInstance.state.connections[mockChannelId] = {
+        id: mockChannelId,
+      } as unknown as SDKConnect['state']['connections'][string];
+    });
+
+    it('keeps the channel when terminate fails without force', async () => {
+      const removed = await removeChannel({
+        channelId: mockChannelId,
+        sendTerminate: true,
+        instance: mockInstance,
+      });
+
+      expect(removed).toBe(false);
+      expect(mockInstance.state.connections[mockChannelId]).toBeDefined();
+      expect(mockRemoteDisconnect).not.toHaveBeenCalled();
+    });
+
+    it('removes the channel locally when terminate fails with force', async () => {
+      const removed = await removeChannel({
+        channelId: mockChannelId,
+        sendTerminate: true,
+        force: true,
+        instance: mockInstance,
+      });
+
+      expect(removed).toBe(true);
+      expect(mockBridgeDisconnect).toHaveBeenCalled();
+      expect(mockRemoteDisconnect).toHaveBeenCalled();
+      expect(mockInstance.state.connected[mockChannelId]).toBeUndefined();
+      expect(mockInstance.state.connections[mockChannelId]).toBeUndefined();
+    });
+  });
+
   it('should delete the channel from the connecting state', () => {
     const mockChannelId = 'mockChannelId';
 
