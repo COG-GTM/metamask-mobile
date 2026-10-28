@@ -172,6 +172,53 @@ describe('Permission Utility Functions', () => {
       );
       expect(result).toEqual([]);
     });
+
+    it('only reads the caveat of the requested subject', () => {
+      const makeSubject = () => ({
+        permissions: {
+          [Caip25EndowmentPermissionName]: {
+            caveats: [
+              {
+                type: Caip25CaveatType,
+                value: { optionalScopes: {}, requiredScopes: {} },
+              },
+            ],
+          },
+        },
+      });
+      const subjects: Record<string, ReturnType<typeof makeSubject>> = {};
+      for (let i = 0; i < 50; i++) {
+        subjects[`dapp${i}.example`] = makeSubject();
+      }
+      const target = subjects['dapp7.example'];
+      mockListAccounts.mockReturnValue([
+        { address: '0x1', metadata: { lastSelected: 1 } },
+      ]);
+      (getEthAccounts as jest.Mock).mockReturnValue(['0x1']);
+
+      const result = getPermittedAccountsByHostname(
+        { subjects },
+        'dapp7.example',
+      );
+
+      expect(result).toEqual(['0x1']);
+      expect(getEthAccounts).toHaveBeenCalledTimes(1);
+      expect(getEthAccounts).toHaveBeenCalledWith(
+        target.permissions[Caip25EndowmentPermissionName].caveats[0].value,
+      );
+    });
+
+    it('returns an empty array for inherited object keys', () => {
+      const mockState = { subjects: {} };
+
+      expect(getPermittedAccountsByHostname(mockState, 'constructor')).toEqual(
+        [],
+      );
+      expect(getPermittedAccountsByHostname(mockState, '__proto__')).toEqual(
+        [],
+      );
+      expect(getEthAccounts).not.toHaveBeenCalled();
+    });
   });
 
   describe('getPermittedChainIdsByHostname', () => {
@@ -187,11 +234,11 @@ describe('Permission Utility Functions', () => {
                     value: {
                       optionalScopes: {
                         'eip155:1': {
-                          accounts: []
+                          accounts: [],
                         },
                         'eip155:2': {
-                          accounts: []
-                        }
+                          accounts: [],
+                        },
                       },
                       requiredScopes: {},
                     },
@@ -209,8 +256,8 @@ describe('Permission Utility Functions', () => {
                     value: {
                       optionalScopes: {
                         'eip155:3': {
-                          accounts: []
-                        }
+                          accounts: [],
+                        },
                       },
                       requiredScopes: {},
                     },
@@ -232,7 +279,7 @@ describe('Permission Utility Functions', () => {
           return ['0x1', '0x2'];
         }
         return ['0x3'];
-          });
+      });
 
       const result = getPermittedChainIdsByHostname(
         mockState,
@@ -252,9 +299,9 @@ describe('Permission Utility Functions', () => {
                     type: Caip25CaveatType,
                     value: {
                       optionalScopes: {
-                        'wallet': {
-                          accounts: []
-                        }
+                        wallet: {
+                          accounts: [],
+                        },
                       },
                       requiredScopes: {},
                     },
@@ -266,7 +313,6 @@ describe('Permission Utility Functions', () => {
         },
       };
 
-
       (getPermittedEthChainIds as jest.Mock).mockImplementation((value) => {
         if (
           value ===
@@ -276,7 +322,7 @@ describe('Permission Utility Functions', () => {
         ) {
           return [];
         }
-          });
+      });
 
       const result = getPermittedChainIdsByHostname(
         mockState,
@@ -736,7 +782,9 @@ describe('Permission Utility Functions', () => {
       // Mock getCaip25Caveat to return undefined
       mockGetCaveat.mockReturnValue(undefined);
 
-      expect(() => updatePermittedChains('https://example.com', ['0x1'])).toThrow(
+      expect(() =>
+        updatePermittedChains('https://example.com', ['0x1']),
+      ).toThrow(
         'Cannot add chain permissions for origin "https://example.com": no permission currently exists for this origin.',
       );
     });

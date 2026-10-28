@@ -123,20 +123,9 @@ export const getPermittedAccountsByHostname = (
   hostname: string,
 ): string[] => {
   const { subjects } = state;
-  const accountsByHostname = Object.keys(subjects).reduce(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc: any, subjectKey) => {
-      const accounts = getAccountsFromSubject(subjects[subjectKey]);
-      if (accounts.length > 0) {
-        acc[subjectKey] = accounts;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return accountsByHostname?.[hostname] || [];
+  const hasSubject =
+    subjects && Object.prototype.hasOwnProperty.call(subjects, hostname);
+  return hasSubject ? getAccountsFromSubject(subjects[hostname]) : [];
 };
 
 // TODO: Replace "any" with type
