@@ -866,17 +866,35 @@ describe('Permission Utility Functions', () => {
   });
 
   describe('getPermittedAccounts', () => {
-    it('should return selected account for internal origins', () => {
-      const selectedAccount = {
-        address: '0x123',
-      };
-      (
-        Engine.context.AccountsController.getSelectedAccount as jest.Mock
-      ).mockReturnValue(selectedAccount);
+    it.each([
+      ['TransactionTypes.MMM', TransactionTypes.MMM],
+      ['MetaMask Mobile', 'MetaMask Mobile'],
+    ])(
+      'does not grant the selected account to origin %s without a permission',
+      (_label, origin) => {
+        (
+          Engine.context.AccountsController.getSelectedAccount as jest.Mock
+        ).mockReturnValue({ address: '0x123' });
+        mockGetCaveat.mockImplementation(() => {
+          throw new PermissionDoesNotExistError(
+            origin,
+            Caip25EndowmentPermissionName,
+          );
+        });
 
-      const result = getPermittedAccounts(TransactionTypes.MMM);
-      expect(result).toEqual(['0x123']);
-    });
+        const result = getPermittedAccounts(origin);
+
+        expect(result).toEqual([]);
+        expect(mockGetCaveat).toHaveBeenCalledWith(
+          origin,
+          Caip25EndowmentPermissionName,
+          Caip25CaveatType,
+        );
+        expect(
+          Engine.context.AccountsController.getSelectedAccount,
+        ).not.toHaveBeenCalled();
+      },
+    );
 
     it('should return permitted accounts for external origins when wallet is unlocked', () => {
       const mockCaveat = {

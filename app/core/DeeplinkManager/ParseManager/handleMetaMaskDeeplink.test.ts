@@ -20,6 +20,8 @@ jest.mock('../../../core/NativeModules', () => ({
   },
 }));
 
+const MOCK_CHANNEL_ID = '123e4567-e89b-12d3-a456-426614174000';
+
 describe('handleMetaMaskProtocol', () => {
   const mockParse = jest.fn();
   const mockHandleBuyCrypto = jest.fn();
@@ -134,7 +136,7 @@ describe('handleMetaMaskProtocol', () => {
     beforeEach(() => {
       url = `${PREFIXES.METAMASK}${ACTIONS.CONNECT}`;
       params.comm = 'deeplinking';
-      params.channelId = 'test-channel-id';
+      params.channelId = MOCK_CHANNEL_ID;
       params.pubkey = 'test-pubkey';
       params.originatorInfo = 'test-originator-info';
       params.request = 'test-request';
@@ -153,6 +155,32 @@ describe('handleMetaMaskProtocol', () => {
           wcURL,
         });
       }).toThrow('DeepLinkManager failed to connect - Invalid scheme');
+    });
+
+    it('rejects a non-UUID channelId without calling handleConnection', () => {
+      const mockHandleConnection = jest.fn();
+      mockSDKConnectGetInstance.mockImplementation(() => ({
+        state: {
+          deeplinkingService: {
+            handleConnection: mockHandleConnection,
+          },
+        },
+      }));
+
+      params.scheme = 'test-scheme';
+      params.channelId = 'MetaMask Mobile';
+
+      expect(() => {
+        handleMetaMaskDeeplink({
+          instance,
+          handled,
+          params,
+          url,
+          origin,
+          wcURL,
+        });
+      }).toThrow('DeepLinkManager failed to connect - Invalid channelId');
+      expect(mockHandleConnection).not.toHaveBeenCalled();
     });
 
     it('should call handleConnection if params.scheme is defined', () => {
@@ -190,7 +218,7 @@ describe('handleMetaMaskProtocol', () => {
   describe('when url starts with ${PREFIXES.METAMASK}${ACTIONS.MMSDK}', () => {
     beforeEach(() => {
       url = `${PREFIXES.METAMASK}${ACTIONS.MMSDK}`;
-      params.channelId = 'test-channel-id';
+      params.channelId = MOCK_CHANNEL_ID;
       params.pubkey = 'test-pubkey';
       params.account = 'test-account';
     });
@@ -228,6 +256,35 @@ describe('handleMetaMaskProtocol', () => {
       }).toThrow(
         'DeepLinkManager: deeplinkingService failed to handleMessage - Invalid scheme',
       );
+    });
+
+    it('rejects a non-UUID channelId without calling handleMessage', () => {
+      const mockHandleMessage = jest.fn();
+      mockSDKConnectGetInstance.mockImplementation(() => ({
+        state: {
+          deeplinkingService: {
+            handleMessage: mockHandleMessage,
+          },
+        },
+      }));
+
+      params.message = 'test-message';
+      params.scheme = 'test-scheme';
+      params.channelId = 'MetaMask Mobile';
+
+      expect(() => {
+        handleMetaMaskDeeplink({
+          instance,
+          handled,
+          params,
+          url,
+          origin,
+          wcURL,
+        });
+      }).toThrow(
+        'DeepLinkManager: deeplinkingService failed to handleMessage - Invalid channelId',
+      );
+      expect(mockHandleMessage).not.toHaveBeenCalled();
     });
 
     it('should call handleMessage if params.message and params.scheme are defined', () => {
