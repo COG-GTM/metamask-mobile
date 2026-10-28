@@ -8,8 +8,8 @@ const selectAccountsByChainIdRaw = (state: RootState) =>
   state.engine.backgroundState.AccountTrackerController.accountsByChainId;
 
 // AccountTrackerController rebuilds `accountsByChainId` (cloneDeep) on every
-// refresh, so the map is deep-compared once here and every downstream selector
-// can rely on reference equality.
+// refresh (including chains whose balances did not change), so the selectors
+// below compare results deeply and recompute only when their input changes.
 export const selectAccountsByChainId = createSelector(
   selectAccountsByChainIdRaw,
   (accountsByChainId) => accountsByChainId,
@@ -20,6 +20,7 @@ export const selectAccounts = createSelector(
   selectAccountsByChainId,
   selectEvmChainId,
   (accountsByChainId, chainId) => accountsByChainId?.[chainId] || {},
+  { memoizeOptions: { resultEqualityCheck: isEqual } },
 );
 
 export const selectAccountsLength = createSelector(

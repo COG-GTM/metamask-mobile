@@ -164,6 +164,19 @@ describe('accountTrackerController selector memoization', () => {
     expect(selectAccounts(second)[MOCK_ADDRESS_1].balance).toBe('0x99');
   });
 
+  it('keeps the current-chain accounts reference when only another chain changes', () => {
+    const first = buildState(ACCOUNTS_BY_CHAIN_ID);
+    const changed = cloneDeep(ACCOUNTS_BY_CHAIN_ID);
+    changed['0x89'][MOCK_ADDRESS_2].balance = '0x77';
+    const second = buildState(changed);
+
+    const accounts = selectAccounts(first);
+    expect(selectAccountsByChainId(second)).not.toBe(
+      selectAccountsByChainId(first),
+    );
+    expect(selectAccounts(second)).toBe(accounts);
+  });
+
   it('returns the new balance when the selected balance changes', () => {
     const first = buildState(ACCOUNTS_BY_CHAIN_ID);
     const changed = cloneDeep(ACCOUNTS_BY_CHAIN_ID);
