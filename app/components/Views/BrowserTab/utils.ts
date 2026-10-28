@@ -79,3 +79,26 @@ export const getMaskedUrl = (
   }
   return urlToMask;
 };
+
+/**
+ * Whether a WebView bridge message was posted by the top-level document whose
+ * origin the BackgroundBridge attributes requests to. Messages from iframes, from
+ * a different origin, or without frame info from the native layer are rejected.
+ *
+ * @param message - Frame info reported by the native WebView for the message
+ * @param bridgeUrl - URL the active BackgroundBridge was created for
+ */
+export const isMessageFromBridgeFrame = (
+  message: { isMainFrame?: boolean; frameOrigin?: string },
+  bridgeUrl: string | undefined,
+): boolean => {
+  if (message.isMainFrame !== true || !message.frameOrigin || !bridgeUrl) {
+    return false;
+  }
+  const bridgeOrigin = new URLParse(bridgeUrl).origin;
+  const frameOrigin = new URLParse(message.frameOrigin).origin;
+  if (!bridgeOrigin || bridgeOrigin === 'null') {
+    return false;
+  }
+  return frameOrigin.toLowerCase() === bridgeOrigin.toLowerCase();
+};

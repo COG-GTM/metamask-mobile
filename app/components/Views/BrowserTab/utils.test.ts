@@ -1,4 +1,9 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
+import {
+  isValidUrl,
+  isENSUrl,
+  getMaskedUrl,
+  isMessageFromBridgeFrame,
+} from './utils';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -89,6 +94,82 @@ describe('BrowserTab utils', () => {
       it(`should correctly mask ${input}`, () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
+    });
+  });
+
+  describe('isMessageFromBridgeFrame', () => {
+    const bridgeUrl = 'https://swap.example';
+
+    it('accepts messages from the main frame of the bridge origin', () => {
+      expect(
+        isMessageFromBridgeFrame(
+          { isMainFrame: true, frameOrigin: 'https://swap.example' },
+          bridgeUrl,
+        ),
+      ).toBe(true);
+    });
+
+    it('accepts explicit default ports and case differences', () => {
+      expect(
+        isMessageFromBridgeFrame(
+          { isMainFrame: true, frameOrigin: 'https://SWAP.example:443' },
+          'https://swap.example/path?x=1',
+        ),
+      ).toBe(true);
+    });
+
+    it('rejects messages posted from iframes, even same-origin ones', () => {
+      expect(
+        isMessageFromBridgeFrame(
+          { isMainFrame: false, frameOrigin: 'https://swap.example' },
+          bridgeUrl,
+        ),
+      ).toBe(false);
+      expect(
+        isMessageFromBridgeFrame(
+          { isMainFrame: false, frameOrigin: 'https://ads.evil.example' },
+          bridgeUrl,
+        ),
+      ).toBe(false);
+    });
+
+    it('rejects main-frame messages from a different origin', () => {
+      [
+        'https://evil.example',
+        'http://swap.example',
+        'https://swap.example:8443',
+        'https://sub.swap.example',
+        'null',
+      ].forEach((frameOrigin) => {
+        expect(
+          isMessageFromBridgeFrame(
+            { isMainFrame: true, frameOrigin },
+            bridgeUrl,
+          ),
+        ).toBe(false);
+      });
+    });
+
+    it('rejects messages without native frame info', () => {
+      expect(isMessageFromBridgeFrame({}, bridgeUrl)).toBe(false);
+      expect(
+        isMessageFromBridgeFrame(
+          { frameOrigin: 'https://swap.example' },
+          bridgeUrl,
+        ),
+      ).toBe(false);
+      expect(isMessageFromBridgeFrame({ isMainFrame: true }, bridgeUrl)).toBe(
+        false,
+      );
+    });
+
+    it('rejects messages when there is no bridge', () => {
+      expect(
+        isMessageFromBridgeFrame(
+          { isMainFrame: true, frameOrigin: 'https://swap.example' },
+          undefined,
+        ),
+      ).toBe(false);
     });
   });
 });
