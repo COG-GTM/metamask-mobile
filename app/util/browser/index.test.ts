@@ -3,6 +3,8 @@ import {
   getAlertMessage,
   protocolAllowList,
   trustedProtocolToDeeplink,
+  getProtocolNavigationAction,
+  browserWebViewOriginWhitelist,
   prefixUrlWithProtocol,
   getUrlObj,
   getHost,
@@ -10,6 +12,9 @@ import {
   processUrlForBrowser,
 } from '.';
 import { strings } from '../../../locales/i18n';
+import { Linking } from 'react-native';
+import URLParse from 'url-parse';
+import { createOnShouldStartLoadWithRequest } from '@metamask/react-native-webview/src/WebViewShared';
 
 describe('Browser utils :: prefixUrlWithProtocol', () => {
   it('should prefix url with https: protocol', () => {
@@ -200,6 +205,108 @@ describe('Browser utils :: protocolWhitelist', () => {
 
     expect(protocolAllowList.includes(protocol)).toBeTruthy();
   });
+});
+
+describe('Browser utils :: getProtocolNavigationAction', () => {
+  const actionFor = (url: string) =>
+    getProtocolNavigationAction(new URLParse(url).protocol);
+
+  it.each(['https://meta.io', 'http://meta.io', 'about:srcdoc', 'about:blank'])(
+    'loads %s in the webview',
+    (url) => {
+      expect(actionFor(url)).toBe('load');
+    },
+  );
+
+  it.each([
+    'metamask://dapp/portfolio.metamask.io',
+    'wc:f82jdjfjakjskdfj@2',
+    'ethereum:0x0000000000000000000000000000000000000000',
+    'dapp://portfolio.metamask.io',
+    'market://details?id=io.metamask',
+  ])('deeplinks trusted %s', (url) => {
+    expect(actionFor(url)).toBe('deeplink');
+  });
+
+  it.each([
+    'sms:+15555550123?body=test',
+    'tel:+15555550123',
+    'mailto:mallory@example.com',
+    'facetime:+15555550123',
+    'itms-apps://apps.apple.com/app/id1',
+    'intent://scan/#Intent;scheme=zxing;end',
+    'otherwallet://connect?uri=wc:abc',
+    'file:///etc/hosts',
+    'SMS:+15555550123',
+  ])('prompts before opening untrusted %s', (url) => {
+    expect(actionFor(url)).toBe('prompt');
+  });
+
+  it.each([
+    // eslint-disable-next-line no-script-url
+    'javascript:alert(1)',
+    'data:text/html,<script>alert(1)</script>',
+    'blob:https://meta.io/0b6c7f43',
+  ])('blocks %s', (url) => {
+    expect(actionFor(url)).toBe('block');
+  });
+});
+
+describe('Browser utils :: browserWebViewOriginWhitelist', () => {
+  const navigate = (originWhitelist: readonly string[], url: string) => {
+    const onShouldStartLoadWithRequest = jest.fn(() => false);
+    const loadRequest = jest.fn();
+    createOnShouldStartLoadWithRequest(
+      loadRequest,
+      originWhitelist,
+      onShouldStartLoadWithRequest,
+    )({
+      nativeEvent: { url, lockIdentifier: 1 },
+    } as unknown as Parameters<ReturnType<typeof createOnShouldStartLoadWithRequest>>[0]);
+    return { onShouldStartLoadWithRequest, loadRequest };
+  };
+
+  let canOpenURLSpy: jest.SpyInstance;
+  let openURLSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    canOpenURLSpy = jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true);
+    openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    canOpenURLSpy.mockClear();
+    openURLSpy.mockClear();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it.each([
+    'sms:+15555550123?body=test',
+    'tel:+15555550123',
+    'facetime:+15555550123',
+    'itms-apps://apps.apple.com/app/id1',
+    'otherwallet://connect?uri=wc:abc',
+    // eslint-disable-next-line no-script-url
+    'javascript:alert(1)',
+    'https://meta.io',
+    'about:srcdoc',
+  ])(
+    'routes %s to onShouldStartLoadWithRequest instead of opening it',
+    async (url) => {
+      const { onShouldStartLoadWithRequest, loadRequest } = navigate(
+        browserWebViewOriginWhitelist,
+        url,
+      );
+      await Promise.resolve();
+
+      expect(onShouldStartLoadWithRequest).toHaveBeenCalledWith(
+        expect.objectContaining({ url }),
+      );
+      expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+      expect(canOpenURLSpy).not.toHaveBeenCalled();
+      expect(openURLSpy).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe('Browser utils :: trustedProtocolToDeeplink', () => {

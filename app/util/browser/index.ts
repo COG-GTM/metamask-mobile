@@ -109,6 +109,42 @@ export const trustedProtocolToDeeplink = [
 ];
 
 /**
+ * Protocols that are never loaded in the browser nor handed to the OS
+ */
+// eslint-disable-next-line no-script-url
+export const blockedProtocols = ['javascript:', 'vbscript:', 'data:', 'blob:'];
+
+/**
+ * Origin whitelist for the in-app browser WebView.
+ *
+ * The WebView library opens any URL that fails its origin whitelist with
+ * `Linking.openURL` without calling `onShouldStartLoadWithRequest`, so every
+ * URL has to pass it for `getProtocolNavigationAction` to be enforced.
+ */
+export const browserWebViewOriginWhitelist = ['*'];
+
+export type ProtocolNavigationAction = 'load' | 'deeplink' | 'block' | 'prompt';
+
+/**
+ * Decides how the in-app browser handles a navigation to the given protocol:
+ * load it in the WebView, deeplink a trusted protocol through the OS, block
+ * it, or prompt the user before handing it to the OS.
+ *
+ * @param protocol - URL protocol including the trailing colon, e.g. `sms:`
+ */
+export const getProtocolNavigationAction = (
+  protocol: string,
+): ProtocolNavigationAction => {
+  const normalizedProtocol = protocol.toLowerCase();
+  if (protocolAllowList.includes(normalizedProtocol)) return 'load';
+  if (trustedProtocolToDeeplink.includes(normalizedProtocol)) return 'deeplink';
+  if (!normalizedProtocol || blockedProtocols.includes(normalizedProtocol)) {
+    return 'block';
+  }
+  return 'prompt';
+};
+
+/**
  * Returns translated warning message for the
  * warning dialog box the user sees when the to be loaded
  * website tries to automatically start an external
