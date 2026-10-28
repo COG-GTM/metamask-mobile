@@ -1,3 +1,4 @@
+import { MutableRefObject } from 'react';
 import AppConstants from '../../../core/AppConstants';
 import URLParse from 'url-parse';
 import { SessionENSNames } from './types';
@@ -79,3 +80,33 @@ export const getMaskedUrl = (
   }
   return urlToMask;
 };
+
+/**
+ * Whether a url belongs to the given origin (e.g. `https://app.example`)
+ */
+export const isUrlFromOrigin = (
+  urlToCheck: string | undefined,
+  origin: string,
+) => {
+  if (!urlToCheck || !origin) return false;
+  return new URLParse(urlToCheck).origin === origin;
+};
+
+/**
+ * Wraps a page metadata ref so it only exposes its value while the resolved page
+ * belongs to `origin`, returning `fallback` otherwise. This keeps approvals raised
+ * by a background bridge from being labelled with another site's url, title or icon.
+ */
+export const scopeRefToOrigin = <T>(
+  ref: MutableRefObject<T>,
+  pageUrlRef: MutableRefObject<string>,
+  origin: string,
+  fallback: T,
+): MutableRefObject<T> => ({
+  get current() {
+    return isUrlFromOrigin(pageUrlRef.current, origin) ? ref.current : fallback;
+  },
+  set current(value: T) {
+    ref.current = value;
+  },
+});

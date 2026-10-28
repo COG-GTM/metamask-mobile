@@ -1,4 +1,10 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
+import {
+  isValidUrl,
+  isENSUrl,
+  getMaskedUrl,
+  isUrlFromOrigin,
+  scopeRefToOrigin,
+} from './utils';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -89,6 +95,42 @@ describe('BrowserTab utils', () => {
       it(`should correctly mask ${input}`, () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
+    });
+  });
+
+  describe('isUrlFromOrigin', () => {
+    it.each([
+      ['https://trade.example/swap?x=1', 'https://trade.example', true],
+      ['https://trade.example:8443/', 'https://trade.example', false],
+      ['http://trade.example/', 'https://trade.example', false],
+      ['https://promo.example/', 'https://trade.example', false],
+      ['https://trade.example.evil.com/', 'https://trade.example', false],
+      ['', 'https://trade.example', false],
+      [undefined, 'https://trade.example', false],
+    ])('returns %s for %s -> %s', (url, origin, expected) => {
+      expect(isUrlFromOrigin(url, origin)).toBe(expected);
+    });
+  });
+
+  describe('scopeRefToOrigin', () => {
+    it('exposes the ref only while the page belongs to the origin', () => {
+      const pageUrlRef = { current: 'https://trade.example/swap' };
+      const titleRef = { current: 'Trade' };
+      const scoped = scopeRefToOrigin(
+        titleRef,
+        pageUrlRef,
+        'https://promo.example',
+        'promo.example',
+      );
+
+      expect(scoped.current).toBe('promo.example');
+
+      pageUrlRef.current = 'https://promo.example/claim';
+      titleRef.current = 'Promo';
+      expect(scoped.current).toBe('Promo');
+
+      scoped.current = 'Updated';
+      expect(titleRef.current).toBe('Updated');
     });
   });
 });

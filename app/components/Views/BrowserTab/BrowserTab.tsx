@@ -103,7 +103,12 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import {
+  getMaskedUrl,
+  isENSUrl,
+  isUrlFromOrigin,
+  scopeRefToOrigin,
+} from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -877,7 +882,17 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       if (dataParsed.name) {
-        backgroundBridgeRef.current?.onMessage(dataParsed);
+        const bridge = backgroundBridgeRef.current;
+        // Only deliver provider messages sent by a document from the bridge's origin
+        if (!bridge || !isUrlFromOrigin(nativeEvent.url, bridge.url)) {
+          Logger.log(
+            `Browser::onMessage dropped message from ${
+              new URLParse(nativeEvent.url ?? '').origin
+            } for bridge ${bridge?.url}`,
+          );
+          return;
+        }
+        bridge.onMessage(dataParsed);
         return;
       }
     } catch (e: unknown) {
@@ -893,11 +908,15 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     urlBarRef.current?.focus();
   }, []);
 
+  const disconnectBackgroundBridge = useCallback(() => {
+    backgroundBridgeRef.current?.onDisconnect();
+    backgroundBridgeRef.current = undefined;
+  }, []);
+
   const initializeBackgroundBridge = useCallback(
     (urlBridge: string, isMainFrame: boolean) => {
       // First disconnect and reset bridge
-      backgroundBridgeRef.current?.onDisconnect();
-      backgroundBridgeRef.current = undefined;
+      disconnectBackgroundBridge();
 
       //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
@@ -914,10 +933,25 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             hostname,
             getProviderState,
             navigation,
-            // Website info
-            url: resolvedUrlRef,
-            title: titleRef,
-            icon: iconRef,
+            // Website info, only exposed while the resolved page matches the bridge origin
+            url: scopeRefToOrigin(
+              resolvedUrlRef,
+              resolvedUrlRef,
+              urlBridge,
+              urlBridge,
+            ),
+            title: scopeRefToOrigin(
+              titleRef,
+              resolvedUrlRef,
+              urlBridge,
+              new URLParse(urlBridge).hostname,
+            ),
+            icon: scopeRefToOrigin(
+              iconRef,
+              resolvedUrlRef,
+              urlBridge,
+              undefined,
+            ),
             // Bookmarks
             isHomepage,
             // Show autocomplete
@@ -935,8 +969,16 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         isMainFrame,
       });
       backgroundBridgeRef.current = newBridge;
+      return newBridge;
     },
-    [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
+    [
+      navigation,
+      isHomepage,
+      toggleUrlModal,
+      tabId,
+      injectHomePageScripts,
+      disconnectBackgroundBridge,
+    ],
   );
 
   const sendActiveAccount = useCallback(async () => {
@@ -962,21 +1004,39 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         started: true,
       };
 
+      const isSameSite =
+        new URLParse(resolvedUrlRef.current).origin === urlOrigin;
+
+      // Swap the bridge before any await so the new document is never served
+      // by the previous site's bridge (permissions and approval labels).
+      const bridge = initializeBackgroundBridge(urlOrigin, true);
+
       // Cancel loading the page if we detect its a phishing page
       const isAllowed = await isAllowedOrigin(urlOrigin);
+      const isCurrentBridge = backgroundBridgeRef.current === bridge;
       if (!isAllowed) {
         handleNotAllowedUrl(urlOrigin); // should this be activeUrl.current instead of url?
+        if (isCurrentBridge) {
+          disconnectBackgroundBridge();
+          if (loadingUrlRef.current === nativeEvent.url) {
+            webviewRef.current?.stopLoading();
+          }
+        }
         return false;
       }
 
-      sendActiveAccount();
+      // A newer navigation already replaced this bridge
+      if (!isCurrentBridge) return;
+
+      // permittedAccountsList belongs to the resolved page, so never push it to another origin
+      if (isSameSite) {
+        sendActiveAccount();
+      }
 
       iconRef.current = undefined;
       if (isHomepage(nativeEvent.url)) {
         injectHomePageScripts();
       }
-
-      initializeBackgroundBridge(urlOrigin, true);
     },
     [
       isAllowedOrigin,
@@ -985,6 +1045,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       isHomepage,
       injectHomePageScripts,
       initializeBackgroundBridge,
+      disconnectBackgroundBridge,
     ],
   );
 
