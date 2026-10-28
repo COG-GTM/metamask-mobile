@@ -5,7 +5,6 @@ export const SECRET_QR_CODE_ERROR = 'SECRET_QR_CODE_NOT_ALLOWED';
 
 const PRIVATE_KEY_REGEX = /^(0x)?[0-9a-f]{64}$/iu;
 const MNEMONIC_LENGTHS = [12, 15, 18, 21, 24];
-const MAX_SCANNED_WORDS = 512;
 
 const isBip39Word = (word: string): boolean =>
   ethers.wordlists.en.getWordIndex(word) >= 0;
@@ -27,10 +26,7 @@ const isMnemonicWindow = (words: string[]): boolean => {
 // Looks for a valid BIP-39 phrase anywhere in the text, so labelled or
 // wrapped phrases ("seed: word word ...") are caught as well.
 const containsMnemonic = (text: string): boolean => {
-  const words = (text.toLowerCase().match(/[a-z]+/gu) || []).slice(
-    0,
-    MAX_SCANNED_WORDS,
-  );
+  const words = text.toLowerCase().match(/[a-z]+/gu) || [];
   let run: string[] = [];
   const checkRun = () =>
     MNEMONIC_LENGTHS.some((length) => {
