@@ -46,6 +46,8 @@ describe('DeeplinkProtocolService', () => {
         },
       }),
       addDappConnection: jest.fn().mockResolvedValue(null),
+      setPendingDappConnection: jest.fn(),
+      removePendingDappConnection: jest.fn(),
     });
 
     // TODO: Replace "any" with type
@@ -357,6 +359,35 @@ describe('DeeplinkProtocolService', () => {
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
     });
+
+    it('should not persist a new connection before permission is granted', async () => {
+      const handleEventSpy = jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockResolvedValue(undefined);
+      const originatorInfo = { url: 'spoofed.example', title: 'Spoofed' };
+
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'mallory',
+        channelId: 'channel-new',
+        originatorInfo: Buffer.from(
+          JSON.stringify({ originatorInfo }),
+        ).toString('base64'),
+      });
+
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(
+        SDKConnect.getInstance().setPendingDappConnection,
+      ).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'channel-new',
+          originatorInfo,
+          scheme: 'mallory',
+        }),
+      );
+      expect(handleEventSpy).toHaveBeenCalled();
+    });
   });
 
   describe('handleConnectionEventAsync', () => {
@@ -454,6 +485,11 @@ describe('DeeplinkProtocolService', () => {
         new Error('Permission error'),
       );
       await service.handleConnectionEventAsync({ clientInfo, params });
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(
+        SDKConnect.getInstance().removePendingDappConnection,
+      ).toHaveBeenCalledWith(clientInfo.clientId);
+      expect(service.connections[clientInfo.clientId]).toBeUndefined();
       expect(service.sendMessage).toHaveBeenCalledWith({
         data: {
           error: new Error('Permission error'),
