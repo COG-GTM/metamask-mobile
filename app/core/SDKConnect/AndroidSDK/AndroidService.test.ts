@@ -152,6 +152,19 @@ describe('AndroidService session binding', () => {
     });
   });
 
+  it('rejects messages for an expired approved session', async () => {
+    const bridge = service.bridgeByClientId[APPROVED_ID] as unknown as {
+      onMessage: jest.Mock;
+    };
+    service.connections[APPROVED_ID].validUntil = Date.now() - 1;
+
+    onMessage(rpcMessage(APPROVED_ID));
+    await flush();
+
+    expect(bridge.onMessage).not.toHaveBeenCalled();
+    expect(service.connections[APPROVED_ID].connected).not.toBe(true);
+  });
+
   it('does not hand the approved dapp bridge to a forged session id', async () => {
     const bridge = service.bridgeByClientId[APPROVED_ID] as unknown as {
       onMessage: jest.Mock;

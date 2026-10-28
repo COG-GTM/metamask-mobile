@@ -296,7 +296,11 @@ export default class AndroidService extends EventEmitter2 {
       return false;
     }
     const connection = this.connections[sessionId];
-    return connection?.clientId === sessionId && !!connection.originatorInfo;
+    return (
+      connection?.clientId === sessionId &&
+      !!connection.originatorInfo &&
+      (connection.validUntil ?? 0) > Date.now()
+    );
   }
 
   private setupOnMessageReceivedListener() {
