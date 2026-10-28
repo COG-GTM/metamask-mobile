@@ -36,6 +36,8 @@ class RNTar: NSObject {
   static let maxArchiveBytes: UInt64 = 250 * 1024 * 1024
   static let maxExtractedBytes = 64 * 1024 * 1024
   static let maxEntries = 5000
+  /// Bound on the inflated tar stream: file contents plus headers, padding and pax records.
+  static let maxTarStreamBytes = maxExtractedBytes + 16 * 1024 * 1024
 
   @objc
   static func requiresMainQueueSetup() -> Bool {
@@ -69,14 +71,15 @@ class RNTar: NSObject {
       throw UnTarError.unableToDecompressFile(file: path, error: error)
     }
     let tarData = try RNTar.isGzipped(data)
-      ? RNTar.gunzip(data, maxOutputBytes: RNTar.maxExtractedBytes)
+      ? RNTar.gunzip(data, maxOutputBytes: RNTar.maxTarStreamBytes)
       : data
-    guard tarData.count <= RNTar.maxExtractedBytes else {
-      throw UnTarError.extractedSizeExceeded(limit: RNTar.maxExtractedBytes)
+    guard tarData.count <= RNTar.maxTarStreamBytes else {
+      throw UnTarError.extractedSizeExceeded(limit: RNTar.maxTarStreamBytes)
     }
 
     try fileManager.createFilesAndDirectories(path: destinationUrl.path, tarData: tarData,
-                                              maxEntries: RNTar.maxEntries)
+                                              maxEntries: RNTar.maxEntries,
+                                              maxFileBytes: UInt64(RNTar.maxExtractedBytes))
     return "\(destinationUrl.path)/package"
   }
 

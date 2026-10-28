@@ -20,6 +20,7 @@ enum UntarError: Error, LocalizedError {
   case unsafePath(name: String)
   case unsupportedEntry(type: UnicodeScalar, name: String)
   case tooManyEntries(limit: Int)
+  case extractedSizeExceeded(limit: UInt64)
   case writeFailed(path: String)
   public var errorDescription: String? {
     switch self {
@@ -30,6 +31,7 @@ enum UntarError: Error, LocalizedError {
     case let .unsafePath(name: name): return "Tar entry \(name) resolves outside of the target directory"
     case let .unsupportedEntry(type: type, name: name): return "Unsupported tar entry type \(type) for \(name)"
     case let .tooManyEntries(limit: limit): return "Tar archive contains more than \(limit) entries"
+    case let .extractedSizeExceeded(limit: limit): return "Tar archive contents exceed \(limit) bytes"
     case let .writeFailed(path: path): return "Failed to write \(path)"
     }
   }
@@ -47,12 +49,13 @@ public extension FileManager {
 
   // MARK: - Private Methods
   private func createFilesAndDirectories(path: String, tarObject: Any, size totalSize: UInt64,
-                                         maxEntries: Int,
+                                         maxEntries: Int, maxFileBytes: UInt64,
                                          progress progressClosure: Closure?) throws -> Bool {
     try createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
     let root = URL(fileURLWithPath: path, isDirectory: true).standardizedFileURL
     var location: UInt64 = 0
     var entryCount = 0
+    var extractedBytes: UInt64 = 0
     while location < totalSize {
       guard totalSize - location >= FileManager.tarBlockSize else { throw UntarError.truncated }
       var blockCount: UInt64 = 1
@@ -70,6 +73,10 @@ public extension FileManager {
         let size = try self.size(object: tarObject, offset: location)
         let dataStart = location + FileManager.tarBlockSize
         guard size <= totalSize, dataStart <= totalSize - size else { throw UntarError.truncated }
+        guard size <= maxFileBytes - extractedBytes else {
+          throw UntarError.extractedSizeExceeded(limit: maxFileBytes)
+        }
+        extractedBytes += size
         if size == 0 {
           try createParentDirectory(of: filePath)
           guard createFile(atPath: filePath, contents: Data(), attributes: nil) else {
@@ -207,20 +214,24 @@ public extension FileManager {
   // Return true when no error for convenience
   @discardableResult func createFilesAndDirectories(path: String, tarData: Data,
                                                     maxEntries: Int = Int.max,
+                                                    maxFileBytes: UInt64 = UInt64.max,
                                                     progress: Closure? = nil) throws -> Bool {
     try createFilesAndDirectories(path: path, tarObject: tarData, size: UInt64(tarData.count),
-                                  maxEntries: maxEntries, progress: progress)
+                                  maxEntries: maxEntries, maxFileBytes: maxFileBytes,
+                                  progress: progress)
   }
 
   @discardableResult func createFilesAndDirectories(url: URL, tarData: Data,
                                                     maxEntries: Int = Int.max,
+                                                    maxFileBytes: UInt64 = UInt64.max,
                                                     progress: Closure? = nil) throws -> Bool {
     try createFilesAndDirectories(path: url.path, tarData: tarData, maxEntries: maxEntries,
-                                  progress: progress)
+                                  maxFileBytes: maxFileBytes, progress: progress)
   }
 
   @discardableResult func createFilesAndDirectories(path: String, tarPath: String,
                                                     maxEntries: Int = Int.max,
+                                                    maxFileBytes: UInt64 = UInt64.max,
                                                     progress: Closure? = nil) throws -> Bool {
     let fileManager = FileManager.default
     if fileManager.fileExists(atPath: tarPath) {
@@ -231,7 +242,8 @@ public extension FileManager {
       }
       defer { fileHandle.closeFile() }
       return try createFilesAndDirectories(path: path, tarObject: fileHandle, size: size,
-                                           maxEntries: maxEntries, progress: progress)
+                                           maxEntries: maxEntries, maxFileBytes: maxFileBytes,
+                                           progress: progress)
     }
 
     throw UntarError.notFound(file: tarPath)
