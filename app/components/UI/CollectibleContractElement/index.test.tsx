@@ -120,6 +120,35 @@ describe('CollectibleContractElement', () => {
     expect(toJSON()).toMatchSnapshot();
   });
 
+  it('does not consume the contractCollectibles array it is given', () => {
+    const contractCollectibles = [
+      { address: '0xdef', tokenId: '1', name: 'Collectible1' },
+      { address: '0xdef', tokenId: '2', name: 'Collectible2' },
+      { address: '0xdef', tokenId: '3', name: 'Collectible3' },
+      { address: '0xdef', tokenId: '4', name: 'Collectible4' },
+    ];
+    const props = {
+      asset: { favorites: false, name: 'AssetName', address: '0xdef' },
+      contractCollectibles,
+      collectiblesVisible: true,
+      onPress: jest.fn(),
+    };
+    const renderElement = () =>
+      render(
+        <Provider store={store}>
+          <ThemeContext.Provider value={mockTheme}>
+            <CollectibleContractElement {...props} />
+          </ThemeContext.Provider>
+        </Provider>,
+      );
+
+    renderElement().unmount();
+    expect(contractCollectibles).toHaveLength(4);
+
+    const { getAllByTestId } = renderElement();
+    expect(getAllByTestId('collectible-Collectible4-4')).toBeTruthy();
+  });
+
   describe('List element', () => {
     it('shows collectibles list when collectiblesVisible is true', () => {
       // Provide the props that are required by the component.
