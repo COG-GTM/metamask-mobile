@@ -1,4 +1,4 @@
-import { getPermissionSubjectFromUrl } from './subject';
+import { getPermissionSubjectFromUrl, isBrowserOriginSubject } from './subject';
 
 describe('getPermissionSubjectFromUrl', () => {
   it.each([
@@ -35,5 +35,20 @@ describe('getPermissionSubjectFromUrl', () => {
   it('returns the input when it cannot be parsed', () => {
     expect(getPermissionSubjectFromUrl('')).toBe('');
     expect(getPermissionSubjectFromUrl('not a url')).toBe('not a url');
+  });
+});
+
+describe('isBrowserOriginSubject', () => {
+  it('matches http and non-default-port https origin subjects', () => {
+    expect(isBrowserOriginSubject('http://dapp.example')).toBe(true);
+    expect(isBrowserOriginSubject('http://dapp.example:8080')).toBe(true);
+    expect(isBrowserOriginSubject('https://dapp.example:8443')).toBe(true);
+  });
+
+  it('does not match hostnames or other URLs', () => {
+    expect(isBrowserOriginSubject('dapp.example')).toBe(false);
+    expect(isBrowserOriginSubject('https://dapp.example')).toBe(false);
+    expect(isBrowserOriginSubject('https://wc.example/')).toBe(false);
+    expect(isBrowserOriginSubject('http://dapp.example/path')).toBe(false);
   });
 });

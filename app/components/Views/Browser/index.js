@@ -26,12 +26,14 @@ import {
 import { useAccounts } from '../../hooks/useAccounts';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import AppConstants from '../../../core/AppConstants';
-import { getPermittedAccounts } from '../../../core/Permissions';
+import {
+  getPermittedAccounts,
+  getPermissionSubjectFromUrl,
+} from '../../../core/Permissions';
 import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
 import BrowserTab from '../BrowserTab/BrowserTab';
-import URL from 'url-parse';
 import { useMetrics } from '../../hooks/useMetrics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appendURLParams } from '../../../util/browser';
@@ -208,8 +210,9 @@ export const Browser = (props) => {
 
   useEffect(() => {
     const checkIfActiveAccountChanged = () => {
-      const hostname = new URL(browserUrl).hostname;
-      const permittedAccounts = getPermittedAccounts(hostname);
+      const permittedAccounts = getPermittedAccounts(
+        getPermissionSubjectFromUrl(browserUrl),
+      );
       const activeAccountAddress = permittedAccounts?.[0];
 
       if (activeAccountAddress) {
@@ -236,12 +239,15 @@ export const Browser = (props) => {
 
     // Handle when the Browser initially mounts and when url changes.
     if (accounts.length && browserUrl) {
-      const hostname = new URL(browserUrl).hostname;
-      if (prevSiteHostname.current !== hostname || !hasAccounts.current) {
+      const permissionSubject = getPermissionSubjectFromUrl(browserUrl);
+      if (
+        prevSiteHostname.current !== permissionSubject ||
+        !hasAccounts.current
+      ) {
         checkIfActiveAccountChanged();
       }
       hasAccounts.current = true;
-      prevSiteHostname.current = hostname;
+      prevSiteHostname.current = permissionSubject;
     }
   }, [browserUrl, accounts, ensByAccountAddress, accountAvatarType, toastRef]);
 
