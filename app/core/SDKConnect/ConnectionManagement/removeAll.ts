@@ -39,6 +39,7 @@ async function removeAll(instance: SDKConnect): Promise<boolean> {
         disabledHosts: {},
         connections: {},
         dappConnections: {},
+        pendingDappConnections: {},
         connected: {},
         connecting: {},
         paused: false,

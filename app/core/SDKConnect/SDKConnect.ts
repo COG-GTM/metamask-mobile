@@ -74,6 +74,9 @@ export interface SDKConnectState {
   deeplinkingServiceStarted: boolean;
   deeplinkingService?: DeeplinkProtocolService;
   dappConnections: SDKSessions;
+  // Requested deeplink connections awaiting approval. Kept apart from
+  // dappConnections, which shares its object with the persisted Redux state.
+  pendingDappConnections: SDKSessions;
   connecting: { [channelId: string]: boolean };
   approvedHosts: ApprovedHosts;
   sdkLoadingState: { [channelId: string]: boolean };
@@ -104,6 +107,7 @@ export class SDKConnect {
     connected: {},
     connections: {},
     dappConnections: {},
+    pendingDappConnections: {},
     androidSDKStarted: false,
     androidSDKBound: false,
     deeplinkingServiceStarted: false,
@@ -245,11 +249,15 @@ export class SDKConnect {
    * persisting it. Use addDappConnection once the user has approved it.
    */
   setPendingDappConnection(connection: ConnectionProps) {
-    this.state.dappConnections[connection.id] = connection;
+    this.state.pendingDappConnections = {
+      ...this.state.pendingDappConnections,
+      [connection.id]: connection,
+    };
   }
 
   removePendingDappConnection(id: string) {
-    delete this.state.dappConnections[id];
+    const { [id]: _removed, ...pending } = this.state.pendingDappConnections;
+    this.state.pendingDappConnections = pending;
   }
 
   public async refreshChannel({ channelId }: { channelId: string }) {
@@ -306,7 +314,9 @@ export class SDKConnect {
 
   public getConnection({ channelId }: { channelId: string }) {
     return (
-      this.state.connections[channelId] ?? this.state.dappConnections[channelId]
+      this.state.connections[channelId] ??
+      this.state.dappConnections[channelId] ??
+      this.state.pendingDappConnections[channelId]
     );
   }
 

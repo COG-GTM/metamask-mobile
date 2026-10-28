@@ -9,6 +9,7 @@ async function addDappConnection(
   instance: SDKConnect,
 ) {
   instance.state.dappConnections[connection.id] = connection;
+  instance.removePendingDappConnection(connection.id);
 
   DevLogger.log(`SDKConnect::addDappConnection`, connection);
 
