@@ -2,23 +2,24 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import useStakingEligibility from '../../Stake/hooks/useStakingEligibility';
 import { TokenI } from '../../Tokens/types';
-import { getSupportedEarnTokens, filterEligibleTokens } from '../utils';
+import {
+  getSupportedEarnTokens,
+  filterEligibleTokens,
+  getEarnTokenKey,
+} from '../utils';
 import { selectAccountTokensAcrossChains } from '../../../../selectors/multichain';
 import { isPortfolioViewEnabled } from '../../../../util/networks';
-import { RootState } from '../../BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
 import { useEarnTokenDetails } from './useEarnTokenDetails';
 import {
   selectPooledStakingEnabledFlag,
   selectStablecoinLendingEnabledFlag,
 } from '../selectors/featureFlags';
 
-// Filters user's tokens to only return the supported and enabled earn tokens.
-const useEarnTokens = () => {
-  const tokens = useSelector((state: RootState) =>
-    selectAccountTokensAcrossChains(state),
-  );
+const EMPTY_EARN_TOKENS: TokenI[] = [];
 
-  const { getTokenWithBalanceAndApr } = useEarnTokenDetails();
+// Filters user's tokens to the supported and enabled earn tokens, without balance/APR details.
+const useEligibleEarnTokens = (): TokenI[] => {
+  const tokens = useSelector(selectAccountTokensAcrossChains);
 
   const isPooledStakingEnabled = useSelector(selectPooledStakingEnabledFlag);
   const isStablecoinLendingEnabled = useSelector(
@@ -30,16 +31,18 @@ const useEarnTokens = () => {
     isLoadingEligibility: isLoadingStakingEligibility,
   } = useStakingEligibility();
 
-  const supportedStablecoins = useMemo(() => {
-    if (isLoadingStakingEligibility || !isPortfolioViewEnabled()) return [];
+  return useMemo(() => {
+    if (isLoadingStakingEligibility || !isPortfolioViewEnabled()) {
+      return EMPTY_EARN_TOKENS;
+    }
 
     const allTokens = Object.values(tokens).flat() as TokenI[];
 
-    if (!allTokens.length) return [];
+    if (!allTokens.length) return EMPTY_EARN_TOKENS;
 
     const supportedTokens = getSupportedEarnTokens(allTokens);
 
-    const eligibleTokens = filterEligibleTokens(
+    return filterEligibleTokens(
       supportedTokens,
       // TODO: Add eligibility check for stablecoin lending before launch.
       {
@@ -47,8 +50,42 @@ const useEarnTokens = () => {
         canLend: isStablecoinLendingEnabled,
       },
     );
+  }, [
+    isEligibleToStake,
+    isLoadingStakingEligibility,
+    isPooledStakingEnabled,
+    isStablecoinLendingEnabled,
+    tokens,
+  ]);
+};
 
-    const eligibleTokensWithBalances = eligibleTokens?.map((token) =>
+/**
+ * Set of `getEarnTokenKey(chainId, symbol)` keys for the user's earn-eligible tokens.
+ * Meant to be computed once per list and passed to rows, instead of calling
+ * `useEarnTokens()` in every row.
+ */
+export const useEarnTokenKeys = (): ReadonlySet<string> => {
+  const eligibleTokens = useEligibleEarnTokens();
+
+  return useMemo(
+    () =>
+      new Set(
+        eligibleTokens.map((token) =>
+          getEarnTokenKey(token.chainId, token.symbol),
+        ),
+      ),
+    [eligibleTokens],
+  );
+};
+
+// Filters user's tokens to only return the supported and enabled earn tokens.
+const useEarnTokens = () => {
+  const eligibleTokens = useEligibleEarnTokens();
+
+  const { getTokenWithBalanceAndApr } = useEarnTokenDetails();
+
+  const supportedStablecoins = useMemo(() => {
+    const eligibleTokensWithBalances = eligibleTokens.map((token) =>
       getTokenWithBalanceAndApr(token),
     );
 
@@ -59,14 +96,7 @@ const useEarnTokens = () => {
 
       return (fiatBalanceA === 0 ? 1 : 0) - (fiatBalanceB === 0 ? 1 : 0);
     });
-  }, [
-    getTokenWithBalanceAndApr,
-    isEligibleToStake,
-    isLoadingStakingEligibility,
-    isPooledStakingEnabled,
-    isStablecoinLendingEnabled,
-    tokens,
-  ]);
+  }, [eligibleTokens, getTokenWithBalanceAndApr]);
 
   return supportedStablecoins;
 };
