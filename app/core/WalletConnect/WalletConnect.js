@@ -11,6 +11,7 @@ import {
 } from '../../util/walletconnect';
 import { WALLETCONNECT_SESSIONS } from '../../constants/storage';
 import { WalletDevice } from '@metamask/transaction-controller';
+import { rpcErrors } from '@metamask/rpc-errors';
 import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
 import getRpcMethodMiddleware, {
   checkActiveAccountAndChainId,
@@ -92,6 +93,9 @@ class WalletConnect {
   requestsToRedirect = {};
   hostname = null;
   requestOriginatedFrom = null;
+  // Accounts this wallet exposed to the dapp. Tracked locally because the
+  // connector's own `accounts` can be overwritten by a peer wc_sessionUpdate.
+  approvedAccounts = [];
 
   constructor(options, existing) {
     if (options.session.redirectUrl) {
@@ -172,16 +176,20 @@ class WalletConnect {
           // We have to implement this method here since the eth_sendTransaction in Engine is not working because we can't send correct origin
           if (payload.method === 'eth_sendTransaction') {
             try {
-              const selectedAddress =
-                Engine.context.AccountsController.getSelectedAccount().address?.toLowerCase();
+              const { from, chainId } = payload.params?.[0] ?? {};
 
-              const chainId = payload.params[0].chainId;
+              if (!from) {
+                throw rpcErrors.invalidParams({
+                  message:
+                    'Invalid parameters: must provide an Ethereum address.',
+                });
+              }
 
-              checkActiveAccountAndChainId({
-                address: payload.params[0].from,
+              await checkActiveAccountAndChainId({
+                address: from,
                 chainId,
                 isWalletConnect: true,
-                activeAccounts: [selectedAddress],
+                activeAccounts: this.approvedAccounts,
                 hostname: payloadHostname,
               });
 
@@ -304,7 +312,17 @@ class WalletConnect {
     this.needsRedirect(id);
   };
 
+  setApprovedAccounts = (accounts) => {
+    const validAccounts = (accounts || [])
+      .filter((account) => typeof account === 'string' && account)
+      .map((account) => account.toLowerCase());
+    if (validAccounts.length > 0) {
+      this.approvedAccounts = validAccounts;
+    }
+  };
+
   updateSession = ({ chainId, accounts }) => {
+    this.setApprovedAccounts(accounts);
     this.walletConnector.updateSession({
       chainId,
       accounts,
@@ -319,6 +337,7 @@ class WalletConnect {
       chainId: parseInt(chainId, 10),
       accounts: [selectedAddress],
     };
+    this.setApprovedAccounts(approveData.accounts);
     if (existing) {
       this.walletConnector.updateSession(approveData);
     } else {
