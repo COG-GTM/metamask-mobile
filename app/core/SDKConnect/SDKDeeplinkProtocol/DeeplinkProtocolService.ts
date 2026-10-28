@@ -451,20 +451,29 @@ export default class DeeplinkProtocolService {
       scheme: params.scheme,
     };
 
-    this.currentClientId = params.channelId;
-
     const existingSession = this.connections?.[clientInfo.clientId];
 
     if (existingSession) {
-      if (!this.isSessionOwnedByCaller(existingSession, params)) {
-        // The link does not prove it comes from the dapp that owns this
-        // channel: keep the stored binding and ask the user to re-approve.
-        this.reauthorizeSession({ clientInfo, params }).catch((err) => {
-          Logger.log(
-            err,
-            `DeeplinkProtocolService::handleConnection error re-authorizing session`,
-          );
-        });
+      if (!this.isSessionBindingMatching(existingSession, params)) {
+        // A link with a different key or scheme does not come from the dapp
+        // the user approved for this channel; never rebind the session to it.
+        Logger.log(
+          `DeeplinkProtocolService::handleConnection rejected link for ${clientInfo.clientId}: public key or scheme does not match the approved session`,
+        );
+        return;
+      }
+
+      this.currentClientId = params.channelId;
+
+      if (this.isSessionExpired(existingSession)) {
+        this.reauthorizeSession({ session: existingSession, params }).catch(
+          (err) => {
+            Logger.log(
+              err,
+              `DeeplinkProtocolService::handleConnection error re-authorizing session`,
+            );
+          },
+        );
         return;
       }
 
@@ -495,6 +504,7 @@ export default class DeeplinkProtocolService {
       return;
     }
 
+    this.currentClientId = params.channelId;
     this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
 
     await SDKConnect.getInstance().addDappConnection({
@@ -525,10 +535,9 @@ export default class DeeplinkProtocolService {
   /**
    * The deeplink protocol has no message authentication, so the best proof of
    * ownership available is that the link matches what the user approved: the
-   * stored dapp public key (when one was bound), the return scheme and an
-   * unexpired session.
+   * stored dapp public key (when one was bound) and the return scheme.
    */
-  public isSessionOwnedByCaller(
+  public isSessionBindingMatching(
     session: DappClient,
     params: { channelId: string; dappPublicKey?: string; scheme?: string },
     { allowMissingPublicKey = false }: { allowMissingPublicKey?: boolean } = {},
@@ -539,18 +548,30 @@ export default class DeeplinkProtocolService {
       storedPublicKey === params.dappPublicKey ||
       (allowMissingPublicKey && !params.dappPublicKey);
 
+    return session.scheme === params.scheme && isPublicKeyMatching;
+  }
+
+  public isSessionOwnedByCaller(
+    session: DappClient,
+    params: { channelId: string; dappPublicKey?: string; scheme?: string },
+    options: { allowMissingPublicKey?: boolean } = {},
+  ) {
     return (
       !this.isSessionExpired(session) &&
-      session.scheme === params.scheme &&
-      isPublicKeyMatching
+      this.isSessionBindingMatching(session, params, options)
     );
   }
 
+  /**
+   * Re-approves an expired session for the dapp it was bound to. The stored
+   * key, scheme and dapp metadata are kept, so the prompt shows the dapp that
+   * will actually receive the responses.
+   */
   public async reauthorizeSession({
-    clientInfo,
+    session,
     params,
   }: {
-    clientInfo: DappClient;
+    session: DappClient;
     params: {
       dappPublicKey: string;
       url: string;
@@ -571,33 +592,35 @@ export default class DeeplinkProtocolService {
 
     try {
       await this.checkPermission({
-        channelId: clientInfo.clientId,
-        originatorInfo: clientInfo.originatorInfo,
+        channelId: session.clientId,
+        originatorInfo: session.originatorInfo,
       });
     } catch (error) {
       Logger.log(
         error,
-        `DeeplinkProtocolService::reauthorizeSession re-approval rejected for ${clientInfo.clientId}`,
+        `DeeplinkProtocolService::reauthorizeSession re-approval rejected for ${session.clientId}`,
       );
       return;
     }
 
-    this.dappPublicKeyByClientId[clientInfo.clientId] = params.dappPublicKey;
-    this.connections[clientInfo.clientId] = {
-      ...clientInfo,
+    const refreshedSession: DappClient = {
+      ...session,
       connected: true,
+      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
     };
-    this.setupBridge(clientInfo);
-    this.currentClientId = clientInfo.clientId;
+
+    this.connections[session.clientId] = refreshedSession;
+    this.setupBridge(refreshedSession);
+    this.currentClientId = session.clientId;
 
     await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
+      id: session.clientId,
       origin: AppConstants.MM_SDK.IOS_SDK,
       lastAuthorized: Date.now(),
-      otherPublicKey: params.dappPublicKey,
-      originatorInfo: clientInfo.originatorInfo,
-      scheme: clientInfo.scheme,
-      validUntil: clientInfo.validUntil,
+      otherPublicKey: this.dappPublicKeyByClientId[session.clientId],
+      originatorInfo: session.originatorInfo,
+      scheme: session.scheme,
+      validUntil: refreshedSession.validUntil,
     });
 
     if (params.request) {
