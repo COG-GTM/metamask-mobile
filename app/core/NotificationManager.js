@@ -148,23 +148,33 @@ class NotificationManager {
   };
 
   _removeSmartTransactionListener = (transactionId) => {
-    const listener = this._smartTransactionListeners[transactionId];
-    if (!listener) return;
+    const entry = this._smartTransactionListeners[transactionId];
+    if (!entry) return;
     delete this._smartTransactionListeners[transactionId];
     Engine.controllerMessenger.tryUnsubscribe(
       'SmartTransactionsController:smartTransaction',
-      listener,
+      entry.listener,
     );
   };
 
   /**
-   * Removes the smart transaction listeners of every transaction watched
-   * under the given nonce (the original and any speed-ups of it)
+   * Removes the smart transaction listeners of the given transaction and of
+   * every watched transaction it replaced (same nonce, sender and chain)
    */
-  _removeSmartTransactionListenersForNonce = (nonce) => {
-    (this._transactionsWatchTable[nonce] || []).forEach((id) =>
-      this._removeSmartTransactionListener(id),
-    );
+  _removeSmartTransactionListenersReplacedBy = (transactionMeta) => {
+    const { nonce, from } = transactionMeta.txParams;
+    const sender = from?.toLowerCase();
+    this._removeSmartTransactionListener(transactionMeta.id);
+    (this._transactionsWatchTable[nonce] || []).forEach((id) => {
+      const entry = this._smartTransactionListeners[id];
+      if (
+        entry &&
+        entry.from === sender &&
+        entry.chainId === transactionMeta.chainId
+      ) {
+        this._removeSmartTransactionListener(id);
+      }
+    });
   };
 
   _showNotification = async (data) => {
@@ -220,9 +230,7 @@ class NotificationManager {
         });
         // Clean up
         this._removeListeners(transactionMeta.id);
-        this._removeSmartTransactionListenersForNonce(
-          transactionMeta.txParams.nonce,
-        );
+        this._removeSmartTransactionListenersReplacedBy(transactionMeta);
         delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
       }, 2000);
   };
@@ -278,9 +286,7 @@ class NotificationManager {
         ReviewManager.promptReview();
 
         this._removeListeners(transactionMeta.id);
-        this._removeSmartTransactionListenersForNonce(
-          transactionMeta.txParams.nonce,
-        );
+        this._removeSmartTransactionListenersReplacedBy(transactionMeta);
         delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
       }, 2000);
   };
@@ -419,26 +425,30 @@ class NotificationManager {
       );
 
     this._removeSmartTransactionListener(transactionMeta.id);
-    this._smartTransactionListeners[transactionMeta.id] =
-      Engine.controllerMessenger.subscribeOnceIf(
-        'SmartTransactionsController:smartTransaction',
-        (smartTransaction) => {
-          delete this._smartTransactionListeners[transactionMeta.id];
-          if (smartTransaction.status !== SmartTransactionStatuses.CANCELLED) {
-            // If the smart transaction is not cancelled, notifications are already handled.
-            return;
-          }
-          this._showNotification({
-            type: 'cancelled',
-            autoHide: true,
-            transaction: { id: smartTransaction.transactionId },
-            duration: 5000,
-          });
-        },
-        (smartTransaction) =>
-          smartTransaction.transactionId === transactionMeta.id &&
-          smartTransaction.status !== SmartTransactionStatuses.PENDING,
-      );
+    const smartTransactionListener = Engine.controllerMessenger.subscribeOnceIf(
+      'SmartTransactionsController:smartTransaction',
+      (smartTransaction) => {
+        delete this._smartTransactionListeners[transactionMeta.id];
+        if (smartTransaction.status !== SmartTransactionStatuses.CANCELLED) {
+          // If the smart transaction is not cancelled, notifications are already handled.
+          return;
+        }
+        this._showNotification({
+          type: 'cancelled',
+          autoHide: true,
+          transaction: { id: smartTransaction.transactionId },
+          duration: 5000,
+        });
+      },
+      (smartTransaction) =>
+        smartTransaction.transactionId === transactionMeta.id &&
+        smartTransaction.status !== SmartTransactionStatuses.PENDING,
+    );
+    this._smartTransactionListeners[transactionMeta.id] = {
+      listener: smartTransactionListener,
+      from: transactionMeta.txParams.from?.toLowerCase(),
+      chainId: transactionMeta.chainId,
+    };
   }
 
   /**

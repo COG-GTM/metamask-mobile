@@ -267,11 +267,17 @@ describe('NotificationManager', () => {
       let subscribeSpy: jest.SpyInstance;
       let unsubscribeSpy: jest.SpyInstance;
 
-      const watch = (id: string, nonce: string) => {
+      const watch = (
+        id: string,
+        nonce: string,
+        from = '0x123',
+        chainId = '0x1',
+      ) => {
         mockTransactionController.state.transactions.push({
           ...mockTransactionController.state.transactions[0],
           id,
-          txParams: { nonce, from: '0x123' },
+          chainId,
+          txParams: { nonce, from },
         });
         notificationManager.watchSubmittedTransaction({
           id,
@@ -406,12 +412,13 @@ describe('NotificationManager', () => {
         publish('TransactionController:transactionConfirmed', {
           id: '0x1',
           chainId: '0x1',
-          txParams: { nonce: '0x1' },
+          txParams: { nonce: '0x1', from: '0x123' },
         });
         publish('TransactionController:transactionFailed', {
           id: '0x2',
           status: 'failed',
-          txParams: { nonce: '0x2' },
+          chainId: '0x1',
+          txParams: { nonce: '0x2', from: '0x123' },
         });
         jest.runAllTimers();
 
@@ -433,11 +440,36 @@ describe('NotificationManager', () => {
         publish('TransactionController:transactionConfirmed', {
           id: '0x1-speedup',
           chainId: '0x1',
-          txParams: { nonce: '0x1' },
+          txParams: { nonce: '0x1', from: '0x123' },
         });
         jest.runAllTimers();
 
         expect(stxHandlerCount()).toBe(0);
+      });
+
+      it('keeps listeners of unrelated transactions that share the nonce', () => {
+        watch('0xalice', '0x1', '0xA11CE', '0x1');
+        watch('0xbob', '0x1', '0xb0b', '0x1');
+        watch('0xalice-other-chain', '0x1', '0xa11ce', '0x89');
+        expect(stxHandlerCount()).toBe(3);
+
+        publish('TransactionController:transactionConfirmed', {
+          id: '0xalice',
+          chainId: '0x1',
+          txParams: { nonce: '0x1', from: '0xa11ce' },
+        });
+        jest.runAllTimers();
+
+        expect(stxHandlerCount()).toBe(2);
+        expect(
+          Object.keys(notificationManager._smartTransactionListeners).sort(),
+        ).toStrictEqual(['0xalice-other-chain', '0xbob']);
+
+        publishStx('0xbob', SmartTransactionStatuses.CANCELLED);
+        expect(cancelledNotifications()).toHaveLength(1);
+        expect(cancelledNotifications()[0][0].transaction).toStrictEqual({
+          id: '0xbob',
+        });
       });
 
       it('keeps a single listener when the same transaction is watched twice', () => {
