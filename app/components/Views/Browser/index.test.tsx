@@ -235,4 +235,73 @@ describe('Browser', () => {
 
     expect(mockUpdateTab).toHaveBeenCalledWith(2, { isArchived: true });
   });
+
+  const renderBrowserWithTabs = (
+    tabs: { id: number; url: string; image: string; isArchived: boolean }[],
+    updateTab: jest.Mock,
+  ) =>
+    renderWithProvider(
+      <Provider store={mockStore(mockInitialState)}>
+        <NavigationContainer independent>
+          <Stack.Navigator>
+            <Stack.Screen name="Browser">
+              {() => (
+                <Browser
+                  route={{ params: {} }}
+                  tabs={tabs}
+                  activeTab={1}
+                  navigation={mockNavigation}
+                  createNewTab={jest.fn}
+                  closeAllTabs={jest.fn}
+                  closeTab={jest.fn}
+                  setActiveTab={jest.fn}
+                  updateTab={updateTab}
+                />
+              )}
+            </Stack.Screen>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </Provider>,
+    );
+
+  it('should not dispatch updateTab when no tab changes archived state', async () => {
+    jest.useFakeTimers();
+    const mockUpdateTab = jest.fn();
+    renderBrowserWithTabs(
+      [
+        { id: 1, url: 'about:blank', image: '', isArchived: false },
+        { id: 2, url: 'about:blank', image: '', isArchived: true },
+      ],
+      mockUpdateTab,
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000 * 60 * 5);
+    });
+
+    expect(mockUpdateTab).not.toHaveBeenCalledWith(expect.anything(), {
+      isArchived: expect.any(Boolean),
+    });
+  });
+
+  it('should unarchive the active tab when it is archived', async () => {
+    jest.useFakeTimers();
+    const mockUpdateTab = jest.fn();
+    renderBrowserWithTabs(
+      [
+        { id: 1, url: 'about:blank', image: '', isArchived: true },
+        { id: 2, url: 'about:blank', image: '', isArchived: false },
+      ],
+      mockUpdateTab,
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000 * 30);
+    });
+
+    const archiveUpdates = mockUpdateTab.mock.calls.filter(
+      ([, data]) => Object.keys(data).join() === 'isArchived',
+    );
+    expect(archiveUpdates).toEqual([[1, { isArchived: false }]]);
+  });
 });
