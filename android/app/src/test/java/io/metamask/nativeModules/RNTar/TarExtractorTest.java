@@ -188,7 +188,10 @@ public class TarExtractorTest {
     File stale = new File(out, "package/stale.js");
     assertTrue(stale.getParentFile().mkdirs());
     assertTrue(stale.createNewFile());
-    File archive = tgz(tar -> addFile(tar, "package/index.js", "ok".getBytes(StandardCharsets.UTF_8)));
+    File archive = tgz(tar -> {
+      addFile(tar, "previous-package/notes.txt", "x".getBytes(StandardCharsets.UTF_8));
+      addFile(tar, "package/index.js", "ok".getBytes(StandardCharsets.UTF_8));
+    });
 
     new TarExtractor().extract(archive.getPath(), out.getPath());
     assertFalse(stale.exists());

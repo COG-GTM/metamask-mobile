@@ -136,10 +136,13 @@ class RNTar: NSObject {
     let stagingUrl = destinationUrl.appendingPathComponent(".rntar-\(UUID().uuidString)",
                                                            isDirectory: true)
     defer { try? fileManager.removeItem(at: stagingUrl) }
-    try fileManager.createFilesAndDirectories(path: stagingUrl.path, tarPath: tarPath,
+    // Extract into stagingUrl/extract so archive entries can never collide with
+    // stagingUrl/previous-package, where the existing package is backed up.
+    let extractUrl = stagingUrl.appendingPathComponent("extract", isDirectory: true)
+    try fileManager.createFilesAndDirectories(path: extractUrl.path, tarPath: tarPath,
                                               limits: limits)
 
-    let stagedPackageUrl = stagingUrl.appendingPathComponent("package", isDirectory: true)
+    let stagedPackageUrl = extractUrl.appendingPathComponent("package", isDirectory: true)
     var isDirectory: ObjCBool = false
     guard fileManager.fileExists(atPath: stagedPackageUrl.path, isDirectory: &isDirectory),
           isDirectory.boolValue else {

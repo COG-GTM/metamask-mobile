@@ -64,17 +64,21 @@ public class TarExtractor {
 
     File canonicalOutputDir = outputDir.getCanonicalFile();
     File stagingDir = new File(canonicalOutputDir, ".rntar-" + UUID.randomUUID());
-    if (!stagingDir.mkdir()) {
+    // The archive is extracted into stagingDir/extract so it can never collide
+    // with stagingDir/previous-package, where the existing package is backed up.
+    File extractDir = new File(stagingDir, "extract");
+    if (!stagingDir.mkdir() || !extractDir.mkdir()) {
+      deleteRecursively(stagingDir);
       throw new IOException("Unable to create the staging directory.");
     }
     try {
       try (InputStream fileInputStream = new FileInputStream(tgzFile);
            GZIPInputStream gzipInputStream = new GZIPInputStream(new BufferedInputStream(fileInputStream));
            TarArchiveInputStream tarInputStream = new TarArchiveInputStream(gzipInputStream)) {
-        extractEntries(tarInputStream, stagingDir);
+        extractEntries(tarInputStream, extractDir);
       }
 
-      File stagedPackage = new File(stagingDir, "package");
+      File stagedPackage = new File(extractDir, "package");
       if (!stagedPackage.isDirectory()) {
         throw new IOException("Tarball does not contain a package directory.");
       }
