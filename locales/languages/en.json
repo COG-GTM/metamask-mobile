@@ -1490,7 +1490,9 @@
     "url_redirection_alert_title": "You are about to visit  an external link",
     "url_redirection_alert_desc": "Links can be used to try to defraud or phish people, so make sure to only visit websites that you trust.",
     "label": "Scan a QR code",
-    "open_settings": "Settings"
+    "open_settings": "Settings",
+    "dapp_secret_qr_code_title": "Sensitive QR code blocked",
+    "dapp_secret_qr_code_desc": "This QR code contains a Secret Recovery Phrase, private key, or connection secret. It was not shared with the site that requested the scan. Never share these with anyone."
   },
   "action_view": {
     "cancel": "Cancel",

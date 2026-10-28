@@ -29,6 +29,10 @@ import {
 import createStyles from './styles';
 import { useTheme } from '../../../util/theme';
 import { ScanSuccess, StartScan } from '../QRTabSwitcher';
+import {
+  isSecretQRContent,
+  SECRET_QR_CODE_ERROR,
+} from '../../../util/qr-secret-guard';
 
 const frameImage = require('../../../images/frame.png'); // eslint-disable-line import/no-commonjs
 
@@ -40,11 +44,13 @@ const QRScanner = ({
   onScanError,
   onStartScan,
   origin,
+  isDappScan,
 }: {
   onScanSuccess: (data: ScanSuccess, content?: string) => void;
   onStartScan?: (data: StartScan) => Promise<void>;
   onScanError?: (error: string) => void;
   origin?: string;
+  isDappScan?: boolean;
 }) => {
   const navigation = useNavigation();
 
@@ -105,6 +111,17 @@ const QRScanner = ({
        * Think of this as a allow or disallow bar code reading
        */
       if (!shouldReadBarCodeRef.current || !mountedRef.current || !content) {
+        return;
+      }
+
+      if (isDappScan && isSecretQRContent(content)) {
+        shouldReadBarCodeRef.current = false;
+        Alert.alert(
+          strings('qr_scanner.dapp_secret_qr_code_title'),
+          strings('qr_scanner.dapp_secret_qr_code_desc'),
+        );
+        end();
+        onScanError?.(SECRET_QR_CODE_ERROR);
         return;
       }
 
@@ -238,6 +255,8 @@ const QRScanner = ({
     },
     [
       origin,
+      isDappScan,
+      onScanError,
       end,
       showAlertForURLRedirection,
       navigation,
