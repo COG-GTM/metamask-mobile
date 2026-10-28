@@ -25,14 +25,26 @@ function selectSubjectMetadata(state: RootState) {
   return selectSubjectMetadataControllerState(state).subjectMetadata;
 }
 
+type SubjectMetadataEntry = ReturnType<typeof selectSubjectMetadata>[string];
+
+const snapSubjectMetadataCache = new WeakMap<
+  SubjectMetadataEntry,
+  SubjectMetadataEntry & { iconUrl: string | null }
+>();
+
 export function selectTargetSubjectMetadata(state: RootState, origin: string) {
   const metadata = selectSubjectMetadata(state)[origin];
 
   if (metadata?.subjectType === SubjectType.Snap) {
-    return {
-      ...metadata,
-      iconUrl: metadata.svgIcon ? getEmbeddableSvg(metadata.svgIcon) : null,
-    };
+    let snapMetadata = snapSubjectMetadataCache.get(metadata);
+    if (!snapMetadata) {
+      snapMetadata = {
+        ...metadata,
+        iconUrl: metadata.svgIcon ? getEmbeddableSvg(metadata.svgIcon) : null,
+      };
+      snapSubjectMetadataCache.set(metadata, snapMetadata);
+    }
+    return snapMetadata;
   }
 
   return metadata;

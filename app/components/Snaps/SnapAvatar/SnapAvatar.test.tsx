@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { Profiler } from 'react';
 import configureMockStore from 'redux-mock-store';
+import { createStore } from 'redux';
 import { Provider } from 'react-redux';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 import { SnapAvatar } from './SnapAvatar';
 
 describe('SnapAvatar', () => {
@@ -59,5 +60,39 @@ describe('SnapAvatar', () => {
     );
     expect(getByText('B')).toBeDefined();
     expect(getByTestId('snap-avatar-fallback')).toBeDefined();
+  });
+
+  it('does not re-render when an unrelated store update is dispatched', () => {
+    const initialState = { ...mockInitialState, counter: 0 };
+    const reducer = (
+      state: typeof initialState | undefined,
+      action: { type: string },
+    ) => {
+      const current = state ?? initialState;
+      return action.type === 'UNRELATED'
+        ? { ...current, counter: current.counter + 1 }
+        : current;
+    };
+    const realStore = createStore(reducer);
+    const onRender = jest.fn();
+
+    render(
+      <Provider store={realStore}>
+        <Profiler id="snap-avatar" onRender={onRender}>
+          <SnapAvatar
+            snapId="npm:@metamask/bip32-example-snap"
+            snapName="BIP-32 Example Snap"
+          />
+        </Profiler>
+      </Provider>,
+    );
+    const rendersAfterMount = onRender.mock.calls.length;
+
+    act(() => {
+      realStore.dispatch({ type: 'UNRELATED' });
+      realStore.dispatch({ type: 'UNRELATED' });
+    });
+
+    expect(onRender).toHaveBeenCalledTimes(rendersAfterMount);
   });
 });
