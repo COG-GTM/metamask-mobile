@@ -328,7 +328,7 @@ const Settings: React.FC = () => {
   const setPassword = async (
     enabled: boolean,
     passwordType: string,
-  ): Promise<boolean | undefined> => {
+  ): Promise<boolean> => {
     setLoading(true);
     let credentials;
     try {
@@ -345,12 +345,13 @@ const Settings: React.FC = () => {
       );
     }
     setLoading(false);
-    navigation.navigate('EnterPasswordSimple', {
-      onPasswordSet: (password: string) => {
-        storeCredentials(password, enabled, passwordType);
-      },
+    return new Promise((resolve) => {
+      navigation.navigate('EnterPasswordSimple', {
+        onPasswordSet: (password: string) => {
+          storeCredentials(password, enabled, passwordType).then(resolve);
+        },
+      });
     });
-    return undefined;
   };
 
   const onSignInWithPasscode = async (enabled: boolean) =>

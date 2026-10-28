@@ -4,7 +4,14 @@ import { BIOMETRY_TYPE } from 'react-native-keychain';
 import LoginOptionsSettings from './LoginOptionsSettings';
 import { Authentication } from '../../../../../core';
 import AUTHENTICATION_TYPE from '../../../../../constants/userProperties';
+import {
+  BIOMETRY_CHOICE_DISABLED,
+  PASSCODE_DISABLED,
+  TRUE,
+} from '../../../../../constants/storage';
 import { SecurityPrivacyViewSelectorsIDs } from '../../../../../../e2e/selectors/Settings/SecurityAndPrivacy/SecurityPrivacyView.selectors';
+
+let mockStorage: Record<string, string> = {};
 
 jest.mock('../../../../../core', () => ({
   Authentication: { getType: jest.fn() },
@@ -17,36 +24,57 @@ jest.mock('../../../../../util/device', () => ({
 
 jest.mock('../../../../../store/storage-wrapper', () => ({
   __esModule: true,
-  default: { getItem: jest.fn().mockResolvedValue(null) },
+  default: {
+    getItem: jest.fn((key: string) => Promise.resolve(mockStorage?.[key])),
+  },
 }));
 
-describe('LoginOptionsSettings', () => {
-  beforeEach(() => {
-    (Authentication.getType as jest.Mock).mockResolvedValue({
-      currentAuthType: AUTHENTICATION_TYPE.PASSWORD,
-      availableBiometryType: BIOMETRY_TYPE.FACE_ID,
-    });
+const setAuthState = (
+  currentAuthType: AUTHENTICATION_TYPE,
+  storage: Record<string, string>,
+) => {
+  (Authentication.getType as jest.Mock).mockResolvedValue({
+    currentAuthType,
+    availableBiometryType: BIOMETRY_TYPE.FACE_ID,
+  });
+  mockStorage = storage;
+};
+
+const passwordOnly = () =>
+  setAuthState(AUTHENTICATION_TYPE.PASSWORD, {
+    [BIOMETRY_CHOICE_DISABLED]: TRUE,
+    [PASSCODE_DISABLED]: TRUE,
   });
 
-  const renderSection = (onSignWithBiometricsOptionUpdated: jest.Mock) =>
+describe('LoginOptionsSettings', () => {
+  const renderSection = (
+    onBiometrics: jest.Mock,
+    onPasscode: jest.Mock = jest.fn().mockResolvedValue(undefined),
+  ) =>
     render(
       <LoginOptionsSettings
-        onSignWithBiometricsOptionUpdated={onSignWithBiometricsOptionUpdated}
-        onSignWithPasscodeOptionUpdated={jest.fn()}
+        onSignWithBiometricsOptionUpdated={onBiometrics}
+        onSignWithPasscodeOptionUpdated={onPasscode}
       />,
     );
 
-  it('turns the biometrics toggle back off when enabling is cancelled', async () => {
-    const onBiometrics = jest.fn().mockResolvedValue(false);
-    const { findByTestId } = renderSection(onBiometrics);
+  const toggleBiometrics = async (
+    findByTestId: ReturnType<typeof render>['findByTestId'],
+  ) => {
     const toggle = await findByTestId(
       SecurityPrivacyViewSelectorsIDs.BIOMETRICS_TOGGLE,
     );
-    expect(toggle.props.value).toBe(false);
-
     await act(async () => {
       fireEvent(toggle, 'onValueChange', true);
     });
+  };
+
+  it('turns the biometrics toggle back off when the biometric prompt is cancelled', async () => {
+    passwordOnly();
+    const onBiometrics = jest.fn(async () => passwordOnly());
+    const { findByTestId } = renderSection(onBiometrics);
+
+    await toggleBiometrics(findByTestId);
 
     expect(onBiometrics).toHaveBeenCalledWith(true);
     await waitFor(async () =>
@@ -58,16 +86,16 @@ describe('LoginOptionsSettings', () => {
     );
   });
 
-  it('keeps the biometrics toggle on when enabling succeeds', async () => {
-    const onBiometrics = jest.fn().mockResolvedValue(true);
-    const { findByTestId } = renderSection(onBiometrics);
-    const toggle = await findByTestId(
-      SecurityPrivacyViewSelectorsIDs.BIOMETRICS_TOGGLE,
+  it('shows biometrics on when enabling succeeds', async () => {
+    passwordOnly();
+    const onBiometrics = jest.fn(async () =>
+      setAuthState(AUTHENTICATION_TYPE.BIOMETRIC, {
+        [PASSCODE_DISABLED]: TRUE,
+      }),
     );
+    const { findByTestId } = renderSection(onBiometrics);
 
-    await act(async () => {
-      fireEvent(toggle, 'onValueChange', true);
-    });
+    await toggleBiometrics(findByTestId);
 
     await waitFor(async () =>
       expect(
@@ -78,23 +106,50 @@ describe('LoginOptionsSettings', () => {
     );
   });
 
-  it('falls back to the requested state when the handler returns nothing', async () => {
-    const onBiometrics = jest.fn().mockResolvedValue(undefined);
-    const { findByTestId } = renderSection(onBiometrics);
-    const toggle = await findByTestId(
-      SecurityPrivacyViewSelectorsIDs.BIOMETRICS_TOGGLE,
-    );
-
-    await act(async () => {
-      fireEvent(toggle, 'onValueChange', true);
+  it('turns the passcode toggle off when a passcode user cancels the biometric prompt', async () => {
+    setAuthState(AUTHENTICATION_TYPE.PASSCODE, {
+      [BIOMETRY_CHOICE_DISABLED]: TRUE,
     });
+    const onBiometrics = jest.fn(async () => passwordOnly());
+    const { findByTestId } = renderSection(onBiometrics);
 
     await waitFor(async () =>
       expect(
         (
-          await findByTestId(SecurityPrivacyViewSelectorsIDs.BIOMETRICS_TOGGLE)
+          await findByTestId(
+            SecurityPrivacyViewSelectorsIDs.DEVICE_PASSCODE_TOGGLE,
+          )
         ).props.value,
       ).toBe(true),
     );
+
+    await toggleBiometrics(findByTestId);
+
+    await waitFor(async () => {
+      expect(
+        (await findByTestId(SecurityPrivacyViewSelectorsIDs.BIOMETRICS_TOGGLE))
+          .props.value,
+      ).toBe(false);
+      expect(
+        (
+          await findByTestId(
+            SecurityPrivacyViewSelectorsIDs.DEVICE_PASSCODE_TOGGLE,
+          )
+        ).props.value,
+      ).toBe(false);
+    });
+  });
+
+  it('keeps the toggle unchanged until the handler settles', async () => {
+    passwordOnly();
+    const onBiometrics = jest.fn(() => new Promise(() => undefined));
+    const { findByTestId } = renderSection(onBiometrics);
+
+    await toggleBiometrics(findByTestId);
+
+    expect(
+      (await findByTestId(SecurityPrivacyViewSelectorsIDs.BIOMETRICS_TOGGLE))
+        .props.value,
+    ).toBe(false);
   });
 });
