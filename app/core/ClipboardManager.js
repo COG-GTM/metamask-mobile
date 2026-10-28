@@ -1,7 +1,4 @@
 import Clipboard from '@react-native-clipboard/clipboard';
-import Device from '../util/device';
-
-const EXPIRE_TIME_MS = 60000;
 
 const ClipboardManager = {
   async getString() {
@@ -10,23 +7,13 @@ const ClipboardManager = {
   async setString(string) {
     await Clipboard.setString(string);
   },
-  expireTime: null,
+  /**
+   * Copies sensitive content (SRP, private keys) and expires it after 60 seconds.
+   * Expiry is native on both platforms so it still runs while the app is in the
+   * background, where React Native pauses JS timers on Android.
+   */
   async setStringExpire(string) {
-    if (Device.isIos()) {
-      await Clipboard.setStringExpire(string);
-    } else {
-      await this.setString(string);
-      if (this.expireTime) {
-        clearTimeout(this.expireTime);
-      }
-      this.expireTime = setTimeout(async () => {
-        const string = await this.getString();
-
-        if (!string) return;
-
-        await Clipboard.clearString();
-      }, EXPIRE_TIME_MS);
-    }
+    await Clipboard.setStringExpire(string);
   },
 };
 
