@@ -28,3 +28,15 @@ export const getPermissionSubjectFromUrl = (url: string): string => {
   }
   return hostname || url;
 };
+
+/**
+ * Whether a PermissionController subject is a full web origin produced by
+ * `getPermissionSubjectFromUrl` for an in-app browser page (`http://host[:port]`
+ * or `https://host:port`), as opposed to e.g. a WalletConnect peer URL.
+ *
+ * @param subject - The permission subject.
+ * @returns True if the subject is an in-app browser origin subject.
+ */
+export const isBrowserOriginSubject = (subject: string): boolean =>
+  /^https?:\/\//.test(subject) &&
+  getPermissionSubjectFromUrl(subject) === subject;

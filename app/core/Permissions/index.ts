@@ -454,4 +454,4 @@ export const getPermittedChains = async (
   return [];
 };
 
-export { getPermissionSubjectFromUrl } from './subject';
+export { getPermissionSubjectFromUrl, isBrowserOriginSubject } from './subject';
