@@ -24,3 +24,20 @@ index 4aa4617..8098026 100644
  				);
  				LIBRARY_SEARCH_PATHS = "$(inherited)";
  				OTHER_LDFLAGS = "-ObjC";
+diff --git a/node_modules/@metamask/react-native-webview/apple/RNCWebViewImpl.m b/node_modules/@metamask/react-native-webview/apple/RNCWebViewImpl.m
+index 6a58db3..a2a6ff8 100644
+--- a/node_modules/@metamask/react-native-webview/apple/RNCWebViewImpl.m
++++ b/node_modules/@metamask/react-native-webview/apple/RNCWebViewImpl.m
+@@ -736,6 +736,12 @@ RCTAutoInsetsProtocol>
+     if (_onMessage) {
+       NSMutableDictionary<NSString *, id> *event = [self baseEvent];
+       [event addEntriesFromDictionary: @{@"data": message.body}];
++      // _webView.URL already points at a provisional navigation, so also
++      // report the frame that actually posted the message.
++      [event addEntriesFromDictionary: @{
++        @"frameUrl": message.frameInfo.request.URL.absoluteString ?: @"",
++        @"isMainFrame": @(message.frameInfo.isMainFrame)
++      }];
+       _onMessage(event);
+     }
+   }

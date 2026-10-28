@@ -79,3 +79,53 @@ export const getMaskedUrl = (
   }
   return urlToMask;
 };
+
+/**
+ * Origin of the document that posted a WebView message.
+ *
+ * On iOS the WebView `url` is WKWebView's active URL, which already points at
+ * a provisional (not yet committed) navigation while the previous document is
+ * still running. The patched iOS WebView therefore also reports `frameUrl`
+ * (the URL of the frame that actually called postMessage) and `isMainFrame`,
+ * which are preferred when present.
+ */
+export const getMessageSenderOrigin = (nativeEvent: {
+  url?: string;
+  frameUrl?: string;
+  isMainFrame?: boolean;
+}): string | undefined => {
+  if (nativeEvent.isMainFrame === false) return undefined;
+  const senderUrl = nativeEvent.frameUrl ?? nativeEvent.url;
+  if (!senderUrl) return undefined;
+  const { origin } = new URLParse(senderUrl);
+  if (!origin || origin === 'null') return undefined;
+  return origin;
+};
+
+export type MessageBridgeAction = 'forward' | 'rekey' | 'drop';
+
+/**
+ * Decides how a provider message is routed to the background bridge.
+ *
+ * - `forward`: the sender is the page the current bridge was created for.
+ * - `rekey`: the sender is the page of the latest top-frame navigation that
+ * passed the phishing check, so it has committed and gets a fresh bridge.
+ * - `drop`: any other sender (e.g. a page whose navigation to another origin
+ * was cancelled, or a blocked origin) must not reach the bridge.
+ */
+export const getMessageBridgeAction = ({
+  senderOrigin,
+  bridgeOrigin,
+  allowedNavigationOrigin,
+}: {
+  senderOrigin?: string;
+  bridgeOrigin?: string;
+  allowedNavigationOrigin?: string;
+}): MessageBridgeAction => {
+  if (!senderOrigin) return 'drop';
+  if (bridgeOrigin && senderOrigin === bridgeOrigin) return 'forward';
+  if (allowedNavigationOrigin && senderOrigin === allowedNavigationOrigin) {
+    return 'rekey';
+  }
+  return 'drop';
+};

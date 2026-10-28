@@ -103,7 +103,12 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import {
+  getMaskedUrl,
+  getMessageBridgeAction,
+  getMessageSenderOrigin,
+  isENSUrl,
+} from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -176,6 +181,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const resolvedUrlRef = useRef('');
   // Tracks currently loading URL to prevent phishing alerts when user navigates away from malicious sites before detection completes
   const loadingUrlRef = useRef('');
+  // Origin of the latest top-frame navigation that passed the phishing check
+  const allowedNavigationOriginRef = useRef('');
   const submittedUrlRef = useRef('');
   const titleRef = useRef<string>('');
   const iconRef = useRef<ImageSourcePropType | undefined>();
@@ -857,38 +864,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     [handleError, handleSuccessfulPageResolution, favicon],
   );
 
-  /**
-   * Handle message from website
-   */
-  const onMessage = ({ nativeEvent }: WebViewMessageEvent) => {
-    const data = nativeEvent.data;
-    try {
-      if (data.length > MAX_MESSAGE_LENGTH) {
-        console.warn(
-          `message exceeded size limit and will be dropped: ${data.slice(
-            0,
-            1000,
-          )}...`,
-        );
-        return;
-      }
-      const dataParsed = typeof data === 'string' ? JSON.parse(data) : data;
-      if (!dataParsed || (!dataParsed.type && !dataParsed.name)) {
-        return;
-      }
-      if (dataParsed.name) {
-        backgroundBridgeRef.current?.onMessage(dataParsed);
-        return;
-      }
-    } catch (e: unknown) {
-      const onMessageError = e as Error;
-      Logger.error(
-        onMessageError,
-        `Browser::onMessage on ${resolvedUrlRef.current}`,
-      );
-    }
-  };
-
   const toggleUrlModal = useCallback(() => {
     urlBarRef.current?.focus();
   }, []);
@@ -939,6 +914,70 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
   );
 
+  /**
+   * Handle message from website
+   */
+  const onMessage = ({ nativeEvent }: WebViewMessageEvent) => {
+    const data = nativeEvent.data;
+    try {
+      if (data.length > MAX_MESSAGE_LENGTH) {
+        console.warn(
+          `message exceeded size limit and will be dropped: ${data.slice(
+            0,
+            1000,
+          )}...`,
+        );
+        return;
+      }
+      const dataParsed = typeof data === 'string' ? JSON.parse(data) : data;
+      if (!dataParsed || (!dataParsed.type && !dataParsed.name)) {
+        return;
+      }
+      if (dataParsed.name) {
+        const senderOrigin = getMessageSenderOrigin(nativeEvent);
+        const action = getMessageBridgeAction({
+          senderOrigin,
+          bridgeOrigin: backgroundBridgeRef.current?.url,
+          allowedNavigationOrigin: allowedNavigationOriginRef.current,
+        });
+        if (action === 'drop' || !senderOrigin) {
+          Logger.log(
+            `Browser::onMessage dropped message from ${senderOrigin} for bridge ${backgroundBridgeRef.current?.url}`,
+          );
+          return;
+        }
+        if (action === 'rekey') {
+          initializeBackgroundBridge(senderOrigin, true);
+        }
+        backgroundBridgeRef.current?.onMessage(dataParsed);
+        return;
+      }
+    } catch (e: unknown) {
+      const onMessageError = e as Error;
+      Logger.error(
+        onMessageError,
+        `Browser::onMessage on ${resolvedUrlRef.current}`,
+      );
+    }
+  };
+
+  /**
+   * Binds the bridge to a page once its top-frame navigation has committed
+   */
+  const bindBridgeToCommittedPage = useCallback(
+    (committedUrl: string) => {
+      const { origin } = new URLParse(committedUrl);
+      if (
+        origin &&
+        origin === allowedNavigationOriginRef.current &&
+        backgroundBridgeRef.current?.url !== origin
+      ) {
+        initializeBackgroundBridge(origin, true);
+      }
+    },
+    [initializeBackgroundBridge],
+  );
+
   const sendActiveAccount = useCallback(async () => {
     notifyAllConnections({
       method: NOTIFICATION_NAMES.accountsChanged,
@@ -976,7 +1015,14 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         injectHomePageScripts();
       }
 
-      initializeBackgroundBridge(urlOrigin, true);
+      // On iOS this fires before the navigation commits and the navigation can
+      // still be cancelled, leaving the previous page running. The bridge for a
+      // new origin is only created once that navigation commits (load end) or
+      // that origin's own page posts a message.
+      allowedNavigationOriginRef.current = urlOrigin;
+      if (backgroundBridgeRef.current?.url === urlOrigin) {
+        initializeBackgroundBridge(urlOrigin, true);
+      }
     },
     [
       isAllowedOrigin,
@@ -1168,6 +1214,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     }: {
       nativeEvent: { downloadUrl: string };
     }) => {
+      // The navigation became a download and never committed, so the
+      // previous page is still running and keeps its own bridge.
+      allowedNavigationOriginRef.current =
+        backgroundBridgeRef.current?.url ?? '';
       const downloadResponse = await downloadFile(downloadUrl);
       if (downloadResponse) {
         reload();
@@ -1295,6 +1345,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           case OnLoadProgress:
             return onLoadProgress(syntheticEvent as WebViewProgressEvent);
           case OnLoadEnd:
+            if (!('code' in syntheticEvent.nativeEvent)) {
+              bindBridgeToCommittedPage(syntheticEvent.nativeEvent.url);
+            }
             return onLoadEnd({
               event: syntheticEvent as
                 | WebViewNavigationEvent
@@ -1306,7 +1359,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             return;
         }
       },
-    [onLoadProgress, onLoadEnd, onLoadStart],
+    [onLoadProgress, onLoadEnd, onLoadStart, bindBridgeToCommittedPage],
   );
 
   const { OnLoadEnd, OnLoadProgress, OnLoadStart } = WebViewNavigationEventName;
