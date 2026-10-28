@@ -76,12 +76,22 @@ export const JS_WINDOW_INFORMATION = `
 export const JS_DESELECT_TEXT = `if (window.getSelection) {window.getSelection().removeAllRanges();}
 else if (document.selection) {document.selection.empty();}`;
 
+const POST_MESSAGE_ORIGIN_REGEX =
+  /^[a-z][a-z0-9+.-]*:\/\/(?:\[[0-9a-f:.]+\]|[a-z0-9\-._~\u00a1-\uffff]+)(?::\d{1,5})?$/i;
+
+/**
+ * Whether `origin` is a serialized `scheme://host[:port]` origin that is safe
+ * to use as the postMessage target origin of scripts injected into a WebView.
+ */
+export const isValidPostMessageOrigin = (origin: unknown): origin is string =>
+  typeof origin === 'string' && POST_MESSAGE_ORIGIN_REGEX.test(origin);
+
 export const JS_POST_MESSAGE_TO_PROVIDER = (
   message: object,
-  origin: string
+  origin: string,
 ) => `(function () {
   try {
-    window.postMessage(${JSON.stringify(message)}, '${origin}');
+    window.postMessage(${JSON.stringify(message)}, ${JSON.stringify(origin)});
   } catch (e) {
     //Nothing to do
   }
@@ -89,9 +99,8 @@ export const JS_POST_MESSAGE_TO_PROVIDER = (
 
 export const JS_IFRAME_POST_MESSAGE_TO_PROVIDER = (
   _message: object,
-  _origin: string
-) =>
-  `(function () {})()`;
+  _origin: string,
+) => `(function () {})()`;
 /** Disable sending messages to iframes for now
  *
 `(function () {
@@ -99,7 +108,7 @@ export const JS_IFRAME_POST_MESSAGE_TO_PROVIDER = (
   for (let frame of iframes){
 
       try {
-        frame.contentWindow.postMessage(${JSON.stringify(_message)}, '${_origin}');
+        frame.contentWindow.postMessage(${JSON.stringify(_message)}, ${JSON.stringify(_origin)});
       } catch (e) {
         //Nothing to do
       }

@@ -19,6 +19,7 @@ import AppConstants from '../AppConstants';
 import RemotePort from './RemotePort';
 import WalletConnectPort from './WalletConnectPort';
 import Port from './Port';
+import { isValidPostMessageOrigin } from '../../util/browserScripts';
 import { store } from '../../store';
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import { rpcErrors } from '@metamask/rpc-errors';
@@ -72,6 +73,9 @@ export class BackgroundBridge extends EventEmitter {
     channelId,
   }) {
     super();
+    if (!isRemoteConn && !isWalletConnect && !isValidPostMessageOrigin(url)) {
+      throw new Error('BackgroundBridge: invalid origin for in-app browser');
+    }
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
     this.hostname = new URL(url).hostname;
