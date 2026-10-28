@@ -719,6 +719,7 @@ exports[`NftDetails should render correctly 1`] = `
                                     onGestureHandlerStateChange={[Function]}
                                     onHandlerStateChange={[Function]}
                                     rippleColor={0}
+                                    testID="nft-details-floor-price-source"
                                   >
                                     <View
                                       accessible={true}
@@ -1226,6 +1227,7 @@ exports[`NftDetails should render correctly 1`] = `
                                   onGestureHandlerStateChange={[Function]}
                                   onHandlerStateChange={[Function]}
                                   rippleColor={0}
+                                  testID="nft-details-top-bid-source"
                                 >
                                   <View
                                     accessible={true}

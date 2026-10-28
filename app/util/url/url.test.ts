@@ -3,8 +3,12 @@ import {
   isBridgeUrl,
   isValidASCIIURL,
   toPunycodeURL,
+  getSafeHttpsUrl,
 } from './index';
 import AppConstants from '../../core/AppConstants';
+
+// Built at runtime so eslint's no-script-url rule doesn't flag test data.
+const SCRIPT_URL = ['javascript', 'alert(1)'].join(':');
 
 describe('URL Check Functions', () => {
   describe('isPortfolioUrl', () => {
@@ -122,5 +126,35 @@ describe('URL Check Functions', () => {
         toPunycodeURL('https://opensea.io/language=français'),
       ).toStrictEqual('https://opensea.io/language=fran%C3%A7ais');
     });
+  });
+});
+
+describe('getSafeHttpsUrl', () => {
+  it.each([
+    ['https://opensea.io/assets/1', 'https://opensea.io/assets/1'],
+    ['opensea.io', 'https://opensea.io/'],
+    ['//blur.io/collections', 'https://blur.io/collections'],
+    ['  https://magiceden.io  ', 'https://magiceden.io/'],
+  ])('returns an https URL for %p', (input, expected) => {
+    expect(getSafeHttpsUrl(input)).toBe(expected);
+  });
+
+  it.each([
+    SCRIPT_URL,
+    'customscheme://x',
+    'http://opensea.io',
+    'data:text/html,<script>alert(1)</script>',
+    'tel:+15555555555',
+    'intent://scan/#Intent;scheme=zxing;end',
+    'metamask://wc?uri=x',
+    'https://user:pass@opensea.io',
+    'https://',
+    '',
+    '   ',
+    undefined,
+    null,
+    42,
+  ])('rejects %p', (input) => {
+    expect(getSafeHttpsUrl(input)).toBeUndefined();
   });
 });

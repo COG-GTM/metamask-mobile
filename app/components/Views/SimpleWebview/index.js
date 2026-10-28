@@ -7,6 +7,16 @@ import Share from 'react-native-share'; // eslint-disable-line  import/default
 import Logger from '../../../util/Logger';
 import { baseStyles } from '../../../styles/common';
 import { ThemeContext, mockTheme } from '../../../util/theme';
+import {
+  getSimpleWebviewHostname,
+  isAllowedSimpleWebviewUrl,
+  onSimpleWebviewShouldStartLoad,
+} from './SimpleWebview.utils';
+
+// Every origin passes the WebView whitelist so that its default handler never
+// forwards non-web schemes to Linking.openURL; onShouldStartLoadWithRequest
+// decides instead.
+const ORIGIN_WHITELIST = ['*'];
 
 export default class SimpleWebview extends PureComponent {
   static propTypes = {
@@ -23,7 +33,15 @@ export default class SimpleWebview extends PureComponent {
   updateNavBar = () => {
     const { navigation, route } = this.props;
     const colors = this.context.colors || mockTheme.colors;
-    navigation.setOptions(getWebviewNavbar(navigation, route, colors));
+    const title =
+      route.params?.title || getSimpleWebviewHostname(route.params?.url);
+    navigation.setOptions(
+      getWebviewNavbar(
+        navigation,
+        { ...route, params: { ...route.params, title } },
+        colors,
+      ),
+    );
   };
 
   componentDidMount = () => {
@@ -50,13 +68,18 @@ export default class SimpleWebview extends PureComponent {
 
   render() {
     const uri = this.props.route.params?.url;
-    if (uri) {
+    if (isAllowedSimpleWebviewUrl(uri)) {
       return (
         <View style={baseStyles.flexGrow}>
-          <WebView source={{ uri }} />
+          <WebView
+            source={{ uri }}
+            originWhitelist={ORIGIN_WHITELIST}
+            onShouldStartLoadWithRequest={onSimpleWebviewShouldStartLoad}
+          />
         </View>
       );
     }
+    return null;
   }
 }
 

@@ -1,6 +1,11 @@
+import { fireEvent } from '@testing-library/react-native';
 import { renderScreen } from '../../../util/test/renderWithProvider';
+import Routes from '../../../constants/navigation/Routes';
 import QrScanner from './';
 import { backgroundState } from '../../../util/test/initial-root-state';
+
+// Built at runtime so eslint's no-script-url rule doesn't flag test data.
+const SCRIPT_URL = ['javascript', 'alert(1)'].join(':');
 
 const initialState = {
   engine: {
@@ -131,7 +136,8 @@ const TEST_COLLECTIBLE = {
   logo: 'https://img.reservoir.tools/images/v2/mainnet/m8Rol%2FE80oMmjzi7K7IQ0u6HzXVyHUh6MaSEPbYQy1GRP1ztTkhG1VSzAwMMXv97QfX8ZgwGwpR8nf9yb12HQqI%2BXfaLY%2BhMdAJk7UThICq3VpXqP8R9a7UJJWaudViqrlaZXcB%2B9WiV9avzgRprPEfJ1chTNYa3%2B36V9Areb6V%2BqwbskYYLZjPXCrV525seJSJnfQqrVwl64p9PV9sCkw%3D%3D?width=250',
 };
 
-let mockUseParamsValues = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let mockUseParamsValues: { collectible: any } = {
   collectible: TEST_COLLECTIBLE,
 };
 
@@ -153,5 +159,118 @@ describe('NftDetails', () => {
       { state: initialState },
     );
     expect(toJSON()).toMatchSnapshot();
+  });
+
+  describe('marketplace source links', () => {
+    const MARKET_COLLECTIBLE = {
+      ...TEST_COLLECTIBLE,
+      lastSale: {
+        orderSource: 'opensea.io',
+        timestamp: 1718582323,
+        price: { amount: { usd: 100, native: 0.03 } },
+      },
+    };
+
+    const renderNftDetails = () =>
+      renderScreen(QrScanner, { name: 'NftDetails' }, { state: initialState });
+
+    const expectBrowserNavigation = (url: string) =>
+      expect(mockNavigate).toHaveBeenCalledWith(Routes.BROWSER_TAB_HOME, {
+        screen: Routes.BROWSER_VIEW,
+        params: expect.objectContaining({ newTabUrl: url }),
+      });
+
+    beforeEach(() => {
+      mockNavigate.mockClear();
+    });
+
+    it('opens https marketplace URLs in the in-app browser, not SimpleWebview', () => {
+      mockUseParamsValues = { collectible: MARKET_COLLECTIBLE };
+      const { getByTestId } = renderNftDetails();
+
+      fireEvent.press(getByTestId('nft-details-last-sale-source'));
+      expectBrowserNavigation('https://opensea.io/');
+
+      fireEvent.press(getByTestId('nft-details-floor-price-source'));
+      expectBrowserNavigation(
+        MARKET_COLLECTIBLE.collection.floorAsk.source.url,
+      );
+
+      fireEvent.press(getByTestId('nft-details-top-bid-source'));
+      expectBrowserNavigation(MARKET_COLLECTIBLE.topBid.source.url);
+
+      expect(mockNavigate).not.toHaveBeenCalledWith(
+        'Webview',
+        expect.objectContaining({ screen: 'SimpleWebview' }),
+      );
+    });
+
+    it('builds an https URL from the collection top bid source domain', () => {
+      mockUseParamsValues = {
+        collectible: {
+          ...MARKET_COLLECTIBLE,
+          topBid: { ...MARKET_COLLECTIBLE.topBid, source: undefined },
+          collection: {
+            ...MARKET_COLLECTIBLE.collection,
+            topBid: { sourceDomain: 'blur.io' },
+          },
+        },
+      };
+      const { getByTestId } = renderNftDetails();
+
+      fireEvent.press(getByTestId('nft-details-top-bid-source'));
+      expectBrowserNavigation('https://blur.io/');
+    });
+
+    it('hides source links whose market data URL is not https', () => {
+      mockUseParamsValues = {
+        collectible: {
+          ...MARKET_COLLECTIBLE,
+          lastSale: {
+            ...MARKET_COLLECTIBLE.lastSale,
+            orderSource: 'customscheme://x',
+          },
+          topBid: {
+            ...MARKET_COLLECTIBLE.topBid,
+            source: { url: SCRIPT_URL },
+          },
+          collection: {
+            ...MARKET_COLLECTIBLE.collection,
+            floorAsk: {
+              ...MARKET_COLLECTIBLE.collection.floorAsk,
+              source: { url: 'http://evil.example' },
+            },
+          },
+        },
+      };
+      const { queryByTestId } = renderNftDetails();
+
+      expect(queryByTestId('nft-details-last-sale-source')).toBeNull();
+      expect(queryByTestId('nft-details-floor-price-source')).toBeNull();
+      expect(queryByTestId('nft-details-top-bid-source')).toBeNull();
+      expect(mockNavigate).not.toHaveBeenCalledWith(
+        'Webview',
+        expect.anything(),
+      );
+    });
+
+    it('hides the top bid link when neither top bid source is https', () => {
+      mockUseParamsValues = {
+        collectible: {
+          ...MARKET_COLLECTIBLE,
+          topBid: {
+            ...MARKET_COLLECTIBLE.topBid,
+            source: { url: SCRIPT_URL },
+          },
+          collection: {
+            ...MARKET_COLLECTIBLE.collection,
+            topBid: { sourceDomain: 'tel:+15555555555' },
+          },
+        },
+      };
+      const { queryByTestId } = renderNftDetails();
+
+      expect(queryByTestId('nft-details-top-bid-source')).toBeNull();
+    });
   });
 });
