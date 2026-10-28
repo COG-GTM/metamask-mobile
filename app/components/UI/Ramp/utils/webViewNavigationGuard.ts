@@ -28,6 +28,12 @@ const ALWAYS_BLOCKED_PROTOCOLS = [
   'blob:',
 ];
 
+/**
+ * Returns the lower-cased URL scheme including the trailing colon.
+ *
+ * @param url - Absolute URL requested by the WebView.
+ * @returns The scheme (e.g. `https:`), or `undefined` when there is none.
+ */
 export const getUrlProtocol = (url: string): string | undefined => {
   const match = /^([a-z][a-z0-9+.-]*:)/i.exec(url.trim());
   return match ? match[1].toLowerCase() : undefined;
@@ -42,6 +48,16 @@ interface RampWebViewNavigationGuardOptions {
   promptForExternalApps: boolean;
 }
 
+/**
+ * Builds an `onShouldStartLoadWithRequest` handler for Ramp WebViews. Loads
+ * http(s)/about URLs, drops wallet and other dangerous schemes, and either
+ * prompts for or drops any other external scheme. Pair it with
+ * `RAMP_WEBVIEW_ORIGIN_WHITELIST`.
+ *
+ * @param options - Guard options.
+ * @param options.promptForExternalApps - Whether to ask the user before opening a non-blocked external scheme.
+ * @returns Handler returning `true` to load the request, `false` to stop it.
+ */
 export const createRampWebViewNavigationGuard = ({
   promptForExternalApps,
 }: RampWebViewNavigationGuardOptions) => {
