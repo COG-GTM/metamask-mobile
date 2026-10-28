@@ -1,5 +1,5 @@
 // Third party dependencies.
-import React, { useCallback, useRef, useMemo } from 'react';
+import React, { useCallback, useEffect, useRef, useMemo } from 'react';
 import {
   Alert,
   InteractionManager,
@@ -38,7 +38,11 @@ import styleSheet from './AccountSelectorList.styles';
 import { AccountListBottomSheetSelectorsIDs } from '../../../../e2e/selectors/wallet/AccountListBottomSheet.selectors';
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 import { RootState } from '../../../reducers';
-import { ACCOUNT_SELECTOR_LIST_TESTID } from './AccountSelectorList.constants';
+import {
+  ACCOUNT_SELECTOR_LIST_TESTID,
+  MAX_SCROLL_TO_INDEX_RETRIES,
+  SCROLL_TO_INDEX_RETRY_DELAY_MS,
+} from './AccountSelectorList.constants';
 import { toHex } from '@metamask/controller-utils';
 
 const AccountSelectorList = ({
@@ -300,31 +304,76 @@ const AccountSelectorList = ({
     ],
   );
 
+  const selectedAccountIndex = useMemo(() => {
+    let index = -1;
+    if (selectedAddresses?.length) {
+      const selectedAddressLower = selectedAddresses[0].toLowerCase();
+      index = accounts.findIndex(
+        (acc) => acc.address.toLowerCase() === selectedAddressLower,
+      );
+    }
+    // Fall back to the account with isSelected flag if no override or match found
+    if (index === -1) {
+      index = accounts.findIndex((acc) => acc.isSelected);
+    }
+    return index;
+  }, [accounts, selectedAddresses]);
+
+  const scrollRetryTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const scrollRetryCountRef = useRef(0);
+
+  useEffect(
+    () => () => {
+      if (scrollRetryTimeoutRef.current) {
+        clearTimeout(scrollRetryTimeoutRef.current);
+      }
+    },
+    [],
+  );
+
   const onContentSizeChanged = useCallback(() => {
     // Handle auto scroll to account
     if (!accounts.length || !isAutoScrollEnabled) return;
     if (accountsLengthRef.current !== accounts.length) {
-      let selectedAccount: Account | undefined;
-
-      if (selectedAddresses?.length) {
-        const selectedAddressLower = selectedAddresses[0].toLowerCase();
-        selectedAccount = accounts.find(
-          (acc) => acc.address.toLowerCase() === selectedAddressLower,
-        );
+      if (selectedAccountIndex === -1) {
+        accountListRef?.current?.scrollToOffset({ offset: 0, animated: false });
+      } else {
+        scrollRetryCountRef.current = 0;
+        accountListRef?.current?.scrollToIndex({
+          index: selectedAccountIndex,
+          animated: false,
+        });
       }
-      // Fall back to the account with isSelected flag if no override or match found
-      if (!selectedAccount) {
-        selectedAccount = accounts.find((acc) => acc.isSelected);
-      }
-
-      accountListRef?.current?.scrollToOffset({
-        offset: selectedAccount?.yOffset,
-        animated: false,
-      });
 
       accountsLengthRef.current = accounts.length;
     }
-  }, [accounts, selectedAddresses, isAutoScrollEnabled]);
+  }, [accounts.length, selectedAccountIndex, isAutoScrollEnabled]);
+
+  // Rows outside the render window have not been measured yet, so jump to an
+  // estimated offset to render that window, then retry the exact scroll.
+  const onScrollToIndexFailed = useCallback(
+    ({
+      index,
+      averageItemLength,
+    }: {
+      index: number;
+      averageItemLength: number;
+    }) => {
+      accountListRef?.current?.scrollToOffset({
+        offset: averageItemLength * index,
+        animated: false,
+      });
+      if (scrollRetryCountRef.current >= MAX_SCROLL_TO_INDEX_RETRIES) return;
+      scrollRetryCountRef.current += 1;
+      if (scrollRetryTimeoutRef.current) {
+        clearTimeout(scrollRetryTimeoutRef.current);
+      }
+      scrollRetryTimeoutRef.current = setTimeout(() => {
+        accountListRef?.current?.scrollToIndex({ index, animated: false });
+      }, SCROLL_TO_INDEX_RETRY_DELAY_MS);
+    },
+    [],
+  );
 
   return (
     <FlatList
@@ -333,8 +382,7 @@ const AccountSelectorList = ({
       data={accounts}
       keyExtractor={getKeyExtractor}
       renderItem={renderAccountItem}
-      // Increasing number of items at initial render fixes scroll issue.
-      initialNumToRender={999}
+      onScrollToIndexFailed={onScrollToIndexFailed}
       testID={ACCOUNT_SELECTOR_LIST_TESTID}
       {...props}
     />

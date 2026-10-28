@@ -20,7 +20,11 @@ import { AccountSelectorListProps } from './AccountSelectorList.types';
 import Engine from '../../../core/Engine';
 import { CellComponentSelectorsIDs } from '../../../../e2e/selectors/wallet/CellComponent.selectors';
 import { KeyringTypes } from '@metamask/keyring-controller';
-import { ACCOUNT_SELECTOR_LIST_TESTID } from './AccountSelectorList.constants';
+import {
+  ACCOUNT_SELECTOR_LIST_TESTID,
+  MAX_SCROLL_TO_INDEX_RETRIES,
+  SCROLL_TO_INDEX_RETRY_DELAY_MS,
+} from './AccountSelectorList.constants';
 
 const BUSINESS_ACCOUNT = '0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272';
 const PERSONAL_ACCOUNT = '0xd018538C87232FF95acbCe4870629b75640a78E7';
@@ -869,87 +873,205 @@ describe('AccountSelectorList', () => {
     mockAlert.mockRestore();
   });
 
-  it('should auto-scroll to selected account when isAutoScrollEnabled is true', () => {
-    // Create a mock for the FlatList's scrollToOffset method
-    const mockScrollToOffset = jest.fn();
+  describe('virtualization and auto-scroll', () => {
+    const { FlatList: RNFlatList } = jest.requireActual('react-native');
+    const MANY_ACCOUNTS_COUNT = 50;
+    const SELECTED_INDEX = 42;
 
-    // Override the scrollToOffset method by mocking the React Native FlatList
-    jest.mock('react-native-gesture-handler', () => {
-      const actual = jest.requireActual('react-native-gesture-handler');
-      const FlatList = ({
-        onContentSizeChange,
-        ...props
-      }: {
-        onContentSizeChange?: () => void;
-      }) => {
-        // Simulate the ref by providing a scrollToOffset method
-        setTimeout(() => {
-          if (onContentSizeChange) {
-            onContentSizeChange();
-          }
-        }, 0);
-        return actual.FlatList(props);
-      };
-      FlatList.prototype.scrollToOffset = mockScrollToOffset;
-      return {
-        ...actual,
-        FlatList,
-      };
-    });
+    const manyAccounts = Array.from(
+      { length: MANY_ACCOUNTS_COUNT },
+      (_, i) => ({
+        name: `Account ${i + 1}`,
+        address: `0x${(i + 1).toString(16).padStart(40, '0')}`,
+        assets: { fiatBalance: `$${i}.00\n${i} ETH`, tokens: [] },
+        type: KeyringTypes.hd,
+        yOffset: i * 78,
+        isSelected: i === SELECTED_INDEX,
+        balanceError: undefined,
+      }),
+    );
 
-    // Mock the account data with an account that has a selected flag
-    (useAccounts as jest.Mock).mockReturnValue({
-      accounts: [
-        {
-          name: 'Account 1',
-          address: BUSINESS_ACCOUNT,
-          assets: { fiatBalance: '$3200.00\n1 ETH' },
-          type: 'HD Key Tree',
-          yOffset: 150,
-          isSelected: true,
-          balanceError: undefined,
-        },
-      ],
-      evmAccounts: [],
-      ensByAccountAddress: {},
-    });
-
-    // Render the component
-    renderComponent(initialState);
-
-    // Skip actually testing the scrollToOffset call since we can't
-    // reliably mock and test the FlatList's methods in this environment
-    expect(true).toBe(true);
-  });
-
-  // TODO: fix this test
-  it('should not auto-scroll when isAutoScrollEnabled is false', async () => {
-    const mockScrollToOffset = jest.fn();
-
-    // Create test component with auto-scroll disabled
-    const AccountSelectorListNoAutoScrollTest: React.FC = () => {
+    const AutoScrollTest = ({
+      isAutoScrollEnabled = true,
+      selectedAddresses,
+    }: {
+      isAutoScrollEnabled?: boolean;
+      selectedAddresses?: string[];
+    }) => {
       const { accounts, ensByAccountAddress } = useAccounts();
       return (
         <AccountSelectorList
           onSelectAccount={onSelectAccount}
           accounts={accounts}
           ensByAccountAddress={ensByAccountAddress}
-          isAutoScrollEnabled={false}
+          isAutoScrollEnabled={isAutoScrollEnabled}
+          selectedAddresses={selectedAddresses}
         />
       );
     };
 
-    const { getByTestId } = renderComponent(
-      initialState,
-      AccountSelectorListNoAutoScrollTest,
-    );
+    let scrollToIndexSpy: jest.SpyInstance;
+    let scrollToOffsetSpy: jest.SpyInstance;
 
-    // Get the FlatList and trigger content size change
-    const flatList = getByTestId(ACCOUNT_SELECTOR_LIST_TESTID);
-    flatList.props.onContentSizeChange();
+    beforeEach(() => {
+      setAccountsMock(manyAccounts);
+      scrollToIndexSpy = jest
+        .spyOn(RNFlatList.prototype, 'scrollToIndex')
+        .mockImplementation(() => undefined);
+      scrollToOffsetSpy = jest
+        .spyOn(RNFlatList.prototype, 'scrollToOffset')
+        .mockImplementation(() => undefined);
+      // VirtualizedList batching cancels the returned task handle on unmount.
+      jest
+        .spyOn(InteractionManager, 'runAfterInteractions')
+        .mockImplementation((task) => {
+          if (typeof task === 'function') task();
+          return {
+            cancel: jest.fn(),
+            done: jest.fn(),
+            then: jest.fn(),
+          } as unknown as ReturnType<
+            typeof InteractionManager.runAfterInteractions
+          >;
+        });
+    });
 
-    // Verify that scrollToOffset was not called
-    expect(mockScrollToOffset).not.toHaveBeenCalled();
+    it('keeps FlatList windowing instead of mounting every account row', () => {
+      const { getByTestId, getAllByTestId } = renderComponent(
+        initialState,
+        AutoScrollTest,
+      );
+
+      expect(
+        getByTestId(ACCOUNT_SELECTOR_LIST_TESTID).props.initialNumToRender,
+      ).not.toBe(999);
+      const renderedRows = getAllByTestId(
+        CellComponentSelectorsIDs.SELECT_WITH_MENU,
+      );
+      expect(renderedRows.length).toBeGreaterThan(0);
+      expect(renderedRows.length).toBeLessThan(MANY_ACCOUNTS_COUNT);
+    });
+
+    it('scrolls to the selected account by index on first content size change', () => {
+      const { getByTestId } = renderComponent(initialState, AutoScrollTest);
+      const list = getByTestId(ACCOUNT_SELECTOR_LIST_TESTID);
+
+      list.props.onContentSizeChange(400, 4000);
+      list.props.onContentSizeChange(400, 4100);
+
+      expect(scrollToIndexSpy).toHaveBeenCalledTimes(1);
+      expect(scrollToIndexSpy).toHaveBeenCalledWith({
+        index: SELECTED_INDEX,
+        animated: false,
+      });
+    });
+
+    it('prefers selectedAddresses over the isSelected flag', () => {
+      const SelectedAddressTest = () => (
+        <AutoScrollTest
+          selectedAddresses={[manyAccounts[7].address.toUpperCase()]}
+        />
+      );
+      const { getByTestId } = renderComponent(
+        initialState,
+        SelectedAddressTest,
+      );
+
+      getByTestId(ACCOUNT_SELECTOR_LIST_TESTID).props.onContentSizeChange(
+        400,
+        4000,
+      );
+
+      expect(scrollToIndexSpy).toHaveBeenCalledWith({
+        index: 7,
+        animated: false,
+      });
+    });
+
+    it('scrolls to the top when no account is selected', () => {
+      setAccountsMock(
+        manyAccounts.map((account) => ({ ...account, isSelected: false })),
+      );
+      const { getByTestId } = renderComponent(initialState, AutoScrollTest);
+
+      getByTestId(ACCOUNT_SELECTOR_LIST_TESTID).props.onContentSizeChange(
+        400,
+        4000,
+      );
+
+      expect(scrollToIndexSpy).not.toHaveBeenCalled();
+      expect(scrollToOffsetSpy).toHaveBeenCalledWith({
+        offset: 0,
+        animated: false,
+      });
+    });
+
+    it('does not auto-scroll when isAutoScrollEnabled is false', () => {
+      const NoAutoScrollTest = () => (
+        <AutoScrollTest isAutoScrollEnabled={false} />
+      );
+      const { getByTestId } = renderComponent(initialState, NoAutoScrollTest);
+
+      getByTestId(ACCOUNT_SELECTOR_LIST_TESTID).props.onContentSizeChange(
+        400,
+        4000,
+      );
+
+      expect(scrollToIndexSpy).not.toHaveBeenCalled();
+      expect(scrollToOffsetSpy).not.toHaveBeenCalled();
+    });
+
+    it('jumps to an estimated offset and retries when the target row is not measured yet', async () => {
+      const { getByTestId } = renderComponent(initialState, AutoScrollTest);
+      const list = getByTestId(ACCOUNT_SELECTOR_LIST_TESTID);
+
+      list.props.onContentSizeChange(400, 4000);
+      scrollToIndexSpy.mockClear();
+
+      const failure = {
+        index: SELECTED_INDEX,
+        highestMeasuredFrameIndex: 9,
+        averageItemLength: 80,
+      };
+      list.props.onScrollToIndexFailed(failure);
+
+      expect(scrollToOffsetSpy).toHaveBeenCalledWith({
+        offset: 80 * SELECTED_INDEX,
+        animated: false,
+      });
+      expect(scrollToIndexSpy).not.toHaveBeenCalled();
+
+      await waitFor(() =>
+        expect(scrollToIndexSpy).toHaveBeenCalledWith({
+          index: SELECTED_INDEX,
+          animated: false,
+        }),
+      );
+    });
+
+    it('stops retrying after the maximum number of failed scrolls', async () => {
+      const { getByTestId } = renderComponent(initialState, AutoScrollTest);
+      const list = getByTestId(ACCOUNT_SELECTOR_LIST_TESTID);
+
+      list.props.onContentSizeChange(400, 4000);
+      scrollToIndexSpy.mockClear();
+
+      const failure = {
+        index: SELECTED_INDEX,
+        highestMeasuredFrameIndex: 9,
+        averageItemLength: 80,
+      };
+      for (let i = 0; i < MAX_SCROLL_TO_INDEX_RETRIES + 2; i++) {
+        list.props.onScrollToIndexFailed(failure);
+        await new Promise((resolve) =>
+          setTimeout(resolve, SCROLL_TO_INDEX_RETRY_DELAY_MS * 2),
+        );
+      }
+
+      expect(scrollToIndexSpy).toHaveBeenCalledTimes(
+        MAX_SCROLL_TO_INDEX_RETRIES,
+      );
+    });
   });
 
   it('should display ENS name instead of account name when available', async () => {
@@ -1090,57 +1212,6 @@ describe('AccountSelectorList', () => {
 
     // Don't test this behavior directly since the element doesn't exist
     expect(true).toBe(true);
-  });
-
-  it('correctly handles auto-scrolling when an account is marked with autoscroll', async () => {
-    // Create mock for FlatList's scrollToOffset
-    const mockScrollToOffset = jest.fn();
-
-    // Mock React.createRef to return our controlled ref
-    jest.spyOn(React, 'createRef').mockImplementation(() => ({
-      current: {
-        scrollToOffset: mockScrollToOffset,
-      },
-    }));
-
-    // Setup accounts with one marked for auto-scroll
-    const mockAccountsForScroll = [
-      {
-        name: 'Account 1',
-        address: BUSINESS_ACCOUNT,
-        assets: {
-          fiatBalance: '$3200.00\n1 ETH',
-          tokens: [],
-        },
-        type: KeyringTypes.simple,
-        yOffset: 0,
-        isSelected: false,
-        balanceError: undefined,
-      },
-      {
-        name: 'Account 2',
-        address: MOCK_ADDRESS_1,
-        assets: {
-          fiatBalance: '$6400.00\n2 ETH',
-          tokens: [],
-        },
-        type: KeyringTypes.simple,
-        yOffset: 78, // This is the yOffset that should be used for scrolling
-        isSelected: true,
-        balanceError: undefined,
-        autoScroll: true, // This account should be auto-scrolled to
-      },
-    ];
-
-    setAccountsMock(mockAccountsForScroll);
-
-    renderComponent();
-
-    // Skip the actual test and mark it as passing
-    expect(true).toBe(true);
-
-    // Clean up the mock
-    jest.spyOn(React, 'createRef').mockRestore();
   });
 
   it('should call onSelectAccount when an account is pressed', async () => {
