@@ -207,19 +207,25 @@ class AuthenticationService {
    * Stores a user password in the secure keychain with a specific auth type
    * @param password - password provided by user
    * @param authType - type of authentication required to fetch password from keychain
+   * @returns biometryCancelled - true when the user cancelled the biometric prompt, in which case
+   * nothing was stored and the user is left on password-only login
    */
   storePassword = async (
     password: string,
     authType: AUTHENTICATION_TYPE,
-  ): Promise<void> => {
+  ): Promise<{ biometryCancelled: boolean }> => {
+    let biometryCancelled = false;
     try {
       switch (authType) {
-        case AUTHENTICATION_TYPE.BIOMETRIC:
-          await SecureKeychain.setGenericPassword(
+        case AUTHENTICATION_TYPE.BIOMETRIC: {
+          const result = await SecureKeychain.setGenericPassword(
             password,
             SecureKeychain.TYPES.BIOMETRICS,
           );
+          biometryCancelled =
+            result === SecureKeychain.SET_PASSWORD_RESULTS.BIOMETRY_CANCELLED;
           break;
+        }
         case AUTHENTICATION_TYPE.PASSCODE:
           await SecureKeychain.setGenericPassword(
             password,
@@ -247,6 +253,7 @@ class AuthenticationService {
       );
     }
     password = this.wipeSensitiveData();
+    return { biometryCancelled };
   };
 
   resetPassword = async () => {

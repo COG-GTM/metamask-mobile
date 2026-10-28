@@ -183,6 +183,36 @@ describe('Authentication', () => {
     expect(methodCalled).toBeTruthy();
   });
 
+  it('reports biometryCancelled when the biometric prompt is cancelled', async () => {
+    const setSpy = jest
+      .spyOn(SecureKeychain, 'setGenericPassword')
+      .mockResolvedValueOnce(
+        SecureKeychain.SET_PASSWORD_RESULTS.BIOMETRY_CANCELLED,
+      );
+    const result = await Authentication.storePassword(
+      '1234',
+      AUTHENTICATION_TYPE.BIOMETRIC,
+    );
+    expect(setSpy).toHaveBeenCalledWith(
+      '1234',
+      SecureKeychain.TYPES.BIOMETRICS,
+    );
+    expect(result).toEqual({ biometryCancelled: true });
+    setSpy.mockRestore();
+  });
+
+  it('does not report biometryCancelled when biometrics are stored', async () => {
+    const setSpy = jest
+      .spyOn(SecureKeychain, 'setGenericPassword')
+      .mockResolvedValueOnce(undefined);
+    const result = await Authentication.storePassword(
+      '1234',
+      AUTHENTICATION_TYPE.BIOMETRIC,
+    );
+    expect(result).toEqual({ biometryCancelled: false });
+    setSpy.mockRestore();
+  });
+
   describe('Multichain - discoverAccounts', () => {
     it('calls discoverAccounts after vault creation in newWalletAndKeychain', async () => {
       jest.spyOn(ReduxService, 'store', 'get').mockReturnValue({

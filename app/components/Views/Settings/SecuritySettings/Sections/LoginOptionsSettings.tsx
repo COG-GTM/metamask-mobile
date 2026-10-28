@@ -18,8 +18,8 @@ import createStyles from '../SecuritySettings.styles';
 import { SecurityPrivacyViewSelectorsIDs } from '../../../../../../e2e/selectors/Settings/SecurityAndPrivacy/SecurityPrivacyView.selectors';
 
 interface BiometricOptionSectionProps {
-  onSignWithBiometricsOptionUpdated: (enabled: boolean) => Promise<void>;
-  onSignWithPasscodeOptionUpdated: (enabled: boolean) => Promise<void>;
+  onSignWithBiometricsOptionUpdated: (enabled: boolean) => Promise<unknown>;
+  onSignWithPasscodeOptionUpdated: (enabled: boolean) => Promise<unknown>;
 }
 
 const LoginOptionsSettings = ({
@@ -34,51 +34,57 @@ const LoginOptionsSettings = ({
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  useEffect(() => {
-    const getOptions = async () => {
-      const authType = await Authentication.getType();
-      const previouslyDisabled = await StorageWrapper.getItem(
-        BIOMETRY_CHOICE_DISABLED,
+  // The persisted auth state is the source of truth: an update can end in a
+  // different state than requested (e.g. a cancelled biometric prompt reverts
+  // to password-only login), so both toggles are re-read after every change.
+  const syncOptions = useCallback(async () => {
+    const authType = await Authentication.getType();
+    const previouslyDisabled = await StorageWrapper.getItem(
+      BIOMETRY_CHOICE_DISABLED,
+    );
+    const passcodePreviouslyDisabled = await StorageWrapper.getItem(
+      PASSCODE_DISABLED,
+    );
+    if (
+      authType.currentAuthType === AUTHENTICATION_TYPE.BIOMETRIC ||
+      authType.currentAuthType === AUTHENTICATION_TYPE.PASSCODE
+    ) {
+      const stateValue = Device.isAndroid()
+        ? AUTHENTICATION_TYPE.BIOMETRIC
+        : authType.availableBiometryType;
+      setBiometryType(stateValue);
+      setBiometryChoice(!(previouslyDisabled && previouslyDisabled === TRUE));
+      setPasscodeChoice(
+        !(passcodePreviouslyDisabled && passcodePreviouslyDisabled === TRUE),
       );
-      const passcodePreviouslyDisabled = await StorageWrapper.getItem(
-        PASSCODE_DISABLED,
-      );
-      if (
-        authType.currentAuthType === AUTHENTICATION_TYPE.BIOMETRIC ||
-        authType.currentAuthType === AUTHENTICATION_TYPE.PASSCODE
-      ) {
-        const stateValue = Device.isAndroid()
+    } else {
+      const stateValue =
+        Device.isAndroid() && authType.availableBiometryType
           ? AUTHENTICATION_TYPE.BIOMETRIC
           : authType.availableBiometryType;
-        setBiometryType(stateValue);
-        setBiometryChoice(!(previouslyDisabled && previouslyDisabled === TRUE));
-        setPasscodeChoice(
-          !(passcodePreviouslyDisabled && passcodePreviouslyDisabled === TRUE),
-        );
-      } else {
-        const stateValue =
-          Device.isAndroid() && authType.availableBiometryType
-            ? AUTHENTICATION_TYPE.BIOMETRIC
-            : authType.availableBiometryType;
-        setBiometryType(stateValue);
-      }
-    };
-    getOptions();
+      setBiometryType(stateValue);
+      setBiometryChoice(false);
+      setPasscodeChoice(false);
+    }
   }, []);
+
+  useEffect(() => {
+    syncOptions();
+  }, [syncOptions]);
 
   const onBiometricsOptionUpdated = useCallback(
     async (enabled: boolean) => {
       await onSignWithBiometricsOptionUpdated(enabled);
-      setBiometryChoice(enabled);
+      await syncOptions();
     },
-    [onSignWithBiometricsOptionUpdated],
+    [onSignWithBiometricsOptionUpdated, syncOptions],
   );
   const onPasscodeOptionUpdated = useCallback(
     async (enabled: boolean) => {
       await onSignWithPasscodeOptionUpdated(enabled);
-      setPasscodeChoice(enabled);
+      await syncOptions();
     },
-    [onSignWithPasscodeOptionUpdated],
+    [onSignWithPasscodeOptionUpdated, syncOptions],
   );
 
   return (

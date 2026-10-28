@@ -258,7 +258,8 @@ const Settings: React.FC = () => {
     password: string,
     enabled: boolean,
     authChoice: string,
-  ) => {
+  ): Promise<boolean> => {
+    let resultingChoice = enabled;
     try {
       await Authentication.resetPassword();
 
@@ -275,7 +276,7 @@ const Settings: React.FC = () => {
           await StorageWrapper.setItem(PASSCODE_DISABLED, TRUE);
         }
 
-        return;
+        return resultingChoice;
       }
 
       try {
@@ -287,7 +288,13 @@ const Settings: React.FC = () => {
         } else {
           authType = AUTHENTICATION_TYPE.PASSWORD;
         }
-        await Authentication.storePassword(password, authType);
+        const { biometryCancelled } = await Authentication.storePassword(
+          password,
+          authType,
+        );
+        if (biometryCancelled) {
+          resultingChoice = false;
+        }
       } catch (error) {
         Logger.error(error as unknown as Error, {});
       }
@@ -315,9 +322,13 @@ const Settings: React.FC = () => {
       }
       setLoading(false);
     }
+    return resultingChoice;
   };
 
-  const setPassword = async (enabled: boolean, passwordType: string) => {
+  const setPassword = async (
+    enabled: boolean,
+    passwordType: string,
+  ): Promise<boolean> => {
     setLoading(true);
     let credentials;
     try {
@@ -327,24 +338,27 @@ const Settings: React.FC = () => {
     }
 
     if (credentials && credentials.password !== '') {
-      storeCredentials(credentials.password, enabled, passwordType);
-    } else {
-      setLoading(false);
+      return await storeCredentials(
+        credentials.password,
+        enabled,
+        passwordType,
+      );
+    }
+    setLoading(false);
+    return new Promise((resolve) => {
       navigation.navigate('EnterPasswordSimple', {
         onPasswordSet: (password: string) => {
-          storeCredentials(password, enabled, passwordType);
+          storeCredentials(password, enabled, passwordType).then(resolve);
         },
       });
-    }
+    });
   };
 
-  const onSignInWithPasscode = async (enabled: boolean) => {
+  const onSignInWithPasscode = async (enabled: boolean) =>
     await setPassword(enabled, PASSCODE_CHOICE_STRING);
-  };
 
-  const onSingInWithBiometrics = async (enabled: boolean) => {
+  const onSingInWithBiometrics = async (enabled: boolean) =>
     await setPassword(enabled, BIOMETRY_CHOICE_STRING);
-  };
 
   const goToSDKSessionManager = () => {
     navigation.navigate('SDKSessionsManager');
