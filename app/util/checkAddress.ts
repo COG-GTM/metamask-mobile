@@ -21,28 +21,24 @@ const checkIfAddressIsSaved = (
   if (transaction.to === undefined) {
     return [];
   }
+  // Only the first chain in the address book is inspected (existing behavior).
   for (const [addressBookChainId, chainAddresses] of Object.entries(
     addressBook,
   )) {
+    if (addressBookChainId !== chainId) {
+      return [];
+    }
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const addressEntries = Object.values(chainAddresses).map((entry: any) => ({
       address: toChecksumAddress(entry.address),
       nickname: entry.name,
     }));
-
-    if (
-      addressEntries.some(
-        (entry) =>
-          entry.address === toChecksumAddress(transaction.to) &&
-          addressBookChainId === chainId,
-      )
-    ) {
-      return addressEntries.filter(
-        (entry) => entry.address === toChecksumAddress(transaction.to),
-      );
+    if (addressEntries.length === 0) {
+      return [];
     }
-    return [];
+    const recipient = toChecksumAddress(transaction.to);
+    return addressEntries.filter((entry) => entry.address === recipient);
   }
 };
 

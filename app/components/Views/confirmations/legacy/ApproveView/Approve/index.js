@@ -3,6 +3,7 @@ import { Alert, AppState, View } from 'react-native';
 import PropTypes from 'prop-types';
 import { getApproveNavbar } from '../../../../../UI/Navbar';
 import { connect } from 'react-redux';
+import { createSelector } from 'reselect';
 import {
   safeToChecksumAddress,
   isHardwareAccount,
@@ -22,7 +23,7 @@ import {
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import { fromWei, renderFromWei, hexToBN } from '../../../../../../util/number';
 import {
-  getNormalizedTxState,
+  selectNormalizedTxState,
   getTicker,
 } from '../../../../../../util/transactions';
 import { getGasLimit } from '../../../../../../util/custom-gas';
@@ -212,6 +213,32 @@ class Approve extends PureComponent {
     isGasEstimateStatusIn: false,
     isChangeInSimulationModalOpen: false,
   };
+
+  getSavedContactListToArray = createSelector(
+    (addressBook) => addressBook,
+    (addressBook) =>
+      Object.values(addressBook).flatMap((value) => Object.values(value)),
+  );
+
+  getSavedContactList = createSelector(
+    (addressBook) => addressBook,
+    (_addressBook, chainId) => chainId,
+    (_addressBook, _chainId, to) => to,
+    (addressBook, chainId, to) =>
+      checkIfAddressIsSaved(addressBook, chainId, { to }),
+  );
+
+  getAddressNickname = createSelector(
+    (addressBook) => this.getSavedContactListToArray(addressBook),
+    (_addressBook, address) => address,
+    (savedContactListToArray, address) => {
+      const checksummedAddress = safeToChecksumAddress(address);
+      const contact = savedContactListToArray.find(
+        (savedContact) => savedContact.address === checksummedAddress,
+      );
+      return contact ? contact.name : '';
+    },
+  );
 
   computeGasEstimates = (overrideGasLimit, gasEstimateTypeChanged) => {
     const { transaction, gasEstimateType } = this.props;
@@ -804,25 +831,14 @@ class Approve extends PureComponent {
       suggestedGasPrice: legacyGasObject?.suggestedGasPrice,
     };
 
-    const savedContactList = checkIfAddressIsSaved(
+    const savedContactList = this.getSavedContactList(
       addressBook,
       chainId,
-      transaction,
+      transaction.to,
     );
-
-    const savedContactListToArray = Object.values(addressBook).flatMap(
-      (value) => Object.values(value),
-    );
-
-    let addressNickname = '';
-
-    const filteredSavedContactList = savedContactListToArray.filter(
-      (contact) => contact.address === safeToChecksumAddress(address),
-    );
-
-    if (filteredSavedContactList.length > 0) {
-      addressNickname = filteredSavedContactList[0].name;
-    }
+    const savedContactListToArray =
+      this.getSavedContactListToArray(addressBook);
+    const addressNickname = this.getAddressNickname(addressBook, address);
 
     if (!transaction.id) return null;
     return (
@@ -961,7 +977,7 @@ class Approve extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = selectNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkId;
 

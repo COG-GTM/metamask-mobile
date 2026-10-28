@@ -1,5 +1,26 @@
 import { AddressBookControllerState } from '@metamask/address-book-controller';
+import { toChecksumAddress } from 'ethereumjs-util';
 import checkIfAddressIsSaved from './checkAddress';
+
+jest.mock('ethereumjs-util', () => {
+  const actual = jest.requireActual('ethereumjs-util');
+  return { ...actual, toChecksumAddress: jest.fn(actual.toChecksumAddress) };
+});
+
+const mockToChecksumAddress = toChecksumAddress as jest.MockedFunction<
+  typeof toChecksumAddress
+>;
+
+const buildChainAddresses = (chainId: string, count: number) =>
+  Object.fromEntries(
+    Array.from({ length: count }, (_, i) => {
+      const address = `0x${(i + 1).toString(16).padStart(40, '0')}`;
+      return [
+        address,
+        { address, name: `contact ${i}`, chainId, memo: '', isEns: false },
+      ];
+    }),
+  ) as AddressBookControllerState['addressBook'][`0x${string}`];
 
 describe('checkIfAddressIsSaved', () => {
   it(`returns an empty array if the transaction recipient is unset`, () => {
@@ -180,5 +201,35 @@ describe('checkIfAddressIsSaved', () => {
         nickname: 'name',
       },
     ]);
+  });
+
+  describe('checksum work', () => {
+    beforeEach(() => mockToChecksumAddress.mockClear());
+
+    it('checksums the recipient once, not once per entry', () => {
+      const addressBook: AddressBookControllerState['addressBook'] = {
+        '0x1': buildChainAddresses('0x1', 50),
+      };
+      const to = '0x0000000000000000000000000000000000000007';
+
+      expect(checkIfAddressIsSaved(addressBook, '0x1', { to })).toStrictEqual([
+        { address: to, nickname: 'contact 6' },
+      ]);
+      // 50 entries + 1 recipient
+      expect(mockToChecksumAddress).toHaveBeenCalledTimes(51);
+    });
+
+    it('skips checksumming when the chain does not match', () => {
+      const addressBook: AddressBookControllerState['addressBook'] = {
+        '0x2': buildChainAddresses('0x2', 50),
+      };
+
+      expect(
+        checkIfAddressIsSaved(addressBook, '0x1', {
+          to: '0x0000000000000000000000000000000000000007',
+        }),
+      ).toStrictEqual([]);
+      expect(mockToChecksumAddress).not.toHaveBeenCalled();
+    });
   });
 });
