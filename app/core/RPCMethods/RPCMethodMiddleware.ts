@@ -46,6 +46,8 @@ import Logger from '../../../app/util/Logger';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { addTransaction } from '../../util/transaction-controller';
 import Routes from '../../constants/navigation/Routes';
+import type { ScanSuccess } from '../../components/Views/QRTabSwitcher';
+import { containsSecretQRData } from '../../util/qr-secret-guard';
 import { endTrace, trace, TraceName } from '../../util/trace';
 import {
   MessageParamsTyped,
@@ -841,31 +843,45 @@ export const getRpcMethodMiddleware = ({
         wallet_scanQRCode: () =>
           new Promise<void>((resolve, reject) => {
             checkTabActive();
+            const pattern = req.params?.[0];
+            if (pattern !== undefined && typeof pattern !== 'string') {
+              throw rpcErrors.invalidParams({
+                message: 'Expected a string regular expression as the first param.',
+              });
+            }
             navigation.navigate(Routes.QR_TAB_SWITCHER, {
-              // TODO: Replace "any" with type
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onScanSuccess: (data: any) => {
-                if (!regex.exec(req.params[0], data)) {
-                  reject({ message: 'NO_REGEX_MATCH', data });
-                } else if (regex.walletAddress.exec(data.target_address)) {
-                  reject({
-                    message: 'INVALID_ETHEREUM_ADDRESS',
-                    data: data.target_address,
-                  });
+              isDappScan: true,
+              onScanSuccess: (data: ScanSuccess | string, content?: string) => {
+                if (containsSecretQRData(data, content)) {
+                  reject(
+                    providerErrors.unauthorized(
+                      'The scanned QR code contains sensitive wallet data and cannot be shared.',
+                    ),
+                  );
+                  return;
                 }
-                let result = data;
-                if (data.target_address) {
+
+                let result: string;
+                if (typeof data === 'string') {
+                  result = data;
+                } else if (data?.target_address) {
                   result = data.target_address;
-                } else if (data.scheme) {
+                } else if (typeof content === 'string') {
+                  result = content;
+                } else {
                   result = JSON.stringify(data);
                 }
+
+                if (pattern !== undefined && !regex.exec(pattern, result)) {
+                  reject({ message: 'NO_REGEX_MATCH', data: result });
+                  return;
+                }
+
                 res.result = result;
                 resolve();
               },
-              // TODO: Replace "any" with type
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onScanError: (e: { toString: () => any }) => {
-                throw rpcErrors.internal(e.toString());
+              onScanError: (e: string) => {
+                reject(rpcErrors.internal(String(e)));
               },
             });
           }),

@@ -49,6 +49,7 @@ export interface QRTabSwitcherParams {
   disableTabber?: boolean;
   origin?: string;
   networkName?: string;
+  isDappScan?: boolean;
 }
 
 export const createQRScannerNavDetails =
@@ -64,6 +65,7 @@ const QRTabSwitcher = () => {
     origin,
     disableTabber,
     networkName,
+    isDappScan,
   } = route.params as QRTabSwitcherParams;
 
   const [selectedIndex, setSelectedIndex] = useState(
@@ -109,6 +111,7 @@ const QRTabSwitcher = () => {
           onScanSuccess={onScanSuccess}
           onStartScan={onStartScan}
           origin={origin}
+          isDappScan={isDappScan}
         />
       ) : null}
 

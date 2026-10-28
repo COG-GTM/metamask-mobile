@@ -1585,6 +1585,128 @@ describe('getRpcMethodMiddleware', () => {
     });
   });
 
+  describe('wallet_scanQRCode', () => {
+    const MNEMONIC =
+      'verb middle giant soon wage common wide tool gentle garlic issue nut';
+    const PRIVATE_KEY =
+      '4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318';
+    const ADDRESS = '0x0000000000000000000000000000000000000001';
+
+    async function scan({
+      params = [],
+      emit,
+    }: {
+      params?: Json[];
+      emit: (callbacks: {
+        onScanSuccess: (data: unknown, content?: string) => void;
+        onScanError: (error: string) => void;
+      }) => void;
+    }) {
+      const navigate = jest.fn((_route, callbacks) => emit(callbacks));
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalOptions(),
+        hostname: 'example.metamask.io',
+        navigation: { navigate },
+      });
+      const request = {
+        jsonrpc,
+        id: 1,
+        method: 'wallet_scanQRCode',
+        params,
+      };
+      const response = await callMiddleware({ middleware, request });
+      return { response, navigate };
+    }
+
+    it('opens the scanner in dapp mode', async () => {
+      const { navigate } = await scan({
+        emit: ({ onScanSuccess }) => onScanSuccess('hello', 'hello'),
+      });
+      expect(navigate).toHaveBeenCalledWith(
+        'QRTabSwitcher',
+        expect.objectContaining({ isDappScan: true }),
+      );
+    });
+
+    it.each([
+      ['seed object', { seed: MNEMONIC }, MNEMONIC],
+      ['private key object', { private_key: PRIVATE_KEY }, PRIVATE_KEY],
+      ['walletConnect object', { walletConnectURI: 'wc:abc@2' }, 'wc:abc@2'],
+      ['raw mnemonic string', MNEMONIC, MNEMONIC],
+      ['raw private key string', `0x${PRIVATE_KEY}`, `0x${PRIVATE_KEY}`],
+      ['labelled private key', `private_key: 0x${PRIVATE_KEY}`, `private_key: 0x${PRIVATE_KEY}`],
+      ['labelled mnemonic', `seed: ${MNEMONIC}`, `seed: ${MNEMONIC}`],
+    ])('rejects a scanned %s without leaking it', async (_, data, content) => {
+      const { response } = await scan({
+        emit: ({ onScanSuccess }) => onScanSuccess(data, content),
+      });
+      const failure = response as JsonRpcFailure;
+      expect(failure.error).toBeDefined();
+      expect((response as JsonRpcSuccess<Json>).result).toBeUndefined();
+      expect(JSON.stringify(response)).not.toContain(MNEMONIC.split(' ')[0]);
+      expect(JSON.stringify(response)).not.toContain(PRIVATE_KEY);
+      expect(JSON.stringify(response)).not.toContain('wc:abc');
+    });
+
+    it('returns the scanned address', async () => {
+      const { response } = await scan({
+        emit: ({ onScanSuccess }) =>
+          onScanSuccess(
+            { target_address: ADDRESS, action: 'send-eth' },
+            `ethereum:${ADDRESS}@1`,
+          ),
+      });
+      expect((response as JsonRpcSuccess<string>).result).toBe(ADDRESS);
+    });
+
+    it.each([
+      ['64 non-hex characters', { private_key: 'z'.repeat(64) }, 'z'.repeat(64)],
+      ['0x prefixed text', { target_address: '0xhello', action: 'send-eth' }, '0xhello'],
+    ])('returns scanned %s as plain text', async (_, data, content) => {
+      const { response } = await scan({
+        emit: ({ onScanSuccess }) => onScanSuccess(data, content),
+      });
+      expect((response as JsonRpcSuccess<string>).result).toBe(content);
+    });
+
+    it('returns arbitrary scanned text as a string', async () => {
+      const { response } = await scan({
+        emit: ({ onScanSuccess }) => onScanSuccess('hello', 'hello'),
+      });
+      expect((response as JsonRpcSuccess<string>).result).toBe('hello');
+    });
+
+    it('rejects results that do not match the requested pattern', async () => {
+      const { response } = await scan({
+        params: ['^0x'],
+        emit: ({ onScanSuccess }) => onScanSuccess('hello', 'hello'),
+      });
+      expect((response as JsonRpcFailure).error.message).toBe(
+        'NO_REGEX_MATCH',
+      );
+    });
+
+    it('rejects a non-string pattern', async () => {
+      const { response, navigate } = await scan({
+        params: [{ evil: true }],
+        emit: ({ onScanSuccess }) => onScanSuccess('hello', 'hello'),
+      });
+      expect((response as JsonRpcFailure).error.code).toBe(
+        rpcErrors.invalidParams().code,
+      );
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('rejects when the scanner reports an error', async () => {
+      const { response } = await scan({
+        emit: ({ onScanError }) => onScanError('SECRET_QR_CODE_NOT_ALLOWED'),
+      });
+      expect((response as JsonRpcFailure).error.message).toBe(
+        'SECRET_QR_CODE_NOT_ALLOWED',
+      );
+    });
+  });
+
   describe('personal_sign', () => {
     async function sendRequest() {
       const { middleware } = setupSignature();
