@@ -89,6 +89,7 @@ class SmartTransactionHook {
   #signedTransactionInHex?: Hex;
   #txParams: TransactionParams;
   #controllerMessenger: SubmitSmartTransactionRequest['controllerMessenger'];
+  #statusPageListener?: (smartTransaction: SmartTransaction) => void;
 
   #isDapp: boolean;
   #isSend: boolean;
@@ -510,22 +511,24 @@ class SmartTransactionHook {
   };
 
   #addListenerToUpdateStatusPage = async ({ uuid }: { uuid: string }) => {
+    const handler = async (smartTransaction: SmartTransaction) => {
+      if (uuid === smartTransaction.uuid) {
+        const { status } = smartTransaction;
+        if (!status || status === SmartTransactionStatuses.PENDING) {
+          return;
+        }
+        if (this.#shouldUpdateApprovalRequest && !this.#approvalEnded) {
+          await this.#updateApprovalRequest({
+            smartTransaction,
+          });
+        }
+        this.#cleanup();
+      }
+    };
+    this.#statusPageListener = handler;
     this.#controllerMessenger.subscribe(
       'SmartTransactionsController:smartTransaction',
-      async (smartTransaction: SmartTransaction) => {
-        if (uuid === smartTransaction.uuid) {
-          const { status } = smartTransaction;
-          if (!status || status === SmartTransactionStatuses.PENDING) {
-            return;
-          }
-          if (this.#shouldUpdateApprovalRequest && !this.#approvalEnded) {
-            await this.#updateApprovalRequest({
-              smartTransaction,
-            });
-          }
-          this.#cleanup();
-        }
-      },
+      handler,
     );
   };
 
@@ -535,32 +538,52 @@ class SmartTransactionHook {
     uuid: string;
   }): Promise<string | null> =>
     new Promise((resolve) => {
+      const handler = async (smartTransaction: SmartTransaction) => {
+        if (uuid === smartTransaction.uuid) {
+          const { status, statusMetadata } = smartTransaction;
+          Logger.log(LOG_PREFIX, 'Smart Transaction: ', smartTransaction);
+          if (!status || status === SmartTransactionStatuses.PENDING) {
+            return;
+          }
+          this.#unsubscribe(handler);
+          if (statusMetadata?.minedHash) {
+            Logger.log(
+              LOG_PREFIX,
+              'Smart Transaction - Received tx hash: ',
+              statusMetadata?.minedHash,
+            );
+            resolve(statusMetadata.minedHash);
+          } else {
+            // cancelled status will have statusMetadata?.minedHash === ''
+            resolve(null);
+          }
+        }
+      };
       this.#controllerMessenger.subscribe(
         'SmartTransactionsController:smartTransaction',
-        async (smartTransaction: SmartTransaction) => {
-          if (uuid === smartTransaction.uuid) {
-            const { status, statusMetadata } = smartTransaction;
-            Logger.log(LOG_PREFIX, 'Smart Transaction: ', smartTransaction);
-            if (!status || status === SmartTransactionStatuses.PENDING) {
-              return;
-            }
-            if (statusMetadata?.minedHash) {
-              Logger.log(
-                LOG_PREFIX,
-                'Smart Transaction - Received tx hash: ',
-                statusMetadata?.minedHash,
-              );
-              resolve(statusMetadata.minedHash);
-            } else {
-              // cancelled status will have statusMetadata?.minedHash === ''
-              resolve(null);
-            }
-          }
-        },
+        handler,
       );
     });
 
+  #unsubscribe = (handler: (smartTransaction: SmartTransaction) => void) => {
+    try {
+      this.#controllerMessenger.unsubscribe(
+        'SmartTransactionsController:smartTransaction',
+        handler,
+      );
+    } catch (error) {
+      // Already unsubscribed (e.g. messenger was reset).
+    }
+  };
+
   #cleanup = () => {
+    // Only the status-page listener is removed here: #cleanup can run while the
+    // messenger is still dispatching, and removing the tx-hash listener then
+    // would skip it. That listener removes itself once it resolves.
+    if (this.#statusPageListener) {
+      this.#unsubscribe(this.#statusPageListener);
+      this.#statusPageListener = undefined;
+    }
     if (this.#approvalEnded) {
       return;
     }

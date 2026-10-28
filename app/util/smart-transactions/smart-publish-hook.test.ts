@@ -1028,3 +1028,177 @@ describe('submitBatchSmartTransactionHook', () => {
     );
   });
 });
+
+describe('smartTransaction messenger subscriptions', () => {
+  const EVENT = 'SmartTransactionsController:smartTransaction';
+
+  const trackSubscriptions = (
+    messenger: SubmitSmartTransactionRequestMocked['controllerMessenger'],
+  ) => {
+    const active = new Set<unknown>();
+    const originalSubscribe = messenger.subscribe.bind(messenger);
+    const originalUnsubscribe = messenger.unsubscribe.bind(messenger);
+    jest
+      .spyOn(messenger, 'subscribe')
+      .mockImplementation((eventType: unknown, handler: unknown) => {
+        if (eventType === EVENT) {
+          active.add(handler);
+        }
+        // @ts-expect-error forwarding spied arguments
+        return originalSubscribe(eventType, handler);
+      });
+    jest
+      .spyOn(messenger, 'unsubscribe')
+      .mockImplementation((eventType: unknown, handler: unknown) => {
+        if (eventType === EVENT) {
+          active.delete(handler);
+        }
+        // @ts-expect-error forwarding spied arguments
+        return originalUnsubscribe(eventType, handler);
+      });
+    return active;
+  };
+
+  const publishStatus = (
+    messenger: SubmitSmartTransactionRequestMocked['controllerMessenger'],
+    status: string,
+    minedHash: string,
+    uuid = stxUuid,
+  ) =>
+    messenger.publish(EVENT, {
+      status,
+      statusMetadata: { minedHash },
+      uuid,
+    } as SmartTransaction);
+
+  const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
+
+  it('removes both handlers once a smart transaction reaches a terminal status', async () => {
+    await withRequest(async ({ request, controllerMessenger }) => {
+      const active = trackSubscriptions(controllerMessenger);
+      setImmediate(() => {
+        publishStatus(controllerMessenger, 'pending', '');
+        publishStatus(controllerMessenger, 'success', transactionHash);
+      });
+
+      const result = await submitSmartTransactionHook(request);
+      await flushPromises();
+
+      expect(result).toEqual({ transactionHash });
+      expect(controllerMessenger.subscribe).toHaveBeenCalledTimes(2);
+      expect(active.size).toBe(0);
+    });
+  });
+
+  it('removes both handlers when the smart transaction is cancelled', async () => {
+    await withRequest(async ({ request, controllerMessenger }) => {
+      const active = trackSubscriptions(controllerMessenger);
+      setImmediate(() => {
+        publishStatus(controllerMessenger, 'cancelled', '');
+      });
+
+      await expect(submitSmartTransactionHook(request)).rejects.toThrow(
+        'Smart Transaction does not have a transaction hash, there was a problem',
+      );
+      await flushPromises();
+
+      expect(active.size).toBe(0);
+    });
+  });
+
+  it('keeps handlers for other smart transactions until their own terminal status', async () => {
+    await withRequest(async ({ request, controllerMessenger }) => {
+      const active = trackSubscriptions(controllerMessenger);
+      const resultPromise = submitSmartTransactionHook(request);
+      await flushPromises();
+
+      publishStatus(controllerMessenger, 'success', transactionHash, 'other');
+      await flushPromises();
+      expect(active.size).toBe(2);
+
+      publishStatus(controllerMessenger, 'success', transactionHash);
+      await expect(resultPromise).resolves.toEqual({ transactionHash });
+      await flushPromises();
+      expect(active.size).toBe(0);
+    });
+  });
+
+  it('removes the tx hash handler when returning the hash asap without a submit-time hash', async () => {
+    await withRequest(
+      async ({ request, controllerMessenger, submitSignedTransactionsSpy }) => {
+        request.featureFlags.smartTransactions.mobileReturnTxHashAsap = true;
+        submitSignedTransactionsSpy.mockResolvedValue({ uuid: stxUuid });
+        const active = trackSubscriptions(controllerMessenger);
+        setImmediate(() => {
+          publishStatus(controllerMessenger, 'success', transactionHash);
+        });
+
+        const result = await submitSmartTransactionHook(request);
+        await flushPromises();
+
+        expect(result).toEqual({ transactionHash });
+        expect(controllerMessenger.subscribe).toHaveBeenCalledTimes(1);
+        expect(active.size).toBe(0);
+      },
+    );
+  });
+
+  it('does not accumulate handlers across multiple smart transactions', async () => {
+    await withRequest(async ({ request, controllerMessenger }) => {
+      const active = trackSubscriptions(controllerMessenger);
+
+      for (let i = 0; i < 3; i++) {
+        setImmediate(() => {
+          publishStatus(controllerMessenger, 'success', transactionHash);
+        });
+        await submitSmartTransactionHook({
+          ...request,
+          transactionMeta: { ...request.transactionMeta, id: `${i}` },
+        });
+        await flushPromises();
+      }
+
+      expect(controllerMessenger.subscribe).toHaveBeenCalledTimes(6);
+      expect(active.size).toBe(0);
+
+      const updateCalls = (
+        request.approvalController.updateRequestState as jest.Mock
+      ).mock.calls.length;
+      publishStatus(controllerMessenger, 'success', transactionHash);
+      await flushPromises();
+      expect(
+        (request.approvalController.updateRequestState as jest.Mock).mock.calls
+          .length,
+      ).toBe(updateCalls);
+    });
+  });
+
+  it('removes both handlers after a batch submission resolves', async () => {
+    const mockSignedTx = createSignedTransaction();
+    await withRequest(
+      {
+        transactions: [
+          { signedTx: mockSignedTx, id: '1', params: {} },
+          { signedTx: mockSignedTx, id: '2', params: {} },
+        ],
+      },
+      async ({ request, controllerMessenger, submitSignedTransactionsSpy }) => {
+        submitSignedTransactionsSpy.mockResolvedValue({
+          uuid: stxUuid,
+          txHash: transactionHash,
+          txHashes: [transactionHash, transactionHash],
+        });
+        const active = trackSubscriptions(controllerMessenger);
+        setImmediate(() => {
+          publishStatus(controllerMessenger, 'success', transactionHash);
+        });
+
+        await submitBatchSmartTransactionHook(request);
+        await flushPromises();
+
+        expect(controllerMessenger.subscribe).toHaveBeenCalledTimes(2);
+        expect(active.size).toBe(0);
+      },
+    );
+  });
+});
