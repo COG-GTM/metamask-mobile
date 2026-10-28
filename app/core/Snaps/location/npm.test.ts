@@ -171,6 +171,18 @@ describe('NpmLocation', () => {
     expect(mockFs.unlink).toHaveBeenCalledWith('/document-dir/archive');
   });
 
+  it('rejects extracted files whose size cannot be determined', async () => {
+    mockFs.stat.mockImplementation(
+      async (path: string) =>
+        ({ size: path.endsWith('.tgz') ? 100 : 'unknown' } as never),
+    );
+
+    await expect(fetchManifest()).rejects.toThrow(
+      `Snap tarball exceeds limit of ${TARBALL_SIZE_SAFETY_LIMIT} bytes.`,
+    );
+    expect(mockFs.readFile).not.toHaveBeenCalled();
+  });
+
   it('rejects tarballs with too many files without reading them', async () => {
     mockFs.ls.mockImplementationOnce(
       async () =>

@@ -17,8 +17,11 @@ const SNAPS_NPM_LOG_TAG = 'snaps/ NPM';
 // Keep in sync with the native RNTar extractors.
 export const TARBALL_ENTRY_LIMIT = 5000;
 
-const exceedsSizeLimit = (size: unknown) =>
-  Number(size) > TARBALL_SIZE_SAFETY_LIMIT;
+// Sizes that cannot be read as a number are treated as exceeding the limit.
+const exceedsSizeLimit = (size: unknown) => {
+  const bytes = Number(size);
+  return !Number.isFinite(bytes) || bytes > TARBALL_SIZE_SAFETY_LIMIT;
+};
 
 const getContentLength = (response: FetchBlobResponse): string | undefined => {
   const headers: Record<string, string> = response.info()?.headers ?? {};
@@ -98,7 +101,8 @@ const fetchAndStoreNPMPackage = async (
     task.progress({ interval: 250 }, (received, total) => {
       if (
         !downloadTooLarge &&
-        (exceedsSizeLimit(received) || exceedsSizeLimit(total))
+        (exceedsSizeLimit(received) ||
+          Number(total) > TARBALL_SIZE_SAFETY_LIMIT)
       ) {
         downloadTooLarge = true;
         task.cancel();
@@ -113,7 +117,7 @@ const fetchAndStoreNPMPackage = async (
       const { size } = await ReactNativeBlobUtil.fs.stat(dataPath);
       assert(
         !downloadTooLarge &&
-          !exceedsSizeLimit(contentLength) &&
+          (contentLength === undefined || !exceedsSizeLimit(contentLength)) &&
           !exceedsSizeLimit(size),
         'Snap tarball exceeds size limit',
       );

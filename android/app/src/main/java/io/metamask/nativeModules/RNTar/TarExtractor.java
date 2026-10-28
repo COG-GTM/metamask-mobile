@@ -8,8 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.UUID;
 import java.util.zip.GZIPInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -43,8 +42,9 @@ public class TarExtractor {
   }
 
   /**
-   * Extracts the gzipped tarball at tgzPath into outputPath. On failure every
-   * file created by this extraction is removed.
+   * Extracts the gzipped tarball at tgzPath into a fresh staging directory and,
+   * once every entry passed validation, moves its "package" directory to
+   * outputPath/package. Nothing in outputPath is modified if extraction fails.
    *
    * @return the absolute path of the "package" directory inside outputPath.
    */
@@ -62,20 +62,34 @@ public class TarExtractor {
       throw new IOException("The output directory is not readable and/or writable.");
     }
 
-    List<File> created = new ArrayList<>();
-    try (InputStream fileInputStream = new FileInputStream(tgzFile);
-         GZIPInputStream gzipInputStream = new GZIPInputStream(new BufferedInputStream(fileInputStream));
-         TarArchiveInputStream tarInputStream = new TarArchiveInputStream(gzipInputStream)) {
-      extractEntries(tarInputStream, outputDir.getCanonicalFile(), created);
-    } catch (IOException | RuntimeException e) {
-      deleteCreated(created);
-      throw e;
+    File canonicalOutputDir = outputDir.getCanonicalFile();
+    File stagingDir = new File(canonicalOutputDir, ".rntar-" + UUID.randomUUID());
+    if (!stagingDir.mkdir()) {
+      throw new IOException("Unable to create the staging directory.");
+    }
+    try {
+      try (InputStream fileInputStream = new FileInputStream(tgzFile);
+           GZIPInputStream gzipInputStream = new GZIPInputStream(new BufferedInputStream(fileInputStream));
+           TarArchiveInputStream tarInputStream = new TarArchiveInputStream(gzipInputStream)) {
+        extractEntries(tarInputStream, stagingDir);
+      }
+
+      File stagedPackage = new File(stagingDir, "package");
+      if (!stagedPackage.isDirectory()) {
+        throw new IOException("Tarball does not contain a package directory.");
+      }
+      File packageDir = new File(canonicalOutputDir, "package");
+      deleteRecursively(packageDir);
+      if (!stagedPackage.renameTo(packageDir)) {
+        throw new IOException("Unable to move the extracted package into place.");
+      }
+    } finally {
+      deleteRecursively(stagingDir);
     }
     return new File(outputDir, "package").getAbsolutePath();
   }
 
-  private void extractEntries(TarArchiveInputStream tarInputStream, File outputDir,
-                              List<File> created) throws IOException {
+  private void extractEntries(TarArchiveInputStream tarInputStream, File outputDir) throws IOException {
     String outputDirPrefix = outputDir.getPath() + File.separator;
     long totalBytes = 0;
     int entryCount = 0;
@@ -94,7 +108,7 @@ public class TarExtractor {
       }
 
       if (entry.isDirectory()) {
-        createDirectories(outputFile, created);
+        createDirectories(outputFile);
         continue;
       }
       if (!entry.isFile()) {
@@ -107,8 +121,7 @@ public class TarExtractor {
         throw new LimitExceededException("Tarball exceeds the limit of " + maxTotalBytes + " bytes.");
       }
 
-      createDirectories(outputFile.getParentFile(), created);
-      created.add(outputFile);
+      createDirectories(outputFile.getParentFile());
       try (OutputStream dest = new BufferedOutputStream(new FileOutputStream(outputFile))) {
         int length;
         while ((length = tarInputStream.read(buffer)) != -1) {
@@ -123,21 +136,31 @@ public class TarExtractor {
     }
   }
 
-  private static void createDirectories(File dir, List<File> created) throws IOException {
-    if (dir == null || dir.isDirectory()) {
-      return;
-    }
-    createDirectories(dir.getParentFile(), created);
-    if (!dir.mkdir() && !dir.isDirectory()) {
+  private static void createDirectories(File dir) throws IOException {
+    if (!dir.isDirectory() && !dir.mkdirs()) {
       throw new IOException("Unable to create directory " + dir.getPath());
     }
-    created.add(dir);
   }
 
-  private static void deleteCreated(List<File> created) {
-    for (int i = created.size() - 1; i >= 0; i--) {
-      // noinspection ResultOfMethodCallIgnored
-      created.get(i).delete();
+  private static boolean isSymlink(File file) throws IOException {
+    File parent = file.getParentFile();
+    if (parent == null) {
+      return false;
     }
+    File resolved = new File(parent.getCanonicalFile(), file.getName());
+    return !resolved.getCanonicalFile().equals(resolved.getAbsoluteFile());
+  }
+
+  private static void deleteRecursively(File file) throws IOException {
+    if (file.isDirectory() && !isSymlink(file)) {
+      File[] children = file.listFiles();
+      if (children != null) {
+        for (File child : children) {
+          deleteRecursively(child);
+        }
+      }
+    }
+    // noinspection ResultOfMethodCallIgnored
+    file.delete();
   }
 }

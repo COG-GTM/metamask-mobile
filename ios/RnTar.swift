@@ -130,9 +130,28 @@ class RNTar: NSObject {
       }
     }
 
-    try fileManager.createFilesAndDirectories(path: destinationUrl.path, tarPath: tarPath,
+    // Extract into a fresh staging directory so a failed extraction never touches
+    // existing files, then move the validated package into place.
+    try fileManager.createDirectory(at: destinationUrl, withIntermediateDirectories: true)
+    let stagingUrl = destinationUrl.appendingPathComponent(".rntar-\(UUID().uuidString)",
+                                                           isDirectory: true)
+    defer { try? fileManager.removeItem(at: stagingUrl) }
+    try fileManager.createFilesAndDirectories(path: stagingUrl.path, tarPath: tarPath,
                                               limits: limits)
-    return "\(destinationUrl.path)/package"
+
+    let stagedPackageUrl = stagingUrl.appendingPathComponent("package", isDirectory: true)
+    var isDirectory: ObjCBool = false
+    guard fileManager.fileExists(atPath: stagedPackageUrl.path, isDirectory: &isDirectory),
+          isDirectory.boolValue else {
+      throw UnTarError.unableToDecompressFile(file: path)
+    }
+    let packageUrl = destinationUrl.appendingPathComponent("package", isDirectory: true)
+    if (try? packageUrl.checkResourceIsReachable()) == true
+        || (try? fileManager.destinationOfSymbolicLink(atPath: packageUrl.path)) != nil {
+      try fileManager.removeItem(at: packageUrl)
+    }
+    try fileManager.moveItem(at: stagedPackageUrl, to: packageUrl)
+    return packageUrl.path
   }
 
   @objc func unTar(_ pathToRead: String, pathToWrite: String,

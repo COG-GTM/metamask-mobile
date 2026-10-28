@@ -145,5 +145,40 @@ public class TarExtractorTest {
         () -> new TarExtractor(1000, 100).extract(archive.getPath(), out.getPath()));
     assertTrue(existing.exists());
     assertFalse(new File(out, "package").exists());
+    assertEquals(1, countFiles(out));
+  }
+
+  @Test
+  public void leavesExistingPackageUntouchedWhenExtractionFails() throws IOException {
+    File out = tmp.newFolder();
+    File manifest = new File(out, "package/snap.manifest.json");
+    assertTrue(manifest.getParentFile().mkdirs());
+    Files.write(manifest.toPath(), "original".getBytes(StandardCharsets.UTF_8));
+    File archive = tgz(tar -> {
+      addFile(tar, "package/snap.manifest.json", "replaced".getBytes(StandardCharsets.UTF_8));
+      addZeroFile(tar, "package/big.bin", 2000);
+    });
+
+    assertThrows(TarExtractor.LimitExceededException.class,
+        () -> new TarExtractor(1000, 100).extract(archive.getPath(), out.getPath()));
+    assertEquals("original", new String(Files.readAllBytes(manifest.toPath()), StandardCharsets.UTF_8));
+    assertEquals(2, countFiles(out));
+  }
+
+  @Test
+  public void onlyMovesPackageDirectoryIntoOutput() throws IOException {
+    File out = tmp.newFolder();
+    File other = new File(out, "other.txt");
+    Files.write(other.toPath(), "original".getBytes(StandardCharsets.UTF_8));
+    File archive = tgz(tar -> {
+      addFile(tar, "other.txt", "replaced".getBytes(StandardCharsets.UTF_8));
+      addFile(tar, "package/index.js", "ok".getBytes(StandardCharsets.UTF_8));
+    });
+
+    String packagePath = new TarExtractor().extract(archive.getPath(), out.getPath());
+    assertEquals(new File(out, "package").getAbsolutePath(), packagePath);
+    assertEquals("original", new String(Files.readAllBytes(other.toPath()), StandardCharsets.UTF_8));
+    assertTrue(new File(out, "package/index.js").isFile());
+    assertEquals(3, countFiles(out));
   }
 }
