@@ -252,8 +252,9 @@ describe('handleConnectionMessage', () => {
       mockCheckPermissions.mockResolvedValue(true);
     });
 
-    it('rejects RPC requests before the reconnection passed OTP verification', async () => {
+    it('rejects RPC requests when the reconnection failed OTP verification', async () => {
       connection.receivedDisconnect = true;
+      connection.reconnectVerification = Promise.resolve(false);
 
       await handleConnectionMessage({ message, engine: Engine, connection });
 

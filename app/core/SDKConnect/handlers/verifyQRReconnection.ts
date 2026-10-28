@@ -6,8 +6,16 @@ import Engine from '../../Engine';
 import { ApprovalTypes } from '../../RPCMethods/RPCMethodMiddleware';
 import { Connection } from '../Connection';
 import DevLogger from '../utils/DevLogger';
-import { waitForKeychainUnlocked } from '../utils/wait.util';
+import {
+  MAX_QUEUE_LOOP,
+  wait,
+  waitForKeychainUnlocked,
+} from '../utils/wait.util';
 
+/**
+ * True for a QR-code channel that is resuming an existing session rather than
+ * completing its first connection.
+ */
 export const isQRReconnection = (connection: Connection) =>
   connection.origin === AppConstants.DEEPLINKS.ORIGIN_QR_CODE &&
   !connection.initialConnection;
@@ -85,10 +93,22 @@ export const requestOTPVerification = async ({
 
 /**
  * Blocks RPC handling for a QR reconnection until OTP re-authorization succeeds.
+ * Requests that arrive before clients_ready wait for the verification to start.
  */
-export const assertQRReconnectionVerified = async (connection: Connection) => {
-  if (!requiresQRReconnectionVerification(connection)) {
-    return;
+export const assertQRReconnectionVerified = async (
+  connection: Connection,
+  { waitTime = 1000 }: { waitTime?: number } = {},
+) => {
+  let i = 0;
+  while (
+    requiresQRReconnectionVerification(connection) &&
+    !connection.reconnectVerification
+  ) {
+    i += 1;
+    if (i > MAX_QUEUE_LOOP) {
+      break;
+    }
+    await wait(waitTime);
   }
 
   if (connection.reconnectVerification) {

@@ -119,6 +119,13 @@ export const handleConnectionReady = async ({
       !connection.initialConnection &&
       connection.origin === AppConstants.DEEPLINKS.ORIGIN_QR_CODE
     ) {
+      if (connection.reconnectVerification) {
+        // Duplicate clients_ready: the first attempt owns the approval and result.
+        DevLogger.log(
+          `SDKConnect::CLIENTS_READY re-authorization already in progress`,
+        );
+        return;
+      }
       const OTPExpirationDuration =
         Number(process.env.OTP_EXPIRATION_DURATION_IN_MS) || HOUR_IN_MS;
       // lastAuthorized is only a past timestamp after a successful OTP check;
@@ -178,13 +185,10 @@ export const handleConnectionReady = async ({
         return Boolean(await checkPermissions({ connection, engine }));
       };
 
-      let verified = false;
-      connection.reconnectVerification = verify();
-      try {
-        verified = await connection.reconnectVerification;
-      } finally {
-        connection.reconnectVerification = undefined;
-      }
+      // Kept after settling so queued RPCs and duplicate ready events see the
+      // outcome; reset by handleClientsDisconnected.
+      connection.reconnectVerification = verify().catch(() => false);
+      const verified = await connection.reconnectVerification;
       if (!verified) {
         throw new Error(
           `SDKConnect::CLIENTS_READY reconnection of ${connection.channelId} was not re-authorized`,

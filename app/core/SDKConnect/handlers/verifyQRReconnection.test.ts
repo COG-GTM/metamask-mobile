@@ -1,5 +1,6 @@
 import AppConstants from '../../AppConstants';
 import { Connection } from '../Connection';
+import { wait } from '../utils/wait.util';
 import {
   assertQRReconnectionVerified,
   requiresQRReconnectionVerification,
@@ -51,7 +52,26 @@ describe('verifyQRReconnection', () => {
   });
 
   describe('assertQRReconnectionVerified', () => {
-    it('rejects requests when no verification has happened', async () => {
+    it('waits for the verification to start when a request arrives before clients_ready', async () => {
+      let calls = 0;
+      (wait as jest.Mock).mockImplementation(async () => {
+        calls += 1;
+        if (calls === 2) {
+          connection.reconnectVerification = Promise.resolve(true).then(() => {
+            connection.reconnectVerified = true;
+            return true;
+          });
+        }
+      });
+
+      await expect(
+        assertQRReconnectionVerified(connection),
+      ).resolves.toBeUndefined();
+      expect(wait).toHaveBeenCalledTimes(2);
+    });
+
+    it('rejects requests after the verification resolved as not verified', async () => {
+      connection.reconnectVerification = Promise.resolve(false);
       await expect(assertQRReconnectionVerified(connection)).rejects.toThrow(
         'Reconnection has not been re-authorized by the wallet user.',
       );

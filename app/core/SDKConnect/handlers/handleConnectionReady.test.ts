@@ -145,6 +145,31 @@ describe('handleConnectionReady - QR code reconnection', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
+  it('keeps the first prompt when clients_ready is received again during approval', async () => {
+    const first = run();
+    await flushPromises();
+    const second = run();
+    await flushPromises();
+    await second;
+
+    expect(approvalAdd).toHaveBeenCalledTimes(1);
+    expect(
+      (
+        Engine.context as unknown as {
+          ApprovalController: { reject: jest.Mock };
+        }
+      ).ApprovalController.reject,
+    ).not.toHaveBeenCalled();
+    expect(onError).not.toHaveBeenCalled();
+
+    resolveApproval({ otpChoice: 42 });
+    await first;
+
+    expect(connection.sendAuthorized).toHaveBeenCalledTimes(1);
+    expect(connection.reconnectVerified).toBe(true);
+    expect(onError).not.toHaveBeenCalled();
+  });
+
   it('refuses the reconnection when the user picks a wrong code', async () => {
     const pending = run();
     await flushPromises();
