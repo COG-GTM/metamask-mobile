@@ -14,7 +14,7 @@ import { PreferencesState } from '@metamask/preferences-controller';
 import * as allSelectors from '../../../../app/reducers/collectibles/index.js';
 // eslint-disable-next-line import/no-namespace
 import * as networkSelectors from '../../../selectors/networkController';
-import { cleanup, waitFor } from '@testing-library/react-native';
+import { cleanup, fireEvent, waitFor } from '@testing-library/react-native';
 import Engine from '../../../core/Engine';
 
 import TestHelpers from '../../../../e2e/helpers';
@@ -117,6 +117,93 @@ describe('CollectibleContracts', () => {
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
+  });
+
+  it('renders each contract row with only its own NFTs and resolves favorites', async () => {
+    const contractA = '0x72b1FDb6443338A158DeC2FbF411B71aeB157A42';
+    const contractB = '0x1111111111111111111111111111111111111111';
+    const contracts = [
+      { address: contractA, name: 'ContractA' },
+      { address: contractB, name: 'ContractB' },
+    ];
+    const nft = (address: string, tokenId: string, name: string) => ({
+      address,
+      tokenId,
+      name,
+      image: `https://example.com/${tokenId}.png`,
+      isCurrentlyOwned: true,
+      standard: 'ERC721',
+      favorite: false,
+    });
+    const nfts = [
+      nft(contractA.toLowerCase(), '1', 'A1'),
+      nft(contractB, '2', 'B2'),
+      nft(contractA, '3', 'A3'),
+      { ...nft(contractB, '4', 'B4'), isCurrentlyOwned: false },
+      nft(contractB.toUpperCase().replace('0X', '0x'), '5', 'B5'),
+    ];
+    const mockState: DeepPartial<RootState> = {
+      collectibles: { favorites: {} },
+      engine: {
+        backgroundState: {
+          ...backgroundState,
+          NetworkController: {
+            ...mockNetworkState({
+              chainId: CHAIN_IDS.MAINNET,
+              id: 'mainnet',
+              nickname: 'Ethereum Mainnet',
+              ticker: 'ETH',
+            }),
+          },
+          AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
+          PreferencesController: {
+            useNftDetection: true,
+          } as unknown as PreferencesState,
+        },
+      },
+    };
+
+    const spyOnCollectibles = jest
+      .spyOn(allSelectors, 'multichainCollectiblesSelector')
+      .mockReturnValue({ '0x1': nfts });
+    const spyOnContracts = jest
+      .spyOn(allSelectors, 'multichainCollectibleContractsSelector')
+      .mockReturnValue({ '0x1': contracts });
+    const spyOnFavorites = jest
+      .spyOn(allSelectors, 'favoritesCollectiblesSelector')
+      .mockReturnValue([
+        { address: contractB, tokenId: 2 },
+        { address: contractA.toLowerCase(), tokenId: '1' },
+      ]);
+
+    const { getByTestId, queryAllByTestId } = renderWithProvider(
+      <CollectibleContracts />,
+      { state: mockState },
+    );
+
+    // Each rendered NFT tile carries its testID on two nodes (box + touchable).
+    const tileCount = (testId: string) => queryAllByTestId(testId).length / 2;
+
+    // Favorites header row: B2 (numeric favorite tokenId) and A1.
+    // First contract row (expanded): A1 and A3 regardless of address casing.
+    expect(tileCount('collectible-A1-1')).toBe(2);
+    expect(tileCount('collectible-B2-2')).toBe(1);
+    expect(tileCount('collectible-A3-3')).toBe(1);
+    expect(tileCount('collectible-B5-5')).toBe(0);
+    expect(tileCount('collectible-B4-4')).toBe(0);
+
+    fireEvent.press(
+      getByTestId(`collectible-contract-element-${contractB}-ContractB`),
+    );
+
+    expect(tileCount('collectible-B2-2')).toBe(2);
+    expect(tileCount('collectible-B5-5')).toBe(1);
+    expect(tileCount('collectible-B4-4')).toBe(0);
+    expect(tileCount('collectible-A1-1')).toBe(2);
+
+    spyOnCollectibles.mockRestore();
+    spyOnContracts.mockRestore();
+    spyOnFavorites.mockRestore();
   });
 
   it('UI refresh changes NFT image when metadata image changes - detection disabled', async () => {
