@@ -17,7 +17,9 @@ type CurrencyRateControllerMessenger = RestrictedMessenger<
 >;
 
 /**
- * Sets up subscription to sync CurrencyRateController changes with RatesController
+ * Sets up subscription to sync CurrencyRateController changes with RatesController.
+ * Only syncs when `currentCurrency` differs from the RatesController fiat currency,
+ * since `setFiatCurrency` always triggers an exchange-rate fetch.
  * @param controllerMessenger - The main controller messenger
  * @param ratesController - The RatesController instance to sync with
  */
@@ -28,7 +30,10 @@ export const setupCurrencyRateSync = (
   controllerMessenger.subscribe(
     'CurrencyRateController:stateChange',
     (state: CurrencyRateState) => {
-      if (state.currentCurrency) {
+      if (
+        state.currentCurrency &&
+        state.currentCurrency !== ratesController.state.fiatCurrency
+      ) {
         ratesController
           .setFiatCurrency(state.currentCurrency)
           .catch((error) => {
