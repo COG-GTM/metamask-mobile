@@ -4,10 +4,12 @@ import { VirtualFile } from '@metamask/snaps-utils';
 import { stringToBytes } from '@metamask/utils';
 import { NativeModules } from 'react-native';
 import ReactNativeBlobUtil, { FetchBlobResponse } from 'react-native-blob-util';
+import { v4 as uuidv4 } from 'uuid';
 import {
   BaseNpmLocation,
   getNpmCanonicalBasePath,
 } from '@metamask/snaps-controllers';
+import Logger from '../../../util/Logger';
 
 const { RNTar } = NativeModules;
 
@@ -51,11 +53,25 @@ const readAndParseAt = async (path: string) => {
   }
 };
 
+/**
+ * Each tarball is downloaded and extracted into its own fresh directory under
+ * the cache dir, so archive entries can never land next to app state such as
+ * the persisted Redux store or MMKV files in DocumentDir.
+ */
+const createExtractionWorkDir = async (): Promise<string> => {
+  const workDir = `${
+    ReactNativeBlobUtil.fs.dirs.CacheDir
+  }/snaps-npm/${uuidv4()}`;
+  await ReactNativeBlobUtil.fs.mkdir(workDir);
+  return workDir;
+};
+
 const fetchAndStoreNPMPackage = async (
   inputRequest: RequestInfo,
+  workDir: string,
 ): Promise<string> => {
-  const targetDir = ReactNativeBlobUtil.fs.dirs.DocumentDir;
-  const filePath = `${targetDir}/archive.tgz`;
+  const filePath = `${workDir}/archive.tgz`;
+  const targetDir = `${workDir}/extracted`;
   const urlToFetch: string =
     typeof inputRequest === 'string' ? inputRequest : inputRequest.url;
 
@@ -77,9 +93,10 @@ const fetchAndStoreNPMPackage = async (
 };
 
 const cleanupFileSystem = async (path: string) => {
-  ReactNativeBlobUtil.fs.unlink(path).catch((error) => {
-    throw new Error(
-      `${SNAPS_NPM_LOG_TAG} cleanupFileSystem failed to clean files at path with error: ${error}`,
+  await ReactNativeBlobUtil.fs.unlink(path).catch((error) => {
+    Logger.error(
+      error,
+      `${SNAPS_NPM_LOG_TAG} cleanupFileSystem failed to clean files at path`,
     );
   });
 };
@@ -88,40 +105,43 @@ export class NpmLocation extends BaseNpmLocation {
   async fetchNpmTarball(
     tarballUrl: URL,
   ): Promise<Map<string, VirtualFile<unknown>>> {
-    // Fetches and unpacks the NPM package on the local filesystem using native code
-    const npmPackageDataLocation = await fetchAndStoreNPMPackage(
-      tarballUrl.toString(),
-    );
-
-    // Find all paths contained within the tarball
-    const paths = await findAllPaths(npmPackageDataLocation);
-
-    const files = await Promise.all(paths.map(readAndParseAt));
-
-    const canonicalBase = getNpmCanonicalBasePath(
-      this.meta.registry,
-      this.meta.packageName,
-    );
-
-    const map = new Map();
-
-    files.forEach(({ path, contents }) => {
-      // Remove most of the base path
-      const normalizedPath = path.replace(`${npmPackageDataLocation}/`, '');
-      map.set(
-        normalizedPath,
-        new VirtualFile({
-          value: contents,
-          path: normalizedPath,
-          data: { canonicalPath: new URL(path, canonicalBase).toString() },
-        }),
+    const workDir = await createExtractionWorkDir();
+    try {
+      // Fetches and unpacks the NPM package on the local filesystem using native code
+      const npmPackageDataLocation = await fetchAndStoreNPMPackage(
+        tarballUrl.toString(),
+        workDir,
       );
-    });
 
-    // Cleanup filesystem
-    await cleanupFileSystem(npmPackageDataLocation);
+      // Find all paths contained within the tarball
+      const paths = await findAllPaths(npmPackageDataLocation);
 
-    return map;
+      const files = await Promise.all(paths.map(readAndParseAt));
+
+      const canonicalBase = getNpmCanonicalBasePath(
+        this.meta.registry,
+        this.meta.packageName,
+      );
+
+      const map = new Map();
+
+      files.forEach(({ path, contents }) => {
+        // Remove most of the base path
+        const normalizedPath = path.replace(`${npmPackageDataLocation}/`, '');
+        map.set(
+          normalizedPath,
+          new VirtualFile({
+            value: contents,
+            path: normalizedPath,
+            data: { canonicalPath: new URL(path, canonicalBase).toString() },
+          }),
+        );
+      });
+
+      return map;
+    } finally {
+      await cleanupFileSystem(workDir);
+    }
   }
 }
 ///: END:ONLY_INCLUDE_IF
