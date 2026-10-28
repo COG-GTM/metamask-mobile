@@ -10,6 +10,8 @@ import {
   AvatarAccountType,
   AvatarVariant,
 } from '../../../../component-library/components/Avatars/Avatar';
+import BannerAlert from '../../../../component-library/components/Banners/Banner/variants/BannerAlert/BannerAlert';
+import { BannerAlertSeverity } from '../../../../component-library/components/Banners/Banner';
 import Button, {
   ButtonSize,
   ButtonVariants,
@@ -47,6 +49,7 @@ const AccountConnectSingle = ({
   secureIcon,
   urlWithProtocol,
   connection,
+  isOriginUnverified = false,
 }: AccountConnectSingleProps) => {
   const { styles } = useStyles(styleSheet, {});
   // TODO: Replace "any" with type
@@ -174,6 +177,19 @@ const AccountConnectSingle = ({
           label={urlWithProtocol}
           iconName={secureIcon}
         />
+        {isOriginUnverified && (
+          <BannerAlert
+            severity={BannerAlertSeverity.Warning}
+            title={strings('accounts.unverified_origin_title')}
+            description={strings('accounts.unverified_origin_description', {
+              url: urlWithProtocol,
+            })}
+            style={styles.unverifiedBanner}
+            testID={
+              ConnectAccountBottomSheetSelectorsIDs.UNVERIFIED_ORIGIN_BANNER
+            }
+          />
+        )}
         <Text style={styles.description}>
           {strings('accounts.connect_description')}
         </Text>

@@ -766,6 +766,8 @@
     "edit_accounts_title": "Edit accounts",
     "connected_accounts_title": "Connected accounts",
     "connect_description": "Share your account address, balance, activity, and allow site to initiate transactions.",
+    "unverified_origin_title": "Unverified connection request",
+    "unverified_origin_description": "This request was opened from a link, QR code or another app. MetaMask can't confirm it comes from {{url}}. Only connect if you started this connection on that site yourself.",
     "select_accounts_description": "Select the account(s) to use on this site:",
     "connect_multiple_accounts": "Connect multiple accounts",
     "connect_more_accounts": "Connect more accounts",
