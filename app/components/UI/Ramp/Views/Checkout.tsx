@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { parseUrl } from 'query-string';
@@ -28,6 +28,10 @@ import useAnalytics from '../hooks/useAnalytics';
 import { strings } from '../../../../../locales/i18n';
 import Routes from '../../../../constants/navigation/Routes';
 import useHandleSuccessfulOrder from '../hooks/useHandleSuccessfulOrder';
+import {
+  RAMP_WEBVIEW_ORIGIN_WHITELIST,
+  createRampWebViewNavigationGuard,
+} from '../utils/webViewNavigationGuard';
 
 interface CheckoutParams {
   url: string;
@@ -52,6 +56,10 @@ const CheckoutWebView = () => {
   const params = useParams<CheckoutParams>();
   const { colors } = useTheme();
   const handleSuccessfulOrder = useHandleSuccessfulOrder();
+  const handleShouldStartLoadWithRequest = useMemo(
+    () => createRampWebViewNavigationGuard({ promptForExternalApps: true }),
+    [],
+  );
 
   const { url: uri, customOrderId, provider } = params;
 
@@ -182,6 +190,8 @@ const CheckoutWebView = () => {
         <WebView
           key={key}
           source={{ uri }}
+          originWhitelist={RAMP_WEBVIEW_ORIGIN_WHITELIST}
+          onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
           onHttpError={(syntheticEvent) => {
             const { nativeEvent } = syntheticEvent;
             if (
