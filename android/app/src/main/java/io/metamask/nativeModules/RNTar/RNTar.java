@@ -62,6 +62,18 @@ public class RNTar extends ReactContextBaseJavaModule {
     }
   }
 
+  // Resolves a tar entry under outputDir, rejecting entries that escape it.
+  static File containedFile(File outputDir, String entryName) throws IOException {
+    String canonicalRoot = outputDir.getCanonicalPath();
+    File outputFile = new File(outputDir, entryName);
+    String canonicalPath = outputFile.getCanonicalPath();
+    if (!canonicalPath.equals(canonicalRoot)
+        && !canonicalPath.startsWith(canonicalRoot + File.separator)) {
+      throw new IOException("Tar entry resolves outside the destination: " + entryName);
+    }
+    return new File(canonicalPath);
+  }
+
   private String extractTgzFile(String tgzPath, String outputPath) throws IOException {
     try {
       // Check if .tgz file exists
@@ -69,8 +81,15 @@ public class RNTar extends ReactContextBaseJavaModule {
         throw new IOException("The specified .tgz file does not exist.");
       }
 
+      // Only extract into a new or empty directory so entries cannot overwrite existing app files
+      String[] existingEntries = new File(outputPath).list();
+      if (existingEntries != null && existingEntries.length > 0) {
+        throw new IOException("The output directory must be new or empty.");
+      }
+
       // Create output directory if it doesn't exist
       createDirectories(outputPath);
+      File outputDir = new File(outputPath);
 
       // Check if the output directory is readable and writable
       if (!isReadableWritable(outputPath)) {
@@ -86,7 +105,10 @@ public class RNTar extends ReactContextBaseJavaModule {
 
         // Loop through the entries in the .tgz file
         while ((entry = (TarArchiveEntry) tarInputStream.getNextEntry()) != null) {
-          File outputFile = new File(outputPath, entry.getName());
+          if (entry.isSymbolicLink() || entry.isLink()) {
+            throw new IOException("Link entries are not supported: " + entry.getName());
+          }
+          File outputFile = containedFile(outputDir, entry.getName());
 
           // If it is a directory, create the output directory
           if (entry.isDirectory()) {
