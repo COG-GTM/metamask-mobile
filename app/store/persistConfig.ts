@@ -13,24 +13,38 @@ import { getPersistentState } from '@metamask/base-controller';
 
 const TIMEOUT = 40000;
 const STORAGE_DEBOUNCE_DELAY = 200;
-// redux-persist runs the transforms and JSON serialization of a changed key at
-// most once per window, so bursts of controller updates are coalesced before
-// the expensive engine-state walk. Always persists the latest state.
+// Coalescing window for redux-persist: changed keys are transformed and
+// serialized together at most once per window, always from the latest state.
+// See patches/redux-persist+6.0.0.patch for the drain-all-keys-per-tick change.
 export const PERSIST_THROTTLE = 1000;
 
-const debouncedSetItem = debounce(
-  async (key: string, value: string) =>
-    await FilesystemStorage.setItem(key, value, Device.isIos()),
-  STORAGE_DEBOUNCE_DELAY,
-  { leading: false, trailing: true },
-);
+let pendingStorageWrite: Promise<unknown> = Promise.resolve();
 
 /**
- * Immediately performs a pending debounced storage write, if any.
+ * Chains filesystem writes so an older in-flight write can never complete
+ * after, and overwrite, a newer one.
+ */
+const enqueueStorageWrite = (key: string, value: string) => {
+  const write = pendingStorageWrite.then(() =>
+    FilesystemStorage.setItem(key, value, Device.isIos()),
+  );
+  pendingStorageWrite = write.catch(() => undefined);
+  return write;
+};
+
+const debouncedSetItem = debounce(enqueueStorageWrite, STORAGE_DEBOUNCE_DELAY, {
+  leading: false,
+  trailing: true,
+});
+
+/**
+ * Immediately performs a pending debounced storage write, if any, and waits
+ * for every queued write to settle.
  */
 export const flushStorageWrite = async () => {
   try {
     await debouncedSetItem.flush();
+    await pendingStorageWrite;
   } catch (error) {
     Logger.error(error as Error, { message: 'Failed to flush storage write' });
   }
