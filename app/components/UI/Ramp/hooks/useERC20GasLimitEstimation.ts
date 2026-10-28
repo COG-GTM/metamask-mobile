@@ -22,9 +22,11 @@ interface Options {
   isNativeToken: boolean;
 }
 
+/** Returns whether the app state indicates the app is not in the foreground. */
 const isBackgroundState = (state: AppStateStatus) =>
   state === 'background' || state === 'inactive';
 
+/** Returns whether the app is currently in the foreground. */
 function useIsAppActive() {
   const [isAppActive, setIsAppActive] = useState(
     () => !isBackgroundState(AppState.currentState),
