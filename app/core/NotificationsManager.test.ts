@@ -7,6 +7,8 @@ import { strings } from '../../locales/i18n';
 import { SmartTransactionStatuses } from '@metamask/smart-transactions-controller/dist/types';
 import Engine from './Engine';
 import { TransactionMeta } from '@metamask/transaction-controller';
+import { EventConstraint } from '@metamask/base-controller';
+import { ExtendedControllerMessenger } from './ExtendedControllerMessenger';
 
 interface NavigationMock {
   navigate: jest.Mock;
@@ -17,6 +19,10 @@ jest.mock('react-redux', () => ({
 }));
 
 jest.unmock('./NotificationManager');
+
+jest.mock('./ReviewManager', () => ({
+  promptReview: jest.fn(),
+}));
 
 const mockNavigate: jest.Mock = jest.fn();
 const mockNavigation: NavigationMock = {
@@ -191,23 +197,14 @@ describe('NotificationManager', () => {
       showNotificationSpy.mockRestore();
     });
 
-    it('shows a notification for a pending smart transaction', async () => {
-      const transaction = {
-        status: SmartTransactionStatuses.PENDING,
-        transactionId: '0x123',
-      };
-
+    it('shows a pending notification when a transaction is watched', () => {
       notificationManager.watchSubmittedTransaction({
         id: '0x123',
         txParams: {
-          nonce: '0x1'
+          nonce: '0x1',
         },
-        silent: false
+        silent: false,
       });
-
-      // Get the subscriber callback
-      const subscriberCallback = mockControllerMessenger.subscribe.mock.calls[0][1];
-      await subscriberCallback(transaction);
 
       expect(showNotificationSpy).toHaveBeenCalledWith({
         type: 'pending',
@@ -216,62 +213,310 @@ describe('NotificationManager', () => {
       });
     });
 
-    it('shows a cancelled notification for cancelled smart transactions', async () => {
-      const mockTransaction = {
-        id: '0x123',
-        txParams: {
-          nonce: '0x1'
-        }
-      };
-      mockTransactionController.getTransactions.mockReturnValue([mockTransaction]);
-
-      const smartTransaction = {
-        status: SmartTransactionStatuses.CANCELLED,
-        transactionId: '0x123',
-      };
-
+    it('subscribes to smart transaction events filtered by transaction id and non-pending status', () => {
       notificationManager.watchSubmittedTransaction({
         id: '0x123',
         txParams: {
-          nonce: '0x1'
+          nonce: '0x1',
         },
-        silent: false
+        silent: false,
       });
 
-      // Get the subscriber callback
-      const subscriberCallback = mockControllerMessenger.subscribe.mock.calls[0][1];
-      await subscriberCallback(smartTransaction);
-
-      expect(showNotificationSpy).toHaveBeenCalledWith({
-        type: 'cancelled',
-        autoHide: true,
-        transaction: { id: '0x123' },
-        duration: 5000,
-      });
+      expect(mockControllerMessenger.subscribe).not.toHaveBeenCalled();
+      const stxCall = mockControllerMessenger.subscribeOnceIf.mock.calls.find(
+        ([eventType]) =>
+          eventType === 'SmartTransactionsController:smartTransaction',
+      );
+      expect(stxCall).toBeDefined();
+      const criteria = stxCall[2];
+      expect(
+        criteria({
+          transactionId: '0x123',
+          status: SmartTransactionStatuses.CANCELLED,
+        }),
+      ).toBe(true);
+      expect(
+        criteria({
+          transactionId: '0x123',
+          status: SmartTransactionStatuses.SUCCESS,
+        }),
+      ).toBe(true);
+      expect(
+        criteria({
+          transactionId: '0x123',
+          status: SmartTransactionStatuses.PENDING,
+        }),
+      ).toBe(false);
+      expect(
+        criteria({
+          transactionId: '0x456',
+          status: SmartTransactionStatuses.CANCELLED,
+        }),
+      ).toBe(false);
     });
 
-    it('unsubscribes from smart transaction events when status is not pending', async () => {
-      const transaction = {
-        status: SmartTransactionStatuses.SUCCESS,
-        transactionId: '0x123',
+    describe('with a real controller messenger', () => {
+      const STX_EVENT = 'SmartTransactionsController:smartTransaction';
+      let messenger: ExtendedControllerMessenger<never, EventConstraint>;
+      const publish = (eventType: string, payload: Record<string, unknown>) =>
+        (
+          messenger as unknown as {
+            publish: (type: string, data: Record<string, unknown>) => void;
+          }
+        ).publish(eventType, payload);
+      let subscribeSpy: jest.SpyInstance;
+      let unsubscribeSpy: jest.SpyInstance;
+
+      const watch = (
+        id: string,
+        nonce: string,
+        from = '0x123',
+        chainId = '0x1',
+      ) => {
+        mockTransactionController.state.transactions.push({
+          ...mockTransactionController.state.transactions[0],
+          id,
+          chainId,
+          txParams: { nonce, from },
+        });
+        notificationManager.watchSubmittedTransaction({
+          id,
+          txParams: { nonce },
+          silent: false,
+        });
       };
 
-      notificationManager.watchSubmittedTransaction({
-        id: '0x123',
-        txParams: {
-          nonce: '0x1'
-        },
-        silent: false
+      const publishStx = (transactionId: string, status: string) =>
+        publish(STX_EVENT, { transactionId, status });
+
+      const cancelledNotifications = () =>
+        showNotificationSpy.mock.calls.filter(
+          ([data]) => data.type === 'cancelled',
+        );
+
+      const stxHandlerCount = () =>
+        subscribeSpy.mock.calls.filter(([e]) => e === STX_EVENT).length -
+        unsubscribeSpy.mock.calls.filter(([e]) => e === STX_EVENT).length;
+
+      const originalTransactions = [
+        ...mockTransactionController.state.transactions,
+      ];
+
+      beforeEach(() => {
+        jest.useFakeTimers();
+        messenger = new ExtendedControllerMessenger();
+        subscribeSpy = jest.spyOn(messenger, 'subscribe');
+        unsubscribeSpy = jest.spyOn(messenger, 'unsubscribe');
+        Object.defineProperty(Engine, 'controllerMessenger', {
+          value: messenger,
+          writable: true,
+        });
+        Object.defineProperty(Engine, 'context', {
+          value: {
+            TransactionController: mockTransactionController,
+            AccountTrackerController: { refresh: jest.fn() },
+            TokenBalancesController: { updateBalancesByChainId: jest.fn() },
+            TokenDetectionController: { detectTokens: jest.fn() },
+          },
+          writable: true,
+        });
+        notificationManager._transactionsWatchTable = {};
+        notificationManager._smartTransactionListeners = {};
+        mockTransactionController.state.transactions = [
+          ...originalTransactions,
+        ];
+        mockTransactionController.getTransactions.mockImplementation(
+          () => mockTransactionController.state.transactions,
+        );
       });
 
-      // Get the subscriber callback
-      const subscriberCallback = mockControllerMessenger.subscribe.mock.calls[0][1];
-      await subscriberCallback(transaction);
+      afterEach(() => {
+        jest.useRealTimers();
+        Object.defineProperty(Engine, 'controllerMessenger', {
+          value: mockControllerMessenger,
+          writable: true,
+        });
+        Object.defineProperty(Engine, 'context', {
+          value: { TransactionController: mockTransactionController },
+          writable: true,
+        });
+      });
 
-      expect(mockControllerMessenger.unsubscribe).toHaveBeenCalledWith(
-        'SmartTransactionsController:smartTransaction',
-        subscriberCallback
-      );
+      it('shows a cancelled notification for a cancelled smart transaction and then unsubscribes', () => {
+        watch('0x123', '0x1');
+        expect(stxHandlerCount()).toBe(1);
+
+        publishStx('0x123', SmartTransactionStatuses.CANCELLED);
+
+        expect(cancelledNotifications()).toStrictEqual([
+          [
+            {
+              type: 'cancelled',
+              autoHide: true,
+              transaction: { id: '0x123' },
+              duration: 5000,
+            },
+          ],
+        ]);
+        expect(stxHandlerCount()).toBe(0);
+        expect(notificationManager._smartTransactionListeners).toStrictEqual(
+          {},
+        );
+
+        publishStx('0x123', SmartTransactionStatuses.CANCELLED);
+        expect(cancelledNotifications()).toHaveLength(1);
+      });
+
+      it('ignores pending events and events for other transactions', () => {
+        watch('0x123', '0x1');
+
+        publishStx('0x123', SmartTransactionStatuses.PENDING);
+        publishStx('0x456', SmartTransactionStatuses.CANCELLED);
+
+        expect(cancelledNotifications()).toHaveLength(0);
+        expect(stxHandlerCount()).toBe(1);
+      });
+
+      it('unsubscribes without notifying on a successful smart transaction', () => {
+        watch('0x123', '0x1');
+
+        publishStx('0x123', SmartTransactionStatuses.SUCCESS);
+
+        expect(cancelledNotifications()).toHaveLength(0);
+        expect(stxHandlerCount()).toBe(0);
+      });
+
+      it('only runs the handler of the matching transaction when many are watched', () => {
+        ['0xa', '0xb', '0xc', '0xd', '0xe'].forEach((id, i) =>
+          watch(id, `0x${i + 10}`),
+        );
+        expect(stxHandlerCount()).toBe(5);
+
+        publishStx('0xc', SmartTransactionStatuses.CANCELLED);
+
+        expect(cancelledNotifications()).toHaveLength(1);
+        expect(cancelledNotifications()[0][0].transaction).toStrictEqual({
+          id: '0xc',
+        });
+        expect(stxHandlerCount()).toBe(4);
+        expect(
+          mockTransactionController.getTransactions,
+        ).not.toHaveBeenCalled();
+      });
+
+      it('does not leak smart transaction listeners for regular transactions that confirm or fail', () => {
+        watch('0x1', '0x1');
+        watch('0x2', '0x2');
+        expect(stxHandlerCount()).toBe(2);
+
+        publish('TransactionController:transactionConfirmed', {
+          id: '0x1',
+          chainId: '0x1',
+          txParams: { nonce: '0x1', from: '0x123' },
+        });
+        publish('TransactionController:transactionFailed', {
+          id: '0x2',
+          status: 'failed',
+          chainId: '0x1',
+          txParams: { nonce: '0x2', from: '0x123' },
+        });
+        jest.runAllTimers();
+
+        expect(stxHandlerCount()).toBe(0);
+        expect(notificationManager._smartTransactionListeners).toStrictEqual(
+          {},
+        );
+
+        publishStx('0x1', SmartTransactionStatuses.CANCELLED);
+        publishStx('0x2', SmartTransactionStatuses.CANCELLED);
+        expect(cancelledNotifications()).toHaveLength(0);
+      });
+
+      it('removes the original transaction listener when its speed-up confirms', () => {
+        watch('0x1', '0x1');
+        watch('0x1-speedup', '0x1');
+        expect(stxHandlerCount()).toBe(2);
+
+        publish('TransactionController:transactionConfirmed', {
+          id: '0x1-speedup',
+          chainId: '0x1',
+          txParams: { nonce: '0x1', from: '0x123' },
+        });
+        jest.runAllTimers();
+
+        expect(stxHandlerCount()).toBe(0);
+      });
+
+      it('keeps listeners of unrelated transactions that share the nonce', () => {
+        watch('0xalice', '0x1', '0xA11CE', '0x1');
+        watch('0xbob', '0x1', '0xb0b', '0x1');
+        watch('0xalice-other-chain', '0x1', '0xa11ce', '0x89');
+        expect(stxHandlerCount()).toBe(3);
+
+        publish('TransactionController:transactionConfirmed', {
+          id: '0xalice',
+          chainId: '0x1',
+          txParams: { nonce: '0x1', from: '0xa11ce' },
+        });
+        jest.runAllTimers();
+
+        expect(stxHandlerCount()).toBe(2);
+        expect(
+          Object.keys(notificationManager._smartTransactionListeners).sort(),
+        ).toStrictEqual(['0xalice-other-chain', '0xbob']);
+
+        publishStx('0xbob', SmartTransactionStatuses.CANCELLED);
+        expect(cancelledNotifications()).toHaveLength(1);
+        expect(cancelledNotifications()[0][0].transaction).toStrictEqual({
+          id: '0xbob',
+        });
+
+        expect(
+          Object.keys(notificationManager._transactionsWatchTable).sort(),
+        ).toStrictEqual(['0x1:0xb0b:0x1', '0x89:0xa11ce:0x1']);
+
+        notificationManager._failedCallback({
+          id: '0xalice-other-chain',
+          status: 'failed',
+          chainId: '0x89',
+          txParams: { nonce: '0x1', from: '0xa11ce' },
+        });
+        notificationManager._confirmedCallback(
+          {
+            id: '0xbob',
+            chainId: '0x1',
+            txParams: { nonce: '0x1', from: '0xb0b' },
+          },
+          { id: '0xbob' },
+        );
+        jest.runAllTimers();
+
+        expect(stxHandlerCount()).toBe(0);
+        expect(notificationManager._smartTransactionListeners).toStrictEqual(
+          {},
+        );
+        expect(notificationManager._transactionsWatchTable).toStrictEqual({});
+        const notificationTypes = showNotificationSpy.mock.calls.map(
+          ([data]) => data.type,
+        );
+        expect(notificationTypes.filter((t) => t === 'error')).toHaveLength(1);
+        expect(notificationTypes.filter((t) => t === 'success')).toHaveLength(
+          2,
+        );
+      });
+
+      it('keeps a single listener when the same transaction is watched twice', () => {
+        watch('0x123', '0x1');
+        notificationManager.watchSubmittedTransaction({
+          id: '0x123',
+          txParams: { nonce: '0x1' },
+          silent: false,
+        });
+
+        expect(stxHandlerCount()).toBe(1);
+        publishStx('0x123', SmartTransactionStatuses.CANCELLED);
+        expect(cancelledNotifications()).toHaveLength(1);
+      });
     });
 
     it('sets up transaction event listeners correctly', () => {
@@ -285,7 +530,7 @@ describe('NotificationManager', () => {
 
       notificationManager.watchSubmittedTransaction(transaction);
 
-      expect(mockControllerMessenger.subscribeOnceIf).toHaveBeenCalledTimes(3);
+      expect(mockControllerMessenger.subscribeOnceIf).toHaveBeenCalledTimes(4);
       expect(mockControllerMessenger.subscribeOnceIf).toHaveBeenCalledWith(
         'TransactionController:transactionConfirmed',
         expect.any(Function),
@@ -298,6 +543,11 @@ describe('NotificationManager', () => {
       );
       expect(mockControllerMessenger.subscribeOnceIf).toHaveBeenCalledWith(
         'TransactionController:speedupTransactionAdded',
+        expect.any(Function),
+        expect.any(Function)
+      );
+      expect(mockControllerMessenger.subscribeOnceIf).toHaveBeenCalledWith(
+        'SmartTransactionsController:smartTransaction',
         expect.any(Function),
         expect.any(Function)
       );

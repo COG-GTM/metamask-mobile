@@ -106,7 +106,7 @@ class NotificationManager {
   _backgroundMode;
 
   /**
-   * Object containing watched transaction ids list by transaction nonce
+   * Object containing watched transaction ids list by chain, sender and nonce
    */
   _transactionsWatchTable = {};
 
@@ -115,6 +115,11 @@ class NotificationManager {
   _transactionConfirmedListener;
 
   _transactionSpeedupListener;
+
+  /**
+   * Smart transaction event handlers keyed by watched transaction id
+   */
+  _smartTransactionListeners = {};
 
   _handleAppStateChange = (appState) => {
     this._backgroundMode = appState === 'background';
@@ -140,6 +145,36 @@ class NotificationManager {
       'TransactionController:speedupTransactionAdded',
       this._transactionSpeedupListener,
     );
+  };
+
+  /**
+   * Key grouping a transaction with its speed-ups / replacements. Nonces are
+   * only unique per sender and chain.
+   */
+  _getWatchKey = (transactionMeta) => {
+    const { nonce, from } = transactionMeta.txParams;
+    return `${transactionMeta.chainId}:${from?.toLowerCase()}:${nonce}`;
+  };
+
+  _removeSmartTransactionListener = (transactionId) => {
+    const listener = this._smartTransactionListeners[transactionId];
+    if (!listener) return;
+    delete this._smartTransactionListeners[transactionId];
+    Engine.controllerMessenger.tryUnsubscribe(
+      'SmartTransactionsController:smartTransaction',
+      listener,
+    );
+  };
+
+  /**
+   * Stops watching every transaction under the given watch key (the original
+   * and any speed-ups of it)
+   */
+  _clearWatchedTransactions = (watchKey) => {
+    (this._transactionsWatchTable[watchKey] || []).forEach((id) =>
+      this._removeSmartTransactionListener(id),
+    );
+    delete this._transactionsWatchTable[watchKey];
   };
 
   _showNotification = async (data) => {
@@ -181,8 +216,8 @@ class NotificationManager {
   _failedCallback = (transactionMeta) => {
     // If it fails we hide the pending tx notification
     this._removeNotificationById(transactionMeta.id);
-    const transaction =
-      this._transactionsWatchTable[transactionMeta.txParams.nonce];
+    const watchKey = this._getWatchKey(transactionMeta);
+    const transaction = this._transactionsWatchTable[watchKey];
     transaction &&
       transaction.length &&
       setTimeout(() => {
@@ -195,14 +230,15 @@ class NotificationManager {
         });
         // Clean up
         this._removeListeners(transactionMeta.id);
-        delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
+        this._clearWatchedTransactions(watchKey);
       }, 2000);
   };
 
   _confirmedCallback = (transactionMeta, originalTransaction) => {
     // Once it's confirmed we hide the pending tx notification
     this._removeNotificationById(transactionMeta.id);
-    this._transactionsWatchTable[transactionMeta.txParams.nonce].length &&
+    const watchKey = this._getWatchKey(transactionMeta);
+    this._transactionsWatchTable[watchKey]?.length &&
       setTimeout(() => {
         // Then we show the success notification
         this._showNotification({
@@ -250,7 +286,7 @@ class NotificationManager {
         ReviewManager.promptReview();
 
         this._removeListeners(transactionMeta.id);
-        delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
+        this._clearWatchedTransactions(watchKey);
       }, 2000);
   };
 
@@ -345,7 +381,7 @@ class NotificationManager {
       ({ id }) => id === transaction.id,
     );
 
-    const nonce = transactionMeta.txParams.nonce;
+    const watchKey = this._getWatchKey(transactionMeta);
     // First we show the pending tx notification if is not an speed up tx
     !speedUp &&
       this._showNotification({
@@ -356,9 +392,9 @@ class NotificationManager {
         },
       });
 
-    this._transactionsWatchTable[nonce]
-      ? this._transactionsWatchTable[nonce].push(transactionMeta.id)
-      : (this._transactionsWatchTable[nonce] = [transactionMeta.id]);
+    this._transactionsWatchTable[watchKey]
+      ? this._transactionsWatchTable[watchKey].push(transactionMeta.id)
+      : (this._transactionsWatchTable[watchKey] = [transactionMeta.id]);
 
     this._transactionConfirmedListener =
       Engine.controllerMessenger.subscribeOnceIf(
@@ -387,36 +423,27 @@ class NotificationManager {
         (transactionMeta) => transactionMeta.id === transaction.id,
       );
 
-    const smartTransactionListener = async (smartTransaction) => {
-      if (smartTransaction.status === SmartTransactionStatuses.PENDING) {
-        return;
-      }
-      Engine.controllerMessenger.unsubscribe(
+    this._removeSmartTransactionListener(transactionMeta.id);
+    this._smartTransactionListeners[transactionMeta.id] =
+      Engine.controllerMessenger.subscribeOnceIf(
         'SmartTransactionsController:smartTransaction',
-        smartTransactionListener,
+        (smartTransaction) => {
+          delete this._smartTransactionListeners[transactionMeta.id];
+          if (smartTransaction.status !== SmartTransactionStatuses.CANCELLED) {
+            // If the smart transaction is not cancelled, notifications are already handled.
+            return;
+          }
+          this._showNotification({
+            type: 'cancelled',
+            autoHide: true,
+            transaction: { id: smartTransaction.transactionId },
+            duration: 5000,
+          });
+        },
+        (smartTransaction) =>
+          smartTransaction.transactionId === transactionMeta.id &&
+          smartTransaction.status !== SmartTransactionStatuses.PENDING,
       );
-      if (smartTransaction.status !== SmartTransactionStatuses.CANCELLED) {
-        // If the smart transaction is not cancelled, notifications are already handled.
-        return;
-      }
-      const transactions = TransactionController.getTransactions({
-        filterToCurrentNetwork: false,
-      });
-      const foundTransaction = transactions.find(
-        (tx) => tx.id === smartTransaction.transactionId,
-      );
-      this._showNotification({
-        type: 'cancelled',
-        autoHide: true,
-        transaction: { id: foundTransaction?.id },
-        duration: 5000,
-      });
-    };
-
-    Engine.controllerMessenger.subscribe(
-      'SmartTransactionsController:smartTransaction',
-      smartTransactionListener,
-    );
   }
 
   /**
