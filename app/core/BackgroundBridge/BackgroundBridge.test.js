@@ -191,4 +191,32 @@ describe('BackgroundBridge', () => {
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
     });
   });
+
+  describe('onDisconnect', () => {
+    it('unsubscribes every controller listener registered by the bridge', () => {
+      const { controllerMessenger } = Engine;
+      const originalUnsubscribe = controllerMessenger.unsubscribe;
+      controllerMessenger.unsubscribe = jest.fn();
+      try {
+        const bridge = setupBackgroundBridge('https://www.mock.io');
+        const subscriptions = controllerMessenger.subscribe.mock.calls.map(
+          ([eventType, handler]) => [eventType, handler],
+        );
+        expect(subscriptions.length).toBeGreaterThan(0);
+        // Skip tearing down the provider stream, which the mocked engine cannot destroy
+        jest.spyOn(bridge.port, 'emit').mockReturnValue(true);
+
+        bridge.onDisconnect();
+
+        expect(controllerMessenger.unsubscribe.mock.calls).toEqual(
+          expect.arrayContaining(subscriptions),
+        );
+        expect(controllerMessenger.unsubscribe).toHaveBeenCalledTimes(
+          subscriptions.length,
+        );
+      } finally {
+        controllerMessenger.unsubscribe = originalUnsubscribe;
+      }
+    });
+  });
 });

@@ -197,7 +197,38 @@ describe('BrowserTab background bridge origin', () => {
 
     props.onMessage(providerMessage(NEW_URL));
     expect(trustedBridge.onMessage).not.toHaveBeenCalled();
+    expect(newBridge.onMessage).not.toHaveBeenCalled();
+  });
+
+  it('delivers messages held during the scan once the new site is allowed', async () => {
+    const props = await renderTab();
+    await loadTrustedDapp(props);
+    const trustedBridge = bridgeFor(TRUSTED_ORIGIN) as MockBridge;
+
+    let resolveScan: (value: unknown) => void = () => undefined;
+    mockScanUrl.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveScan = resolve;
+      }),
+    );
+    let loadStart: Promise<unknown> = Promise.resolve();
+    await act(async () => {
+      loadStart = props.onLoadStart(navEvent(NEW_URL));
+    });
+    const newBridge = bridgeFor(NEW_ORIGIN) as MockBridge;
+
+    props.onMessage(providerMessage(NEW_URL));
+    expect(newBridge.onMessage).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveScan({ result: false });
+      await loadStart;
+    });
     expect(newBridge.onMessage).toHaveBeenCalledTimes(1);
+    expect(trustedBridge.onMessage).not.toHaveBeenCalled();
+
+    props.onMessage(providerMessage(NEW_URL));
+    expect(newBridge.onMessage).toHaveBeenCalledTimes(2);
   });
 
   it('drops messages whose document origin does not match the active bridge', async () => {
@@ -219,9 +250,21 @@ describe('BrowserTab background bridge origin', () => {
     await loadTrustedDapp(props);
     const trustedBridge = bridgeFor(TRUSTED_ORIGIN) as MockBridge;
 
-    mockScanUrl.mockResolvedValueOnce({ result: true, name: 'phishing' });
+    let resolveScan: (value: unknown) => void = () => undefined;
+    mockScanUrl.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveScan = resolve;
+      }),
+    );
+    let loadStart: Promise<unknown> = Promise.resolve();
     await act(async () => {
-      await props.onLoadStart(navEvent(NEW_URL));
+      loadStart = props.onLoadStart(navEvent(NEW_URL));
+    });
+    // Sent by the blocked page while the scan is still in flight
+    props.onMessage(providerMessage(NEW_URL));
+    await act(async () => {
+      resolveScan({ result: true, name: 'phishing' });
+      await loadStart;
     });
 
     expect(trustedBridge.onDisconnect).toHaveBeenCalled();
