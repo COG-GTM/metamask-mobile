@@ -706,5 +706,50 @@ describe('Engine', () => {
       expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(2);
       expect(mockDispatch).toHaveBeenLastCalledWith(networkIdUpdated('1'));
     });
+
+    const deferNetworkId = () => {
+      let resolve: (networkId: string) => void = () => undefined;
+      let reject: (error: Error) => void = () => undefined;
+      mockDeprecatedGetNetworkId.mockImplementationOnce(
+        () =>
+          new Promise<string>((res, rej) => {
+            resolve = res;
+            reject = rej;
+          }),
+      );
+      return {
+        resolve: (networkId: string) => resolve(networkId),
+        reject: (error: Error) => reject(error),
+      };
+    };
+
+    it('ignores a lookup that resolves after the selected network changed', async () => {
+      const mainnetLookup = deferNetworkId();
+      await publishStateChange(buildNetworkState('mainnet'));
+      mockDeprecatedGetNetworkId.mockResolvedValue('59144');
+      await publishStateChange(buildNetworkState('linea-mainnet'));
+
+      mainnetLookup.resolve('1');
+      await flushPromises();
+      await publishStateChange(buildNetworkState('linea-mainnet'));
+
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+      expect(mockDispatch).toHaveBeenLastCalledWith(networkIdUpdated('59144'));
+      expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not re-arm the lookup when a superseded lookup fails', async () => {
+      const staleLookup = deferNetworkId();
+      await publishStateChange(buildNetworkState('mainnet'));
+      await publishNetworkWillChange(buildNetworkState('mainnet'));
+      await publishStateChange(buildNetworkState('mainnet'));
+
+      staleLookup.reject(new Error('connection reset'));
+      await flushPromises();
+      await publishStateChange(buildNetworkState('mainnet'));
+
+      expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(2);
+      expect(mockDispatch).toHaveBeenLastCalledWith(networkIdUpdated('1'));
+    });
   });
 });
