@@ -45,6 +45,78 @@ export const isENSUrl = (urlToCheck: string, ensIgnoreList: string[]) => {
   return false;
 };
 
+// Dot segments, plus encoded separators/percents a gateway might decode into one.
+const UNSAFE_PATH_REGEX = /%2f|%5c|%25|\\|(^|\/)(\.|%2e){1,2}(\/|$)/i;
+
+/**
+ * Finds the ENS name whose resolved content root (gateway + content hash, or
+ * gateway + IPNS name) contains the given url.
+ *
+ * Path-based gateways serve every ENS site under the same hostname, so the
+ * content root is what actually identifies the site.
+ */
+export const findSessionENSName = (
+  url: string,
+  sessionENSNames: SessionENSNames,
+) => {
+  if (!url) return undefined;
+  const target = new URLParse(url);
+  // Latest entry first, so the most recently resolved name wins.
+  for (const [key, entry] of Object.entries(sessionENSNames).reverse()) {
+    const marker = entry.type?.startsWith('ipns') ? entry.hostname : entry.hash;
+    if (!marker) continue;
+    const markerIndex = key.indexOf(marker);
+    if (markerIndex === -1) continue;
+    const root = new URLParse(key.slice(0, markerIndex + marker.length));
+    if (
+      !root.protocol ||
+      target.protocol !== root.protocol ||
+      target.host !== root.host
+    ) {
+      continue;
+    }
+    const rootPath = root.pathname;
+    let rest: string;
+    if (target.pathname === rootPath) {
+      rest = '';
+    } else if (target.pathname.startsWith(`${rootPath}/`)) {
+      rest = target.pathname.slice(rootPath.length);
+    } else {
+      continue;
+    }
+    if (UNSAFE_PATH_REGEX.test(rest)) continue;
+    return {
+      ...entry,
+      rest: `${rest || '/'}${target.query}${target.hash}`,
+    };
+  }
+  return undefined;
+};
+
+/**
+ * Returns the origin that wallet permissions for a url are keyed by.
+ * Pages resolved from an ENS name use the ENS name rather than the gateway
+ * host, so different ENS sites on the same gateway don't share permissions.
+ */
+export const getPermissionOriginUrl = (
+  url: string,
+  sessionENSNames: SessionENSNames,
+) => {
+  const ensName = findSessionENSName(url, sessionENSNames);
+  if (ensName) return `https://${ensName.hostname}`;
+  return new URLParse(url).origin;
+};
+
+/**
+ * Hostname used as the permission subject for a url (see getPermissionOriginUrl)
+ */
+export const getPermissionHostname = (
+  url: string,
+  sessionENSNames: SessionENSNames,
+) =>
+  findSessionENSName(url, sessionENSNames)?.hostname ??
+  new URLParse(url).hostname;
+
 /**
  * Gets the url to be displayed to the user
  * For example, if it's ens then show [site].eth instead of ipfs url
@@ -54,28 +126,7 @@ export const getMaskedUrl = (
   sessionENSNames: SessionENSNames,
 ) => {
   if (!urlToMask) return urlToMask;
-  let replace = null;
-  if (urlToMask.startsWith(AppConstants.IPFS_DEFAULT_GATEWAY_URL)) {
-    replace = (key: string) =>
-      `${AppConstants.IPFS_DEFAULT_GATEWAY_URL}${sessionENSNames[key].hash}/`;
-  } else if (urlToMask.startsWith(AppConstants.IPNS_DEFAULT_GATEWAY_URL)) {
-    replace = (key: string) =>
-      `${AppConstants.IPNS_DEFAULT_GATEWAY_URL}${sessionENSNames[key].hostname}/`;
-  } else if (urlToMask.startsWith(AppConstants.SWARM_DEFAULT_GATEWAY_URL)) {
-    replace = (key: string) =>
-      `${AppConstants.SWARM_DEFAULT_GATEWAY_URL}${sessionENSNames[key].hash}/`; //TODO: This was SWARM_GATEWAY_URL before, it was broken, understand what it does
-  }
-
-  if (replace) {
-    const key = Object.keys(sessionENSNames).find((ens) =>
-      urlToMask.startsWith(ens),
-    );
-    if (key) {
-      urlToMask = urlToMask.replace(
-        replace(key),
-        `https://${sessionENSNames[key].hostname}/`,
-      );
-    }
-  }
-  return urlToMask;
+  const ensName = findSessionENSName(urlToMask, sessionENSNames);
+  if (!ensName) return urlToMask;
+  return `https://${ensName.hostname}${ensName.rest}`;
 };
