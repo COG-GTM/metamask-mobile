@@ -50,8 +50,6 @@ import ErrorBoundary from '../ErrorBoundary';
 import { getRpcMethodMiddleware } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import downloadFile from '../../../util/browser/downloadFile';
 import { MAX_MESSAGE_LENGTH } from '../../../constants/dapp';
-
-const MAX_PENDING_SCAN_MESSAGES = 100;
 import sanitizeUrlInput from '../../../util/url/sanitizeUrlInput';
 import {
   getCaip25Caveat,
@@ -901,9 +899,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         }
         const pendingScan = pendingScanRef.current;
         if (pendingScan?.bridge === bridge) {
-          if (pendingScan.messages.length < MAX_PENDING_SCAN_MESSAGES) {
-            pendingScan.messages.push(dataParsed);
-          }
+          pendingScan.messages.push(dataParsed);
           return;
         }
         bridge.onMessage(dataParsed);
