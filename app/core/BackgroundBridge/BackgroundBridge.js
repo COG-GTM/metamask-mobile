@@ -578,7 +578,7 @@ export class BackgroundBridge extends EventEmitter {
       // eth_requestAccounts from an already connected origin resolves without a prompt.
       if (
         req.method === 'eth_requestAccounts' &&
-        getPermittedAccounts(origin).length > 0
+        getPermittedAccounts(origin, { ignoreLock: true }).length > 0
       ) {
         return next();
       }

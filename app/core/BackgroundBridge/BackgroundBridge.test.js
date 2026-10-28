@@ -242,7 +242,9 @@ describe('BackgroundBridge', () => {
 
       const { next, end } = runGuard(bridge, 'eth_requestAccounts');
 
-      expect(getPermittedAccounts).toHaveBeenCalledWith('evil.example');
+      expect(getPermittedAccounts).toHaveBeenCalledWith('evil.example', {
+        ignoreLock: true,
+      });
       expect(next).toHaveBeenCalled();
       expect(end).not.toHaveBeenCalled();
     });

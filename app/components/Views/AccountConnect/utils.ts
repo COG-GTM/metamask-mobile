@@ -6,7 +6,11 @@ import {
   setEthAccounts,
   setPermittedEthChainIds,
 } from '@metamask/chain-agnostic-permission';
-import { getHost } from '../../../util/browser';
+import {
+  getHost,
+  getUrlObj,
+  prefixUrlWithProtocol,
+} from '../../../util/browser';
 
 /**
  * Takes in an incoming value and attempts to return the {@link Caip25CaveatValue}.
@@ -124,7 +128,8 @@ interface BrowserTabsState {
 /**
  * Returns the URL of the in-app browser tab whose hostname matches the
  * requesting origin, preferring the active tab. Returns undefined when no tab
- * belongs to that origin, so callers never fall back to an unrelated tab.
+ * belongs to that origin or the matching tabs mix protocols, so callers never
+ * borrow an unrelated tab's identity.
  *
  * @param browser - The browser slice of the redux state.
  * @param origin - The hostname that issued the permission request.
@@ -140,6 +145,16 @@ export function getBrowserTabUrlForOrigin(
   const matchingTabs = browser.tabs.filter(
     ({ url }) => Boolean(url) && getHost(url) === origin,
   );
+  // The request only carries a hostname, so if tabs on that host disagree on
+  // protocol we cannot tell which one asked; don't borrow an https URL (and lock icon).
+  const protocols = new Set(
+    matchingTabs.map(
+      ({ url }) => getUrlObj(prefixUrlWithProtocol(url)).protocol,
+    ),
+  );
+  if (protocols.size !== 1) {
+    return undefined;
+  }
   const activeMatch = matchingTabs.find(({ id }) => id === browser.activeTab);
   return (activeMatch ?? matchingTabs[0])?.url;
 }
