@@ -83,6 +83,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { useStyles } from '../../hooks/useStyles';
 import styleSheet from './styles';
 import { type RootState } from '../../../reducers';
+import { store } from '../../../store';
 import { type Dispatch } from 'redux';
 import {
   type SessionENSNames,
@@ -933,6 +934,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             analytics: {},
           }),
         isMainFrame,
+        isTabActive: () => store.getState().browser.activeTab === tabId,
       });
       backgroundBridgeRef.current = newBridge;
     },

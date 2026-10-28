@@ -336,4 +336,47 @@ describe('AccountConnect', () => {
     // Verify createEventBuilder was called
     expect(mockCreateEventBuilder).toHaveBeenCalled();
   });
+
+  describe('requesting site identity', () => {
+    const renderForBackgroundTabRequest = () =>
+      renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: {
+                  id: 'mockId',
+                  origin: 'evil.example',
+                },
+                permissions: {
+                  eth_accounts: {
+                    parentCapability: 'eth_accounts',
+                  },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        {
+          state: {
+            ...mockInitialState,
+            browser: {
+              activeTab: 2,
+              tabs: [
+                { id: 1, url: 'https://evil.example/landing' },
+                { id: 2, url: 'https://app.uniswap.org/swap' },
+              ],
+            },
+          } as DeepPartial<RootState>,
+        },
+      );
+
+    it('names the requesting origin, not the active browser tab', () => {
+      const { getByText, queryByText } = renderForBackgroundTabRequest();
+
+      expect(getByText('evil.example wants to:')).toBeOnTheScreen();
+      expect(queryByText(/app\.uniswap\.org/)).toBeNull();
+    });
+  });
 });

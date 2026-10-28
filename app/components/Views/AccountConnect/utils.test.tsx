@@ -7,6 +7,7 @@ import {
 import {
   getRequestedCaip25CaveatValue,
   getCaip25PermissionsResponse,
+  getBrowserTabUrlForOrigin,
 } from './utils';
 
 describe('getRequestedCaip25CaveatValue', () => {
@@ -338,5 +339,36 @@ describe('getCaip25PermissionsResponse', () => {
         ],
       },
     });
+  });
+});
+
+describe('getBrowserTabUrlForOrigin', () => {
+  const tabs = [
+    { id: 1, url: 'https://evil.example/landing' },
+    { id: 2, url: 'https://app.uniswap.org/swap' },
+    { id: 3, url: 'http://evil.example/other' },
+  ];
+
+  it('never returns the active tab when it belongs to a different origin', () => {
+    expect(
+      getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, 'evil.example'),
+    ).toBe('https://evil.example/landing');
+  });
+
+  it('prefers the active tab when it matches the origin', () => {
+    expect(
+      getBrowserTabUrlForOrigin({ activeTab: 3, tabs }, 'evil.example'),
+    ).toBe('http://evil.example/other');
+  });
+
+  it('returns undefined when no tab matches the origin', () => {
+    expect(
+      getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, 'other.example'),
+    ).toBeUndefined();
+  });
+
+  it('returns undefined without browser state or origin', () => {
+    expect(getBrowserTabUrlForOrigin(undefined, 'evil.example')).toBeUndefined();
+    expect(getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, '')).toBeUndefined();
   });
 });
