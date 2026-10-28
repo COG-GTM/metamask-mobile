@@ -81,6 +81,7 @@ import useOriginSource from '../../hooks/useOriginSource';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 import {
   getBrowserTabUrlForOrigin,
+  isBrowserTabOriginAmbiguous,
   getCaip25PermissionsResponse,
   getRequestedCaip25CaveatValue,
 } from './utils';
@@ -170,6 +171,9 @@ const AccountConnect = (props: AccountConnectProps) => {
   const requestingTabUrl = useSelector(
     (state: RootState) =>
       getBrowserTabUrlForOrigin(state.browser, channelIdOrHostname),
+  );
+  const isRequestingTabAmbiguous = useSelector((state: RootState) =>
+    isBrowserTabOriginAmbiguous(state.browser, channelIdOrHostname),
   );
 
   const sdkConnection = SDKConnect.getInstance().getConnection({
@@ -268,7 +272,8 @@ const AccountConnect = (props: AccountConnectProps) => {
   }, [dappUrl, channelIdOrHostname]);
 
   const faviconSource = useFavicon(
-    requestingTabUrl || (!isChannelId ? channelIdOrHostname : ''),
+    requestingTabUrl ||
+      (!isChannelId && !isRequestingTabAmbiguous ? channelIdOrHostname : ''),
   );
 
   const actualIcon = useMemo(() => {

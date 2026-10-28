@@ -125,11 +125,41 @@ interface BrowserTabsState {
   tabs?: { id: number; url: string }[];
 }
 
+function resolveBrowserTabsForOrigin(
+  browser: BrowserTabsState | undefined,
+  origin: string,
+): { url?: string; ambiguous: boolean } {
+  if (!origin || !browser?.tabs?.length) {
+    return { ambiguous: false };
+  }
+  const matchingTabs = browser.tabs.filter(
+    ({ url }) => Boolean(url) && getHost(url) === origin,
+  );
+  // BackgroundBridge only lets the active tab raise a connect prompt, so an
+  // active tab on the requesting host is the requester.
+  const activeMatch = matchingTabs.find(({ id }) => id === browser.activeTab);
+  if (activeMatch) {
+    return { url: activeMatch.url, ambiguous: false };
+  }
+  // Otherwise the request only carries a hostname; if tabs on that host
+  // disagree on protocol we cannot tell which one asked.
+  const protocols = new Set(
+    matchingTabs.map(
+      ({ url }) => getUrlObj(prefixUrlWithProtocol(url)).protocol,
+    ),
+  );
+  if (protocols.size > 1) {
+    return { ambiguous: true };
+  }
+  return { url: matchingTabs[0]?.url, ambiguous: false };
+}
+
 /**
- * Returns the URL of the in-app browser tab whose hostname matches the
- * requesting origin, preferring the active tab. Returns undefined when no tab
- * belongs to that origin or the matching tabs mix protocols, so callers never
- * borrow an unrelated tab's identity.
+ * Returns the URL of the in-app browser tab that issued a request from the
+ * given hostname: the active tab when it is on that host, otherwise a tab on
+ * that host as long as all such tabs share one protocol. Returns undefined
+ * when the requesting tab cannot be identified, so callers never borrow an
+ * unrelated tab's identity.
  *
  * @param browser - The browser slice of the redux state.
  * @param origin - The hostname that issued the permission request.
@@ -139,22 +169,20 @@ export function getBrowserTabUrlForOrigin(
   browser: BrowserTabsState | undefined,
   origin: string,
 ): string | undefined {
-  if (!origin || !browser?.tabs?.length) {
-    return undefined;
-  }
-  const matchingTabs = browser.tabs.filter(
-    ({ url }) => Boolean(url) && getHost(url) === origin,
-  );
-  // The request only carries a hostname, so if tabs on that host disagree on
-  // protocol we cannot tell which one asked; don't borrow an https URL (and lock icon).
-  const protocols = new Set(
-    matchingTabs.map(
-      ({ url }) => getUrlObj(prefixUrlWithProtocol(url)).protocol,
-    ),
-  );
-  if (protocols.size !== 1) {
-    return undefined;
-  }
-  const activeMatch = matchingTabs.find(({ id }) => id === browser.activeTab);
-  return (activeMatch ?? matchingTabs[0])?.url;
+  return resolveBrowserTabsForOrigin(browser, origin).url;
+}
+
+/**
+ * Whether several inactive tabs share the requesting hostname with different
+ * protocols, meaning the request's protocol (and favicon) is unknown.
+ *
+ * @param browser - The browser slice of the redux state.
+ * @param origin - The hostname that issued the permission request.
+ * @returns True when the requesting tab cannot be identified.
+ */
+export function isBrowserTabOriginAmbiguous(
+  browser: BrowserTabsState | undefined,
+  origin: string,
+): boolean {
+  return resolveBrowserTabsForOrigin(browser, origin).ambiguous;
 }
