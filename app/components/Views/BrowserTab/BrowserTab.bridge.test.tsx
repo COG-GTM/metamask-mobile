@@ -205,7 +205,7 @@ describe('BrowserTab background bridge', () => {
     );
   });
 
-  it('drops messages sent before the bridge exists instead of replaying them later', async () => {
+  it('delivers same-origin messages sent while the current navigation was being scanned', async () => {
     let resolveScan: (value: typeof SAFE) => void = () => undefined;
     mockGetPhishingTestResultAsync.mockImplementation(
       () =>
@@ -221,6 +221,9 @@ describe('BrowserTab background bridge', () => {
         nativeEvent: { url: 'https://dapp.example/' },
       });
       getWebView().props.onMessage(providerMessage('https://dapp.example/', 1));
+      getWebView().props.onMessage(
+        providerMessage('https://other.example/', 2),
+      );
     });
     await act(async () => {
       resolveScan(SAFE);
@@ -229,14 +232,56 @@ describe('BrowserTab background bridge', () => {
 
     const [bridge] = mockBridges;
     expect(bridge.url).toBe('https://dapp.example');
-    expect(bridge.onMessage).not.toHaveBeenCalled();
-
-    act(() => {
-      getWebView().props.onMessage(providerMessage('https://dapp.example/', 2));
-    });
     expect(bridge.onMessage).toHaveBeenCalledTimes(1);
     expect(bridge.onMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ id: 2 }) }),
+      expect.objectContaining({ data: expect.objectContaining({ id: 1 }) }),
+    );
+  });
+
+  it('does not replay messages from a superseded navigation when the origin is visited again', async () => {
+    const resolvers: ((value: typeof SAFE) => void)[] = [];
+    mockGetPhishingTestResultAsync.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolvers.push(resolve);
+        }),
+    );
+    const getWebView = await renderWebView();
+
+    let firstVisit: Promise<unknown> = Promise.resolve();
+    let otherVisit: Promise<unknown> = Promise.resolve();
+    act(() => {
+      firstVisit = getWebView().props.onLoadStart({
+        nativeEvent: { url: 'https://shop.example/' },
+      });
+      getWebView().props.onMessage(providerMessage('https://shop.example/', 1));
+      otherVisit = getWebView().props.onLoadStart({
+        nativeEvent: { url: 'https://other.example/' },
+      });
+    });
+    await act(async () => {
+      resolvers[0](SAFE);
+      resolvers[1](SAFE);
+      await Promise.all([firstVisit, otherVisit]);
+    });
+
+    let secondVisit: Promise<unknown> = Promise.resolve();
+    act(() => {
+      secondVisit = getWebView().props.onLoadStart({
+        nativeEvent: { url: 'https://shop.example/' },
+      });
+    });
+    await act(async () => {
+      resolvers[2](SAFE);
+      await secondVisit;
+    });
+
+    expect(mockBridges.map(({ url }) => url)).toEqual([
+      'https://other.example',
+      'https://shop.example',
+    ]);
+    mockBridges.forEach((bridge) =>
+      expect(bridge.onMessage).not.toHaveBeenCalled(),
     );
   });
 });

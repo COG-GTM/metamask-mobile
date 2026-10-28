@@ -68,6 +68,7 @@ import {
   OLD_HOMEPAGE_URL_HOST,
   NOTIFICATION_NAMES,
   MM_MIXPANEL_TOKEN,
+  MAX_PENDING_BRIDGE_MESSAGES,
 } from './constants';
 import { regex } from '../../../../app/util/regex';
 import { selectEvmChainId } from '../../../selectors/networkController';
@@ -178,6 +179,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const loadingUrlRef = useRef('');
   // Incremented on every onLoadStart so a slower, superseded navigation cannot install its bridge
   const loadStartIdRef = useRef(0);
+  // Provider messages received while the current navigation's bridge is not installed yet
+  const pendingBridgeMessagesRef = useRef<
+    { loadStartId: number; origin: string; message: Record<string, unknown> }[]
+  >([]);
   const submittedUrlRef = useRef('');
   const titleRef = useRef<string>('');
   const iconRef = useRef<ImageSourcePropType | undefined>();
@@ -884,7 +889,17 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         // Never route a page's requests through a bridge bound to another origin
         if (bridge && bridge.url === pageOrigin) {
           bridge.onMessage(dataParsed);
+          return;
         }
+        const pending = pendingBridgeMessagesRef.current;
+        if (pending.length >= MAX_PENDING_BRIDGE_MESSAGES) {
+          pending.shift();
+        }
+        pending.push({
+          loadStartId: loadStartIdRef.current,
+          origin: pageOrigin,
+          message: dataParsed,
+        });
         return;
       }
     } catch (e: unknown) {
@@ -961,6 +976,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     async ({ nativeEvent }: WebViewNavigationEvent) => {
       loadingUrlRef.current = nativeEvent.url;
       const loadStartId = ++loadStartIdRef.current;
+      pendingBridgeMessagesRef.current = [];
 
       // Use URL to produce real url. This should be the actual website that the user is viewing.
       const { origin: urlOrigin } = new URLParse(nativeEvent.url);
@@ -973,6 +989,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       // Cancel loading the page if we detect its a phishing page
       const isAllowed = await isAllowedOrigin(urlOrigin);
       if (!isAllowed) {
+        if (loadStartId === loadStartIdRef.current) {
+          pendingBridgeMessagesRef.current = [];
+        }
         handleNotAllowedUrl(urlOrigin); // should this be activeUrl.current instead of url?
         return false;
       }
@@ -990,6 +1009,18 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       }
 
       initializeBackgroundBridge(urlOrigin, true);
+
+      // Deliver only requests sent during this navigation by a page of this origin
+      const pending = pendingBridgeMessagesRef.current;
+      pendingBridgeMessagesRef.current = [];
+      pending
+        .filter(
+          (entry) =>
+            entry.loadStartId === loadStartId && entry.origin === urlOrigin,
+        )
+        .forEach(({ message }) =>
+          backgroundBridgeRef.current?.onMessage(message),
+        );
     },
     [
       isAllowedOrigin,
