@@ -1,7 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FilesystemStorage from 'redux-persist-filesystem-storage';
 import Device from '../util/device';
-import persistConfig from './persistConfig';
+import persistConfig, {
+  flushStorageWrite,
+  PERSIST_THROTTLE,
+} from './persistConfig';
 import { version } from './migrations';
 import Engine from '../core/Engine';
 import { Transform } from 'redux-persist';
@@ -94,8 +97,10 @@ jest.mock('./migrations', () => ({
 }));
 
 // Mock debounce
+const mockDebounceFlush = jest.fn();
 jest.mock('lodash', () => ({
-  debounce: <T extends (...args: unknown[]) => unknown>(fn: T) => fn,
+  debounce: <T extends (...args: unknown[]) => unknown>(fn: T) =>
+    Object.assign(fn, { flush: () => mockDebounceFlush() }),
 }));
 
 describe('persistConfig', () => {
@@ -118,6 +123,11 @@ describe('persistConfig', () => {
         'accounts',
         'confirmationMetrics',
       ]);
+    });
+
+    it('throttles persist processing so engine updates are coalesced', () => {
+      expect(PERSIST_THROTTLE).toBe(1000);
+      expect(persistConfig.throttle).toBe(PERSIST_THROTTLE);
     });
 
     it('have correct storage configuration', () => {
@@ -222,6 +232,89 @@ describe('persistConfig', () => {
         mockValue,
         true,
       );
+    });
+
+    it('flushStorageWrite flushes the pending debounced write', async () => {
+      await flushStorageWrite();
+      expect(mockDebounceFlush).toHaveBeenCalledTimes(1);
+    });
+
+    describe('write ordering', () => {
+      const flushMicrotasks = () => new Promise((r) => setImmediate(r));
+
+      // Deferred filesystem writes that settle only when told to; a write
+      // records its value to "disk" at the moment it completes.
+      const deferDiskWrites = () => {
+        const disk: { value?: string } = {};
+        const completions: (() => void)[] = [];
+        (FilesystemStorage.setItem as jest.Mock).mockImplementation(
+          (_key: string, value: string) =>
+            new Promise<void>((resolve) =>
+              completions.push(() => {
+                disk.value = value;
+                resolve();
+              }),
+            ),
+        );
+        return { disk, completions };
+      };
+
+      it('does not let an older in-flight write overwrite a newer one', async () => {
+        const { disk, completions } = deferDiskWrites();
+
+        const older = persistConfig.storage.setItem(mockKey, 'older');
+        const newer = persistConfig.storage.setItem(mockKey, 'newer');
+        await flushMicrotasks();
+
+        // The newer write must wait for the in-flight one instead of racing it
+        expect(completions).toHaveLength(1);
+
+        completions[0]();
+        await older;
+        await flushMicrotasks();
+        expect(completions).toHaveLength(2);
+        completions[1]();
+        await newer;
+
+        expect(disk.value).toBe('newer');
+      });
+
+      it('flushStorageWrite resolves only after in-flight writes complete', async () => {
+        const { disk, completions } = deferDiskWrites();
+
+        persistConfig.storage.setItem(mockKey, 'older');
+        persistConfig.storage.setItem(mockKey, 'newer');
+        let flushed = false;
+        const flush = flushStorageWrite().then(() => {
+          flushed = true;
+        });
+
+        await flushMicrotasks();
+        expect(flushed).toBe(false);
+        completions[0]();
+        await flushMicrotasks();
+        expect(flushed).toBe(false);
+        completions[1]();
+        await flush;
+
+        expect(flushed).toBe(true);
+        expect(disk.value).toBe('newer');
+      });
+
+      it('keeps writing after a failed write', async () => {
+        (FilesystemStorage.setItem as jest.Mock)
+          .mockRejectedValueOnce(new Error('disk full'))
+          .mockResolvedValueOnce(undefined);
+
+        await persistConfig.storage.setItem(mockKey, 'first');
+        await persistConfig.storage.setItem(mockKey, 'second');
+
+        expect(FilesystemStorage.setItem).toHaveBeenLastCalledWith(
+          mockKey,
+          'second',
+          true,
+        );
+      });
     });
 
     it('remove item using FilesystemStorage', async () => {

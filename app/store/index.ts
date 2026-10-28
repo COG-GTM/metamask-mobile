@@ -11,6 +11,11 @@ import { trace, endTrace, TraceName, TraceOperation } from '../util/trace';
 import thunk from 'redux-thunk';
 
 import persistConfig from './persistConfig';
+import {
+  createFlushPersistedState,
+  createPersistFlushMiddleware,
+  flushPersistedStateOnAppBackground,
+} from './persistFlush';
 import getUIStartupSpan from '../core/Performance/UIStartup';
 import ReduxService, { ReduxStore } from '../core/redux';
 import { onPersistedDataLoaded } from '../actions/user';
@@ -24,6 +29,8 @@ const pReducer = persistReducer<RootState, AnyAction>(
 
 // eslint-disable-next-line import/no-mutable-exports
 let store: ReduxStore, persistor: Persistor;
+
+const flushPersistedState = createFlushPersistedState(() => persistor);
 const createStoreAndPersistor = async () => {
   trace({
     name: TraceName.StoreInit,
@@ -40,7 +47,11 @@ const createStoreAndPersistor = async () => {
   // Create the store and apply middlewares. In E2E tests, an optional initialState
   // from fixtures can be provided to preload the store; otherwise, it remains undefined.
 
-  const middlewares = [sagaMiddleware, thunk];
+  const middlewares = [
+    sagaMiddleware,
+    thunk,
+    createPersistFlushMiddleware(flushPersistedState),
+  ];
 
   /*
   if (__DEV__) {
@@ -74,10 +85,11 @@ const createStoreAndPersistor = async () => {
   };
 
   persistor = persistStore(store, null, onPersistComplete);
+  flushPersistedStateOnAppBackground(flushPersistedState);
 };
 
 (async () => {
   await createStoreAndPersistor();
 })();
 
-export { store, persistor };
+export { store, persistor, flushPersistedState };

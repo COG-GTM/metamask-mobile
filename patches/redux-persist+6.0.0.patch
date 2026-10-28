@@ -1,0 +1,84 @@
+diff --git a/node_modules/redux-persist/es/createPersistoid.js b/node_modules/redux-persist/es/createPersistoid.js
+index 8b43b9a..3e61ffa 100644
+--- a/node_modules/redux-persist/es/createPersistoid.js
++++ b/node_modules/redux-persist/es/createPersistoid.js
+@@ -61,7 +61,25 @@ export default function createPersistoid(config) {
+       return;
+     }
+ 
+-    var key = keysToProcess.shift();
++    // With a throttle, drain every queued key per tick so a burst of changes
++    // is written once per throttle window regardless of how many keys changed.
++    if (throttle > 0) {
++      while (keysToProcess.length !== 0) {
++        processKey(keysToProcess.shift());
++      }
++
++      writeStagedState();
++      return;
++    }
++
++    processKey(keysToProcess.shift());
++
++    if (keysToProcess.length === 0) {
++      writeStagedState();
++    }
++  }
++
++  function processKey(key) {
+     var endState = transforms.reduce(function (subState, transformer) {
+       return transformer.in(subState, key, lastState);
+     }, lastState[key]);
+@@ -76,10 +94,6 @@ export default function createPersistoid(config) {
+       //if the endState is undefined, no need to persist the existing serialized content
+       delete stagedState[key];
+     }
+-
+-    if (keysToProcess.length === 0) {
+-      writeStagedState();
+-    }
+   }
+ 
+   function writeStagedState() {
+diff --git a/node_modules/redux-persist/lib/createPersistoid.js b/node_modules/redux-persist/lib/createPersistoid.js
+index b026562..e705e88 100644
+--- a/node_modules/redux-persist/lib/createPersistoid.js
++++ b/node_modules/redux-persist/lib/createPersistoid.js
+@@ -67,7 +67,25 @@ function createPersistoid(config) {
+       return;
+     }
+ 
+-    var key = keysToProcess.shift();
++    // With a throttle, drain every queued key per tick so a burst of changes
++    // is written once per throttle window regardless of how many keys changed.
++    if (throttle > 0) {
++      while (keysToProcess.length !== 0) {
++        processKey(keysToProcess.shift());
++      }
++
++      writeStagedState();
++      return;
++    }
++
++    processKey(keysToProcess.shift());
++
++    if (keysToProcess.length === 0) {
++      writeStagedState();
++    }
++  }
++
++  function processKey(key) {
+     var endState = transforms.reduce(function (subState, transformer) {
+       return transformer.in(subState, key, lastState);
+     }, lastState[key]);
+@@ -82,10 +100,6 @@ function createPersistoid(config) {
+       //if the endState is undefined, no need to persist the existing serialized content
+       delete stagedState[key];
+     }
+-
+-    if (keysToProcess.length === 0) {
+-      writeStagedState();
+-    }
+   }
+ 
+   function writeStagedState() {
