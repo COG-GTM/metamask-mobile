@@ -12,12 +12,15 @@ import Gzip
 enum UnTarError: Error, LocalizedError {
   case unableToDecompressFile(file: String, error: Error? = nil)
   case sourceFileNotFound(file: String)
+  case destinationNotEmpty(directory: String)
   public var errorDescription: String? {
     switch self {
     case let .unableToDecompressFile(file: file, error: error):
       return "RNTar failed to decompress file \(file)  \(error as Optional)"
     case let .sourceFileNotFound(file: file):
       return "Source file \(file) not found"
+    case let .destinationNotEmpty(directory: directory):
+      return "Destination \(directory) must be a new or empty directory"
     }
   }
 }
@@ -45,12 +48,10 @@ class RNTar: NSObject {
       throw UnTarError.unableToDecompressFile(file: path)
     }
 
-    if !fileManager.fileExists(atPath: sourceUrl.path) {
-      do {
-        try (fileManager.createDirectory(atPath: sourceUrl.path, withIntermediateDirectories: true))
-      } catch {
-        throw UnTarError.unableToDecompressFile(file: path)
-      }
+    // Only extract into a dedicated directory so entries cannot overwrite existing app files.
+    if fileManager.fileExists(atPath: destinationUrl.path),
+       !((try? fileManager.contentsOfDirectory(atPath: destinationUrl.path))?.isEmpty ?? false) {
+      throw UnTarError.destinationNotEmpty(directory: destinationUrl.path)
     }
     let untarResponse = try FileManager.default
       .createFilesAndDirectories(path: destinationUrl.path, tarData: decompressedData)
