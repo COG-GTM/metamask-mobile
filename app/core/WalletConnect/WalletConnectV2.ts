@@ -7,8 +7,10 @@ import { IWalletKit, WalletKit, WalletKitTypes } from '@reown/walletkit';
 import { Core } from '@walletconnect/core';
 import { SessionTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
+import { Alert } from 'react-native';
 
 import { updateWC2Metadata } from '../../../app/actions/sdk';
+import { strings } from '../../../locales/i18n';
 import { selectEvmChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import StorageWrapper from '../../store/storage-wrapper';
@@ -24,6 +26,8 @@ import WalletConnect from './WalletConnect';
 import {
   getHostname,
   getScopedPermissions,
+  getVerifyRejectionReason,
+  getWCPermissionSubject,
   hideWCLoadingState,
   parseWalletConnectUri,
   showWCLoadingState,
@@ -119,6 +123,34 @@ export class WC2Manager {
       activeSessions.forEach(async (session) => {
         const sessionKey = session.topic;
         try {
+          const permissionSubject = getWCPermissionSubject(
+            session.peer.metadata.url,
+          );
+
+          // Sessions approved before permissions were namespaced have no
+          // record under their WalletConnect subject; their old record may be
+          // shared with an in-app browser origin, so don't reuse it.
+          if (
+            !permissionSubject ||
+            !permissionController.hasPermission(
+              permissionSubject,
+              Caip25EndowmentPermissionName,
+            )
+          ) {
+            DevLogger.log(
+              `WC2::init disconnecting ${sessionKey}: no permissions for ${permissionSubject}`,
+            );
+            try {
+              await web3Wallet.disconnectSession({
+                topic: sessionKey,
+                reason: getSdkError('USER_DISCONNECTED'),
+              });
+            } catch (err) {
+              console.warn(`Can't disconnect session ${sessionKey}`, err);
+            }
+            return;
+          }
+
           this.sessions[sessionKey] = new WalletConnect2Session({
             web3Wallet,
             channelId: sessionKey,
@@ -130,13 +162,11 @@ export class WC2Manager {
 
           // Find approvedAccounts for current sessions
           DevLogger.log(
-            `WC2::init getPermittedAccounts for ${sessionKey} origin=${getHostname(
-              session.peer.metadata.url,
-            )}`,
+            `WC2::init getPermittedAccounts for ${sessionKey} origin=${permissionSubject}`,
             JSON.stringify(permissionController.state, null, 2),
           );
           const accountPermission = permissionController.getPermission(
-            session.peer.metadata.url,
+            permissionSubject,
             'eth_accounts',
           );
 
@@ -145,9 +175,8 @@ export class WC2Manager {
             JSON.stringify(accountPermission, null, 2),
           );
 
-          const hostname = getHostname(session.peer.metadata.url);
           let approvedAccounts =
-            getPermittedAccounts(hostname) ?? [];
+            getPermittedAccounts(permissionSubject) ?? [];
 
           DevLogger.log(
             `WC2::init approvedAccounts id ${accountPermission?.id}`,
@@ -415,14 +444,42 @@ export class WC2Manager {
     const icons = metadata.icons;
     const icon = icons?.[0] ?? '';
 
-    // Extract the hostname to ensure we're consistent with permission checks
-    const hostname = getHostname(url);
+    // metadata.url is declared by the dapp, so its permissions live under a
+    // WalletConnect-only subject rather than the bare hostname used by the
+    // in-app browser.
+    const permissionSubject = getWCPermissionSubject(url);
     // Keep the full url for logging and UI display
     const origin = url;
 
     DevLogger.log(
-      `WC2::session_proposal metadata url=${origin} normalized to hostname=${hostname}`,
+      `WC2::session_proposal metadata url=${origin} permission subject=${permissionSubject}`,
     );
+
+    const verifyRejection = getVerifyRejectionReason(proposal.verifyContext);
+    if (verifyRejection || !permissionSubject) {
+      DevLogger.log(
+        `WC2::session_proposal rejected id=${id} reason=${verifyRejection ?? 'invalid_url'}`,
+        proposal.verifyContext?.verified,
+      );
+      try {
+        await this.web3Wallet.rejectSession({
+          id: proposal.id,
+          reason: getSdkError('USER_REJECTED'),
+        });
+      } catch (err) {
+        console.warn(`Can't reject session proposal ${id}`, err);
+      }
+      Alert.alert(
+        strings('walletconnect_sessions.connection_blocked_title'),
+        strings(
+          verifyRejection === 'scam'
+            ? 'walletconnect_sessions.connection_blocked_scam'
+            : 'walletconnect_sessions.connection_blocked_unverified',
+          { url: getHostname(url) || url },
+        ),
+      );
+      return;
+    }
 
     // Save Connection info to redux store to be retrieved in ui.
     store.dispatch(updateWC2Metadata({ url, name, icon, id: `${id}` }));
@@ -435,15 +492,14 @@ export class WC2Manager {
       // Create a modified CAIP-25 caveat value that includes the current chain
       const caveatValue = getDefaultCaip25CaveatValue();
 
-      // Important: Use hostname as the origin for permission request to ensure consistency
-      DevLogger.log(`WC2::session_proposal requestPermissions for hostname`, {
-        hostname,
+      DevLogger.log(`WC2::session_proposal requestPermissions`, {
+        permissionSubject,
         caveatValue,
       });
 
       // Request permissions via the permissions controller
       await permissionsController.requestPermissions(
-        { origin: hostname },
+        { origin: permissionSubject },
         {
           [Caip25EndowmentPermissionName]: {
             caveats: [
@@ -462,9 +518,9 @@ export class WC2Manager {
       // Explicitly add the current chain to permissions
       try {
         const hexChainId = `0x${walletChainIdDecimal.toString(16)}` as `0x${string}`;
-        DevLogger.log(`WC2::session_proposal ensuring chain ${hexChainId} is permitted for ${hostname}`);
+        DevLogger.log(`WC2::session_proposal ensuring chain ${hexChainId} is permitted for ${permissionSubject}`);
 
-        updatePermittedChains(hostname, [hexChainId]);
+        updatePermittedChains(permissionSubject, [hexChainId]);
         DevLogger.log(`WC2::session_proposal chain permission added successfully`);
       } catch (err) {
         DevLogger.log(`WC2::session_proposal error adding chain permission`, err);
@@ -481,11 +537,10 @@ export class WC2Manager {
     }
 
     try {
-      // Use the hostname for consistent permissions
-      const approvedAccounts = getPermittedAccounts(hostname);
+      const approvedAccounts = getPermittedAccounts(permissionSubject);
 
       DevLogger.log(`WC2::session_proposal getScopedPermissions`, {
-        hostname,
+        permissionSubject,
         approvedAccounts,
         walletChainIdHex,
         walletChainIdDecimal,

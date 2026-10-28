@@ -12,6 +12,8 @@ import WalletConnect2Session from './WalletConnect2Session';
 // eslint-disable-next-line import/no-namespace
 import * as wcUtils from './wc-utils';
 import { Core } from '@walletconnect/core';
+import { Alert } from 'react-native';
+import { getPermittedAccounts } from '../Permissions';
 
 jest.mock('../AppConstants', () => ({
   WALLET_CONNECT: {
@@ -107,6 +109,7 @@ jest.mock('../Engine', () => ({
         id: 'mockPermissionId',
       }),
       revokeAllPermissions: jest.fn(),
+      hasPermission: jest.fn().mockReturnValue(true),
     },
   },
 }));
@@ -605,6 +608,131 @@ describe('WC2Manager', () => {
       expect(rejectSessionSpy).toHaveBeenCalledWith({
         id: 1,
         reason: expect.any(Object),
+      });
+    });
+
+    describe('permission subject isolation', () => {
+      const buildProposal = (
+        verified: Record<string, unknown> = {
+          verifyUrl: 'https://verify.walletconnect.com',
+          validation: 'VALID',
+          origin: 'https://app.example-dex.com',
+        },
+      ) => ({
+        id: 7,
+        params: {
+          id: 7,
+          pairingTopic: 'test-pairing',
+          proposer: {
+            publicKey: 'test-public-key',
+            metadata: {
+              name: 'Example DEX',
+              description: 'Example DEX',
+              url: 'https://app.example-dex.com',
+              icons: [],
+            },
+          },
+          expiryTimestamp: Date.now() + 300000,
+          relays: [{ protocol: 'irn' }],
+          requiredNamespaces: {},
+          optionalNamespaces: {},
+        },
+        verifyContext: { verified },
+      });
+
+      it('does not read or write the browser permission subject for the same hostname', async () => {
+        const { PermissionController } = Engine.context;
+        (PermissionController.requestPermissions as jest.Mock).mockClear();
+        (getPermittedAccounts as jest.Mock).mockClear();
+
+        await manager.onSessionProposal(
+          buildProposal() as unknown as Parameters<
+            typeof manager.onSessionProposal
+          >[0],
+        );
+
+        expect(PermissionController.requestPermissions).toHaveBeenCalledWith(
+          { origin: 'wc::app.example-dex.com' },
+          expect.any(Object),
+        );
+        expect(
+          PermissionController.requestPermissions,
+        ).not.toHaveBeenCalledWith(
+          { origin: 'app.example-dex.com' },
+          expect.anything(),
+        );
+        expect(getPermittedAccounts).toHaveBeenCalledWith(
+          'wc::app.example-dex.com',
+        );
+        expect(getPermittedAccounts).not.toHaveBeenCalledWith(
+          'app.example-dex.com',
+        );
+      });
+
+      it.each([
+        ['flagged as a scam', { validation: 'VALID', isScam: true }],
+        ['whose origin failed verification', { validation: 'INVALID' }],
+      ])(
+        'rejects proposals %s without requesting permissions',
+        async (_label, verified) => {
+          const { PermissionController } = Engine.context;
+          (PermissionController.requestPermissions as jest.Mock).mockClear();
+          const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation();
+          const web3Wallet = (manager as unknown as { web3Wallet: IWalletKit })
+            .web3Wallet;
+          const rejectSessionSpy = jest.spyOn(web3Wallet, 'rejectSession');
+          rejectSessionSpy.mockClear();
+          mockApproveSession.mockClear();
+
+          await manager.onSessionProposal(
+            buildProposal({
+              verifyUrl: 'https://verify.walletconnect.com',
+              origin: 'https://evil.example',
+              ...verified,
+            }) as unknown as Parameters<typeof manager.onSessionProposal>[0],
+          );
+
+          expect(rejectSessionSpy).toHaveBeenCalledWith({
+            id: 7,
+            reason: expect.any(Object),
+          });
+          expect(
+            PermissionController.requestPermissions,
+          ).not.toHaveBeenCalled();
+          expect(mockApproveSession).not.toHaveBeenCalled();
+          expect(alertSpy).toHaveBeenCalled();
+          alertSpy.mockRestore();
+        },
+      );
+
+      it('disconnects restored sessions that have no namespaced permission', async () => {
+        const { PermissionController } = Engine.context;
+        (PermissionController.hasPermission as jest.Mock).mockReturnValue(
+          false,
+        );
+        (getPermittedAccounts as jest.Mock).mockClear();
+        const sessions: { [topic: string]: WalletConnect2Session } = {};
+
+        const restored = await WC2Manager.init({
+          navigation: mockNavigation,
+          sessions,
+        });
+        await new Promise(process.nextTick);
+        const web3Wallet = (restored as unknown as { web3Wallet: IWalletKit })
+          .web3Wallet;
+
+        expect(PermissionController.hasPermission).toHaveBeenCalledWith(
+          'wc::example.com',
+          expect.any(String),
+        );
+        expect(web3Wallet.disconnectSession).toHaveBeenCalledWith({
+          topic: 'test-topic',
+          reason: expect.any(Object),
+        });
+        expect(sessions['test-topic']).toBeUndefined();
+        expect(getPermittedAccounts).not.toHaveBeenCalledWith('example.com');
+
+        (PermissionController.hasPermission as jest.Mock).mockReturnValue(true);
       });
     });
 

@@ -2552,7 +2552,10 @@
     "session_ended_title": "Session Ended",
     "session_ended_desc": "The selected session has been terminated",
     "session_already_exist": "This session is already connected.",
-    "close_current_session": "Close the current session before starting a new one."
+    "close_current_session": "Close the current session before starting a new one.",
+    "connection_blocked_title": "Connection blocked",
+    "connection_blocked_scam": "{{url}} has been flagged as malicious by WalletConnect Verify. The connection was rejected.",
+    "connection_blocked_unverified": "This dapp claims to be {{url}}, but WalletConnect Verify could not confirm it is hosted there. The connection was rejected."
   },
   "paymentRequest": {
     "title": "PAYMENT REQUEST",

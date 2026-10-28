@@ -79,6 +79,7 @@ import { useNetworkInfo } from '../../../selectors/selectedNetworkController';
 import { AvatarSize } from '../../../component-library/components/Avatars/Avatar';
 import { selectEvmNetworkConfigurationsByChainId } from '../../../selectors/networkController';
 import { isUUID } from '../../../core/SDKConnect/utils/isUUID';
+import { WALLET_CONNECT_ORIGIN } from '../../../util/walletconnect';
 import useOriginSource from '../../hooks/useOriginSource';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 import {
@@ -169,6 +170,10 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const isChannelId = isUUID(channelIdOrHostname);
 
+  const dappOrigin = channelIdOrHostname.startsWith(WALLET_CONNECT_ORIGIN)
+    ? channelIdOrHostname.slice(WALLET_CONNECT_ORIGIN.length)
+    : channelIdOrHostname;
+
   const sdkConnection = SDKConnect.getInstance().getConnection({
     channelId: channelIdOrHostname,
   });
@@ -195,7 +200,7 @@ const AccountConnect = (props: AccountConnectProps) => {
         channelIdOrHostname.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1],
       ).origin;
     } else if (isOriginWalletConnect) {
-      title = channelIdOrHostname;
+      title = dappOrigin;
       dappHostname = title;
     } else if (!isChannelId && (dappUrl || channelIdOrHostname)) {
       title = prefixUrlWithProtocol(dappUrl || channelIdOrHostname);
@@ -213,6 +218,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     isChannelId,
     dappUrl,
     channelIdOrHostname,
+    dappOrigin,
   ]);
 
   const urlWithProtocol =
@@ -246,7 +252,7 @@ const AccountConnect = (props: AccountConnectProps) => {
   }, [networkConfigurations]);
 
   useEffect(() => {
-    let url = dappUrl || channelIdOrHostname || '';
+    let url = dappUrl || dappOrigin || '';
 
     const checkOrigin = async () => {
       if (isProductSafetyDappScanningEnabled()) {
@@ -262,10 +268,10 @@ const AccountConnect = (props: AccountConnectProps) => {
     return () => {
       isMountedRef.current = false;
     };
-  }, [dappUrl, channelIdOrHostname]);
+  }, [dappUrl, dappOrigin]);
 
   const faviconSource = useFavicon(
-    inappBrowserOrigin || (!isChannelId ? channelIdOrHostname : ''),
+    inappBrowserOrigin || (!isChannelId ? dappOrigin : ''),
   );
 
   const actualIcon = useMemo(() => {

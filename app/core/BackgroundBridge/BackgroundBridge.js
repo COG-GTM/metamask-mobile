@@ -36,6 +36,7 @@ const EventEmitter = require('events').EventEmitter;
 const { NOTIFICATION_NAMES } = AppConstants;
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { getPermittedAccounts } from '../Permissions';
+import { WALLET_CONNECT_ORIGIN } from '../../util/walletconnect';
 import { NetworkStatus } from '@metamask/network-controller';
 import { NETWORK_ID_LOADING } from '../redux/slices/inpageProvider';
 import createUnsupportedMethodMiddleware from '../RPCMethods/createUnsupportedMethodMiddleware';
@@ -74,7 +75,11 @@ export class BackgroundBridge extends EventEmitter {
     super();
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
-    this.hostname = new URL(url).hostname;
+    // WalletConnect peers declare their own URL, so they get a namespaced
+    // permission subject that cannot collide with an in-app browser hostname.
+    this.hostname = isWalletConnect
+      ? `${WALLET_CONNECT_ORIGIN}${new URL(url).hostname}`
+      : new URL(url).hostname;
     this.remoteConnHost = remoteConnHost;
     this.isMainFrame = isMainFrame;
     this.isWalletConnect = isWalletConnect;
@@ -279,7 +284,7 @@ export class BackgroundBridge extends EventEmitter {
         `notifySelectedAddressChanged: ${selectedAddress} channelId=${this.channelId} wc=${this.isWalletConnect} url=${this.url}`,
       );
       if (this.isWalletConnect) {
-        approvedAccounts = getPermittedAccounts(this.url);
+        approvedAccounts = getPermittedAccounts(this.hostname);
       } else {
         approvedAccounts = getPermittedAccounts(
           this.channelId ?? this.hostname,
