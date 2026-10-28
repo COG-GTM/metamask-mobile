@@ -28,6 +28,16 @@ export const generateStateLogs = (state: any, loggedIn = true): string => {
   // Remove Keyring controller data  so that encrypted vault is not included in logs
   delete fullState.engine.backgroundState.KeyringController;
 
+  // Remove bearer/push tokens so a shared state log cannot be replayed against identity services
+  const { AuthenticationController, NotificationServicesPushController } =
+    fullState.engine.backgroundState;
+  if (AuthenticationController?.sessionData?.token) {
+    delete AuthenticationController.sessionData.token.accessToken;
+  }
+  if (NotificationServicesPushController) {
+    delete NotificationServicesPushController.fcmToken;
+  }
+
   if (!loggedIn) {
     return JSON.stringify(fullState);
   }

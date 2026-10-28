@@ -154,6 +154,85 @@ describe('logs :: generateStateLogs', () => {
   });
 });
 
+describe('logs :: generateStateLogs :: identity tokens', () => {
+  const accessToken = 'eyJhbGciOiJFUzI1NiJ9.mock-identity-access-token';
+  const fcmToken = 'mock-fcm-registration-token';
+  const buildState = () => ({
+    engine: {
+      backgroundState: {
+        ...backgroundState,
+        KeyringController: {
+          vault: 'vault mock',
+        },
+        AuthenticationController: {
+          isSignedIn: true,
+          sessionData: {
+            profile: {
+              identifierId: 'identifier-id',
+              profileId: 'profile-id',
+              metaMetricsId: 'metametrics-id',
+            },
+            token: {
+              accessToken,
+              expiresIn: 3600,
+              obtainedAt: 1700000000000,
+            },
+          },
+        },
+        NotificationServicesPushController: {
+          fcmToken,
+          isPushEnabled: true,
+          isUpdatingFCMToken: false,
+        },
+      },
+    },
+  });
+
+  it.each([true, false])(
+    'does not include the identity access token or FCM token (loggedIn: %s)',
+    (loggedIn) => {
+      const logs = generateStateLogs(buildState(), loggedIn);
+
+      expect(logs).not.toContain(accessToken);
+      expect(logs).not.toContain(fcmToken);
+      expect(logs).not.toContain('accessToken');
+      expect(logs).not.toContain('fcmToken');
+    },
+  );
+
+  it('keeps non-secret identity diagnostics', () => {
+    const { backgroundState: exported } = JSON.parse(
+      generateStateLogs(buildState()),
+    ).engine;
+
+    expect(exported.AuthenticationController).toStrictEqual({
+      isSignedIn: true,
+      sessionData: {
+        profile: {
+          identifierId: 'identifier-id',
+          profileId: 'profile-id',
+          metaMetricsId: 'metametrics-id',
+        },
+        token: { expiresIn: 3600, obtainedAt: 1700000000000 },
+      },
+    });
+    expect(exported.NotificationServicesPushController).toStrictEqual({
+      isPushEnabled: true,
+      isUpdatingFCMToken: false,
+    });
+  });
+
+  it('does not mutate the input state', () => {
+    const state = buildState();
+    generateStateLogs(state);
+
+    expect(
+      state.engine.backgroundState.AuthenticationController.sessionData.token
+        .accessToken,
+    ).toBe(accessToken);
+  });
+});
+
 describe('logs :: downloadStateLogs', () => {
   beforeEach(() => {
     jest.clearAllMocks();
