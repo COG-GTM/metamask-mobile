@@ -15,7 +15,10 @@ import {
 import { isPortfolioViewEnabled } from '../../../util/networks';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 
-const useTokenRatesPolling = ({ chainIds }: { chainIds?: Hex[] } = {}) => {
+// Starts/stops TokenRatesController polling without subscribing to its state.
+export const useTokenRatesPollingOnly = ({
+  chainIds,
+}: { chainIds?: Hex[] } = {}) => {
   // Selectors to determine polling input
   const networkConfigurationsPopularNetworks = useSelector(
     selectAllPopularNetworkConfigurations,
@@ -24,10 +27,6 @@ const useTokenRatesPolling = ({ chainIds }: { chainIds?: Hex[] } = {}) => {
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isAllNetworksSelected = useSelector(selectIsAllNetworks);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
-
-  // Selectors returning state updated by the polling
-  const contractExchangeRates = useSelector(selectContractExchangeRates);
-  const tokenMarketData = useSelector(selectTokenMarketData);
 
   // if all networks are selected, poll all popular networks
   const filteredChainIds =
@@ -53,6 +52,14 @@ const useTokenRatesPolling = ({ chainIds }: { chainIds?: Hex[] } = {}) => {
         ]
       : [],
   });
+};
+
+const useTokenRatesPolling = ({ chainIds }: { chainIds?: Hex[] } = {}) => {
+  useTokenRatesPollingOnly({ chainIds });
+
+  // Selectors returning state updated by the polling
+  const contractExchangeRates = useSelector(selectContractExchangeRates);
+  const tokenMarketData = useSelector(selectTokenMarketData);
 
   return {
     contractExchangeRates,

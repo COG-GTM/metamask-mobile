@@ -15,8 +15,9 @@ import {
 import { isPortfolioViewEnabled } from '../../../util/networks';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 
-// Polls native currency prices across networks.
-const useCurrencyRatePolling = () => {
+// Polls native currency prices across networks without subscribing to the
+// CurrencyRateController state.
+export const useCurrencyRatePollingOnly = () => {
   // Selectors to determine polling input
   const networkConfigurationsPopularNetworks = useSelector(
     selectAllPopularNetworkConfigurations,
@@ -28,10 +29,6 @@ const useCurrencyRatePolling = () => {
   const isAllNetworksSelected = useSelector(selectIsAllNetworks);
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
-
-  // Selectors returning state updated by the polling
-  const conversionRate = useSelector(selectConversionRate);
-  const currencyRates = useSelector(selectCurrencyRates);
 
   // if all networks are selected, poll all popular networks
   const networkConfigurationsToPoll =
@@ -63,6 +60,15 @@ const useCurrencyRatePolling = () => {
       ),
     input: isEvmSelected ? [{ nativeCurrencies }] : [],
   });
+};
+
+// Polls native currency prices across networks.
+const useCurrencyRatePolling = () => {
+  useCurrencyRatePollingOnly();
+
+  // Selectors returning state updated by the polling
+  const conversionRate = useSelector(selectConversionRate);
+  const currencyRates = useSelector(selectCurrencyRates);
 
   return {
     conversionRate,

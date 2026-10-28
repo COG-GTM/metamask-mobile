@@ -1,6 +1,10 @@
 import { renderHookWithProvider } from '../../../util/test/renderWithProvider';
 import Engine from '../../../core/Engine';
-import useTokenBalancesPolling from './useTokenBalancesPolling';
+import useTokenBalancesPolling, {
+  useTokenBalancesPollingOnly,
+} from './useTokenBalancesPolling';
+// eslint-disable-next-line import/no-namespace
+import * as tokenBalancesSelectors from '../../../selectors/tokenBalancesController';
 // eslint-disable-next-line import/no-namespace
 import * as networks from '../../../util/networks';
 import { RootState } from '../../../reducers';
@@ -223,5 +227,43 @@ describe('useTokenBalancesPolling', () => {
       Engine.context.TokenBalancesController,
     );
     expect(mockedTokenBalancesController.startPolling).toHaveBeenCalledTimes(0);
+  });
+
+  it('useTokenBalancesPollingOnly polls the same inputs without subscribing to token balances state', () => {
+    jest.spyOn(networks, 'isPortfolioViewEnabled').mockReturnValue(false);
+    const selectAllTokenBalancesSpy = jest.spyOn(
+      tokenBalancesSelectors,
+      'selectAllTokenBalances',
+    );
+
+    const { result, unmount } = renderHookWithProvider(
+      () => useTokenBalancesPollingOnly(),
+      { state },
+    );
+
+    const mockedTokenBalancesController = jest.mocked(
+      Engine.context.TokenBalancesController,
+    );
+    expect(result.current).toBeUndefined();
+    expect(mockedTokenBalancesController.startPolling).toHaveBeenCalledTimes(1);
+    expect(mockedTokenBalancesController.startPolling).toHaveBeenCalledWith({
+      chainId: selectedChainId,
+    });
+    expect(selectAllTokenBalancesSpy).not.toHaveBeenCalled();
+
+    unmount();
+    expect(
+      mockedTokenBalancesController.stopPollingByPollingToken,
+    ).toHaveBeenCalledTimes(1);
+
+    selectAllTokenBalancesSpy.mockRestore();
+  });
+
+  it('useTokenBalancesPolling still returns the token balances state', () => {
+    const { result } = renderHookWithProvider(() => useTokenBalancesPolling(), {
+      state,
+    });
+
+    expect(result.current.tokenBalances).toBeDefined();
   });
 });

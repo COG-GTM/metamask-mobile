@@ -1,6 +1,10 @@
 import { renderHookWithProvider } from '../../../util/test/renderWithProvider';
 import Engine from '../../../core/Engine';
-import useTokenListPolling from './useTokenListPolling';
+import useTokenListPolling, {
+  useTokenListPollingOnly,
+} from './useTokenListPolling';
+// eslint-disable-next-line import/no-namespace
+import * as tokenListSelectors from '../../../selectors/tokenListController';
 // eslint-disable-next-line import/no-namespace
 import * as networks from '../../../util/networks';
 import { RootState } from '../../../reducers';
@@ -190,5 +194,60 @@ describe('useTokenListPolling', () => {
       Engine.context.TokenListController,
     );
     expect(mockedTokenListController.startPolling).toHaveBeenCalledTimes(0);
+  });
+
+  it('useTokenListPollingOnly polls the same inputs without subscribing to token list state', () => {
+    const selectTokenListSpy = jest.spyOn(
+      tokenListSelectors,
+      'selectTokenList',
+    );
+    const selectERC20TokensByChainSpy = jest.spyOn(
+      tokenListSelectors,
+      'selectERC20TokensByChain',
+    );
+
+    const { result, unmount } = renderHookWithProvider(
+      () => useTokenListPollingOnly(),
+      { state },
+    );
+
+    const mockedTokenListController = jest.mocked(
+      Engine.context.TokenListController,
+    );
+    const calledAmount = networks.isPortfolioViewEnabled() ? 2 : 1;
+    expect(result.current).toBeUndefined();
+    expect(mockedTokenListController.startPolling).toHaveBeenCalledTimes(
+      calledAmount,
+    );
+    expect(mockedTokenListController.startPolling).toHaveBeenCalledWith({
+      chainId: selectedChainId,
+    });
+    expect(selectTokenListSpy).not.toHaveBeenCalled();
+    expect(selectERC20TokensByChainSpy).not.toHaveBeenCalled();
+
+    unmount();
+    expect(
+      mockedTokenListController.stopPollingByPollingToken,
+    ).toHaveBeenCalledTimes(calledAmount);
+
+    selectTokenListSpy.mockRestore();
+    selectERC20TokensByChainSpy.mockRestore();
+  });
+
+  it('useTokenListPolling still returns the token list state', () => {
+    const selectERC20TokensByChainSpy = jest.spyOn(
+      tokenListSelectors,
+      'selectERC20TokensByChain',
+    );
+
+    const { result } = renderHookWithProvider(() => useTokenListPolling(), {
+      state,
+    });
+
+    expect(result.current).toHaveProperty('tokenList');
+    expect(result.current).toHaveProperty('tokenListByChain');
+    expect(selectERC20TokensByChainSpy).toHaveBeenCalled();
+
+    selectERC20TokensByChainSpy.mockRestore();
   });
 });
