@@ -75,3 +75,47 @@ export const toPunycodeURL = (urlString: string) => {
     return urlString;
   }
 };
+
+const URL_SCHEME_REGEX = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
+const HOST_WITH_PORT_REGEX =
+  /^[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)+:\d+(?:[/?#]|$)/;
+
+/**
+ * Normalizes an untrusted URL (e.g. third-party NFT market data) and returns it
+ * only when it is an https URL with a hostname and no embedded credentials.
+ * Values without a scheme are treated as https hostnames/paths.
+ */
+export const getSafeHttpsUrl = (rawUrl?: unknown): string | undefined => {
+  if (typeof rawUrl !== 'string') {
+    return undefined;
+  }
+  const trimmed = rawUrl.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  let candidate = trimmed;
+  if (trimmed.startsWith('//')) {
+    candidate = `https:${trimmed}`;
+  } else if (
+    HOST_WITH_PORT_REGEX.test(trimmed) ||
+    !URL_SCHEME_REGEX.test(trimmed)
+  ) {
+    candidate = `https://${trimmed}`;
+  }
+
+  try {
+    const url = new URL(candidate);
+    if (
+      url.protocol !== 'https:' ||
+      !url.hostname ||
+      url.username ||
+      url.password
+    ) {
+      return undefined;
+    }
+    return url.href;
+  } catch {
+    return undefined;
+  }
+};

@@ -9,6 +9,12 @@ exports[`SimpleWebview should render correctly 1`] = `
   }
 >
   <WebView
+    onShouldStartLoadWithRequest={[Function]}
+    originWhitelist={
+      [
+        "*",
+      ]
+    }
     source={
       {
         "uri": "https://etherscan.io",

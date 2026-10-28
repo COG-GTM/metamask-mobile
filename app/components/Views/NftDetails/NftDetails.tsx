@@ -44,7 +44,8 @@ import { getDecimalChainId } from '../../../util/networks';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 import { renderShortText } from '../../../util/general';
-import { prefixUrlWithProtocol } from '../../../util/browser';
+import { getSafeHttpsUrl } from '../../../util/url';
+import { EXTERNAL_LINK_TYPE } from '../../../constants/browser';
 import { formatTimestampToYYYYMMDD } from '../../../util/date';
 import MAX_TOKEN_ID_LENGTH from './nftDetails.utils';
 import Engine from '../../../core/Engine';
@@ -110,28 +111,33 @@ const NftDetails = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chainId]);
 
-  const viewHighestFloorPriceSource = () => {
-    const url =
-      hasFloorAskPrice &&
-      Boolean(collectible?.collection?.floorAsk?.source?.url)
-        ? collectible?.collection?.floorAsk?.source?.url
-        : undefined;
+  // Marketplace URLs come from third-party NFT market data, so they are only
+  // opened as https URLs in the in-app browser (address bar, phishing check,
+  // deeplink prompt) rather than in SimpleWebview.
+  const highestFloorPriceSourceUrl = hasFloorAskPrice
+    ? getSafeHttpsUrl(collectible?.collection?.floorAsk?.source?.url)
+    : undefined;
 
-    navigation.navigate('Webview', {
-      screen: 'SimpleWebview',
-      params: { url },
-    });
-  };
+  const lastSalePriceSourceUrl = getSafeHttpsUrl(
+    collectible?.lastSale?.orderSource,
+  );
 
-  const viewLastSalePriceSource = () => {
-    const source = collectible?.lastSale?.orderSource;
-    if (source) {
-      const url = prefixUrlWithProtocol(source);
-      navigation.navigate('Webview', {
-        screen: 'SimpleWebview',
-        params: { url },
-      });
+  const topBidSourceUrl =
+    getSafeHttpsUrl(collectible?.topBid?.source?.url) ||
+    getSafeHttpsUrl(collectible?.collection?.topBid?.sourceDomain);
+
+  const openMarketplaceUrl = (url?: string) => {
+    if (!url) {
+      return;
     }
+    navigation.navigate(Routes.BROWSER_TAB_HOME, {
+      screen: Routes.BROWSER_VIEW,
+      params: {
+        newTabUrl: url,
+        linkType: EXTERNAL_LINK_TYPE,
+        timestamp: Date.now(),
+      },
+    });
   };
 
   const copyAddressToClipboard = async (address?: string) => {
@@ -216,12 +222,6 @@ const NftDetails = () => {
     }
     return `${topBidValue}${ticker}`;
   };
-
-  const getTopBidSourceDomain = () =>
-    collectible?.topBid?.source?.url ||
-    (collectible?.collection?.topBid?.sourceDomain
-      ? `https://${collectible?.collection.topBid?.sourceDomain}`
-      : undefined);
 
   const [numberOfLines, setNumberOfLines] = useState(0);
 
@@ -364,9 +364,12 @@ const NftDetails = () => {
                       : styles.generalInfoTitleTextStyle
                   }
                   icon={
-                    hasLastSalePrice && collectible?.lastSale?.orderSource ? (
+                    hasLastSalePrice && lastSalePriceSourceUrl ? (
                       <TouchableOpacity
-                        onPress={() => viewLastSalePriceSource()}
+                        testID="nft-details-last-sale-source"
+                        onPress={() =>
+                          openMarketplaceUrl(lastSalePriceSourceUrl)
+                        }
                       >
                         <Icon
                           name={IconName.Export}
@@ -398,9 +401,12 @@ const NftDetails = () => {
                       : styles.generalInfoTitleTextStyle
                   }
                   icon={
-                    hasFloorAskPrice ? (
+                    highestFloorPriceSourceUrl ? (
                       <TouchableOpacity
-                        onPress={() => viewHighestFloorPriceSource()}
+                        testID="nft-details-floor-price-source"
+                        onPress={() =>
+                          openMarketplaceUrl(highestFloorPriceSourceUrl)
+                        }
                       >
                         <Icon
                           name={IconName.Export}
@@ -610,14 +616,10 @@ const NftDetails = () => {
             titleStyle={styles.informationRowTitleStyle}
             valueStyle={styles.informationRowValueStyle}
             icon={
-              getTopBidSourceDomain() ? (
+              topBidSourceUrl ? (
                 <TouchableOpacity
-                  onPress={() => {
-                    navigation.navigate('Webview', {
-                      screen: 'SimpleWebview',
-                      params: { url: getTopBidSourceDomain() },
-                    });
-                  }}
+                  testID="nft-details-top-bid-source"
+                  onPress={() => openMarketplaceUrl(topBidSourceUrl)}
                 >
                   <Icon
                     name={IconName.Export}
