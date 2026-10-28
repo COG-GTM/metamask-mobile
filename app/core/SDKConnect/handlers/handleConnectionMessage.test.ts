@@ -5,6 +5,7 @@ import {
   CommunicationLayerMessage,
   MessageType,
 } from '@metamask/sdk-communication-layer';
+import AppConstants from '../../AppConstants';
 import Engine from '../../Engine';
 import { Connection } from '../Connection';
 import DevLogger from '../utils/DevLogger';
@@ -240,6 +241,72 @@ describe('handleConnectionMessage', () => {
           name: 'metamask-provider',
         },
       });
+    });
+  });
+
+  describe('QR code reconnection gate', () => {
+    beforeEach(() => {
+      connection.origin = AppConstants.DEEPLINKS.ORIGIN_QR_CODE;
+      connection.initialConnection = false;
+      connection.reconnectVerified = false;
+      mockCheckPermissions.mockResolvedValue(true);
+    });
+
+    it('rejects RPC requests when the reconnection failed OTP verification', async () => {
+      connection.receivedDisconnect = true;
+      connection.reconnectVerification = Promise.resolve(false);
+
+      await handleConnectionMessage({ message, engine: Engine, connection });
+
+      expect(mockCheckPermissions).not.toHaveBeenCalled();
+      expect(mockHandleCustomRpcCalls).not.toHaveBeenCalled();
+      expect(mockBackgroundBridgeOnMessage).not.toHaveBeenCalled();
+      expect(connection.isReady).not.toBe(true);
+      expect(mockHandleSendMessage).toHaveBeenCalledWith({
+        connection,
+        msg: {
+          data: {
+            error: expect.objectContaining({
+              message:
+                'Reconnection has not been re-authorized by the wallet user.',
+            }),
+            id: message.id,
+            jsonrpc: '2.0',
+          },
+          name: 'metamask-provider',
+        },
+      });
+    });
+
+    it('waits for a pending OTP verification before handling the request', async () => {
+      let resolveVerification: (value: boolean) => void = () => undefined;
+      connection.reconnectVerification = new Promise<boolean>((resolve) => {
+        resolveVerification = resolve;
+      });
+
+      const pending = handleConnectionMessage({
+        message,
+        engine: Engine,
+        connection,
+      });
+      await new Promise((resolve) => setImmediate(resolve));
+      expect(mockCheckPermissions).not.toHaveBeenCalled();
+
+      connection.reconnectVerified = true;
+      resolveVerification(true);
+      await pending;
+
+      expect(mockCheckPermissions).toHaveBeenCalledTimes(1);
+      expect(mockHandleCustomRpcCalls).toHaveBeenCalledTimes(1);
+    });
+
+    it('handles requests once the reconnection is verified', async () => {
+      connection.reconnectVerified = true;
+
+      await handleConnectionMessage({ message, engine: Engine, connection });
+
+      expect(mockCheckPermissions).toHaveBeenCalledTimes(1);
+      expect(mockHandleCustomRpcCalls).toHaveBeenCalledTimes(1);
     });
   });
 

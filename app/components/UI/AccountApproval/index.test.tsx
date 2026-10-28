@@ -1,8 +1,22 @@
 import React from 'react';
+import { fireEvent } from '@testing-library/react-native';
 import AccountApproval from '.';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
+import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
+import SDKConnect from '../../../core/SDKConnect/SDKConnect';
+
+jest.mock('../../../core/SDKConnect/SDKConnect', () => ({
+  __esModule: true,
+  default: {
+    getInstance: jest.fn(() => ({
+      getConnections: () => ({}),
+      removeChannel: jest.fn(),
+      invalidateChannel: jest.fn(),
+    })),
+  },
+}));
 
 jest.mock('react-native/Libraries/Linking/Linking', () => ({
   addEventListener: jest.fn(),
@@ -96,5 +110,84 @@ describe('AccountApproval', () => {
     // Need to await for the async phishing check to complete
     const warningText = await findByText('Deceptive site ahead');
     expect(warningText).toBeTruthy();
+  });
+
+  describe('QR code reconnection OTP', () => {
+    const mockRemoveChannel = jest.fn();
+    const otpPageInformation = {
+      icon: '',
+      url: 'https://dapp.example',
+      title: 'Example dapp',
+      origin: 'qr-code',
+      reconnect: true,
+      channelId: 'channel-1',
+      otps: [42, 7, 13],
+    };
+    const metrics = {
+      trackEvent: jest.fn(),
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      (SDKConnect.getInstance as jest.Mock).mockReturnValue({
+        getConnections: () => ({}),
+        removeChannel: mockRemoveChannel,
+        invalidateChannel: jest.fn(),
+      });
+    });
+
+    const renderOTP = (onConfirm: jest.Mock, onCancel: jest.Mock) =>
+      renderWithProvider(
+        <AccountApproval
+          currentPageInformation={otpPageInformation}
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+          metrics={metrics}
+          navigation={{ navigate: jest.fn() }}
+        />,
+        { state: mockInitialState },
+      );
+
+    it('shows the code choices and disables resume until one is picked', () => {
+      const { getByText, getByTestId } = renderOTP(jest.fn(), jest.fn());
+
+      expect(getByText('42')).toBeTruthy();
+      expect(getByText('7')).toBeTruthy();
+      expect(getByText('13')).toBeTruthy();
+      expect(
+        getByTestId(CommonSelectorsIDs.CONNECT_BUTTON).props.accessibilityState
+          ?.disabled ??
+          getByTestId(CommonSelectorsIDs.CONNECT_BUTTON).props.disabled,
+      ).toBe(true);
+    });
+
+    it('passes the chosen code to onConfirm when the right code is picked', () => {
+      const onConfirm = jest.fn();
+      const onCancel = jest.fn();
+      const { getByText, getByTestId } = renderOTP(onConfirm, onCancel);
+
+      fireEvent.press(getByText('42'));
+      fireEvent.press(getByTestId(CommonSelectorsIDs.CONNECT_BUTTON));
+
+      expect(onConfirm).toHaveBeenCalledWith(undefined, { otpChoice: 42 });
+      expect(onCancel).not.toHaveBeenCalled();
+      expect(mockRemoveChannel).not.toHaveBeenCalled();
+    });
+
+    it('rejects and removes the channel when a wrong code is picked', () => {
+      const onConfirm = jest.fn();
+      const onCancel = jest.fn();
+      const { getByText, getByTestId } = renderOTP(onConfirm, onCancel);
+
+      fireEvent.press(getByText('7'));
+      fireEvent.press(getByTestId(CommonSelectorsIDs.CONNECT_BUTTON));
+
+      expect(onConfirm).not.toHaveBeenCalled();
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(mockRemoveChannel).toHaveBeenCalledWith({
+        channelId: 'channel-1',
+        sendTerminate: true,
+      });
+    });
   });
 });

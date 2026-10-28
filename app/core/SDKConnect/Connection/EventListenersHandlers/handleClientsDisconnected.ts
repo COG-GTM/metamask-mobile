@@ -27,6 +27,8 @@ function handleClientsDisconnected({
       }
       instance.initialConnection = false;
       instance.otps = undefined;
+      instance.reconnectVerified = false;
+      instance.reconnectVerification = undefined;
     }
 
     // detect interruption of connection (can happen on mobile browser ios) - We need to warm the user to redo the connection.

@@ -22,6 +22,7 @@ import {
 import checkPermissions from './checkPermissions';
 import handleCustomRpcCalls from './handleCustomRpcCalls';
 import handleSendMessage from './handleSendMessage';
+import { assertQRReconnectionVerified } from './verifyQRReconnection';
 // eslint-disable-next-line
 const { version } = require('../../../../package.json');
 
@@ -132,6 +133,7 @@ export const handleConnectionMessage = async ({
   // Wait for bridge to be ready before handling messages.
   // It will wait until user accept/reject the connection request.
   try {
+    await assertQRReconnectionVerified(connection);
     await checkPermissions({ message, connection, engine });
     DevLogger.log(
       `[handleConnectionMessage] checkPermissions passed -- method=${
