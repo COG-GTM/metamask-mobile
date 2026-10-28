@@ -68,6 +68,7 @@ import {
   OLD_HOMEPAGE_URL_HOST,
   NOTIFICATION_NAMES,
   MM_MIXPANEL_TOKEN,
+  MAX_PENDING_BRIDGE_MESSAGES,
 } from './constants';
 import { regex } from '../../../../app/util/regex';
 import { selectEvmChainId } from '../../../selectors/networkController';
@@ -176,6 +177,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const resolvedUrlRef = useRef('');
   // Tracks currently loading URL to prevent phishing alerts when user navigates away from malicious sites before detection completes
   const loadingUrlRef = useRef('');
+  // Incremented on every onLoadStart so a slower, superseded navigation cannot install its bridge
+  const loadStartIdRef = useRef(0);
+  // Messages from a page whose origin has no bridge yet; flushed once its bridge is created
+  const pendingBridgeMessagesRef = useRef<
+    { origin: string; message: Record<string, unknown> }[]
+  >([]);
   const submittedUrlRef = useRef('');
   const titleRef = useRef<string>('');
   const iconRef = useRef<ImageSourcePropType | undefined>();
@@ -877,7 +884,18 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       if (dataParsed.name) {
-        backgroundBridgeRef.current?.onMessage(dataParsed);
+        const pageOrigin = new URLParse(nativeEvent.url ?? '').origin;
+        const bridge = backgroundBridgeRef.current;
+        if (bridge && bridge.url === pageOrigin) {
+          bridge.onMessage(dataParsed);
+          return;
+        }
+        // Never route a page's requests through a bridge bound to another origin
+        const pending = pendingBridgeMessagesRef.current;
+        if (pending.length >= MAX_PENDING_BRIDGE_MESSAGES) {
+          pending.shift();
+        }
+        pending.push({ origin: pageOrigin, message: dataParsed });
         return;
       }
     } catch (e: unknown) {
@@ -935,6 +953,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         isMainFrame,
       });
       backgroundBridgeRef.current = newBridge;
+
+      const pending = pendingBridgeMessagesRef.current;
+      pendingBridgeMessagesRef.current = [];
+      pending
+        .filter(({ origin }) => origin === urlBridge)
+        .forEach(({ message }) => newBridge.onMessage(message));
     },
     [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
   );
@@ -953,6 +977,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const onLoadStart = useCallback(
     async ({ nativeEvent }: WebViewNavigationEvent) => {
       loadingUrlRef.current = nativeEvent.url;
+      const loadStartId = ++loadStartIdRef.current;
 
       // Use URL to produce real url. This should be the actual website that the user is viewing.
       const { origin: urlOrigin } = new URLParse(nativeEvent.url);
@@ -966,6 +991,11 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       const isAllowed = await isAllowedOrigin(urlOrigin);
       if (!isAllowed) {
         handleNotAllowedUrl(urlOrigin); // should this be activeUrl.current instead of url?
+        return false;
+      }
+
+      // A newer navigation started while the phishing check was pending
+      if (loadStartId !== loadStartIdRef.current) {
         return false;
       }
 
