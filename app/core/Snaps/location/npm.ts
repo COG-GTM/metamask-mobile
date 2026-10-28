@@ -1,17 +1,32 @@
 /* eslint-disable import/prefer-default-export */
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import { VirtualFile } from '@metamask/snaps-utils';
-import { stringToBytes } from '@metamask/utils';
+import { assert, stringToBytes } from '@metamask/utils';
 import { NativeModules } from 'react-native';
 import ReactNativeBlobUtil, { FetchBlobResponse } from 'react-native-blob-util';
 import {
   BaseNpmLocation,
   getNpmCanonicalBasePath,
+  TARBALL_SIZE_SAFETY_LIMIT,
 } from '@metamask/snaps-controllers';
 
 const { RNTar } = NativeModules;
 
 const SNAPS_NPM_LOG_TAG = 'snaps/ NPM';
+
+// Keep in sync with the native RNTar extractors.
+export const TARBALL_ENTRY_LIMIT = 5000;
+
+const exceedsSizeLimit = (size: unknown) =>
+  Number(size) > TARBALL_SIZE_SAFETY_LIMIT;
+
+const getContentLength = (response: FetchBlobResponse): string | undefined => {
+  const headers: Record<string, string> = response.info()?.headers ?? {};
+  const key = Object.keys(headers).find(
+    (header) => header.toLowerCase() === 'content-length',
+  );
+  return key ? headers[key] : undefined;
+};
 
 const decompressFile = async (
   path: string,
@@ -51,6 +66,21 @@ const readAndParseAt = async (path: string) => {
   }
 };
 
+const assertExtractedSize = async (paths: string[]) => {
+  assert(
+    paths.length <= TARBALL_ENTRY_LIMIT,
+    `Snap tarball exceeds limit of ${TARBALL_ENTRY_LIMIT} files.`,
+  );
+  const stats = await Promise.all(
+    paths.map((path) => ReactNativeBlobUtil.fs.stat(path)),
+  );
+  const totalSize = stats.reduce((sum, { size }) => sum + Number(size), 0);
+  assert(
+    !exceedsSizeLimit(totalSize),
+    `Snap tarball exceeds limit of ${TARBALL_SIZE_SAFETY_LIMIT} bytes.`,
+  );
+};
+
 const fetchAndStoreNPMPackage = async (
   inputRequest: RequestInfo,
 ): Promise<string> => {
@@ -60,15 +90,42 @@ const fetchAndStoreNPMPackage = async (
     typeof inputRequest === 'string' ? inputRequest : inputRequest.url;
 
   try {
-    const response: FetchBlobResponse = await ReactNativeBlobUtil.config({
+    const task = ReactNativeBlobUtil.config({
       fileCache: true,
       path: filePath,
     }).fetch('GET', urlToFetch);
-    const dataPath = response.data;
-    const decompressedPath = await decompressFile(dataPath, targetDir);
-    // remove response file from cache
-    response.flush();
-    return decompressedPath;
+    let downloadTooLarge = false;
+    task.progress({ interval: 250 }, (received, total) => {
+      if (
+        !downloadTooLarge &&
+        (exceedsSizeLimit(received) || exceedsSizeLimit(total))
+      ) {
+        downloadTooLarge = true;
+        task.cancel();
+      }
+    });
+
+    let response: FetchBlobResponse | undefined;
+    try {
+      response = await task;
+      const dataPath = response.data;
+      const contentLength = getContentLength(response);
+      const { size } = await ReactNativeBlobUtil.fs.stat(dataPath);
+      assert(
+        !downloadTooLarge &&
+          !exceedsSizeLimit(contentLength) &&
+          !exceedsSizeLimit(size),
+        'Snap tarball exceeds size limit',
+      );
+      return await decompressFile(dataPath, targetDir);
+    } finally {
+      // remove response file from cache
+      if (response) {
+        response.flush();
+      } else {
+        ReactNativeBlobUtil.fs.unlink(filePath).catch(() => undefined);
+      }
+    }
   } catch (error) {
     throw new Error(
       `${SNAPS_NPM_LOG_TAG} fetchAndStoreNPMPackage failed to fetch with error: ${error}`,
@@ -93,10 +150,16 @@ export class NpmLocation extends BaseNpmLocation {
       tarballUrl.toString(),
     );
 
-    // Find all paths contained within the tarball
-    const paths = await findAllPaths(npmPackageDataLocation);
-
-    const files = await Promise.all(paths.map(readAndParseAt));
+    let files: { path: string; contents: Uint8Array }[];
+    try {
+      // Find all paths contained within the tarball
+      const paths = await findAllPaths(npmPackageDataLocation);
+      await assertExtractedSize(paths);
+      files = await Promise.all(paths.map(readAndParseAt));
+    } catch (error) {
+      await cleanupFileSystem(npmPackageDataLocation);
+      throw error;
+    }
 
     const canonicalBase = getNpmCanonicalBasePath(
       this.meta.registry,
