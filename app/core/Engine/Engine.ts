@@ -1450,13 +1450,26 @@ export class Engine {
       },
     );
 
+    // NetworkController state changes far more often than the selected
+    // network (metadata lookups for any client, config edits), so only query
+    // `net_version` when the selected network client changes, after a
+    // `networkWillChange`, or to retry after a failed lookup.
+    let networkIdNetworkClientId: string | undefined;
+
     this.controllerMessenger.subscribe(
       AppConstants.NETWORK_STATE_CHANGE_EVENT,
-      async () => {
+      async ({ selectedNetworkClientId }: NetworkState) => {
+        if (selectedNetworkClientId === networkIdNetworkClientId) {
+          return;
+        }
+        networkIdNetworkClientId = selectedNetworkClientId;
         try {
           const networkId = await deprecatedGetNetworkId();
           store.dispatch(networkIdUpdated(networkId));
         } catch (error) {
+          if (networkIdNetworkClientId === selectedNetworkClientId) {
+            networkIdNetworkClientId = undefined;
+          }
           console.error(
             error,
             `Network ID not changed, current chainId: ${getGlobalChainId(
@@ -1470,6 +1483,7 @@ export class Engine {
     this.controllerMessenger.subscribe(
       `${networkController.name}:networkWillChange`,
       () => {
+        networkIdNetworkClientId = undefined;
         store.dispatch(networkIdWillUpdate());
       },
     );
