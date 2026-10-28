@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
-- fix: refresh wallet NFT tab metadata only when the owned-NFT list changes, not on every re-render
+- fix: refresh wallet NFT tab metadata only when the owned-NFT list changes, not on every re-render ([#2014](https://github.com/COG-GTM/metamask-mobile/pull/2014))
 
 ### Added
 
