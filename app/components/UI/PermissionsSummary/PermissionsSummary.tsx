@@ -51,6 +51,9 @@ import { useNetworkInfo } from '../../../selectors/selectedNetworkController';
 import { ConnectedAccountsSelectorsIDs } from '../../../../e2e/selectors/Browser/ConnectedAccountModal.selectors';
 import { PermissionSummaryBottomSheetSelectorsIDs } from '../../../../e2e/selectors/Browser/PermissionSummaryBottomSheet.selectors';
 import { NetworkNonPemittedBottomSheetSelectorsIDs } from '../../../../e2e/selectors/Network/NetworkNonPemittedBottomSheet.selectors';
+import { ConnectAccountBottomSheetSelectorsIDs } from '../../../../e2e/selectors/Browser/ConnectAccountBottomSheet.selectors';
+import BannerAlert from '../../../component-library/components/Banners/Banner/variants/BannerAlert/BannerAlert';
+import { BannerAlertSeverity } from '../../../component-library/components/Banners/Banner';
 
 const PermissionsSummary = ({
   currentPageInformation,
@@ -72,6 +75,7 @@ const PermissionsSummary = ({
   networkAvatars = [],
   onAddNetwork = () => undefined,
   onChooseFromPermittedNetworks = () => undefined,
+  isOriginUnverified = false,
 }: PermissionsSummaryProps) => {
   const { colors } = useTheme();
   const { styles } = useStyles(styleSheet, { isRenderedAsBottomSheet });
@@ -384,8 +388,7 @@ const PermissionsSummary = ({
                     }
                     imageSource={
                       isNonDappNetworkSwitch
-                        ?
-                          getNetworkImageSource({
+                        ? getNetworkImageSource({
                             chainId,
                           })
                         : chainImage
@@ -444,6 +447,19 @@ const PermissionsSummary = ({
                   })}
             </TextComponent>
           </View>
+          {isOriginUnverified && (
+            <BannerAlert
+              severity={BannerAlertSeverity.Warning}
+              title={strings('accounts.unverified_origin_title')}
+              description={strings('accounts.unverified_origin_description', {
+                url: currentPageInformation.url,
+              })}
+              style={styles.unverifiedBanner}
+              testID={
+                ConnectAccountBottomSheetSelectorsIDs.UNVERIFIED_ORIGIN_BANNER
+              }
+            />
+          )}
           {isNonDappNetworkSwitch && (
             <TextComponent
               variant={TextVariant.BodyMD}
