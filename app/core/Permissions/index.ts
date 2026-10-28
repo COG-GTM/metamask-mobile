@@ -60,15 +60,20 @@ export const sortAccountsByLastSelected = (accounts: Hex[]) => {
   const internalAccounts: InternalAccount[] =
     Engine.context.AccountsController.listAccounts();
 
-  return accounts.sort((firstAddress, secondAddress) => {
-    const firstAccount = internalAccounts.find(
-      (internalAccount) =>
-        internalAccount.address.toLowerCase() === firstAddress.toLowerCase(),
-    );
+  const internalAccountsByAddress = new Map<string, InternalAccount>();
+  for (const internalAccount of internalAccounts) {
+    const address = internalAccount.address.toLowerCase();
+    if (!internalAccountsByAddress.has(address)) {
+      internalAccountsByAddress.set(address, internalAccount);
+    }
+  }
 
-    const secondAccount = internalAccounts.find(
-      (internalAccount) =>
-        internalAccount.address.toLowerCase() === secondAddress.toLowerCase(),
+  return accounts.sort((firstAddress, secondAddress) => {
+    const firstAccount = internalAccountsByAddress.get(
+      firstAddress.toLowerCase(),
+    );
+    const secondAccount = internalAccountsByAddress.get(
+      secondAddress.toLowerCase(),
     );
 
     if (!firstAccount) {
@@ -116,27 +121,23 @@ function getAccountsFromSubject(subject: any) {
   return [];
 }
 
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getSubjectByHostname(subjects: any, hostname: string) {
+  if (!subjects || !Object.prototype.hasOwnProperty.call(subjects, hostname)) {
+    return undefined;
+  }
+  return subjects[hostname];
+}
+
 export const getPermittedAccountsByHostname = (
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   state: any,
   hostname: string,
 ): string[] => {
-  const { subjects } = state;
-  const accountsByHostname = Object.keys(subjects).reduce(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc: any, subjectKey) => {
-      const accounts = getAccountsFromSubject(subjects[subjectKey]);
-      if (accounts.length > 0) {
-        acc[subjectKey] = accounts;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return accountsByHostname?.[hostname] || [];
+  const subject = getSubjectByHostname(state?.subjects, hostname);
+  return subject ? getAccountsFromSubject(subject) : [];
 };
 
 // TODO: Replace "any" with type
@@ -164,21 +165,8 @@ export const getPermittedChainIdsByHostname = (
   state: any,
   hostname: string,
 ): string[] => {
-  const { subjects } = state;
-  const chainIdsByHostname = Object.keys(subjects).reduce(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc: any, subjectKey) => {
-      const chainIds = getPermittedChainIdsFromSubject(subjects[subjectKey]);
-      if (chainIds.length > 0) {
-        acc[subjectKey] = chainIds;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return chainIdsByHostname?.[hostname] || [];
+  const subject = getSubjectByHostname(state?.subjects, hostname);
+  return subject ? getPermittedChainIdsFromSubject(subject) : [];
 };
 
 /**
