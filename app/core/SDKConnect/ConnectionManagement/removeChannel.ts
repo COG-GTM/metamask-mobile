@@ -6,8 +6,92 @@ import {
 import { store } from '../../../../app/store';
 import AppConstants from '../../../core/AppConstants';
 import Engine from '../../Engine';
+import { Connection } from '../Connection';
 import SDKConnect from '../SDKConnect';
 import DevLogger from '../utils/DevLogger';
+
+export const TERMINATE_TIMEOUT_MS = 3000;
+
+/**
+ * Asks the connection to send TERMINATE to the dapp (when `sendTerminate` is
+ * true) and to clean itself up, giving up after `TERMINATE_TIMEOUT_MS`.
+ * A timed-out attempt is left pending; the caller does not wait for it.
+ *
+ * @param params - The parameters.
+ * @param params.connection - The connection being removed.
+ * @param params.sendTerminate - Whether to send TERMINATE to the dapp.
+ * @returns True only if TERMINATE was delivered before the timeout.
+ */
+async function sendTerminateWithTimeout({
+  connection,
+  sendTerminate,
+}: {
+  connection: Connection;
+  sendTerminate: boolean;
+}): Promise<boolean> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<boolean>((resolve) => {
+    timeoutId = setTimeout(() => resolve(false), TERMINATE_TIMEOUT_MS);
+  });
+  try {
+    return await Promise.race([
+      connection.removeConnection({
+        terminate: sendTerminate,
+        context: 'SDKConnect::removeChannel',
+      }),
+      timeout,
+    ]);
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
+ * Best-effort close of a connection whose permissions were already revoked.
+ * Tries to notify the dapp; if that is not confirmed (offline dapp, relay
+ * failure, error or timeout), tears the remote down locally without sending
+ * a message so the session cannot be resumed with the old keys.
+ *
+ * @param params - The parameters.
+ * @param params.connection - The connection being removed.
+ * @param params.channelId - The channel id, for logging.
+ * @param params.sendTerminate - Whether to send TERMINATE to the dapp.
+ */
+async function closeConnection({
+  connection,
+  channelId,
+  sendTerminate,
+}: {
+  connection: Connection;
+  channelId: string;
+  sendTerminate: boolean;
+}) {
+  let terminated = false;
+  try {
+    terminated = await sendTerminateWithTimeout({ connection, sendTerminate });
+  } catch (err) {
+    console.error(`Can't remove connection ${channelId}`, err);
+  }
+
+  if (terminated) {
+    return;
+  }
+
+  // The dapp could not be told (offline, relay failure or timeout): tear the
+  // session down locally so it cannot be resumed with the old keys.
+  DevLogger.log(
+    `SDKConnect::removeChannel channelId=${channelId} sendTerminate=${sendTerminate} terminated=false, closing locally`,
+  );
+  try {
+    connection.backgroundBridge?.onDisconnect();
+    connection.isReady = false;
+    connection.lastAuthorized = 0;
+    connection.authorizedSent = false;
+    await connection.remote.disconnect({ terminate: true, sendMessage: false });
+  } catch (err) {
+    console.error(`Can't close connection ${channelId}`, err);
+  }
+}
 
 async function removeChannel({
   channelId,
@@ -22,10 +106,11 @@ async function removeChannel({
 }): Promise<boolean> {
   // check if it is an android sdk connection, if it doesn't belong to regular connections
   const isDappConnection = instance.state.connections[channelId] === undefined;
+  const connection = instance.state.connected[channelId];
 
   DevLogger.log(
-    `SDKConnect::removeChannel ${channelId} sendTerminate=${sendTerminate} isDappConnection=${isDappConnection} connectedted=${
-      instance.state.connected[channelId] !== undefined
+    `SDKConnect::removeChannel ${channelId} sendTerminate=${sendTerminate} isDappConnection=${isDappConnection} connected=${
+      connection !== undefined
     }`,
   );
 
@@ -34,21 +119,8 @@ async function removeChannel({
     instance.state.deeplinkingService?.removeConnection(channelId);
   }
 
-  if (instance.state.connected[channelId]) {
-    try {
-      const terminated = await instance.state.connected[channelId].removeConnection({
-        terminate: true,
-        context: 'SDKConnect::removeChannel',
-      });
-      if(!terminated) {
-        DevLogger.log(`SDKConnect::removeChannel channelId=${channelId} terminated=${terminated} try again later`);
-        // don't delete channel, try again later
-        return terminated;
-      }
-    } catch (err) {
-      console.error(`Can't remove connection ${channelId}`, err);
-    }
-  }
+  // Revoke locally before notifying the dapp, so a dapp that cannot be
+  // reached keeps neither its session nor its permissions.
   delete instance.state.connected[channelId];
   delete instance.state.connections[channelId];
   delete instance.state.approvedHosts[
@@ -75,6 +147,14 @@ async function removeChannel({
     if (permissionsController.getPermissions(channelId)) {
       permissionsController.revokeAllPermissions(channelId);
     }
+  }
+
+  if (connection) {
+    await closeConnection({
+      connection,
+      channelId,
+      sendTerminate: Boolean(sendTerminate),
+    });
   }
 
   return true;
