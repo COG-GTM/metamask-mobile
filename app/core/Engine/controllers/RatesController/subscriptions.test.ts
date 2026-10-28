@@ -40,8 +40,8 @@ const setup = (fiatCurrency = 'usd') => {
   };
   setupCurrencyRateSync(
     messenger.getRestricted({
-      name: 'CurrencyRateController',
-      allowedActions: [] as never[],
+      name: 'RatesController',
+      allowedActions: [],
       allowedEvents: ['CurrencyRateController:stateChange'],
     }) as unknown as Parameters<typeof setupCurrencyRateSync>[0],
     ratesController as unknown as RatesController,
