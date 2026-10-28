@@ -21,7 +21,10 @@ import { RpcEndpointType } from '@metamask/network-controller';
 import { selectShouldUseSmartTransaction } from '../../../selectors/smartTransactionsController';
 import { useSwapsSmartTransaction } from './utils/useSwapsSmartTransaction';
 import { query } from '@metamask/controller-utils';
-import { TransactionStatus } from '@metamask/transaction-controller';
+import {
+  TransactionStatus,
+  TransactionType,
+} from '@metamask/transaction-controller';
 
 jest.mock('../../../util/networks/global-network', () => ({
   ...jest.requireActual('../../../util/networks/global-network'),
@@ -424,6 +427,44 @@ describe('QuotesView', () => {
 
       // Verify submitSwapsSmartTransaction was not called
       expect(mockSubmitSwapsSmartTransaction).not.toHaveBeenCalled();
+    });
+  });
+
+  it('marks the trade transaction with the Swaps origin and swap type', async () => {
+    const state = merge({}, mockInitialState);
+    jest.mocked(query).mockResolvedValueOnce(123).mockResolvedValueOnce({
+      timestamp: 1234,
+    });
+    const addTransactionSpy = jest
+      .spyOn(Engine.context.TransactionController, 'addTransaction')
+      .mockResolvedValue({
+        result: Promise.resolve('mock-tx-hash'),
+        transactionMeta: {
+          id: 'mock-id',
+          networkClientId: 'mock-network-id',
+          time: Date.now(),
+          chainId: '0x1',
+          status: 'submitted' as TransactionStatus,
+          txParams: { from: '0x0', to: '0x1', value: '0x0' },
+        },
+      });
+
+    const wrapper = render(QuotesView, state);
+    const swapButton = await wrapper.findByTestId(
+      SwapsViewSelectors.SWAP_BUTTON,
+    );
+    act(() => {
+      fireEvent.press(swapButton);
+    });
+
+    await waitFor(() => {
+      expect(addTransactionSpy).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.objectContaining({
+          origin: process.env.MM_FOX_CODE,
+          type: TransactionType.swap,
+        }),
+      );
     });
   });
 
