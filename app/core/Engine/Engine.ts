@@ -68,7 +68,11 @@ import {
   LedgerMobileBridge,
   LedgerTransportMiddleware,
 } from '@metamask/eth-ledger-bridge-keyring';
-import { Encryptor, LEGACY_DERIVATION_OPTIONS, pbkdf2 } from '../Encryptor';
+import {
+  Encryptor,
+  DERIVATION_OPTIONS_MINIMUM_OWASP2023,
+  pbkdf2,
+} from '../Encryptor';
 import { getDecimalChainId, isTestNet } from '../../util/networks';
 import {
   fetchEstimatedMultiLayerL1Fee,
@@ -208,8 +212,10 @@ import { toFormattedAddress } from '../../util/address';
 
 const NON_EMPTY = 'NON_EMPTY';
 
+// Vaults written with weaker KDF params are re-encrypted with these on the
+// next password unlock (see `Encryptor.isVaultUpdated`).
 const encryptor = new Encryptor({
-  keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
+  keyDerivationOptions: DERIVATION_OPTIONS_MINIMUM_OWASP2023,
 });
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
