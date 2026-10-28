@@ -65,6 +65,10 @@ describe('isSecretKeyMaterial', () => {
     ['raw private key', PRIVATE_KEY],
     ['0x private key', `0x${PRIVATE_KEY}`],
     ['private key with whitespace', ` ${PRIVATE_KEY}\n`],
+    ['labelled mnemonic', `Secret Recovery Phrase: ${VALID_12}`],
+    ['mnemonic in JSON', JSON.stringify({ mnemonic: VALID_24, v: 1 })],
+    ['labelled private key', `Private key: 0x${PRIVATE_KEY}`],
+    ['private key in JSON', JSON.stringify({ privateKey: PRIVATE_KEY })],
     [
       'extended private key',
       'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi',
@@ -78,6 +82,10 @@ describe('isSecretKeyMaterial', () => {
     ['ethereum URI', 'ethereum:0x29c76e6ad8f28bb1004902578fb108c507be341b@1'],
     ['url', 'https://metamask.io'],
     ['plain text', 'hello world'],
+    [
+      'english sentence',
+      'Please scan this code to verify your ticket for the concert tonight',
+    ],
     ['11 mnemonic words', VALID_12.split(' ').slice(0, 11).join(' ')],
     [
       '12 words with an invalid checksum',

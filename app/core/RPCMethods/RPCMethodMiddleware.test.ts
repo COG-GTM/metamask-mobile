@@ -1793,6 +1793,20 @@ describe('getRpcMethodMiddleware', () => {
       expect((response as JsonRpcFailure).error.code).toBe(-32602);
       expect(navigate).not.toHaveBeenCalled();
     });
+
+    it('rejects object-shaped params before opening the scanner', async () => {
+      const { navigate, responsePromise } = setupScan({ 0: '^0x' });
+      const response = await responsePromise;
+      expect((response as JsonRpcFailure).error.code).toBe(-32602);
+      expect(navigate).not.toHaveBeenCalled();
+    });
+
+    it('rejects a catastrophic-backtracking pattern before opening the scanner', async () => {
+      const { navigate, responsePromise } = setupScan(['^(a+)+$']);
+      const response = await responsePromise;
+      expect((response as JsonRpcFailure).error.code).toBe(-32602);
+      expect(navigate).not.toHaveBeenCalled();
+    });
   });
 
   describe('originThrottling', () => {

@@ -844,9 +844,7 @@ export const getRpcMethodMiddleware = ({
 
         wallet_scanQRCode: async () => {
           checkTabActive();
-          const matcher = buildScanQRCodeMatcher(
-            Array.isArray(req.params) ? req.params[0] : undefined,
-          );
+          const matcher = buildScanQRCodeMatcher(req.params);
           await new Promise<void>((resolve, reject) => {
             navigation.navigate(Routes.QR_TAB_SWITCHER, {
               dappOrigin: hostname,

@@ -45,12 +45,47 @@ export const parseSeedPhrase = (seedPhrase: string): string =>
 export const { isValidMnemonic } = ethers.utils;
 
 const RAW_PRIVATE_KEY_REGEX = /^(0x)?[0-9a-f]{64}$/iu;
-const EXTENDED_PRIVATE_KEY_REGEX = /^[tuvxyz]prv[1-9A-HJ-NP-Za-km-z]{100,}$/u;
+const EMBEDDED_PRIVATE_KEY_REGEX = /(?:^|[^0-9a-z])(?:0x)?[0-9a-f]{64}(?![0-9a-z])/iu;
+const EXTENDED_PRIVATE_KEY_REGEX = /[tuvxyz]prv[1-9A-HJ-NP-Za-km-z]{100,}/u;
 const NUMBER_ONLY_REGEX = /^\d+$/u;
+const MNEMONIC_LENGTHS = [12, 15, 18, 21, 24];
 
 /**
- * Whether QR content is secret key material: a Secret Recovery Phrase
- * (optionally numbered or oddly spaced), a raw private key or an extended private key.
+ * Whether the text contains a BIP-39 (English) mnemonic anywhere, e.g. wrapped
+ * in labels ("Secret Recovery Phrase: ..."), JSON or numbered lists.
+ *
+ * @param text - Text to inspect.
+ * @returns True if any run of consecutive wordlist words forms a valid mnemonic.
+ */
+const containsMnemonic = (text: string): boolean => {
+  const tokens = text.toLowerCase().split(/[^a-z]+/u).filter(Boolean);
+  const runs: string[][] = [];
+  let run: string[] = [];
+  for (const token of tokens) {
+    if (ethers.wordlists.en.getWordIndex(token) !== -1) {
+      run.push(token);
+    } else {
+      runs.push(run);
+      run = [];
+    }
+  }
+  runs.push(run);
+  return runs.some((words) =>
+    MNEMONIC_LENGTHS.some((length) => {
+      for (let start = 0; start + length <= words.length; start++) {
+        if (isValidMnemonic(words.slice(start, start + length).join(' '))) {
+          return true;
+        }
+      }
+      return false;
+    }),
+  );
+};
+
+/**
+ * Whether QR content contains secret key material: a Secret Recovery Phrase
+ * (bare, numbered, labelled or oddly spaced), a raw private key or an extended
+ * private key.
  *
  * @param content - Raw scanned text.
  * @returns True if the content must be treated as a wallet secret.
@@ -62,6 +97,7 @@ export const isSecretKeyMaterial = (content: string): boolean => {
   const trimmed = content.trim();
   if (
     RAW_PRIVATE_KEY_REGEX.test(trimmed) ||
+    EMBEDDED_PRIVATE_KEY_REGEX.test(trimmed) ||
     EXTENDED_PRIVATE_KEY_REGEX.test(trimmed)
   ) {
     return true;
@@ -70,7 +106,10 @@ export const isSecretKeyMaterial = (content: string): boolean => {
     .split(' ')
     .filter((word) => !NUMBER_ONLY_REGEX.test(word))
     .join(' ');
-  return !failedSeedPhraseRequirements(words) && isValidMnemonic(words);
+  return (
+    (!failedSeedPhraseRequirements(words) && isValidMnemonic(words)) ||
+    containsMnemonic(trimmed)
+  );
 };
 
 /**

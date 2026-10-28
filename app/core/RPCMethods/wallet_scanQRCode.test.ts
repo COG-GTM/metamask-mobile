@@ -2,6 +2,7 @@ import {
   buildScanQRCodeMatcher,
   getScanQRCodeError,
   getScanQRCodeResult,
+  MAX_SCAN_QR_CODE_MATCH_LENGTH,
   MAX_SCAN_QR_CODE_PATTERN_LENGTH,
   SCAN_QR_CODE_USER_CANCELLED,
   SCAN_QR_CODE_WALLET_ONLY_CONTENT,
@@ -16,11 +17,48 @@ const ADDRESS = '0x29c76e6ad8f28bb1004902578fb108c507be341b';
 describe('buildScanQRCodeMatcher', () => {
   it('returns undefined when no pattern is provided', () => {
     expect(buildScanQRCodeMatcher(undefined)).toBeUndefined();
-    expect(buildScanQRCodeMatcher(null)).toBeUndefined();
+    expect(buildScanQRCodeMatcher([])).toBeUndefined();
+    expect(buildScanQRCodeMatcher([undefined])).toBeUndefined();
+    expect(buildScanQRCodeMatcher([null])).toBeUndefined();
   });
 
-  it('compiles a string pattern', () => {
-    expect(buildScanQRCodeMatcher('^0x')?.test(ADDRESS)).toBe(true);
+  it.each([
+    '^0x',
+    '^0x[0-9a-fA-F]{40}$',
+    '^ethereum:.*',
+    '^https?://.+',
+    '^(ethereum|bitcoin):',
+    '^[a-z0-9.]+@example\\.com$',
+  ])('compiles the simple pattern %s', (pattern) => {
+    expect(buildScanQRCodeMatcher([pattern])).toBeInstanceOf(RegExp);
+  });
+
+  it('matches with the compiled pattern', () => {
+    expect(buildScanQRCodeMatcher(['^0x'])?.test(ADDRESS)).toBe(true);
+  });
+
+  it('rejects object-shaped params instead of ignoring the filter', () => {
+    expect(() => buildScanQRCodeMatcher({ 0: '^0x' })).toThrow(
+      expect.objectContaining({ code: -32602 }),
+    );
+  });
+
+  it.each([
+    ['nested quantifier', '^(a+)+$'],
+    ['nested star', '(a*)*b'],
+    ['quantified alternation', '^(a|aa)+$'],
+    ['quantified group with inner quantifier', '(?:x\\d+)*y'],
+    ['backreference', '(a)\\1'],
+    ['named backreference', '(?<x>a)\\k<x>'],
+    ['lookahead', 'a(?=b)'],
+    ['negative lookbehind', '(?<!a)b'],
+    ['polynomial backtracking', '\\d*\\d*\\d*x'],
+    ['two unbounded quantifiers', 'a.*b.*c'],
+    ['large bounded ranges', 'a{0,500}a{0,500}b'],
+  ])('rejects a %s pattern with invalid params', (_, pattern) => {
+    expect(() => buildScanQRCodeMatcher([pattern])).toThrow(
+      expect.objectContaining({ code: -32602 }),
+    );
   });
 
   it.each([
@@ -29,7 +67,7 @@ describe('buildScanQRCodeMatcher', () => {
     ['an over-long string', 'a'.repeat(MAX_SCAN_QR_CODE_PATTERN_LENGTH + 1)],
     ['an invalid regular expression', '('],
   ])('rejects %s with invalid params', (_, pattern) => {
-    expect(() => buildScanQRCodeMatcher(pattern)).toThrow(
+    expect(() => buildScanQRCodeMatcher([pattern])).toThrow(
       expect.objectContaining({ code: -32602 }),
     );
   });
@@ -89,6 +127,24 @@ describe('getScanQRCodeResult', () => {
     }
     expect(thrown).toMatchObject({ message: 'NO_REGEX_MATCH' });
     expect(JSON.stringify(thrown)).not.toContain('hello');
+  });
+
+  it('rejects a labelled recovery phrase', () => {
+    const text = `Secret Recovery Phrase: ${MNEMONIC}`;
+    expect(() =>
+      getScanQRCodeResult({ content: text }, text, undefined),
+    ).toThrow(expect.objectContaining({ code: 4100 }));
+  });
+
+  it('does not run the dapp pattern on over-long content', () => {
+    const text = `0x${'a'.repeat(MAX_SCAN_QR_CODE_MATCH_LENGTH)}`;
+    const matcher = /^0x/u;
+    const exec = jest.spyOn(matcher, 'exec');
+    expect(() => getScanQRCodeResult({ content: text }, text, matcher)).toThrow(
+      expect.objectContaining({ message: 'NO_REGEX_MATCH' }),
+    );
+    expect(exec).not.toHaveBeenCalled();
+    expect(getScanQRCodeResult({ content: text }, text, undefined)).toBe(text);
   });
 
   it('rejects when there is no scanned text', () => {
