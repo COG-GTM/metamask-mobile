@@ -55,6 +55,7 @@ import {
 import Logger from '../../util/Logger';
 import { handleMethodData } from '../../util/transaction-controller';
 import EthQuery from '@metamask/eth-query';
+import { createSelector } from 'reselect';
 
 const { SAI_ADDRESS } = AppConstants;
 
@@ -634,6 +635,15 @@ export function getNormalizedTxState(state) {
     ? { ...state.transaction, ...state.transaction.transaction }
     : undefined;
 }
+
+/**
+ * Memoized getNormalizedTxState: returns the same object until state.transaction changes,
+ * so connected components don't re-render on unrelated dispatches.
+ */
+export const selectNormalizedTxState = createSelector(
+  (state) => state.transaction,
+  (transaction) => getNormalizedTxState({ transaction }),
+);
 
 export const getActiveTabUrl = ({ browser = {} }) =>
   browser.tabs &&

@@ -39,6 +39,8 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  getNormalizedTxState,
+  selectNormalizedTxState,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
@@ -1214,7 +1216,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1222,7 +1224,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx2', mockTransactionController);
-    
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1232,7 +1234,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1240,7 +1242,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('nonexistent', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1254,47 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
+  });
+});
+
+describe('Transactions utils :: selectNormalizedTxState', () => {
+  const transactionState = {
+    id: 'tx1',
+    chainId: '0x1',
+    transaction: { from: '0xfrom', to: '0xto', gas: '0x5208' },
+  };
+
+  it('returns the same shape as getNormalizedTxState', () => {
+    const state = { transaction: transactionState };
+    expect(selectNormalizedTxState(state)).toStrictEqual(
+      getNormalizedTxState(state),
+    );
+  });
+
+  it('returns undefined when there is no transaction state', () => {
+    expect(selectNormalizedTxState({ transaction: undefined })).toBeUndefined();
+  });
+
+  it('returns the same reference while state.transaction is unchanged', () => {
+    const first = selectNormalizedTxState({
+      transaction: transactionState,
+      engine: { backgroundState: { a: 1 } },
+    });
+    const second = selectNormalizedTxState({
+      transaction: transactionState,
+      engine: { backgroundState: { a: 2 } },
+    });
+    expect(second).toBe(first);
+  });
+
+  it('returns a new object when state.transaction changes', () => {
+    const first = selectNormalizedTxState({ transaction: transactionState });
+    const second = selectNormalizedTxState({
+      transaction: { ...transactionState, id: 'tx2' },
+    });
+    expect(second).not.toBe(first);
+    expect(second?.id).toBe('tx2');
   });
 });
