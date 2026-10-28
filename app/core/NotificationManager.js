@@ -116,6 +116,11 @@ class NotificationManager {
 
   _transactionSpeedupListener;
 
+  /**
+   * Smart transaction event handlers keyed by watched transaction id
+   */
+  _smartTransactionListeners = {};
+
   _handleAppStateChange = (appState) => {
     this._backgroundMode = appState === 'background';
   };
@@ -139,6 +144,26 @@ class NotificationManager {
     Engine.controllerMessenger.tryUnsubscribe(
       'TransactionController:speedupTransactionAdded',
       this._transactionSpeedupListener,
+    );
+  };
+
+  _removeSmartTransactionListener = (transactionId) => {
+    const listener = this._smartTransactionListeners[transactionId];
+    if (!listener) return;
+    delete this._smartTransactionListeners[transactionId];
+    Engine.controllerMessenger.tryUnsubscribe(
+      'SmartTransactionsController:smartTransaction',
+      listener,
+    );
+  };
+
+  /**
+   * Removes the smart transaction listeners of every transaction watched
+   * under the given nonce (the original and any speed-ups of it)
+   */
+  _removeSmartTransactionListenersForNonce = (nonce) => {
+    (this._transactionsWatchTable[nonce] || []).forEach((id) =>
+      this._removeSmartTransactionListener(id),
     );
   };
 
@@ -195,6 +220,9 @@ class NotificationManager {
         });
         // Clean up
         this._removeListeners(transactionMeta.id);
+        this._removeSmartTransactionListenersForNonce(
+          transactionMeta.txParams.nonce,
+        );
         delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
       }, 2000);
   };
@@ -250,6 +278,9 @@ class NotificationManager {
         ReviewManager.promptReview();
 
         this._removeListeners(transactionMeta.id);
+        this._removeSmartTransactionListenersForNonce(
+          transactionMeta.txParams.nonce,
+        );
         delete this._transactionsWatchTable[transactionMeta.txParams.nonce];
       }, 2000);
   };
@@ -387,36 +418,27 @@ class NotificationManager {
         (transactionMeta) => transactionMeta.id === transaction.id,
       );
 
-    const smartTransactionListener = async (smartTransaction) => {
-      if (smartTransaction.status === SmartTransactionStatuses.PENDING) {
-        return;
-      }
-      Engine.controllerMessenger.unsubscribe(
+    this._removeSmartTransactionListener(transactionMeta.id);
+    this._smartTransactionListeners[transactionMeta.id] =
+      Engine.controllerMessenger.subscribeOnceIf(
         'SmartTransactionsController:smartTransaction',
-        smartTransactionListener,
+        (smartTransaction) => {
+          delete this._smartTransactionListeners[transactionMeta.id];
+          if (smartTransaction.status !== SmartTransactionStatuses.CANCELLED) {
+            // If the smart transaction is not cancelled, notifications are already handled.
+            return;
+          }
+          this._showNotification({
+            type: 'cancelled',
+            autoHide: true,
+            transaction: { id: smartTransaction.transactionId },
+            duration: 5000,
+          });
+        },
+        (smartTransaction) =>
+          smartTransaction.transactionId === transactionMeta.id &&
+          smartTransaction.status !== SmartTransactionStatuses.PENDING,
       );
-      if (smartTransaction.status !== SmartTransactionStatuses.CANCELLED) {
-        // If the smart transaction is not cancelled, notifications are already handled.
-        return;
-      }
-      const transactions = TransactionController.getTransactions({
-        filterToCurrentNetwork: false,
-      });
-      const foundTransaction = transactions.find(
-        (tx) => tx.id === smartTransaction.transactionId,
-      );
-      this._showNotification({
-        type: 'cancelled',
-        autoHide: true,
-        transaction: { id: foundTransaction?.id },
-        duration: 5000,
-      });
-    };
-
-    Engine.controllerMessenger.subscribe(
-      'SmartTransactionsController:smartTransaction',
-      smartTransactionListener,
-    );
   }
 
   /**
