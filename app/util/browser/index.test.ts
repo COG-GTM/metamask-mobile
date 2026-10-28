@@ -5,6 +5,7 @@ import {
   trustedProtocolToDeeplink,
   getProtocolNavigationAction,
   browserWebViewOriginWhitelist,
+  handleProtocolNavigation,
   prefixUrlWithProtocol,
   getUrlObj,
   getHost,
@@ -12,7 +13,7 @@ import {
   processUrlForBrowser,
 } from '.';
 import { strings } from '../../../locales/i18n';
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import URLParse from 'url-parse';
 import { createOnShouldStartLoadWithRequest } from '@metamask/react-native-webview/src/WebViewShared';
 
@@ -252,26 +253,41 @@ describe('Browser utils :: getProtocolNavigationAction', () => {
   });
 });
 
-describe('Browser utils :: browserWebViewOriginWhitelist', () => {
-  const navigate = (originWhitelist: readonly string[], url: string) => {
-    const onShouldStartLoadWithRequest = jest.fn(() => false);
+describe('Browser utils :: browserWebViewOriginWhitelist + handleProtocolNavigation', () => {
+  type AlertButtons = { text: string; onPress: () => void }[];
+
+  const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
+
+  let alertSpy: jest.SpyInstance;
+  let canOpenURLSpy: jest.SpyInstance;
+  let openURLSpy: jest.SpyInstance;
+
+  // Drives the real WebView library request filter with the browser handler
+  const navigate = (
+    url: string,
+    originWhitelist = browserWebViewOriginWhitelist,
+  ) => {
     const loadRequest = jest.fn();
     createOnShouldStartLoadWithRequest(
       loadRequest,
       originWhitelist,
-      onShouldStartLoadWithRequest,
+      ({ url: requestUrl }) => handleProtocolNavigation(requestUrl),
     )({
       nativeEvent: { url, lockIdentifier: 1 },
     } as unknown as Parameters<ReturnType<typeof createOnShouldStartLoadWithRequest>>[0]);
-    return { onShouldStartLoadWithRequest, loadRequest };
+    return loadRequest;
   };
 
-  let canOpenURLSpy: jest.SpyInstance;
-  let openURLSpy: jest.SpyInstance;
+  const pressAlertButton = (text: string) => {
+    const buttons = alertSpy.mock.calls[0][2] as AlertButtons;
+    buttons.find((button) => button.text === text)?.onPress();
+  };
 
   beforeEach(() => {
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     canOpenURLSpy = jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true);
     openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    alertSpy.mockClear();
     canOpenURLSpy.mockClear();
     openURLSpy.mockClear();
   });
@@ -286,27 +302,68 @@ describe('Browser utils :: browserWebViewOriginWhitelist', () => {
     'facetime:+15555550123',
     'itms-apps://apps.apple.com/app/id1',
     'otherwallet://connect?uri=wc:abc',
-    // eslint-disable-next-line no-script-url
-    'javascript:alert(1)',
-    'https://meta.io',
-    'about:srcdoc',
   ])(
-    'routes %s to onShouldStartLoadWithRequest instead of opening it',
+    'prompts and opens nothing for %s until the user allows it',
     async (url) => {
-      const { onShouldStartLoadWithRequest, loadRequest } = navigate(
-        browserWebViewOriginWhitelist,
-        url,
-      );
-      await Promise.resolve();
+      const loadRequest = navigate(url);
+      await flushPromises();
 
-      expect(onShouldStartLoadWithRequest).toHaveBeenCalledWith(
-        expect.objectContaining({ url }),
-      );
       expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+      expect(alertSpy).toHaveBeenCalledTimes(1);
+      expect(alertSpy.mock.calls[0][0]).toBe(
+        strings('onboarding.warning_title'),
+      );
       expect(canOpenURLSpy).not.toHaveBeenCalled();
       expect(openURLSpy).not.toHaveBeenCalled();
     },
   );
+
+  it('opens the URL only after the user taps Allow', async () => {
+    const url = 'sms:+15555550123?body=test';
+    navigate(url);
+
+    pressAlertButton(strings('browser.protocol_alert_options.ignore'));
+    await flushPromises();
+    expect(openURLSpy).not.toHaveBeenCalled();
+
+    pressAlertButton(strings('browser.protocol_alert_options.allow'));
+    await flushPromises();
+    expect(canOpenURLSpy).toHaveBeenCalledWith(url);
+    expect(openURLSpy).toHaveBeenCalledWith(url);
+  });
+
+  it.each(['https://meta.io', 'about:srcdoc'])('loads %s', async (url) => {
+    const loadRequest = navigate(url);
+    await flushPromises();
+
+    expect(loadRequest).toHaveBeenCalledWith(true, url, 1);
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(openURLSpy).not.toHaveBeenCalled();
+  });
+
+  it('deeplinks trusted protocols without a prompt', async () => {
+    const url = 'metamask://dapp/portfolio.metamask.io';
+    const loadRequest = navigate(url);
+    await flushPromises();
+
+    expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(openURLSpy).toHaveBeenCalledWith(url);
+  });
+
+  it.each([
+    // eslint-disable-next-line no-script-url
+    'javascript:alert(1)',
+    'data:text/html,<script>alert(1)</script>',
+  ])('blocks %s without prompting or opening it', async (url) => {
+    const loadRequest = navigate(url);
+    await flushPromises();
+
+    expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(canOpenURLSpy).not.toHaveBeenCalled();
+    expect(openURLSpy).not.toHaveBeenCalled();
+  });
 });
 
 describe('Browser utils :: trustedProtocolToDeeplink', () => {
