@@ -135,6 +135,8 @@ describe('getSafeHttpsUrl', () => {
     ['opensea.io', 'https://opensea.io/'],
     ['//blur.io/collections', 'https://blur.io/collections'],
     ['  https://magiceden.io  ', 'https://magiceden.io/'],
+    ['market.example:8443/assets/1', 'https://market.example:8443/assets/1'],
+    ['market.example:8443', 'https://market.example:8443/'],
   ])('returns an https URL for %p', (input, expected) => {
     expect(getSafeHttpsUrl(input)).toBe(expected);
   });
