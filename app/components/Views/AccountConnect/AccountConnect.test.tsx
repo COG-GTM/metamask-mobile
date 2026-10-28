@@ -8,6 +8,7 @@ import { RootState } from '../../../reducers';
 import { fireEvent } from '@testing-library/react-native';
 import AccountConnectMultiSelector from './AccountConnectMultiSelector/AccountConnectMultiSelector';
 import AccountConnectSingle from './AccountConnectSingle/AccountConnectSingle';
+import PermissionsSummary from '../../UI/PermissionsSummary';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { ConnectAccountBottomSheetSelectorsIDs } from '../../../../e2e/selectors/Browser/ConnectAccountBottomSheet.selectors';
 import Engine from '../../../core/Engine';
@@ -80,7 +81,7 @@ jest.mock('../../../core/Engine', () => {
         }),
         scanUrl: jest.fn((domainName: string) => ({
           domainName,
-          recommendedAction: 'NONE'
+          recommendedAction: 'NONE',
         })),
       },
       PermissionController: {
@@ -229,6 +230,52 @@ describe('AccountConnect', () => {
       expect(single.props.favicon).toEqual({ uri: '' });
       expect(single.props.secureIcon).toBe(IconName.LockSlash);
       expect(single.props.isOriginUnverified).toBe(true);
+    });
+
+    it('shows the unverified banner on the permissions summary for non-UUID channel ids', () => {
+      const forgedChannelId = 'not-a-uuid-channel';
+      mockIsUUID.mockReturnValue(false);
+      mockGetConnection.mockReturnValue({
+        id: forgedChannelId,
+        origin: 'deeplink',
+        originatorInfo: {
+          url: 'https://app.acmeswap.com',
+          title: 'Acme Swap',
+          icon: 'https://attacker.example/acme-logo.png',
+          platform: 'web',
+          dappId: 'app.acmeswap.com',
+        },
+      });
+
+      const { getByTestId, UNSAFE_getByType } = renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: { id: 'mockId', origin: forgedChannelId },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        { state: mockInitialState },
+      );
+
+      expect(getByTestId('permission-summary-container')).toBeDefined();
+      expect(
+        getByTestId(
+          ConnectAccountBottomSheetSelectorsIDs.UNVERIFIED_ORIGIN_BANNER,
+        ),
+      ).toBeOnTheScreen();
+      const summary = UNSAFE_getByType(PermissionsSummary);
+      expect(summary.props.isOriginUnverified).toBe(true);
+      expect(summary.props.currentPageInformation.icon).toBe('');
+      expect(summary.props.currentPageInformation.url).toBe(
+        'https://app.acmeswap.com',
+      );
     });
 
     it('does not show the unverified banner for in-app browser requests', () => {

@@ -676,9 +676,10 @@ const AccountConnect = (props: AccountConnectProps) => {
     const permissionsSummaryProps: PermissionsSummaryProps = {
       currentPageInformation: {
         currentEnsName: '',
-        icon: faviconSource as string,
+        icon: isSdkOriginUnverified ? '' : (faviconSource as string),
         url: urlWithProtocol,
       },
+      isOriginUnverified: isSdkOriginUnverified,
       onEdit: () => {
         setScreen(AccountConnectScreens.MultiConnectSelector);
       },
@@ -693,6 +694,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     };
     return <PermissionsSummary {...permissionsSummaryProps} />;
   }, [
+    isSdkOriginUnverified,
     faviconSource,
     urlWithProtocol,
     selectedAddresses,
