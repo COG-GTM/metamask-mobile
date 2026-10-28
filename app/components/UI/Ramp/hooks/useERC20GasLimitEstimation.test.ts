@@ -1,4 +1,6 @@
 import { renderHook, act } from '@testing-library/react-hooks';
+import { AppState, AppStateStatus } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import useERC20GasLimitEstimation from './useERC20GasLimitEstimation';
 import { getGasLimit } from '../../../../util/custom-gas';
 import { generateTransferData } from '../../../../util/transactions';
@@ -17,6 +19,12 @@ jest.mock('../../../../util/address', () => ({
   safeToChecksumAddress: jest.fn((address) => address),
 }));
 
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useIsFocused: jest.fn(() => true),
+}));
+
+const mockUseIsFocused = useIsFocused as jest.Mock;
 const mockGetGasLimit = getGasLimit as jest.Mock;
 const mockGenerateTransferData = generateTransferData as jest.Mock;
 
@@ -40,6 +48,7 @@ describe('useERC20GasLimitEstimation', () => {
       gas: { toNumber: () => DEFAULT_GAS_LIMIT },
     }));
     mockGenerateTransferData.mockReturnValue('0xmockedData');
+    mockUseIsFocused.mockReturnValue(true);
   });
 
   it('returns default transfer gas limit for native token', () => {
@@ -361,6 +370,91 @@ describe('useERC20GasLimitEstimation', () => {
     expect(result.current).toBeGreaterThan(0);
     expect(typeof result.current).toBe('number');
 
+    jest.useFakeTimers({ legacyFakeTimers: true });
+  });
+
+  it('does not poll while the screen is unfocused and resumes on focus', async () => {
+    jest.useFakeTimers();
+    mockUseIsFocused.mockReturnValue(false);
+
+    const { rerender } = renderHook(() =>
+      useERC20GasLimitEstimation(defaultParams),
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL * 3);
+      await Promise.resolve();
+    });
+    expect(mockGetGasLimit).not.toHaveBeenCalled();
+
+    mockUseIsFocused.mockReturnValue(true);
+    rerender();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(mockGetGasLimit).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL);
+      await Promise.resolve();
+    });
+    expect(mockGetGasLimit).toHaveBeenCalledTimes(2);
+
+    jest.useFakeTimers({ legacyFakeTimers: true });
+  });
+
+  it('stops polling when the screen loses focus', async () => {
+    jest.useFakeTimers();
+
+    const { rerender } = renderHook(() =>
+      useERC20GasLimitEstimation(defaultParams),
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(mockGetGasLimit).toHaveBeenCalledTimes(1);
+
+    mockUseIsFocused.mockReturnValue(false);
+    rerender();
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL * 3);
+      await Promise.resolve();
+    });
+    expect(mockGetGasLimit).toHaveBeenCalledTimes(1);
+
+    jest.useFakeTimers({ legacyFakeTimers: true });
+  });
+
+  it('pauses polling while the app is backgrounded', async () => {
+    jest.useFakeTimers();
+    const addEventListenerSpy = jest.spyOn(AppState, 'addEventListener');
+
+    renderHook(() => useERC20GasLimitEstimation(defaultParams));
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(mockGetGasLimit).toHaveBeenCalledTimes(1);
+
+    const onAppStateChange = addEventListenerSpy.mock.calls[0][1] as (
+      state: AppStateStatus,
+    ) => void;
+
+    await act(async () => {
+      onAppStateChange('background');
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(POLLING_INTERVAL * 3);
+      await Promise.resolve();
+    });
+    expect(mockGetGasLimit).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      onAppStateChange('active');
+      await Promise.resolve();
+    });
+    expect(mockGetGasLimit).toHaveBeenCalledTimes(2);
+
+    addEventListenerSpy.mockRestore();
     jest.useFakeTimers({ legacyFakeTimers: true });
   });
 });

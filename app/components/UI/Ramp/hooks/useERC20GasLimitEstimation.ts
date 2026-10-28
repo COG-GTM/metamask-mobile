@@ -1,4 +1,6 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { AppState, AppStateStatus } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { TransactionParams } from '@metamask/transaction-controller';
 import { toHex } from '@metamask/controller-utils';
 import useInterval from '../../../hooks/useInterval';
@@ -20,8 +22,32 @@ interface Options {
   isNativeToken: boolean;
 }
 
+/** Returns whether the app state indicates the app is not in the foreground. */
+const isBackgroundState = (state: AppStateStatus) =>
+  state === 'background' || state === 'inactive';
+
+/** Returns whether the app is currently in the foreground. */
+function useIsAppActive() {
+  const [isAppActive, setIsAppActive] = useState(
+    () => !isBackgroundState(AppState.currentState),
+  );
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      'change',
+      (nextAppState: AppStateStatus) => {
+        setIsAppActive(!isBackgroundState(nextAppState));
+      },
+    );
+    return () => subscription.remove();
+  }, []);
+
+  return isAppActive;
+}
+
 /**
  * Returns the estimated gas limit for an ERC20 transfer.
+ * Polling only runs while the screen is focused and the app is in the foreground.
  *
  * @param options - The options object
  * @param options.tokenAddress - The token address. If provided, will estimate gas limit for ERC20 transfer
@@ -40,6 +66,9 @@ function useERC20GasLimitEstimation({
 }: Options) {
   const [estimatedGasLimit, setEstimatedGasLimit] =
     useState(TRANSFER_GAS_LIMIT);
+  const isFocused = useIsFocused();
+  const isAppActive = useIsAppActive();
+  const shouldPoll = !isNativeToken && isFocused && isAppActive;
 
   const estimateERC20GasLimit = useCallback(() => {
     if (!tokenAddress || isNativeToken) {
@@ -80,7 +109,7 @@ function useERC20GasLimitEstimation({
     () => {
       estimateERC20GasLimit();
     },
-    { delay: isNativeToken ? null : POLLING_INTERVAL, immediate: true },
+    { delay: shouldPoll ? POLLING_INTERVAL : null, immediate: true },
   );
 
   return estimatedGasLimit;
