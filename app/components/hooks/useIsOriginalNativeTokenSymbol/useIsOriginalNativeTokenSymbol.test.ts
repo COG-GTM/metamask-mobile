@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import useIsOriginalNativeTokenSymbol from './useIsOriginalNativeTokenSymbol';
 import { backgroundState } from '../../../../app/util/test/initial-root-state';
 import axios from 'axios';
+import { clearSafeChainsListCache } from '../../../util/networks/safeChainsList';
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
@@ -10,6 +11,10 @@ jest.mock('react-redux', () => ({
 }));
 
 describe('useIsOriginalNativeTokenSymbol', () => {
+  beforeEach(() => {
+    clearSafeChainsListCache();
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });

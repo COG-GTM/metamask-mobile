@@ -511,6 +511,29 @@ describe('NetworkSettings', () => {
     expect(wrapper.state('validatedChainId')).toBe(true);
   });
 
+  it('patches a copy of the polygon entry to POL without mutating the shared safe chains list', async () => {
+    wrapper.setState({ rpcUrl: 'http://localhost:8545', chainId: '137' });
+
+    await wrapper.instance().validateRpcAndChainId();
+
+    const polygonEntry =
+      SAMPLE_NETWORKSETTINGS_PROPS.matchedChainNetwork.safeChainsList.find(
+        (network) => network.chainId === 137,
+      );
+    expect(wrapper.state('networkList').nativeCurrency.symbol).toBe('POL');
+    expect(wrapper.state('networkList').nativeCurrency.name).toBe('POL');
+    expect(polygonEntry?.nativeCurrency.symbol).toBe('MATIC');
+    expect(polygonEntry?.nativeCurrency.name).toBe('Polygon');
+  });
+
+  it('does not throw for polygon when the safe chains list is not loaded', async () => {
+    wrapper.setProps({ matchedChainNetwork: null });
+    wrapper.setState({ rpcUrl: 'http://localhost:8545', chainId: '137' });
+
+    expect(() => wrapper.instance().validateRpcAndChainId()).not.toThrow();
+    expect(wrapper.state('networkList')).toBeUndefined();
+  });
+
   // here
   it('should update state and call getCurrentState on block explorer URL change', async () => {
     const newProps = {
