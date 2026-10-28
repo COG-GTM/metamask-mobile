@@ -87,6 +87,26 @@ describe('FiatOrders', () => {
 
     expect(screen.toJSON()).toMatchSnapshot();
   });
+
+  it('blocks non-http(s) navigations in the authentication WebView', () => {
+    const mockUrl = 'https://test.metamask.io/auth';
+    renderWithProvider(<FiatOrders />, {
+      state: {
+        ...defaultState,
+        fiatOrders: {
+          ...defaultState.fiatOrders,
+          authenticationUrls: [mockUrl],
+        },
+      },
+    });
+
+    const webView = screen.UNSAFE_getByType(WebView);
+    expect(webView.props.originWhitelist).toEqual(['*']);
+    const { onShouldStartLoadWithRequest } = webView.props;
+    expect(onShouldStartLoadWithRequest({ url: mockUrl })).toBe(true);
+    expect(onShouldStartLoadWithRequest({ url: 'metamask://buy' })).toBe(false);
+    expect(onShouldStartLoadWithRequest({ url: 'tel:123' })).toBe(false);
+  });
 });
 
 describe('getAggregatorAnalyticsPayload', () => {
