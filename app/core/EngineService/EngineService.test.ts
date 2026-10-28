@@ -47,6 +47,7 @@ jest.mock('../Engine', () => {
           KeyringController: {
             subscribe: jest.fn(),
             state: { ...keyringState },
+            metadata: { vault: { persist: true, anonymous: false } },
           },
           AssetsContractController: { subscribe: jest.fn() },
           NftController: { subscribe: jest.fn() },
@@ -141,7 +142,6 @@ describe('EngineService', () => {
         },
       );
     });
-
   });
 
   it('should log Engine initialization with empty state', async () => {
@@ -188,6 +188,71 @@ describe('EngineService', () => {
       expect(NavigationService.navigation?.reset).toHaveBeenCalledWith({
         routes: [{ name: Routes.VAULT_RECOVERY.RESTORE_WALLET }],
       });
+    });
+  });
+
+  describe('UPDATE_BG_STATE coalescing', () => {
+    const mockDispatch = jest.fn();
+
+    const startAndGetHandlers = async () => {
+      jest.spyOn(ReduxService, 'store', 'get').mockReturnValue({
+        getState: () => ({ engine: { backgroundState: {} } }),
+        dispatch: mockDispatch,
+      } as unknown as ReduxStore);
+      await engineService.start();
+      const subscribe = Engine.controllerMessenger.subscribe as jest.Mock;
+      return Object.fromEntries(
+        subscribe.mock.calls.map(([eventName, handler]) => [
+          eventName,
+          handler,
+        ]),
+      ) as Record<string, () => void>;
+    };
+
+    const bgStateDispatches = () =>
+      mockDispatch.mock.calls.filter(
+        ([action]) => action.type === 'UPDATE_BG_STATE',
+      );
+
+    it('dispatches once per tick with every changed controller key', async () => {
+      const handlers = await startAndGetHandlers();
+
+      handlers['TokenBalancesController:stateChange']();
+      handlers['TokenRatesController:stateChange']();
+      handlers['AccountTrackerController:stateChange']();
+      handlers['TokenBalancesController:stateChange']();
+
+      expect(bgStateDispatches()).toHaveLength(0);
+      await Promise.resolve();
+
+      expect(bgStateDispatches()).toEqual([
+        [
+          {
+            type: 'UPDATE_BG_STATE',
+            payload: {
+              keys: [
+                'TokenBalancesController',
+                'TokenRatesController',
+                'AccountTrackerController',
+              ],
+            },
+          },
+        ],
+      ]);
+    });
+
+    it('dispatches again for changes in a later tick', async () => {
+      const handlers = await startAndGetHandlers();
+
+      handlers['NetworkController:stateChange']();
+      await Promise.resolve();
+      handlers['TransactionController:stateChange']();
+      await Promise.resolve();
+
+      expect(bgStateDispatches().map(([action]) => action.payload)).toEqual([
+        { keys: ['NetworkController'] },
+        { keys: ['TransactionController'] },
+      ]);
     });
   });
 });
