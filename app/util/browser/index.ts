@@ -1,7 +1,9 @@
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import isUrl from 'is-url';
 import Url from 'url-parse';
 import { regex, hasProtocol } from '../../util/regex';
+import Logger from '../Logger';
+import { strings } from '../../../locales/i18n';
 
 /**
  * Returns URL prefixed with protocol
@@ -188,6 +190,46 @@ export const allowLinkOpen = (url: string) =>
     .catch((e) => {
       console.warn(`Error opening URL: ${e}`);
     });
+
+/**
+ * Applies `getProtocolNavigationAction` to a WebView navigation request.
+ * Untrusted protocols are only handed to the OS after the user taps Allow.
+ *
+ * @param url - URL the WebView is about to navigate to
+ * @returns - `true` to let the WebView load the URL, `false` to stop it
+ */
+export const handleProtocolNavigation = (url: string): boolean => {
+  const { protocol } = new Url(url);
+  const action = getProtocolNavigationAction(protocol);
+  if (action === 'load') return true;
+  Logger.log(`Protocol not allowed ${protocol}`);
+
+  // Trusted deeplink protocols are handed to the OS without a warning
+  if (action === 'deeplink') {
+    allowLinkOpen(url);
+    return false;
+  }
+
+  if (action === 'block') return false;
+
+  Alert.alert(
+    strings('onboarding.warning_title'),
+    getAlertMessage(protocol, strings),
+    [
+      {
+        text: strings('browser.protocol_alert_options.ignore'),
+        onPress: () => null,
+        style: 'cancel',
+      },
+      {
+        text: strings('browser.protocol_alert_options.allow'),
+        onPress: () => allowLinkOpen(url),
+        style: 'default',
+      },
+    ],
+  );
+  return false;
+};
 
 /**
  * Appends search parameters to a URL and returns the complete URL string
