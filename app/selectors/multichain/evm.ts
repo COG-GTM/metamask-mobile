@@ -244,6 +244,15 @@ interface AccountTokensByChain {
   )[];
 }
 
+/**
+ * Groups an account's native and non-native tokens by chain ID for every configured EVM network.
+ *
+ * @param allTokens - Non-native tokens keyed by chain ID and account address.
+ * @param networkConfigurations - EVM network configurations keyed by chain ID.
+ * @param nativeTokens - Native tokens for the account, keyed by chain ID.
+ * @param address - Account address; returns an empty map when undefined.
+ * @returns Tokens for the account keyed by chain ID, with native tokens first.
+ */
 const buildAccountTokensByChain = (
   allTokens: ReturnType<typeof selectAllTokens>,
   networkConfigurations: ReturnType<
