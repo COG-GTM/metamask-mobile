@@ -1453,8 +1453,10 @@ export class Engine {
     // NetworkController state changes far more often than the selected
     // network (metadata lookups for any client, config edits), so only query
     // `net_version` when the selected network client changes, after a
-    // `networkWillChange`, or to retry after a failed lookup.
+    // `networkWillChange`, or to retry after a failed lookup. Each lookup gets
+    // a generation so results from superseded lookups are ignored.
     let networkIdNetworkClientId: string | undefined;
+    let networkIdLookupGeneration = 0;
 
     this.controllerMessenger.subscribe(
       AppConstants.NETWORK_STATE_CHANGE_EVENT,
@@ -1463,11 +1465,14 @@ export class Engine {
           return;
         }
         networkIdNetworkClientId = selectedNetworkClientId;
+        const lookupGeneration = ++networkIdLookupGeneration;
         try {
           const networkId = await deprecatedGetNetworkId();
-          store.dispatch(networkIdUpdated(networkId));
+          if (lookupGeneration === networkIdLookupGeneration) {
+            store.dispatch(networkIdUpdated(networkId));
+          }
         } catch (error) {
-          if (networkIdNetworkClientId === selectedNetworkClientId) {
+          if (lookupGeneration === networkIdLookupGeneration) {
             networkIdNetworkClientId = undefined;
           }
           console.error(
@@ -1484,6 +1489,7 @@ export class Engine {
       `${networkController.name}:networkWillChange`,
       () => {
         networkIdNetworkClientId = undefined;
+        networkIdLookupGeneration += 1;
         store.dispatch(networkIdWillUpdate());
       },
     );
