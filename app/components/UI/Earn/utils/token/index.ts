@@ -73,3 +73,8 @@ export const isSupportedLendingTokenByChainId = (
   chainId: string,
 ) =>
   SUPPORTED_LENDING_TOKENS.has(tokenSymbol) && SUPPORTED_CHAIN_IDS.has(chainId);
+
+export const getEarnTokenKey = (
+  chainId: string | undefined,
+  symbol: string | undefined,
+) => `${chainId}:${symbol}`;

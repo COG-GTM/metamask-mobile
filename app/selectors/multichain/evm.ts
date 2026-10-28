@@ -3,7 +3,6 @@ import { Hex } from '@metamask/utils';
 import { Token, getNativeTokenAddress } from '@metamask/assets-controllers';
 import {
   selectSelectedInternalAccountFormattedAddress,
-  selectSelectedInternalAccount,
   selectSelectedInternalAccountAddress,
 } from '../accountsController';
 import { selectAllTokens } from '../tokensController';
@@ -234,6 +233,57 @@ export const selectNativeTokensAcrossChains = createSelector(
     selectNativeTokensAcrossChainsForAddress(state, selectedAddress),
 );
 
+interface AccountTokensByChain {
+  [chainId: string]: (
+    | TokenI
+    | (Token & {
+        isStaked?: boolean;
+        isNative?: boolean;
+        isETH?: boolean;
+      })
+  )[];
+}
+
+const buildAccountTokensByChain = (
+  allTokens: ReturnType<typeof selectAllTokens>,
+  networkConfigurations: ReturnType<
+    typeof selectEvmNetworkConfigurationsByChainId
+  >,
+  nativeTokens: { [chainId: string]: TokenI[] },
+  address: string | undefined,
+): AccountTokensByChain => {
+  const tokensByChain: AccountTokensByChain = {};
+
+  if (!address) {
+    return tokensByChain;
+  }
+
+  // Create a list of available chainIds
+  const chainIds = Object.keys(networkConfigurations);
+
+  for (const chainId of chainIds) {
+    const currentChainId = chainId as Hex;
+    const nonNativeTokens =
+      allTokens[currentChainId]?.[address]?.map((token) => ({
+        ...token,
+        token: token.name,
+        chainId,
+        isETH: false,
+        isNative: false,
+        balanceFiat: '',
+        isStaked: false,
+      })) || [];
+
+    // Add both native and non-native tokens
+    tokensByChain[currentChainId] = [
+      ...(nativeTokens[currentChainId] || []),
+      ...nonNativeTokens,
+    ];
+  }
+
+  return tokensByChain;
+};
+
 export const selectAccountTokensAcrossChainsForAddress =
   createDeepEqualSelector(
     selectAllTokens,
@@ -241,62 +291,28 @@ export const selectAccountTokensAcrossChainsForAddress =
     (state: RootState, address: string | undefined) =>
       selectNativeTokensAcrossChainsForAddress(state, address),
     (_: RootState, address: string | undefined) => address,
-    (allTokens, networkConfigurations, nativeTokens, address) => {
-      const tokensByChain: {
-        [chainId: string]: (
-          | TokenI
-          | (Token & {
-              isStaked?: boolean;
-              isNative?: boolean;
-              isETH?: boolean;
-            })
-        )[];
-      } = {};
+    buildAccountTokensByChain,
+  );
 
-      if (!address) {
-        return tokensByChain;
-      }
-
-      // Create a list of available chainIds
-      const chainIds = Object.keys(networkConfigurations);
-
-      for (const chainId of chainIds) {
-        const currentChainId = chainId as Hex;
-        const nonNativeTokens =
-          allTokens[currentChainId]?.[address]?.map((token) => ({
-            ...token,
-            token: token.name,
-            chainId,
-            isETH: false,
-            isNative: false,
-            balanceFiat: '',
-            isStaked: false,
-          })) || [];
-
-        // Add both native and non-native tokens
-        tokensByChain[currentChainId] = [
-          ...(nativeTokens[currentChainId] || []),
-          ...nonNativeTokens,
-        ];
-      }
-
-      return tokensByChain;
-    },
+const selectSelectedAccountNativeTokensAcrossChains = (state: RootState) =>
+  selectNativeTokensAcrossChainsForAddress(
+    state,
+    selectSelectedInternalAccountAddress(state),
   );
 
 /**
  * Get the tokens for the selected account across all chains.
+ * Inputs are narrow slices of state so unrelated dispatches don't recompute it.
  *
  * @param {RootState} state - The root state.
  * @returns {TokensByChain} The tokens for the selected account across all chains.
  */
-export const selectAccountTokensAcrossChains = createSelector(
-  (state: RootState) => state,
-  selectSelectedInternalAccount,
-  (state, selectedAccount) => {
-    const selectedAddress = selectedAccount?.address;
-    return selectAccountTokensAcrossChainsForAddress(state, selectedAddress);
-  },
+export const selectAccountTokensAcrossChains = createDeepEqualSelector(
+  selectAllTokens,
+  selectEvmNetworkConfigurationsByChainId,
+  selectSelectedAccountNativeTokensAcrossChains,
+  selectSelectedInternalAccountAddress,
+  buildAccountTokensByChain,
 );
 
 export const selectNativeEvmAsset = createDeepEqualSelector(

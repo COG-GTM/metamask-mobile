@@ -1,5 +1,6 @@
 import {
   filterEligibleTokens,
+  getEarnTokenKey,
   getSupportedEarnTokens,
   isSupportedLendingTokenByChainId,
   SUPPORTED_LENDING_TOKENS,
@@ -206,6 +207,18 @@ describe('tokenUtils', () => {
     it('returns false when chainId parameter is empty', () => {
       const isSupported = isSupportedLendingTokenByChainId('USDC', '');
       expect(isSupported).toBe(false);
+    });
+  });
+
+  describe('getEarnTokenKey', () => {
+    it('keys a token by chainId and symbol', () => {
+      expect(getEarnTokenKey(CHAIN_IDS.MAINNET, 'USDC')).toBe('0x1:USDC');
+    });
+
+    it('distinguishes the same symbol on different chains', () => {
+      expect(getEarnTokenKey(CHAIN_IDS.MAINNET, 'USDC')).not.toBe(
+        getEarnTokenKey(CHAIN_IDS.BASE, 'USDC'),
+      );
     });
   });
 });
