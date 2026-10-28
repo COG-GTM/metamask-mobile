@@ -7,6 +7,7 @@ import {
   backupVault,
   getVaultFromBackup,
   clearAllVaultBackups,
+  isVaultBackedUp,
 } from './backupVault';
 import { KeyringControllerState } from '@metamask/keyring-controller';
 import {
@@ -212,6 +213,52 @@ describe('backupVault file', () => {
       expect(resetInternetCredentials).toHaveBeenCalledTimes(3);
 
       expect(response).toEqual(mockedSuccessResponse);
+    });
+  });
+
+  describe('isVaultBackedUp', () => {
+    const keyringState = (vault?: string): KeyringControllerState => ({
+      vault,
+      keyrings: [],
+      isUnlocked: false,
+      keyringsMetadata: [],
+    });
+
+    beforeEach(async () => {
+      await clearAllVaultBackups();
+    });
+
+    it('returns true only for the vault written by the last successful backup', async () => {
+      expect(isVaultBackedUp('vault-1')).toBe(false);
+
+      await backupVault(keyringState('vault-1'));
+
+      expect(isVaultBackedUp('vault-1')).toBe(true);
+      expect(isVaultBackedUp('vault-2')).toBe(false);
+      expect(isVaultBackedUp(undefined)).toBe(false);
+
+      await backupVault(keyringState('vault-2'));
+
+      expect(isVaultBackedUp('vault-1')).toBe(false);
+      expect(isVaultBackedUp('vault-2')).toBe(true);
+    });
+
+    it('returns false after the backups are cleared', async () => {
+      await backupVault(keyringState('vault-1'));
+
+      await clearAllVaultBackups();
+
+      expect(isVaultBackedUp('vault-1')).toBe(false);
+    });
+
+    it('returns false when a backup of the same vault fails', async () => {
+      await backupVault(keyringState('vault-1'));
+      (setInternetCredentials as jest.Mock).mockImplementationOnce(() => false);
+
+      const response = await backupVault(keyringState('vault-1'));
+
+      expect(response.success).toBe(false);
+      expect(isVaultBackedUp('vault-1')).toBe(false);
     });
   });
 

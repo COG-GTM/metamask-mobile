@@ -25,6 +25,16 @@ interface KeyringBackupResponse {
   error?: string;
 }
 
+// Vault most recently written to the primary keychain backup by this process.
+let lastBackedUpVault: string | undefined;
+
+/**
+ * Whether the primary keychain backup already holds this exact vault.
+ */
+export function isVaultBackedUp(vault: string | undefined): boolean {
+  return vault !== undefined && vault === lastBackedUpVault;
+}
+
 /**
  * Removes the primary vault backup from react-native-keychain
  */
@@ -45,6 +55,7 @@ const _resetTemporaryVaultBackup = async (): Promise<void> => {
  * Clears all vault backups from react-native-keychain
  */
 export async function clearAllVaultBackups() {
+  lastBackedUpVault = undefined;
   await _resetVaultBackup();
   await _resetTemporaryVaultBackup();
 }
@@ -62,6 +73,7 @@ export async function backupVault(
   keyringState: KeyringControllerState,
 ): Promise<KeyringBackupResponse> {
   const keyringVault = keyringState.vault as string;
+  lastBackedUpVault = undefined;
 
   try {
     // Does a primary backup exist?
@@ -106,6 +118,8 @@ export async function backupVault(
 
     // Clear the temporary backup
     await _resetTemporaryVaultBackup();
+
+    lastBackedUpVault = keyringVault;
 
     return {
       success: true,
