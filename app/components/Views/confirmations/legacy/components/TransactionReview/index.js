@@ -26,6 +26,7 @@ import Logger from '../../../../../../util/Logger';
 import { safeToChecksumAddress } from '../../../../../../util/address';
 import { getBlockaidMetricsParams } from '../../../../../../util/blockaid';
 import Device from '../../../../../../util/device';
+import { prefixUrlWithProtocol } from '../../../../../../util/browser';
 import { isMultiLayerFeeNetwork } from '../../../../../../util/networks';
 import { fetchEstimatedMultiLayerL1Fee } from '../../../../../../util/networks/engineNetworkUtils';
 import {
@@ -151,10 +152,6 @@ class TransactionReview extends PureComponent {
      * Transaction object associated with this transaction
      */
     transaction: PropTypes.object,
-    /**
-     * Browser/tab information
-     */
-    browser: PropTypes.object,
     /**
      * ETH to current currency conversion rate
      */
@@ -475,15 +472,27 @@ class TransactionReview extends PureComponent {
     this.setState({ dataVisible: true });
   };
 
-  getUrlFromBrowser() {
-    const { browser } = this.props;
-    let url;
-    browser.tabs.forEach((tab) => {
-      if (tab.id === browser.activeTab) {
-        url = tab.url;
-      }
-    });
-    return url;
+  /**
+   * Returns the requesting dapp URL from the transaction's own metadata.
+   * Never derive it from browser tab state: the tab can navigate to another
+   * site while the confirmation is open.
+   */
+  getSDKConnection() {
+    const { origin } = this.props.transaction;
+    return origin
+      ? SDKConnect.getInstance().getConnection({ channelId: origin })
+      : undefined;
+  }
+
+  getRequestUrl() {
+    const { origin } = this.props.transaction;
+    const sdkConnection = this.getSDKConnection();
+    if (sdkConnection) {
+      return sdkConnection.originatorInfo?.url ?? '';
+    }
+    // Browser transactions record a bare hostname with no scheme. Do not
+    // invent one: an https:// prefix would make HTTP dapps look secure.
+    return origin ?? '';
   }
 
   getConfirmButtonState() {
@@ -544,16 +553,9 @@ class TransactionReview extends PureComponent {
       `TransactionReview render channelIdOrHostname=${channelIdOrHostname}`,
     );
 
-    const sdkConnections = SDKConnect.getInstance().getConnections();
+    const currentConnection = this.getSDKConnection();
 
-    const currentConnection = sdkConnections[channelIdOrHostname ?? ''];
-
-    let url = '';
-    if (currentConnection) {
-      url = currentConnection.originatorInfo.url;
-    } else {
-      url = this.getUrlFromBrowser();
-    }
+    const url = this.getRequestUrl();
 
     const styles = this.getStyles();
 
@@ -647,7 +649,11 @@ class TransactionReview extends PureComponent {
                         onCancelPress={this.props.onCancel}
                         gasEstimateType={gasEstimateType}
                         EIP1559GasData={EIP1559GasData}
-                        origin={dappSuggestedGas ? url : null}
+                        origin={
+                          dappSuggestedGas && url
+                            ? prefixUrlWithProtocol(url)
+                            : null
+                        }
                         gasSelected={gasSelected}
                         originWarning={dappSuggestedGasWarning}
                         onUpdatingValuesStart={onUpdatingValuesStart}
@@ -682,13 +688,14 @@ class TransactionReview extends PureComponent {
   };
 
   renderQRDetails() {
-    const currentPageInformation = { url: this.getUrlFromBrowser() };
     const {
       QRState,
-      transaction: { from },
+      transaction: { from, origin },
       onCancel,
       onConfirm,
     } = this.props;
+
+    const currentPageInformation = { origin, url: this.getRequestUrl() };
 
     const styles = this.getStyles();
     return (
@@ -731,7 +738,6 @@ const mapStateToProps = (state) => {
     chainId,
     showHexData: state.settings.showHexData,
     transaction,
-    browser: state.browser,
     primaryCurrency: state.settings.primaryCurrency,
     tokenList: selectTokenList(state),
     shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),

@@ -14,6 +14,8 @@ import * as TransactionUtils from '../../../../../../util/transactions';
 // eslint-disable-next-line import/no-namespace
 import { FALSE_POSITIVE_REPOST_LINE_TEST_ID } from '../BlockaidBanner/BlockaidBanner.constants';
 import { MOCK_KEYRING_CONTROLLER_STATE } from '../../../../../../util/test/keyringControllerTestUtils';
+import { APPROVAL_TAG_URL_ORIGIN_PILL } from '../../../../../UI/ApprovalTagUrl';
+import SDKConnect from '../../../../../../core/SDKConnect/SDKConnect';
 
 jest.mock('../../../../../../util/transactions', () => ({
   ...jest.requireActual('../../../../../../util/transactions'),
@@ -61,11 +63,10 @@ const MOCK_ADDRESS_1 = '0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272';
 const MOCK_ADDRESS_2 = '0xB374Ca013934e498e5baD3409147F34E6c462389';
 const MOCK_ADDRESS_3 = '0xd018538C87232FF95acbCe4870629b75640a78E7';
 
-const MOCK_ACCOUNTS_CONTROLLER_STATE =
-  createMockAccountsControllerState(
-    [MOCK_ADDRESS_1, MOCK_ADDRESS_2, MOCK_ADDRESS_3],
-    MOCK_ADDRESS_3,
-  );
+const MOCK_ACCOUNTS_CONTROLLER_STATE = createMockAccountsControllerState(
+  [MOCK_ADDRESS_1, MOCK_ADDRESS_2, MOCK_ADDRESS_3],
+  MOCK_ADDRESS_3,
+);
 
 jest.mock('../../../../../../core/Engine', () => {
   const { MOCK_ACCOUNTS_CONTROLLER_STATE: mockAccountsControllerState } =
@@ -200,9 +201,7 @@ describe('TransactionReview', () => {
     const store = mockStore(mockState);
     const wrapper = shallow(
       <Provider store={store}>
-        <TransactionReview
-          generateTransform={generateTransform}
-        />
+        <TransactionReview generateTransform={generateTransform} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -232,13 +231,11 @@ describe('TransactionReview', () => {
 
     const blockaidMetricsParamsSpy = jest
       .spyOn(BlockaidUtils, 'getBlockaidMetricsParams')
-      .mockImplementation(
-        ({ result_type, reason, providerRequestsCount }) => ({
-          security_alert_response: result_type,
-          security_alert_reason: reason,
-          security_alert_provider_requests_count: providerRequestsCount,
-        }),
-      );
+      .mockImplementation(({ result_type, reason, providerRequestsCount }) => ({
+        security_alert_response: result_type,
+        security_alert_reason: reason,
+        security_alert_provider_requests_count: providerRequestsCount,
+      }));
     const { queryByText, queryByTestId, getByText } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
@@ -347,5 +344,78 @@ describe('TransactionReview', () => {
     );
     const confirmButton = getByRole('button', { name: 'Confirm' });
     expect(confirmButton.props.disabled).toBe(true);
+  });
+
+  it('labels the request with the transaction origin, not the active browser tab', () => {
+    const { getByTestId, getByText, queryByText } = renderWithProvider(
+      <TransactionReview
+        EIP1559GasData={{}}
+        generateTransform={generateTransform}
+      />,
+      {
+        state: {
+          ...mockState,
+          browser: {
+            activeTab: 1,
+            tabs: [{ id: 1, url: 'https://trusted-exchange.example/trade' }],
+          },
+          transaction: {
+            ...mockState.transaction,
+            origin: 'attacker.example',
+          },
+        },
+      },
+    );
+
+    expect(getByTestId(APPROVAL_TAG_URL_ORIGIN_PILL)).toBeDefined();
+    expect(getByText('https://attacker.example')).toBeDefined();
+    expect(queryByText(/trusted-exchange\.example/)).toBeNull();
+  });
+
+  it('labels native SDK channel requests with the SDK originator URL', () => {
+    const channelId = '6e1b8b7e-0f43-4a8c-9a3f-1f0e5c3d2b10';
+    const getConnection = jest.fn(({ channelId: id }) =>
+      id === channelId
+        ? { originatorInfo: { url: 'https://shop.example', icon: '' } }
+        : undefined,
+    );
+    const getInstanceSpy = jest
+      .spyOn(SDKConnect, 'getInstance')
+      .mockReturnValue({ getConnection, getConnections: () => ({}) });
+
+    const { getByText, queryByText } = renderWithProvider(
+      <TransactionReview
+        EIP1559GasData={{}}
+        generateTransform={generateTransform}
+      />,
+      {
+        state: {
+          ...mockState,
+          transaction: { ...mockState.transaction, origin: channelId },
+        },
+      },
+    );
+
+    expect(getByText('https://shop.example')).toBeDefined();
+    expect(queryByText(new RegExp(channelId))).toBeNull();
+    getInstanceSpy.mockRestore();
+  });
+
+  it('renders dapp-suggested gas for a hostname-only browser origin', () => {
+    const { getByText } = renderWithProvider(
+      <TransactionReview
+        EIP1559GasData={{}}
+        generateTransform={generateTransform}
+        dappSuggestedGas
+      />,
+      {
+        state: {
+          ...mockState,
+          transaction: { ...mockState.transaction, origin: 'attacker.example' },
+        },
+      },
+    );
+
+    expect(getByText('https://attacker.example')).toBeDefined();
   });
 });
