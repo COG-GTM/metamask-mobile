@@ -19,6 +19,12 @@
   <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
   <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
 
+  <!-- Keeps the native SDK's local.client / local.service broadcasts inside this app -->
+  <permission
+    android:name="${applicationId}.permission.NATIVE_SDK_BROADCAST"
+    android:protectionLevel="signature" />
+  <uses-permission android:name="${applicationId}.permission.NATIVE_SDK_BROADCAST" />
+
 	<uses-sdk tools:overrideLibrary="com.tectiv3.aes" />
 
 	<application

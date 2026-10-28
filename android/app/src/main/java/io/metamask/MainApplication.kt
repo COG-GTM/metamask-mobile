@@ -63,11 +63,25 @@ class MainApplication : Application(), ShareApplication, ReactApplication {
 
     @Suppress("OVERRIDE_DEPRECATION")
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter): Intent? {
+        if (NativeSdkBroadcastGuard.isNativeSdkFilter(filter)) {
+            return NativeSdkBroadcastGuard.registerPrivateReceiver(baseContext, receiver, filter)
+        }
         return if (Build.VERSION.SDK_INT >= 34 && applicationInfo.targetSdkVersion >= 34) {
             super.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
         } else {
             super.registerReceiver(receiver, filter)
         }
+    }
+
+    override fun sendBroadcast(intent: Intent) {
+        if (NativeSdkBroadcastGuard.isNativeSdkIntent(intent)) {
+            super.sendBroadcast(
+                NativeSdkBroadcastGuard.restrictToPackage(this, intent),
+                NativeSdkBroadcastGuard.permission(this),
+            )
+            return
+        }
+        super.sendBroadcast(intent)
     }
 
     override fun onCreate() {

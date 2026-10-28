@@ -288,6 +288,17 @@ export default class AndroidService extends EventEmitter2 {
     );
   }
 
+  private isApprovedSession(sessionId: unknown): sessionId is string {
+    if (typeof sessionId !== 'string' || sessionId.length === 0) {
+      return false;
+    }
+    if (!Object.prototype.hasOwnProperty.call(this.connections, sessionId)) {
+      return false;
+    }
+    const connection = this.connections[sessionId];
+    return connection?.clientId === sessionId && !!connection.originatorInfo;
+  }
+
   private setupOnMessageReceivedListener() {
     this.eventHandler.onMessageReceived((jsonMessage: string) => {
       const handleEventAsync = async () => {
@@ -322,12 +333,6 @@ export default class AndroidService extends EventEmitter2 {
           sessionId = parsedMsg.id;
           message = parsedMsg.message;
           data = JSON.parse(message);
-
-          // Update connected state
-          this.connections[sessionId] = {
-            ...this.connections[sessionId],
-            connected: true,
-          };
         } catch (error) {
           Logger.log(
             error,
@@ -347,6 +352,34 @@ export default class AndroidService extends EventEmitter2 {
           });
           return;
         }
+
+        // The native layer takes the session id from the calling app, so it
+        // is only trusted when it names a connection the user approved.
+        if (!this.isApprovedSession(sessionId)) {
+          Logger.log(
+            `AndroidService::onMessageReceived rejected message for unknown session`,
+          );
+          this.sendMessage({
+            data: {
+              id: data?.id,
+              error: { code: 4100, message: 'Unauthorized session' },
+              jsonrpc: '2.0',
+            },
+            name: 'metamask-provider',
+          }).catch((err) => {
+            Logger.log(
+              err,
+              `AndroidService::onMessageReceived error sending unauthorized session error`,
+            );
+          });
+          return;
+        }
+
+        // Update connected state
+        this.connections[sessionId] = {
+          ...this.connections[sessionId],
+          connected: true,
+        };
 
         let bridge = this.bridgeByClientId[sessionId];
 
