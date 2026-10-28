@@ -23,6 +23,7 @@ describe('addDappConnection', () => {
         dappConnections: {},
       },
       emit: mockEmit,
+      removePendingDappConnection: jest.fn(),
     } as unknown as SDKConnect;
   });
 
@@ -35,6 +36,18 @@ describe('addDappConnection', () => {
 
     expect(mockInstance.state.dappConnections[mockConnection.id]).toBe(
       mockConnection,
+    );
+  });
+
+  it('should clear the pending connection once it is persisted', async () => {
+    const mockConnection = {
+      id: 'test-id',
+    } as unknown as ConnectionProps;
+
+    await addDappConnection(mockConnection, mockInstance);
+
+    expect(mockInstance.removePendingDappConnection).toHaveBeenCalledWith(
+      'test-id',
     );
   });
 });

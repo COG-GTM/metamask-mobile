@@ -447,6 +447,31 @@ describe('SDKConnect', () => {
       });
     });
 
+    describe('pending dapp connections', () => {
+      it('exposes a pending connection without adding it to dappConnections', () => {
+        const persisted = {} as SDKSessions;
+        sdkConnect.state.dappConnections = persisted;
+        const pending = {
+          id: 'pending-channel',
+          originatorInfo: { url: 'https://dapp.example', title: 'Dapp' },
+        } as unknown as ConnectionProps;
+
+        sdkConnect.setPendingDappConnection(pending);
+
+        expect(sdkConnect.getConnection({ channelId: 'pending-channel' })).toBe(
+          pending,
+        );
+        expect(persisted).toEqual({});
+        expect(sdkConnect.state.dappConnections).toBe(persisted);
+
+        sdkConnect.removePendingDappConnection('pending-channel');
+
+        expect(
+          sdkConnect.getConnection({ channelId: 'pending-channel' }),
+        ).toBeUndefined();
+      });
+    });
+
     describe('getApprovedHosts', () => {
       it('should retrieve approved hosts', () => {
         const testApprovedHosts = {} as ApprovedHosts;
