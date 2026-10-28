@@ -99,6 +99,17 @@ public extension FileManager {
     guard resolvedPath == rootPath || resolvedPath.hasPrefix(rootPrefix) else {
       throw UntarError.unsafeEntry(name: entryName)
     }
+    // Symlinks already on disk must not redirect the write outside root.
+    let realRoot = root.resolvingSymlinksInPath().path
+    let realRootPrefix = realRoot.hasSuffix("/") ? realRoot : realRoot + "/"
+    let realParent = URL(fileURLWithPath: resolvedPath).deletingLastPathComponent()
+      .resolvingSymlinksInPath().path
+    let isLink = (try? FileManager.default.attributesOfItem(atPath: resolvedPath)[.type]
+      as? FileAttributeType) == .typeSymbolicLink
+    guard resolvedPath == rootPath || realParent == realRoot || realParent.hasPrefix(realRootPrefix),
+          !isLink else {
+      throw UntarError.unsafeEntry(name: entryName)
+    }
     return resolvedPath
   }
 
