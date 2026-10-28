@@ -65,6 +65,12 @@ const SECURITY_ALERT_RESPONSE_IN_PROGRESS = {
   description: 'Validating the confirmation in progress.',
 };
 
+/**
+ * Ids of signature requests that were approved or rejected. A validation that finishes after
+ * that must not write its result back, or the entry would be orphaned in persisted state.
+ */
+const completedSignatureSecurityAlertIds = new Set<string>();
+
 const SIGNATURE_APPROVAL_TYPES: Record<string, ApprovalType> = {
   personal_sign: ApprovalType.PersonalSign,
   eth_signTypedData: ApprovalType.EthSignTypedData,
@@ -260,7 +266,10 @@ function setSecurityAlertResponse(
         { ...response, securityAlertId } as any,
       );
     }
-  } else if (securityAlertId) {
+  } else if (
+    securityAlertId &&
+    !completedSignatureSecurityAlertIds.has(securityAlertId)
+  ) {
     store.dispatch(
       setSignatureRequestSecurityAlertResponse(securityAlertId, {
         ...response,
@@ -309,6 +318,9 @@ function normalizeRequest(request: PPOMRequest): PPOMRequest {
 }
 
 function clearSignatureSecurityAlertResponse(securityAlertId?: string) {
+  if (securityAlertId) {
+    completedSignatureSecurityAlertIds.add(securityAlertId);
+  }
   store.dispatch(clearSignatureRequestSecurityAlertResponse(securityAlertId));
 }
 

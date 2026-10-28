@@ -372,6 +372,16 @@ describe('PPOM Utils', () => {
       }
     });
 
+    it('does not store a result that arrives after the signature request was completed', async () => {
+      const spy = jest.spyOn(SignatureRequestActions, 'default');
+      PPOMUtil.clearSignatureSecurityAlertResponse('completed-id');
+      await PPOMUtil.validateRequest({
+        ...mockSignatureRequest,
+        securityAlertResponse: { securityAlertId: 'completed-id' },
+      });
+      expect(spy).not.toHaveBeenCalled();
+    });
+
     it('reuses an existing securityAlertId on the request', async () => {
       const spy = jest.spyOn(SignatureRequestActions, 'default');
       await PPOMUtil.validateRequest({
