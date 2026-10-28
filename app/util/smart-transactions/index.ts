@@ -98,10 +98,15 @@ const waitForSmartTransactionConfirmationDone = (
 
     function onDone(smartTransaction?: SmartTransaction) {
       clearTimeout(timeoutId);
-      controllerMessenger.tryUnsubscribe(
-        'SmartTransactionsController:smartTransactionConfirmationDone',
-        onDone,
-      );
+      // Callers may pass a RestrictedMessenger (no tryUnsubscribe); ignore "not subscribed" after Engine teardown.
+      try {
+        controllerMessenger.unsubscribe(
+          'SmartTransactionsController:smartTransactionConfirmationDone',
+          onDone,
+        );
+      } catch {
+        // Ignore
+      }
       resolve(smartTransaction);
     }
 

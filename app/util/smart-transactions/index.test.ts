@@ -386,7 +386,7 @@ describe('Smart Transactions utils', () => {
       } as unknown as SmartTransactionsController;
       controllerMessenger = {
         subscribe: jest.fn(),
-        tryUnsubscribe: jest.fn(),
+        unsubscribe: jest.fn(),
       } as unknown as BaseControllerMessenger;
     });
 
@@ -587,6 +587,51 @@ describe('Smart Transactions utils', () => {
       );
       expect(jest.getTimerCount()).toBe(0);
     });
+
+    it.each(['event', 'timeout'])(
+      'cleans up on a restricted messenger without tryUnsubscribe (%s path)',
+      async (path) => {
+        const restricted = (
+          messenger as unknown as {
+            getRestricted: (opts: object) => BaseControllerMessenger;
+          }
+        ).getRestricted({
+          name: 'TransactionControllerInit',
+          allowedEvents: [CONFIRMATION_DONE_EVENT],
+          allowedActions: [],
+        });
+        expect(
+          (restricted as unknown as { tryUnsubscribe?: unknown })
+            .tryUnsubscribe,
+        ).toBeUndefined();
+        const restrictedUnsubscribeSpy = jest.spyOn(restricted, 'unsubscribe');
+
+        const resultPromise = getSmartTransactionMetricsProperties(
+          smartTransactionsController,
+          transactionMeta,
+          true,
+          restricted,
+        );
+        if (path === 'event') {
+          publishConfirmationDone({
+            statusMetadata: { timedOut: true, proxied: false },
+          });
+        } else {
+          jest.advanceTimersByTime(10000);
+        }
+
+        await expect(resultPromise).resolves.toEqual(
+          path === 'event'
+            ? {
+                smart_transaction_timed_out: true,
+                smart_transaction_proxied: false,
+              }
+            : {},
+        );
+        expect(restrictedUnsubscribeSpy).toHaveBeenCalledTimes(1);
+        expect(jest.getTimerCount()).toBe(0);
+      },
+    );
 
     it('leaves no handler behind after repeated calls', async () => {
       for (let i = 0; i < 3; i++) {
