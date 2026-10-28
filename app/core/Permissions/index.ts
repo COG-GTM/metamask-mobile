@@ -121,9 +121,18 @@ function getAccountsFromSubject(subject: any) {
   return [];
 }
 
-// TODO: Replace "any" with type
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getSubjectByHostname(subjects: any, hostname: string) {
+/**
+ * Returns the PermissionController subject stored under `hostname`, reading
+ * only own properties so inherited keys (e.g. `constructor`) never match.
+ *
+ * @param subjects - The PermissionController `subjects` map.
+ * @param hostname - The subject origin to look up.
+ * @returns The subject, or `undefined` when no subject exists for `hostname`.
+ */
+function getSubjectByHostname(
+  subjects: Record<string, unknown> | undefined,
+  hostname: string,
+): unknown {
   if (!subjects || !Object.prototype.hasOwnProperty.call(subjects, hostname)) {
     return undefined;
   }

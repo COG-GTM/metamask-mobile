@@ -373,16 +373,14 @@ describe('Permission Utility Functions', () => {
         value === requestedValue ? ['0x1'] : ['0x2'],
       );
 
-      expect(
-        getPermittedChainIdsByHostname(mockState, 'dapp.example'),
-      ).toEqual(['0x1']);
+      expect(getPermittedChainIdsByHostname(mockState, 'dapp.example')).toEqual(
+        ['0x1'],
+      );
       expect(getPermittedEthChainIds).toHaveBeenCalledTimes(1);
       expect(
         getPermittedChainIdsByHostname(mockState, 'missing.example'),
       ).toEqual([]);
-      expect(getPermittedChainIdsByHostname(mockState, 'toString')).toEqual(
-        [],
-      );
+      expect(getPermittedChainIdsByHostname(mockState, 'toString')).toEqual([]);
       expect(getPermittedEthChainIds).toHaveBeenCalledTimes(1);
     });
   });
