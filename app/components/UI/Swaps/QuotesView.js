@@ -17,6 +17,7 @@ import { swapsUtils } from '@metamask/swaps-controller';
 import {
   WalletDevice,
   TransactionStatus,
+  TransactionType,
   CHAIN_IDS,
 } from '@metamask/transaction-controller';
 import { ORIGIN_METAMASK, query } from '@metamask/controller-utils';
@@ -999,6 +1000,7 @@ function SwapsQuotesView({
             deviceConfirmedOn: WalletDevice.MM_MOBILE,
             networkClientId,
             origin: process.env.MM_FOX_CODE,
+            type: TransactionType.swap,
           },
         );
 
@@ -1061,6 +1063,7 @@ function SwapsQuotesView({
             deviceConfirmedOn: WalletDevice.MM_MOBILE,
             networkClientId,
             origin: process.env.MM_FOX_CODE,
+            type: TransactionType.swapApproval,
           },
         );
 

@@ -65,6 +65,7 @@ import {
 import { CaveatTypes } from '../Permissions/constants';
 import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
 import { toHex } from '@metamask/controller-utils';
+import getDefaultBridgeParams from '../SDKConnect/AndroidSDK/getDefaultBridgeParams';
 
 jest.mock('../../util/permissions', () => ({
   __esModule: true,
@@ -1469,6 +1470,122 @@ describe('getRpcMethodMiddleware', () => {
       expect((response as JsonRpcFailure).error.message).toBe(
         expectedError.message,
       );
+    });
+  });
+
+  describe('internal origin spoofing', () => {
+    const mockAddress = '0x0000000000000000000000000000000000000001';
+    const swapsContract = '0x881d40237659c251811cec9c364ef91dc08d300c';
+    const sendTransactionRequest = {
+      jsonrpc,
+      id: 1,
+      method: 'eth_sendTransaction',
+      params: [
+        { from: mockAddress, to: swapsContract, data: '0x5f575529', value: '0x1' },
+      ],
+    };
+    const internalOrigins = [
+      ['MM_FOX_CODE', process.env.MM_FOX_CODE as string],
+      ['MM_FOX_CODE (case/whitespace variant)', ` ${(process.env.MM_FOX_CODE as string).toLowerCase()} `],
+      ['ORIGIN_METAMASK', 'metamask'],
+      ['MetaMask Mobile', 'MetaMask Mobile'],
+    ];
+
+    beforeEach(() => {
+      setupGlobalState({
+        addTransactionResult: Promise.resolve('fake-hash'),
+        permittedAccounts: { 'channel-1': [mockAddress] },
+        selectedNetworkClientId: 'mainnet',
+      });
+    });
+
+    it.each(internalOrigins)(
+      'rejects eth_sendTransaction from an SDK dapp whose originatorInfo.url is %s',
+      async (_, spoofedOrigin) => {
+        const bridgeParams = getDefaultBridgeParams({
+          clientId: 'channel-1',
+          originatorInfo: {
+            url: spoofedOrigin,
+            title: 'FunDrop',
+            platform: 'ios',
+            dappId: 'fundrop',
+            apiVersion: '0.0.0',
+          },
+          connected: true,
+          validUntil: Date.now() + 1000,
+          scheme: 'fundrop',
+        });
+        const middleware = bridgeParams.getRpcMethodMiddleware({
+          hostname: spoofedOrigin,
+          getProviderState: jest.fn(),
+        });
+
+        const response = await callMiddleware({
+          middleware,
+          request: sendTransactionRequest,
+        });
+
+        expect((response as JsonRpcFailure).error.code).toBe(
+          providerErrors.unauthorized().code,
+        );
+        expect(mockAddTransaction).not.toHaveBeenCalled();
+      },
+    );
+
+    it('rejects an SDK remote connection whose host is the Swaps origin', async () => {
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalSDKOptions(),
+        hostname: `MMSDKREMOTE::${process.env.MM_FOX_CODE}`,
+        channelId: 'channel-1',
+      });
+
+      const response = await callMiddleware({
+        middleware,
+        request: sendTransactionRequest,
+      });
+
+      expect((response as JsonRpcFailure).error.code).toBe(
+        providerErrors.unauthorized().code,
+      );
+      expect(mockAddTransaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects an SDK connection whose channel id is an internal origin', async () => {
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalSDKOptions(),
+        hostname: 'fundrop.example',
+        channelId: process.env.MM_FOX_CODE,
+      });
+
+      const response = await callMiddleware({
+        middleware,
+        request: { jsonrpc, id: 1, method: 'eth_accounts' },
+      });
+
+      expect((response as JsonRpcFailure).error.code).toBe(
+        providerErrors.unauthorized().code,
+      );
+      expect(mockGetPermittedAccounts).not.toHaveBeenCalled();
+    });
+
+    it('still forwards eth_sendTransaction from a regular SDK dapp with its own origin', async () => {
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalSDKOptions(),
+        hostname: 'fundrop.example',
+        channelId: 'channel-1',
+      });
+
+      const response = await callMiddleware({
+        middleware,
+        request: sendTransactionRequest,
+      });
+
+      expect((response as JsonRpcFailure).error).toBeUndefined();
+      expect(mockAddTransaction).toHaveBeenCalledWith(
+        sendTransactionRequest.params[0],
+        expect.objectContaining({ origin: 'fundrop.example' }),
+      );
+      expect(mockAddTransaction.mock.calls[0][1]).not.toHaveProperty('type');
     });
   });
 

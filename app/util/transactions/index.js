@@ -1571,6 +1571,23 @@ export const minimumTokenAllowance = (tokenDecimals) => {
     .toString(10);
 };
 
+export const SWAPS_TRANSACTION_TYPES = [
+  TransactionType.swap,
+  TransactionType.swapApproval,
+];
+
+/**
+ * Whether a transaction was created by the in-app Swaps flow.
+ * The origin alone is not trusted: dapps control the origin string (e.g. SDK
+ * `originatorInfo.url`) and the MM_FOX_CODE value ships in the app bundle.
+ * The transaction `type` is only set by internal callers of `addTransaction`
+ * (QuotesView) and is never inferred by TransactionController for dapp requests.
+ */
+export const getIsFromSwapsFlow = (origin, type) =>
+  Boolean(process.env.MM_FOX_CODE) &&
+  origin === process.env.MM_FOX_CODE &&
+  SWAPS_TRANSACTION_TYPES.includes(type);
+
 /**
  * For a MM Swap tx: Determines if the transaction is an ERC20 approve tx OR the actual swap tx where tokens are transferred
  */
@@ -1579,6 +1596,7 @@ export const getIsSwapApproveOrSwapTransaction = (
   origin,
   to,
   chainId,
+  type,
 ) => {
   if (!data) {
     return false;
@@ -1586,8 +1604,8 @@ export const getIsSwapApproveOrSwapTransaction = (
 
   // if approval data includes metaswap contract
   // if destination address is metaswap contract
-  return (
-    origin === process.env.MM_FOX_CODE &&
+  return Boolean(
+    getIsFromSwapsFlow(origin, type) &&
     to &&
     (swapsUtils.isValidContractAddress(chainId, to) ||
       (data?.startsWith(APPROVE_FUNCTION_SIGNATURE) &&
@@ -1599,32 +1617,47 @@ export const getIsSwapApproveOrSwapTransaction = (
 /**
  * For a MM Swap tx: Determines if the transaction is an ERC20 approve tx
  */
-export const getIsSwapApproveTransaction = (data, origin, to, chainId) => {
+export const getIsSwapApproveTransaction = (
+  data,
+  origin,
+  to,
+  chainId,
+  type,
+) => {
   if (!data) {
     return false;
   }
 
-  const isFromSwaps = origin === process.env.MM_FOX_CODE;
+  const isFromSwaps = getIsFromSwapsFlow(origin, type);
   const isApproveFunction =
     data && getFourByteSignature(data) === APPROVE_FUNCTION_SIGNATURE;
   const isSpenderSwapsContract =
     decodeApproveData(data).spenderAddress?.toLowerCase() ===
     swapsUtils.getSwapsContractAddress(chainId);
 
-  return isFromSwaps && to && isApproveFunction && isSpenderSwapsContract;
+  return Boolean(
+    isFromSwaps && to && isApproveFunction && isSpenderSwapsContract,
+  );
 };
 
 /**
  * For a MM Swap tx: Determines if the transaction is the actual swap tx where tokens are transferred
  */
-export const getIsSwapTransaction = (data, origin, to, chainId) => {
+export const getIsSwapTransaction = (data, origin, to, chainId, type) => {
   const isSwapApproveOrSwapTransaction = getIsSwapApproveOrSwapTransaction(
     data,
     origin,
     to,
     chainId,
+    type,
   );
-  const isSwapApprove = getIsSwapApproveTransaction(data, origin, to, chainId);
+  const isSwapApprove = getIsSwapApproveTransaction(
+    data,
+    origin,
+    to,
+    chainId,
+    type,
+  );
 
   return isSwapApproveOrSwapTransaction && !isSwapApprove;
 };

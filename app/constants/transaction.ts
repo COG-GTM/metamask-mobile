@@ -23,3 +23,19 @@ export const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const PREFIX_HEX_STRING = '0x';
 
 export const INTERNAL_ORIGINS = [process.env.MM_FOX_CODE, TransactionTypes.MMM, ORIGIN_METAMASK];
+
+/**
+ * Whether a value supplied by an external party (dapp hostname, SDK
+ * originatorInfo, channel id) collides with an origin reserved for
+ * wallet-internal flows. Compared trimmed and case-insensitively.
+ */
+export const isInternalOrigin = (value?: string | null): boolean => {
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim().toLowerCase();
+  if (!normalized) return false;
+  return INTERNAL_ORIGINS.some(
+    (internalOrigin) =>
+      typeof internalOrigin === 'string' &&
+      internalOrigin.trim().toLowerCase() === normalized,
+  );
+};
