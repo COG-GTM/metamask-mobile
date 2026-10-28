@@ -155,6 +155,9 @@ describe('WalletConnect v1 eth_sendTransaction', () => {
     const StorageWrapper = require('../../store/storage-wrapper');
     const AppConstants = require('../AppConstants').default;
     const { addTransaction } = require('../../util/transaction-controller');
+    const BackgroundBridgeModule = require('../BackgroundBridge/BackgroundBridge');
+    const { store } = require('../../store');
+    const { selectEvmChainId } = require('../../selectors/networkController');
     /* eslint-enable @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires */
 
     const handlers: Record<string, (...args: unknown[]) => Promise<void>> = {};
@@ -169,6 +172,7 @@ describe('WalletConnect v1 eth_sendTransaction', () => {
         handlers[event as string] = callback as (
           ...args: unknown[]
         ) => Promise<void>;
+        // eslint-disable-next-line @typescript-eslint/no-this-alias, consistent-this
         connector = this;
       });
     const rejectRequest = jest.spyOn(RNWC.prototype, 'rejectRequest');
@@ -211,8 +215,19 @@ describe('WalletConnect v1 eth_sendTransaction', () => {
       await flushPromises();
     };
 
+    const BackgroundBridgeMock =
+      BackgroundBridgeModule.default ?? BackgroundBridgeModule;
+    const { updateSession } =
+      BackgroundBridgeMock.mock.calls[
+        BackgroundBridgeMock.mock.calls.length - 1
+      ][0].wcRequestActions;
+
     return {
       sendTransaction,
+      updateSession,
+      activeChainId: selectEvmChainId(store.getState()),
+      findNetworkClientIdByChainId:
+        EngineMock.context.NetworkController.findNetworkClientIdByChainId,
       addTransaction,
       rejectRequest,
       approveRequest,
@@ -259,6 +274,50 @@ describe('WalletConnect v1 eth_sendTransaction', () => {
 
     expect(addTransaction).not.toHaveBeenCalled();
     expect(rejectRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a previously exposed account after the session accounts are cleared', async () => {
+    const { sendTransaction, updateSession, addTransaction, rejectRequest } =
+      await setup();
+
+    updateSession({ chainId: 1, accounts: [] });
+    await sendTransaction({ from: sessionAccount, to: otherWalletAccount });
+
+    expect(addTransaction).not.toHaveBeenCalled();
+    expect(rejectRequest).toHaveBeenCalledTimes(1);
+  });
+
+  it('authorizes the account exposed by the latest wallet session update', async () => {
+    const { sendTransaction, updateSession, addTransaction, rejectRequest } =
+      await setup();
+
+    updateSession({ chainId: 1, accounts: [otherWalletAccount] });
+    await sendTransaction({ from: sessionAccount, to: otherWalletAccount });
+
+    expect(addTransaction).not.toHaveBeenCalled();
+    expect(rejectRequest).toHaveBeenCalledTimes(1);
+
+    await sendTransaction({ from: otherWalletAccount, to: sessionAccount });
+
+    expect(addTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the active chain when the request omits chainId', async () => {
+    const {
+      sendTransaction,
+      addTransaction,
+      rejectRequest,
+      activeChainId,
+      findNetworkClientIdByChainId,
+    } = await setup();
+    findNetworkClientIdByChainId.mockClear();
+
+    await sendTransaction({ from: sessionAccount, to: otherWalletAccount });
+
+    expect(rejectRequest).not.toHaveBeenCalled();
+    expect(activeChainId).toBeDefined();
+    expect(findNetworkClientIdByChainId).toHaveBeenCalledWith(activeChainId);
+    expect(addTransaction).toHaveBeenCalledTimes(1);
   });
 
   it('adds the transaction when from is the account exposed to the session', async () => {

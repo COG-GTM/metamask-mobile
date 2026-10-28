@@ -176,7 +176,8 @@ class WalletConnect {
           // We have to implement this method here since the eth_sendTransaction in Engine is not working because we can't send correct origin
           if (payload.method === 'eth_sendTransaction') {
             try {
-              const { from, chainId } = payload.params?.[0] ?? {};
+              const { from, chainId: requestedChainId } =
+                payload.params?.[0] ?? {};
 
               if (!from) {
                 throw rpcErrors.invalidParams({
@@ -187,12 +188,14 @@ class WalletConnect {
 
               await checkActiveAccountAndChainId({
                 address: from,
-                chainId,
+                chainId: requestedChainId,
                 isWalletConnect: true,
                 activeAccounts: this.approvedAccounts,
                 hostname: payloadHostname,
               });
 
+              const chainId =
+                requestedChainId ?? selectEvmChainId(store.getState());
               const { NetworkController } = Engine.context;
               const networkClientId =
                 NetworkController.findNetworkClientIdByChainId(chainId);
@@ -316,9 +319,7 @@ class WalletConnect {
     const validAccounts = (accounts || [])
       .filter((account) => typeof account === 'string' && account)
       .map((account) => account.toLowerCase());
-    if (validAccounts.length > 0) {
-      this.approvedAccounts = validAccounts;
-    }
+    this.approvedAccounts = validAccounts;
   };
 
   updateSession = ({ chainId, accounts }) => {
