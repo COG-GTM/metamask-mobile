@@ -105,7 +105,7 @@ import {
   getPermissionSpecifications,
   unrestrictedMethods,
 } from '../Permissions/specifications.js';
-import { backupVault, isVaultBackedUp } from '../BackupVault';
+import { backupVaultIfChanged } from '../BackupVault';
 import { Hex, Json } from '@metamask/utils';
 import { providerErrors } from '@metamask/rpc-errors';
 
@@ -1503,34 +1503,22 @@ export class Engine {
   }
 
   handleVaultBackup() {
-    // Closure rather than a field: the Engine instance is frozen by `init`.
-    let vaultBackupInFlight: string | undefined;
     this.controllerMessenger.subscribe(
       AppConstants.KEYRING_STATE_CHANGE_EVENT,
       (state: KeyringControllerState) => {
-        const { vault } = state;
-        // Lock/unlock and keyring metadata updates leave the vault unchanged;
-        // only rewrite the keychain backup when the ciphertext differs.
-        if (
-          !vault ||
-          vault === vaultBackupInFlight ||
-          isVaultBackedUp(vault)
-        ) {
+        if (!state.vault) {
           return;
         }
 
-        vaultBackupInFlight = vault;
-        backupVault(state)
-          .then(() => {
-            Logger.log('Engine', 'Vault back up successful');
+        // Back up vault if it exists and differs from the keychain backup
+        backupVaultIfChanged(state)
+          .then((result) => {
+            if (result.success && !result.skipped) {
+              Logger.log('Engine', 'Vault back up successful');
+            }
           })
           .catch((error) => {
             Logger.error(error, 'Engine Vault backup failed');
-          })
-          .finally(() => {
-            if (vaultBackupInFlight === vault) {
-              vaultBackupInFlight = undefined;
-            }
           });
       },
     );

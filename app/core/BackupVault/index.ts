@@ -2,5 +2,5 @@ export {
   backupVault,
   getVaultFromBackup,
   clearAllVaultBackups,
-  isVaultBackedUp,
+  backupVaultIfChanged,
 } from './backupVault';

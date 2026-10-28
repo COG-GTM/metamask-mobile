@@ -11,11 +11,12 @@ import {
 import { mockNetworkState } from '../../util/test/network';
 import { Hex } from '@metamask/utils';
 import { KeyringControllerState } from '@metamask/keyring-controller';
-import { backupVault, isVaultBackedUp } from '../BackupVault';
+import { backupVaultIfChanged } from '../BackupVault';
 
 jest.mock('../BackupVault', () => ({
-  backupVault: jest.fn().mockResolvedValue({ success: true, vault: 'vault' }),
-  isVaultBackedUp: jest.fn().mockReturnValue(false),
+  backupVaultIfChanged: jest
+    .fn()
+    .mockResolvedValue({ success: true, vault: 'vault' }),
 }));
 jest.unmock('./Engine');
 jest.mock('../../store', () => ({
@@ -59,8 +60,7 @@ describe('Engine', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
-    (backupVault as jest.Mock).mockReset();
-    (isVaultBackedUp as jest.Mock).mockReset();
+    (backupVaultIfChanged as jest.Mock).mockReset();
   });
 
   it('should expose an API', () => {
@@ -106,7 +106,7 @@ describe('Engine', () => {
   });
 
   it('should backup vault when Engine is initialized and vault exists', () => {
-    (backupVault as jest.Mock).mockResolvedValue({
+    (backupVaultIfChanged as jest.Mock).mockResolvedValue({
       success: true,
       vault: 'vault',
     });
@@ -123,85 +123,12 @@ describe('Engine', () => {
       } as KeyringControllerState,
       [],
     );
-    expect(backupVault).toHaveBeenCalled();
-  });
-
-  it('should not backup vault when the vault is already backed up', () => {
-    (backupVault as jest.Mock).mockResolvedValue({
-      success: true,
-      vault: 'vault-b',
-    });
-    (isVaultBackedUp as jest.Mock).mockImplementation(
-      (vault: string) => vault === 'vault-a',
-    );
-    const engine = Engine.init({});
-    const keyringState = {
-      isUnlocked: true,
-      keyrings: [],
-      keyringsMetadata: [],
-    };
-
-    engine.controllerMessenger.publish(
-      'KeyringController:stateChange',
-      { ...keyringState, vault: 'vault-a' } as KeyringControllerState,
-      [],
-    );
-    expect(backupVault).not.toHaveBeenCalled();
-
-    engine.controllerMessenger.publish(
-      'KeyringController:stateChange',
-      { ...keyringState, vault: 'vault-b' } as KeyringControllerState,
-      [],
-    );
-    expect(backupVault).toHaveBeenCalledTimes(1);
-    expect(backupVault).toHaveBeenCalledWith(
-      expect.objectContaining({ vault: 'vault-b' }),
-    );
-  });
-
-  it('should not start a second backup of a vault that is already being backed up', async () => {
-    let resolveBackup: (value: { success: boolean }) => void = () => undefined;
-    (backupVault as jest.Mock).mockReturnValue(
-      new Promise((resolve) => {
-        resolveBackup = resolve;
-      }),
-    );
-    (isVaultBackedUp as jest.Mock).mockReturnValue(false);
-    const engine = Engine.init({});
-    const keyringState = {
-      vault: 'vault-c',
-      keyrings: [],
-      keyringsMetadata: [],
-    };
-
-    engine.controllerMessenger.publish(
-      'KeyringController:stateChange',
-      { ...keyringState, isUnlocked: false } as KeyringControllerState,
-      [],
-    );
-    engine.controllerMessenger.publish(
-      'KeyringController:stateChange',
-      { ...keyringState, isUnlocked: true } as KeyringControllerState,
-      [],
-    );
-    expect(backupVault).toHaveBeenCalledTimes(1);
-
-    resolveBackup({ success: true });
-    await new Promise(process.nextTick);
-
-    // Once the in-flight backup settles, the keychain state decides.
-    (backupVault as jest.Mock).mockResolvedValue({ success: true });
-    engine.controllerMessenger.publish(
-      'KeyringController:stateChange',
-      { ...keyringState, isUnlocked: false } as KeyringControllerState,
-      [],
-    );
-    expect(backupVault).toHaveBeenCalledTimes(2);
+    expect(backupVaultIfChanged).toHaveBeenCalled();
   });
 
   it('should not backup vault when Engine is initialized and vault is empty', () => {
-    // backupVault will not be called so return value doesn't matter here
-    (backupVault as jest.Mock).mockResolvedValue(undefined);
+    // backupVaultIfChanged will not be called so return value doesn't matter here
+    (backupVaultIfChanged as jest.Mock).mockResolvedValue(undefined);
     const engine = Engine.init({});
     const newEngine = Engine.init({});
     expect(engine).toStrictEqual(newEngine);
@@ -215,7 +142,7 @@ describe('Engine', () => {
       } as KeyringControllerState,
       [],
     );
-    expect(backupVault).not.toHaveBeenCalled();
+    expect(backupVaultIfChanged).not.toHaveBeenCalled();
   });
 
   it('calling Engine.destroy deletes the old instance', async () => {

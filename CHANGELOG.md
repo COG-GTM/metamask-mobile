@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fix(bridge): fix transaction history for EVM and Solana bridge transactions ([#14759](https://github.com/MetaMask/metamask-mobile/pull/14759))
 - fix(bridge): change networks properly when user switches between source and destination tokens ([#14812](https://github.com/MetaMask/metamask-mobile/pull/14812))
 - fix(bridge): fix(bridge): update quote details card toggle to handle same chain swaps and improve slippage button layout ([#15153](https://github.com/MetaMask/metamask-mobile/pull/15153))
-- fix(engine): skip the keychain vault backup when the KeyringController vault is unchanged (e.g. on lock/unlock)
+- fix(engine): skip the keychain vault backup when the KeyringController vault is unchanged (e.g. on lock/unlock) ([#2032](https://github.com/COG-GTM/metamask-mobile/pull/2032))
 
 ## [7.45.2]
 
