@@ -10,6 +10,7 @@ describe('compileUntrustedRegExp', () => {
     '^0x[0-9a-fA-F]{40}$',
     '^(ethereum:)?0x[0-9a-fA-F]{40}',
     '^ethereum:.*$',
+    '^(ethereum:)?.*$',
     '^wc:[a-z0-9-]+@2\\?',
     'foo|bar|baz',
     '^[A-Z]{3}-\\d{4}$',
@@ -30,6 +31,10 @@ describe('compileUntrustedRegExp', () => {
     ['.*a.*b', /too many repetitions/],
     ['\\d+\\d{0,5}$', /too many repetitions/],
     ['a{0,99999}b', /too many repetitions/],
+    [`${'(a|aa)'.repeat(13)}b`, /too many repetitions/],
+    [`${'(?:a|a)'.repeat(13)}b`, /too many repetitions/],
+    [`${'a{0,8}'.repeat(4)}b`, /too many repetitions/],
+    ['[a-z]*(a|aa)(a|aa)b', /too many repetitions/],
     ['^(a)\\1$', /backreferences/],
     ['^(?<x>a)\\k<x>$', /backreferences/],
     ['^(?=a)a', /lookarounds/],
@@ -59,9 +64,11 @@ describe('compileUntrustedRegExp', () => {
   it('matches accepted worst-case patterns quickly at the maximum input length', () => {
     const input = `${'a'.repeat(MAX_UNTRUSTED_INPUT_LENGTH - 1)}1`;
     for (const pattern of [
+      `${'(a|aa)'.repeat(11)}b`,
+      `${'a{0,6}'.repeat(4)}b`,
       '[a-z]*$',
       '[a-z]+[a-z]?$',
-      '^[a-z]*[a-z]?[a-z]?$',
+      '^[a-z]*[a-z]?$',
     ]) {
       const compiled = compileUntrustedRegExp(pattern);
       const start = Date.now();

@@ -11,7 +11,7 @@
 
 export const MAX_UNTRUSTED_PATTERN_LENGTH = 128;
 export const MAX_UNTRUSTED_INPUT_LENGTH = 2048;
-const MAX_MATCH_COST = 4 * MAX_UNTRUSTED_INPUT_LENGTH ** 2;
+const MAX_MATCH_COST = 2 * MAX_UNTRUSTED_INPUT_LENGTH ** 2;
 
 export class UntrustedRegExpError extends Error {
   constructor(message: string) {
