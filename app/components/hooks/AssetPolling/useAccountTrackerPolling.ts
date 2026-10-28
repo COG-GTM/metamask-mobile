@@ -11,10 +11,14 @@ import { selectAccountsByChainId } from '../../../selectors/accountTrackerContro
 import { isPortfolioViewEnabled } from '../../../util/networks';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 
-// Polls native currency prices across networks.
-const useAccountTrackerPolling = ({
+interface AccountTrackerPollingOptions {
+  networkClientIds?: { networkClientId: string }[];
+}
+
+// Starts/stops AccountTrackerController polling without subscribing to its state.
+export const useAccountTrackerPollingOnly = ({
   networkClientIds,
-}: { networkClientIds?: { networkClientId: string }[] } = {}) => {
+}: AccountTrackerPollingOptions = {}) => {
   // Selectors to determine polling input
   const networkConfigurationsPopularNetworks = useSelector(
     selectAllPopularNetworkConfigurations,
@@ -24,8 +28,6 @@ const useAccountTrackerPolling = ({
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
 
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
-
-  const accountsByChainId = useSelector(selectAccountsByChainId);
   const networkClientIdsConfig = Object.values(
     networkConfigurationsPopularNetworks,
   ).map((network) => ({
@@ -60,6 +62,14 @@ const useAccountTrackerPolling = ({
       ),
     input,
   });
+};
+
+const useAccountTrackerPolling = ({
+  networkClientIds,
+}: AccountTrackerPollingOptions = {}) => {
+  useAccountTrackerPollingOnly({ networkClientIds });
+
+  const accountsByChainId = useSelector(selectAccountsByChainId);
 
   return {
     accountsByChainId,

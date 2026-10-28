@@ -12,7 +12,10 @@ import { isPortfolioViewEnabled } from '../../../util/networks';
 import { selectAllTokenBalances } from '../../../selectors/tokenBalancesController';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 
-const useTokenBalancesPolling = ({ chainIds }: { chainIds?: Hex[] } = {}) => {
+// Starts/stops TokenBalancesController polling without subscribing to its state.
+export const useTokenBalancesPollingOnly = ({
+  chainIds,
+}: { chainIds?: Hex[] } = {}) => {
   // Selectors to determine polling input
   const networkConfigurationsPopularNetworks = useSelector(
     selectAllPopularNetworkConfigurations,
@@ -21,9 +24,6 @@ const useTokenBalancesPolling = ({ chainIds }: { chainIds?: Hex[] } = {}) => {
   const isAllNetworksSelected = useSelector(selectIsAllNetworks);
   const isPopularNetwork = useSelector(selectIsPopularNetwork);
   const isEvmSelected = useSelector(selectIsEvmNetworkSelected);
-
-  // Selectors returning state updated by the polling
-  const tokenBalances = useSelector(selectAllTokenBalances);
 
   const networkConfigurationsToPoll =
     isAllNetworksSelected && isPopularNetwork && isPortfolioViewEnabled()
@@ -48,6 +48,13 @@ const useTokenBalancesPolling = ({ chainIds }: { chainIds?: Hex[] } = {}) => {
       ? chainIdsToPoll.map((chainId) => ({ chainId: chainId as Hex }))
       : [],
   });
+};
+
+const useTokenBalancesPolling = ({ chainIds }: { chainIds?: Hex[] } = {}) => {
+  useTokenBalancesPollingOnly({ chainIds });
+
+  // Selectors returning state updated by the polling
+  const tokenBalances = useSelector(selectAllTokenBalances);
 
   return {
     tokenBalances,
