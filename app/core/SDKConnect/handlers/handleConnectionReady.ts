@@ -12,6 +12,7 @@ import Engine from '../../Engine';
 import { approveHostProps } from '../SDKConnect';
 import generateOTP from '../utils/generateOTP.util';
 import { setupBridge } from './setupBridge';
+import { requestOTPVerification } from './verifyQRReconnection';
 import { HOUR_IN_MS } from '../SDKConnectConstants';
 
 export const handleConnectionReady = async ({
@@ -118,24 +119,33 @@ export const handleConnectionReady = async ({
       !connection.initialConnection &&
       connection.origin === AppConstants.DEEPLINKS.ORIGIN_QR_CODE
     ) {
-      const currentTime = Date.now();
       const OTPExpirationDuration =
         Number(process.env.OTP_EXPIRATION_DURATION_IN_MS) || HOUR_IN_MS;
+      // lastAuthorized is only a past timestamp after a successful OTP check;
+      // future values are session expiries (approvedHosts) and do not count.
+      const elapsedSinceAuthorized = connection.lastAuthorized
+        ? Date.now() - connection.lastAuthorized
+        : -1;
       const channelWasActiveRecently =
-        !!connection.lastAuthorized &&
-        currentTime - connection.lastAuthorized < OTPExpirationDuration;
-      if (channelWasActiveRecently) {
-        connection.approvalPromise = undefined;
-        // Prevent auto approval if metamask is killed and restarted
-        disapprove(connection.channelId);
-        // Always need to re-approve connection first.
-        await checkPermissions({
-          connection,
-          engine,
-          lastAuthorized: connection.lastAuthorized,
-        });
-        connection.sendAuthorized(true);
-      } else {
+        elapsedSinceAuthorized >= 0 &&
+        elapsedSinceAuthorized < OTPExpirationDuration;
+
+      connection.reconnectVerified = false;
+      connection.approvalPromise = undefined;
+      // Prevent auto approval if metamask is killed and restarted
+      disapprove(connection.channelId);
+
+      const verify = async (): Promise<boolean> => {
+        if (channelWasActiveRecently) {
+          return Boolean(
+            await checkPermissions({
+              connection,
+              engine,
+              lastAuthorized: connection.lastAuthorized,
+            }),
+          );
+        }
+
         if (approvalController.get(connection.channelId)) {
           DevLogger.log(`SDKConnect::CLIENTS_READY reject previous approval`);
           // cleaning previous pending approval
@@ -144,7 +154,6 @@ export const handleConnectionReady = async ({
             providerErrors.userRejectedRequest(),
           );
         }
-        connection.approvalPromise = undefined;
         if (!connection.otps) {
           connection.otps = generateOTP();
         }
@@ -158,14 +167,34 @@ export const handleConnectionReady = async ({
         }).catch((err) => {
           Logger.log(err, `SDKConnect:: Connection failed to send otp`);
         });
-        // Prevent auto approval if metamask is killed and restarted
-        disapprove(connection.channelId);
-        // Always need to re-approve connection first.
-        await checkPermissions({
+
+        const otpVerified = await requestOTPVerification({
           connection,
           engine,
         });
-        connection.sendAuthorized(true);
+        if (!otpVerified) {
+          return false;
+        }
+        return Boolean(await checkPermissions({ connection, engine }));
+      };
+
+      let verified = false;
+      connection.reconnectVerification = verify();
+      try {
+        verified = await connection.reconnectVerification;
+      } finally {
+        connection.reconnectVerification = undefined;
+      }
+      if (!verified) {
+        throw new Error(
+          `SDKConnect::CLIENTS_READY reconnection of ${connection.channelId} was not re-authorized`,
+        );
+      }
+
+      connection.reconnectVerified = true;
+      connection.otps = undefined;
+      connection.sendAuthorized(true);
+      if (!channelWasActiveRecently) {
         connection.lastAuthorized = Date.now();
       }
     } else if (

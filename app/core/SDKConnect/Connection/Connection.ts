@@ -94,6 +94,16 @@ export class Connection extends EventEmitter2 {
    */
   otps?: number[];
 
+  /**
+   * Set once a QR-code reconnection passed OTP re-authorization; reset on disconnect.
+   */
+  reconnectVerified = false;
+
+  /**
+   * Pending OTP re-authorization for the current QR-code reconnection.
+   */
+  reconnectVerification?: Promise<boolean>;
+
   approvalPromise?: Promise<unknown>;
 
   /**

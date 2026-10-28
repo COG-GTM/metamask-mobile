@@ -1,0 +1,84 @@
+import AppConstants from '../../AppConstants';
+import { Connection } from '../Connection';
+import {
+  assertQRReconnectionVerified,
+  requiresQRReconnectionVerification,
+} from './verifyQRReconnection';
+
+jest.mock('../../Engine');
+jest.mock('../utils/DevLogger');
+jest.mock('../utils/wait.util');
+
+describe('verifyQRReconnection', () => {
+  let connection: Connection;
+
+  beforeEach(() => {
+    connection = {
+      channelId: 'channel-1',
+      origin: AppConstants.DEEPLINKS.ORIGIN_QR_CODE,
+      initialConnection: false,
+      reconnectVerified: false,
+      remote: { hasRelayPersistence: () => false },
+    } as unknown as Connection;
+  });
+
+  describe('requiresQRReconnectionVerification', () => {
+    it('is required for an unverified QR code reconnection', () => {
+      expect(requiresQRReconnectionVerification(connection)).toBe(true);
+    });
+
+    it('is not required once the reconnection is verified', () => {
+      connection.reconnectVerified = true;
+      expect(requiresQRReconnectionVerification(connection)).toBe(false);
+    });
+
+    it('is not required for the initial QR code connection', () => {
+      connection.initialConnection = true;
+      expect(requiresQRReconnectionVerification(connection)).toBe(false);
+    });
+
+    it('is not required for deeplink connections', () => {
+      connection.origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
+      expect(requiresQRReconnectionVerification(connection)).toBe(false);
+    });
+
+    it('is not required for relay-persisted connections', () => {
+      connection.remote = {
+        hasRelayPersistence: () => true,
+      } as unknown as Connection['remote'];
+      expect(requiresQRReconnectionVerification(connection)).toBe(false);
+    });
+  });
+
+  describe('assertQRReconnectionVerified', () => {
+    it('rejects requests when no verification has happened', async () => {
+      await expect(assertQRReconnectionVerified(connection)).rejects.toThrow(
+        'Reconnection has not been re-authorized by the wallet user.',
+      );
+    });
+
+    it('waits for a pending verification and passes when it succeeds', async () => {
+      connection.reconnectVerification = Promise.resolve(true).then(() => {
+        connection.reconnectVerified = true;
+        return true;
+      });
+      await expect(
+        assertQRReconnectionVerified(connection),
+      ).resolves.toBeUndefined();
+    });
+
+    it('waits for a pending verification and rejects when it fails', async () => {
+      connection.reconnectVerification = Promise.reject(new Error('rejected'));
+      await expect(assertQRReconnectionVerified(connection)).rejects.toThrow(
+        'Reconnection has not been re-authorized by the wallet user.',
+      );
+    });
+
+    it('passes for verified connections', async () => {
+      connection.reconnectVerified = true;
+      await expect(
+        assertQRReconnectionVerified(connection),
+      ).resolves.toBeUndefined();
+    });
+  });
+});

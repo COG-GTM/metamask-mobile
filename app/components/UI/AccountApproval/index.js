@@ -97,8 +97,8 @@ class AccountApproval extends PureComponent {
     otp:
       this.props.currentPageInformation.origin ===
         AppConstants.DEEPLINKS.ORIGIN_QR_CODE &&
-      this.props.currentPageInformation.reconnect &&
-      this.props.currentPageInformation.apiVersion,
+      !!this.props.currentPageInformation.reconnect &&
+      (this.props.currentPageInformation.otps?.length ?? 0) > 0,
     isUrlFlaggedAsPhishing: false,
   };
 
@@ -199,10 +199,10 @@ class AccountApproval extends PureComponent {
       this.state.otp &&
       this.state.otpChoice !== this.props.currentPageInformation.otps[0]
     ) {
-      SDKConnect.getInstance().removeChannel(
-        this.props.currentPageInformation.channelId,
-        true,
-      );
+      SDKConnect.getInstance().removeChannel({
+        channelId: this.props.currentPageInformation.channelId,
+        sendTerminate: true,
+      });
       // onConfirm will close current window by rejecting current approvalRequest.
       this.props.onCancel();
 
@@ -229,7 +229,12 @@ class AccountApproval extends PureComponent {
       });
     }
 
-    this.props.onConfirm();
+    if (this.state.otp) {
+      // The SDK handler re-checks the chosen code against the one sent to the dapp.
+      this.props.onConfirm(undefined, { otpChoice: this.state.otpChoice });
+    } else {
+      this.props.onConfirm();
+    }
     this.props.metrics.trackEvent(
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.CONNECT_REQUEST_COMPLETED,
@@ -252,10 +257,10 @@ class AccountApproval extends PureComponent {
         .build(),
     );
     if (this.props.currentPageInformation.channelId) {
-      SDKConnect.getInstance().removeChannel(
-        this.props.currentPageInformation.channelId,
-        true,
-      );
+      SDKConnect.getInstance().removeChannel({
+        channelId: this.props.currentPageInformation.channelId,
+        sendTerminate: true,
+      });
     }
 
     this.props.onCancel();

@@ -73,6 +73,20 @@ describe('handleClientsDisconnected', () => {
       expect(mockConnection.otps).toBeUndefined();
     });
 
+    it('should require OTP re-authorization on the next reconnection', () => {
+      mockConnection.reconnectVerified = true;
+      mockConnection.reconnectVerification = Promise.resolve(true);
+      const handler = handleClientsDisconnected({
+        instance: mockConnection,
+        disapprove: mockDisapprove,
+      });
+
+      handler();
+
+      expect(mockConnection.reconnectVerified).toBe(false);
+      expect(mockConnection.reconnectVerification).toBeUndefined();
+    });
+
     it('should set receivedDisconnect to true', () => {
       const handler = handleClientsDisconnected({
         instance: mockConnection,
