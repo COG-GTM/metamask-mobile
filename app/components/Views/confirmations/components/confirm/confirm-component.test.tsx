@@ -1,8 +1,10 @@
 import { act } from '@testing-library/react-native';
 import React from 'react';
+import { merge } from 'lodash';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   generateContractInteractionState,
+  getSignatureSecurityAlertState,
   personalSignatureConfirmationState,
   securityAlertResponse,
   stakingClaimConfirmationState,
@@ -228,10 +230,14 @@ describe('Confirm', () => {
 
   it('renders a blockaid banner if the confirmation has blockaid error response', async () => {
     const { getByText } = renderWithProvider(<Confirm />, {
-      state: {
-        ...typedSignV1ConfirmationState,
-        signatureRequest: { securityAlertResponse },
-      },
+      state: merge(
+        {},
+        typedSignV1ConfirmationState,
+        getSignatureSecurityAlertState(
+          '7e62bcb1-a4e9-11ef-9b51-ddf21c91a998',
+          securityAlertResponse,
+        ),
+      ),
     });
 
     await act(async () => {
@@ -247,10 +253,14 @@ describe('Confirm', () => {
       .spyOn(ConfirmationRedesignEnabled, 'useConfirmationRedesignEnabled')
       .mockReturnValue({ isRedesignedEnabled: false });
     const { queryByText } = renderWithProvider(<Confirm />, {
-      state: {
-        ...typedSignV1ConfirmationState,
-        signatureRequest: { securityAlertResponse },
-      },
+      state: merge(
+        {},
+        typedSignV1ConfirmationState,
+        getSignatureSecurityAlertState(
+          '7e62bcb1-a4e9-11ef-9b51-ddf21c91a998',
+          securityAlertResponse,
+        ),
+      ),
     });
     expect(queryByText('Signature request')).toBeNull();
   });

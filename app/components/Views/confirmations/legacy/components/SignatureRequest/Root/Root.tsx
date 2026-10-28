@@ -3,8 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
-import setSignatureRequestSecurityAlertResponse from '../../../../../../../actions/signatureRequest';
-import { store } from '../../../../../../../store';
+import { RootState } from '../../../../../../../reducers';
+import PPOMUtil from '../../../../../../../lib/ppom/ppom-util';
+import { selectSignatureRequestById } from '../../../../../../../selectors/signatureController';
+import { getSignatureRequestSecurityAlertId } from '../../../../selectors/security-alerts';
 import { useTheme } from '../../../../../../../util/theme';
 import { useConfirmationRedesignEnabled } from '../../../../hooks/useConfirmationRedesignEnabled';
 import PersonalSign from '../../PersonalSign';
@@ -47,12 +49,19 @@ const Root = ({
 
   const currentPageMeta = messageParams?.meta;
 
-  useEffect(() => {
-    store.dispatch(setSignatureRequestSecurityAlertResponse());
-    return () => {
-      store.dispatch(setSignatureRequestSecurityAlertResponse());
-    };
-  }, []);
+  const signatureRequest = useSelector((state: RootState) =>
+    selectSignatureRequestById(state, messageParams?.metamaskId as string),
+  );
+  const securityAlertId = getSignatureRequestSecurityAlertId(signatureRequest);
+
+  useEffect(
+    () => () => {
+      if (securityAlertId) {
+        PPOMUtil.clearSignatureSecurityAlertResponse(securityAlertId);
+      }
+    },
+    [securityAlertId],
+  );
 
   if (
     !messageParams ||

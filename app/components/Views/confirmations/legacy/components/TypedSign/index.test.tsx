@@ -84,12 +84,14 @@ const initialState = {
     },
   },
   signatureRequest: {
-    securityAlertResponse: {
-      description: '',
-      features: [],
-      providerRequestsCount: { eth_chainId: 1 },
-      reason: '',
-      result_type: 'Benign',
+    securityAlertResponses: {
+      'test-security-alert-id': {
+        description: '',
+        features: [],
+        providerRequestsCount: { eth_chainId: 1 },
+        reason: '',
+        result_type: 'Benign',
+      },
     },
   },
 };

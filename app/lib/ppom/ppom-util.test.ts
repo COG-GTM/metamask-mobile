@@ -22,6 +22,7 @@ import {
   SecurityAlertSource,
 } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 import Logger from '../../util/Logger';
+import signatureRequestReducer from '../../reducers/signatureRequest';
 
 const CHAIN_ID_MOCK = '0x1';
 
@@ -280,8 +281,104 @@ describe('PPOM Utils', () => {
 
     it('should update signature requests with validation result', async () => {
       const spy = jest.spyOn(SignatureRequestActions, 'default');
-      await PPOMUtil.validateRequest(mockSignatureRequest);
+      const request = { ...mockSignatureRequest };
+      await PPOMUtil.validateRequest(request);
       expect(spy).toHaveBeenCalledTimes(2);
+      const securityAlertId = (
+        request as { securityAlertResponse?: { securityAlertId?: string } }
+      ).securityAlertResponse?.securityAlertId;
+      expect(securityAlertId).toEqual(expect.any(String));
+      expect(spy).toHaveBeenNthCalledWith(
+        1,
+        securityAlertId,
+        expect.objectContaining({
+          result_type: ResultType.RequestInProgress,
+          securityAlertId,
+        }),
+      );
+      expect(spy).toHaveBeenNthCalledWith(
+        2,
+        securityAlertId,
+        expect.objectContaining({ securityAlertId }),
+      );
+    });
+
+    it('does not let the result for one signature request replace the result for another', async () => {
+      const spy = jest.spyOn(SignatureRequestActions, 'default');
+      const usePPOMMock = MockEngine.context.PPOMController
+        ?.usePPOM as jest.Mock;
+      usePPOMMock
+        .mockResolvedValueOnce({
+          result_type: ResultType.Malicious,
+          reason: Reason.permitFarming,
+        })
+        .mockResolvedValueOnce({
+          result_type: ResultType.Benign,
+          reason: Reason.notApplicable,
+        });
+
+      const requestA = { ...mockSignatureRequest, id: 1 };
+      const requestB = {
+        ...mockSignatureRequest,
+        id: 2,
+        origin: 'other.example',
+      };
+      await PPOMUtil.validateRequest(requestA);
+      await PPOMUtil.validateRequest(requestB);
+
+      const state = spy.mock.results.reduce(
+        (acc, { value }) => signatureRequestReducer(acc, value),
+        signatureRequestReducer(undefined, { type: 'INIT' }),
+      );
+      const idA = (
+        requestA as { securityAlertResponse?: { securityAlertId?: string } }
+      ).securityAlertResponse?.securityAlertId as string;
+      const idB = (
+        requestB as { securityAlertResponse?: { securityAlertId?: string } }
+      ).securityAlertResponse?.securityAlertId as string;
+
+      expect(idA).not.toEqual(idB);
+      expect(state.securityAlertResponses[idA].result_type).toBe(
+        ResultType.Malicious,
+      );
+      expect(state.securityAlertResponses[idB].result_type).toBe(
+        ResultType.Benign,
+      );
+    });
+
+    it('does not validate a signature request that ApprovalController will reject as a duplicate', async () => {
+      const spy = jest.spyOn(SignatureRequestActions, 'default');
+      const hasMock = jest.fn().mockReturnValue(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (MockEngine.context as any).ApprovalController = { has: hasMock };
+      try {
+        const request = { ...mockSignatureRequest };
+        await PPOMUtil.validateRequest(request);
+        expect(hasMock).toHaveBeenCalledWith({
+          origin: mockSignatureRequest.origin,
+          type: 'personal_sign',
+        });
+        expect(spy).not.toHaveBeenCalled();
+        expect(
+          MockEngine.context.PPOMController?.usePPOM,
+        ).not.toHaveBeenCalled();
+        expect(
+          (request as { securityAlertResponse?: unknown })
+            .securityAlertResponse,
+        ).toBeUndefined();
+      } finally {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delete (MockEngine.context as any).ApprovalController;
+      }
+    });
+
+    it('reuses an existing securityAlertId on the request', async () => {
+      const spy = jest.spyOn(SignatureRequestActions, 'default');
+      await PPOMUtil.validateRequest({
+        ...mockSignatureRequest,
+        securityAlertResponse: { securityAlertId: 'existing-id' },
+      });
+      expect(spy).toHaveBeenCalledWith('existing-id', expect.anything());
     });
 
     it('normalizes transaction requests before validation', async () => {
@@ -472,12 +569,14 @@ describe('PPOM Utils', () => {
   });
 
   describe('clearSignatureSecurityAlertResponse', () => {
-    it('set call action to set securityAlertResponse for signature in redux state to undefined', async () => {
-      const spy = jest.spyOn(SignatureRequestActions, 'default');
-      PPOMUtil.clearSignatureSecurityAlertResponse();
+    it('clears the security alert response for the given securityAlertId', async () => {
+      const spy = jest.spyOn(
+        SignatureRequestActions,
+        'clearSignatureRequestSecurityAlertResponse',
+      );
+      PPOMUtil.clearSignatureSecurityAlertResponse('abc');
       expect(spy).toHaveBeenCalledTimes(1);
-      // function call with no arguments
-      expect(spy).toHaveBeenCalledWith();
+      expect(spy).toHaveBeenCalledWith('abc');
     });
   });
 });
