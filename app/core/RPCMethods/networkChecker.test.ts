@@ -1,11 +1,16 @@
 import checkSafeNetwork from './networkChecker.util';
 import { BannerAlertSeverity } from '../../component-library/components/Banners/Banner';
 import axios from 'axios';
+import { clearSafeChainsListCache } from '../../util/networks/safeChainsList';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('checkSafeNetwork', () => {
+  beforeEach(() => {
+    clearSafeChainsListCache();
+  });
+
   afterEach(() => {
     mockedAxios.get.mockRestore();
   });

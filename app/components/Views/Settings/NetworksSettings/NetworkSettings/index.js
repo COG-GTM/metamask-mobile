@@ -682,15 +682,23 @@ export class NetworkSettings extends PureComponent {
     const { rpcUrl, chainId } = this.state;
 
     if (rpcUrl && chainId) {
-      const chainToMatch = this.props.matchedChainNetwork?.safeChainsList?.find(
+      const matchedChain = this.props.matchedChainNetwork?.safeChainsList?.find(
         (network) => network.chainId === parseInt(chainId),
       );
+      let chainToMatch = matchedChain;
 
       // This is a temporary hack to not include POL as a potential scam token while chainlist updates
       // TODO: This can be safely removed once safeChainsList updates from MATIC to POL
-      if (parseInt(chainId) === 137) {
-        chainToMatch.nativeCurrency.symbol = 'POL';
-        chainToMatch.nativeCurrency.name = 'POL';
+      // The list is a shared cache, so patch a copy of the entry instead of the entry itself.
+      if (matchedChain && parseInt(chainId) === 137) {
+        chainToMatch = {
+          ...matchedChain,
+          nativeCurrency: {
+            ...matchedChain.nativeCurrency,
+            symbol: 'POL',
+            name: 'POL',
+          },
+        };
       }
 
       this.updateNetworkList(chainToMatch);
