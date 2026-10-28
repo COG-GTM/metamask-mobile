@@ -43,6 +43,10 @@ export const getSafeChainsList = (): Promise<SafeChainListEntry[]> => {
   return request.promise;
 };
 
+/**
+ * Drops the cached (or in-flight) chains.json request so the next
+ * `getSafeChainsList` call downloads it again. Intended for test isolation.
+ */
 export const clearSafeChainsListCache = () => {
   cachedRequest = undefined;
 };
