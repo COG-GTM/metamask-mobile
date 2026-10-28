@@ -374,12 +374,30 @@ describe('PPOM Utils', () => {
 
     it('does not store a result that arrives after the signature request was completed', async () => {
       const spy = jest.spyOn(SignatureRequestActions, 'default');
+      const validation = PPOMUtil.validateRequest({
+        ...mockSignatureRequest,
+        securityAlertResponse: { securityAlertId: 'completed-id' },
+      });
       PPOMUtil.clearSignatureSecurityAlertResponse('completed-id');
+      await validation;
+      expect(spy).not.toHaveBeenCalled();
+
+      // The id is forgotten once its validation settles.
       await PPOMUtil.validateRequest({
         ...mockSignatureRequest,
         securityAlertResponse: { securityAlertId: 'completed-id' },
       });
-      expect(spy).not.toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith('completed-id', expect.anything());
+    });
+
+    it('does not remember ids cleared without a running validation', async () => {
+      const spy = jest.spyOn(SignatureRequestActions, 'default');
+      PPOMUtil.clearSignatureSecurityAlertResponse('idle-id');
+      await PPOMUtil.validateRequest({
+        ...mockSignatureRequest,
+        securityAlertResponse: { securityAlertId: 'idle-id' },
+      });
+      expect(spy).toHaveBeenCalledWith('idle-id', expect.anything());
     });
 
     it('reuses an existing securityAlertId on the request', async () => {

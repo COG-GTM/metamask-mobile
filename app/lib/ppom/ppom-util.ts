@@ -65,9 +65,13 @@ const SECURITY_ALERT_RESPONSE_IN_PROGRESS = {
   description: 'Validating the confirmation in progress.',
 };
 
+/** Number of running validations per signature securityAlertId. */
+const pendingSignatureValidations = new Map<string, number>();
+
 /**
- * Ids of signature requests that were approved or rejected. A validation that finishes after
- * that must not write its result back, or the entry would be orphaned in persisted state.
+ * Ids of signature requests that were approved or rejected while still being validated.
+ * Their late results must not be written back, or the entry would be orphaned in persisted
+ * state. Entries are removed once the last validation for the id settles.
  */
 const completedSignatureSecurityAlertIds = new Set<string>();
 
@@ -130,8 +134,34 @@ async function validateRequest(
     if (isRejectedDuplicateSignatureRequest(req)) {
       return;
     }
-    securityAlertId = bindSignatureSecurityAlertId(req, securityAlertId);
+    const id = bindSignatureSecurityAlertId(req, securityAlertId);
+    pendingSignatureValidations.set(
+      id,
+      (pendingSignatureValidations.get(id) ?? 0) + 1,
+    );
+    try {
+      return await runValidation(req, transactionId, id);
+    } finally {
+      const remaining = (pendingSignatureValidations.get(id) ?? 1) - 1;
+      if (remaining > 0) {
+        pendingSignatureValidations.set(id, remaining);
+      } else {
+        pendingSignatureValidations.delete(id);
+        completedSignatureSecurityAlertIds.delete(id);
+      }
+    }
   }
+
+  return runValidation(req, transactionId, securityAlertId);
+}
+
+async function runValidation(
+  req: PPOMRequest,
+  transactionId?: string,
+  securityAlertId?: string,
+) {
+  const isConfirmationMethod = CONFIRMATION_METHODS.includes(req.method);
+  const isTransaction = isTransactionRequest(req);
 
   const {
     AccountsController,
@@ -318,7 +348,7 @@ function normalizeRequest(request: PPOMRequest): PPOMRequest {
 }
 
 function clearSignatureSecurityAlertResponse(securityAlertId?: string) {
-  if (securityAlertId) {
+  if (securityAlertId && pendingSignatureValidations.has(securityAlertId)) {
     completedSignatureSecurityAlertIds.add(securityAlertId);
   }
   store.dispatch(clearSignatureRequestSecurityAlertResponse(securityAlertId));
