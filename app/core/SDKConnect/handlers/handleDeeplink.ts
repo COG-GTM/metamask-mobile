@@ -76,13 +76,39 @@ const handleDeeplink = async ({
   }
   DevLogger.log(`handleDeeplink:: url=${url}`);
   const connections = sdkConnect.getConnections();
-  const channelExists = connections[channelId] !== undefined;
+  let channelExists = connections[channelId] !== undefined;
+  const approvedPublicKey = connections[channelId]?.otherPublicKey;
+  let peerKeyChanged = false;
 
   DevLogger.log(
     `handleDeeplink:: channel=${channelId} exists=${channelExists}`,
   );
 
   try {
+    if (
+      channelExists &&
+      otherPublicKey &&
+      otherPublicKey !== approvedPublicKey
+    ) {
+      // A different peer key on an approved channel is a new peer: drop the
+      // channel and its permissions so the user has to approve it again.
+      DevLogger.log(
+        `handleDeeplink:: channel=${channelId} peer key changed --- reset channel and require approval`,
+      );
+      const removed = await sdkConnect.removeChannel({
+        channelId,
+        sendTerminate: true,
+      });
+      if (!removed || sdkConnect.getConnections()[channelId] !== undefined) {
+        Logger.log(
+          `handleDeeplink:: channel=${channelId} peer key changed but channel could not be reset --- ignoring deeplink`,
+        );
+        return;
+      }
+      channelExists = false;
+      peerKeyChanged = true;
+    }
+
     if (channelExists) {
       // is it already connected?
       let connected = sdkConnect.getConnected()[channelId]?.remote.isConnected() ?? false;
@@ -103,12 +129,11 @@ const handleDeeplink = async ({
           DevLogger.log(`handleDeeplink:: channel=${channelId} reconnecting`);
           await sdkConnect.reconnect({
             channelId,
-            otherPublicKey,
+            otherPublicKey: approvedPublicKey ?? otherPublicKey,
             context,
             protocolVersion,
             initialConnection: false,
             trigger: 'deeplink',
-            updateKey: true,
           });
         }
       } else {
@@ -119,6 +144,13 @@ const handleDeeplink = async ({
       DevLogger.log(
         `handleDeeplink:: channel=${channelId} reconnected=${connected} -- handle rcp`,
       );
+      // Only accept rpc from a link that carries the approved peer key.
+      if (rpc && otherPublicKey !== approvedPublicKey) {
+        DevLogger.log(
+          `handleDeeplink:: channel=${channelId} rpc ignored --- link does not carry the approved peer key`,
+        );
+        return;
+      }
       // If msg contains rpc calls, handle them
       if (rpc) {
         const connection = sdkConnect.getConnected()[channelId];
@@ -154,7 +186,9 @@ const handleDeeplink = async ({
       }
     } else {
       const trigger =
-        rpc !== undefined && origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK
+        rpc !== undefined &&
+        !peerKeyChanged &&
+        origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK
           ? undefined // temporarily unset trigger on android to prevent goBack after connection approval
           : 'deeplink';
 
@@ -172,7 +206,8 @@ const handleDeeplink = async ({
       });
 
       // When RPC is provided on new connection, it means connectWith.
-      if (rpc) {
+      // Not for a channel reset after a peer key change: approve first.
+      if (rpc && !peerKeyChanged) {
         const connection = sdkConnect.getConnected()[channelId];
         if (!connection) {
           DevLogger.log(`handleDeeplink:: connection not found`);

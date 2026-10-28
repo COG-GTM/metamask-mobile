@@ -233,4 +233,33 @@ describe('reconnect', () => {
       expect(mockInstance.state.connecting['test-channel-id']).toEqual(false);
     });
   });
+
+  describe('Peer key pinning', () => {
+    it('keeps the approved peer key when called with a different key while paused', async () => {
+      mockRemoteIsReady.mockReturnValue(false);
+      mockRemoteIsPaused.mockReturnValue(false);
+      mockRemoteIsConnected.mockReturnValue(false);
+      mockInstance.state.paused = true;
+      (waitForCondition as jest.Mock).mockImplementationOnce(async () => {
+        mockInstance.state.paused = false;
+      });
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'attacker-public-key',
+        context: 'test-context',
+      });
+
+      expect(
+        mockInstance.state.connections['test-channel-id'].otherPublicKey,
+      ).toBe('test-other-public-key-2');
+      expect(mockRemoteSetOtherPublicKey).not.toHaveBeenCalled();
+      expect(Connection).toHaveBeenLastCalledWith(
+        expect.objectContaining({ otherPublicKey: 'test-other-public-key-2' }),
+      );
+    });
+  });
 });

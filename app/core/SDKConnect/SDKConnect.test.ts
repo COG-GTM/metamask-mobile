@@ -202,7 +202,6 @@ describe('SDKConnect', () => {
         const otherPublicKey = 'testOtherPublicKey';
         const initialConnection = true;
         const trigger = 'deeplink';
-        const updateKey = true;
         const context = 'testContext';
 
         await sdkConnect.reconnect({
@@ -210,7 +209,6 @@ describe('SDKConnect', () => {
           otherPublicKey,
           initialConnection,
           trigger,
-          updateKey,
           context,
         });
 
@@ -220,7 +218,6 @@ describe('SDKConnect', () => {
           otherPublicKey,
           initialConnection,
           trigger,
-          updateKey,
           context,
           instance: sdkConnect,
         });

@@ -8,14 +8,12 @@ async function reconnect({
   otherPublicKey,
   initialConnection,
   trigger,
-  updateKey,
   context,
   instance,
 }: {
   channelId: string;
   otherPublicKey: string;
   context?: string;
-  updateKey?: boolean;
   protocolVersion?: ConnectionProps['protocolVersion'];
   trigger?: ConnectionProps['trigger'];
   initialConnection: boolean;
@@ -35,22 +33,15 @@ async function reconnect({
       return;
     }
 
-    if (instance.state.paused && updateKey) {
-      instance.state.connections[channelId].otherPublicKey = otherPublicKey;
-      const currentOtherPublicKey =
-        instance.state.connections[channelId].otherPublicKey;
-      if (currentOtherPublicKey !== otherPublicKey) {
-        console.warn(
-          `SDKConnect::reconnect[${context}] existing=${
-            existingConnection !== undefined
-          } - update otherPublicKey -  ${currentOtherPublicKey} --> ${otherPublicKey}`,
-        );
-        if (existingConnection) {
-          existingConnection.remote.setOtherPublicKey(otherPublicKey);
-        }
-      } else {
-        DevLogger.log(`SDKConnect::reconnect[${context}] - same otherPublicKey`);
-      }
+    // The peer key is pinned to the one the user approved; a key passed in
+    // by the caller never replaces it.
+    const approvedPublicKey =
+      instance.state.connections[channelId]?.otherPublicKey;
+    const peerPublicKey = approvedPublicKey || otherPublicKey;
+    if (approvedPublicKey && otherPublicKey !== approvedPublicKey) {
+      DevLogger.log(
+        `SDKConnect::reconnect[${context}] - ignoring otherPublicKey that differs from the approved key`,
+      );
     }
 
     // Update initial connection state
@@ -75,7 +66,7 @@ async function reconnect({
       } connecting=${connecting} socketConnected=${socketConnected} existingConnection=${
         existingConnection !== undefined
       }`,
-      otherPublicKey,
+      peerPublicKey,
     );
 
     let interruptReason = '';
@@ -130,7 +121,7 @@ async function reconnect({
     instance.state.connected[channelId] = new Connection({
       ...connection,
       socketServerUrl: instance.state.socketServerUrl,
-      otherPublicKey,
+      otherPublicKey: peerPublicKey,
       reconnect: true,
       trigger,
       initialConnection,
