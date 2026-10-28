@@ -25,6 +25,9 @@ jest.mock('../../Permissions', () => ({
   getPermittedAccounts: jest.fn().mockReturnValue([]),
 }));
 
+const PERSISTED_CHANNEL_ID = '0b1c2d3e-4f50-4617-8899-aabbccddeeff';
+const CHANNEL_ID = '123e4567-e89b-12d3-a456-426614174000';
+
 const MOCK_ADDRESS = '0xc4955c0d639d99699bfd7ec54d9fafee40e4d272';
 const mockInternalAccount = createMockInternalAccount(
   MOCK_ADDRESS,
@@ -38,8 +41,8 @@ describe('DeeplinkProtocolService', () => {
     jest.clearAllMocks();
     (SDKConnect.getInstance as jest.Mock).mockReturnValue({
       loadDappConnections: jest.fn().mockResolvedValue({
-        connection1: {
-          id: 'connection1',
+        [PERSISTED_CHANNEL_ID]: {
+          id: PERSISTED_CHANNEL_ID,
           originatorInfo: { url: 'test.com', title: 'Test' },
           validUntil: Date.now(),
           scheme: 'scheme1',
@@ -97,7 +100,34 @@ describe('DeeplinkProtocolService', () => {
 
     it('should initialize with raw connections', async () => {
       await service.init();
-      expect(service.connections.connection1).toBeDefined();
+      expect(service.connections[PERSISTED_CHANNEL_ID]).toBeDefined();
+    });
+
+    it('skips persisted connections whose id is not a UUID', async () => {
+      (
+        SDKConnect.getInstance().loadDappConnections as jest.Mock
+      ).mockResolvedValue({
+        'MetaMask Mobile': {
+          id: 'MetaMask Mobile',
+          originatorInfo: { url: 'evil.example', title: 'Evil' },
+          validUntil: Date.now(),
+          scheme: 'evil',
+        },
+      });
+      const setupBridgeSpy = jest.spyOn(service, 'setupBridge');
+      service.isInitialized = false;
+      service.connections = {};
+
+      await service.init();
+
+      expect(
+        SDKConnect.getInstance().loadDappConnections,
+      ).toHaveBeenCalledTimes(2);
+
+      expect(service.connections['MetaMask Mobile']).toBeUndefined();
+      expect(setupBridgeSpy).not.toHaveBeenCalledWith(
+        expect.objectContaining({ clientId: 'MetaMask Mobile' }),
+      );
     });
   });
 
@@ -280,7 +310,7 @@ describe('DeeplinkProtocolService', () => {
         dappPublicKey: 'key',
         url: 'url',
         scheme: 'scheme',
-        channelId: 'channel1',
+        channelId: CHANNEL_ID,
         originatorInfo: Buffer.from(
           JSON.stringify({
             originatorInfo: {
@@ -292,8 +322,8 @@ describe('DeeplinkProtocolService', () => {
           }),
         ).toString('base64'),
       };
-      service.connections.channel1 = {
-        clientId: 'channel1',
+      service.connections[CHANNEL_ID] = {
+        clientId: CHANNEL_ID,
         originatorInfo: {
           url: 'test.com',
           title: 'Test',
@@ -307,7 +337,7 @@ describe('DeeplinkProtocolService', () => {
 
       await service.handleConnection(connectionParams);
 
-      expect(service.connections.channel1.connected).toBe(true);
+      expect(service.connections[CHANNEL_ID].connected).toBe(true);
     });
   });
 
@@ -342,20 +372,84 @@ describe('DeeplinkProtocolService', () => {
   });
 
   describe('handleConnection', () => {
+    const buildConnectionParams = (channelId: string) => ({
+      dappPublicKey: 'key',
+      url: 'url',
+      scheme: 'scheme',
+      channelId,
+      originatorInfo: Buffer.from(
+        JSON.stringify({
+          originatorInfo: { url: 'test.com', title: 'Test' },
+        }),
+      ).toString('base64'),
+    });
+
     it('should handle a new connection', async () => {
-      const connectionParams = {
-        dappPublicKey: 'key',
-        url: 'url',
-        scheme: 'scheme',
-        channelId: 'channel1',
-        originatorInfo: Buffer.from(
-          JSON.stringify({
-            originatorInfo: { url: 'test.com', title: 'Test' },
-          }),
-        ).toString('base64'),
-      };
-      await service.handleConnection(connectionParams);
-      expect(service.connections.connection1).toBeDefined();
+      await service.handleConnection(buildConnectionParams(CHANNEL_ID));
+      expect(service.connections[PERSISTED_CHANNEL_ID]).toBeDefined();
+    });
+
+    it('does not persist a new connection before permission is granted', async () => {
+      const handleConnectionEventAsyncSpy = jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockResolvedValue(undefined);
+
+      await service.handleConnection(buildConnectionParams(CHANNEL_ID));
+
+      expect(handleConnectionEventAsyncSpy).toHaveBeenCalled();
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+    });
+
+    it('does not persist a new connection when the permission request is rejected', async () => {
+      service.checkPermission = jest
+        .fn()
+        .mockRejectedValue(new Error('User rejected the request.'));
+      service.sendMessage = jest.fn().mockResolvedValue(null);
+      service.setupBridge = jest.fn();
+      (Engine.context as unknown as Record<string, unknown>).KeyringController =
+        { isUnlocked: jest.fn().mockReturnValue(true) };
+
+      service.openDeeplink = jest.fn().mockResolvedValue(null);
+      const handleConnectionEventAsyncSpy = jest.spyOn(
+        service,
+        'handleConnectionEventAsync',
+      );
+
+      await service.handleConnection(buildConnectionParams(CHANNEL_ID));
+      await handleConnectionEventAsyncSpy.mock.results[0].value;
+
+      expect(service.checkPermission).toHaveBeenCalled();
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(service.setupBridge).not.toHaveBeenCalled();
+      expect(service.connections[CHANNEL_ID]).toBeUndefined();
+    });
+
+    it('ignores a connection whose channelId is not a UUID', async () => {
+      const handleConnectionEventAsyncSpy = jest.spyOn(
+        service,
+        'handleConnectionEventAsync',
+      );
+      const processDappRpcRequestSpy = jest.spyOn(
+        service,
+        'processDappRpcRequest',
+      );
+      service.connections['MetaMask Mobile'] = {
+        clientId: 'MetaMask Mobile',
+        originatorInfo: { url: 'evil.example', title: 'Evil' },
+        connected: false,
+        validUntil: Date.now(),
+        scheme: 'evil',
+      } as DappClient;
+
+      await service.handleConnection({
+        ...buildConnectionParams('MetaMask Mobile'),
+        request: JSON.stringify({ id: '1', method: 'eth_accounts' }),
+      });
+
+      expect(handleConnectionEventAsyncSpy).not.toHaveBeenCalled();
+      expect(processDappRpcRequestSpy).not.toHaveBeenCalled();
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(service.currentClientId).toBeUndefined();
     });
   });
 

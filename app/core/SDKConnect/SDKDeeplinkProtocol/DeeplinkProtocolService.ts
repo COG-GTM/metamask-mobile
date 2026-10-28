@@ -21,6 +21,7 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import { isUUID } from '../utils/isUUID';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -69,6 +70,10 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        if (!isUUID(connection.id)) {
+          return;
+        }
+
         const clientInfo = {
           connected: false,
           clientId: connection.id,
@@ -420,6 +425,15 @@ export default class DeeplinkProtocolService {
     originatorInfo?: string;
     request?: string;
   }) {
+    if (!isUUID(params.channelId)) {
+      Logger.error(
+        new Error('DeeplinkProtocolService::handleConnection invalid channelId'),
+        { scheme: params.scheme },
+      );
+
+      return;
+    }
+
     if (!params.originatorInfo) {
       const deepLinkError = new Error(
         'DeeplinkProtocolService::handleConnection no originatorInfo',
@@ -479,16 +493,6 @@ export default class DeeplinkProtocolService {
 
       return;
     }
-
-    await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
-      lastAuthorized: Date.now(),
-      origin: AppConstants.MM_SDK.IOS_SDK,
-      originatorInfo: clientInfo.originatorInfo,
-      otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
-      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      scheme: clientInfo.scheme,
-    });
 
     this.handleConnectionEventAsync({
       clientInfo,
@@ -578,7 +582,9 @@ export default class DeeplinkProtocolService {
       accountsController.getSelectedAccount().address,
     );
 
-    let connectedAddresses = getPermittedAccounts(this.currentClientId ?? '');
+    let connectedAddresses: string[] = getPermittedAccounts(
+      this.currentClientId ?? '',
+    );
 
     DevLogger.log(
       `DeeplinkProtocolService::clients_connected connectedAddresses`,

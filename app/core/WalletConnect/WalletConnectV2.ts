@@ -146,7 +146,7 @@ export class WC2Manager {
           );
 
           const hostname = getHostname(session.peer.metadata.url);
-          let approvedAccounts =
+          let approvedAccounts: string[] =
             getPermittedAccounts(hostname) ?? [];
 
           DevLogger.log(

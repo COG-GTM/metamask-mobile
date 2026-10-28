@@ -1,14 +1,11 @@
 import ImportedEngine from '../Engine';
 import Logger from '../../util/Logger';
-import TransactionTypes from '../TransactionTypes';
 import { CaipChainId, Hex, KnownCaipNamespace } from '@metamask/utils';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { Caip25CaveatType, Caip25CaveatValue, Caip25EndowmentPermissionName, getEthAccounts, getPermittedEthChainIds, setEthAccounts, setPermittedEthChainIds } from '@metamask/chain-agnostic-permission';
 import { CaveatConstraint, PermissionDoesNotExistError } from '@metamask/permission-controller';
 import { captureException } from '@sentry/react-native';
 import { toHex } from '@metamask/controller-utils';
-
-const INTERNAL_ORIGINS = [process.env.MM_FOX_CODE, TransactionTypes.MMM];
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -390,18 +387,10 @@ export const getPermittedAccounts = (
   origin: string,
   { ignoreLock }: { ignoreLock?: boolean } = {},
 ) => {
-  const { AccountsController, PermissionController, KeyringController } =
-    Engine.context;
+  const { PermissionController, KeyringController } = Engine.context;
 
   let caveat;
   try {
-    if (INTERNAL_ORIGINS.includes(origin)) {
-      const selectedAccountAddress =
-        AccountsController.getSelectedAccount().address;
-
-      return [selectedAccountAddress];
-    }
-
     caveat = PermissionController.getCaveat(
       origin,
       Caip25EndowmentPermissionName,
