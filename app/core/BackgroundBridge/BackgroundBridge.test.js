@@ -1,6 +1,7 @@
 import getDefaultBridgeParams from '../SDKConnect/AndroidSDK/getDefaultBridgeParams';
 import BackgroundBridge from './BackgroundBridge';
 import Engine from '../Engine';
+import { ExtendedControllerMessenger } from '../ExtendedControllerMessenger';
 import { createEip1193MethodMiddleware } from '../RPCMethods/createEip1193MethodMiddleware';
 import createEthAccountsMethodMiddleware from '../RPCMethods/createEthAccountsMethodMiddleware';
 import { getPermittedAccounts } from '../Permissions';
@@ -189,6 +190,126 @@ describe('BackgroundBridge', () => {
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+    });
+  });
+
+  describe('onDisconnect', () => {
+    const { PermissionController } = Engine.context;
+    let messenger;
+
+    // Routes the mocked Engine messenger through a real messenger so that
+    // published events reach exactly the handlers still subscribed.
+    beforeEach(() => {
+      messenger = new ExtendedControllerMessenger();
+      PermissionController.name = 'PermissionController';
+      Engine.controllerMessenger.subscribe.mockImplementation((...args) =>
+        messenger.subscribe(...args),
+      );
+      Engine.controllerMessenger.tryUnsubscribe.mockImplementation((...args) =>
+        messenger.tryUnsubscribe(...args),
+      );
+    });
+
+    afterEach(() => {
+      delete PermissionController.name;
+      Engine.controllerMessenger.subscribe.mockReset();
+      Engine.controllerMessenger.tryUnsubscribe.mockReset();
+    });
+
+    function createBridge() {
+      const bridge = setupBackgroundBridge('https://www.mock.io');
+      // The provider engine is built from mocked middleware factories, so its
+      // real teardown cannot run in this environment.
+      bridge.engine = { destroy: jest.fn() };
+      return bridge;
+    }
+
+    function publishAllBridgeEvents() {
+      messenger.publish('NetworkController:stateChange', {}, []);
+      messenger.publish('PreferencesController:stateChange', {}, []);
+      messenger.publish('SelectedNetworkController:stateChange', {}, []);
+      messenger.publish('KeyringController:lock');
+      messenger.publish('KeyringController:unlock');
+      messenger.publish(
+        'PermissionController:stateChange',
+        { subjects: { clientId: { origin: 'clientId', at: Date.now() } } },
+        [],
+      );
+    }
+
+    it('removes every controller messenger subscription made by the constructor', () => {
+      const bridge = createBridge();
+      const subscriptions = Engine.controllerMessenger.subscribe.mock.calls.map(
+        ([eventName, handler]) => [eventName, handler],
+      );
+      expect(subscriptions.map(([eventName]) => eventName)).toStrictEqual([
+        'NetworkController:stateChange',
+        'PreferencesController:stateChange',
+        'SelectedNetworkController:stateChange',
+        'KeyringController:lock',
+        'KeyringController:unlock',
+        'PermissionController:stateChange',
+      ]);
+
+      bridge.onDisconnect();
+
+      expect(
+        Engine.controllerMessenger.tryUnsubscribe.mock.calls,
+      ).toStrictEqual(subscriptions);
+      expect(bridge.controllerSubscriptions).toStrictEqual([]);
+      expect(bridge.listenerCount('update')).toBe(0);
+    });
+
+    it('stops disconnected bridges from handling controller events', () => {
+      const deadBridges = [createBridge(), createBridge(), createBridge()];
+      deadBridges.forEach((bridge) => bridge.onDisconnect());
+      const liveBridge = createBridge();
+
+      const handlerSpies = [...deadBridges, liveBridge].map((bridge) => ({
+        bridge,
+        onStateUpdate: jest
+          .spyOn(bridge, 'onStateUpdate')
+          .mockResolvedValue(undefined),
+        sendNotification: jest
+          .spyOn(bridge, 'sendNotification')
+          .mockImplementation(() => undefined),
+        notifySelectedAddressChanged: jest
+          .spyOn(bridge, 'notifySelectedAddressChanged')
+          .mockResolvedValue(undefined),
+      }));
+
+      publishAllBridgeEvents();
+
+      for (const spies of handlerSpies) {
+        if (spies.bridge === liveBridge) {
+          expect(spies.onStateUpdate).toHaveBeenCalledTimes(3);
+          expect(spies.notifySelectedAddressChanged).toHaveBeenCalledTimes(1);
+        } else {
+          expect(spies.onStateUpdate).not.toHaveBeenCalled();
+          expect(spies.sendNotification).not.toHaveBeenCalled();
+          expect(spies.notifySelectedAddressChanged).not.toHaveBeenCalled();
+        }
+      }
+    });
+
+    it('is safe to call twice', () => {
+      const bridge = createBridge();
+      bridge.onDisconnect();
+      expect(() => bridge.onDisconnect()).not.toThrow();
+    });
+
+    it('does not run onStateUpdate work once disconnected', async () => {
+      const bridge = createBridge();
+      const getProviderNetworkState = jest.spyOn(
+        bridge,
+        'getProviderNetworkState',
+      );
+      bridge.onDisconnect();
+
+      bridge.sendStateUpdate();
+      await bridge.onStateUpdate();
+
+      expect(getProviderNetworkState).not.toHaveBeenCalled();
     });
   });
 });
