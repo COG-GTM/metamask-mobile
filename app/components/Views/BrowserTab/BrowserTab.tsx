@@ -25,8 +25,8 @@ import {
   processUrlForBrowser,
   prefixUrlWithProtocol,
   isTLD,
-  protocolAllowList,
-  trustedProtocolToDeeplink,
+  getProtocolNavigationAction,
+  browserWebViewOriginWhitelist,
   getAlertMessage,
   allowLinkOpen,
   getUrlObj,
@@ -767,18 +767,20 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       }
     }
 
-    // Continue request loading it the protocol is whitelisted
     const { protocol } = new URLParse(urlToLoad);
-    if (protocolAllowList.includes(protocol)) return true;
+    const protocolAction = getProtocolNavigationAction(protocol);
+    if (protocolAction === 'load') return true;
     Logger.log(`Protocol not allowed ${protocol}`);
 
     // If it is a trusted deeplink protocol, do not show the
     // warning alert. Allow the OS to deeplink the URL
     // and stop the webview from loading it.
-    if (trustedProtocolToDeeplink.includes(protocol)) {
+    if (protocolAction === 'deeplink') {
       allowLinkOpen(urlToLoad);
       return false;
     }
+
+    if (protocolAction === 'block') return false;
 
     // TODO: add logging for untrusted protocol being used
     // Sentry
@@ -1379,17 +1381,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
               {!!entryScriptWeb3 && firstUrlLoaded && (
                 <>
                   <WebView
-                    originWhitelist={[
-                      'https://',
-                      'http://',
-                      'metamask://',
-                      'dapp://',
-                      'wc://',
-                      'ethereum://',
-                      'file://',
-                      // Needed for Recaptcha
-                      'about:srcdoc',
-                    ]}
+                    originWhitelist={browserWebViewOriginWhitelist}
                     decelerationRate={'normal'}
                     ref={webviewRef}
                     renderError={() => (
