@@ -1,33 +1,106 @@
-diff --git a/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
-index b68b858..af71dc5 100644
---- a/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
-+++ b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
-@@ -16,6 +16,9 @@ import android.content.Context;
- import android.graphics.Bitmap;
- import android.net.Uri;
- import android.os.Build;
+diff --git a/node_modules/@react-native-clipboard/clipboard/android/src/main/AndroidManifest.xml b/node_modules/@react-native-clipboard/clipboard/android/src/main/AndroidManifest.xml
+index 5f5d7a2..52c394a 100644
+--- a/node_modules/@react-native-clipboard/clipboard/android/src/main/AndroidManifest.xml
++++ b/node_modules/@react-native-clipboard/clipboard/android/src/main/AndroidManifest.xml
+@@ -1,4 +1,10 @@
+ 
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ 
++  <application>
++    <receiver
++      android:name="com.reactnativecommunity.clipboard.ClipboardExpiryReceiver"
++      android:exported="false" />
++  </application>
++
+ </manifest>
+diff --git a/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardExpiryReceiver.java b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardExpiryReceiver.java
+new file mode 100644
+index 0000000..04ac227
+--- /dev/null
++++ b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardExpiryReceiver.java
+@@ -0,0 +1,113 @@
++package com.reactnativecommunity.clipboard;
++
++import android.app.AlarmManager;
++import android.app.PendingIntent;
++import android.content.BroadcastReceiver;
++import android.content.ClipData;
++import android.content.ClipboardManager;
++import android.content.Context;
++import android.content.Intent;
++import android.os.Build;
 +import android.os.Handler;
 +import android.os.Looper;
 +import android.os.PersistableBundle;
- import android.provider.MediaStore;
- import android.util.Base64;
- import android.util.Log;
-@@ -41,6 +44,10 @@ public class ClipboardModule extends NativeClipboardModuleSpec {
-   public static final String CLIPBOARD_TEXT_CHANGED = "RNCClipboard_TEXT_CHANGED";
-   private ReactApplicationContext reactContext;
-   private ClipboardManager.OnPrimaryClipChangedListener listener = null;
-+  private static final long EXPIRE_TIME_MS = 60000;
++import android.os.SystemClock;
++
++/**
++ * Clears sensitive text copied with setStringExpire after EXPIRE_TIME_MS without relying on
++ * React Native JS timers, which are paused while the activity is in the background.
++ * An in-process Handler gives a precise expiry while the process is running; an AlarmManager
++ * broadcast is the backstop when the process is frozen by the cached apps freezer or killed.
++ */
++public class ClipboardExpiryReceiver extends BroadcastReceiver {
++  static final long EXPIRE_TIME_MS = 60000;
 +  private static final String EXTRA_IS_SENSITIVE = "android.content.extra.IS_SENSITIVE";
-+  private final Handler expiryHandler = new Handler(Looper.getMainLooper());
-+  private Runnable pendingExpiry = null;
- 
-   public ClipboardModule(ReactApplicationContext reactContext) {
-     super(reactContext);
-@@ -64,6 +71,77 @@ public class ClipboardModule extends NativeClipboardModuleSpec {
-     return (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
-   }
- 
-+  private void clearPrimaryClip(ClipboardManager clipboard) {
++  private static final Handler handler = new Handler(Looper.getMainLooper());
++  private static Context appContext = null;
++  private static String pendingContent = null;
++  private static final Runnable inProcessExpiry = new Runnable() {
++    @Override
++    public void run() {
++      if (appContext != null) {
++        expire(appContext);
++      }
++    }
++  };
++
++  static synchronized void setStringExpire(Context context, String content) {
++    Context app = context.getApplicationContext();
++    ClipData clip = ClipData.newPlainText(null, content);
++    PersistableBundle extras = new PersistableBundle();
++    extras.putBoolean(EXTRA_IS_SENSITIVE, true);
++    clip.getDescription().setExtras(extras);
++    getClipboard(app).setPrimaryClip(clip);
++
++    appContext = app;
++    pendingContent = content;
++    handler.removeCallbacks(inProcessExpiry);
++    handler.postDelayed(inProcessExpiry, EXPIRE_TIME_MS);
++    scheduleAlarm(app);
++  }
++
++  @Override
++  public void onReceive(Context context, Intent intent) {
++    expire(context.getApplicationContext());
++  }
++
++  static synchronized void expire(Context app) {
++    handler.removeCallbacks(inProcessExpiry);
++    AlarmManager alarmManager = (AlarmManager) app.getSystemService(Context.ALARM_SERVICE);
++    if (alarmManager != null) {
++      alarmManager.cancel(alarmIntent(app));
++    }
++    String expected = pendingContent;
++    pendingContent = null;
++    try {
++      ClipboardManager clipboard = getClipboard(app);
++      // Background apps cannot read the clipboard on Android 10+ (null clip). Only skip
++      // clearing when we can see that the user has since copied something else.
++      ClipData clip = clipboard.getPrimaryClip();
++      if (expected != null && clip != null && clip.getItemCount() > 0) {
++        CharSequence text = clip.getItemAt(0).getText();
++        if (text == null || !expected.contentEquals(text)) {
++          return;
++        }
++      }
++      clearPrimaryClip(clipboard);
++    } catch (Exception e) {
++      e.printStackTrace();
++    }
++  }
++
++  static void clearPrimaryClip(ClipboardManager clipboard) {
 +    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
 +      clipboard.clearPrimaryClip();
 +    } else {
@@ -35,64 +108,51 @@ index b68b858..af71dc5 100644
 +    }
 +  }
 +
++  private static void scheduleAlarm(Context app) {
++    AlarmManager alarmManager = (AlarmManager) app.getSystemService(Context.ALARM_SERVICE);
++    if (alarmManager == null) {
++      return;
++    }
++    long triggerAt = SystemClock.elapsedRealtime() + EXPIRE_TIME_MS;
++    PendingIntent intent = alarmIntent(app);
++    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || alarmManager.canScheduleExactAlarms()) {
++      alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, intent);
++    } else {
++      alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, intent);
++    }
++  }
++
++  private static PendingIntent alarmIntent(Context app) {
++    Intent intent = new Intent(app, ClipboardExpiryReceiver.class);
++    return PendingIntent.getBroadcast(
++        app, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
++  }
++
++  private static ClipboardManager getClipboard(Context app) {
++    return (ClipboardManager) app.getSystemService(Context.CLIPBOARD_SERVICE);
++  }
++}
+diff --git a/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
+index b68b858..d80875e 100644
+--- a/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
++++ b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
+@@ -64,6 +64,24 @@ public class ClipboardModule extends NativeClipboardModuleSpec {
+     return (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
+   }
+ 
 +  @ReactMethod
 +  public void clearString() {
 +    try {
-+      clearPrimaryClip(getClipboardService());
++      ClipboardExpiryReceiver.clearPrimaryClip(getClipboardService());
 +    } catch (Exception e) {
 +      e.printStackTrace();
 +    }
 +  }
 +
-+  /**
-+   * Copies sensitive text and clears it natively after EXPIRE_TIME_MS. The main-looper
-+   * Handler keeps running while the activity is paused, unlike React Native JS timers.
-+   */
 +  @ReactMethod
-+  public void setStringExpire(final String content) {
++  public void setStringExpire(String content) {
 +    try {
-+      ClipData clipdata = ClipData.newPlainText(null, content);
-+      PersistableBundle extras = new PersistableBundle();
-+      extras.putBoolean(EXTRA_IS_SENSITIVE, true);
-+      clipdata.getDescription().setExtras(extras);
-+      getClipboardService().setPrimaryClip(clipdata);
-+    } catch (Exception e) {
-+      e.printStackTrace();
-+      return;
-+    }
-+
-+    synchronized (this) {
-+      if (pendingExpiry != null) {
-+        expiryHandler.removeCallbacks(pendingExpiry);
-+      }
-+      pendingExpiry = new Runnable() {
-+        @Override
-+        public void run() {
-+          synchronized (ClipboardModule.this) {
-+            if (pendingExpiry == this) {
-+              pendingExpiry = null;
-+            }
-+          }
-+          clearIfUnchanged(content);
-+        }
-+      };
-+      expiryHandler.postDelayed(pendingExpiry, EXPIRE_TIME_MS);
-+    }
-+  }
-+
-+  private void clearIfUnchanged(String content) {
-+    try {
-+      ClipboardManager clipboard = getClipboardService();
-+      // Android 10+ returns null to backgrounded apps; clear anyway since we cannot
-+      // prove the secret was replaced.
-+      ClipData clip = clipboard.getPrimaryClip();
-+      if (clip != null && clip.getItemCount() > 0) {
-+        CharSequence text = clip.getItemAt(0).getText();
-+        if (text == null || !content.contentEquals(text)) {
-+          return;
-+        }
-+      }
-+      clearPrimaryClip(clipboard);
++      ClipboardExpiryReceiver.setStringExpire(reactContext, content);
 +    } catch (Exception e) {
 +      e.printStackTrace();
 +    }
