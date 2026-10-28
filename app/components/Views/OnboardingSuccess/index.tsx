@@ -2,6 +2,7 @@ import React, { useCallback, useLayoutEffect, useState } from 'react';
 import {
   ScrollView,
   View,
+  Alert,
   Linking,
   Keyboard,
   TouchableOpacity,
@@ -35,17 +36,23 @@ import { OnboardingSuccessSelectorIDs } from '../../../../e2e/selectors/Onboardi
 import styles from './index.styles';
 import importAdditionalAccounts from '../../../util/importAdditionalAccounts';
 import { setCompletedOnboarding } from '../../../actions/onboarding';
+import { isHintSeedPhrase } from '../../../util/mnemonic';
+import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
+import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { MetaMetricsEvents } from '../../../core/Analytics';
 
 interface OnboardingSuccessProps {
   onDone: () => void;
   backedUpSRP?: boolean;
   noSRP?: boolean;
+  words?: string[];
 }
 
 const OnboardingSuccess = ({
   onDone,
   backedUpSRP,
   noSRP,
+  words,
 }: OnboardingSuccessProps) => {
   const navigation = useNavigation();
   const { colors } = useTheme();
@@ -78,6 +85,10 @@ const OnboardingSuccess = ({
 
   const saveHint = async () => {
     if (!hintText) return;
+    if (isHintSeedPhrase(hintText, words)) {
+      Alert.alert('Error!', strings('manual_backup_step_3.no_seedphrase'));
+      return;
+    }
     setShowHint(false);
     const currentSeedphraseHints = await StorageWrapper.getItem(
       SEED_PHRASE_HINTS,
@@ -87,6 +98,11 @@ const OnboardingSuccess = ({
       await StorageWrapper.setItem(
         SEED_PHRASE_HINTS,
         JSON.stringify({ ...parsedHints, manualBackup: hintText }),
+      );
+      trackOnboarding(
+        MetricsEventBuilder.createEventBuilder(
+          MetaMetricsEvents.WALLET_SECURITY_RECOVERY_HINT_SAVED,
+        ).build(),
       );
     }
   };
