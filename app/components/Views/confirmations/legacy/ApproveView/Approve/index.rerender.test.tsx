@@ -130,7 +130,7 @@ const initialState = {
 type TestState = typeof initialState & { unrelatedCounter?: number };
 
 const reducer = (prevState: TestState | undefined, action: AnyAction) => {
-  const state = prevState ?? initialState;
+  const state: TestState = prevState ?? initialState;
   switch (action.type) {
     case UNRELATED_UPDATE:
       return { ...state, unrelatedCounter: (state.unrelatedCounter ?? 0) + 1 };
