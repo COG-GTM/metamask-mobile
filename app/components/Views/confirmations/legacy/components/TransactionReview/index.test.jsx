@@ -14,6 +14,7 @@ import * as TransactionUtils from '../../../../../../util/transactions';
 // eslint-disable-next-line import/no-namespace
 import { FALSE_POSITIVE_REPOST_LINE_TEST_ID } from '../BlockaidBanner/BlockaidBanner.constants';
 import { MOCK_KEYRING_CONTROLLER_STATE } from '../../../../../../util/test/keyringControllerTestUtils';
+import { APPROVAL_TAG_URL_ORIGIN_PILL } from '../../../../../UI/ApprovalTagUrl';
 
 jest.mock('../../../../../../util/transactions', () => ({
   ...jest.requireActual('../../../../../../util/transactions'),
@@ -347,5 +348,31 @@ describe('TransactionReview', () => {
     );
     const confirmButton = getByRole('button', { name: 'Confirm' });
     expect(confirmButton.props.disabled).toBe(true);
+  });
+
+  it('labels the request with the transaction origin, not the active browser tab', () => {
+    const { getByTestId, getByText, queryByText } = renderWithProvider(
+      <TransactionReview
+        EIP1559GasData={{}}
+        generateTransform={generateTransform}
+      />,
+      {
+        state: {
+          ...mockState,
+          browser: {
+            activeTab: 1,
+            tabs: [{ id: 1, url: 'https://trusted-exchange.example/trade' }],
+          },
+          transaction: {
+            ...mockState.transaction,
+            origin: 'attacker.example',
+          },
+        },
+      },
+    );
+
+    expect(getByTestId(APPROVAL_TAG_URL_ORIGIN_PILL)).toBeDefined();
+    expect(getByText('https://attacker.example')).toBeDefined();
+    expect(queryByText(/trusted-exchange\.example/)).toBeNull();
   });
 });

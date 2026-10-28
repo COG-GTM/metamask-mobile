@@ -9,6 +9,7 @@ import { SET_APPROVAL_FOR_ALL_SIGNATURE } from '../../../../../../util/transacti
 jest.mock('../../../../../../util/address', () => ({
   ...jest.requireActual('../../../../../../util/address'),
   getTokenDetails: jest.fn(),
+  getAddressAccountType: jest.fn(() => 'MetaMask'),
 }));
 
 jest.mock('react-redux', () => ({
@@ -28,6 +29,7 @@ jest.mock('../../../../../../core/Engine', () => {
     context: {
       KeyringController: {
         getOrAddQRKeyring: async () => ({ subscribe: () => ({}) }),
+        state: { keyrings: [], keyringsMetadata: [] },
       },
       AssetsContractController: {
         getERC20BalanceOf: jest.fn().mockResolvedValue(0x0186a0),
@@ -233,5 +235,22 @@ describe('ApproveTransactionModal', () => {
       const isDisabled = getByTestId('Confirm').props.disabled;
       expect(isDisabled).toBe(true);
     });
+  });
+
+  it('labels the request with the transaction origin, not the active browser tab', async () => {
+    const state = cloneDeep(initialState);
+    state.transaction.from = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
+    state.transaction.origin = 'attacker.example';
+    state.transaction.txParams.origin = 'attacker.example';
+    state.browser.tabs[0].url = 'https://trusted-exchange.example/trade';
+
+    const { findByText, queryByText } = renderScreen(
+      ApproveTransactionModal,
+      { name: 'Approve' },
+      { state },
+    );
+
+    expect(await findByText('https://attacker.example')).toBeDefined();
+    expect(queryByText(/trusted-exchange\.example/)).toBeNull();
   });
 });
