@@ -1566,6 +1566,148 @@ describe('getRpcMethodMiddleware', () => {
     });
   });
 
+  describe('wallet_scanQRCode', () => {
+    const validAddress = '0x0000000000000000000000000000000000000001';
+
+    function setupScan(params?: Json[]) {
+      const navigate = jest.fn();
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalOptions(),
+        navigation: { navigate },
+        hostname: 'example.metamask.io',
+      });
+      const request = {
+        jsonrpc,
+        id: 1,
+        method: 'wallet_scanQRCode',
+        ...(params ? { params } : {}),
+      };
+      const responsePromise = callMiddleware({ middleware, request });
+      const getScanCallbacks = () => navigate.mock.calls[0][1];
+      return { navigate, responsePromise, getScanCallbacks };
+    }
+
+    it('rejects a nested-quantifier pattern with invalid params before opening the scanner', async () => {
+      const { navigate, responsePromise } = setupScan(['^(([a-z]*)*)*$']);
+
+      const response = await responsePromise;
+
+      expect(navigate).not.toHaveBeenCalled();
+      expect((response as JsonRpcFailure).error.code).toBe(
+        rpcErrors.invalidParams().code,
+      );
+      expect((response as JsonRpcFailure).error.message).toMatch(
+        /quantified groups/,
+      );
+    });
+
+    it.each([[{}], [null], ['a'.repeat(129)], ['(']])(
+      'rejects invalid pattern %p with invalid params',
+      async (pattern) => {
+        const { navigate, responsePromise } = setupScan([pattern as Json]);
+
+        const response = await responsePromise;
+
+        expect(navigate).not.toHaveBeenCalled();
+        expect((response as JsonRpcFailure).error.code).toBe(
+          rpcErrors.invalidParams().code,
+        );
+      },
+    );
+
+    it('fails fast when a crafted scan meets a bounded pattern', async () => {
+      const { responsePromise, getScanCallbacks } = setupScan(['^[a-z]*$']);
+      await new Promise(setImmediate);
+
+      const start = Date.now();
+      getScanCallbacks().onScanSuccess(`${'a'.repeat(2000)}1`);
+      const response = await responsePromise;
+
+      expect(Date.now() - start).toBeLessThan(1000);
+      expect((response as JsonRpcFailure).error.message).toBe(
+        'NO_REGEX_MATCH',
+      );
+    });
+
+    it('rejects scan results longer than the matching limit', async () => {
+      const { responsePromise, getScanCallbacks } = setupScan(['^a']);
+      await new Promise(setImmediate);
+
+      getScanCallbacks().onScanSuccess('a'.repeat(2049));
+      const response = await responsePromise;
+
+      expect((response as JsonRpcFailure).error.message).toBe(
+        'SCAN_RESULT_TOO_LONG',
+      );
+    });
+
+    it('returns scanned text that matches the pattern', async () => {
+      const { responsePromise, getScanCallbacks } = setupScan(['^hello']);
+      await new Promise(setImmediate);
+
+      getScanCallbacks().onScanSuccess('hello world');
+      const response = await responsePromise;
+
+      assertIsJsonRpcSuccess(response);
+      expect(response.result).toBe('hello world');
+    });
+
+    it('returns scanned text when no pattern is provided', async () => {
+      const { responsePromise, getScanCallbacks } = setupScan();
+      await new Promise(setImmediate);
+
+      getScanCallbacks().onScanSuccess('anything');
+      const response = await responsePromise;
+
+      assertIsJsonRpcSuccess(response);
+      expect(response.result).toBe('anything');
+    });
+
+    it('returns a valid scanned target address', async () => {
+      const { responsePromise, getScanCallbacks } = setupScan();
+      await new Promise(setImmediate);
+
+      getScanCallbacks().onScanSuccess({
+        target_address: validAddress,
+        action: 'send-eth',
+      });
+      const response = await responsePromise;
+
+      assertIsJsonRpcSuccess(response);
+      expect(response.result).toBe(validAddress);
+    });
+
+    it('rejects an invalid scanned target address', async () => {
+      const { responsePromise, getScanCallbacks } = setupScan();
+      await new Promise(setImmediate);
+
+      getScanCallbacks().onScanSuccess({
+        target_address: '0x1234',
+        action: 'send-eth',
+      });
+      const response = await responsePromise;
+
+      expect((response as JsonRpcFailure).error.message).toBe(
+        'INVALID_ETHEREUM_ADDRESS',
+      );
+    });
+
+    it('rejects the request when scanning fails', async () => {
+      const { responsePromise, getScanCallbacks } = setupScan();
+      await new Promise(setImmediate);
+
+      getScanCallbacks().onScanError('camera unavailable');
+      const response = await responsePromise;
+
+      expect((response as JsonRpcFailure).error.code).toBe(
+        rpcErrors.internal().code,
+      );
+      expect((response as JsonRpcFailure).error.message).toBe(
+        'camera unavailable',
+      );
+    });
+  });
+
   describe('parity_checkRequest', () => {
     it('returns null', async () => {
       const middleware = getRpcMethodMiddleware({
