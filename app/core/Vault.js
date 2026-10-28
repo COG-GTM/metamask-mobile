@@ -59,7 +59,9 @@ export const recreateVaultWithNewPassword = async (
   selectedAddress,
 ) => {
   const { KeyringController } = Engine.context;
-  const seedPhrase = await getSeedPhrase(password);
+  const [primaryHdKeyring, ...secondaryHdKeyrings] = await getHdKeyringBackups(
+    password,
+  );
 
   let importedAccounts = [];
   try {
@@ -83,10 +85,6 @@ export const recreateVaultWithNewPassword = async (
     );
   }
 
-  // Get props to restore vault
-  const hdKeyring = KeyringController.state.keyrings[0];
-  const existingAccountCount = hdKeyring.accounts.length;
-
   const serializedLedgerKeyring = hasKeyringType(
     KeyringController.state,
     KeyringTypes.ledger,
@@ -101,7 +99,17 @@ export const recreateVaultWithNewPassword = async (
     : undefined;
 
   // Recreate keyring with password given to this method
-  await KeyringController.createNewVaultAndRestore(newPassword, seedPhrase);
+  await KeyringController.createNewVaultAndRestore(
+    newPassword,
+    primaryHdKeyring.mnemonic,
+  );
+
+  for (const { mnemonic, numberOfAccounts } of secondaryHdKeyrings) {
+    await KeyringController.addNewKeyring(KeyringTypes.hd, {
+      mnemonic,
+      numberOfAccounts,
+    });
+  }
 
   if (serializedQrKeyring !== undefined) {
     await restoreQRKeyring(serializedQrKeyring);
@@ -111,7 +119,7 @@ export const recreateVaultWithNewPassword = async (
   }
 
   // Create previous accounts again
-  for (let i = 0; i < existingAccountCount - 1; i++) {
+  for (let i = 0; i < primaryHdKeyring.numberOfAccounts - 1; i++) {
     await KeyringController.addNewAccount();
   }
 
@@ -154,6 +162,37 @@ export const recreateVaultWithSamePassword = async (
  */
 function hasKeyringType(state, type) {
   return state?.keyrings?.some((keyring) => keyring.type === type);
+}
+
+/**
+ * Exports the mnemonic and account count of every HD keyring in the vault,
+ * primary keyring first.
+ *
+ * @param {string} password - The current wallet password.
+ * @returns {Promise<{ mnemonic: Uint8Array, numberOfAccounts: number }[]>}
+ */
+async function getHdKeyringBackups(password) {
+  const { KeyringController } = Engine.context;
+  const { keyrings, keyringsMetadata } = KeyringController.state;
+  const backups = [];
+  for (let i = 0; i < keyrings.length; i++) {
+    if (keyrings[i].type !== KeyringTypes.hd) {
+      continue;
+    }
+    const keyringId = keyringsMetadata?.[i]?.id;
+    // Without an id, exportSeedPhrase falls back to the first keyring.
+    if (!keyringId && i !== 0) {
+      throw new Error('Missing metadata for HD keyring on recreate vault');
+    }
+    backups.push({
+      mnemonic: await KeyringController.exportSeedPhrase(password, keyringId),
+      numberOfAccounts: Math.max(keyrings[i].accounts.length, 1),
+    });
+  }
+  if (!backups.length) {
+    throw new Error('No HD keyring found on recreate vault');
+  }
+  return backups;
 }
 
 /**
