@@ -128,7 +128,9 @@ const PermissionsSummary = ({
         style={styles.domainLogoContainer}
         viewStyle={styles.assetLogoContainer}
         title={iconTitle}
-        url={currentEnsName || url}
+        // An empty url stops WebsiteIcon from fetching the favicon of a
+        // self-reported (unverified) origin.
+        url={isOriginUnverified ? '' : currentEnsName || url}
         icon={typeof icon === 'string' ? icon : icon?.uri}
       />
     );
