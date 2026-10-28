@@ -58,7 +58,6 @@ import {
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { updateIncomingTransactions } from '../../../util/transaction-controller';
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
-import { store } from '../../../store';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import {
   selectSwapsTransactions,
@@ -160,6 +159,10 @@ class Asset extends PureComponent {
      * Array of ERC20 assets
      */
     tokens: PropTypes.array,
+    /**
+     * Network ID of the in-page provider, used to match legacy txs without chainId
+     */
+    networkId: PropTypes.string,
     swapsIsLive: PropTypes.bool,
     swapsTokens: PropTypes.object,
     searchDiscoverySwapsTokens: PropTypes.array,
@@ -304,7 +307,8 @@ class Asset extends PureComponent {
     } else if (
       prevProps.transactions !== this.props.transactions ||
       prevProps.swapsTransactions !== this.props.swapsTransactions ||
-      prevProps.tokens !== this.props.tokens
+      prevProps.tokens !== this.props.tokens ||
+      prevProps.networkId !== this.props.networkId
     ) {
       this.normalizeTransactions();
     }
@@ -324,8 +328,7 @@ class Asset extends PureComponent {
     this.txsPending.length !== newTxsPending.length;
 
   ethFilter = (tx) => {
-    const { networkId } = store.getState().inpageProvider;
-    const { chainId } = this.props;
+    const { chainId, networkId } = this.props;
     const {
       txParams: { from, to },
       isTransfer,
@@ -353,9 +356,7 @@ class Asset extends PureComponent {
   };
 
   noEthFilter = (tx) => {
-    const { networkId } = store.getState().inpageProvider;
-
-    const { chainId, swapsTransactions } = this.props;
+    const { chainId, networkId, swapsTransactions } = this.props;
     const {
       txParams: { to, from },
       isTransfer,
@@ -613,6 +614,7 @@ const mapStateToProps = (state, { route }) => ({
     getRampNetworks(state),
   ),
   networkClientId: selectNetworkClientId(state),
+  networkId: state.inpageProvider.networkId,
 });
 
 const mapDispatchToProps = (dispatch) => ({

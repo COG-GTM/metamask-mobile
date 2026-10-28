@@ -12,6 +12,7 @@ import {
   MOCK_ADDRESS_2,
 } from '../../../util/test/accountsControllerTestUtils';
 import { updateBgState } from '../../../core/redux/slices/engine';
+import { networkIdUpdated } from '../../../core/redux/slices/inpageProvider';
 import { sortTransactions } from '../../../util/activity';
 import Transactions from '../../UI/Transactions';
 import Asset from './';
@@ -243,6 +244,29 @@ describe('Asset normalizeTransactions', () => {
     );
     expect((sortTransactions as jest.Mock).mock.calls.length).toBe(
       sortCalls + 1,
+    );
+  });
+
+  it('re-normalizes legacy transactions when the network id changes', async () => {
+    const legacy = tx(
+      'legacy',
+      'confirmed',
+      3,
+      { from: SELECTED, to: ZERO },
+      { chainId: undefined, networkID: '123' },
+    );
+    const { store } = renderAsset([...history, legacy]);
+    await waitFor(() =>
+      expect(lastTransactionsProps().transactions.length).toBeGreaterThan(0),
+    );
+    expect(ids(lastTransactionsProps().transactions)).not.toContain('legacy');
+
+    act(() => {
+      store.dispatch(networkIdUpdated('123'));
+    });
+
+    await waitFor(() =>
+      expect(ids(lastTransactionsProps().transactions)).toContain('legacy'),
     );
   });
 });
