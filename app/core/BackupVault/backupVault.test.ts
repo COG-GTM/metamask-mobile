@@ -7,6 +7,7 @@ import {
   backupVault,
   getVaultFromBackup,
   clearAllVaultBackups,
+  backupVaultIfChanged,
 } from './backupVault';
 import { KeyringControllerState } from '@metamask/keyring-controller';
 import {
@@ -212,6 +213,104 @@ describe('backupVault file', () => {
       expect(resetInternetCredentials).toHaveBeenCalledTimes(3);
 
       expect(response).toEqual(mockedSuccessResponse);
+    });
+  });
+
+  describe('backupVaultIfChanged', () => {
+    const keyringState = (vault?: string): KeyringControllerState => ({
+      vault,
+      keyrings: [],
+      isUnlocked: false,
+      keyringsMetadata: [],
+    });
+    const primaryWrites = () =>
+      (setInternetCredentials as jest.Mock).mock.calls.filter(
+        ([server]) => server === VAULT_BACKUP_KEY,
+      ).length;
+
+    beforeEach(async () => {
+      await clearAllVaultBackups();
+      jest.clearAllMocks();
+    });
+
+    it('does not touch the keychain when the vault is already backed up', async () => {
+      await backupVaultIfChanged(keyringState('vault-1'));
+      jest.clearAllMocks();
+
+      const response = await backupVaultIfChanged(keyringState('vault-1'));
+
+      expect(response).toEqual({
+        success: true,
+        vault: 'vault-1',
+        skipped: true,
+      });
+      expect(getInternetCredentials).not.toHaveBeenCalled();
+      expect(setInternetCredentials).not.toHaveBeenCalled();
+      expect(resetInternetCredentials).not.toHaveBeenCalled();
+    });
+
+    it('backs up a changed vault', async () => {
+      await backupVaultIfChanged(keyringState('vault-1'));
+      await backupVaultIfChanged(keyringState('vault-2'));
+
+      expect(primaryWrites()).toBe(2);
+      expect(await getInternetCredentials(VAULT_BACKUP_KEY)).toEqual({
+        username: VAULT_BACKUP_KEY,
+        password: 'vault-2',
+      });
+    });
+
+    it('backs up again after the backups are cleared', async () => {
+      await backupVaultIfChanged(keyringState('vault-1'));
+      await clearAllVaultBackups();
+
+      await backupVaultIfChanged(keyringState('vault-1'));
+
+      expect(primaryWrites()).toBe(2);
+      expect(await getInternetCredentials(VAULT_BACKUP_KEY)).toEqual({
+        username: VAULT_BACKUP_KEY,
+        password: 'vault-1',
+      });
+    });
+
+    it('does not treat a vault as backed up when a clear overlaps its backup', async () => {
+      const backup = backupVaultIfChanged(keyringState('vault-1'));
+      await clearAllVaultBackups();
+      await backup;
+
+      expect(await getInternetCredentials(VAULT_BACKUP_KEY)).toBeUndefined();
+
+      await backupVaultIfChanged(keyringState('vault-1'));
+
+      expect(await getInternetCredentials(VAULT_BACKUP_KEY)).toEqual({
+        username: VAULT_BACKUP_KEY,
+        password: 'vault-1',
+      });
+    });
+
+    it('writes an overlapping repeat of the same vault only once', async () => {
+      await Promise.all([
+        backupVaultIfChanged(keyringState('vault-1')),
+        backupVaultIfChanged(keyringState('vault-1')),
+      ]);
+
+      expect(primaryWrites()).toBe(1);
+    });
+
+    it('retries a queued repeat when the first backup fails', async () => {
+      (setInternetCredentials as jest.Mock).mockImplementationOnce(() => false);
+
+      const [first, second] = await Promise.all([
+        backupVaultIfChanged(keyringState('vault-1')),
+        backupVaultIfChanged(keyringState('vault-1')),
+      ]);
+
+      expect(first.success).toBe(false);
+      expect(second).toEqual({ success: true, vault: 'vault-1' });
+      expect(await getInternetCredentials(VAULT_BACKUP_KEY)).toEqual({
+        username: VAULT_BACKUP_KEY,
+        password: 'vault-1',
+      });
     });
   });
 

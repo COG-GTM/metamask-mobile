@@ -23,7 +23,22 @@ interface KeyringBackupResponse {
   success: boolean;
   vault?: string;
   error?: string;
+  skipped?: boolean;
 }
+
+// Vault held by the primary keychain backup after the last completed operation.
+let lastBackedUpVault: string | undefined;
+let keychainQueue: Promise<unknown> = Promise.resolve();
+
+/**
+ * Runs keychain backup operations one at a time so that overlapping backups
+ * and clears cannot interleave and `lastBackedUpVault` matches the keychain.
+ */
+const serialize = <T>(operation: () => Promise<T>): Promise<T> => {
+  const result = keychainQueue.then(operation, operation);
+  keychainQueue = result.catch(() => undefined);
+  return result;
+};
 
 /**
  * Removes the primary vault backup from react-native-keychain
@@ -44,9 +59,12 @@ const _resetTemporaryVaultBackup = async (): Promise<void> => {
 /**
  * Clears all vault backups from react-native-keychain
  */
-export async function clearAllVaultBackups() {
-  await _resetVaultBackup();
-  await _resetTemporaryVaultBackup();
+export function clearAllVaultBackups(): Promise<void> {
+  return serialize(async () => {
+    lastBackedUpVault = undefined;
+    await _resetVaultBackup();
+    await _resetTemporaryVaultBackup();
+  });
 }
 
 /**
@@ -58,10 +76,34 @@ export async function clearAllVaultBackups() {
     vault?: string;
   }
  */
-export async function backupVault(
+export function backupVault(
+  keyringState: KeyringControllerState,
+): Promise<KeyringBackupResponse> {
+  return serialize(() => _backupVault(keyringState));
+}
+
+/**
+ * Backs up the vault unless the primary keychain backup already holds it, so
+ * keyring updates that leave the vault unchanged (lock, unlock, account
+ * metadata) do not rewrite the keychain.
+ * @returns Promise<KeyringBackupResponse>
+ */
+export function backupVaultIfChanged(
+  keyringState: KeyringControllerState,
+): Promise<KeyringBackupResponse> {
+  return serialize(async () => {
+    if (keyringState.vault && keyringState.vault === lastBackedUpVault) {
+      return { success: true, vault: keyringState.vault, skipped: true };
+    }
+    return _backupVault(keyringState);
+  });
+}
+
+async function _backupVault(
   keyringState: KeyringControllerState,
 ): Promise<KeyringBackupResponse> {
   const keyringVault = keyringState.vault as string;
+  lastBackedUpVault = undefined;
 
   try {
     // Does a primary backup exist?
@@ -106,6 +148,8 @@ export async function backupVault(
 
     // Clear the temporary backup
     await _resetTemporaryVaultBackup();
+
+    lastBackedUpVault = keyringVault;
 
     return {
       success: true,

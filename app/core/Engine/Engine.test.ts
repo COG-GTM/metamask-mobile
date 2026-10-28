@@ -11,10 +11,12 @@ import {
 import { mockNetworkState } from '../../util/test/network';
 import { Hex } from '@metamask/utils';
 import { KeyringControllerState } from '@metamask/keyring-controller';
-import { backupVault } from '../BackupVault';
+import { backupVaultIfChanged } from '../BackupVault';
 
 jest.mock('../BackupVault', () => ({
-  backupVault: jest.fn().mockResolvedValue({ success: true, vault: 'vault' }),
+  backupVaultIfChanged: jest
+    .fn()
+    .mockResolvedValue({ success: true, vault: 'vault' }),
 }));
 jest.unmock('./Engine');
 jest.mock('../../store', () => ({
@@ -58,7 +60,7 @@ describe('Engine', () => {
 
   afterEach(() => {
     jest.restoreAllMocks();
-    (backupVault as jest.Mock).mockReset();
+    (backupVaultIfChanged as jest.Mock).mockReset();
   });
 
   it('should expose an API', () => {
@@ -104,7 +106,7 @@ describe('Engine', () => {
   });
 
   it('should backup vault when Engine is initialized and vault exists', () => {
-    (backupVault as jest.Mock).mockResolvedValue({
+    (backupVaultIfChanged as jest.Mock).mockResolvedValue({
       success: true,
       vault: 'vault',
     });
@@ -121,12 +123,12 @@ describe('Engine', () => {
       } as KeyringControllerState,
       [],
     );
-    expect(backupVault).toHaveBeenCalled();
+    expect(backupVaultIfChanged).toHaveBeenCalled();
   });
 
   it('should not backup vault when Engine is initialized and vault is empty', () => {
-    // backupVault will not be called so return value doesn't matter here
-    (backupVault as jest.Mock).mockResolvedValue(undefined);
+    // backupVaultIfChanged will not be called so return value doesn't matter here
+    (backupVaultIfChanged as jest.Mock).mockResolvedValue(undefined);
     const engine = Engine.init({});
     const newEngine = Engine.init({});
     expect(engine).toStrictEqual(newEngine);
@@ -140,7 +142,7 @@ describe('Engine', () => {
       } as KeyringControllerState,
       [],
     );
-    expect(backupVault).not.toHaveBeenCalled();
+    expect(backupVaultIfChanged).not.toHaveBeenCalled();
   });
 
   it('calling Engine.destroy deletes the old instance', async () => {

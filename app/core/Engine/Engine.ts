@@ -105,7 +105,7 @@ import {
   getPermissionSpecifications,
   unrestrictedMethods,
 } from '../Permissions/specifications.js';
-import { backupVault } from '../BackupVault';
+import { backupVaultIfChanged } from '../BackupVault';
 import { Hex, Json } from '@metamask/utils';
 import { providerErrors } from '@metamask/rpc-errors';
 
@@ -1510,10 +1510,12 @@ export class Engine {
           return;
         }
 
-        // Back up vault if it exists
-        backupVault(state)
-          .then(() => {
-            Logger.log('Engine', 'Vault back up successful');
+        // Back up vault if it exists and differs from the keychain backup
+        backupVaultIfChanged(state)
+          .then((result) => {
+            if (result.success && !result.skipped) {
+              Logger.log('Engine', 'Vault back up successful');
+            }
           })
           .catch((error) => {
             Logger.error(error, 'Engine Vault backup failed');
