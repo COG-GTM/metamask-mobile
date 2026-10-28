@@ -13,6 +13,7 @@ import SmartTransactionsController from '@metamask/smart-transactions-controller
 // eslint-disable-next-line import/no-namespace
 import * as environment from '../environment';
 import type { BaseControllerMessenger } from '../../core/Engine';
+import { ExtendedControllerMessenger } from '../../core/ExtendedControllerMessenger';
 
 describe('Smart Transactions utils', () => {
   describe('getTransactionType', () => {
@@ -385,6 +386,7 @@ describe('Smart Transactions utils', () => {
       } as unknown as SmartTransactionsController;
       controllerMessenger = {
         subscribe: jest.fn(),
+        unsubscribe: jest.fn(),
       } as unknown as BaseControllerMessenger;
     });
 
@@ -512,17 +514,163 @@ describe('Smart Transactions utils', () => {
     });
   });
 
+  describe('getSmartTransactionMetricsProperties listener cleanup', () => {
+    const CONFIRMATION_DONE_EVENT =
+      'SmartTransactionsController:smartTransactionConfirmationDone';
+    const transactionMeta = { hash: '0x123' } as TransactionMeta;
+    let smartTransactionsController: SmartTransactionsController;
+    let messenger: BaseControllerMessenger;
+    let subscribeSpy: jest.SpyInstance;
+    let unsubscribeSpy: jest.SpyInstance;
+
+    const publishConfirmationDone = (smartTransaction: unknown) =>
+      (
+        messenger as unknown as {
+          publish: (event: string, payload: unknown) => void;
+        }
+      ).publish(CONFIRMATION_DONE_EVENT, smartTransaction);
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      smartTransactionsController = {
+        getSmartTransactionByMinedTxHash: jest.fn().mockReturnValue(undefined),
+      } as unknown as SmartTransactionsController;
+      messenger =
+        new ExtendedControllerMessenger() as unknown as BaseControllerMessenger;
+      subscribeSpy = jest.spyOn(messenger, 'subscribe');
+      unsubscribeSpy = jest.spyOn(messenger, 'unsubscribe');
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('unsubscribes and clears the timeout when the confirmation done event fires', async () => {
+      const resultPromise = getSmartTransactionMetricsProperties(
+        smartTransactionsController,
+        transactionMeta,
+        true,
+        messenger,
+      );
+
+      publishConfirmationDone({
+        statusMetadata: { timedOut: false, proxied: true },
+      });
+
+      await expect(resultPromise).resolves.toEqual({
+        smart_transaction_timed_out: false,
+        smart_transaction_proxied: true,
+      });
+      expect(unsubscribeSpy).toHaveBeenCalledWith(
+        CONFIRMATION_DONE_EVENT,
+        subscribeSpy.mock.calls[0][1],
+      );
+      expect(jest.getTimerCount()).toBe(0);
+      expect(() => publishConfirmationDone({})).not.toThrow();
+      expect(unsubscribeSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('unsubscribes when the 10 second timeout elapses', async () => {
+      const resultPromise = getSmartTransactionMetricsProperties(
+        smartTransactionsController,
+        transactionMeta,
+        true,
+        messenger,
+      );
+
+      jest.advanceTimersByTime(10000);
+
+      await expect(resultPromise).resolves.toEqual({});
+      expect(unsubscribeSpy).toHaveBeenCalledWith(
+        CONFIRMATION_DONE_EVENT,
+        subscribeSpy.mock.calls[0][1],
+      );
+      expect(jest.getTimerCount()).toBe(0);
+    });
+
+    it.each(['event', 'timeout'])(
+      'cleans up on a restricted messenger without tryUnsubscribe (%s path)',
+      async (path) => {
+        const restricted = (
+          messenger as unknown as {
+            getRestricted: (opts: object) => BaseControllerMessenger;
+          }
+        ).getRestricted({
+          name: 'TransactionControllerInit',
+          allowedEvents: [CONFIRMATION_DONE_EVENT],
+          allowedActions: [],
+        });
+        expect(
+          (restricted as unknown as { tryUnsubscribe?: unknown })
+            .tryUnsubscribe,
+        ).toBeUndefined();
+        const restrictedUnsubscribeSpy = jest.spyOn(restricted, 'unsubscribe');
+
+        const resultPromise = getSmartTransactionMetricsProperties(
+          smartTransactionsController,
+          transactionMeta,
+          true,
+          restricted,
+        );
+        if (path === 'event') {
+          publishConfirmationDone({
+            statusMetadata: { timedOut: true, proxied: false },
+          });
+        } else {
+          jest.advanceTimersByTime(10000);
+        }
+
+        await expect(resultPromise).resolves.toEqual(
+          path === 'event'
+            ? {
+                smart_transaction_timed_out: true,
+                smart_transaction_proxied: false,
+              }
+            : {},
+        );
+        expect(restrictedUnsubscribeSpy).toHaveBeenCalledTimes(1);
+        expect(jest.getTimerCount()).toBe(0);
+      },
+    );
+
+    it('leaves no handler behind after repeated calls', async () => {
+      for (let i = 0; i < 3; i++) {
+        const resultPromise = getSmartTransactionMetricsProperties(
+          smartTransactionsController,
+          transactionMeta,
+          true,
+          messenger,
+        );
+        publishConfirmationDone({
+          statusMetadata: { timedOut: false, proxied: false },
+        });
+        await resultPromise;
+      }
+      jest.advanceTimersByTime(10000);
+
+      const handlerSpy = jest.fn();
+      messenger.subscribe(CONFIRMATION_DONE_EVENT, handlerSpy);
+      publishConfirmationDone({});
+      expect(handlerSpy).toHaveBeenCalledTimes(1);
+      expect(subscribeSpy).toHaveBeenCalledTimes(4);
+      expect(unsubscribeSpy).toHaveBeenCalledTimes(3);
+      expect(jest.getTimerCount()).toBe(0);
+    });
+  });
+
   describe('getTradeTxTokenFee', () => {
     it('returns the token fee when the full path exists', () => {
       const mockQuote = {
         tradeTxFees: {
-          fees: [{
-            tokenFees: ['mockTokenFee'],
-          }],
+          fees: [
+            {
+              tokenFees: ['mockTokenFee'],
+            },
+          ],
           cancelFees: {},
           feeEstimate: '0x0',
           gasLimit: '0x0',
-          gasUsed: '0x0'
+          gasUsed: '0x0',
         },
         approvalTxFees: null,
       } as unknown as GasIncludedQuote;
@@ -547,7 +695,7 @@ describe('Smart Transactions utils', () => {
           cancelFees: {},
           feeEstimate: '0x0',
           gasLimit: '0x0',
-          gasUsed: '0x0'
+          gasUsed: '0x0',
         },
         approvalTxFees: null,
       } as unknown as GasIncludedQuote;
@@ -587,19 +735,21 @@ describe('Smart Transactions utils', () => {
     it('returns transaction fees when gas is included and token fee exists', () => {
       const mockQuote = {
         tradeTxFees: {
-          fees: [{
-            tokenFees: ['mockTokenFee'],
-          }],
+          fees: [
+            {
+              tokenFees: ['mockTokenFee'],
+            },
+          ],
           cancelFees: {},
           feeEstimate: '0x0',
           gasLimit: '0x0',
-          gasUsed: '0x0'
+          gasUsed: '0x0',
         },
         approvalTxFees: {
           cancelFees: {},
           feeEstimate: '0x0',
           gasLimit: '0x0',
-          gasUsed: '0x0'
+          gasUsed: '0x0',
         },
         isGasIncludedTrade: true,
       } as unknown as GasIncludedQuote;
@@ -614,13 +764,15 @@ describe('Smart Transactions utils', () => {
     it('returns undefined when gas is not included', () => {
       const mockQuote = {
         tradeTxFees: {
-          fees: [{
-            tokenFees: ['mockTokenFee'],
-          }],
+          fees: [
+            {
+              tokenFees: ['mockTokenFee'],
+            },
+          ],
           cancelFees: {},
           feeEstimate: '0x0',
           gasLimit: '0x0',
-          gasUsed: '0x0'
+          gasUsed: '0x0',
         },
         approvalTxFees: null,
         isGasIncludedTrade: false,
@@ -637,7 +789,7 @@ describe('Smart Transactions utils', () => {
           cancelFees: {},
           feeEstimate: '0x0',
           gasLimit: '0x0',
-          gasUsed: '0x0'
+          gasUsed: '0x0',
         },
         approvalTxFees: null,
         isGasIncludedTrade: true,
@@ -662,19 +814,25 @@ describe('Smart Transactions utils', () => {
 
     it('returns true for Infura URLs in production', () => {
       isProductionMock.mockReturnValue(true);
-      const result = getIsAllowedRpcUrlForSmartTransactions('https://mainnet.infura.io/v3/abc123');
+      const result = getIsAllowedRpcUrlForSmartTransactions(
+        'https://mainnet.infura.io/v3/abc123',
+      );
       expect(result).toBe(true);
     });
 
     it('returns true for Binance URLs in production', () => {
       isProductionMock.mockReturnValue(true);
-      const result = getIsAllowedRpcUrlForSmartTransactions('https://bsc-dataseed.binance.org/');
+      const result = getIsAllowedRpcUrlForSmartTransactions(
+        'https://bsc-dataseed.binance.org/',
+      );
       expect(result).toBe(true);
     });
 
     it('returns false for other URLs in production', () => {
       isProductionMock.mockReturnValue(true);
-      const result = getIsAllowedRpcUrlForSmartTransactions('https://example.com/rpc');
+      const result = getIsAllowedRpcUrlForSmartTransactions(
+        'https://example.com/rpc',
+      );
       expect(result).toBe(false);
     });
 
@@ -686,7 +844,9 @@ describe('Smart Transactions utils', () => {
 
     it('returns true for any URL in non-production environments', () => {
       isProductionMock.mockReturnValue(false);
-      const result = getIsAllowedRpcUrlForSmartTransactions('https://example.com/rpc');
+      const result = getIsAllowedRpcUrlForSmartTransactions(
+        'https://example.com/rpc',
+      );
       expect(result).toBe(true);
     });
 
