@@ -127,4 +127,61 @@ describe('parseOriginatorInfo', () => {
       'Invalid OriginatorInfo structure',
     );
   });
+
+  describe('sanitizes link-supplied metadata', () => {
+    const scriptUrl = ['javascript', 'alert(1)'].join(':');
+    const encode = (info: Record<string, unknown>) =>
+      Buffer.from(
+        JSON.stringify({
+          title: 'Acme Swap',
+          platform: 'web',
+          dappId: 'acme',
+          ...info,
+        }),
+      ).toString('base64');
+
+    it('reduces the url to its origin', () => {
+      const result = parseOriginatorInfo({
+        base64OriginatorInfo: encode({
+          url: 'https://user:pass@app.acmeswap.com:8443/path?q=1#frag',
+        }),
+      });
+
+      expect(result.url).toBe('https://app.acmeswap.com:8443');
+    });
+
+    it.each([scriptUrl, 'metamask://connect', 'not a url', ''])(
+      'blanks non-http(s) url %p',
+      (url) => {
+        const result = parseOriginatorInfo({
+          base64OriginatorInfo: encode({ url }),
+        });
+
+        expect(result.url).toBe('');
+      },
+    );
+
+    it.each([
+      'http://app.acmeswap.com/logo.png',
+      scriptUrl,
+      'file:///etc/passwd',
+    ])('drops icon %p', (icon) => {
+      const result = parseOriginatorInfo({
+        base64OriginatorInfo: encode({ url: 'https://a.com', icon }),
+      });
+
+      expect(result).not.toHaveProperty('icon');
+    });
+
+    it.each(['https://a.com/logo.png', 'data:image/png;base64,AAAA'])(
+      'keeps icon %p',
+      (icon) => {
+        const result = parseOriginatorInfo({
+          base64OriginatorInfo: encode({ url: 'https://a.com', icon }),
+        });
+
+        expect(result.icon).toBe(icon);
+      },
+    );
+  });
 });

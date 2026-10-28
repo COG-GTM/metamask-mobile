@@ -43,8 +43,41 @@ const parseOriginatorInfo = ({
     throw new Error('Invalid OriginatorInfo structure');
   }
 
-  return parsedData;
+  return sanitizeOriginatorInfo(parsedData);
 };
+
+const ALLOWED_URL_PROTOCOLS = ['https:', 'http:'];
+
+/**
+ * Normalizes link-supplied (unverified) originator metadata so it can't carry
+ * paths, credentials or non-web schemes into the UI, and drops icons that are
+ * not https or inline images.
+ */
+function sanitizeOriginatorInfo(info: OriginatorInfo): OriginatorInfo {
+  let url = '';
+  try {
+    const urlObj = new URL(info.url);
+    if (ALLOWED_URL_PROTOCOLS.includes(urlObj.protocol)) {
+      url = urlObj.origin;
+    }
+  } catch (e) {
+    url = '';
+  }
+
+  const icon =
+    info.icon &&
+    (info.icon.startsWith('https://') || info.icon.startsWith('data:image/'))
+      ? info.icon
+      : undefined;
+
+  const sanitized: OriginatorInfo = { ...info, url };
+  if (icon === undefined) {
+    delete sanitized.icon;
+  } else {
+    sanitized.icon = icon;
+  }
+  return sanitized;
+}
 
 /**
  * Type guard to validate if the given data conforms to the OriginatorInfo interface.

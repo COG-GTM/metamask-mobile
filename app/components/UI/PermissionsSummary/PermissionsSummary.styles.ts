@@ -142,6 +142,10 @@ const createStyles = (params: {
       marginHorizontal: 24,
       marginBottom: 16,
     },
+    unverifiedBanner: {
+      marginHorizontal: 16,
+      marginBottom: 16,
+    },
   });
 };
 

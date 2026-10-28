@@ -6,6 +6,7 @@ export const ConnectAccountBottomSheetSelectorsIDs = {
   CONNECT_BUTTON: 'connect-button',
   CANCEL_BUTTON: 'cancel-button',
   SELECT_ALL_BUTTON: 'select-all-button',
+  UNVERIFIED_ORIGIN_BANNER: 'connect-account-unverified-origin-banner',
 };
 
 export const ConnectAccountBottomSheetSelectorsText = {
