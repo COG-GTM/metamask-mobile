@@ -865,13 +865,6 @@ export const getRpcMethodMiddleware = ({
                 if (typeof data === 'string') {
                   result = data;
                 } else if (data?.target_address) {
-                  if (!regex.walletAddress.exec(data.target_address)) {
-                    reject({
-                      message: 'INVALID_ETHEREUM_ADDRESS',
-                      data: data.target_address,
-                    });
-                    return;
-                  }
                   result = data.target_address;
                 } else if (typeof content === 'string') {
                   result = content;

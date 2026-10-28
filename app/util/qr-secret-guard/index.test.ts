@@ -19,6 +19,16 @@ describe('isSecretQRContent', () => {
     ['private key', PRIVATE_KEY],
     ['0x prefixed private key', `0x${PRIVATE_KEY}`],
     ['WalletConnect URI', 'wc:abc@2?relay-protocol=irn&symKey=deadbeef'],
+    ['labelled private key', `private_key: 0x${PRIVATE_KEY}`],
+    ['private key in JSON', `{"key":"${PRIVATE_KEY}"}`],
+    ['labelled mnemonic', `seed: ${MNEMONIC_12}`],
+    ['mnemonic in JSON', `{"mnemonic":"${MNEMONIC_24}"}`],
+    [
+      'numbered mnemonic',
+      MNEMONIC_12.split(' ')
+        .map((w, i) => `${i + 1}. ${w}`)
+        .join('\n'),
+    ],
   ])('detects %s', (_, content) => {
     expect(isSecretQRContent(content)).toBe(true);
   });
@@ -33,6 +43,8 @@ describe('isSecretQRContent', () => {
       'one two three four five six seven eight nine ten eleven twelve',
     ],
     ['non-string', 123],
+    ['64 non-hex characters', 'z'.repeat(64)],
+    ['0x prefixed text', '0xhello'],
   ])('ignores %s', (_, content) => {
     expect(isSecretQRContent(content)).toBe(false);
   });
@@ -49,6 +61,11 @@ describe('containsSecretQRData', () => {
 
   it('detects secret raw content even when data looks harmless', () => {
     expect(containsSecretQRData({}, MNEMONIC_12)).toBe(true);
+  });
+
+  it('allows a private_key field that is not a private key', () => {
+    const content = 'z'.repeat(64);
+    expect(containsSecretQRData({ private_key: content }, content)).toBe(false);
   });
 
   it('allows address scan results', () => {

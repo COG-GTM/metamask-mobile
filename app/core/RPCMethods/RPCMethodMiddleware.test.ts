@@ -1634,6 +1634,8 @@ describe('getRpcMethodMiddleware', () => {
       ['walletConnect object', { walletConnectURI: 'wc:abc@2' }, 'wc:abc@2'],
       ['raw mnemonic string', MNEMONIC, MNEMONIC],
       ['raw private key string', `0x${PRIVATE_KEY}`, `0x${PRIVATE_KEY}`],
+      ['labelled private key', `private_key: 0x${PRIVATE_KEY}`, `private_key: 0x${PRIVATE_KEY}`],
+      ['labelled mnemonic', `seed: ${MNEMONIC}`, `seed: ${MNEMONIC}`],
     ])('rejects a scanned %s without leaking it', async (_, data, content) => {
       const { response } = await scan({
         emit: ({ onScanSuccess }) => onScanSuccess(data, content),
@@ -1655,6 +1657,16 @@ describe('getRpcMethodMiddleware', () => {
           ),
       });
       expect((response as JsonRpcSuccess<string>).result).toBe(ADDRESS);
+    });
+
+    it.each([
+      ['64 non-hex characters', { private_key: 'z'.repeat(64) }, 'z'.repeat(64)],
+      ['0x prefixed text', { target_address: '0xhello', action: 'send-eth' }, '0xhello'],
+    ])('returns scanned %s as plain text', async (_, data, content) => {
+      const { response } = await scan({
+        emit: ({ onScanSuccess }) => onScanSuccess(data, content),
+      });
+      expect((response as JsonRpcSuccess<string>).result).toBe(content);
     });
 
     it('returns arbitrary scanned text as a string', async () => {
