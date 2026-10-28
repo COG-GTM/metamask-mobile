@@ -9,6 +9,7 @@ import { fireEvent } from '@testing-library/react-native';
 import AccountConnectMultiSelector from './AccountConnectMultiSelector/AccountConnectMultiSelector';
 import AccountConnectSingle from './AccountConnectSingle/AccountConnectSingle';
 import PermissionsSummary from '../../UI/PermissionsSummary';
+import WebsiteIcon from '../../UI/WebsiteIcon';
 import { IconName } from '../../../component-library/components/Icons/Icon';
 import { ConnectAccountBottomSheetSelectorsIDs } from '../../../../e2e/selectors/Browser/ConnectAccountBottomSheet.selectors';
 import Engine from '../../../core/Engine';
@@ -276,6 +277,7 @@ describe('AccountConnect', () => {
       expect(summary.props.currentPageInformation.url).toBe(
         'https://app.acmeswap.com',
       );
+      expect(UNSAFE_getByType(WebsiteIcon).props.url).toBe('');
     });
 
     it('does not show the unverified banner for in-app browser requests', () => {
