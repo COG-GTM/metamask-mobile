@@ -1,16 +1,98 @@
 diff --git a/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
-index b68b858..3376547 100644
+index b68b858..af71dc5 100644
 --- a/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
 +++ b/node_modules/@react-native-clipboard/clipboard/android/src/main/java/com/reactnativecommunity/clipboard/ClipboardModule.java
-@@ -64,6 +64,16 @@ public class ClipboardModule extends NativeClipboardModuleSpec {
+@@ -16,6 +16,9 @@ import android.content.Context;
+ import android.graphics.Bitmap;
+ import android.net.Uri;
+ import android.os.Build;
++import android.os.Handler;
++import android.os.Looper;
++import android.os.PersistableBundle;
+ import android.provider.MediaStore;
+ import android.util.Base64;
+ import android.util.Log;
+@@ -41,6 +44,10 @@ public class ClipboardModule extends NativeClipboardModuleSpec {
+   public static final String CLIPBOARD_TEXT_CHANGED = "RNCClipboard_TEXT_CHANGED";
+   private ReactApplicationContext reactContext;
+   private ClipboardManager.OnPrimaryClipChangedListener listener = null;
++  private static final long EXPIRE_TIME_MS = 60000;
++  private static final String EXTRA_IS_SENSITIVE = "android.content.extra.IS_SENSITIVE";
++  private final Handler expiryHandler = new Handler(Looper.getMainLooper());
++  private Runnable pendingExpiry = null;
+ 
+   public ClipboardModule(ReactApplicationContext reactContext) {
+     super(reactContext);
+@@ -64,6 +71,77 @@ public class ClipboardModule extends NativeClipboardModuleSpec {
      return (ClipboardManager) reactContext.getSystemService(Context.CLIPBOARD_SERVICE);
    }
  
++  private void clearPrimaryClip(ClipboardManager clipboard) {
++    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
++      clipboard.clearPrimaryClip();
++    } else {
++      clipboard.setPrimaryClip(ClipData.newPlainText("", ""));
++    }
++  }
++
 +  @ReactMethod
 +  public void clearString() {
 +    try {
++      clearPrimaryClip(getClipboardService());
++    } catch (Exception e) {
++      e.printStackTrace();
++    }
++  }
++
++  /**
++   * Copies sensitive text and clears it natively after EXPIRE_TIME_MS. The main-looper
++   * Handler keeps running while the activity is paused, unlike React Native JS timers.
++   */
++  @ReactMethod
++  public void setStringExpire(final String content) {
++    try {
++      ClipData clipdata = ClipData.newPlainText(null, content);
++      PersistableBundle extras = new PersistableBundle();
++      extras.putBoolean(EXTRA_IS_SENSITIVE, true);
++      clipdata.getDescription().setExtras(extras);
++      getClipboardService().setPrimaryClip(clipdata);
++    } catch (Exception e) {
++      e.printStackTrace();
++      return;
++    }
++
++    synchronized (this) {
++      if (pendingExpiry != null) {
++        expiryHandler.removeCallbacks(pendingExpiry);
++      }
++      pendingExpiry = new Runnable() {
++        @Override
++        public void run() {
++          synchronized (ClipboardModule.this) {
++            if (pendingExpiry == this) {
++              pendingExpiry = null;
++            }
++          }
++          clearIfUnchanged(content);
++        }
++      };
++      expiryHandler.postDelayed(pendingExpiry, EXPIRE_TIME_MS);
++    }
++  }
++
++  private void clearIfUnchanged(String content) {
++    try {
 +      ClipboardManager clipboard = getClipboardService();
-+      clipboard.clearPrimaryClip();
++      // Android 10+ returns null to backgrounded apps; clear anyway since we cannot
++      // prove the secret was replaced.
++      ClipData clip = clipboard.getPrimaryClip();
++      if (clip != null && clip.getItemCount() > 0) {
++        CharSequence text = clip.getItemAt(0).getText();
++        if (text == null || !content.contentEquals(text)) {
++          return;
++        }
++      }
++      clearPrimaryClip(clipboard);
 +    } catch (Exception e) {
 +      e.printStackTrace();
 +    }
@@ -20,15 +102,17 @@ index b68b858..3376547 100644
    public void getString(Promise promise) {
      try {
 diff --git a/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.d.ts b/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.d.ts
-index 6c85195..3a9302e 100644
+index 6c85195..133b824 100644
 --- a/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.d.ts
 +++ b/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.d.ts
-@@ -90,6 +90,25 @@ export declare const Clipboard: {
+@@ -90,6 +90,27 @@ export declare const Clipboard: {
       * }
       * ```
       */
 +    /**
-+     * [IOS ONLY] Set content of string type with an expiry date of 60 seconds. You can use following code to set clipboard content
++     * Set content of string type and clear it from the clipboard after 60 seconds.
++     * iOS uses a pasteboard expiration date; Android clears the clip natively and
++     * marks it as sensitive so it is hidden from clipboard previews.
 +     * ```javascript
 +     * _setContent() {
 +     *   Clipboard.setStringExpire('hello world');
@@ -36,8 +120,8 @@ index 6c85195..3a9302e 100644
 +     * ```
 +     * @param the content to be stored in the clipboard.
 +     */
-+	setStringExpire(content: string): void;
-+	/**
++    setStringExpire(content: string): void;
++    /**
 +     * [ANDROID ONLY] Clears the primary clip on Android
 +     * ```javascript
 +     * _clearContent() {
@@ -45,31 +129,33 @@ index 6c85195..3a9302e 100644
 +     * }
 +     * ```
 +     */
-+	clearString(): void;
++    clearString(): void;
      hasString(): Promise<boolean>;
      /**
       * Returns whether the clipboard has an image or is empty.
 diff --git a/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.js b/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.js
-index ccdf309..3eb6120 100644
+index ccdf309..c28ea2b 100644
 --- a/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.js
 +++ b/node_modules/@react-native-clipboard/clipboard/dist/Clipboard.js
-@@ -127,6 +127,29 @@ exports.Clipboard = {
+@@ -127,6 +127,31 @@ exports.Clipboard = {
      setStrings(content) {
          NativeClipboardModule_1.default.setStrings(content);
      },
-+    	/**
-+     * [IOS ONLY] Set content of string type. You can use following code to set clipboard content
++    /**
++     * Set content of string type and clear it from the clipboard after 60 seconds.
++     * iOS uses a pasteboard expiration date; Android clears the clip natively and
++     * marks it as sensitive so it is hidden from clipboard previews.
 +     * ```javascript
 +     * _setContent() {
-+     *   Clipboard.setString('hello world');
++     *   Clipboard.setStringExpire('hello world');
 +     * }
 +     * ```
 +     * @param the content to be stored in the clipboard.
 +     */
-+	setStringExpire: function (content) {
-+        NativeClipboard_1.default.setStringExpire(content);
-+	},
-+	/**
++    setStringExpire(content) {
++        NativeClipboardModule_1.default.setStringExpire(content);
++    },
++    /**
 +     * [ANDROID ONLY] Clears the primary clip on Android
 +     * ```javascript
 +     * _clearContent() {
@@ -77,9 +163,9 @@ index ccdf309..3eb6120 100644
 +     * }
 +     * ```
 +     */
-+	clearString: function () {
-+		NativeClipboard_1.default.clearString();
-+	},
++    clearString() {
++        NativeClipboardModule_1.default.clearString();
++    },
      /**
       * Returns whether the clipboard has content or is empty.
       * This method returns a `Promise`, so you can use following code to get clipboard content
@@ -95,7 +181,7 @@ index 3ee5caa..f6bd6f3 100644
  
  @implementation RNCClipboard {
      BOOL isObserving;
-@@ -51,6 +52,16 @@ - (void) listener:(NSNotification *) notification
+@@ -51,6 +52,16 @@ NSString *const CLIPBOARD_TEXT_CHANGED = @"RNCClipboard_TEXT_CHANGED";
      }
  }
  
@@ -112,3 +198,16 @@ index 3ee5caa..f6bd6f3 100644
  RCT_EXPORT_METHOD(setListener)
  {
      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(listener:) name:UIPasteboardChangedNotification object:nil];
+diff --git a/node_modules/@react-native-clipboard/clipboard/jest/clipboard-mock.js b/node_modules/@react-native-clipboard/clipboard/jest/clipboard-mock.js
+index 2b57880..8806b50 100644
+--- a/node_modules/@react-native-clipboard/clipboard/jest/clipboard-mock.js
++++ b/node_modules/@react-native-clipboard/clipboard/jest/clipboard-mock.js
+@@ -9,6 +9,8 @@ const ClipboardMock = {
+ 	getImageJPG: jest.fn(),
+ 	setImage: jest.fn(),
+ 	setString: jest.fn(),
++	setStringExpire: jest.fn(),
++	clearString: jest.fn(),
+ 	hasString: jest.fn().mockResolvedValue(true),
+ 	hasImage: jest.fn().mockResolvedValue(true),
+ 	hasURL: jest.fn().mockResolvedValue(true),
