@@ -22,6 +22,7 @@ import {
   getPermittedAccounts,
 } from '../Permissions';
 import {
+  checkActiveAccountAndChainId,
   getRpcMethodMiddleware,
   getRpcMethodMiddlewareHooks,
 } from './RPCMethodMiddleware';
@@ -388,6 +389,66 @@ function setupSignature() {
 
   return { middleware };
 }
+
+describe('checkActiveAccountAndChainId', () => {
+  const sessionAccount = '0x0000000000000000000000000000000000000001';
+  const otherAccount = '0x0000000000000000000000000000000000000002';
+
+  beforeEach(() => {
+    mockGetPermittedAccounts.mockReset();
+  });
+
+  it('rejects an address outside activeAccounts even if the origin has permitted accounts', async () => {
+    mockGetPermittedAccounts.mockReturnValue([otherAccount]);
+
+    await expect(
+      checkActiveAccountAndChainId({
+        address: otherAccount,
+        hostname: hostMock,
+        isWalletConnect: true,
+        activeAccounts: [sessionAccount],
+      }),
+    ).rejects.toThrow(
+      'Invalid parameters: must provide a permitted Ethereum address.',
+    );
+    expect(mockGetPermittedAccounts).not.toHaveBeenCalled();
+  });
+
+  it('rejects any address when activeAccounts is empty', async () => {
+    await expect(
+      checkActiveAccountAndChainId({
+        address: sessionAccount,
+        hostname: hostMock,
+        isWalletConnect: true,
+        activeAccounts: [],
+      }),
+    ).rejects.toThrow('Invalid parameters: must provide an Ethereum address.');
+  });
+
+  it('accepts an address in activeAccounts regardless of checksum casing', async () => {
+    await expect(
+      checkActiveAccountAndChainId({
+        address: sessionAccount,
+        hostname: hostMock,
+        isWalletConnect: true,
+        activeAccounts: [sessionAccount.toLowerCase()],
+      }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('falls back to permitted accounts when activeAccounts is not provided', async () => {
+    mockGetPermittedAccounts.mockReturnValue([sessionAccount]);
+
+    await expect(
+      checkActiveAccountAndChainId({
+        address: sessionAccount,
+        hostname: hostMock,
+        isWalletConnect: false,
+      }),
+    ).resolves.toBeUndefined();
+    expect(mockGetPermittedAccounts).toHaveBeenCalledWith(hostMock);
+  });
+});
 
 describe('getRpcMethodMiddleware', () => {
   beforeEach(() => jest.clearAllMocks());
