@@ -20,6 +20,9 @@ const styleSheet = (params: { theme: Theme }) => {
       marginVertical: 16,
       color: colors.text.alternative,
     },
+    unverifiedBanner: {
+      marginTop: 16,
+    },
     sheetActionContainer: {
       marginTop: 16,
     },
