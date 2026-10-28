@@ -1092,6 +1092,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           return null;
         }
         const { type, hash } = ipfsContent;
+        // Re-insert so the most recently resolved name wins on lookup.
+        delete sessionENSNamesRef.current[ipfsUrl];
         sessionENSNamesRef.current[ipfsUrl] = { hostname, hash, type };
         setIsResolvedIpfsUrl(true);
         return ipfsUrl;
@@ -1386,7 +1388,13 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             onBlur={hideAutocomplete}
             onChangeText={onChangeUrlBar}
             connectedAccounts={permittedAccountsList}
-            activeUrl={resolvedUrlRef.current}
+            activeUrl={
+              resolvedUrlRef.current &&
+              getPermissionOriginUrl(
+                resolvedUrlRef.current,
+                sessionENSNamesRef.current,
+              )
+            }
             setIsUrlBarFocused={setIsUrlBarFocused}
             isUrlBarFocused={isUrlBarFocused}
           />

@@ -45,7 +45,8 @@ export const isENSUrl = (urlToCheck: string, ensIgnoreList: string[]) => {
   return false;
 };
 
-const DOT_SEGMENT_REGEX = /(^|\/)(\.|%2e){1,2}(\/|$)/i;
+// Dot segments, plus encoded separators/percents a gateway might decode into one.
+const UNSAFE_PATH_REGEX = /%2f|%5c|%25|\\|(^|\/)(\.|%2e){1,2}(\/|$)/i;
 
 /**
  * Finds the ENS name whose resolved content root (gateway + content hash, or
@@ -60,7 +61,8 @@ export const findSessionENSName = (
 ) => {
   if (!url) return undefined;
   const target = new URLParse(url);
-  for (const [key, entry] of Object.entries(sessionENSNames)) {
+  // Latest entry first, so the most recently resolved name wins.
+  for (const [key, entry] of Object.entries(sessionENSNames).reverse()) {
     const marker = entry.type?.startsWith('ipns') ? entry.hostname : entry.hash;
     if (!marker) continue;
     const markerIndex = key.indexOf(marker);
@@ -82,7 +84,7 @@ export const findSessionENSName = (
     } else {
       continue;
     }
-    if (DOT_SEGMENT_REGEX.test(rest)) continue;
+    if (UNSAFE_PATH_REGEX.test(rest)) continue;
     return {
       ...entry,
       rest: `${rest || '/'}${target.query}${target.hash}`,

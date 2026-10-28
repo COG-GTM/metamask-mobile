@@ -178,6 +178,34 @@ describe('BrowserTab utils', () => {
       ).toBe('ipfs.io');
     });
 
+    it('does not map encoded separator escapes out of the content root', () => {
+      [
+        `${PATH_GATEWAY}${GOOD_CID}/..%2f${BAD_CID}/`,
+        `${PATH_GATEWAY}${GOOD_CID}/..%5C${BAD_CID}/`,
+        `${PATH_GATEWAY}${GOOD_CID}/%252e%252e/${BAD_CID}/`,
+      ].forEach((url) =>
+        expect(getPermissionHostname(url, sessionENSNames)).toBe('ipfs.io'),
+      );
+    });
+
+    it('prefers the most recently resolved name for a shared content root', () => {
+      const names: SessionENSNames = {
+        [`${PATH_GATEWAY}${GOOD_CID}/`]: {
+          hash: GOOD_CID,
+          hostname: 'gooddapp.eth',
+          type: 'ipfs-ns',
+        },
+        [`${PATH_GATEWAY}${GOOD_CID}/app`]: {
+          hash: GOOD_CID,
+          hostname: 'alias.eth',
+          type: 'ipfs-ns',
+        },
+      };
+      expect(getPermissionHostname(`${PATH_GATEWAY}${GOOD_CID}/`, names)).toBe(
+        'alias.eth',
+      );
+    });
+
     it('does not map the same content path on a different host', () => {
       expect(
         getPermissionOriginUrl(
