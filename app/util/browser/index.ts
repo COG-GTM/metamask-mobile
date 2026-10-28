@@ -1,4 +1,4 @@
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import isUrl from 'is-url';
 import Url from 'url-parse';
 import { regex, hasProtocol } from '../../util/regex';
@@ -98,14 +98,21 @@ export const protocolAllowList = ['about:', 'http:', 'https:'];
 
 /**
  *
- * List of all trusted protocols for OS Linker to handle
+ * List of all trusted protocols for OS Linker to handle without a prompt.
+ * These hand off to another app and never re-enter MetaMask.
  */
-export const trustedProtocolToDeeplink = [
+export const trustedProtocolToDeeplink = ['market:'];
+
+/**
+ * Schemes registered by MetaMask itself. Opening one from a web page loops
+ * back into the app's deeplink handler with the same trust as a link the
+ * user tapped outside the app, so the user must confirm it first.
+ */
+export const inAppDeeplinkProtocols = [
   'wc:',
   'metamask:',
   'ethereum:',
   'dapp:',
-  'market:',
 ];
 
 /**
@@ -133,6 +140,24 @@ export const getAlertMessage = (
 };
 
 /**
+ * Returns the warning shown when a website tries to open one of MetaMask's
+ * own deeplink schemes, naming the website that made the request.
+ *
+ * @param requesterUrl - URL of the page that triggered the navigation
+ * @param i18nService - translator function
+ * @returns - String corresponding to the warning message
+ */
+export const getInAppDeeplinkAlertMessage = (
+  requesterUrl: string,
+  i18nService: (id: string, options?: object) => string,
+) => {
+  const hostname = requesterUrl ? new Url(requesterUrl).hostname : '';
+  return hostname
+    ? i18nService('browser.protocol_alerts.in_app_deeplink', { hostname })
+    : i18nService('browser.protocol_alerts.in_app_deeplink_unknown');
+};
+
+/**
  * Promps the Operating System for its ability
  * to open an URI outside the Webview
  * Executes it when a positive response is received.
@@ -152,6 +177,50 @@ export const allowLinkOpen = (url: string) =>
     .catch((e) => {
       console.warn(`Error opening URL: ${e}`);
     });
+
+/**
+ * Handles a webview navigation to a non-web protocol. Only protocols in
+ * `trustedProtocolToDeeplink` are opened directly; everything else,
+ * including MetaMask's own deeplink schemes, requires the user to allow it.
+ *
+ * @param params.url - URL the webview tried to load
+ * @param params.protocol - Protocol of `url`, e.g. `metamask:`
+ * @param params.requesterUrl - URL of the page that triggered the navigation
+ * @param params.i18nService - translator function
+ */
+export const handleNonWebProtocolLink = ({
+  url,
+  protocol,
+  requesterUrl,
+  i18nService,
+}: {
+  url: string;
+  protocol: string;
+  requesterUrl: string;
+  i18nService: (id: string, options?: object) => string;
+}) => {
+  if (trustedProtocolToDeeplink.includes(protocol)) {
+    allowLinkOpen(url);
+    return;
+  }
+
+  const alertMsg = inAppDeeplinkProtocols.includes(protocol)
+    ? getInAppDeeplinkAlertMessage(requesterUrl, i18nService)
+    : getAlertMessage(protocol, i18nService);
+
+  Alert.alert(i18nService('onboarding.warning_title'), alertMsg, [
+    {
+      text: i18nService('browser.protocol_alert_options.ignore'),
+      onPress: () => null,
+      style: 'cancel',
+    },
+    {
+      text: i18nService('browser.protocol_alert_options.allow'),
+      onPress: () => allowLinkOpen(url),
+      style: 'default',
+    },
+  ]);
+};
 
 /**
  * Appends search parameters to a URL and returns the complete URL string

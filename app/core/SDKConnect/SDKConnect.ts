@@ -240,6 +240,18 @@ export class SDKConnect {
     return addDappConnection(connection, this);
   }
 
+  /**
+   * Makes a requested connection visible to the approval UI without
+   * persisting it. Use addDappConnection once the user has approved it.
+   */
+  setPendingDappConnection(connection: ConnectionProps) {
+    this.state.dappConnections[connection.id] = connection;
+  }
+
+  removePendingDappConnection(id: string) {
+    delete this.state.dappConnections[id];
+  }
+
   public async refreshChannel({ channelId }: { channelId: string }) {
     const session = this.state.connected[channelId];
     if (!session) {

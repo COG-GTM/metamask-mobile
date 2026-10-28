@@ -1,6 +1,10 @@
+import { Alert, AlertButton, Linking } from 'react-native';
 import {
   isTLD,
   getAlertMessage,
+  getInAppDeeplinkAlertMessage,
+  handleNonWebProtocolLink,
+  inAppDeeplinkProtocols,
   protocolAllowList,
   trustedProtocolToDeeplink,
   prefixUrlWithProtocol,
@@ -203,45 +207,131 @@ describe('Browser utils :: protocolWhitelist', () => {
 });
 
 describe('Browser utils :: trustedProtocolToDeeplink', () => {
-  it('should match wc: protocol', () => {
-    const { protocol } = new URL('wc:f82jdjfjakjskdfj');
+  it('should match market: protocol', () => {
+    const { protocol } = new URL('market://details?id=io.metamask');
 
     expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
   });
-  it('should match metamask: protocol', () => {
-    const { protocol } = new URL('metamask://dapp/portfolio.metamask.io');
-
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
-  });
-  it('should match ethereum: protocol', () => {
-    const { protocol } = new URL('ethereum://tx');
-
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
-  });
-  it('should match dapp: protocol', () => {
-    const { protocol } = new URL('dapp://portfolio.metamask.io');
-
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
-  });
-  it('should not match eth: protocol', () => {
-    const { protocol } = new URL('eth://portfolio.metamask.io');
+  it.each([
+    'wc:f82jdjfjakjskdfj',
+    'metamask://dapp/portfolio.metamask.io',
+    'ethereum://tx',
+    'dapp://portfolio.metamask.io',
+  ])('should not trust MetaMask own scheme %s', (url) => {
+    const { protocol } = new URL(url);
 
     expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+    expect(inAppDeeplinkProtocols.includes(protocol)).toBeTruthy();
   });
-  it('should not match tel: protocol', () => {
-    const { protocol } = new URL('tel://portfolio.metamask.io');
+  it.each([
+    'eth://portfolio.metamask.io',
+    'tel://portfolio.metamask.io',
+    'mailto://portfolio.metamask.io',
+    'ldap://portfolio.metamask.io',
+  ])('should not match %s', (url) => {
+    const { protocol } = new URL(url);
 
     expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+    expect(inAppDeeplinkProtocols.includes(protocol)).toBeFalsy();
   });
-  it('should not match mailto: protocol', () => {
-    const { protocol } = new URL('mailto://portfolio.metamask.io');
+});
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+describe('Browser utils :: getInAppDeeplinkAlertMessage', () => {
+  it('names the requesting website', () => {
+    expect(
+      getInAppDeeplinkAlertMessage('https://evil.example/phish?x=1', strings),
+    ).toBe(
+      strings('browser.protocol_alerts.in_app_deeplink', {
+        hostname: 'evil.example',
+      }),
+    );
+    expect(
+      getInAppDeeplinkAlertMessage('https://evil.example/phish', strings),
+    ).toContain('evil.example');
   });
-  it('should not match ldap: protocol', () => {
-    const { protocol } = new URL('ldap://portfolio.metamask.io');
+  it('falls back to a generic message without a requester', () => {
+    expect(getInAppDeeplinkAlertMessage('', strings)).toBe(
+      strings('browser.protocol_alerts.in_app_deeplink_unknown'),
+    );
+  });
+});
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+describe('Browser utils :: handleNonWebProtocolLink', () => {
+  const requesterUrl = 'https://mallory.example/page';
+  let alertSpy: jest.SpyInstance;
+  let canOpenSpy: jest.SpyInstance;
+  let openSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    canOpenSpy = jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true);
+    openSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const flush = () => new Promise((resolve) => setImmediate(resolve));
+
+  it.each([
+    'ethereum:0x0000000000000000000000000000000000000001@137?value=5e18',
+    'metamask://connect?channelId=abc&comm=deeplinking&scheme=mallory',
+    'wc:abc@2?relay-protocol=irn&symKey=123',
+    'dapp://mallory.example',
+  ])('prompts with the requesting site before opening %s', async (url) => {
+    const { protocol } = new URL(url);
+    handleNonWebProtocolLink({
+      url,
+      protocol,
+      requesterUrl,
+      i18nService: strings,
+    });
+    await flush();
+
+    expect(canOpenSpy).not.toHaveBeenCalled();
+    expect(openSpy).not.toHaveBeenCalled();
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    const [title, message, buttons] = alertSpy.mock.calls[0];
+    expect(title).toBe(strings('onboarding.warning_title'));
+    expect(message).toContain('mallory.example');
+
+    (buttons as AlertButton[])[0].onPress?.();
+    await flush();
+    expect(openSpy).not.toHaveBeenCalled();
+
+    (buttons as AlertButton[])[1].onPress?.();
+    await flush();
+    expect(openSpy).toHaveBeenCalledWith(url);
+  });
+
+  it('opens trusted external protocols without a prompt', async () => {
+    const url = 'market://details?id=io.metamask';
+    handleNonWebProtocolLink({
+      url,
+      protocol: 'market:',
+      requesterUrl,
+      i18nService: strings,
+    });
+    await flush();
+
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(openSpy).toHaveBeenCalledWith(url);
+  });
+
+  it('keeps the generic warning for other protocols', () => {
+    handleNonWebProtocolLink({
+      url: 'tel:123',
+      protocol: 'tel:',
+      requesterUrl,
+      i18nService: strings,
+    });
+
+    expect(alertSpy.mock.calls[0][1]).toBe(
+      strings('browser.protocol_alerts.tel'),
+    );
+    expect(openSpy).not.toHaveBeenCalled();
   });
 });
 

@@ -1736,7 +1736,9 @@
     "protocol_alerts": {
       "tel": "This website has been blocked from automatically making a phone call",
       "mailto": "This website has been blocked from automatically composing an email.",
-      "generic": "This website has been blocked from automatically opening an external application"
+      "generic": "This website has been blocked from automatically opening an external application",
+      "in_app_deeplink": "{{hostname}} is trying to open a MetaMask link. It could switch your network, prepare a transaction or request a connection. Only allow this if you trust {{hostname}}.",
+      "in_app_deeplink_unknown": "This website is trying to open a MetaMask link. It could switch your network, prepare a transaction or request a connection. Only allow this if you trust this website."
     },
     "ipfs_gateway_off_title": "IPFS gateway is off",
     "ipfs_gateway_off_content": "To see this site, turn on IPFS gateway in Privacy and Security Settings.",
