@@ -28,6 +28,44 @@ const INIT_BG_STATE_KEY = 'INIT_BG_STATE';
 export class EngineService {
   private engineInitialized = false;
 
+  private pendingBgStateKeys = new Set<string>();
+
+  private bgStateFlushScheduled = false;
+
+  /**
+   * Coalesces controller state changes emitted in the same tick into a single
+   * UPDATE_BG_STATE dispatch, so a burst of controller updates notifies Redux
+   * subscribers once instead of once per controller.
+   */
+  private queueBgStateUpdate = (controllerName: string) => {
+    this.pendingBgStateKeys.add(controllerName);
+    if (this.bgStateFlushScheduled) {
+      return;
+    }
+    this.bgStateFlushScheduled = true;
+    queueMicrotask(this.flushBgStateUpdates);
+  };
+
+  private flushBgStateUpdates = () => {
+    this.bgStateFlushScheduled = false;
+    if (this.pendingBgStateKeys.size === 0) {
+      return;
+    }
+    const keys = Array.from(this.pendingBgStateKeys);
+    this.pendingBgStateKeys.clear();
+    try {
+      ReduxService.store.dispatch({
+        type: UPDATE_BG_STATE_KEY,
+        payload: { keys },
+      });
+    } catch (error) {
+      Logger.error(
+        error as Error,
+        `${LOG_TAG}: Failed to flush ${UPDATE_BG_STATE_KEY}`,
+      );
+    }
+  };
+
   /**
    * Starts the Engine and subscribes to the controller state changes
    *
@@ -107,10 +145,7 @@ export class EngineService {
       if (!engine.context.KeyringController.metadata.vault) {
         Logger.log('keyringController vault missing for UPDATE_BG_STATE_KEY');
       }
-      ReduxService.store.dispatch({
-        type: UPDATE_BG_STATE_KEY,
-        payload: { key: controllerName },
-      });
+      this.queueBgStateUpdate(controllerName);
     };
 
     BACKGROUND_STATE_CHANGE_EVENT_NAMES.forEach((eventName) => {

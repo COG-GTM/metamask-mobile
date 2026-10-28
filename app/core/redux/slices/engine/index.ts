@@ -10,10 +10,17 @@ const initialState = {
 // Create an action to initialize the background state
 export const initBgState = createAction('INIT_BG_STATE');
 
+/**
+ * `key` updates a single controller; `keys` carries every controller that
+ * changed since the last flush (see EngineService).
+ */
+export type UpdateBgStatePayload = { key: string } | { keys: string[] };
+
 // Create an action to update the background state
-export const updateBgState = createAction('UPDATE_BG_STATE', (key) => ({
-  payload: key,
-}));
+export const updateBgState = createAction(
+  'UPDATE_BG_STATE',
+  (payload: UpdateBgStatePayload) => ({ payload }),
+);
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,9 +28,7 @@ export const counter: any = {};
 const engineReducer = (
   // eslint-disable-next-line @typescript-eslint/default-param-last
   state = initialState,
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: PayloadAction<{ key: any } | undefined>,
+  action: PayloadAction<UpdateBgStatePayload | undefined>,
 ) => {
   switch (action.type) {
     case initBgState.type: {
@@ -33,10 +38,17 @@ const engineReducer = (
       const newState = { ...state };
 
       if (action.payload) {
-        const newControllerState =
-          Engine.state[action.payload.key as keyof typeof Engine.state];
+        const keys =
+          'keys' in action.payload ? action.payload.keys : [action.payload.key];
 
-        newState.backgroundState[action.payload.key] = newControllerState;
+        if (keys.length > 0) {
+          // Build the Engine state snapshot once per dispatch, not once per key
+          const engineState = Engine.state;
+          keys.forEach((key) => {
+            newState.backgroundState[key] =
+              engineState[key as keyof typeof engineState];
+          });
+        }
       }
 
       return newState;
