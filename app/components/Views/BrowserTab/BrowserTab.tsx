@@ -103,7 +103,12 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import {
+  getMaskedUrl,
+  getPermissionHostname,
+  getPermissionOriginUrl,
+  isENSUrl,
+} from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -193,7 +198,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const searchEngine = useSelector(selectSearchEngine);
   const permittedAccountsList = useSelector((state: RootState) => {
     const permissionsControllerState = selectPermissionControllerState(state);
-    const hostname = new URLParse(resolvedUrlRef.current).hostname;
+    const hostname = getPermissionHostname(
+      resolvedUrlRef.current,
+      sessionENSNamesRef.current,
+    );
     const permittedAcc = getPermittedAccountsByHostname(
       permissionsControllerState,
       hostname,
@@ -448,7 +456,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const triggerDappViewedEvent = useCallback((urlToTrigger: string) => {
     const permissionsControllerState =
       Engine.context.PermissionController.state;
-    const hostname = new URLParse(urlToTrigger).hostname;
+    const hostname = getPermissionHostname(
+      urlToTrigger,
+      sessionENSNamesRef.current,
+    );
     const connectedAccounts = getPermittedAccountsByHostname(
       permissionsControllerState,
       hostname,
@@ -639,7 +650,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       return;
     }
     if (!resolvedUrlRef.current) return;
-    const hostname = new URLParse(resolvedUrlRef.current).hostname;
+    const hostname = getPermissionHostname(
+      resolvedUrlRef.current,
+      sessionENSNamesRef.current,
+    );
     const permissionsControllerState =
       Engine.context.PermissionController.state;
     const permittedAccounts = getPermittedAccountsByHostname(
@@ -976,7 +990,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         injectHomePageScripts();
       }
 
-      initializeBackgroundBridge(urlOrigin, true);
+      initializeBackgroundBridge(
+        getPermissionOriginUrl(nativeEvent.url, sessionENSNamesRef.current),
+        true,
+      );
     },
     [
       isAllowedOrigin,
