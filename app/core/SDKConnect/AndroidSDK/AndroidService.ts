@@ -189,13 +189,14 @@ export default class AndroidService extends EventEmitter2 {
             });
 
             this.setupBridge(clientInfo);
+            const validUntil = Date.now() + DEFAULT_SESSION_TIMEOUT_MS;
             // Save session to SDKConnect
             // Save to local connections
             this.connections[clientInfo.clientId] = {
               connected: true,
               clientId: clientInfo.clientId,
               originatorInfo: clientInfo.originatorInfo,
-              validUntil: clientInfo.validUntil,
+              validUntil,
             };
             await SDKConnect.getInstance().addDappConnection({
               id: clientInfo.clientId,
@@ -203,7 +204,7 @@ export default class AndroidService extends EventEmitter2 {
               origin: AppConstants.MM_SDK.ANDROID_SDK,
               originatorInfo: clientInfo.originatorInfo,
               otherPublicKey: '',
-              validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+              validUntil,
             });
           }
 

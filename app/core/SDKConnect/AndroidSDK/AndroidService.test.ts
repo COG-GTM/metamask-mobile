@@ -165,6 +165,33 @@ describe('AndroidService session binding', () => {
     expect(service.connections[APPROVED_ID].connected).not.toBe(true);
   });
 
+  it('accepts requests from a newly connected native client right away', async () => {
+    const NEW_ID = 'new-dapp-session';
+    const onClientsConnected = mockOnClientsConnected.mock.calls[0][0];
+
+    await onClientsConnected(
+      JSON.stringify({
+        clientId: NEW_ID,
+        originatorInfo: { ...APPROVED_ORIGINATOR, url: 'https://new.example' },
+        connected: false,
+      }),
+    );
+    await flush();
+
+    expect(service.connections[NEW_ID].validUntil).toBeGreaterThan(Date.now());
+    const bridge = service.bridgeByClientId[NEW_ID] as unknown as {
+      onMessage: jest.Mock;
+    };
+
+    onMessage(rpcMessage(NEW_ID));
+    await flush();
+
+    expect(bridge.onMessage).toHaveBeenCalledWith({
+      name: 'metamask-provider',
+      data: expect.objectContaining({ id: 'rpc-1', method: 'personal_sign' }),
+    });
+  });
+
   it('does not hand the approved dapp bridge to a forged session id', async () => {
     const bridge = service.bridgeByClientId[APPROVED_ID] as unknown as {
       onMessage: jest.Mock;
