@@ -1,24 +1,26 @@
 import { createSelector } from 'reselect';
-import { AccountTrackerControllerState } from '@metamask/assets-controllers';
+import { isEqual } from 'lodash';
 import { RootState } from '../reducers';
-import { createDeepEqualSelector } from './util';
 import { selectEvmChainId } from './networkController';
 import { selectSelectedInternalAccountFormattedAddress } from './accountsController';
 
-const selectAccountTrackerControllerState = (state: RootState) =>
-  state.engine.backgroundState.AccountTrackerController;
+const selectAccountsByChainIdRaw = (state: RootState) =>
+  state.engine.backgroundState.AccountTrackerController.accountsByChainId;
 
-export const selectAccountsByChainId = createDeepEqualSelector(
-  selectAccountTrackerControllerState,
-  (accountTrackerControllerState: AccountTrackerControllerState) =>
-    accountTrackerControllerState.accountsByChainId,
+// AccountTrackerController rebuilds `accountsByChainId` (cloneDeep) on every
+// refresh (including chains whose balances did not change), so the selectors
+// below compare results deeply and recompute only when their input changes.
+export const selectAccountsByChainId = createSelector(
+  selectAccountsByChainIdRaw,
+  (accountsByChainId) => accountsByChainId,
+  { memoizeOptions: { resultEqualityCheck: isEqual } },
 );
 
-export const selectAccounts = createDeepEqualSelector(
+export const selectAccounts = createSelector(
   selectAccountsByChainId,
   selectEvmChainId,
-  selectSelectedInternalAccountFormattedAddress,
   (accountsByChainId, chainId) => accountsByChainId?.[chainId] || {},
+  { memoizeOptions: { resultEqualityCheck: isEqual } },
 );
 
 export const selectAccountsLength = createSelector(
@@ -26,16 +28,15 @@ export const selectAccountsLength = createSelector(
   (accounts) => Object.keys(accounts).length,
 );
 
-export const selectAccountBalanceByChainId = createDeepEqualSelector(
+export const selectAccountBalanceByChainId = createSelector(
   selectAccountsByChainId,
   selectEvmChainId,
   selectSelectedInternalAccountFormattedAddress,
-  (accountsByChainId, chainId, selectedInternalAccountChecksummedAddress) => {
-    const accountsBalance = selectedInternalAccountChecksummedAddress
+  (accountsByChainId, chainId, selectedInternalAccountChecksummedAddress) =>
+    selectedInternalAccountChecksummedAddress
       ? accountsByChainId?.[chainId]?.[
           selectedInternalAccountChecksummedAddress
         ]
-      : undefined;
-    return accountsBalance;
-  },
+      : undefined,
+  { memoizeOptions: { resultEqualityCheck: isEqual } },
 );
