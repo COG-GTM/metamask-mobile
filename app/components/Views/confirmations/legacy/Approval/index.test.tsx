@@ -1,8 +1,8 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { act, render } from '@testing-library/react-native';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
-import { Store } from 'redux';
+import { Store, createStore } from 'redux';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 
@@ -11,6 +11,17 @@ import { ThemeContext, mockTheme } from '../../../../../util/theme';
 import initialRootState from '../../../../../util/test/initial-root-state';
 
 const TRANSACTION_ID_MOCK = '123';
+const mockModalRender = jest.fn();
+
+jest.mock('react-native-modal', () => {
+  const ActualModal = jest.requireActual('react-native-modal').default;
+  const ReactActual = jest.requireActual('react');
+  const MockModal = (props: Record<string, unknown>) => {
+    mockModalRender();
+    return ReactActual.createElement(ActualModal, props);
+  };
+  return { __esModule: true, default: MockModal };
+});
 jest.mock('../../../../../selectors/smartTransactionsController', () => ({
   selectSmartTransactionsEnabled: () => false,
   selectShouldUseSmartTransaction: () => false,
@@ -119,5 +130,27 @@ describe('Approval', () => {
   it('render matches snapshot', () => {
     const wrapper = renderComponent({ store });
     expect(wrapper).toMatchSnapshot();
+  });
+
+  it('does not re-render on store updates that leave state.transaction unchanged', () => {
+    const initialState = store.getState();
+    const realStore = createStore(
+      (state: typeof initialState, action: { type: string }) =>
+        action.type === 'UNRELATED_UPDATE'
+          ? { ...state, engine: { ...state.engine } }
+          : state,
+      initialState,
+    );
+    renderComponent({ store: realStore });
+    const rendersAfterMount = mockModalRender.mock.calls.length;
+    expect(rendersAfterMount).toBeGreaterThan(0);
+
+    act(() => {
+      for (let i = 0; i < 5; i++) {
+        realStore.dispatch({ type: 'UNRELATED_UPDATE' });
+      }
+    });
+
+    expect(mockModalRender).toHaveBeenCalledTimes(rendersAfterMount);
   });
 });

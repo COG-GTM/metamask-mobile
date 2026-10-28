@@ -22,7 +22,7 @@ import {
 import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
 import { fromWei, renderFromWei, hexToBN } from '../../../../../util/number';
 import {
-  getNormalizedTxState,
+  selectNormalizedTxState,
   getTicker,
 } from '../../../../../util/transactions';
 import { getGasLimit } from '../../../../../util/custom-gas';
@@ -960,7 +960,7 @@ class Approve extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = selectNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkId;
 

@@ -23,7 +23,7 @@ import {
 import { strings } from '../../../../../../../../locales/i18n';
 import {
   getTicker,
-  getNormalizedTxState,
+  selectNormalizedTxState,
   calculateAmountsEIP1559,
   calculateEthEIP1559,
   calculateERC20EIP1559,
@@ -748,7 +748,7 @@ class TransactionReviewInformation extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = selectNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const networkClientId = transaction?.networkClientId;
 

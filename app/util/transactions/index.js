@@ -55,6 +55,7 @@ import {
 import Logger from '../../util/Logger';
 import { handleMethodData } from '../../util/transaction-controller';
 import EthQuery from '@metamask/eth-query';
+import { createSelector } from 'reselect';
 
 const { SAI_ADDRESS } = AppConstants;
 
@@ -628,12 +629,16 @@ export function addAccountTimeFlagFilter(
   );
 }
 
-//Leaving here a comment to re-visit this function since it's probably be possible to deprecate
-export function getNormalizedTxState(state) {
-  return state.transaction
-    ? { ...state.transaction, ...state.transaction.transaction }
-    : undefined;
-}
+/**
+ * Merges `state.transaction` with its nested `transaction` params.
+ * Memoized on `state.transaction` so connected components keep a stable
+ * reference across unrelated store updates.
+ */
+export const selectNormalizedTxState = createSelector(
+  (state) => state.transaction,
+  (transaction) =>
+    transaction ? { ...transaction, ...transaction.transaction } : undefined,
+);
 
 export const getActiveTabUrl = ({ browser = {} }) =>
   browser.tabs &&

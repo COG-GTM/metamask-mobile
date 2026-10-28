@@ -29,7 +29,7 @@ import {
 } from '../../../../../../util/number';
 import {
   getTicker,
-  getNormalizedTxState,
+  selectNormalizedTxState,
   getActiveTabUrl,
   getMethodData,
   decodeApproveData,
@@ -1350,13 +1350,13 @@ class ApproveTransactionReview extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = selectNormalizedTxState(state);
   const chainId = transaction?.chainId;
 
   return {
     ticker: selectNativeCurrencyByChainId(state, chainId),
     networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
-    transaction: getNormalizedTxState(state),
+    transaction,
     tokensLength: selectTokensLength(state),
     accountsLength: selectAccountsLength(state),
     providerType: selectProviderTypeByChainId(state, chainId),

@@ -16,7 +16,7 @@ import { connect } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import {
   generateTransferData,
-  getNormalizedTxState,
+  selectNormalizedTxState,
   getTicker,
   getActiveTabUrl,
   parseTransactionEIP1559,
@@ -964,7 +964,7 @@ class TransactionEditor extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = selectNormalizedTxState(state);
   const chainId = transaction?.chainId;
 
   return {

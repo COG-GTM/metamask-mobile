@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import QRSigningDetails from '../QRSigningDetails';
 import { useTheme } from '../../../../util/theme';
 import { useDispatch, useSelector } from 'react-redux';
-import { getNormalizedTxState } from '../../../../util/transactions';
+import { selectNormalizedTxState } from '../../../../util/transactions';
 import { resetTransaction } from '../../../../actions/transaction';
 
 interface IQRSigningModalProps {
@@ -45,7 +45,7 @@ const QRSigningModal = ({
   const dispatch = useDispatch();
   const styles = createStyles(colors);
   const [isModalCompleteShow, setModalCompleteShow] = useState(false);
-  const { from } = useSelector(getNormalizedTxState);
+  const { from } = useSelector(selectNormalizedTxState);
 
   const handleCancel = () => {
     onCancel?.();
