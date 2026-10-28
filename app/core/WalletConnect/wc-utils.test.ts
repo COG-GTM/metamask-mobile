@@ -10,6 +10,8 @@ import {
   networkModalOnboardingConfig,
   onRequestUserApproval,
   getHostname,
+  getWCPermissionSubject,
+  getVerifyRejectionReason,
 } from './wc-utils';
 import type { NavigationContainerRef } from '@react-navigation/native';
 import Routes from '../../../app/constants/navigation/Routes';
@@ -227,7 +229,82 @@ describe('WalletConnect Utils', () => {
     });
   });
 
+  describe('getWCPermissionSubject', () => {
+    it('namespaces the metadata hostname with the WalletConnect prefix', () => {
+      expect(getWCPermissionSubject('https://app.example-dex.com/path')).toBe(
+        'wc::app.example-dex.com',
+      );
+    });
+
+    it('does not double-prefix an existing subject', () => {
+      expect(getWCPermissionSubject('wc::app.example-dex.com')).toBe(
+        'wc::app.example-dex.com',
+      );
+    });
+
+    it('returns an empty string when there is no url', () => {
+      expect(getWCPermissionSubject('')).toBe('');
+      expect(getWCPermissionSubject(undefined as unknown as string)).toBe('');
+    });
+  });
+
+  describe('getVerifyRejectionReason', () => {
+    const context = (verified: Record<string, unknown>) =>
+      ({ verified } as unknown as Parameters<
+        typeof getVerifyRejectionReason
+      >[0]);
+
+    it('rejects proposals flagged as scams', () => {
+      expect(
+        getVerifyRejectionReason(
+          context({ validation: 'VALID', isScam: true, origin: 'x', verifyUrl: 'x' }),
+        ),
+      ).toBe('scam');
+    });
+
+    it('rejects proposals whose origin failed verification', () => {
+      expect(
+        getVerifyRejectionReason(
+          context({ validation: 'INVALID', origin: 'x', verifyUrl: 'x' }),
+        ),
+      ).toBe('invalid');
+    });
+
+    it('allows valid, unknown, or missing verification results', () => {
+      expect(
+        getVerifyRejectionReason(
+          context({ validation: 'VALID', origin: 'x', verifyUrl: 'x' }),
+        ),
+      ).toBeUndefined();
+      expect(
+        getVerifyRejectionReason(
+          context({ validation: 'UNKNOWN', origin: 'x', verifyUrl: 'x' }),
+        ),
+      ).toBeUndefined();
+      expect(getVerifyRejectionReason(undefined)).toBeUndefined();
+    });
+  });
+
   describe('getScopedPermissions', () => {
+    it('reads permissions from the namespaced WalletConnect subject', async () => {
+      const { getPermittedAccounts, getPermittedChains } =
+        jest.requireMock('../Permissions');
+      getPermittedAccounts.mockClear();
+      getPermittedChains.mockClear();
+
+      await getScopedPermissions({ origin: 'https://app.example-dex.com' });
+
+      expect(getPermittedAccounts).toHaveBeenCalledWith(
+        'wc::app.example-dex.com',
+      );
+      expect(getPermittedChains).toHaveBeenCalledWith(
+        'wc::app.example-dex.com',
+      );
+      expect(getPermittedAccounts).not.toHaveBeenCalledWith(
+        'app.example-dex.com',
+      );
+    });
+
     it('returns correct scoped permissions', async () => {
       const result = await getScopedPermissions({ origin: 'test' });
       expect(result).toEqual({
@@ -302,10 +379,12 @@ describe('WalletConnect Utils', () => {
 
       // Verify addPermittedChain was called with the right parameters
       expect(mockUpdatePermittedChain).toHaveBeenCalledWith(
-        'test-dapp.com',
+        'wc::test-dapp.com',
         ['0x3']
       );
-      expect(switchToNetwork).toHaveBeenCalled();
+      expect(switchToNetwork).toHaveBeenCalledWith(
+        expect.objectContaining({ origin: 'wc::test-dapp.com' }),
+      );
       expect(result).toBe(true);
     });
   });

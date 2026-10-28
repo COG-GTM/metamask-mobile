@@ -2,7 +2,7 @@ import { toHex } from '@metamask/controller-utils';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { CaipChainId, KnownCaipNamespace } from '@metamask/utils';
 import { NavigationContainerRef } from '@react-navigation/native';
-import { RelayerTypes } from '@walletconnect/types';
+import { RelayerTypes, Verify } from '@walletconnect/types';
 import { parseRelayParams } from '@walletconnect/utils';
 import qs from 'qs';
 import Routes from '../../../app/constants/navigation/Routes';
@@ -20,6 +20,7 @@ import {
 import { getRpcMethodMiddlewareHooks } from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { wait } from '../SDKConnect/utils/wait.util';
+import { WALLET_CONNECT_ORIGIN } from '../../util/walletconnect';
 
 export interface WCMultiVersionParams {
   protocol: string;
@@ -61,6 +62,32 @@ export const getHostname = (uri: string): string => {
     DevLogger.log('Error in getHostname:', error);
     return uri;
   }
+};
+
+/**
+ * Permission subject for a WalletConnect peer. The peer's metadata URL is
+ * self-declared, so it is namespaced with WALLET_CONNECT_ORIGIN to keep it
+ * from sharing a PermissionController subject with an in-app browser origin.
+ */
+export const getWCPermissionSubject = (url: string): string => {
+  const unprefixed = url?.startsWith(WALLET_CONNECT_ORIGIN)
+    ? url.slice(WALLET_CONNECT_ORIGIN.length)
+    : url;
+  const hostname = getHostname(unprefixed);
+  return hostname ? `${WALLET_CONNECT_ORIGIN}${hostname}` : '';
+};
+
+/**
+ * Returns why a session proposal must be refused based on the WalletConnect
+ * Verify API result, or undefined when it may be shown to the user.
+ */
+export const getVerifyRejectionReason = (
+  verifyContext?: Verify.Context,
+): 'scam' | 'invalid' | undefined => {
+  const verified = verifyContext?.verified;
+  if (verified?.isScam) return 'scam';
+  if (verified?.validation === 'INVALID') return 'invalid';
+  return undefined;
 };
 
 export const parseWalletConnectUri = (uri: string): WCMultiVersionParams => {
@@ -200,9 +227,9 @@ export const getApprovedSessionMethods = (_: { origin: string }): string[] => {
 };
 
 export const getScopedPermissions = async ({ origin }: { origin: string }) => {
-  const hostname = getHostname(origin);
-  const approvedAccounts = getPermittedAccounts(hostname);
-  const chains = await getPermittedChains(hostname);
+  const permissionSubject = getWCPermissionSubject(origin);
+  const approvedAccounts = getPermittedAccounts(permissionSubject);
+  const chains = await getPermittedChains(permissionSubject);
 
   DevLogger.log(
     `WC::getScopedPermissions for ${origin}, found accounts:`,
@@ -252,9 +279,15 @@ export const onRequestUserApproval = (origin: string) => async (args: any) => {
 
 export const checkWCPermissions = async ({
   origin,
+  permissionSubject = getWCPermissionSubject(origin),
   caip2ChainId,
   allowSwitchingToNewChain = false,
-}: { origin: string; caip2ChainId: CaipChainId; allowSwitchingToNewChain?: boolean }) => {
+}: {
+  origin: string;
+  permissionSubject?: string;
+  caip2ChainId: CaipChainId;
+  allowSwitchingToNewChain?: boolean;
+}) => {
   const networkConfigurations = selectNetworkConfigurations(store.getState());
   const decimalChainId = caip2ChainId.split(':')[1];
   const hexChainIdString = toHex(`0x${parseInt(decimalChainId, 10).toString(16)}`);
@@ -271,8 +304,7 @@ export const checkWCPermissions = async ({
     });
   }
 
-  const hostname = getHostname(origin);
-  const permittedChains = await getPermittedChains(hostname);
+  const permittedChains = await getPermittedChains(permissionSubject);
   const isAllowedChainId = permittedChains.includes(caip2ChainId);
 
   DevLogger.log(`WC::checkWCPermissions permittedChains: ${permittedChains}`);
@@ -306,8 +338,8 @@ export const checkWCPermissions = async ({
       if (!isAllowedChainId && allowSwitchingToNewChain) {
         // Preemptively add the chain to the permitted chains
         // This is to prevent a race condition where WalletConnect is told about the chain switch before permissions are updated
-        DevLogger.log(`WC::checkWCPermissions adding permitted chain for ${hostname}:`, hexChainIdString);
-        updatePermittedChains(hostname, [hexChainIdString]);
+        DevLogger.log(`WC::checkWCPermissions adding permitted chain for ${permissionSubject}:`, hexChainIdString);
+        updatePermittedChains(permissionSubject, [hexChainIdString]);
       }
 
       await switchToNetwork({
@@ -315,9 +347,9 @@ export const checkWCPermissions = async ({
         chainId: hexChainIdString,
         requestUserApproval: onRequestUserApproval(origin),
         analytics: {},
-        origin,
+        origin: permissionSubject,
         isAddNetworkFlow: false,
-        hooks: getRpcMethodMiddlewareHooks(origin),
+        hooks: getRpcMethodMiddlewareHooks(permissionSubject),
       });
     } catch (error) {
       DevLogger.log(
@@ -328,8 +360,8 @@ export const checkWCPermissions = async ({
       if (!isAllowedChainId && allowSwitchingToNewChain) {
         // If we failed to switch to the network, remove the chain from the permitted chains
         // This is so we don't leave any dangling permissions if the user rejects the switch
-        DevLogger.log(`WC::checkWCPermissions removing permitted chain for ${hostname}:`, hexChainIdString);
-        removePermittedChain(hostname, hexChainIdString);
+        DevLogger.log(`WC::checkWCPermissions removing permitted chain for ${permissionSubject}:`, hexChainIdString);
+        removePermittedChain(permissionSubject, hexChainIdString);
       }
 
       return false;

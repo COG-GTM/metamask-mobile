@@ -160,7 +160,9 @@ class WalletConnect {
       if (payload.method) {
         const payloadUrl = this.walletConnector.session.peerMeta.url;
         const payloadHostname = new URL(payloadUrl).hostname;
-        if (payloadHostname === this.backgroundBridge.hostname) {
+        // backgroundBridge.hostname is the namespaced permission subject, so
+        // compare against the hostname of the URL the bridge was created with.
+        if (payloadHostname === new URL(this.backgroundBridge.url).hostname) {
           if (METHODS_TO_REDIRECT[payload.method]) {
             this.requestsToRedirect[payload.id] = true;
           }

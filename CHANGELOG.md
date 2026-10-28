@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- fix: scope WalletConnect v2 permissions to a `wc::` subject so they no longer share the in-app browser's permission record for the same hostname, and reject session proposals flagged as scam or `INVALID` by WalletConnect Verify. Existing WalletConnect v2 sessions are disconnected once on upgrade and must be reconnected ([#2064](https://github.com/COG-GTM/metamask-mobile/pull/2064))
 
 ### Added
 

@@ -22,8 +22,8 @@ import { ERROR_MESSAGES } from './WalletConnectV2';
 import METHODS_TO_REDIRECT from './wc-config';
 import {
   checkWCPermissions,
-  getHostname,
   getScopedPermissions,
+  getWCPermissionSubject,
   hideWCLoadingState,
 } from './wc-utils';
 
@@ -55,6 +55,7 @@ class WalletConnect2Session {
   private lastChainId: string;
   private isHandlingChainChange = false;
   private _isHandlingRequest = false;
+  private permissionSubject: string;
 
   public session: SessionTypes.Struct;
 
@@ -89,6 +90,7 @@ class WalletConnect2Session {
     const url = session.peer.metadata.url;
     const name = session.peer.metadata.name;
     const icons = session.peer.metadata.icons;
+    this.permissionSubject = getWCPermissionSubject(url);
 
     DevLogger.log(
       `WalletConnect2Session::constructor topic=${session.topic} pairingTopic=${session.pairingTopic} url=${url} name=${name} icons=${icons}`,
@@ -114,7 +116,7 @@ class WalletConnect2Session {
         getProviderState: any;
       }) =>
         getRpcMethodMiddleware({
-          hostname: getHostname(url),
+          hostname: this.permissionSubject,
           getProviderState,
           channelId,
           analytics: {},
@@ -391,14 +393,12 @@ class WalletConnect2Session {
 
       // const origin = normalizeOrigin(this.session.peer.metadata.url);
       const origin = this.session.peer.metadata.url;
-      const hostname = getHostname(origin);
-
       DevLogger.log(
-        `WC2::updateSession origin=${origin} hostname=${hostname} - chainId=${chainId} - accounts=${accounts}`,
+        `WC2::updateSession origin=${origin} subject=${this.permissionSubject} - chainId=${chainId} - accounts=${accounts}`,
       );
 
       if (accounts.length === 0) {
-        const approvedAccounts = getPermittedAccounts(hostname);
+        const approvedAccounts = getPermittedAccounts(this.permissionSubject);
         if (approvedAccounts.length > 0) {
           DevLogger.log(
             `WC2::updateSession found approved accounts`,
@@ -474,7 +474,12 @@ class WalletConnect2Session {
     );
 
     try {
-      const allowed = await checkWCPermissions({ origin, caip2ChainId, allowSwitchingToNewChain: isSwitchingChain });
+      const allowed = await checkWCPermissions({
+        origin,
+        permissionSubject: this.permissionSubject,
+        caip2ChainId,
+        allowSwitchingToNewChain: isSwitchingChain,
+      });
       DevLogger.log(
         `WC2::handleRequest caip2ChainId=${caip2ChainId} is allowed=${allowed}`,
       );

@@ -191,4 +191,36 @@ describe('BackgroundBridge', () => {
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
     });
   });
+
+  describe('WalletConnect permission subject', () => {
+    it('namespaces the subject so it cannot share a browser origin', () => {
+      const url = 'https://app.example-dex.com';
+      setupBackgroundBridge(url);
+      const browserBridge = new BackgroundBridge({
+        webview: null,
+        url,
+        isMainFrame: true,
+        getRpcMethodMiddleware: jest.fn(),
+      });
+      const wcBridge = new BackgroundBridge({
+        webview: null,
+        url,
+        isWalletConnect: true,
+        wcRequestActions: {},
+        getRpcMethodMiddleware: jest.fn(),
+      });
+
+      expect(browserBridge.hostname).toBe('app.example-dex.com');
+      expect(wcBridge.hostname).toBe('wc::app.example-dex.com');
+
+      getPermittedAccounts.mockClear();
+      wcBridge.notifySelectedAddressChanged('0x1');
+      expect(getPermittedAccounts).toHaveBeenCalledWith(
+        'wc::app.example-dex.com',
+      );
+      expect(getPermittedAccounts).not.toHaveBeenCalledWith(
+        'app.example-dex.com',
+      );
+    });
+  });
 });

@@ -83,6 +83,9 @@ jest.mock('./wc-utils', () => ({
   hideWCLoadingState: jest.fn(),
   showWCLoadingState: jest.fn(),
   checkWCPermissions: jest.fn().mockResolvedValue(true),
+  getWCPermissionSubject: jest
+    .fn()
+    .mockImplementation((url: string) => `wc::${new URL(url).hostname}`),
   getScopedPermissions: jest.fn().mockResolvedValue({
     eip155: {
       chains: ['eip155:1'],
