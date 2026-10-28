@@ -24,7 +24,7 @@ import {
 import {
   getTicker,
   decodeTransferData,
-  getNormalizedTxState,
+  selectNormalizedTxState,
 } from '../../../../../../util/transactions';
 import StyledButton from '../../../../../UI/StyledButton';
 import { WalletDevice } from '@metamask/transaction-controller';
@@ -1595,7 +1595,7 @@ class Confirm extends PureComponent {
 Confirm.contextType = ThemeContext;
 
 const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = selectNormalizedTxState(state);
   const chainId = transaction?.chainId || selectEvmChainId(state);
 
   const networkClientId =

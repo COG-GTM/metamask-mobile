@@ -39,6 +39,7 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  selectNormalizedTxState,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
@@ -1254,5 +1255,46 @@ describe('Transactions utils :: getTransactionById', () => {
     const result = getTransactionById('tx1', mockTransactionController);
     
     expect(result).toBeUndefined();
+  });
+});
+
+describe('Transactions utils :: selectNormalizedTxState', () => {
+  const transactionState = {
+    id: 'tx1',
+    assetType: 'ETH',
+    transaction: { from: '0x1', to: '0x2', value: '0x0' },
+  };
+
+  it('merges the nested transaction params into the transaction state', () => {
+    const result = selectNormalizedTxState({ transaction: transactionState });
+
+    expect(result).toEqual({
+      ...transactionState,
+      from: '0x1',
+      to: '0x2',
+      value: '0x0',
+    });
+  });
+
+  it('returns undefined when there is no transaction state', () => {
+    expect(selectNormalizedTxState({})).toBeUndefined();
+  });
+
+  it('returns the same reference while state.transaction is unchanged', () => {
+    const state = { transaction: transactionState, engine: { a: 1 } };
+    const first = selectNormalizedTxState(state);
+    const second = selectNormalizedTxState({ ...state, engine: { a: 2 } });
+
+    expect(second).toBe(first);
+  });
+
+  it('returns a new object when state.transaction changes', () => {
+    const first = selectNormalizedTxState({ transaction: transactionState });
+    const second = selectNormalizedTxState({
+      transaction: { ...transactionState, assetType: 'ERC20' },
+    });
+
+    expect(second).not.toBe(first);
+    expect(second?.assetType).toBe('ERC20');
   });
 });

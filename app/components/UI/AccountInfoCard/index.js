@@ -26,7 +26,7 @@ import { hexToBN, renderFromWei, weiToFiat } from '../../../util/number';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import {
   getActiveTabUrl,
-  getNormalizedTxState,
+  selectNormalizedTxState,
   getTicker,
 } from '../../../util/transactions';
 import ApproveTransactionHeader from '../../Views/confirmations/legacy/components/ApproveTransactionHeader';
@@ -248,7 +248,7 @@ const mapStateToProps = (state) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),
-  transaction: getNormalizedTxState(state),
+  transaction: selectNormalizedTxState(state),
   activeTabUrl: getActiveTabUrl(state),
 });
 

@@ -39,7 +39,7 @@ import {
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
 import {
   decodeTransferData,
-  getNormalizedTxState,
+  selectNormalizedTxState,
   getTicker,
   getTransactionReviewActionKey,
   isApprovalTransaction,
@@ -717,7 +717,7 @@ class TransactionReview extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = selectNormalizedTxState(state);
   const chainId = transaction?.chainId;
   const transactionMetadata = selectCurrentTransactionMetadata(state);
   const networkClientId = transactionMetadata?.networkClientId;

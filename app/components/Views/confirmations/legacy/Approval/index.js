@@ -14,7 +14,7 @@ import AppConstants from '../../../../../core/AppConstants';
 import { MetaMetricsEvents } from '../../../../../core/Analytics';
 import {
   getTransactionReviewActionKey,
-  getNormalizedTxState,
+  selectNormalizedTxState,
   getActiveTabUrl,
 } from '../../../../../util/transactions';
 import { strings } from '../../../../../../locales/i18n';
@@ -751,7 +751,7 @@ class Approval extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
-  const transaction = getNormalizedTxState(state);
+  const transaction = selectNormalizedTxState(state);
   const chainId = transaction?.chainId;
 
   return {
