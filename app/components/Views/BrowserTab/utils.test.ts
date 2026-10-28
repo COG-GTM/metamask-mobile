@@ -1,4 +1,10 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
+import {
+  isValidUrl,
+  isENSUrl,
+  getMaskedUrl,
+  getMessageBridgeAction,
+  getMessageSenderOrigin,
+} from './utils';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -90,5 +96,85 @@ describe('BrowserTab utils', () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
     });
+  });
+});
+
+describe('getMessageSenderOrigin', () => {
+  it('prefers the posting frame URL over the WebView URL', () => {
+    expect(
+      getMessageSenderOrigin({
+        url: 'https://globex-swap.example/some-download',
+        frameUrl: 'https://prize-drop.example/play',
+        isMainFrame: true,
+      }),
+    ).toBe('https://prize-drop.example');
+  });
+
+  it('falls back to the WebView URL when no frame URL is reported', () => {
+    expect(
+      getMessageSenderOrigin({ url: 'https://app.uniswap.org/swap' }),
+    ).toBe('https://app.uniswap.org');
+  });
+
+  it('rejects messages from subframes', () => {
+    expect(
+      getMessageSenderOrigin({
+        url: 'https://app.uniswap.org/',
+        frameUrl: 'https://ads.example/frame',
+        isMainFrame: false,
+      }),
+    ).toBeUndefined();
+  });
+
+  it('rejects messages without a usable sender URL', () => {
+    expect(
+      getMessageSenderOrigin({ url: 'https://app.uniswap.org/', frameUrl: '' }),
+    ).toBeUndefined();
+    expect(getMessageSenderOrigin({ url: '' })).toBeUndefined();
+    expect(getMessageSenderOrigin({ url: 'about:blank' })).toBeUndefined();
+  });
+});
+
+describe('getMessageBridgeAction', () => {
+  it('forwards messages from the page the bridge was created for', () => {
+    expect(
+      getMessageBridgeAction({
+        senderOrigin: 'https://prize-drop.example',
+        bridgeOrigin: 'https://prize-drop.example',
+        allowedNavigationOrigin: 'https://globex-swap.example',
+      }),
+    ).toBe('forward');
+  });
+
+  it('re-keys the bridge once the allowed navigation target posts a message', () => {
+    expect(
+      getMessageBridgeAction({
+        senderOrigin: 'https://globex-swap.example',
+        bridgeOrigin: 'https://prize-drop.example',
+        allowedNavigationOrigin: 'https://globex-swap.example',
+      }),
+    ).toBe('rekey');
+    expect(
+      getMessageBridgeAction({
+        senderOrigin: 'https://globex-swap.example',
+        allowedNavigationOrigin: 'https://globex-swap.example',
+      }),
+    ).toBe('rekey');
+  });
+
+  it('drops messages from any other origin', () => {
+    expect(
+      getMessageBridgeAction({
+        senderOrigin: 'https://prize-drop.example',
+        bridgeOrigin: 'https://globex-swap.example',
+        allowedNavigationOrigin: 'https://globex-swap.example',
+      }),
+    ).toBe('drop');
+    expect(
+      getMessageBridgeAction({
+        senderOrigin: undefined,
+        bridgeOrigin: 'https://globex-swap.example',
+      }),
+    ).toBe('drop');
   });
 });
