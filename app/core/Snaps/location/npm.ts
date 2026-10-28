@@ -7,6 +7,7 @@ import ReactNativeBlobUtil, { FetchBlobResponse } from 'react-native-blob-util';
 import {
   BaseNpmLocation,
   getNpmCanonicalBasePath,
+  TARBALL_SIZE_SAFETY_LIMIT,
 } from '@metamask/snaps-controllers';
 
 const { RNTar } = NativeModules;
@@ -65,10 +66,16 @@ const fetchAndStoreNPMPackage = async (
       path: filePath,
     }).fetch('GET', urlToFetch);
     const dataPath = response.data;
-    const decompressedPath = await decompressFile(dataPath, targetDir);
-    // remove response file from cache
-    response.flush();
-    return decompressedPath;
+    try {
+      const { size } = await ReactNativeBlobUtil.fs.stat(dataPath);
+      if (Number(size) > TARBALL_SIZE_SAFETY_LIMIT) {
+        throw new Error('Snap tarball exceeds size limit');
+      }
+      return await decompressFile(dataPath, targetDir);
+    } finally {
+      // remove response file from cache
+      response.flush();
+    }
   } catch (error) {
     throw new Error(
       `${SNAPS_NPM_LOG_TAG} fetchAndStoreNPMPackage failed to fetch with error: ${error}`,
