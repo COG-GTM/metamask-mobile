@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Alert, BackHandler, View, StyleSheet, Keyboard } from 'react-native';
+import { BackHandler, View, StyleSheet } from 'react-native';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { fontStyles } from '../../../styles/common';
@@ -10,13 +10,9 @@ import { showAlert } from '../../../actions/alert';
 import AndroidBackHandler from '../AndroidBackHandler';
 import Device from '../../../util/device';
 import Confetti from '../../UI/Confetti';
-import HintModal from '../../UI/HintModal';
 import { getTransparentOnboardingNavbarOptions } from '../../UI/Navbar';
 import setOnboardingWizardStep from '../../../actions/wizard';
-import {
-  ONBOARDING_WIZARD,
-  SEED_PHRASE_HINTS,
-} from '../../../constants/storage';
+import { ONBOARDING_WIZARD } from '../../../constants/storage';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
@@ -84,8 +80,6 @@ class ManualBackupStep3 extends PureComponent {
 
   state = {
     currentStep: 4,
-    showHint: false,
-    hintText: '',
   };
 
   static propTypes = {
@@ -115,15 +109,6 @@ class ManualBackupStep3 extends PureComponent {
 
   componentDidMount = async () => {
     this.updateNavBar();
-    const currentSeedphraseHints = await StorageWrapper.getItem(
-      SEED_PHRASE_HINTS,
-    );
-    const parsedHints =
-      currentSeedphraseHints && JSON.parse(currentSeedphraseHints);
-    const manualBackup = parsedHints?.manualBackup;
-    this.setState({
-      hintText: manualBackup,
-    });
     trackOnboarding(
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.WALLET_SECURITY_COMPLETED,
@@ -136,10 +121,6 @@ class ManualBackupStep3 extends PureComponent {
     this.updateNavBar();
   };
 
-  toggleHint = () => {
-    this.setState((state) => ({ showHint: !state.showHint }));
-  };
-
   learnMore = () =>
     this.props.navigation.navigate('Webview', {
       screen: 'SimpleWebview',
@@ -149,38 +130,6 @@ class ManualBackupStep3 extends PureComponent {
       },
     });
 
-  isHintSeedPhrase = (hintText) => {
-    const words = this.props.route.params?.words;
-    if (words) {
-      const lower = (string) => String(string).toLowerCase();
-      return lower(hintText) === lower(words.join(' '));
-    }
-    return false;
-  };
-
-  saveHint = async () => {
-    const { hintText } = this.state;
-    if (!hintText) return;
-    if (this.isHintSeedPhrase(hintText)) {
-      Alert.alert('Error!', strings('manual_backup_step_3.no_seedphrase'));
-      return;
-    }
-    this.toggleHint();
-    const currentSeedphraseHints = await StorageWrapper.getItem(
-      SEED_PHRASE_HINTS,
-    );
-    const parsedHints = JSON.parse(currentSeedphraseHints);
-    await StorageWrapper.setItem(
-      SEED_PHRASE_HINTS,
-      JSON.stringify({ ...parsedHints, manualBackup: hintText }),
-    );
-    trackOnboarding(
-      MetricsEventBuilder.createEventBuilder(
-        MetaMetricsEvents.WALLET_SECURITY_RECOVERY_HINT_SAVED,
-      ).build(),
-    );
-  };
-
   done = async () => {
     const onboardingWizard = await StorageWrapper.getItem(ONBOARDING_WIZARD);
     if (onboardingWizard) {
@@ -189,22 +138,6 @@ class ManualBackupStep3 extends PureComponent {
       this.props.setOnboardingWizardStep(1);
       this.props.navigation.reset({ routes: [{ name: 'HomeNav' }] });
     }
-  };
-
-  handleChangeText = (text) => this.setState({ hintText: text });
-
-  renderHint = () => {
-    const { showHint, hintText } = this.state;
-    return (
-      <HintModal
-        onConfirm={this.saveHint}
-        onCancel={this.toggleHint}
-        modalVisible={showHint}
-        onRequestClose={Keyboard.dismiss}
-        value={hintText}
-        onChangeText={this.handleChangeText}
-      />
-    );
   };
 
   render() {
@@ -222,11 +155,14 @@ class ManualBackupStep3 extends PureComponent {
             />
           </View>
         ) : null}
-        <OnboardingSuccess onDone={this.done} backedUpSRP />
+        <OnboardingSuccess
+          onDone={this.done}
+          backedUpSRP
+          words={this.props.route?.params?.words}
+        />
         {Device.isAndroid() && (
           <AndroidBackHandler customBackPress={this.props.navigation.pop} />
         )}
-        {this.renderHint()}
       </View>
     );
   }
