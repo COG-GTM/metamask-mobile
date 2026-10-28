@@ -11,7 +11,7 @@ import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
 import PropTypes from 'prop-types';
 import { getApproveNavbar } from '../../../../../UI/Navbar';
 import { connect } from 'react-redux';
-import { getHost } from '../../../../../../util/browser';
+import { getHost, prefixUrlWithProtocol } from '../../../../../../util/browser';
 import {
   getAddressAccountType,
   getTokenDetails,
@@ -322,10 +322,13 @@ class ApproveTransactionReview extends PureComponent {
    * Requesting dapp URL from the transaction's own metadata, never from
    * browser tab state (the tab can navigate while the approval is open).
    */
-  getRequestUrl = () =>
-    this.sdkConnection?.originatorInfo?.url ??
-    this.props.transaction.origin ??
-    '';
+  getRequestUrl = () => {
+    if (this.sdkConnection) {
+      return this.sdkConnection.originatorInfo?.url ?? '';
+    }
+    const { origin } = this.props.transaction;
+    return origin ? prefixUrlWithProtocol(origin) : '';
+  };
 
   fetchEstimatedL1Fee = async () => {
     const { transaction, chainId } = this.props;

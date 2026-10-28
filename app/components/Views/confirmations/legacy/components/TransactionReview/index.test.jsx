@@ -15,6 +15,7 @@ import * as TransactionUtils from '../../../../../../util/transactions';
 import { FALSE_POSITIVE_REPOST_LINE_TEST_ID } from '../BlockaidBanner/BlockaidBanner.constants';
 import { MOCK_KEYRING_CONTROLLER_STATE } from '../../../../../../util/test/keyringControllerTestUtils';
 import { APPROVAL_TAG_URL_ORIGIN_PILL } from '../../../../../UI/ApprovalTagUrl';
+import SDKConnect from '../../../../../../core/SDKConnect/SDKConnect';
 
 jest.mock('../../../../../../util/transactions', () => ({
   ...jest.requireActual('../../../../../../util/transactions'),
@@ -374,5 +375,34 @@ describe('TransactionReview', () => {
     expect(getByTestId(APPROVAL_TAG_URL_ORIGIN_PILL)).toBeDefined();
     expect(getByText('https://attacker.example')).toBeDefined();
     expect(queryByText(/trusted-exchange\.example/)).toBeNull();
+  });
+
+  it('labels native SDK channel requests with the SDK originator URL', () => {
+    const channelId = '6e1b8b7e-0f43-4a8c-9a3f-1f0e5c3d2b10';
+    const getConnection = jest.fn(({ channelId: id }) =>
+      id === channelId
+        ? { originatorInfo: { url: 'https://shop.example', icon: '' } }
+        : undefined,
+    );
+    const getInstanceSpy = jest
+      .spyOn(SDKConnect, 'getInstance')
+      .mockReturnValue({ getConnection, getConnections: () => ({}) });
+
+    const { getByText, queryByText } = renderWithProvider(
+      <TransactionReview
+        EIP1559GasData={{}}
+        generateTransform={generateTransform}
+      />,
+      {
+        state: {
+          ...mockState,
+          transaction: { ...mockState.transaction, origin: channelId },
+        },
+      },
+    );
+
+    expect(getByText('https://shop.example')).toBeDefined();
+    expect(queryByText(new RegExp(channelId))).toBeNull();
+    getInstanceSpy.mockRestore();
   });
 });

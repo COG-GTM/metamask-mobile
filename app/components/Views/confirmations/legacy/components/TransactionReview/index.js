@@ -26,6 +26,7 @@ import Logger from '../../../../../../util/Logger';
 import { safeToChecksumAddress } from '../../../../../../util/address';
 import { getBlockaidMetricsParams } from '../../../../../../util/blockaid';
 import Device from '../../../../../../util/device';
+import { prefixUrlWithProtocol } from '../../../../../../util/browser';
 import { isMultiLayerFeeNetwork } from '../../../../../../util/networks';
 import { fetchEstimatedMultiLayerL1Fee } from '../../../../../../util/networks/engineNetworkUtils';
 import {
@@ -476,14 +477,21 @@ class TransactionReview extends PureComponent {
    * Never derive it from browser tab state: the tab can navigate to another
    * site while the confirmation is open.
    */
+  getSDKConnection() {
+    const { origin } = this.props.transaction;
+    return origin
+      ? SDKConnect.getInstance().getConnection({ channelId: origin })
+      : undefined;
+  }
+
   getRequestUrl() {
     const { origin } = this.props.transaction;
-    const currentConnection =
-      SDKConnect.getInstance().getConnections()[origin ?? ''];
-    if (currentConnection) {
-      return currentConnection.originatorInfo?.url ?? '';
+    const sdkConnection = this.getSDKConnection();
+    if (sdkConnection) {
+      return sdkConnection.originatorInfo?.url ?? '';
     }
-    return origin ?? '';
+    // Browser transactions record a bare hostname; consumers expect a URL.
+    return origin ? prefixUrlWithProtocol(origin) : '';
   }
 
   getConfirmButtonState() {
@@ -544,9 +552,7 @@ class TransactionReview extends PureComponent {
       `TransactionReview render channelIdOrHostname=${channelIdOrHostname}`,
     );
 
-    const sdkConnections = SDKConnect.getInstance().getConnections();
-
-    const currentConnection = sdkConnections[channelIdOrHostname ?? ''];
+    const currentConnection = this.getSDKConnection();
 
     const url = this.getRequestUrl();
 
