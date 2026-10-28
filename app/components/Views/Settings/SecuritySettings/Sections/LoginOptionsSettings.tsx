@@ -17,9 +17,15 @@ import { LOGIN_OPTIONS } from '../SecuritySettings.constants';
 import createStyles from '../SecuritySettings.styles';
 import { SecurityPrivacyViewSelectorsIDs } from '../../../../../../e2e/selectors/Settings/SecurityAndPrivacy/SecurityPrivacyView.selectors';
 
+// Handlers resolve to the resulting toggle state when it differs from the
+// requested one (e.g. the biometric prompt was cancelled).
 interface BiometricOptionSectionProps {
-  onSignWithBiometricsOptionUpdated: (enabled: boolean) => Promise<void>;
-  onSignWithPasscodeOptionUpdated: (enabled: boolean) => Promise<void>;
+  onSignWithBiometricsOptionUpdated: (
+    enabled: boolean,
+  ) => Promise<boolean | undefined | void>;
+  onSignWithPasscodeOptionUpdated: (
+    enabled: boolean,
+  ) => Promise<boolean | undefined | void>;
 }
 
 const LoginOptionsSettings = ({
@@ -68,8 +74,8 @@ const LoginOptionsSettings = ({
 
   const onBiometricsOptionUpdated = useCallback(
     async (enabled: boolean) => {
-      await onSignWithBiometricsOptionUpdated(enabled);
-      setBiometryChoice(enabled);
+      const result = await onSignWithBiometricsOptionUpdated(enabled);
+      setBiometryChoice(typeof result === 'boolean' ? result : enabled);
     },
     [onSignWithBiometricsOptionUpdated],
   );

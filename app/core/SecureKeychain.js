@@ -13,6 +13,8 @@ import {
 } from '../constants/storage';
 import Device from '../util/device';
 
+const BIOMETRY_PROMPT_CANCELLED_MESSAGE = 'User canceled the operation.';
+
 const privates = new WeakMap();
 const encryptor = new Encryptor({
   keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
@@ -162,29 +164,15 @@ export default {
         try {
           await this.getGenericPassword();
         } catch (error) {
-          // Specifically check for user cancellation
-          if (error.message === 'User canceled the operation.') {
-            // Store password without biometrics
-            const encryptedPassword = await instance.encryptPassword(password);
-            await Keychain.setGenericPassword(
-              'metamask-user',
-              encryptedPassword,
-              {
-                ...defaultOptions,
-              },
-            );
-
-            // Update storage to reflect disabled biometrics
-            await StorageWrapper.removeItem(BIOMETRY_CHOICE);
+          if (error.message === BIOMETRY_PROMPT_CANCELLED_MESSAGE) {
+            // Never fall back to an unprotected keychain entry here: it would be
+            // readable without any user presence check (i.e. Remember Me without
+            // the user opting in). Revert to password-only login instead.
+            await this.resetGenericPassword();
             await StorageWrapper.setItem(BIOMETRY_CHOICE_DISABLED, TRUE);
+            await StorageWrapper.setItem(PASSCODE_DISABLED, TRUE);
 
-            // Update metrics
-            await metrics.addTraitsToUser({
-              [UserProfileProperty.AUTHENTICATION_TYPE]:
-                AUTHENTICATION_TYPE.PASSWORD,
-            });
-
-            return;
+            return this.SET_PASSWORD_RESULTS.BIOMETRY_CANCELLED;
           }
         }
       }
@@ -208,5 +196,8 @@ export default {
     BIOMETRICS: 'BIOMETRICS',
     PASSCODE: 'PASSCODE',
     REMEMBER_ME: 'REMEMBER_ME',
+  },
+  SET_PASSWORD_RESULTS: {
+    BIOMETRY_CANCELLED: 'BIOMETRY_CANCELLED',
   },
 };
