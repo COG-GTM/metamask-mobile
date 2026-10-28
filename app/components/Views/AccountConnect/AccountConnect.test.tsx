@@ -5,7 +5,12 @@ import renderWithProvider, {
 import AccountConnect from './AccountConnect';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { RootState } from '../../../reducers';
-import { fireEvent } from '@testing-library/react-native';
+import { fireEvent, waitFor } from '@testing-library/react-native';
+import {
+  Caip25CaveatType,
+  Caip25EndowmentPermissionName,
+} from '@metamask/chain-agnostic-permission';
+import { CommonSelectorsIDs } from '../../../../e2e/selectors/Common.selectors';
 import AccountConnectMultiSelector from './AccountConnectMultiSelector/AccountConnectMultiSelector';
 import Engine from '../../../core/Engine';
 import {
@@ -82,6 +87,7 @@ jest.mock('../../../core/Engine', () => {
       },
       PermissionController: {
         rejectPermissionsRequest: jest.fn(),
+        acceptPermissionsRequest: jest.fn().mockResolvedValue(undefined),
       },
       AccountsController: {
         state: mockAccountsState,
@@ -335,5 +341,72 @@ describe('AccountConnect', () => {
     });
     // Verify createEventBuilder was called
     expect(mockCreateEventBuilder).toHaveBeenCalled();
+  });
+
+  describe('handleConnect', () => {
+    it('approves only the displayed CAIP-25 permission and drops other bundled permissions', async () => {
+      const { getByTestId } = renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: {
+                  id: 'mockId',
+                  origin: 'https://example.com',
+                },
+                permissions: {
+                  [Caip25EndowmentPermissionName]: {
+                    parentCapability: Caip25EndowmentPermissionName,
+                    caveats: [
+                      {
+                        type: Caip25CaveatType,
+                        value: {
+                          requiredScopes: {},
+                          optionalScopes: {},
+                          sessionProperties: {},
+                          isMultichainOrigin: false,
+                        },
+                      },
+                    ],
+                  },
+                  wallet_snap: {
+                    parentCapability: 'wallet_snap',
+                    caveats: [
+                      {
+                        type: 'snapIds',
+                        value: {
+                          'npm:@metamask/message-signing-snap': {},
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        { state: mockInitialState },
+      );
+
+      fireEvent.press(getByTestId(CommonSelectorsIDs.CONNECT_BUTTON));
+
+      const acceptPermissionsRequest = Engine.context.PermissionController
+        .acceptPermissionsRequest as jest.Mock;
+      await waitFor(() => expect(acceptPermissionsRequest).toHaveBeenCalled());
+
+      const [request] = acceptPermissionsRequest.mock.calls[0];
+      expect(Object.keys(request.permissions)).toStrictEqual([
+        Caip25EndowmentPermissionName,
+      ]);
+      expect(request.permissions).not.toHaveProperty('wallet_snap');
+      expect(request.metadata.id).toBe('mockId');
+      const [caveat] =
+        request.permissions[Caip25EndowmentPermissionName].caveats;
+      expect(caveat.type).toBe(Caip25CaveatType);
+      expect(
+        Object.keys(caveat.value.optionalScopes).length,
+      ).toBeGreaterThan(0);
+    });
   });
 });
