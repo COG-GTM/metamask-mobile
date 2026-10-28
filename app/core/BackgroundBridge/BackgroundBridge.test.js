@@ -54,7 +54,7 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url, overrides = {}) {
   // Arrange
   const {
     AccountsController,
@@ -104,12 +104,33 @@ function setupBackgroundBridge(url) {
     url,
     isRemoteConn: true,
     ...defaultBridgeParams,
+    ...overrides,
   });
 }
 
 describe('BackgroundBridge', () => {
   beforeEach(() => jest.clearAllMocks());
   describe('constructor', () => {
+    it.each([
+      "https://x');alert(1);('",
+      "https://x');import(location.pathname.at(0)+'evil.tld');('",
+      'null',
+      'https:www.mock.io',
+    ])('refuses in-app browser origin %p', (url) => {
+      expect(() =>
+        setupBackgroundBridge(url, { isRemoteConn: false, isMainFrame: true }),
+      ).toThrow('BackgroundBridge: invalid origin for in-app browser');
+    });
+
+    it('accepts a valid in-app browser origin', () => {
+      const bridge = setupBackgroundBridge('https://app.uniswap.org', {
+        isRemoteConn: false,
+        isMainFrame: true,
+      });
+      expect(bridge.url).toBe('https://app.uniswap.org');
+      expect(bridge.hostname).toBe('app.uniswap.org');
+    });
+
     const { KeyringController, PermissionController } = Engine.context;
 
     it('creates Eip1193MethodMiddleware with expected hooks', async () => {
