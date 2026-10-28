@@ -12,6 +12,16 @@ import DevLogger from '../utils/DevLogger';
 
 export const TERMINATE_TIMEOUT_MS = 3000;
 
+/**
+ * Asks the connection to send TERMINATE to the dapp (when `sendTerminate` is
+ * true) and to clean itself up, giving up after `TERMINATE_TIMEOUT_MS`.
+ * A timed-out attempt is left pending; the caller does not wait for it.
+ *
+ * @param params - The parameters.
+ * @param params.connection - The connection being removed.
+ * @param params.sendTerminate - Whether to send TERMINATE to the dapp.
+ * @returns True only if TERMINATE was delivered before the timeout.
+ */
 async function sendTerminateWithTimeout({
   connection,
   sendTerminate,
@@ -36,6 +46,17 @@ async function sendTerminateWithTimeout({
   }
 }
 
+/**
+ * Best-effort close of a connection whose permissions were already revoked.
+ * Tries to notify the dapp; if that is not confirmed (offline dapp, relay
+ * failure, error or timeout), tears the remote down locally without sending
+ * a message so the session cannot be resumed with the old keys.
+ *
+ * @param params - The parameters.
+ * @param params.connection - The connection being removed.
+ * @param params.channelId - The channel id, for logging.
+ * @param params.sendTerminate - Whether to send TERMINATE to the dapp.
+ */
 async function closeConnection({
   connection,
   channelId,
