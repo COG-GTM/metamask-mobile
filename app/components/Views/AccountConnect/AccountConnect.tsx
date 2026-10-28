@@ -183,9 +183,10 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const [isSdkUrlUnknown, setIsSdkUrlUnknown] = useState(false);
 
-  const { domainTitle, hostname } = useMemo(() => {
+  const { domainTitle, hostname, isInAppBrowserRequest } = useMemo(() => {
     let title = '';
     let dappHostname = dappUrl || channelIdOrHostname;
+    let isBrowserRequest = false;
 
     if (
       isOriginMMSDKRemoteConn &&
@@ -200,12 +201,17 @@ const AccountConnect = (props: AccountConnectProps) => {
     } else if (!isChannelId && (dappUrl || channelIdOrHostname)) {
       title = prefixUrlWithProtocol(dappUrl || channelIdOrHostname);
       dappHostname = inappBrowserOrigin;
+      isBrowserRequest = !dappUrl;
     } else {
       title = strings('sdk.unknown');
       setIsSdkUrlUnknown(true);
     }
 
-    return { domainTitle: title, hostname: dappHostname };
+    return {
+      domainTitle: title,
+      hostname: dappHostname,
+      isInAppBrowserRequest: isBrowserRequest,
+    };
   }, [
     isOriginWalletConnect,
     inappBrowserOrigin,
@@ -215,10 +221,13 @@ const AccountConnect = (props: AccountConnectProps) => {
     channelIdOrHostname,
   ]);
 
-  const urlWithProtocol =
-    hostname && !isUUID(hostname)
-      ? prefixUrlWithProtocol(getHost(hostname))
-      : domainTitle;
+  // In-app browser requests show the requesting permission subject so an
+  // http:// or non-default-port page is never presented as the https site.
+  const urlWithProtocol = isInAppBrowserRequest
+    ? domainTitle
+    : hostname && !isUUID(hostname)
+    ? prefixUrlWithProtocol(getHost(hostname))
+    : domainTitle;
 
   const { chainId } = useNetworkInfo(hostname);
 
