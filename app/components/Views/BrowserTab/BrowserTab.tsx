@@ -50,6 +50,10 @@ import ErrorBoundary from '../ErrorBoundary';
 import { getRpcMethodMiddleware } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import downloadFile from '../../../util/browser/downloadFile';
 import { MAX_MESSAGE_LENGTH } from '../../../constants/dapp';
+
+// Bounds the provider messages held for a page while its origin is phishing scanned
+const MAX_PENDING_SCAN_MESSAGES = 500;
+const MAX_PENDING_SCAN_SIZE = 5 * MAX_MESSAGE_LENGTH;
 import sanitizeUrlInput from '../../../util/url/sanitizeUrlInput';
 import {
   getCaip25Caveat,
@@ -103,7 +107,12 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import {
+  getMaskedUrl,
+  isENSUrl,
+  isUrlFromOrigin,
+  scopeRefToOrigin,
+} from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -187,6 +196,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     sendNotification: (payload: unknown) => void;
     onDisconnect: () => void;
     onMessage: (message: Record<string, unknown>) => void;
+  }>();
+  // Provider messages held back while the bridge's origin is being phishing scanned
+  const pendingScanRef = useRef<{
+    bridge: NonNullable<typeof backgroundBridgeRef.current>;
+    messages: Record<string, unknown>[];
+    size: number;
   }>();
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
@@ -860,6 +875,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   /**
    * Handle message from website
    */
+  const disconnectBackgroundBridge = useCallback(() => {
+    backgroundBridgeRef.current?.onDisconnect();
+    backgroundBridgeRef.current = undefined;
+    pendingScanRef.current = undefined;
+  }, []);
+
   const onMessage = ({ nativeEvent }: WebViewMessageEvent) => {
     const data = nativeEvent.data;
     try {
@@ -877,7 +898,35 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       if (dataParsed.name) {
-        backgroundBridgeRef.current?.onMessage(dataParsed);
+        const bridge = backgroundBridgeRef.current;
+        // Only deliver provider messages sent by a document from the bridge's origin
+        if (!bridge || !isUrlFromOrigin(nativeEvent.url, bridge.url)) {
+          Logger.log(
+            `Browser::onMessage dropped message from ${
+              new URLParse(nativeEvent.url ?? '').origin
+            } for bridge ${bridge?.url}`,
+          );
+          return;
+        }
+        const pendingScan = pendingScanRef.current;
+        if (pendingScan?.bridge === bridge) {
+          pendingScan.size += data.length;
+          if (
+            pendingScan.messages.length >= MAX_PENDING_SCAN_MESSAGES ||
+            pendingScan.size > MAX_PENDING_SCAN_SIZE
+          ) {
+            // A page flooding the wallet before its scan finishes loses its bridge
+            Logger.log(
+              `Browser::onMessage pending scan limit exceeded for ${bridge.url}`,
+            );
+            disconnectBackgroundBridge();
+            webviewRef.current?.stopLoading();
+            return;
+          }
+          pendingScan.messages.push(dataParsed);
+          return;
+        }
+        bridge.onMessage(dataParsed);
         return;
       }
     } catch (e: unknown) {
@@ -896,8 +945,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const initializeBackgroundBridge = useCallback(
     (urlBridge: string, isMainFrame: boolean) => {
       // First disconnect and reset bridge
-      backgroundBridgeRef.current?.onDisconnect();
-      backgroundBridgeRef.current = undefined;
+      disconnectBackgroundBridge();
 
       //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
@@ -914,10 +962,25 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             hostname,
             getProviderState,
             navigation,
-            // Website info
-            url: resolvedUrlRef,
-            title: titleRef,
-            icon: iconRef,
+            // Website info, only exposed while the resolved page matches the bridge origin
+            url: scopeRefToOrigin(
+              resolvedUrlRef,
+              resolvedUrlRef,
+              urlBridge,
+              urlBridge,
+            ),
+            title: scopeRefToOrigin(
+              titleRef,
+              resolvedUrlRef,
+              urlBridge,
+              new URLParse(urlBridge).hostname,
+            ),
+            icon: scopeRefToOrigin(
+              iconRef,
+              resolvedUrlRef,
+              urlBridge,
+              undefined,
+            ),
             // Bookmarks
             isHomepage,
             // Show autocomplete
@@ -935,8 +998,16 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         isMainFrame,
       });
       backgroundBridgeRef.current = newBridge;
+      return newBridge;
     },
-    [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
+    [
+      navigation,
+      isHomepage,
+      toggleUrlModal,
+      tabId,
+      injectHomePageScripts,
+      disconnectBackgroundBridge,
+    ],
   );
 
   const sendActiveAccount = useCallback(async () => {
@@ -962,21 +1033,55 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         started: true,
       };
 
+      const isSameSite =
+        new URLParse(resolvedUrlRef.current).origin === urlOrigin;
+
+      // Swap the bridge before any await so the new document is never served
+      // by the previous site's bridge (permissions and approval labels).
+      const bridge = initializeBackgroundBridge(urlOrigin, true);
+      // Hold the page's provider requests until the scan allows the origin
+      const pendingScan = {
+        bridge,
+        messages: [] as Record<string, unknown>[],
+        size: 0,
+      };
+      pendingScanRef.current = pendingScan;
+
       // Cancel loading the page if we detect its a phishing page
-      const isAllowed = await isAllowedOrigin(urlOrigin);
+      let isAllowed = false;
+      try {
+        isAllowed = await isAllowedOrigin(urlOrigin);
+      } finally {
+        if (pendingScanRef.current === pendingScan) {
+          pendingScanRef.current = undefined;
+        }
+      }
+      const isCurrentBridge = backgroundBridgeRef.current === bridge;
       if (!isAllowed) {
         handleNotAllowedUrl(urlOrigin); // should this be activeUrl.current instead of url?
+        if (isCurrentBridge) {
+          disconnectBackgroundBridge();
+          if (loadingUrlRef.current === nativeEvent.url) {
+            webviewRef.current?.stopLoading();
+          }
+        }
         return false;
       }
 
-      sendActiveAccount();
+      // A newer navigation already replaced this bridge
+      if (!isCurrentBridge) return;
+
+      pendingScan.messages.forEach((message) => bridge.onMessage(message));
+
+      // permittedAccountsList belongs to the resolved page, so never push it to another origin
+      if (isSameSite) {
+        sendActiveAccount();
+      }
 
       iconRef.current = undefined;
       if (isHomepage(nativeEvent.url)) {
         injectHomePageScripts();
       }
-
-      initializeBackgroundBridge(urlOrigin, true);
     },
     [
       isAllowedOrigin,
@@ -985,6 +1090,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       isHomepage,
       injectHomePageScripts,
       initializeBackgroundBridge,
+      disconnectBackgroundBridge,
     ],
   );
 

@@ -142,29 +142,30 @@ export class BackgroundBridge extends EventEmitter {
       this.sendStateUpdate,
     );
 
-    Engine.controllerMessenger.subscribe(
-      'KeyringController:lock',
-      this.onLock.bind(this),
-    );
+    this.onLock = this.onLock.bind(this);
+    this.onUnlock = this.onUnlock.bind(this);
+    Engine.controllerMessenger.subscribe('KeyringController:lock', this.onLock);
     Engine.controllerMessenger.subscribe(
       'KeyringController:unlock',
-      this.onUnlock.bind(this),
+      this.onUnlock,
     );
 
     try {
       const pc = Engine.context.PermissionController;
       const controllerMessenger = Engine.controllerMessenger;
+      this.permissionStateChangeEvent = `${pc.name}:stateChange`;
+      this.onPermissionStateChange = (subjectWithPermission) => {
+        DevLogger.log(
+          `PermissionController:stateChange event`,
+          subjectWithPermission,
+        );
+        // Inform dapp about updated permissions
+        const selectedAddress = this.getState().selectedAddress;
+        this.notifySelectedAddressChanged(selectedAddress);
+      };
       controllerMessenger.subscribe(
-        `${pc.name}:stateChange`,
-        (subjectWithPermission) => {
-          DevLogger.log(
-            `PermissionController:stateChange event`,
-            subjectWithPermission,
-          );
-          // Inform dapp about updated permissions
-          const selectedAddress = this.getState().selectedAddress;
-          this.notifySelectedAddressChanged(selectedAddress);
-        },
+        this.permissionStateChangeEvent,
+        this.onPermissionStateChange,
         (state) => state.subjects[this.channelId],
       );
     } catch (err) {
@@ -367,14 +368,21 @@ export class BackgroundBridge extends EventEmitter {
 
   onDisconnect = () => {
     this.disconnected = true;
-    Engine.controllerMessenger.unsubscribe(
-      AppConstants.NETWORK_STATE_CHANGE_EVENT,
-      this.sendStateUpdate,
-    );
-    Engine.controllerMessenger.unsubscribe(
-      'PreferencesController:stateChange',
-      this.sendStateUpdate,
-    );
+    [
+      [AppConstants.NETWORK_STATE_CHANGE_EVENT, this.sendStateUpdate],
+      ['PreferencesController:stateChange', this.sendStateUpdate],
+      ['SelectedNetworkController:stateChange', this.sendStateUpdate],
+      ['KeyringController:lock', this.onLock],
+      ['KeyringController:unlock', this.onUnlock],
+      [this.permissionStateChangeEvent, this.onPermissionStateChange],
+    ].forEach(([eventType, handler]) => {
+      if (!eventType || !handler) return;
+      try {
+        Engine.controllerMessenger.unsubscribe(eventType, handler);
+      } catch (err) {
+        DevLogger.log(`Error in BackgroundBridge: ${err}`);
+      }
+    });
 
     this.port.emit('disconnect', { name: this.port.name, data: null });
   };
