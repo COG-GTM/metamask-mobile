@@ -77,6 +77,36 @@ describe('persistFlush', () => {
       expect(JSON.parse(lastWrite.engine)).toEqual(engineState(20).engine);
     });
 
+    it('writes all changed keys once per window instead of one key per window', () => {
+      const { persistoid, transformIn, setItem } =
+        createTestPersistoid(PERSIST_THROTTLE);
+      // Rehydration-like update where many top-level keys change at once
+      const keys = Array.from({ length: 25 }, (_, i) => `slice${i}`);
+      const state = Object.fromEntries(keys.map((k) => [k, { k }]));
+      persistoid.update(state as unknown as TestState);
+
+      jest.advanceTimersByTime(PERSIST_THROTTLE);
+
+      expect(transformIn).toHaveBeenCalledTimes(keys.length);
+      expect(setItem).toHaveBeenCalledTimes(1);
+      expect(Object.keys(JSON.parse(setItem.mock.calls[0][1]))).toEqual(keys);
+    });
+
+    it('persists state changed after a write within the next window', () => {
+      const { persistoid, setItem } = createTestPersistoid(PERSIST_THROTTLE);
+      persistoid.update(engineState(1));
+      jest.advanceTimersByTime(PERSIST_THROTTLE);
+      expect(setItem).toHaveBeenCalledTimes(1);
+
+      persistoid.update(engineState(2));
+      jest.advanceTimersByTime(PERSIST_THROTTLE * 2);
+
+      expect(setItem).toHaveBeenCalledTimes(2);
+      expect(JSON.parse(JSON.parse(setItem.mock.calls[1][1]).engine)).toEqual(
+        engineState(2).engine,
+      );
+    });
+
     it('flush() writes queued state immediately', async () => {
       const { persistoid, setItem } = createTestPersistoid(PERSIST_THROTTLE);
       persistoid.update(engineState(7));
