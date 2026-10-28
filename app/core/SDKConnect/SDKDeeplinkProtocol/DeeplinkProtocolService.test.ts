@@ -12,6 +12,7 @@ import AppConstants from '../../AppConstants';
 import { DappClient } from '../AndroidSDK/dapp-sdk-types';
 import { createMockInternalAccount } from '../../../util/test/accountsControllerTestUtils';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
+import { Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
 
 jest.mock('../SDKConnect');
 jest.mock('react-native');
@@ -56,6 +57,7 @@ describe('DeeplinkProtocolService', () => {
     (Engine.context as any) = {
       PermissionController: {
         requestPermissions: jest.fn().mockResolvedValue(null),
+        hasPermission: jest.fn().mockReturnValue(true),
         getPermissions: jest
           .fn()
           .mockReturnValue({ eth_accounts: { caveats: [{ value: [] }] } }),
@@ -424,6 +426,42 @@ describe('DeeplinkProtocolService', () => {
       expect(service.connections[CHANNEL_ID]).toBeUndefined();
     });
 
+    it('requires a new permission prompt for a restored session whose permission was revoked', async () => {
+      (
+        Engine.context.PermissionController.hasPermission as jest.Mock
+      ).mockReturnValue(false);
+      const handleConnectionEventAsyncSpy = jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockResolvedValue(undefined);
+      const processDappRpcRequestSpy = jest.spyOn(
+        service,
+        'processDappRpcRequest',
+      );
+      service.connections[CHANNEL_ID] = {
+        clientId: CHANNEL_ID,
+        originatorInfo: { url: 'test.com', title: 'Test' },
+        connected: false,
+        validUntil: Date.now(),
+        scheme: 'scheme',
+      } as DappClient;
+
+      await service.handleConnection({
+        ...buildConnectionParams(CHANNEL_ID),
+        request: JSON.stringify({ id: '1', method: 'eth_accounts' }),
+      });
+
+      expect(
+        Engine.context.PermissionController.hasPermission,
+      ).toHaveBeenCalledWith(CHANNEL_ID, Caip25EndowmentPermissionName);
+      expect(service.connections[CHANNEL_ID]).toBeUndefined();
+      expect(processDappRpcRequestSpy).not.toHaveBeenCalled();
+      expect(handleConnectionEventAsyncSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          clientInfo: expect.objectContaining({ clientId: CHANNEL_ID }),
+        }),
+      );
+    });
+
     it('ignores a connection whose channelId is not a UUID', async () => {
       const handleConnectionEventAsyncSpy = jest.spyOn(
         service,
@@ -506,6 +544,7 @@ describe('DeeplinkProtocolService', () => {
       (Engine.context as unknown) = {
         PermissionController: {
           requestPermissions: jest.fn().mockResolvedValue(null),
+          hasPermission: jest.fn().mockReturnValue(true),
         },
         KeyringController: {
           unlock: jest.fn().mockResolvedValue(null),

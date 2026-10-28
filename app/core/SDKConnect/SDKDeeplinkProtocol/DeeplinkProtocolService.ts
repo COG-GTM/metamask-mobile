@@ -278,6 +278,21 @@ export default class DeeplinkProtocolService {
     }
   }
 
+  public hasConnectionPermission(channelId: string): boolean {
+    const permissionsController = (
+      Engine.context as {
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PermissionController: PermissionController<any, any>;
+      }
+    ).PermissionController;
+
+    return permissionsController.hasPermission(
+      channelId,
+      Caip25EndowmentPermissionName,
+    );
+  }
+
   public async checkPermission({
     channelId,
   }: {
@@ -463,6 +478,13 @@ export default class DeeplinkProtocolService {
     };
 
     this.currentClientId = params.channelId;
+
+    if (
+      this.connections?.[clientInfo.clientId] &&
+      !this.hasConnectionPermission(clientInfo.clientId)
+    ) {
+      delete this.connections[clientInfo.clientId];
+    }
 
     const isSessionExists = this.connections?.[clientInfo.clientId];
 
@@ -801,7 +823,7 @@ export default class DeeplinkProtocolService {
         isSessionExists,
       );
 
-      if (!isSessionExists) {
+      if (!isSessionExists || !this.hasConnectionPermission(sessionId)) {
         const message = {
           data: {
             id: data.id,
