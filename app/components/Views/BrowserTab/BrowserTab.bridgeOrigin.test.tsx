@@ -231,6 +231,36 @@ describe('BrowserTab background bridge origin', () => {
     expect(newBridge.onMessage).toHaveBeenCalledTimes(2);
   });
 
+  it('drops the bridge of a page that floods messages before its scan finishes', async () => {
+    const props = await renderTab();
+    await loadTrustedDapp(props);
+
+    let resolveScan: (value: unknown) => void = () => undefined;
+    mockScanUrl.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveScan = resolve;
+      }),
+    );
+    let loadStart: Promise<unknown> = Promise.resolve();
+    await act(async () => {
+      loadStart = props.onLoadStart(navEvent(NEW_URL));
+    });
+    const newBridge = bridgeFor(NEW_ORIGIN) as MockBridge;
+
+    for (let i = 0; i < 501; i++) {
+      props.onMessage(providerMessage(NEW_URL));
+    }
+    expect(newBridge.onDisconnect).toHaveBeenCalled();
+
+    await act(async () => {
+      resolveScan({ result: false });
+      await loadStart;
+    });
+    props.onMessage(providerMessage(NEW_URL));
+    expect(newBridge.onMessage).not.toHaveBeenCalled();
+    expect(bridgeFor(TRUSTED_ORIGIN)?.onMessage).not.toHaveBeenCalled();
+  });
+
   it('drops messages whose document origin does not match the active bridge', async () => {
     const props = await renderTab();
     await loadTrustedDapp(props);

@@ -50,6 +50,10 @@ import ErrorBoundary from '../ErrorBoundary';
 import { getRpcMethodMiddleware } from '../../../core/RPCMethods/RPCMethodMiddleware';
 import downloadFile from '../../../util/browser/downloadFile';
 import { MAX_MESSAGE_LENGTH } from '../../../constants/dapp';
+
+// Bounds the provider messages held for a page while its origin is phishing scanned
+const MAX_PENDING_SCAN_MESSAGES = 500;
+const MAX_PENDING_SCAN_SIZE = 5 * MAX_MESSAGE_LENGTH;
 import sanitizeUrlInput from '../../../util/url/sanitizeUrlInput';
 import {
   getCaip25Caveat,
@@ -197,6 +201,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const pendingScanRef = useRef<{
     bridge: NonNullable<typeof backgroundBridgeRef.current>;
     messages: Record<string, unknown>[];
+    size: number;
   }>();
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
@@ -870,6 +875,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   /**
    * Handle message from website
    */
+  const disconnectBackgroundBridge = useCallback(() => {
+    backgroundBridgeRef.current?.onDisconnect();
+    backgroundBridgeRef.current = undefined;
+    pendingScanRef.current = undefined;
+  }, []);
+
   const onMessage = ({ nativeEvent }: WebViewMessageEvent) => {
     const data = nativeEvent.data;
     try {
@@ -899,6 +910,19 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         }
         const pendingScan = pendingScanRef.current;
         if (pendingScan?.bridge === bridge) {
+          pendingScan.size += data.length;
+          if (
+            pendingScan.messages.length >= MAX_PENDING_SCAN_MESSAGES ||
+            pendingScan.size > MAX_PENDING_SCAN_SIZE
+          ) {
+            // A page flooding the wallet before its scan finishes loses its bridge
+            Logger.log(
+              `Browser::onMessage pending scan limit exceeded for ${bridge.url}`,
+            );
+            disconnectBackgroundBridge();
+            webviewRef.current?.stopLoading();
+            return;
+          }
           pendingScan.messages.push(dataParsed);
           return;
         }
@@ -916,11 +940,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
 
   const toggleUrlModal = useCallback(() => {
     urlBarRef.current?.focus();
-  }, []);
-
-  const disconnectBackgroundBridge = useCallback(() => {
-    backgroundBridgeRef.current?.onDisconnect();
-    backgroundBridgeRef.current = undefined;
   }, []);
 
   const initializeBackgroundBridge = useCallback(
@@ -1021,7 +1040,11 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       // by the previous site's bridge (permissions and approval labels).
       const bridge = initializeBackgroundBridge(urlOrigin, true);
       // Hold the page's provider requests until the scan allows the origin
-      const pendingScan = { bridge, messages: [] as Record<string, unknown>[] };
+      const pendingScan = {
+        bridge,
+        messages: [] as Record<string, unknown>[],
+        size: 0,
+      };
       pendingScanRef.current = pendingScan;
 
       // Cancel loading the page if we detect its a phishing page
