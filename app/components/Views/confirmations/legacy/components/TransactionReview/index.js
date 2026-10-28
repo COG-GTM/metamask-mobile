@@ -490,8 +490,9 @@ class TransactionReview extends PureComponent {
     if (sdkConnection) {
       return sdkConnection.originatorInfo?.url ?? '';
     }
-    // Browser transactions record a bare hostname; consumers expect a URL.
-    return origin ? prefixUrlWithProtocol(origin) : '';
+    // Browser transactions record a bare hostname with no scheme. Do not
+    // invent one: an https:// prefix would make HTTP dapps look secure.
+    return origin ?? '';
   }
 
   getConfirmButtonState() {
@@ -648,7 +649,11 @@ class TransactionReview extends PureComponent {
                         onCancelPress={this.props.onCancel}
                         gasEstimateType={gasEstimateType}
                         EIP1559GasData={EIP1559GasData}
-                        origin={dappSuggestedGas ? url : null}
+                        origin={
+                          dappSuggestedGas && url
+                            ? prefixUrlWithProtocol(url)
+                            : null
+                        }
                         gasSelected={gasSelected}
                         originWarning={dappSuggestedGasWarning}
                         onUpdatingValuesStart={onUpdatingValuesStart}

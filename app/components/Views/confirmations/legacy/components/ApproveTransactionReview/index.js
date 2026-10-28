@@ -11,7 +11,7 @@ import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
 import PropTypes from 'prop-types';
 import { getApproveNavbar } from '../../../../../UI/Navbar';
 import { connect } from 'react-redux';
-import { getHost, prefixUrlWithProtocol } from '../../../../../../util/browser';
+import { getHost } from '../../../../../../util/browser';
 import {
   getAddressAccountType,
   getTokenDetails,
@@ -326,8 +326,8 @@ class ApproveTransactionReview extends PureComponent {
     if (this.sdkConnection) {
       return this.sdkConnection.originatorInfo?.url ?? '';
     }
-    const { origin } = this.props.transaction;
-    return origin ? prefixUrlWithProtocol(origin) : '';
+    // Bare hostname, no scheme: do not invent https:// for HTTP dapps.
+    return this.props.transaction.origin ?? '';
   };
 
   fetchEstimatedL1Fee = async () => {
