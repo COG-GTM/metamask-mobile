@@ -13,6 +13,10 @@ import { getPersistentState } from '@metamask/base-controller';
 
 const TIMEOUT = 40000;
 const STORAGE_DEBOUNCE_DELAY = 200;
+// redux-persist runs the transforms and JSON serialization of a changed key at
+// most once per window, so bursts of controller updates are coalesced before
+// the expensive engine-state walk. Always persists the latest state.
+export const PERSIST_THROTTLE = 1000;
 
 const debouncedSetItem = debounce(
   async (key: string, value: string) =>
@@ -20,6 +24,17 @@ const debouncedSetItem = debounce(
   STORAGE_DEBOUNCE_DELAY,
   { leading: false, trailing: true },
 );
+
+/**
+ * Immediately performs a pending debounced storage write, if any.
+ */
+export const flushStorageWrite = async () => {
+  try {
+    await debouncedSetItem.flush();
+  } catch (error) {
+    Logger.error(error as Error, { message: 'Failed to flush storage write' });
+  }
+};
 
 const MigratedStorage = {
   async getItem(key: string) {
@@ -139,6 +154,7 @@ const persistConfig = {
   stateReconciler: autoMergeLevel2, // see "Merge Process" section for details.
   migrate: createMigrate(migrations, { debug: false }),
   timeout: TIMEOUT,
+  throttle: PERSIST_THROTTLE,
   writeFailHandler: (error: Error) =>
     Logger.error(error, { message: 'Error persisting data' }), // Log error if saving state fails
 };

@@ -1,7 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FilesystemStorage from 'redux-persist-filesystem-storage';
 import Device from '../util/device';
-import persistConfig from './persistConfig';
+import persistConfig, {
+  flushStorageWrite,
+  PERSIST_THROTTLE,
+} from './persistConfig';
 import { version } from './migrations';
 import Engine from '../core/Engine';
 import { Transform } from 'redux-persist';
@@ -94,8 +97,10 @@ jest.mock('./migrations', () => ({
 }));
 
 // Mock debounce
+const mockDebounceFlush = jest.fn();
 jest.mock('lodash', () => ({
-  debounce: <T extends (...args: unknown[]) => unknown>(fn: T) => fn,
+  debounce: <T extends (...args: unknown[]) => unknown>(fn: T) =>
+    Object.assign(fn, { flush: () => mockDebounceFlush() }),
 }));
 
 describe('persistConfig', () => {
@@ -118,6 +123,11 @@ describe('persistConfig', () => {
         'accounts',
         'confirmationMetrics',
       ]);
+    });
+
+    it('throttles persist processing so engine updates are coalesced', () => {
+      expect(PERSIST_THROTTLE).toBe(1000);
+      expect(persistConfig.throttle).toBe(PERSIST_THROTTLE);
     });
 
     it('have correct storage configuration', () => {
@@ -222,6 +232,11 @@ describe('persistConfig', () => {
         mockValue,
         true,
       );
+    });
+
+    it('flushStorageWrite flushes the pending debounced write', async () => {
+      await flushStorageWrite();
+      expect(mockDebounceFlush).toHaveBeenCalledTimes(1);
     });
 
     it('remove item using FilesystemStorage', async () => {
