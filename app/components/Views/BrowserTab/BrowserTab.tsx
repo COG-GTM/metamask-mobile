@@ -68,7 +68,6 @@ import {
   OLD_HOMEPAGE_URL_HOST,
   NOTIFICATION_NAMES,
   MM_MIXPANEL_TOKEN,
-  MAX_PENDING_BRIDGE_MESSAGES,
 } from './constants';
 import { regex } from '../../../../app/util/regex';
 import { selectEvmChainId } from '../../../selectors/networkController';
@@ -179,10 +178,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const loadingUrlRef = useRef('');
   // Incremented on every onLoadStart so a slower, superseded navigation cannot install its bridge
   const loadStartIdRef = useRef(0);
-  // Messages from a page whose origin has no bridge yet; flushed once its bridge is created
-  const pendingBridgeMessagesRef = useRef<
-    { origin: string; message: Record<string, unknown> }[]
-  >([]);
   const submittedUrlRef = useRef('');
   const titleRef = useRef<string>('');
   const iconRef = useRef<ImageSourcePropType | undefined>();
@@ -886,16 +881,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       if (dataParsed.name) {
         const pageOrigin = new URLParse(nativeEvent.url ?? '').origin;
         const bridge = backgroundBridgeRef.current;
+        // Never route a page's requests through a bridge bound to another origin
         if (bridge && bridge.url === pageOrigin) {
           bridge.onMessage(dataParsed);
-          return;
         }
-        // Never route a page's requests through a bridge bound to another origin
-        const pending = pendingBridgeMessagesRef.current;
-        if (pending.length >= MAX_PENDING_BRIDGE_MESSAGES) {
-          pending.shift();
-        }
-        pending.push({ origin: pageOrigin, message: dataParsed });
         return;
       }
     } catch (e: unknown) {
@@ -953,12 +942,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         isMainFrame,
       });
       backgroundBridgeRef.current = newBridge;
-
-      const pending = pendingBridgeMessagesRef.current;
-      pendingBridgeMessagesRef.current = [];
-      pending
-        .filter(({ origin }) => origin === urlBridge)
-        .forEach(({ message }) => newBridge.onMessage(message));
     },
     [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
   );

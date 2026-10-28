@@ -205,7 +205,7 @@ describe('BrowserTab background bridge', () => {
     );
   });
 
-  it('delivers messages sent before the bridge exists once the bridge for that origin is created', async () => {
+  it('drops messages sent before the bridge exists instead of replaying them later', async () => {
     let resolveScan: (value: typeof SAFE) => void = () => undefined;
     mockGetPhishingTestResultAsync.mockImplementation(
       () =>
@@ -221,9 +221,6 @@ describe('BrowserTab background bridge', () => {
         nativeEvent: { url: 'https://dapp.example/' },
       });
       getWebView().props.onMessage(providerMessage('https://dapp.example/', 1));
-      getWebView().props.onMessage(
-        providerMessage('https://other.example/', 2),
-      );
     });
     await act(async () => {
       resolveScan(SAFE);
@@ -232,9 +229,14 @@ describe('BrowserTab background bridge', () => {
 
     const [bridge] = mockBridges;
     expect(bridge.url).toBe('https://dapp.example');
+    expect(bridge.onMessage).not.toHaveBeenCalled();
+
+    act(() => {
+      getWebView().props.onMessage(providerMessage('https://dapp.example/', 2));
+    });
     expect(bridge.onMessage).toHaveBeenCalledTimes(1);
     expect(bridge.onMessage).toHaveBeenCalledWith(
-      expect.objectContaining({ data: expect.objectContaining({ id: 1 }) }),
+      expect.objectContaining({ data: expect.objectContaining({ id: 2 }) }),
     );
   });
 });
