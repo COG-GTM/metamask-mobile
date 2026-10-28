@@ -93,11 +93,17 @@ export const sortAccountsByLastSelected = (accounts: Hex[]) => {
   });
 };
 
+/**
+ * Returns the permitted evm accounts for a single permission subject, sorted
+ * by most recently selected.
+ *
+ * @param subject - The PermissionController subject entry, if any.
+ * @returns The permitted evm account addresses.
+ */
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getAccountsFromSubject(subject: any) {
-  const caveats =
-    subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
+export function getAccountsFromSubject(subject: any): string[] {
+  const caveats = subject?.permissions?.[Caip25EndowmentPermissionName]?.caveats;
   if (!caveats) {
     return [];
   }
@@ -122,21 +128,11 @@ export const getPermittedAccountsByHostname = (
   state: any,
   hostname: string,
 ): string[] => {
-  const { subjects } = state;
-  const accountsByHostname = Object.keys(subjects).reduce(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc: any, subjectKey) => {
-      const accounts = getAccountsFromSubject(subjects[subjectKey]);
-      if (accounts.length > 0) {
-        acc[subjectKey] = accounts;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return accountsByHostname?.[hostname] || [];
+  const subjects = state?.subjects;
+  if (!subjects || !Object.prototype.hasOwnProperty.call(subjects, hostname)) {
+    return [];
+  }
+  return getAccountsFromSubject(subjects[hostname]);
 };
 
 // TODO: Replace "any" with type

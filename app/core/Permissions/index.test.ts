@@ -28,6 +28,7 @@ import {
   updatePermittedChains,
   sortAccountsByLastSelected,
   getPermittedAccounts,
+  getAccountsFromSubject,
 } from '.';
 import { Hex, Json } from '@metamask/utils';
 
@@ -171,6 +172,83 @@ describe('Permission Utility Functions', () => {
         'https://example.com',
       );
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getPermittedAccountsByHostname subject lookup', () => {
+    const buildSubject = () => ({
+      permissions: {
+        [Caip25EndowmentPermissionName]: {
+          caveats: [
+            {
+              type: Caip25CaveatType,
+              value: { optionalScopes: {}, requiredScopes: {} },
+            },
+          ],
+        },
+      },
+    });
+
+    it('only derives accounts for the requested subject', () => {
+      const target = buildSubject();
+      const mockState = {
+        subjects: {
+          'https://example.com': target,
+          'https://other-1.com': buildSubject(),
+          'https://other-2.com': buildSubject(),
+        },
+      };
+      (getEthAccounts as jest.Mock).mockReturnValue(['0x1']);
+      mockListAccounts.mockReturnValue([
+        { address: '0x1', metadata: { lastSelected: 1 } },
+      ]);
+
+      const result = getPermittedAccountsByHostname(
+        mockState,
+        'https://example.com',
+      );
+
+      expect(result).toEqual(['0x1']);
+      expect(getEthAccounts).toHaveBeenCalledTimes(1);
+      expect(getEthAccounts).toHaveBeenCalledWith(
+        target.permissions[Caip25EndowmentPermissionName].caveats[0].value,
+      );
+    });
+
+    it('is not affected by other subjects with unknown accounts', () => {
+      const target = buildSubject();
+      const mockState = {
+        subjects: {
+          'https://example.com': target,
+          'https://stale.com': buildSubject(),
+        },
+      };
+      const targetCaveatValue =
+        target.permissions[Caip25EndowmentPermissionName].caveats[0].value;
+      (getEthAccounts as jest.Mock).mockImplementation((value) =>
+        value === targetCaveatValue ? ['0x1'] : ['0xdead'],
+      );
+      mockListAccounts.mockReturnValue([
+        { address: '0x1', metadata: { lastSelected: 1 } },
+      ]);
+
+      expect(
+        getPermittedAccountsByHostname(mockState, 'https://example.com'),
+      ).toEqual(['0x1']);
+    });
+
+    it('ignores inherited object keys as hostnames', () => {
+      const mockState = { subjects: { 'https://example.com': buildSubject() } };
+
+      expect(getPermittedAccountsByHostname(mockState, 'toString')).toEqual([]);
+      expect(getPermittedAccountsByHostname(mockState, '__proto__')).toEqual(
+        [],
+      );
+      expect(getEthAccounts).not.toHaveBeenCalled();
+    });
+
+    it('returns an empty list for a missing subject', () => {
+      expect(getAccountsFromSubject(undefined)).toEqual([]);
     });
   });
 
