@@ -6,11 +6,10 @@ import Engine from '../../Engine';
 import { ApprovalTypes } from '../../RPCMethods/RPCMethodMiddleware';
 import { Connection } from '../Connection';
 import DevLogger from '../utils/DevLogger';
-import {
-  MAX_QUEUE_LOOP,
-  wait,
-  waitForKeychainUnlocked,
-} from '../utils/wait.util';
+import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
+
+// How long an RPC that arrived before clients_ready waits for verification to start.
+const VERIFICATION_START_MAX_WAIT_LOOPS = 60;
 
 /**
  * True for a QR-code channel that is resuming an existing session rather than
@@ -97,17 +96,18 @@ export const requestOTPVerification = async ({
  */
 export const assertQRReconnectionVerified = async (
   connection: Connection,
-  { waitTime = 1000 }: { waitTime?: number } = {},
+  {
+    waitTime = 1000,
+    maxWaitLoops = VERIFICATION_START_MAX_WAIT_LOOPS,
+  }: { waitTime?: number; maxWaitLoops?: number } = {},
 ) => {
   let i = 0;
   while (
     requiresQRReconnectionVerification(connection) &&
-    !connection.reconnectVerification
+    !connection.reconnectVerification &&
+    i < maxWaitLoops
   ) {
     i += 1;
-    if (i > MAX_QUEUE_LOOP) {
-      break;
-    }
     await wait(waitTime);
   }
 

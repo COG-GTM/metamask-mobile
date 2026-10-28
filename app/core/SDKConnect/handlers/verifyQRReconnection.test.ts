@@ -14,6 +14,7 @@ describe('verifyQRReconnection', () => {
   let connection: Connection;
 
   beforeEach(() => {
+    jest.resetAllMocks();
     connection = {
       channelId: 'channel-1',
       origin: AppConstants.DEEPLINKS.ORIGIN_QR_CODE,
@@ -68,6 +69,17 @@ describe('verifyQRReconnection', () => {
         assertQRReconnectionVerified(connection),
       ).resolves.toBeUndefined();
       expect(wait).toHaveBeenCalledTimes(2);
+    });
+
+    it('rejects requests when the verification never starts', async () => {
+      (wait as jest.Mock).mockResolvedValue(undefined);
+
+      await expect(
+        assertQRReconnectionVerified(connection, { maxWaitLoops: 3 }),
+      ).rejects.toThrow(
+        'Reconnection has not been re-authorized by the wallet user.',
+      );
+      expect(wait).toHaveBeenCalledTimes(3);
     });
 
     it('rejects requests after the verification resolved as not verified', async () => {
