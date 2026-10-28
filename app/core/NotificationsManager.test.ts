@@ -470,6 +470,39 @@ describe('NotificationManager', () => {
         expect(cancelledNotifications()[0][0].transaction).toStrictEqual({
           id: '0xbob',
         });
+
+        expect(
+          Object.keys(notificationManager._transactionsWatchTable).sort(),
+        ).toStrictEqual(['0x1:0xb0b:0x1', '0x89:0xa11ce:0x1']);
+
+        notificationManager._failedCallback({
+          id: '0xalice-other-chain',
+          status: 'failed',
+          chainId: '0x89',
+          txParams: { nonce: '0x1', from: '0xa11ce' },
+        });
+        notificationManager._confirmedCallback(
+          {
+            id: '0xbob',
+            chainId: '0x1',
+            txParams: { nonce: '0x1', from: '0xb0b' },
+          },
+          { id: '0xbob' },
+        );
+        jest.runAllTimers();
+
+        expect(stxHandlerCount()).toBe(0);
+        expect(notificationManager._smartTransactionListeners).toStrictEqual(
+          {},
+        );
+        expect(notificationManager._transactionsWatchTable).toStrictEqual({});
+        const notificationTypes = showNotificationSpy.mock.calls.map(
+          ([data]) => data.type,
+        );
+        expect(notificationTypes.filter((t) => t === 'error')).toHaveLength(1);
+        expect(notificationTypes.filter((t) => t === 'success')).toHaveLength(
+          2,
+        );
       });
 
       it('keeps a single listener when the same transaction is watched twice', () => {
