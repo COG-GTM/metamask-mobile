@@ -181,4 +181,18 @@ public class TarExtractorTest {
     assertTrue(new File(out, "package/index.js").isFile());
     assertEquals(3, countFiles(out));
   }
+
+  @Test
+  public void replacesExistingPackageOnSuccess() throws IOException {
+    File out = tmp.newFolder();
+    File stale = new File(out, "package/stale.js");
+    assertTrue(stale.getParentFile().mkdirs());
+    assertTrue(stale.createNewFile());
+    File archive = tgz(tar -> addFile(tar, "package/index.js", "ok".getBytes(StandardCharsets.UTF_8)));
+
+    new TarExtractor().extract(archive.getPath(), out.getPath());
+    assertFalse(stale.exists());
+    assertTrue(new File(out, "package/index.js").isFile());
+    assertEquals(2, countFiles(out));
+  }
 }

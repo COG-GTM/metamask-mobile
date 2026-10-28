@@ -145,12 +145,23 @@ class RNTar: NSObject {
           isDirectory.boolValue else {
       throw UnTarError.unableToDecompressFile(file: path)
     }
+    // Move any existing package aside (into the staging directory, which is
+    // removed afterwards) so it can be restored if the swap fails.
     let packageUrl = destinationUrl.appendingPathComponent("package", isDirectory: true)
-    if (try? packageUrl.checkResourceIsReachable()) == true
-        || (try? fileManager.destinationOfSymbolicLink(atPath: packageUrl.path)) != nil {
-      try fileManager.removeItem(at: packageUrl)
+    let previousPackageUrl = stagingUrl.appendingPathComponent("previous-package")
+    let hadPackage = (try? packageUrl.checkResourceIsReachable()) == true
+      || (try? fileManager.destinationOfSymbolicLink(atPath: packageUrl.path)) != nil
+    if hadPackage {
+      try fileManager.moveItem(at: packageUrl, to: previousPackageUrl)
     }
-    try fileManager.moveItem(at: stagedPackageUrl, to: packageUrl)
+    do {
+      try fileManager.moveItem(at: stagedPackageUrl, to: packageUrl)
+    } catch {
+      if hadPackage {
+        try? fileManager.moveItem(at: previousPackageUrl, to: packageUrl)
+      }
+      throw error
+    }
     return packageUrl.path
   }
 

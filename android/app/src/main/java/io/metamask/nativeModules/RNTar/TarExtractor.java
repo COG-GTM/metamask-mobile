@@ -78,9 +78,19 @@ public class TarExtractor {
       if (!stagedPackage.isDirectory()) {
         throw new IOException("Tarball does not contain a package directory.");
       }
+      // Move any existing package aside (into the staging directory, which is
+      // deleted afterwards) so it can be restored if the swap fails.
       File packageDir = new File(canonicalOutputDir, "package");
-      deleteRecursively(packageDir);
+      File previousPackage = new File(stagingDir, "previous-package");
+      boolean hadPackage = packageDir.exists();
+      if (hadPackage && !packageDir.renameTo(previousPackage)) {
+        throw new IOException("Unable to move the existing package aside.");
+      }
       if (!stagedPackage.renameTo(packageDir)) {
+        if (hadPackage) {
+          // noinspection ResultOfMethodCallIgnored
+          previousPackage.renameTo(packageDir);
+        }
         throw new IOException("Unable to move the extracted package into place.");
       }
     } finally {
