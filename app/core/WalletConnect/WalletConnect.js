@@ -1,4 +1,5 @@
 import RNWalletConnect from '@walletconnect/client';
+import { rpcErrors } from '@metamask/rpc-errors';
 import { v1 as random } from 'uuid';
 import Engine from '../Engine';
 import Logger from '../../util/Logger';
@@ -177,7 +178,18 @@ class WalletConnect {
 
               const chainId = payload.params[0].chainId;
 
-              await checkActiveAccountAndChainId({
+              const from = payload.params[0].from?.toLowerCase();
+              const sessionAccounts = (
+                this.walletConnector.session?.accounts ?? []
+              ).map((account) => account?.toLowerCase());
+              if (!from || !sessionAccounts.includes(from)) {
+                throw rpcErrors.invalidParams({
+                  message:
+                    'Invalid parameters: must provide a permitted Ethereum address.',
+                });
+              }
+
+              checkActiveAccountAndChainId({
                 address: payload.params[0].from,
                 chainId,
                 isWalletConnect: true,
