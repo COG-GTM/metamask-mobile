@@ -1,6 +1,5 @@
 // Third party dependencies.
 import { useNavigation } from '@react-navigation/native';
-import { isEqual } from 'lodash';
 import React, {
   useCallback,
   useContext,
@@ -42,7 +41,6 @@ import {
   getUrlObj,
   prefixUrlWithProtocol,
 } from '../../../util/browser';
-import { getActiveTabUrl } from '../../../util/transactions';
 import { Account, useAccounts } from '../../hooks/useAccounts';
 
 // Internal dependencies.
@@ -82,6 +80,8 @@ import { isUUID } from '../../../core/SDKConnect/utils/isUUID';
 import useOriginSource from '../../hooks/useOriginSource';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 import {
+  getBrowserTabUrlForOrigin,
+  isBrowserTabOriginAmbiguous,
   getCaip25PermissionsResponse,
   getRequestedCaip25CaveatValue,
 } from './utils';
@@ -153,8 +153,6 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const { toastRef } = useContext(ToastContext);
 
-  // origin is set to the last active tab url in the browser which can conflict with sdk
-  const inappBrowserOrigin: string = useSelector(getActiveTabUrl, isEqual);
   const accountsLength = useSelector(selectAccountsLength);
   const { wc2Metadata } = useSelector((state: RootState) => state.sdk);
 
@@ -168,6 +166,15 @@ const AccountConnect = (props: AccountConnectProps) => {
   };
 
   const isChannelId = isUUID(channelIdOrHostname);
+
+  // The sheet must describe the requesting site, never whichever tab happens to be visible.
+  const requestingTabUrl = useSelector(
+    (state: RootState) =>
+      getBrowserTabUrlForOrigin(state.browser, channelIdOrHostname),
+  );
+  const isRequestingTabAmbiguous = useSelector((state: RootState) =>
+    isBrowserTabOriginAmbiguous(state.browser, channelIdOrHostname),
+  );
 
   const sdkConnection = SDKConnect.getInstance().getConnection({
     channelId: channelIdOrHostname,
@@ -199,7 +206,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       dappHostname = title;
     } else if (!isChannelId && (dappUrl || channelIdOrHostname)) {
       title = prefixUrlWithProtocol(dappUrl || channelIdOrHostname);
-      dappHostname = inappBrowserOrigin;
+      dappHostname = requestingTabUrl || dappHostname;
     } else {
       title = strings('sdk.unknown');
       setIsSdkUrlUnknown(true);
@@ -208,7 +215,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     return { domainTitle: title, hostname: dappHostname };
   }, [
     isOriginWalletConnect,
-    inappBrowserOrigin,
+    requestingTabUrl,
     isOriginMMSDKRemoteConn,
     isChannelId,
     dappUrl,
@@ -265,7 +272,8 @@ const AccountConnect = (props: AccountConnectProps) => {
   }, [dappUrl, channelIdOrHostname]);
 
   const faviconSource = useFavicon(
-    inappBrowserOrigin || (!isChannelId ? channelIdOrHostname : ''),
+    requestingTabUrl ||
+      (!isChannelId && !isRequestingTabAmbiguous ? channelIdOrHostname : ''),
   );
 
   const actualIcon = useMemo(() => {

@@ -7,6 +7,8 @@ import {
 import {
   getRequestedCaip25CaveatValue,
   getCaip25PermissionsResponse,
+  getBrowserTabUrlForOrigin,
+  isBrowserTabOriginAmbiguous,
 } from './utils';
 
 describe('getRequestedCaip25CaveatValue', () => {
@@ -338,5 +340,80 @@ describe('getCaip25PermissionsResponse', () => {
         ],
       },
     });
+  });
+});
+
+describe('getBrowserTabUrlForOrigin', () => {
+  const tabs = [
+    { id: 1, url: 'https://evil.example/landing' },
+    { id: 2, url: 'https://app.uniswap.org/swap' },
+    { id: 3, url: 'http://evil.example/other' },
+  ];
+
+  it('never returns the active tab when it belongs to a different origin', () => {
+    expect(
+      getBrowserTabUrlForOrigin(
+        { activeTab: 2, tabs: tabs.slice(0, 2) },
+        'evil.example',
+      ),
+    ).toBe('https://evil.example/landing');
+  });
+
+  it('prefers the active tab when it matches the origin', () => {
+    const sameProtocolTabs = [
+      { id: 1, url: 'https://evil.example/landing' },
+      { id: 3, url: 'https://evil.example/other' },
+    ];
+    expect(
+      getBrowserTabUrlForOrigin(
+        { activeTab: 3, tabs: sameProtocolTabs },
+        'evil.example',
+      ),
+    ).toBe('https://evil.example/other');
+  });
+
+  it('keeps the active https tab when an inactive http tab shares its host', () => {
+    expect(
+      getBrowserTabUrlForOrigin({ activeTab: 1, tabs }, 'evil.example'),
+    ).toBe('https://evil.example/landing');
+    expect(
+      isBrowserTabOriginAmbiguous({ activeTab: 1, tabs }, 'evil.example'),
+    ).toBe(false);
+  });
+
+  it('keeps the active http tab when an inactive https tab shares its host', () => {
+    expect(
+      getBrowserTabUrlForOrigin({ activeTab: 3, tabs }, 'evil.example'),
+    ).toBe('http://evil.example/other');
+  });
+
+  it('returns undefined and flags ambiguity when inactive matches mix http and https', () => {
+    expect(
+      getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, 'evil.example'),
+    ).toBeUndefined();
+    expect(
+      isBrowserTabOriginAmbiguous({ activeTab: 2, tabs }, 'evil.example'),
+    ).toBe(true);
+  });
+
+  it('does not flag ambiguity when no tab matches', () => {
+    expect(
+      isBrowserTabOriginAmbiguous({ activeTab: 2, tabs }, 'other.example'),
+    ).toBe(false);
+  });
+
+  it('returns undefined when no tab matches the origin', () => {
+    expect(
+      getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, 'other.example'),
+    ).toBeUndefined();
+  });
+
+  it('returns undefined without browser state or origin', () => {
+    expect(
+      getBrowserTabUrlForOrigin(undefined, 'evil.example'),
+    ).toBeUndefined();
+    expect(
+      getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, ''),
+    ).toBeUndefined();
   });
 });

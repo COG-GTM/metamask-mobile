@@ -21,7 +21,7 @@ import WalletConnectPort from './WalletConnectPort';
 import Port from './Port';
 import { store } from '../../store';
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-import { rpcErrors } from '@metamask/rpc-errors';
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import snapMethodMiddlewareBuilder from '../Snaps/SnapsMethodMiddleware';
 import { SubjectType } from '@metamask/permission-controller';
 ///: END:ONLY_INCLUDE_IF
@@ -56,6 +56,11 @@ const legacyNetworkId = () => {
     : networkId;
 };
 
+const PERMISSION_PROMPT_METHODS = [
+  'wallet_requestPermissions',
+  'eth_requestAccounts',
+];
+
 export class BackgroundBridge extends EventEmitter {
   constructor({
     webview,
@@ -70,6 +75,7 @@ export class BackgroundBridge extends EventEmitter {
     remoteConnHost,
     isMMSDK,
     channelId,
+    isTabActive,
   }) {
     super();
     this.url = url;
@@ -84,6 +90,7 @@ export class BackgroundBridge extends EventEmitter {
     this.disconnected = false;
     this.getApprovedHosts = getApprovedHosts;
     this.channelId = channelId;
+    this.isTabActive = isTabActive;
     this.deprecatedNetworkVersions = {};
 
     this.createMiddleware = getRpcMethodMiddleware;
@@ -436,6 +443,10 @@ export class BackgroundBridge extends EventEmitter {
     // Handle unsupported RPC Methods
     engine.push(createUnsupportedMethodMiddleware());
 
+    // Hidden browser tabs stay mounted, so stop them from raising a connect
+    // prompt over whichever site the user is currently looking at.
+    engine.push(this.createInactiveTabPermissionGuard(origin));
+
     // Unrestricted/permissionless RPC method implementations.
     engine.push(
       createEip1193MethodMiddleware({
@@ -553,6 +564,26 @@ export class BackgroundBridge extends EventEmitter {
     // forward to metamask primary provider
     engine.push(providerAsMiddleware(proxyClient.provider));
     return engine;
+  }
+
+  createInactiveTabPermissionGuard(origin) {
+    return (req, _res, next, end) => {
+      if (
+        !this.isTabActive ||
+        !PERMISSION_PROMPT_METHODS.includes(req.method) ||
+        this.isTabActive()
+      ) {
+        return next();
+      }
+      // eth_requestAccounts from an already connected origin resolves without a prompt.
+      if (
+        req.method === 'eth_requestAccounts' &&
+        getPermittedAccounts(origin, { ignoreLock: true }).length > 0
+      ) {
+        return next();
+      }
+      return end(providerErrors.userRejectedRequest());
+    };
   }
 
   sendNotification(payload) {
