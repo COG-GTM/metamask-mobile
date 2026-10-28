@@ -18,6 +18,7 @@ import Text, {
 } from '../../../../component-library/components/Texts/Text';
 import { getNavigationOptionsTitle } from '../../../UI/Navbar';
 import PermissionItem from './PermissionItem';
+import { isBrowserOriginSubject } from '../../../../core/Permissions';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { RootState } from '../../../../reducers';
 import {
@@ -90,9 +91,10 @@ const PermissionsManager = (props: SDKSessionsManagerProps) => {
     Object.entries(subjects || {}).forEach(([key, value]) => {
       if (key === 'npm:@metamask/message-signing-snap') return;
 
+      const { origin } = value as { origin: string };
       if (
         !uuidRegex.test(key) &&
-        !walletConnectRegex.test((value as { origin: string }).origin)
+        (!walletConnectRegex.test(origin) || isBrowserOriginSubject(origin))
       ) {
         inAppBrowserSubjects.push(value);
       }

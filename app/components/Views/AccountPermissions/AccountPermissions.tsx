@@ -240,13 +240,13 @@ const AccountPermissions = (props: AccountPermissionsProps) => {
       params: {
         hostInfo: {
           metadata: {
-            origin: urlWithProtocol && new URL(urlWithProtocol).hostname,
+            origin: hostname,
           },
         },
         onRevokeAll: !isRenderedAsBottomSheet && onRevokeAllHandler,
       },
     });
-  }, [navigate, urlWithProtocol, isRenderedAsBottomSheet, onRevokeAllHandler]);
+  }, [navigate, hostname, isRenderedAsBottomSheet, onRevokeAllHandler]);
 
   const handleCreateAccount = useCallback(
     async () => {

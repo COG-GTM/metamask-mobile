@@ -59,4 +59,37 @@ describe('PermissionsManager', () => {
       getByText(strings('app_settings.no_permissions_desc')),
     ).toBeDefined();
   });
+
+  it('lists in-app browser origin subjects but not WalletConnect URLs', () => {
+    const makeSubject = (origin: string) => ({ origin, permissions: {} });
+    const { getByText, queryByText } = renderWithProvider(
+      <SafeAreaProvider>
+        <PermissionsManager navigation={mockNavigation} />
+      </SafeAreaProvider>,
+      {
+        state: {
+          engine: {
+            backgroundState: {
+              ...backgroundState,
+              PermissionController: {
+                subjects: {
+                  'dapp.example': makeSubject('dapp.example'),
+                  'http://dapp.example': makeSubject('http://dapp.example'),
+                  'https://dapp.example:8443': makeSubject(
+                    'https://dapp.example:8443',
+                  ),
+                  'https://wc.example/': makeSubject('https://wc.example/'),
+                },
+              },
+            } as unknown as typeof backgroundState,
+          },
+        },
+      },
+    );
+
+    expect(getByText('dapp.example')).toBeDefined();
+    expect(getByText('http://dapp.example')).toBeDefined();
+    expect(getByText('https://dapp.example:8443')).toBeDefined();
+    expect(queryByText('https://wc.example/')).toBeNull();
+  });
 });

@@ -53,6 +53,7 @@ import { MAX_MESSAGE_LENGTH } from '../../../constants/dapp';
 import sanitizeUrlInput from '../../../util/url/sanitizeUrlInput';
 import {
   getCaip25Caveat,
+  getPermissionSubjectFromUrl,
   getPermittedAccountsByHostname,
 } from '../../../core/Permissions';
 import Routes from '../../../constants/navigation/Routes';
@@ -193,10 +194,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const searchEngine = useSelector(selectSearchEngine);
   const permittedAccountsList = useSelector((state: RootState) => {
     const permissionsControllerState = selectPermissionControllerState(state);
-    const hostname = new URLParse(resolvedUrlRef.current).hostname;
     const permittedAcc = getPermittedAccountsByHostname(
       permissionsControllerState,
-      hostname,
+      getPermissionSubjectFromUrl(resolvedUrlRef.current),
     );
     return permittedAcc;
   }, isEqual);
@@ -451,7 +451,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     const hostname = new URLParse(urlToTrigger).hostname;
     const connectedAccounts = getPermittedAccountsByHostname(
       permissionsControllerState,
-      hostname,
+      getPermissionSubjectFromUrl(urlToTrigger),
     );
 
     // Check if there are any connected accounts
@@ -639,7 +639,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       return;
     }
     if (!resolvedUrlRef.current) return;
-    const hostname = new URLParse(resolvedUrlRef.current).hostname;
+    const hostname = getPermissionSubjectFromUrl(resolvedUrlRef.current);
     const permissionsControllerState =
       Engine.context.PermissionController.state;
     const permittedAccounts = getPermittedAccountsByHostname(

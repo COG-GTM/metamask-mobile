@@ -35,7 +35,10 @@ const pump = require('pump');
 const EventEmitter = require('events').EventEmitter;
 const { NOTIFICATION_NAMES } = AppConstants;
 import DevLogger from '../SDKConnect/utils/DevLogger';
-import { getPermittedAccounts } from '../Permissions';
+import {
+  getPermittedAccounts,
+  getPermissionSubjectFromUrl,
+} from '../Permissions';
 import { NetworkStatus } from '@metamask/network-controller';
 import { NETWORK_ID_LOADING } from '../redux/slices/inpageProvider';
 import createUnsupportedMethodMiddleware from '../RPCMethods/createUnsupportedMethodMiddleware';
@@ -74,7 +77,12 @@ export class BackgroundBridge extends EventEmitter {
     super();
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
-    this.hostname = new URL(url).hostname;
+    // In-app browser pages are keyed by permission subject (bare hostname only for
+    // default-port https) so http:// or other-port pages don't inherit https grants.
+    const isInAppBrowser = !isRemoteConn && !isWalletConnect && !isMMSDK;
+    this.hostname = isInAppBrowser
+      ? getPermissionSubjectFromUrl(url)
+      : new URL(url).hostname;
     this.remoteConnHost = remoteConnHost;
     this.isMainFrame = isMainFrame;
     this.isWalletConnect = isWalletConnect;

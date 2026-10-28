@@ -69,7 +69,10 @@ import { SnapSettings } from '../../Views/Snaps/SnapSettings';
 import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { getActiveTabUrl } from '../../../util/transactions';
-import { getPermittedAccountsByHostname } from '../../../core/Permissions';
+import {
+  getPermissionSubjectFromUrl,
+  getPermittedAccountsByHostname,
+} from '../../../core/Permissions';
 import { TabBarIconKey } from '../../../component-library/components/Navigation/TabBar/TabBar.types';
 import { isEqual } from 'lodash';
 import { selectProviderConfig } from '../../../selectors/networkController';
@@ -460,10 +463,9 @@ const HomeTabs = () => {
     if (!isUrl(activeTabUrl)) return [];
     try {
       const permissionsControllerState = selectPermissionControllerState(state);
-      const hostname = new URL(activeTabUrl).hostname;
       const permittedAcc = getPermittedAccountsByHostname(
         permissionsControllerState,
-        hostname,
+        getPermissionSubjectFromUrl(activeTabUrl),
       );
       return permittedAcc;
     } catch (error) {

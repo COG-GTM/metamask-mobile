@@ -29,6 +29,7 @@ import Button, {
   ButtonVariants,
 } from '../../../component-library/components/Buttons/Button';
 import { getHost } from '../../../util/browser';
+import { getPermissionSubjectFromUrl } from '../../../core/Permissions';
 import WebsiteIcon from '../WebsiteIcon';
 import useSelectedAccount from '../Tabs/TabThumbnail/useSelectedAccount';
 import styleSheet from './PermissionsSummary.styles';
@@ -81,7 +82,7 @@ const PermissionsSummary = ({
   const chainId = useSelector(selectEvmChainId);
 
   const hostname = useMemo(
-    () => new URL(currentPageInformation.url).hostname,
+    () => getPermissionSubjectFromUrl(currentPageInformation.url),
     [currentPageInformation.url],
   );
   const networkInfo = useNetworkInfo(hostname);
@@ -166,7 +167,9 @@ const PermissionsSummary = ({
                       metadata: {
                         origin:
                           currentPageInformation?.url &&
-                          new URL(currentPageInformation?.url).hostname,
+                          getPermissionSubjectFromUrl(
+                            currentPageInformation?.url,
+                          ),
                       },
                     },
                     connectionDateTime: new Date().getTime(),
