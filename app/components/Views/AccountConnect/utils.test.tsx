@@ -351,14 +351,30 @@ describe('getBrowserTabUrlForOrigin', () => {
 
   it('never returns the active tab when it belongs to a different origin', () => {
     expect(
-      getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, 'evil.example'),
+      getBrowserTabUrlForOrigin(
+        { activeTab: 2, tabs: tabs.slice(0, 2) },
+        'evil.example',
+      ),
     ).toBe('https://evil.example/landing');
   });
 
   it('prefers the active tab when it matches the origin', () => {
+    const sameProtocolTabs = [
+      { id: 1, url: 'https://evil.example/landing' },
+      { id: 3, url: 'https://evil.example/other' },
+    ];
+    expect(
+      getBrowserTabUrlForOrigin(
+        { activeTab: 3, tabs: sameProtocolTabs },
+        'evil.example',
+      ),
+    ).toBe('https://evil.example/other');
+  });
+
+  it('returns undefined when matching tabs mix http and https', () => {
     expect(
       getBrowserTabUrlForOrigin({ activeTab: 3, tabs }, 'evil.example'),
-    ).toBe('http://evil.example/other');
+    ).toBeUndefined();
   });
 
   it('returns undefined when no tab matches the origin', () => {
@@ -368,7 +384,11 @@ describe('getBrowserTabUrlForOrigin', () => {
   });
 
   it('returns undefined without browser state or origin', () => {
-    expect(getBrowserTabUrlForOrigin(undefined, 'evil.example')).toBeUndefined();
-    expect(getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, '')).toBeUndefined();
+    expect(
+      getBrowserTabUrlForOrigin(undefined, 'evil.example'),
+    ).toBeUndefined();
+    expect(
+      getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, ''),
+    ).toBeUndefined();
   });
 });
