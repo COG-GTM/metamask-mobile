@@ -54,7 +54,7 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url, extraParams = {}) {
   // Arrange
   const {
     AccountsController,
@@ -104,6 +104,7 @@ function setupBackgroundBridge(url) {
     url,
     isRemoteConn: true,
     ...defaultBridgeParams,
+    ...extraParams,
   });
 }
 
@@ -189,6 +190,81 @@ describe('BackgroundBridge', () => {
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+    });
+  });
+
+  describe('inactive tab permission guard', () => {
+    const runGuard = (bridge, method) => {
+      const next = jest.fn();
+      const end = jest.fn();
+      bridge.createInactiveTabPermissionGuard('evil.example')(
+        { method },
+        {},
+        next,
+        end,
+      );
+      return { next, end };
+    };
+
+    it.each(['wallet_requestPermissions', 'eth_requestAccounts'])(
+      'rejects %s from a hidden tab',
+      (method) => {
+        getPermittedAccounts.mockReturnValue([]);
+        const bridge = setupBackgroundBridge('https://evil.example', {
+          isTabActive: () => false,
+        });
+
+        const { next, end } = runGuard(bridge, method);
+
+        expect(next).not.toHaveBeenCalled();
+        expect(end).toHaveBeenCalledWith(
+          expect.objectContaining({ code: 4001 }),
+        );
+      },
+    );
+
+    it('allows permission prompts from the active tab', () => {
+      const bridge = setupBackgroundBridge('https://evil.example', {
+        isTabActive: () => true,
+      });
+
+      const { next, end } = runGuard(bridge, 'wallet_requestPermissions');
+
+      expect(next).toHaveBeenCalled();
+      expect(end).not.toHaveBeenCalled();
+    });
+
+    it('lets an already connected hidden tab call eth_requestAccounts', () => {
+      getPermittedAccounts.mockReturnValue(['0x1']);
+      const bridge = setupBackgroundBridge('https://evil.example', {
+        isTabActive: () => false,
+      });
+
+      const { next, end } = runGuard(bridge, 'eth_requestAccounts');
+
+      expect(getPermittedAccounts).toHaveBeenCalledWith('evil.example');
+      expect(next).toHaveBeenCalled();
+      expect(end).not.toHaveBeenCalled();
+    });
+
+    it('does not affect other methods from a hidden tab', () => {
+      const bridge = setupBackgroundBridge('https://evil.example', {
+        isTabActive: () => false,
+      });
+
+      const { next, end } = runGuard(bridge, 'eth_chainId');
+
+      expect(next).toHaveBeenCalled();
+      expect(end).not.toHaveBeenCalled();
+    });
+
+    it('is a no-op for bridges without a tab (SDK / WalletConnect)', () => {
+      const bridge = setupBackgroundBridge('https://evil.example');
+
+      const { next, end } = runGuard(bridge, 'wallet_requestPermissions');
+
+      expect(next).toHaveBeenCalled();
+      expect(end).not.toHaveBeenCalled();
     });
   });
 });

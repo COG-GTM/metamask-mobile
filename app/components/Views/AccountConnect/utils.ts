@@ -6,6 +6,7 @@ import {
   setEthAccounts,
   setPermittedEthChainIds,
 } from '@metamask/chain-agnostic-permission';
+import { getHost } from '../../../util/browser';
 
 /**
  * Takes in an incoming value and attempts to return the {@link Caip25CaveatValue}.
@@ -113,4 +114,32 @@ export function getCaip25PermissionsResponse(
       ],
     },
   };
+}
+
+interface BrowserTabsState {
+  activeTab?: number | null;
+  tabs?: { id: number; url: string }[];
+}
+
+/**
+ * Returns the URL of the in-app browser tab whose hostname matches the
+ * requesting origin, preferring the active tab. Returns undefined when no tab
+ * belongs to that origin, so callers never fall back to an unrelated tab.
+ *
+ * @param browser - The browser slice of the redux state.
+ * @param origin - The hostname that issued the permission request.
+ * @returns The matching tab URL, if any.
+ */
+export function getBrowserTabUrlForOrigin(
+  browser: BrowserTabsState | undefined,
+  origin: string,
+): string | undefined {
+  if (!origin || !browser?.tabs?.length) {
+    return undefined;
+  }
+  const matchingTabs = browser.tabs.filter(
+    ({ url }) => Boolean(url) && getHost(url) === origin,
+  );
+  const activeMatch = matchingTabs.find(({ id }) => id === browser.activeTab);
+  return (activeMatch ?? matchingTabs[0])?.url;
 }
