@@ -432,10 +432,6 @@ describe('DeeplinkProtocolService', () => {
     });
 
     it('does not run a request or replace the key when the public key differs', async () => {
-      (
-        Engine.context.PermissionController.requestPermissions as jest.Mock
-      ).mockRejectedValue(new Error('User rejected'));
-
       await service.handleConnection({
         channelId: 'acme',
         url: 'url',
@@ -452,16 +448,12 @@ describe('DeeplinkProtocolService', () => {
       expect(service.connections.acme.originatorInfo.title).toBe('Acme Swap');
       expect(
         Engine.context.PermissionController.requestPermissions,
-      ).toHaveBeenCalledWith({ origin: 'acme' }, expect.any(Object));
+      ).not.toHaveBeenCalled();
       expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
       expect(Linking.openURL).not.toHaveBeenCalled();
     });
 
     it('does not run a request when the return scheme differs', async () => {
-      (
-        Engine.context.PermissionController.requestPermissions as jest.Mock
-      ).mockRejectedValue(new Error('User rejected'));
-
       await service.handleConnection({
         channelId: 'acme',
         url: 'url',
@@ -474,6 +466,30 @@ describe('DeeplinkProtocolService', () => {
 
       expect(onMessage).not.toHaveBeenCalled();
       expect(service.connections.acme.scheme).toBe('acmeswap');
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalled();
+      expect(Linking.openURL).not.toHaveBeenCalled();
+    });
+
+    it('does not rebind an expired session to a different public key', async () => {
+      service.connections.acme.validUntil = Date.now() - 1;
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'mallory-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.dappPublicKeyByClientId.acme).toBe('acme-key');
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalled();
     });
 
     it('requires re-approval when the session has expired', async () => {
@@ -495,26 +511,32 @@ describe('DeeplinkProtocolService', () => {
       expect(onMessage).not.toHaveBeenCalled();
       expect(
         Engine.context.PermissionController.requestPermissions,
-      ).toHaveBeenCalled();
+      ).toHaveBeenCalledWith({ origin: 'acme' }, expect.any(Object));
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
     });
 
-    it('rebinds the session and runs the request once the user re-approves', async () => {
+    it('renews an expired session and runs the request once the user re-approves', async () => {
+      service.connections.acme.validUntil = Date.now() - 1;
+
       await service.handleConnection({
         channelId: 'acme',
         url: 'url',
         scheme: 'acmeswap',
-        dappPublicKey: 'rotated-key',
+        dappPublicKey: 'acme-key',
         originatorInfo,
         request,
       });
       await flush();
 
-      expect(service.dappPublicKeyByClientId.acme).toBe('rotated-key');
+      expect(service.dappPublicKeyByClientId.acme).toBe('acme-key');
+      expect(service.connections.acme.originatorInfo.title).toBe('Acme Swap');
+      expect(service.connections.acme.validUntil).toBeGreaterThan(Date.now());
       expect(SDKConnect.getInstance().addDappConnection).toHaveBeenCalledWith(
         expect.objectContaining({
           id: 'acme',
-          otherPublicKey: 'rotated-key',
+          otherPublicKey: 'acme-key',
           scheme: 'acmeswap',
+          originatorInfo: expect.objectContaining({ title: 'Acme Swap' }),
         }),
       );
       expect(onMessage).toHaveBeenCalledWith({
