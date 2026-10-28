@@ -13,11 +13,14 @@ async function removeChannel({
   channelId,
   engine,
   sendTerminate,
+  force,
   instance,
 }: {
   channelId: string;
   engine?: typeof Engine;
   sendTerminate?: boolean;
+  // Remove local state and permissions even if the peer can't be notified.
+  force?: boolean;
   instance: SDKConnect;
 }): Promise<boolean> {
   // check if it is an android sdk connection, if it doesn't belong to regular connections
@@ -40,10 +43,15 @@ async function removeChannel({
         terminate: true,
         context: 'SDKConnect::removeChannel',
       });
-      if(!terminated) {
+      if(!terminated && !force) {
         DevLogger.log(`SDKConnect::removeChannel channelId=${channelId} terminated=${terminated} try again later`);
         // don't delete channel, try again later
         return terminated;
+      }
+      if (!terminated) {
+        const connection = instance.state.connected[channelId];
+        connection.backgroundBridge?.onDisconnect();
+        connection.remote.disconnect();
       }
     } catch (err) {
       console.error(`Can't remove connection ${channelId}`, err);

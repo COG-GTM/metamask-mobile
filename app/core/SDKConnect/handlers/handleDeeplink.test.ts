@@ -37,6 +37,7 @@ describe('handleDeeplink', () => {
   const mockRevalidateChannel = jest.fn();
   const mockReconnect = jest.fn();
   const mockConnectToChannel = jest.fn();
+  const mockRemoveChannel = jest.fn();
   const mockHandleConnectionMessage =
     handleConnectionMessage as jest.MockedFunction<
       typeof handleConnectionMessage
@@ -75,6 +76,7 @@ describe('handleDeeplink', () => {
       revalidateChannel: mockRevalidateChannel,
       reconnect: mockReconnect,
       connectToChannel: mockConnectToChannel,
+      removeChannel: mockRemoveChannel,
       getConnected: mockGetConnected,
     } as unknown as SDKConnect;
 
@@ -130,7 +132,7 @@ describe('handleDeeplink', () => {
 
   it('should reconnects to an existing channel', async () => {
     mockHasInitialized.mockReturnValue(true);
-    mockGetConnections.mockReturnValue({ [channelId]: {} });
+    mockGetConnections.mockReturnValue({ [channelId]: { otherPublicKey } });
 
     // Mock the getConnected method to return a connection that's not connected
     mockGetConnected.mockReturnValue({
@@ -160,8 +162,8 @@ describe('handleDeeplink', () => {
       protocolVersion,
       initialConnection: false,
       trigger: 'deeplink',
-      updateKey: true,
     });
+    expect(mockRemoveChannel).not.toHaveBeenCalled();
   });
 
   it('should connects to a new channel if it does not exist', async () => {
@@ -212,7 +214,7 @@ describe('handleDeeplink', () => {
 
   it('should handle rpc calls for existing connections', async () => {
     mockHasInitialized.mockReturnValue(true);
-    mockGetConnections.mockReturnValue({ [channelId]: {} });
+    mockGetConnections.mockReturnValue({ [channelId]: { otherPublicKey } });
 
     sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
 
@@ -303,5 +305,218 @@ describe('handleDeeplink', () => {
     expect(mockConnectToChannel).toHaveBeenCalled();
     expect(mockDecrypt).not.toHaveBeenCalled();
     expect(handleConnectionMessage).not.toHaveBeenCalled();
+  });
+
+  describe('peer key of an approved channel', () => {
+    const approvedPublicKey = 'approvedDappPublicKey';
+    const attackerPublicKey = 'attackerPublicKey';
+
+    beforeEach(() => {
+      mockHasInitialized.mockReturnValue(true);
+      sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
+      mockGetConnected.mockReturnValue({
+        [channelId]: {
+          remote: {
+            isConnected: jest.fn().mockReturnValue(false),
+            decrypt: mockDecrypt,
+            getRPCMethodTracker: jest.fn().mockReturnValue({}),
+          },
+        },
+      });
+    });
+
+    it('does not reconnect with updateKey when the deeplink key differs from the approved key', async () => {
+      const connections: Record<string, { otherPublicKey: string }> = {
+        [channelId]: { otherPublicKey: approvedPublicKey },
+      };
+      mockGetConnections.mockReturnValue(connections);
+      mockRemoveChannel.mockImplementation(async () => {
+        delete connections[channelId];
+        return true;
+      });
+
+      await handleDeeplink({
+        sdkConnect,
+        channelId,
+        origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+        url,
+        otherPublicKey: attackerPublicKey,
+        protocolVersion,
+        context,
+        rpc,
+      });
+
+      expect(mockReconnect).not.toHaveBeenCalled();
+      expect(mockRemoveChannel).toHaveBeenCalledWith({
+        channelId,
+        sendTerminate: true,
+        force: true,
+      });
+      // Handled as a brand-new connection so the user must approve it again.
+      expect(mockConnectToChannel).toHaveBeenCalledWith({
+        id: channelId,
+        initialConnection: true,
+        origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+        originatorInfo: undefined,
+        protocolVersion,
+        trigger: 'deeplink',
+        otherPublicKey: attackerPublicKey,
+      });
+      expect(mockDecrypt).not.toHaveBeenCalled();
+      expect(handleConnectionMessage).not.toHaveBeenCalled();
+    });
+
+    it('uses the deeplink origin for a key change on a QR-code link so approval is required', async () => {
+      const connections: Record<string, { otherPublicKey: string }> = {
+        [channelId]: { otherPublicKey: approvedPublicKey },
+      };
+      mockGetConnections.mockReturnValue(connections);
+      mockRemoveChannel.mockImplementation(async () => {
+        delete connections[channelId];
+        return true;
+      });
+
+      await handleDeeplink({
+        sdkConnect,
+        channelId,
+        origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+        url: `${url}&t=q`,
+        otherPublicKey: attackerPublicKey,
+        protocolVersion,
+        context,
+      });
+
+      expect(mockConnectToChannel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          initialConnection: true,
+          origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+          trigger: undefined,
+        }),
+      );
+    });
+
+    it('requires approval without a return-to-dapp trigger for a key change from an in-app QR scan', async () => {
+      const connections: Record<string, { otherPublicKey: string }> = {
+        [channelId]: { otherPublicKey: approvedPublicKey },
+      };
+      mockGetConnections.mockReturnValue(connections);
+      mockRemoveChannel.mockImplementation(async () => {
+        delete connections[channelId];
+        return true;
+      });
+
+      await handleDeeplink({
+        sdkConnect,
+        channelId,
+        origin: AppConstants.DEEPLINKS.ORIGIN_QR_CODE,
+        url,
+        otherPublicKey: attackerPublicKey,
+        protocolVersion,
+        context,
+      });
+
+      expect(mockConnectToChannel).toHaveBeenCalledWith(
+        expect.objectContaining({
+          initialConnection: true,
+          origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+          trigger: undefined,
+        }),
+      );
+    });
+
+    it('treats a key on a channel with no stored key as a key change', async () => {
+      const connections: Record<string, object> = { [channelId]: {} };
+      mockGetConnections.mockReturnValue(connections);
+      mockRemoveChannel.mockImplementation(async () => {
+        delete connections[channelId];
+        return true;
+      });
+
+      await handleDeeplink({
+        sdkConnect,
+        channelId,
+        origin,
+        url,
+        otherPublicKey: attackerPublicKey,
+        protocolVersion,
+        context,
+      });
+
+      expect(mockReconnect).not.toHaveBeenCalled();
+      expect(mockRemoveChannel).toHaveBeenCalled();
+      expect(mockConnectToChannel).toHaveBeenCalledWith(
+        expect.objectContaining({ id: channelId, initialConnection: true }),
+      );
+    });
+
+    it('ignores the deeplink when the channel cannot be reset', async () => {
+      mockGetConnections.mockReturnValue({
+        [channelId]: { otherPublicKey: approvedPublicKey },
+      });
+      mockRemoveChannel.mockResolvedValue(false);
+
+      await handleDeeplink({
+        sdkConnect,
+        channelId,
+        origin,
+        url,
+        otherPublicKey: attackerPublicKey,
+        protocolVersion,
+        context,
+        rpc,
+      });
+
+      expect(mockReconnect).not.toHaveBeenCalled();
+      expect(mockConnectToChannel).not.toHaveBeenCalled();
+      expect(handleConnectionMessage).not.toHaveBeenCalled();
+    });
+
+    it('reconnects with the approved key and skips rpc when the deeplink has no key', async () => {
+      mockGetConnections.mockReturnValue({
+        [channelId]: { otherPublicKey: approvedPublicKey },
+      });
+
+      await handleDeeplink({
+        sdkConnect,
+        channelId,
+        origin,
+        url,
+        otherPublicKey: '',
+        protocolVersion,
+        context,
+        rpc,
+      });
+
+      expect(mockRemoveChannel).not.toHaveBeenCalled();
+      expect(mockReconnect).toHaveBeenCalledWith(
+        expect.objectContaining({ otherPublicKey: approvedPublicKey }),
+      );
+      expect(mockReconnect.mock.calls[0][0]).not.toHaveProperty('updateKey');
+      expect(mockDecrypt).not.toHaveBeenCalled();
+      expect(handleConnectionMessage).not.toHaveBeenCalled();
+    });
+
+    it('handles rpc when the deeplink carries the approved key', async () => {
+      mockGetConnections.mockReturnValue({
+        [channelId]: { otherPublicKey: approvedPublicKey },
+      });
+
+      await handleDeeplink({
+        sdkConnect,
+        channelId,
+        origin,
+        url,
+        otherPublicKey: approvedPublicKey,
+        protocolVersion,
+        context,
+        rpc,
+      });
+
+      expect(mockRemoveChannel).not.toHaveBeenCalled();
+      expect(mockReconnect).toHaveBeenCalledWith(
+        expect.objectContaining({ otherPublicKey: approvedPublicKey }),
+      );
+      expect(handleConnectionMessage).toHaveBeenCalled();
+    });
   });
 });
