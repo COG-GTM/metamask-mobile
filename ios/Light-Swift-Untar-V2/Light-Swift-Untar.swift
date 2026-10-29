@@ -15,10 +15,12 @@ public typealias Closure = (Double) -> Void
 enum UntarError: Error, LocalizedError {
   case notFound(file: String)
   case corruptFile(type: UnicodeScalar)
+  case unsafeEntryPath(name: String)
   public var errorDescription: String? {
     switch self {
     case let .notFound(file: file): return "Source file \(file) not found"
     case let .corruptFile(type: type): return "Invalid block type \(type) found"
+    case let .unsafeEntryPath(name: name): return "Unsafe tar entry path \(name)"
     }
   }
 }
@@ -46,7 +48,7 @@ public extension FileManager {
       switch type {
       case "0": // File
         let name = self.name(object: tarObject, offset: location)
-        let filePath = URL(fileURLWithPath: path).appendingPathComponent(name).path
+        let filePath = try containedEntryPath(destination: path, name: name)
         let size = self.size(object: tarObject, offset: location)
         if size == 0 { try "".write(toFile: filePath, atomically: true, encoding: .utf8) } else {
           blockCount += (size - 1) / FileManager.tarBlockSize + 1 // size / tarBlockSize rounded up
@@ -55,7 +57,8 @@ public extension FileManager {
         }
       case "5": // Directory
         let name = self.name(object: tarObject, offset: location)
-        let directoryPath = URL(fileURLWithPath: path).appendingPathComponent(name).path
+        let directoryPath = try containedEntryPath(destination: path, name: name,
+                                                   allowDestinationItself: true)
         try createDirectory(atPath: directoryPath, withIntermediateDirectories: true,
                             attributes: nil)
       case "\0": break // Null block
@@ -74,6 +77,27 @@ public extension FileManager {
       location += blockCount * FileManager.tarBlockSize
     }
     return true
+  }
+
+  // Resolves a tar entry name under the destination, rejecting absolute names,
+  // `..` segments and anything that would resolve outside the destination.
+  private func containedEntryPath(destination: String, name: String,
+                                  allowDestinationItself: Bool = false) throws -> String {
+    let components = name.split(separator: "/", omittingEmptySubsequences: false)
+    guard !name.isEmpty, !name.hasPrefix("/"), !name.contains("\0"),
+          !components.contains("..") else {
+      throw UntarError.unsafeEntryPath(name: name)
+    }
+    let baseUrl = URL(fileURLWithPath: destination, isDirectory: true).standardizedFileURL
+    let basePath = baseUrl.path
+    let resolvedPath = baseUrl.appendingPathComponent(name).standardizedFileURL.path
+    let basePrefix = basePath.hasSuffix("/") ? basePath : basePath + "/"
+    let isInside = resolvedPath.hasPrefix(basePrefix)
+    let isDestination = allowDestinationItself && resolvedPath == basePath
+    guard isInside || isDestination else {
+      throw UntarError.unsafeEntryPath(name: name)
+    }
+    return resolvedPath
   }
 
   private func type(object: Any, offset: UInt64) -> UnicodeScalar {
