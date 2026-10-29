@@ -54,7 +54,7 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url, channelId = 'clientId') {
   // Arrange
   const {
     AccountsController,
@@ -100,7 +100,7 @@ function setupBackgroundBridge(url) {
   // Act
   return new BackgroundBridge({
     webview: null,
-    channelId: 'clientId',
+    channelId,
     url,
     isRemoteConn: true,
     ...defaultBridgeParams,
@@ -189,6 +189,25 @@ describe('BackgroundBridge', () => {
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+    });
+  });
+
+  describe('internal origin spoofing', () => {
+    it('rejects requests from a peer whose channel ID claims an internal origin', async () => {
+      const bridge = setupBackgroundBridge(
+        'https:www.mock.io',
+        'MetaMask Mobile',
+      );
+      getPermittedAccounts.mockClear();
+
+      const response = await bridge.engine.handle({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'eth_accounts',
+      });
+
+      expect(response.error.code).toBe(4100);
+      expect(getPermittedAccounts).not.toHaveBeenCalled();
     });
   });
 });

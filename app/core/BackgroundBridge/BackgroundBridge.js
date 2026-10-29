@@ -21,7 +21,7 @@ import WalletConnectPort from './WalletConnectPort';
 import Port from './Port';
 import { store } from '../../store';
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-import { rpcErrors } from '@metamask/rpc-errors';
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import snapMethodMiddlewareBuilder from '../Snaps/SnapsMethodMiddleware';
 import { SubjectType } from '@metamask/permission-controller';
 ///: END:ONLY_INCLUDE_IF
@@ -36,6 +36,7 @@ const EventEmitter = require('events').EventEmitter;
 const { NOTIFICATION_NAMES } = AppConstants;
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { getPermittedAccounts } from '../Permissions';
+import { isInternalOrigin } from '../../util/transactions/internal-origins';
 import { NetworkStatus } from '@metamask/network-controller';
 import { NETWORK_ID_LOADING } from '../redux/slices/inpageProvider';
 import createUnsupportedMethodMiddleware from '../RPCMethods/createUnsupportedMethodMiddleware';
@@ -424,6 +425,26 @@ export class BackgroundBridge extends EventEmitter {
     subscriptionManager.events.on('notification', (message) =>
       engine.emit('notification', message),
     );
+
+    // BackgroundBridge only serves external requesters (browser, SDK,
+    // WalletConnect). Reject any that claim a MetaMask internal origin before
+    // handlers that trust those origins (e.g. getPermittedAccounts) run.
+    const isSpoofingInternalOrigin = [
+      origin,
+      this.hostname,
+      this.channelId,
+      this.remoteConnHost,
+    ].some(isInternalOrigin);
+    engine.push((_req, _res, next, end) => {
+      if (isSpoofingInternalOrigin) {
+        return end(
+          providerErrors.unauthorized(
+            'Requests from this origin are not allowed.',
+          ),
+        );
+      }
+      return next();
+    });
 
     // metadata
     engine.push(createOriginMiddleware({ origin }));

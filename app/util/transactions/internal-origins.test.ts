@@ -1,4 +1,5 @@
 import {
+  MAX_INTERNAL_SWAPS_ACTION_IDS,
   createInternalSwapsActionId,
   isInternalOrigin,
   isInternalSwapsTransaction,
@@ -51,5 +52,22 @@ describe('internal-origins', () => {
         createInternalSwapsActionId(),
       );
     });
+  });
+
+  it('evicts the oldest action IDs once the limit is reached', () => {
+    const oldestActionId = createInternalSwapsActionId();
+    const newerActionIds = Array.from(
+      { length: MAX_INTERNAL_SWAPS_ACTION_IDS },
+      () => createInternalSwapsActionId(),
+    );
+
+    expect(
+      isInternalSwapsTransaction(process.env.MM_FOX_CODE, oldestActionId),
+    ).toBe(false);
+    newerActionIds.forEach((actionId) =>
+      expect(
+        isInternalSwapsTransaction(process.env.MM_FOX_CODE, actionId),
+      ).toBe(true),
+    );
   });
 });

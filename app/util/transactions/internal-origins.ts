@@ -2,6 +2,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { INTERNAL_ORIGINS } from '../../constants/transaction';
 
 const SWAPS_ACTION_ID_PREFIX = 'mm-swaps-';
+// Swaps transactions are classified right after creation, so only the most
+// recent IDs need to be kept. Oldest IDs are evicted first.
+export const MAX_INTERNAL_SWAPS_ACTION_IDS = 100;
 
 // Action IDs issued in-process to the Swaps flow. Dapps cannot read or
 // set TransactionController `actionId`, so membership here is the trust
@@ -24,6 +27,10 @@ export const isInternalOrigin = (value?: string | null): boolean =>
 export const createInternalSwapsActionId = (): string => {
   const actionId = `${SWAPS_ACTION_ID_PREFIX}${uuidv4()}`;
   internalSwapsActionIds.add(actionId);
+  if (internalSwapsActionIds.size > MAX_INTERNAL_SWAPS_ACTION_IDS) {
+    const [oldestActionId] = internalSwapsActionIds;
+    internalSwapsActionIds.delete(oldestActionId);
+  }
   return actionId;
 };
 
