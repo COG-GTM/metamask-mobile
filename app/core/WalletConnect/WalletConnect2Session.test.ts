@@ -78,6 +78,17 @@ jest.mock('../../store', () => ({
 jest.mock('../RPCMethods/RPCMethodMiddleware', () => ({
   __esModule: true,
   default: () => () => ({ acknowledged: () => Promise.resolve() }),
+  checkActiveAccountAndChainId: jest.fn().mockResolvedValue(undefined),
+}));
+jest.mock('../../util/transaction-controller', () => ({
+  addTransaction: jest.fn(),
+}));
+jest.mock('../../util/networks/global-network', () => ({
+  getGlobalNetworkClientId: jest.fn().mockReturnValue('mainnet'),
+}));
+jest.mock('../../../app/lib/ppom/ppom-util', () => ({
+  __esModule: true,
+  default: { validateRequest: jest.fn() },
 }));
 jest.mock('./wc-utils', () => ({
   hideWCLoadingState: jest.fn(),
@@ -708,6 +719,96 @@ describe('WalletConnect2Session', () => {
     expect(approveRequestSpy).toHaveBeenCalledWith({
       id: switchChainRequest.id + '',
       result: true,
+    });
+  });
+  describe('eth_sendTransaction', () => {
+    const permittedAddress = '0x1234567890abcdef1234567890abcdef12345678';
+    const buildRequest = (from?: string) => ({
+      id: '77',
+      topic: mockSession.topic,
+      params: {
+        chainId: 'eip155:1',
+        request: {
+          method: 'eth_sendTransaction',
+          params: [{ from, to: '0xabc', value: '0x0' }],
+        },
+      },
+      verifyContext: { verified: { origin: 'https://example.com' } },
+    });
+
+    beforeEach(() => {
+      (session as any).topicByRequestId['77'] = mockSession.topic;
+    });
+
+    it('rejects and does not add the transaction when from is not permitted', async () => {
+      const { checkActiveAccountAndChainId } = jest.requireMock(
+        '../RPCMethods/RPCMethodMiddleware',
+      );
+      const { addTransaction } = jest.requireMock(
+        '../../util/transaction-controller',
+      );
+      const permissionError = new Error(
+        'Invalid parameters: must provide a permitted Ethereum address.',
+      );
+      checkActiveAccountAndChainId.mockRejectedValueOnce(permissionError);
+      addTransaction.mockClear();
+      const rejectRequestSpy = jest.spyOn(session, 'rejectRequest');
+      const unpermittedAddress = '0x9999999999999999999999999999999999999999';
+
+      await session.handleRequest(buildRequest(unpermittedAddress) as any);
+
+      expect(checkActiveAccountAndChainId).toHaveBeenCalledWith({
+        address: unpermittedAddress,
+        hostname: 'example.com',
+        isWalletConnect: true,
+      });
+      expect(addTransaction).not.toHaveBeenCalled();
+      expect(rejectRequestSpy).toHaveBeenCalledWith({
+        id: '77',
+        error: permissionError,
+      });
+    });
+
+    it('rejects and does not add the transaction when from is missing', async () => {
+      const { addTransaction } = jest.requireMock(
+        '../../util/transaction-controller',
+      );
+      addTransaction.mockClear();
+      const rejectRequestSpy = jest.spyOn(session, 'rejectRequest');
+
+      await session.handleRequest(buildRequest(undefined) as any);
+
+      expect(addTransaction).not.toHaveBeenCalled();
+      expect(rejectRequestSpy).toHaveBeenCalled();
+    });
+
+    it('adds the transaction when from is permitted', async () => {
+      const { checkActiveAccountAndChainId } = jest.requireMock(
+        '../RPCMethods/RPCMethodMiddleware',
+      );
+      const { addTransaction } = jest.requireMock(
+        '../../util/transaction-controller',
+      );
+      addTransaction.mockResolvedValueOnce({
+        transactionMeta: { id: 'tx-1' },
+        result: Promise.resolve('0xhash'),
+      });
+      const approveRequestSpy = jest
+        .spyOn(session, 'approveRequest')
+        .mockResolvedValue(undefined);
+
+      await session.handleRequest(buildRequest(permittedAddress) as any);
+
+      expect(checkActiveAccountAndChainId).toHaveBeenCalledWith({
+        address: permittedAddress,
+        hostname: 'example.com',
+        isWalletConnect: true,
+      });
+      expect(addTransaction).toHaveBeenCalled();
+      expect(approveRequestSpy).toHaveBeenCalledWith({
+        id: '77',
+        result: '0xhash',
+      });
     });
   });
 });
