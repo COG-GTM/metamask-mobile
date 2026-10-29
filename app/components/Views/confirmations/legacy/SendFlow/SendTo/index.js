@@ -69,6 +69,11 @@ const dummy = () => true;
 /**
  * View that wraps the wraps the "Send" screen
  */
+const toChecksumAddressIfValid = (address) =>
+  address && isValidHexAddress(address)
+    ? toChecksumAddress(address)
+    : undefined;
+
 class SendFlow extends PureComponent {
   static propTypes = {
     /**
@@ -224,7 +229,7 @@ class SendFlow extends PureComponent {
     const { toAccount } = this.state;
     const { addressBook, globalChainId, internalAccounts } = this.props;
     const networkAddressBook = addressBook[globalChainId] || {};
-    const checksummedAddress = toChecksumAddress(toAccount);
+    const checksummedAddress = toChecksumAddressIfValid(toAccount);
     return !!(
       networkAddressBook[checksummedAddress] ||
       internalAccounts.find((account) =>
@@ -379,9 +384,10 @@ class SendFlow extends PureComponent {
     const { addressBook, internalAccounts, globalChainId } = this.props;
     if (!toAccount) return;
 
-    const networkAddressBook = addressBook[globalChainId] || {};
+    const checksummedAddress = toChecksumAddressIfValid(toAccount);
+    if (!checksummedAddress) return null;
 
-    const checksummedAddress = toChecksumAddress(toAccount);
+    const networkAddressBook = addressBook[globalChainId] || {};
     const matchingAccount = internalAccounts.find((account) =>
       toLowerCaseEquals(account.address, checksummedAddress),
     );
@@ -499,7 +505,7 @@ class SendFlow extends PureComponent {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
-    const checksummedAddress = toAccount && toChecksumAddress(toAccount);
+    const checksummedAddress = toChecksumAddressIfValid(toAccount);
     const existingAddressName = this.getAddressNameFromBookOrInternalAccounts(
       toEnsAddressResolved || toAccount,
     );
