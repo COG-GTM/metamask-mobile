@@ -1,6 +1,8 @@
 import { renderScreen } from '../../../util/test/renderWithProvider';
 import QrScanner from './';
 import { backgroundState } from '../../../util/test/initial-root-state';
+import { fireEvent } from '@testing-library/react-native';
+import Routes from '../../../constants/navigation/Routes';
 
 const initialState = {
   engine: {
@@ -142,6 +144,7 @@ jest.mock('../../../util/navigation/navUtils', () => ({
 
 describe('NftDetails', () => {
   beforeEach(() => {
+    mockNavigate.mockClear();
     mockUseParamsValues = {
       collectible: TEST_COLLECTIBLE,
     };
@@ -153,5 +156,61 @@ describe('NftDetails', () => {
       { state: initialState },
     );
     expect(toJSON()).toMatchSnapshot();
+  });
+
+  it('opens marketplace sources in the main browser', () => {
+    const { getByTestId } = renderScreen(
+      QrScanner,
+      { name: 'NftDetails' },
+      { state: initialState },
+    );
+    fireEvent.press(getByTestId('nft-details-top-bid-source'));
+    expect(mockNavigate).toHaveBeenCalledWith(Routes.BROWSER.HOME, {
+      screen: Routes.BROWSER.VIEW,
+      params: expect.objectContaining({
+        newTabUrl: TEST_COLLECTIBLE.topBid.source.url,
+      }),
+    });
+    expect(mockNavigate).not.toHaveBeenCalledWith(
+      'Webview',
+      expect.anything(),
+    );
+  });
+
+  it('does not render links for unsafe marketplace URLs', () => {
+    mockUseParamsValues = {
+      collectible: {
+        ...TEST_COLLECTIBLE,
+        lastSale: {
+          orderSource: 'customscheme://x',
+          price: { amount: { native: 0.1, usd: 300 } },
+        },
+        topBid: {
+          ...TEST_COLLECTIBLE.topBid,
+          source: {
+            ...TEST_COLLECTIBLE.topBid.source,
+            url: 'javascript:alert(1)',
+          },
+        },
+        collection: {
+          ...TEST_COLLECTIBLE.collection,
+          floorAsk: {
+            ...TEST_COLLECTIBLE.collection.floorAsk,
+            source: {
+              ...TEST_COLLECTIBLE.collection.floorAsk.source,
+              url: 'http://evil.example',
+            },
+          },
+        },
+      } as unknown as typeof TEST_COLLECTIBLE,
+    };
+    const { queryByTestId } = renderScreen(
+      QrScanner,
+      { name: 'NftDetails' },
+      { state: initialState },
+    );
+    expect(queryByTestId('nft-details-top-bid-source')).toBeNull();
+    expect(queryByTestId('nft-details-last-sale-source')).toBeNull();
+    expect(queryByTestId('nft-details-floor-price-source')).toBeNull();
   });
 });
