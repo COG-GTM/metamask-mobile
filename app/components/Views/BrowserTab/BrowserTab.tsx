@@ -1100,11 +1100,20 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       // previous origin nor a pending load-start check can bind to this document
       const navigationId = detachBridgeForNavigation();
       const isAllowed = await isAllowedOrigin(committedOrigin);
-      if (isAllowed && navigationId === navigationIdRef.current) {
-        approveBridgeOrigin(committedOrigin);
+      if (navigationId !== navigationIdRef.current) return;
+      if (!isAllowed) {
+        // Blocked pages reached without a load start (e.g. history) stay without a bridge
+        handleNotAllowedUrl(committedOrigin);
+        return;
       }
+      approveBridgeOrigin(committedOrigin);
     },
-    [isAllowedOrigin, approveBridgeOrigin, detachBridgeForNavigation],
+    [
+      isAllowedOrigin,
+      approveBridgeOrigin,
+      detachBridgeForNavigation,
+      handleNotAllowedUrl,
+    ],
   );
 
   /**

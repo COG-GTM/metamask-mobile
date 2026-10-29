@@ -420,4 +420,43 @@ describe('BrowserTab background bridge origin binding', () => {
     expect(mockBridges[1].url).toBe(ORIGIN_A);
     expect(mockBridges[1].onMessage).toHaveBeenCalledTimes(1);
   });
+
+  it('never binds a bridge to a phishing-blocked page reached via back/forward', async () => {
+    const webview = await renderWebView();
+    await loadStart(webview, `${ORIGIN_A}/page`);
+    postMessage(webview, { frameOrigin: ORIGIN_A, isMainFrame: true });
+    const previousBridge = mockBridges[0];
+
+    mockGetPhishingTestResultAsync.mockResolvedValue({
+      result: true,
+      name: 'blocklist',
+    } as Awaited<ReturnType<typeof getPhishingTestResultAsync>>);
+    await act(async () => {
+      webview.props.onNavigationStateChange({
+        url: `${ATTACKER}/page`,
+        title: '',
+        loading: false,
+        canGoBack: false,
+        canGoForward: true,
+        navigationType: 'backforward',
+      });
+    });
+    await act(async () => {
+      webview.props.onLoadEnd({
+        nativeEvent: {
+          url: `${ATTACKER}/page`,
+          title: '',
+          loading: false,
+          canGoBack: false,
+          canGoForward: true,
+        },
+      });
+    });
+
+    expect(previousBridge.onDisconnect).toHaveBeenCalled();
+    postMessage(webview, { frameOrigin: ATTACKER, isMainFrame: true });
+    postMessage(webview, { frameOrigin: ORIGIN_A, isMainFrame: true });
+    expect(mockBridges).toHaveLength(1);
+    expect(previousBridge.onMessage).toHaveBeenCalledTimes(1);
+  });
 });
