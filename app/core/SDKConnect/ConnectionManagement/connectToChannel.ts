@@ -170,7 +170,15 @@ async function connectToChannel({
           error,
         );
         // first needs to connect without key exchange to send the event
-        await instance.state.connected[id].remote.reject({ channelId: id });
+        // The channel may already have been removed (e.g. user disconnected during approval).
+        try {
+          await connected.remote.reject({ channelId: id });
+        } catch (rejectError) {
+          DevLogger.log(
+            `SDKConnect::connectToChannel - reject failed channelId=${id}`,
+            rejectError,
+          );
+        }
         // Send rejection event without awaiting
         SendAnalytics(
           { id, event: TrackingEvents.REJECTED, ...originatorInfo },
