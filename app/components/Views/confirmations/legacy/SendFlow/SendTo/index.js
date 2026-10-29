@@ -67,12 +67,19 @@ import { selectAddressBook } from '../../../../../../selectors/addressBookContro
 const dummy = () => true;
 
 /**
- * View that wraps the wraps the "Send" screen
+ * Checksums an address only when it is a complete, valid hex address.
+ *
+ * @param {string} [address] - Raw recipient input, possibly partial (e.g. `0x12`) or an ENS name.
+ * @returns {string|undefined} The checksummed address, or `undefined` for empty or invalid input.
  */
 const toChecksumAddressIfValid = (address) =>
   address && isValidHexAddress(address)
     ? toChecksumAddress(address)
     : undefined;
+
+/**
+ * View that wraps the wraps the "Send" screen
+ */
 
 class SendFlow extends PureComponent {
   static propTypes = {
