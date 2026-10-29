@@ -28,7 +28,7 @@ import { MetaMetricsEvents } from '../../../core/Analytics';
 import { AccountOverviewSelectorsIDs } from '../../../../e2e/selectors/Browser/AccountOverview.selectors';
 import { useMetrics } from '../../../components/hooks/useMetrics';
 import { useNetworkInfo } from '../../../selectors/selectedNetworkController';
-import UrlParser from 'url-parse';
+import { getBrowserPermissionSubject } from '../../../core/Permissions';
 import { selectEvmChainId } from '../../../selectors/networkController';
 
 const styles = StyleSheet.create({
@@ -147,7 +147,7 @@ const AccountRightButton = ({
   const currentUrl = route.params?.url;
   let hostname;
   if (currentUrl) {
-    hostname = new UrlParser(currentUrl)?.hostname;
+    hostname = getBrowserPermissionSubject(currentUrl);
   }
 
   const { networkName, networkImageSource } = useNetworkInfo(hostname);

@@ -27,7 +27,10 @@ import createStyles from './TabThumbnail.styles';
 import { TabThumbnailProps } from './TabThumbnail.types';
 import { useSelector } from 'react-redux';
 import { selectPermissionControllerState } from '../../../../selectors/snaps/permissionController';
-import { getPermittedAccountsByHostname } from '../../../../core/Permissions';
+import {
+  getBrowserPermissionSubject,
+  getPermittedAccountsByHostname,
+} from '../../../../core/Permissions';
 import { useAccounts } from '../../../hooks/useAccounts';
 import { useFavicon } from '../../../hooks/useFavicon';
 
@@ -51,7 +54,7 @@ const TabThumbnail = ({
   const permittedAccountsList = useSelector(selectPermissionControllerState);
   const permittedAccountsByHostname = getPermittedAccountsByHostname(
     permittedAccountsList,
-    tabTitle,
+    getBrowserPermissionSubject(tab.url),
   );
   const activeAddress = permittedAccountsByHostname[0];
   const { evmAccounts: accounts } = useAccounts({});

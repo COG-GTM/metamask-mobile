@@ -54,7 +54,7 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url, overrides = {}) {
   // Arrange
   const {
     AccountsController,
@@ -104,6 +104,7 @@ function setupBackgroundBridge(url) {
     url,
     isRemoteConn: true,
     ...defaultBridgeParams,
+    ...overrides,
   });
 }
 
@@ -179,6 +180,38 @@ describe('BackgroundBridge', () => {
         expect.any(Function),
       );
     });
+
+    it.each([
+      ['https://dapp.example/path', 'dapp.example'],
+      ['http://dapp.example/path', 'http://dapp.example'],
+      ['https://dapp.example:8443/path', 'https://dapp.example:8443'],
+    ])(
+      'keys in-app browser permissions for %s by %s',
+      async (url, expectedOrigin) => {
+        setupBackgroundBridge(url, {
+          isRemoteConn: false,
+          channelId: undefined,
+        });
+        const eip1193MethodMiddlewareHooks =
+          createEip1193MethodMiddleware.mock.calls[0][0];
+        const ethAccountsMethodMiddlewareHooks =
+          createEthAccountsMethodMiddleware.mock.calls[0][0];
+
+        eip1193MethodMiddlewareHooks.getAccounts();
+        ethAccountsMethodMiddlewareHooks.getAccounts();
+        expect(getPermittedAccounts).toHaveBeenNthCalledWith(1, expectedOrigin);
+        expect(getPermittedAccounts).toHaveBeenNthCalledWith(2, expectedOrigin);
+
+        eip1193MethodMiddlewareHooks.requestPermissionsForOrigin({});
+        expect(PermissionController.requestPermissions).toHaveBeenCalledWith(
+          { origin: expectedOrigin },
+          {},
+        );
+        expect(
+          PermissionController.createPermissionMiddleware,
+        ).toHaveBeenCalledWith({ origin: expectedOrigin });
+      },
+    );
 
     it('creates EthAccountsMethodMiddleware with expected hooks', async () => {
       const url = 'https:www.mock.io';

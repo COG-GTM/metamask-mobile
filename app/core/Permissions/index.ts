@@ -8,6 +8,8 @@ import { CaveatConstraint, PermissionDoesNotExistError } from '@metamask/permiss
 import { captureException } from '@sentry/react-native';
 import { toHex } from '@metamask/controller-utils';
 
+export { getBrowserPermissionSubject } from './getBrowserPermissionSubject';
+
 const INTERNAL_ORIGINS = [process.env.MM_FOX_CODE, TransactionTypes.MMM];
 
 // TODO: Replace "any" with type

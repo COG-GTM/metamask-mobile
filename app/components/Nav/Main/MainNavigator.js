@@ -69,7 +69,10 @@ import { SnapSettings } from '../../Views/Snaps/SnapSettings';
 import Routes from '../../../constants/navigation/Routes';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { getActiveTabUrl } from '../../../util/transactions';
-import { getPermittedAccountsByHostname } from '../../../core/Permissions';
+import {
+  getBrowserPermissionSubject,
+  getPermittedAccountsByHostname,
+} from '../../../core/Permissions';
 import { TabBarIconKey } from '../../../component-library/components/Navigation/TabBar/TabBar.types';
 import { isEqual } from 'lodash';
 import { selectProviderConfig } from '../../../selectors/networkController';
@@ -77,7 +80,6 @@ import { selectAccountsLength } from '../../../selectors/accountTrackerControlle
 import isUrl from 'is-url';
 import SDKSessionsManager from '../../Views/SDK/SDKSessionsManager/SDKSessionsManager';
 import PermissionsManager from '../../Views/Settings/PermissionsSettings/PermissionsManager';
-import URL from 'url-parse';
 import Logger from '../../../util/Logger';
 import { getDecimalChainId } from '../../../util/networks';
 import { useMetrics } from '../../../components/hooks/useMetrics';
@@ -460,10 +462,9 @@ const HomeTabs = () => {
     if (!isUrl(activeTabUrl)) return [];
     try {
       const permissionsControllerState = selectPermissionControllerState(state);
-      const hostname = new URL(activeTabUrl).hostname;
       const permittedAcc = getPermittedAccountsByHostname(
         permissionsControllerState,
-        hostname,
+        getBrowserPermissionSubject(activeTabUrl),
       );
       return permittedAcc;
     } catch (error) {
