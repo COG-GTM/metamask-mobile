@@ -37,6 +37,7 @@ describe('downloadFile', () => {
   let openURLSpy: jest.SpyInstance;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true);
     openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);

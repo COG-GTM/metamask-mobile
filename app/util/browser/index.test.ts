@@ -213,6 +213,7 @@ describe('Browser utils :: promptToOpenExternalLink', () => {
   };
 
   beforeEach(() => {
+    jest.clearAllMocks();
     alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
     jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true);
     openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
@@ -271,6 +272,23 @@ describe('Browser utils :: promptToOpenExternalLink', () => {
 
     expect(await result).toBe(true);
     expect(openURLSpy).toHaveBeenCalledWith(url);
+  });
+
+  it('resolves false when the OS cannot open the allowed link', async () => {
+    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(false);
+    const result = promptToOpenExternalLink('unknown-scheme://x');
+    pressButton(1);
+
+    expect(await result).toBe(false);
+    expect(openURLSpy).not.toHaveBeenCalled();
+  });
+
+  it('resolves false when opening the allowed link fails', async () => {
+    openURLSpy.mockRejectedValue(new Error('failed'));
+    const result = promptToOpenExternalLink('metamask://connect');
+    pressButton(1);
+
+    expect(await result).toBe(false);
   });
 });
 

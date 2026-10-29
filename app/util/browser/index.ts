@@ -127,19 +127,21 @@ export const getAlertMessage = (
  * Executes it when a positive response is received.
  *
  * @param url - String containing url
- * @returns Promise<any>
+ * @returns Promise resolving to true if the OS opened the url
  */
-export const allowLinkOpen = (url: string) =>
+export const allowLinkOpen = (url: string): Promise<boolean> =>
   Linking.canOpenURL(url)
-    .then((supported) => {
+    .then(async (supported) => {
       if (supported) {
-        return Linking.openURL(url);
+        await Linking.openURL(url);
+        return true;
       }
       console.warn(`Can't open url: ${url}`);
-      return null;
+      return false;
     })
     .catch((e) => {
       console.warn(`Error opening URL: ${e}`);
+      return false;
     });
 
 /**
@@ -148,7 +150,7 @@ export const allowLinkOpen = (url: string) =>
  * every external open triggered by web content.
  *
  * @param url - String containing url
- * @returns Promise resolving to true if the user allowed the link to open
+ * @returns Promise resolving to true if the user allowed the link and it opened
  */
 export const promptToOpenExternalLink = (url: string): Promise<boolean> =>
   new Promise((resolve) => {
@@ -165,7 +167,7 @@ export const promptToOpenExternalLink = (url: string): Promise<boolean> =>
         {
           text: strings('browser.protocol_alert_options.allow'),
           onPress: () => {
-            allowLinkOpen(url).finally(() => resolve(true));
+            allowLinkOpen(url).then(resolve);
           },
           style: 'default',
         },
