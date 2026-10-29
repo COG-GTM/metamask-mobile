@@ -13,6 +13,10 @@ declare module 'react-native-minimizer';
 declare module 'react-native-tcp-socket';
 
 declare module 'xhr2';
+
+declare module 'content-hash' {
+  export function encode(codec: string, value: string): string;
+}
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -41,7 +41,6 @@ import URLParse from 'url-parse';
 import WebviewErrorComponent from '../../UI/WebviewError';
 import { addToHistory, addToWhitelist } from '../../../actions/browser';
 import Device from '../../../util/device';
-import AppConstants from '../../../core/AppConstants';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import OnboardingWizard from '../../UI/OnboardingWizard';
 import DrawerStatusTracker from '../../../core/DrawerStatusTracker';
@@ -103,7 +102,7 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import { getEnsContentGatewayUrl, getMaskedUrl, isENSUrl } from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -136,7 +135,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   addToBrowserHistory,
   bookmarks,
   initialUrl,
-  ipfsGateway,
   newTab,
   homePageUrl,
   activeChainId,
@@ -383,22 +381,20 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           name: hostname,
           chainId: activeChainId,
         });
-        if (type === 'ipfs-ns') {
-          gatewayUrl = `${ipfsGateway}${hash}${pathname || '/'}${query || ''}`;
+        gatewayUrl = getEnsContentGatewayUrl({
+          type,
+          hash,
+          hostname,
+          pathname,
+          query,
+        });
+        if (type === 'ipfs-ns' && gatewayUrl) {
           const response = await fetch(gatewayUrl);
           const statusCode = response.status;
           if (statusCode >= 400) {
             Logger.log('Status code ', statusCode, gatewayUrl);
             return null;
           }
-        } else if (type === 'swarm-ns') {
-          gatewayUrl = `${AppConstants.SWARM_DEFAULT_GATEWAY_URL}${hash}${
-            pathname || '/'
-          }${query || ''}`;
-        } else if (type === 'ipns-ns') {
-          gatewayUrl = `${AppConstants.IPNS_DEFAULT_GATEWAY_URL}${hostname}${
-            pathname || '/'
-          }${query || ''}`;
         }
         return {
           url: gatewayUrl,
@@ -442,7 +438,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         goBack();
       }
     },
-    [goBack, ipfsGateway, setIpfsBannerVisible, activeChainId],
+    [goBack, setIpfsBannerVisible, activeChainId],
   );
 
   const triggerDappViewedEvent = useCallback((urlToTrigger: string) => {

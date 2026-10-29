@@ -16,8 +16,10 @@ export default {
   TX_CHECK_BACKGROUND_FREQUENCY: 30000,
   IPFS_OVERRIDE_PARAM: 'mm_override',
   IPFS_DEFAULT_GATEWAY_URL: 'https://dweb.link/ipfs/',
-  IPNS_DEFAULT_GATEWAY_URL: 'https://gateway.pinata.cloud/ipns/',
-  SWARM_DEFAULT_GATEWAY_URL: 'https://swarm-gateways.net/bzz:/',
+  // ENS content is loaded through subdomain gateways so each site gets its own origin
+  IPFS_SUBDOMAIN_GATEWAY_HOST: 'ipfs.dweb.link',
+  IPNS_SUBDOMAIN_GATEWAY_HOST: 'ipns.dweb.link',
+  SWARM_SUBDOMAIN_GATEWAY_HOST: 'bzz.link',
   supportedTLDs: ['eth', 'xyz', 'test'],
   MAX_PUSH_NOTIFICATION_PROMPT_TIMES: 2,
   SECURITY_ALERTS_API: {
