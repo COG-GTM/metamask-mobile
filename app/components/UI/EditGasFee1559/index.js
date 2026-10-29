@@ -146,6 +146,7 @@ const createStyles = (colors) =>
 
 /**
  * The EditGasFee1559 component will be deprecated in favor of EditGasFee1559Update as part of the gas polling refactor code that moves gas fee modifications to `app/core/GasPolling`. When the refactoring is completed, the EditGasFee1559Update will be renamed EditGasFee1559 and this component will be removed. The EditGasFee1559Update is currently being used in the Update Transaction(Speed Up/Cancel) flow.
+ * @param {{ selected?: any, gasFee?: any, gasOptions?: any, onChange?: any, onCancel?: any, onSave?: any, gasFeeNative?: any, gasFeeConversion?: any, gasFeeMaxNative?: any, gasFeeMaxConversion?: any, maxPriorityFeeNative?: any, maxPriorityFeeConversion?: any, maxFeePerGasNative?: any, maxFeePerGasConversion?: any, primaryCurrency?: any, chainId?: any, timeEstimate?: any, timeEstimateColor?: any, timeEstimateId?: any, error?: any, warning?: any, dappSuggestedGas?: any, ignoreOptions?: any, updateOption?: any, extendOptions?: any, recommended?: any, warningMinimumEstimateOption?: any, suggestedEstimateOption?: any, onUpdatingValuesStart?: any, onUpdatingValuesEnd?: any, animateOnChange?: any, isAnimating?: any, analyticsParams?: any, view: any }} props
  */
 
 const EditGasFee1559 = ({
@@ -171,12 +172,12 @@ const EditGasFee1559 = ({
   error,
   warning,
   dappSuggestedGas,
-  ignoreOptions,
+  ignoreOptions = [],
   updateOption,
   extendOptions = {},
   recommended,
-  warningMinimumEstimateOption,
-  suggestedEstimateOption,
+  warningMinimumEstimateOption = AppConstants.GAS_OPTIONS.LOW,
+  suggestedEstimateOption = AppConstants.GAS_OPTIONS.MEDIUM,
   animateOnChange,
   isAnimating,
   onUpdatingValuesStart,
@@ -848,12 +849,6 @@ const EditGasFee1559 = ({
       </ScrollView>
     </View>
   );
-};
-
-EditGasFee1559.defaultProps = {
-  ignoreOptions: [],
-  warningMinimumEstimateOption: AppConstants.GAS_OPTIONS.LOW,
-  suggestedEstimateOption: AppConstants.GAS_OPTIONS.MEDIUM,
 };
 
 EditGasFee1559.propTypes = {

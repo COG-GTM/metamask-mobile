@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import { Reason, SecurityAlertResponse } from '../../legacy/components/BlockaidBanner/BlockaidBanner.types';
 import { RowAlertKey } from '../../components/UI/info-row/alert-row/constants';
@@ -110,9 +111,13 @@ describe('useBlockaidAlerts', () => {
     const { result } = renderHook(() => useBlockaidAlerts());
 
     const selectAlert = result.current[0];
-    const onContactUsClicked = selectAlert.content?.props.onContactUsClicked;
+    const onContactUsClicked = (
+      selectAlert.content as
+        | ReactElement<{ onContactUsClicked?: () => void }>
+        | undefined
+    )?.props.onContactUsClicked;
 
-    onContactUsClicked();
+    onContactUsClicked?.();
 
     expect(mockTrackBlockaidAlertLinkClickedEvent).toHaveBeenCalledTimes(1);
   });

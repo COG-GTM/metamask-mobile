@@ -479,8 +479,7 @@ exports[`SecuritySettings should render correctly 1`] = `
                 style={
                   [
                     {
-                      "height": 31,
-                      "width": 51,
+                      "alignSelf": "flex-start",
                     },
                     [
                       {
@@ -631,8 +630,7 @@ exports[`SecuritySettings should render correctly 1`] = `
           style={
             [
               {
-                "height": 31,
-                "width": 51,
+                "alignSelf": "flex-start",
               },
               [
                 {
@@ -769,8 +767,7 @@ exports[`SecuritySettings should render correctly 1`] = `
               style={
                 [
                   {
-                    "height": 31,
-                    "width": 51,
+                    "alignSelf": "flex-start",
                   },
                   {
                     "backgroundColor": "#b7bbc866",
@@ -1247,8 +1244,7 @@ exports[`SecuritySettings should render correctly 1`] = `
               style={
                 [
                   {
-                    "height": 31,
-                    "width": 51,
+                    "alignSelf": "flex-start",
                   },
                   [
                     {
@@ -1367,8 +1363,7 @@ exports[`SecuritySettings should render correctly 1`] = `
               style={
                 [
                   {
-                    "height": 31,
-                    "width": 51,
+                    "alignSelf": "flex-start",
                   },
                   [
                     {
@@ -1550,8 +1545,7 @@ exports[`SecuritySettings should render correctly 1`] = `
                   style={
                     [
                       {
-                        "height": 31,
-                        "width": 51,
+                        "alignSelf": "flex-start",
                       },
                       [
                         {
@@ -1669,8 +1663,7 @@ exports[`SecuritySettings should render correctly 1`] = `
                   style={
                     [
                       {
-                        "height": 31,
-                        "width": 51,
+                        "alignSelf": "flex-start",
                       },
                       [
                         {
@@ -1788,8 +1781,7 @@ exports[`SecuritySettings should render correctly 1`] = `
                   style={
                     [
                       {
-                        "height": 31,
-                        "width": 51,
+                        "alignSelf": "flex-start",
                       },
                       [
                         {
@@ -1859,8 +1851,7 @@ exports[`SecuritySettings should render correctly 1`] = `
               style={
                 [
                   {
-                    "height": 31,
-                    "width": 51,
+                    "alignSelf": "flex-start",
                   },
                   [
                     {
@@ -1994,8 +1985,7 @@ exports[`SecuritySettings should render correctly 1`] = `
               style={
                 [
                   {
-                    "height": 31,
-                    "width": 51,
+                    "alignSelf": "flex-start",
                   },
                   [
                     {
@@ -2080,8 +2070,7 @@ exports[`SecuritySettings should render correctly 1`] = `
                 style={
                   [
                     {
-                      "height": 31,
-                      "width": 51,
+                      "alignSelf": "flex-start",
                     },
                     [
                       {
@@ -2166,8 +2155,7 @@ exports[`SecuritySettings should render correctly 1`] = `
               style={
                 [
                   {
-                    "height": 31,
-                    "width": 51,
+                    "alignSelf": "flex-start",
                   },
                   [
                     {
@@ -2308,8 +2296,7 @@ exports[`SecuritySettings should render correctly 1`] = `
                 style={
                   [
                     {
-                      "height": 31,
-                      "width": 51,
+                      "alignSelf": "flex-start",
                     },
                     [
                       {
@@ -2411,8 +2398,7 @@ exports[`SecuritySettings should render correctly 1`] = `
               style={
                 [
                   {
-                    "height": 31,
-                    "width": 51,
+                    "alignSelf": "flex-start",
                   },
                   [
                     {
@@ -2534,8 +2520,7 @@ exports[`SecuritySettings should render correctly 1`] = `
               style={
                 [
                   {
-                    "height": 31,
-                    "width": 51,
+                    "alignSelf": "flex-start",
                   },
                   [
                     {

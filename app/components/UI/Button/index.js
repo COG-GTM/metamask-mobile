@@ -26,6 +26,7 @@ const createStyles = (colors) =>
  * {@link https://github.com/MetaMask/metamask-mobile/tree/main/app/component-library/components/Buttons/Button/README.md}
  * If you would like to help with the replacement of the old `Button` component, please submit a pull request against this GitHub issue:
  * {@link https://github.com/MetaMask/metamask-mobile/issues/8108}
+ * @param {{ children?: any, style?: any, onPress?: any } & Record<string, any>} props
  */
 const Button = (props) => {
   const { colors } = useTheme();

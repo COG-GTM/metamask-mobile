@@ -27,7 +27,7 @@ exports[`Transactions should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <Connect(QRHardwareAwareness)
     loading={false}
     transactions={
       [

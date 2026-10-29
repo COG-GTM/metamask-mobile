@@ -9,6 +9,7 @@ import {
   View,
   Alert,
   BackHandler,
+  NativeEventSubscription,
   ImageSourcePropType,
   KeyboardAvoidingView,
   Platform,
@@ -178,7 +179,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const loadingUrlRef = useRef('');
   const submittedUrlRef = useRef('');
   const titleRef = useRef<string>('');
-  const iconRef = useRef<ImageSourcePropType | undefined>();
+  const iconRef = useRef<ImageSourcePropType | undefined>(undefined);
   const sessionENSNamesRef = useRef<SessionENSNames>({});
   const ensIgnoreListRef = useRef<string[]>([]);
   const backgroundBridgeRef = useRef<{
@@ -187,7 +188,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     sendNotification: (payload: unknown) => void;
     onDisconnect: () => void;
     onMessage: (message: Record<string, unknown>) => void;
-  }>();
+  } | undefined>(undefined);
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
   const searchEngine = useSelector(selectSearchEngine);
@@ -542,24 +543,27 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       return true;
     };
 
-    BackHandler.addEventListener('hardwareBackPress', handleAndroidBackPress);
+    const backHandlerSubscriptions: NativeEventSubscription[] = [];
+    const addBackHandler = () => {
+      backHandlerSubscriptions.push(
+        BackHandler.addEventListener(
+          'hardwareBackPress',
+          handleAndroidBackPress,
+        ),
+      );
+    };
+    const removeBackHandlers = () => {
+      backHandlerSubscriptions.splice(0).forEach((sub) => sub.remove());
+    };
+
+    addBackHandler();
 
     // Handle hardwareBackPress event only for browser, not components rendered on top
-    navigation.addListener('focus', () => {
-      BackHandler.addEventListener('hardwareBackPress', handleAndroidBackPress);
-    });
-    navigation.addListener('blur', () => {
-      BackHandler.removeEventListener(
-        'hardwareBackPress',
-        handleAndroidBackPress,
-      );
-    });
+    navigation.addListener('focus', addBackHandler);
+    navigation.addListener('blur', removeBackHandlers);
 
     return function cleanup() {
-      BackHandler.removeEventListener(
-        'hardwareBackPress',
-        handleAndroidBackPress,
-      );
+      removeBackHandlers();
     };
   }, [goBack, isTabActive, navigation]);
 

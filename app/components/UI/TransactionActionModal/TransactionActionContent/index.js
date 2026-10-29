@@ -57,9 +57,10 @@ const createStyles = (colors) =>
 
 /**
  * View that renders a modal to be used for speed up or cancel transaction modal
+ * @param {{ confirmDisabled?: any, feeText?: any, titleText?: any, gasTitleText?: any, descriptionText?: any }} props
  */
 export default function TransactionActionContent({
-  confirmDisabled,
+  confirmDisabled = false,
   feeText,
   titleText,
   gasTitleText,
@@ -84,16 +85,6 @@ export default function TransactionActionContent({
     </View>
   );
 }
-
-TransactionActionContent.defaultProps = {
-  cancelButtonMode: 'neutral',
-  confirmButtonMode: 'warning',
-  cancelText: strings('action_view.cancel'),
-  confirmText: strings('action_view.confirm'),
-  confirmDisabled: false,
-  displayCancelButton: true,
-  displayConfirmButton: true,
-};
 
 TransactionActionContent.propTypes = {
   /**

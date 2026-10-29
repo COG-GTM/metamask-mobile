@@ -27,6 +27,8 @@ module.exports = function (baseConfig) {
         assetExts: assetExts.filter((ext) => ext !== 'svg'),
         sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
         resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
+        // RN 0.79+ enables package exports by default, which resolves Node builds (e.g. axios) instead of browser builds
+        unstable_enablePackageExports: false,
         extraNodeModules: {
           ...defaultConfig.resolver.extraNodeModules,
           crypto: require.resolve('react-native-crypto'),

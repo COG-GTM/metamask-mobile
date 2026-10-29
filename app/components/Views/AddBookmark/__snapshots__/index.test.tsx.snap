@@ -152,6 +152,11 @@ exports[`AddBookmark should render correctly 1`] = `
               keyboardAppearance="light"
               onChangeText={[Function]}
               placeholder=""
+              ref={
+                {
+                  "current": null,
+                }
+              }
               returnKeyType="done"
               style={
                 {

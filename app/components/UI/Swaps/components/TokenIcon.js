@@ -63,6 +63,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ medium?: any, big?: any, biggest?: any, style?: any, testID?: any } & Record<string, any>} props
+ */
 const EmptyIcon = ({ medium, big, biggest, style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -90,6 +93,9 @@ EmptyIcon.propTypes = {
   testID: PropTypes.string,
 };
 
+/**
+ * @param {{ symbol?: any, icon?: any, medium?: any, big?: any, biggest?: any, style?: any, testID?: any }} props
+ */
 function TokenIcon({ symbol, icon, medium, big, biggest, style, testID }) {
   const [showFallback, setShowFallback] = useState(false);
   const { colors } = useTheme();

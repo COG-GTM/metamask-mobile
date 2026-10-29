@@ -131,7 +131,7 @@ exports[`Network Selector renders correctly 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -139,24 +139,8 @@ exports[`Network Selector renders correctly 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -164,7 +148,6 @@ exports[`Network Selector renders correctly 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -241,6 +224,9 @@ exports[`Network Selector renders correctly 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -339,6 +325,9 @@ exports[`Network Selector renders correctly 1`] = `
                       />
                       <View
                         collapsable={false}
+                        enabled={true}
+                        handlerTag={-1}
+                        handlerType="PanGestureHandler"
                         onGestureHandlerEvent={[Function]}
                         onGestureHandlerStateChange={[Function]}
                         style={
@@ -495,6 +484,8 @@ exports[`Network Selector renders correctly 1`] = `
                           >
                             <RCTScrollView
                               collapsable={false}
+                              handlerTag={-1}
+                              handlerType="NativeViewGestureHandler"
                               keyboardShouldPersistTaps="handled"
                               onGestureHandlerEvent={[Function]}
                               onGestureHandlerStateChange={[Function]}
@@ -1250,8 +1241,7 @@ exports[`Network Selector renders correctly 1`] = `
                                     style={
                                       [
                                         {
-                                          "height": 31,
-                                          "width": 51,
+                                          "alignSelf": "flex-start",
                                         },
                                         {
                                           "backgroundColor": "#b7bbc866",
@@ -1318,8 +1308,8 @@ exports[`Network Selector renders correctly 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -1455,7 +1445,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -1463,24 +1453,8 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -1488,7 +1462,6 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -1565,6 +1538,9 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -1663,6 +1639,9 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                       />
                       <View
                         collapsable={false}
+                        enabled={true}
+                        handlerTag={-1}
+                        handlerType="PanGestureHandler"
                         onGestureHandlerEvent={[Function]}
                         onGestureHandlerStateChange={[Function]}
                         style={
@@ -1822,6 +1801,8 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                           >
                             <RCTScrollView
                               collapsable={false}
+                              handlerTag={-1}
+                              handlerType="NativeViewGestureHandler"
                               keyboardShouldPersistTaps="handled"
                               onGestureHandlerEvent={[Function]}
                               onGestureHandlerStateChange={[Function]}
@@ -4156,8 +4137,7 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
                                     style={
                                       [
                                         {
-                                          "height": 31,
-                                          "width": 51,
+                                          "alignSelf": "flex-start",
                                         },
                                         {
                                           "backgroundColor": "#b7bbc866",
@@ -4224,8 +4204,8 @@ exports[`Network Selector renders correctly when network UI redesign is enabled 
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;

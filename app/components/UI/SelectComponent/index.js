@@ -6,11 +6,11 @@ import {
   Text,
   View,
   TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 import { fontStyles, baseStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Modal from 'react-native-modal';
-import dismissKeyboard from 'react-native/Libraries/Utilities/dismissKeyboard';
 import IconCheck from 'react-native-vector-icons/MaterialCommunityIcons';
 import Device from '../../../util/device';
 import { ThemeContext, mockTheme } from '../../../util/theme';
@@ -133,7 +133,7 @@ export default class SelectComponent extends PureComponent {
   };
 
   showPicker = () => {
-    dismissKeyboard();
+    Keyboard.dismiss();
     this.setState({ pickerVisible: true });
     Device.isIos() &&
       // If there are more options than 13 (number of items

@@ -27,7 +27,7 @@ exports[`ManualBackupStep2 should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <Connect(ManualBackupStep2)
     route={
       {
         "params": {

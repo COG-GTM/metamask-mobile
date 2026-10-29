@@ -36,7 +36,7 @@ exports[`Component ContractBoxBase should render correctly 1`] = `
         variant="Token"
       />
     </View>
-    <Component
+    <Pressable
       onPress={[Function]}
     >
       <Text
@@ -54,7 +54,7 @@ exports[`Component ContractBoxBase should render correctly 1`] = `
       >
         0x29900...da21a
       </Text>
-    </Component>
+    </Pressable>
   </View>
   <View
     style={
@@ -65,7 +65,7 @@ exports[`Component ContractBoxBase should render correctly 1`] = `
       }
     }
   >
-    <Component
+    <Pressable
       onPress={[Function]}
       style={
         {
@@ -79,7 +79,7 @@ exports[`Component ContractBoxBase should render correctly 1`] = `
         name="Copy"
         size="24"
       />
-    </Component>
+    </Pressable>
   </View>
 </View>
 `;

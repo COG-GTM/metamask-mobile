@@ -29,7 +29,7 @@ export default function NetworkFilterBottomSheet({
 }: {
   onFilterControlsBottomSheetPress: (option: FilterOption) => void;
   setOpenNetworkFilter: (open: boolean) => void;
-  sheetRef: React.RefObject<BottomSheetRef>;
+  sheetRef: React.RefObject<BottomSheetRef | null>;
 }) {
   const { styles } = useStyles(styleSheet, {});
 

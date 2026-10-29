@@ -6,6 +6,9 @@ import PropTypes from 'prop-types';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
+/**
+ * @param {{ timeEstimateId?: any, isVisible?: any, onHideModal?: any }} props
+ */
 const TimeEstimateInfoModal = ({ timeEstimateId, isVisible, onHideModal }) => (
   <InfoModal
     isVisible={isVisible}

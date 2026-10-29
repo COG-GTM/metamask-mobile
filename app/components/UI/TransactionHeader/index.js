@@ -85,6 +85,7 @@ const createStyles = (colors) =>
 
 /**
  * PureComponent that renders the transaction header used for signing, granting permissions and sending
+ * @param {{ currentPageInformation?: any, networkType?: any, nickname?: any } & Record<string, any>} props
  */
 const TransactionHeader = (props) => {
   const { colors } = useTheme();

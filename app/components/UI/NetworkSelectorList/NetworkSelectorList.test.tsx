@@ -1,10 +1,13 @@
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  openURL: jest.fn(),
-  canOpenURL: jest.fn(),
-  getInitialURL: jest.fn(),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    openURL: jest.fn(),
+    canOpenURL: jest.fn(),
+    getInitialURL: jest.fn(),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 // Third party dependencies.
 import React from 'react';

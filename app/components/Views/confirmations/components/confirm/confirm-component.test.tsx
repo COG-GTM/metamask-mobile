@@ -37,13 +37,16 @@ jest.mock('@react-navigation/native', () => ({
   }),
 }));
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  openURL: jest.fn(),
-  canOpenURL: jest.fn(),
-  getInitialURL: jest.fn(),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    openURL: jest.fn(),
+    canOpenURL: jest.fn(),
+    getInitialURL: jest.fn(),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 jest.mock('react-native-safe-area-context', () => {
   const inset = { top: 0, right: 0, bottom: 0, left: 0 };

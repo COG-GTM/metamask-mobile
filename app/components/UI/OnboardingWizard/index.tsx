@@ -136,7 +136,7 @@ const OnboardingWizard = ({
   }
 
   const onboardingWizardNavigator = (s: number) => {
-    const steps: Record<number, JSX.Element> = {
+    const steps: Record<number, React.JSX.Element> = {
       1: <Step1 onClose={closeOnboardingWizard} />,
       2: <Step2 coachmarkRef={coachmarkRef} onClose={closeOnboardingWizard} />,
       3: <Step3 coachmarkRef={coachmarkRef} onClose={closeOnboardingWizard} />,

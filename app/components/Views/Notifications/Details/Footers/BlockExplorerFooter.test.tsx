@@ -14,9 +14,12 @@ import { ModalFooterType } from '../../../../../util/notifications/constants/con
 import MOCK_NOTIFICATIONS from '../../../../UI/Notification/__mocks__/mock_notifications';
 import { MetricsEventBuilder } from '../../../../../core/Analytics/MetricsEventBuilder';
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    openURL: jest.fn(),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 jest.mock('react-redux', () => ({
   useSelector: jest.fn(),
 }));
@@ -43,9 +46,12 @@ const trackEventMock = jest.fn();
   getMetaMetricsId: jest.fn(),
 });
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    openURL: jest.fn(),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 describe('BlockExplorerFooter', () => {
   beforeEach(() => {

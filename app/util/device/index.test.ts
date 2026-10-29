@@ -4,6 +4,8 @@ describe('Device', () => {
   describe('isAndroid + isIos', () => {
     it('should return expected values when Platform.OS is "android"', () => {
       jest.doMock('react-native/Libraries/Utilities/Platform', () => ({
+        __esModule: true,
+        default: { OS: 'android' },
         OS: 'android',
       }));
       expect(Device.isAndroid()).toBe(true);

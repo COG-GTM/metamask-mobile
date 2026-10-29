@@ -131,7 +131,7 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -139,24 +139,8 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -164,7 +148,6 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -241,6 +224,9 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -311,9 +297,12 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -475,6 +464,11 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -690,8 +684,8 @@ exports[`Amount converts ERC-20 token value to USD 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -827,7 +821,7 @@ exports[`Amount converts ETH to USD 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -835,24 +829,8 @@ exports[`Amount converts ETH to USD 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -860,7 +838,6 @@ exports[`Amount converts ETH to USD 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -937,6 +914,9 @@ exports[`Amount converts ETH to USD 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -1007,9 +987,12 @@ exports[`Amount converts ETH to USD 1`] = `
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -1171,6 +1154,11 @@ exports[`Amount converts ETH to USD 1`] = `
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -1386,8 +1374,8 @@ exports[`Amount converts ETH to USD 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -1523,7 +1511,7 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -1531,24 +1519,8 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -1556,7 +1528,6 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -1633,6 +1604,9 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -1703,9 +1677,12 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -1884,6 +1861,11 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -2099,8 +2081,8 @@ exports[`Amount converts USD to ERC-20 token value 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -2236,7 +2218,7 @@ exports[`Amount converts USD to ETH 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -2244,24 +2226,8 @@ exports[`Amount converts USD to ETH 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -2269,7 +2235,6 @@ exports[`Amount converts USD to ETH 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -2346,6 +2311,9 @@ exports[`Amount converts USD to ETH 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -2416,9 +2384,12 @@ exports[`Amount converts USD to ETH 1`] = `
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -2597,6 +2568,11 @@ exports[`Amount converts USD to ETH 1`] = `
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -2812,8 +2788,8 @@ exports[`Amount converts USD to ETH 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -2949,7 +2925,7 @@ exports[`Amount displays correct balance 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -2957,24 +2933,8 @@ exports[`Amount displays correct balance 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -2982,7 +2942,6 @@ exports[`Amount displays correct balance 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -3059,6 +3018,9 @@ exports[`Amount displays correct balance 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -3129,9 +3091,12 @@ exports[`Amount displays correct balance 1`] = `
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -3293,6 +3258,11 @@ exports[`Amount displays correct balance 1`] = `
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -3507,8 +3477,8 @@ exports[`Amount displays correct balance 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -3644,7 +3614,7 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -3652,24 +3622,8 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -3677,7 +3631,6 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -3754,6 +3707,9 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -3824,9 +3780,12 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -3988,6 +3947,11 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -4202,8 +4166,8 @@ exports[`Amount does not show a warning when conversion rate is available 1`] = 
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -4339,7 +4303,7 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -4347,24 +4311,8 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -4372,7 +4320,6 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -4449,6 +4396,9 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -4519,9 +4469,12 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -4863,8 +4816,8 @@ exports[`Amount does not show a warning when transfering collectibles 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -5000,7 +4953,7 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -5008,24 +4961,8 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -5033,7 +4970,6 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -5110,6 +5046,9 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={5}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -5180,9 +5119,12 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -5344,6 +5286,11 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -5554,8 +5501,8 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -5691,7 +5638,7 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -5699,24 +5646,8 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -5724,7 +5655,6 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -5801,6 +5731,9 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={6}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -5871,9 +5804,12 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -6035,6 +5971,11 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -6245,8 +6186,8 @@ exports[`Amount proceeds if balance is sufficient while on Native primary curren
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -6382,7 +6323,7 @@ exports[`Amount renders correctly 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -6390,24 +6331,8 @@ exports[`Amount renders correctly 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -6415,7 +6340,6 @@ exports[`Amount renders correctly 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -6492,6 +6416,9 @@ exports[`Amount renders correctly 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -6562,9 +6489,12 @@ exports[`Amount renders correctly 1`] = `
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -6802,6 +6732,11 @@ exports[`Amount renders correctly 1`] = `
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -6935,8 +6870,8 @@ exports[`Amount renders correctly 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -7072,7 +7007,7 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -7080,24 +7015,8 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -7105,7 +7024,6 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -7182,6 +7100,9 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -7252,9 +7173,12 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -7492,6 +7416,11 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -7625,8 +7554,8 @@ exports[`Amount shows a warning when conversion rate is not available 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -7762,7 +7691,7 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -7770,24 +7699,8 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -7795,7 +7708,6 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -7872,6 +7784,9 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={7}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -7942,9 +7857,12 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
                   >
                     <RNCSafeAreaView
                       edges={
-                        [
-                          "bottom",
-                        ]
+                        {
+                          "bottom": "additive",
+                          "left": "off",
+                          "right": "off",
+                          "top": "off",
+                        }
                       }
                       style={
                         {
@@ -8106,6 +8024,11 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
                                     onChangeText={[Function]}
                                     placeholder="0"
                                     placeholderTextColor="#9ca1af"
+                                    ref={
+                                      {
+                                        "current": null,
+                                      }
+                                    }
                                     style={
                                       {
                                         "color": "#121314",
@@ -8357,8 +8280,8 @@ exports[`Amount shows an error message if balance is insufficient 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;

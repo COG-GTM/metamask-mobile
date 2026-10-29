@@ -55,10 +55,13 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ onCancel: any, onConfirm: any, modalVisible: any, onRequestClose: any, value?: any, onChangeText: any }} props
+ */
 const HintModal = ({
   onCancel,
   onConfirm,
-  modalVisible,
+  modalVisible = false,
   onRequestClose,
   value,
   onChangeText,
@@ -122,11 +125,5 @@ const propTypes = {
   value: PropTypes.string,
   onChangeText: PropTypes.func.isRequired,
 };
-const defaultProps = {
-  modalVisible: false,
-};
-
 HintModal.propTypes = propTypes;
-HintModal.defaultProps = defaultProps;
-
 export default HintModal;

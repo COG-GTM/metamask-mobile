@@ -502,7 +502,7 @@ describe('EarnInputView', () => {
 
         fireEvent.press(getByText(strings('stake.review')));
 
-        jest.useFakeTimers({ legacyFakeTimers: true });
+        jest.useRealTimers();
         // Wait for approval to be processed
         await flushPromises();
 

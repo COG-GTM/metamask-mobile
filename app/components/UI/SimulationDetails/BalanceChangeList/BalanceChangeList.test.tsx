@@ -49,7 +49,7 @@ describe('BalanceChangeList', () => {
       'simulation-details-balance-change-list-container',
     );
 
-    expect(container.findAllByType(BalanceChangeRow)).toHaveLength(
+    expect(container.findAllByType(BalanceChangeRow as React.ElementType)).toHaveLength(
       balanceChangesMock.length,
     );
   });
@@ -96,7 +96,7 @@ describe('BalanceChangeList', () => {
       'simulation-details-balance-change-list-container',
     );
 
-    const rows = container.findAllByType(BalanceChangeRow);
+    const rows = container.findAllByType(BalanceChangeRow as React.ElementType);
 
     expect(rows).toHaveLength(multipleBalanceChangesMock.length);
     expect(rows[0].props.label).toBe(headingMock);

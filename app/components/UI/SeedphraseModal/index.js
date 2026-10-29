@@ -51,6 +51,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ showWhatIsSeedphraseModal?: any, hideWhatIsSeedphrase?: any }} props
+ */
 const SeedphraseModal = ({
   showWhatIsSeedphraseModal,
   hideWhatIsSeedphrase,

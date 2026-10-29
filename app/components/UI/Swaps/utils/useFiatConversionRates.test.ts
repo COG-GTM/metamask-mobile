@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '../../../../util/test/react-hooks-compat';
 import { useFiatConversionRates } from './useFiatConversionRates';
 import { safeToChecksumAddress } from '../../../../util/address';
 import { fetchTokenContractExchangeRates } from '@metamask/assets-controllers';

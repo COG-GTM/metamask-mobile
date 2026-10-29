@@ -7,7 +7,6 @@ exports[`PhishingModal should match snapshot when showPhishingModal is true 1`] 
   animationType="none"
   deviceHeight={null}
   deviceWidth={null}
-  hardwareAccelerated={false}
   hideModalContentWhileAnimating={false}
   onBackdropPress={[Function]}
   onModalHide={[Function]}

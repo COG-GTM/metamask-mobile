@@ -42,6 +42,7 @@ import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder
 /**
  * View that's shown during the second step of
  * the backup seed phrase flow
+ * @param {{ navigation?: any, route?: any, appTheme?: any }} props
  */
 const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
   const [seedPhraseHidden, setSeedPhraseHidden] = useState(true);

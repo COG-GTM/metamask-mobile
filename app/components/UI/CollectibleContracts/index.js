@@ -154,6 +154,7 @@ const debouncedNavigation = debounce((navigation, collectible) => {
 /**
  * View that renders a list of CollectibleContract
  * ERC-721 and ERC-1155
+ * @param {{ networkType?: any, chainId?: any, selectedAddress?: any, collectibleContracts?: any, collectibles?: any, isNftFetchingProgress?: any, navigation?: any, favoriteCollectibles?: any, removeFavoriteCollectible?: any, useNftDetection?: any, isIpfsGatewayEnabled?: any, displayNftMedia?: any }} props
  */
 const CollectibleContracts = ({
   selectedAddress,

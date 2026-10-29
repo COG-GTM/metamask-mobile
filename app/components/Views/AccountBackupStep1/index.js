@@ -126,6 +126,7 @@ const createStyles = (colors) =>
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
+ * @param {{ navigation?: any, route?: any, setOnboardingWizardStep?: any } & Record<string, any>} props
  */
 const AccountBackupStep1 = (props) => {
   const { navigation, route } = props;
@@ -163,11 +164,14 @@ const AccountBackupStep1 = (props) => {
       const hardwareBackPress = () => true;
 
       // Add event listener
-      BackHandler.addEventListener('hardwareBackPress', hardwareBackPress);
+      const backHandlerSubscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        hardwareBackPress,
+      );
 
       // Remove event listener on cleanup
       return () => {
-        BackHandler.removeEventListener('hardwareBackPress', hardwareBackPress);
+        backHandlerSubscription.remove();
       };
     },
     [], // Run only when component mounts

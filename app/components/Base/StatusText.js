@@ -14,6 +14,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * @param {{ testID?: any } & Record<string, any>} props
+ */
 export const ConfirmedText = ({testID, ...props}) => (
   <Text
     testID={testID}
@@ -27,6 +30,9 @@ ConfirmedText.propTypes = {
   testID: PropTypes.string,
 };
 
+/**
+ * @param {{ testID?: any } & Record<string, any>} props
+ */
 export const PendingText = ({testID, ...props}) => {
   const { colors } = useTheme();
   return (
@@ -42,6 +48,9 @@ PendingText.propTypes = {
   testID: PropTypes.string,
 };
 
+/**
+ * @param {{ testID?: any } & Record<string, any>} props
+ */
 export const FailedText = ({testID, ...props} ) => {
   const { colors } = useTheme();
   return (
@@ -57,7 +66,10 @@ FailedText.propTypes = {
   testID: PropTypes.string,
 };
 
-function StatusText({ status, context, testID, ...props }) {
+/**
+ * @param {{ status: any, context?: any, testID?: any } & Record<string, any>} props
+ */
+function StatusText({ status, context = 'transaction', testID, ...props }) {
   switch (status) {
     case 'Confirmed':
     case 'confirmed':
@@ -106,10 +118,6 @@ function StatusText({ status, context, testID, ...props }) {
       );
   }
 }
-
-StatusText.defaultProps = {
-  context: 'transaction',
-};
 
 StatusText.propTypes = {
   status: PropTypes.string.isRequired,

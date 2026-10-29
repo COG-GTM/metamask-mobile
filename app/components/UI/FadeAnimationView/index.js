@@ -4,6 +4,9 @@ import PropTypes from 'prop-types';
 
 const TIME = 3900; // 3900/6 = 650 for each
 
+/**
+ * @param {{ children?: any, style?: any, animationTime?: any, valueToWatch?: any, onAnimationStart?: any, onAnimationEnd?: any, animateOnChange?: any }} props
+ */
 const FadeAnimationView = ({
   children,
   style,

@@ -86,7 +86,7 @@ export const ppomInit = async () => {
 };
 
 export class PPOMView extends Component {
-  webViewRef: RefObject<WebView> = React.createRef();
+  webViewRef: RefObject<WebView | null> = React.createRef();
   invoke = createInvoke(() => this.webViewRef?.current);
 
   // TODO: Replace "any" with type

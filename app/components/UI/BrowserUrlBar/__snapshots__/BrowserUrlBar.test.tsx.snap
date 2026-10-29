@@ -41,6 +41,11 @@ exports[`BrowserUrlBar should render correctly 1`] = `
         onSubmitEditing={[Function]}
         placeholder="Search by token, site or address"
         placeholderTextColor="#9ca1af"
+        ref={
+          {
+            "current": null,
+          }
+        }
         returnKeyType="go"
         selectTextOnFocus={true}
         style={
@@ -204,6 +209,11 @@ exports[`BrowserUrlBar should render correctly when url bar is not focused 1`] =
         onSubmitEditing={[Function]}
         placeholder="Search by token, site or address"
         placeholderTextColor="#9ca1af"
+        ref={
+          {
+            "current": null,
+          }
+        }
         returnKeyType="go"
         selectTextOnFocus={true}
         style={
@@ -246,6 +256,11 @@ exports[`BrowserUrlBar should render correctly when url bar is not focused 1`] =
       testID="navbar-account-button"
     >
       <TextInput
+        ref={
+          {
+            "current": null,
+          }
+        }
         style={
           {
             "height": 0,

@@ -9,12 +9,15 @@ const mockOpenURL = jest.fn(() => Promise.resolve());
 const mockAddEventListener = jest.fn();
 const mockRemoveEventListener = jest.fn();
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: mockOpenURL,
-  canOpenURL: mockCanOpenURL,
-  addEventListener: mockAddEventListener,
-  removeEventListener: mockRemoveEventListener,
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    openURL: mockOpenURL,
+    canOpenURL: mockCanOpenURL,
+    addEventListener: mockAddEventListener,
+    removeEventListener: mockRemoveEventListener,
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 describe('PhishingModal', () => {
   it('should render correctly', () => {

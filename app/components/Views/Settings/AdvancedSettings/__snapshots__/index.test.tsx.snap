@@ -194,8 +194,7 @@ exports[`AdvancedSettings should render correctly 1`] = `
                 style={
                   [
                     {
-                      "height": 31,
-                      "width": 51,
+                      "alignSelf": "flex-start",
                     },
                     [
                       {
@@ -299,8 +298,7 @@ exports[`AdvancedSettings should render correctly 1`] = `
                 style={
                   [
                     {
-                      "height": 31,
-                      "width": 51,
+                      "alignSelf": "flex-start",
                     },
                     [
                       {
@@ -385,8 +383,7 @@ exports[`AdvancedSettings should render correctly 1`] = `
                 style={
                   [
                     {
-                      "height": 31,
-                      "width": 51,
+                      "alignSelf": "flex-start",
                     },
                     [
                       {
@@ -471,8 +468,7 @@ exports[`AdvancedSettings should render correctly 1`] = `
                 style={
                   [
                     {
-                      "height": 31,
-                      "width": 51,
+                      "alignSelf": "flex-start",
                     },
                     [
                       {
@@ -558,8 +554,7 @@ exports[`AdvancedSettings should render correctly 1`] = `
                 style={
                   [
                     {
-                      "height": 31,
-                      "width": 51,
+                      "alignSelf": "flex-start",
                     },
                     [
                       {

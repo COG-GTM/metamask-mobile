@@ -5,6 +5,9 @@ import { KEYS } from './constants';
 import useCurrency from './useCurrency';
 import { ViewPropTypes } from 'deprecated-react-native-prop-types';
 
+/**
+ * @param {{ onChange?: any, currency?: any, decimals?: any, value?: any, style?: any, digitButtonStyle?: any, digitTextStyle?: any, periodButtonStyle?: any, periodTextStyle?: any, deleteButtonStyle?: any, deleteIcon?: any }} props
+ */
 function KeypadComponent({
   onChange,
   value,

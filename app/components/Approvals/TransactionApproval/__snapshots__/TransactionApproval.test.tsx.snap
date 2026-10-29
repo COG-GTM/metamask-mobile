@@ -15,14 +15,14 @@ exports[`TransactionApproval renders QR signing modal if signing QR object 1`] =
 `;
 
 exports[`TransactionApproval renders approval component if transaction type is dapp 1`] = `
-<Component
+<Connect(Component)
   dappTransactionModalVisible={true}
   hideModal={[Function]}
 />
 `;
 
 exports[`TransactionApproval renders approve component if transaction type is transaction 1`] = `
-<Component
+<Connect(Component)
   hideModal={[Function]}
   modalVisible={true}
 />

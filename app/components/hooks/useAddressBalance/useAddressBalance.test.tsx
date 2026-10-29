@@ -129,7 +129,7 @@ describe('useAddressBalance', () => {
   });
 
   it('should render balance if asset is undefined', () => {
-    let asset: Asset;
+    let asset!: Asset;
     let res = renderHook(() => useAddressBalance(asset, MOCK_ADDRESS_1), {
       wrapper: Wrapper,
     });

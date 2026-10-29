@@ -93,6 +93,11 @@ exports[`SnapUIInput handles disabled input 1`] = `
                   onBlur={[Function]}
                   onChangeText={[Function]}
                   onFocus={[Function]}
+                  ref={
+                    {
+                      "current": null,
+                    }
+                  }
                   style={
                     {
                       "backgroundColor": "#ffffff",
@@ -218,6 +223,11 @@ exports[`SnapUIInput renders with initial value 1`] = `
                   onBlur={[Function]}
                   onChangeText={[Function]}
                   onFocus={[Function]}
+                  ref={
+                    {
+                      "current": null,
+                    }
+                  }
                   style={
                     {
                       "backgroundColor": "#ffffff",

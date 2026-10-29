@@ -27,6 +27,6 @@ exports[`CollectibleContracts should render correctly 1`] = `
     }
   }
 >
-  <Component />
+  <Connect(CollectibleContracts) />
 </ContextProvider>
 `;

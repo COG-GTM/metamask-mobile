@@ -97,6 +97,9 @@ const createStyles = (colors, shadows) =>
     },
   });
 
+/**
+ * @param {{ incompleteText?: any, completeText?: any, onComplete?: any, onSwipeChange?: any, disabled?: any }} props
+ */
 function SliderButton({
   incompleteText,
   completeText,

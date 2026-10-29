@@ -9,14 +9,14 @@ import {
 import { getTotalMemorySync } from 'react-native-device-info';
 
 interface AnimatedFoxProps {
-  bgColor: string;
+  bgColor?: string;
 }
 const round = (value: number, decimals: number): number =>
   Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
 
 const styles = { flex: 1 };
 
-const AnimatedFox: React.FC<AnimatedFoxProps> = ({ bgColor }) => {
+const AnimatedFox: React.FC<AnimatedFoxProps> = ({ bgColor = 'white' }) => {
   const webviewRef = useRef<WebView>(null);
   const position = useRef({ beta: 0, gamma: 0 });
 
@@ -1572,10 +1572,6 @@ const AnimatedFox: React.FC<AnimatedFoxProps> = ({ bgColor }) => {
       injectedJavaScript={`document.body.style.background="${bgColor}"`}
     />
   );
-};
-
-AnimatedFox.defaultProps = {
-  bgColor: 'white',
 };
 
 export default AnimatedFox;

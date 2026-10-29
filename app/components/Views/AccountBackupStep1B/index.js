@@ -199,6 +199,7 @@ const createStyles = (colors) =>
 /**
  * View that's shown during the first step of
  * the backup seed phrase flow
+ * @param {{ navigation?: any, route?: any } & Record<string, any>} props
  */
 const AccountBackupStep1B = (props) => {
   const { navigation, route } = props;

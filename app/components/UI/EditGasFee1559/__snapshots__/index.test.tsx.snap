@@ -37,7 +37,6 @@ exports[`EditGasFee1559 should render correctly 1`] = `
           >
             <TouchableOpacity>
               <Icon
-                allowFontScaling={false}
                 color="#121314"
                 name="arrow-back"
                 size={24}
@@ -50,7 +49,6 @@ exports[`EditGasFee1559 should render correctly 1`] = `
               <Component />
             </Text>
             <Icon
-              allowFontScaling={false}
               color="#ffffff"
               name="arrow-back"
               size={24}
@@ -208,9 +206,7 @@ exports[`EditGasFee1559 should render correctly 1`] = `
                   }
                 >
                   <Icon
-                    allowFontScaling={false}
                     name="arrow-up"
-                    size={12}
                   />
                 </Text>
               </TouchableOpacity>
@@ -259,7 +255,6 @@ exports[`EditGasFee1559 should render correctly 1`] = `
                           onPress={[Function]}
                         >
                           <Icon
-                            allowFontScaling={false}
                             name="information"
                             size={14}
                             style={
@@ -315,7 +310,6 @@ exports[`EditGasFee1559 should render correctly 1`] = `
                           onPress={[Function]}
                         >
                           <Icon
-                            allowFontScaling={false}
                             name="information"
                             size={14}
                             style={
@@ -392,7 +386,6 @@ exports[`EditGasFee1559 should render correctly 1`] = `
                           onPress={[Function]}
                         >
                           <Icon
-                            allowFontScaling={false}
                             name="information"
                             size={14}
                             style={
@@ -449,17 +442,7 @@ exports[`EditGasFee1559 should render correctly 1`] = `
               </Text>
             </TouchableOpacity>
             <StyledButton
-              disabledContainerStyle={
-                {
-                  "opacity": 0.6,
-                }
-              }
               onPress={[Function]}
-              styleDisabled={
-                {
-                  "opacity": 0.6,
-                }
-              }
               type="confirm"
             >
               Save

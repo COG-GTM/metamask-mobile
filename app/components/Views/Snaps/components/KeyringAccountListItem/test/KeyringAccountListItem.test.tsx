@@ -6,9 +6,12 @@ import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { KEYRING_ACCOUNT_LIST_ITEM, KEYRING_ACCOUNT_LIST_ITEM_BUTTON } from '../KeyringAccountListItem.constants';
 import { MOCK_ADDRESS_1, createMockSnapInternalAccount } from '../../../../../../util/test/accountsControllerTestUtils';
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    openURL: jest.fn(),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 describe('KeyringAccountListItem', () => {
 

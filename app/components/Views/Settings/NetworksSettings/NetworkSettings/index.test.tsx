@@ -332,7 +332,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapper2.instance() as NetworkSettings;
+    const instance = wrapper2.instance() as unknown as NetworkSettings;
     instance.componentDidMount();
 
     expect(wrapper2.state('blockExplorerUrl')).toBe('https://etherscan.io');
@@ -378,7 +378,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapperComponent.instance() as NetworkSettings;
+    const instance = wrapperComponent.instance() as unknown as NetworkSettings;
     instance.componentDidMount();
 
     expect(wrapperComponent.state('blockExplorerUrl')).toBe(
@@ -428,7 +428,7 @@ describe('NetworkSettings', () => {
       .find(NetworkSettings)
       .dive();
 
-    const instance = wrapper2.instance() as NetworkSettings;
+    const instance = wrapper2.instance() as unknown as NetworkSettings;
     instance.componentDidMount();
 
     expect(wrapper2.state('blockExplorerUrl')).toBe('https://etherscan.io');

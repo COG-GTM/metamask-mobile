@@ -93,6 +93,12 @@ jest.mock('../../../core/Engine', () => {
 });
 
 const mockInitialState = {
+  banners: {
+    dismissedBanners: [],
+  },
+  browser: {
+    tabs: [],
+  },
   networkOnboarded: {
     networkOnboardedState: {
       '0x1': true,
@@ -207,19 +213,16 @@ describe('Wallet', () => {
     jest.clearAllMocks();
   });
   it('should render correctly', () => {
-    //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
     const wrapper = render(Wallet);
     expect(wrapper.toJSON()).toMatchSnapshot();
   });
 
   it('should render correctly when there are no detected tokens', () => {
-    //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
     const wrapper = renderWithoutDetectedTokens(Wallet);
     expect(wrapper.toJSON()).toMatchSnapshot();
   });
 
   it('should render scan qr icon', () => {
-    //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
     render(Wallet);
     const scanButton = screen.getByTestId(
       WalletViewSelectorsIDs.WALLET_SCAN_BUTTON,
@@ -227,12 +230,10 @@ describe('Wallet', () => {
     expect(scanButton).toBeDefined();
   });
   it('should render ScrollableTabView', () => {
-    //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
     render(Wallet);
     expect(ScrollableTabView).toHaveBeenCalled();
   });
   it('should render the address copy button', () => {
-    //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
     render(Wallet);
     const addressCopyButton = screen.getByTestId(
       WalletViewSelectorsIDs.NAVBAR_ADDRESS_COPY_BUTTON,
@@ -240,7 +241,6 @@ describe('Wallet', () => {
     expect(addressCopyButton).toBeDefined();
   });
   it('should render the account picker', () => {
-    //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
     render(Wallet);
     const accountPicker = screen.getByTestId(
       WalletViewSelectorsIDs.ACCOUNT_ICON,
@@ -251,7 +251,6 @@ describe('Wallet', () => {
   it('Should add tokens to state automatically when there are detected tokens', () => {
     const mockedAddTokens = jest.mocked(Engine.context.TokensController);
 
-    //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
     render(Wallet);
 
     expect(mockedAddTokens.addTokens).toHaveBeenCalledTimes(1);
@@ -263,7 +262,6 @@ describe('Wallet', () => {
       .mockImplementation((callback: (state: unknown) => unknown) =>
         callback(mockInitialState),
       );
-    //@ts-expect-error we are ignoring the navigation params on purpose
     const wrapper = render(Wallet);
     expect(wrapper.toJSON()).toMatchSnapshot();
   });

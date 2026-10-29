@@ -243,6 +243,11 @@ exports[`AddAsset component renders collectible view correctly 1`] = `
                 onSubmitEditing={[Function]}
                 placeholder="Enter the collectible ID"
                 placeholderTextColor="#9ca1af"
+                ref={
+                  {
+                    "current": null,
+                  }
+                }
                 returnKeyType="done"
                 style={
                   [
@@ -436,6 +441,8 @@ exports[`AddAsset component renders token view correctly 1`] = `
   <View>
     <RCTScrollView
       collapsable={false}
+      handlerTag={1}
+      handlerType="NativeViewGestureHandler"
       onGestureHandlerEvent={[Function]}
       onGestureHandlerStateChange={[Function]}
       style={

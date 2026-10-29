@@ -16,6 +16,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * @param {{ errorMessage?: any, errorContinue?: any, onContinue?: any, isOnlyWarning?: any } & Record<string, any>} props
+ */
 export default function ErrorMessage(props) {
   const { errorMessage, errorContinue, onContinue, isOnlyWarning } = props;
   return (

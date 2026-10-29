@@ -72,6 +72,9 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+/**
+ * @param {{ setHasOnboarded?: any }} props
+ */
 function Onboarding({ setHasOnboarded }) {
   const navigation = useNavigation();
   const { colors } = useTheme();

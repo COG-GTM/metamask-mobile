@@ -27,7 +27,7 @@ exports[`Collectible should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <Connect(Collectible)
     route={
       {
         "params": {

@@ -10,6 +10,7 @@ import {
   FlatList,
   InteractionManager,
   ScrollView,
+  Keyboard,
 } from 'react-native';
 import { connect } from 'react-redux';
 import {
@@ -62,7 +63,6 @@ import collectiblesTransferInformation from '../../../../../../util/collectibles
 import { strings } from '../../../../../../../locales/i18n';
 import Device from '../../../../../../util/device';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
-import dismissKeyboard from 'react-native/Libraries/Utilities/dismissKeyboard';
 import NetworkMainAssetLogo from '../../../../../UI/NetworkMainAssetLogo';
 import { renderShortText } from '../../../../../../util/general';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -691,7 +691,7 @@ class Amount extends PureComponent {
         this.setState({
           amountError: strings('transaction.invalid_collectible_ownership'),
         });
-        dismissKeyboard();
+        Keyboard.dismiss();
         return;
       }
     }
@@ -852,7 +852,7 @@ class Amount extends PureComponent {
     }
     if (amountError) {
       this.setState({ amountError });
-      dismissKeyboard();
+      Keyboard.dismiss();
     }
     return !!amountError;
   };

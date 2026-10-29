@@ -45,25 +45,26 @@ const createStyles = (colors) =>
  * View that renders the content of an action modal
  * The objective of this component is to reuse it in other places and not
  * only on ActionModal component
+ * @param {{ cancelButtonDisabled?: any, cancelTestID?: any, confirmTestID?: any, cancelText?: any, children?: any, cancelButtonMode?: any, confirmButtonMode?: any, confirmDisabled?: any, confirmText?: any, displayCancelButton?: any, displayConfirmButton?: any, onCancelPress?: any, onConfirmPress?: any, viewWrapperStyle?: any, viewContainerStyle?: any, actionContainerStyle?: any, verticalButtons?: any, childrenContainerStyle?: any }} props
  */
 export default function ActionContent({
-  cancelTestID,
-  confirmTestID,
-  cancelText,
+  cancelTestID = '',
+  confirmTestID = '',
+  cancelText = strings('action_view.cancel'),
   children,
-  confirmText,
-  confirmDisabled,
-  cancelButtonMode,
-  cancelButtonDisabled,
-  confirmButtonMode,
-  displayCancelButton,
-  displayConfirmButton,
+  confirmText = strings('action_view.confirm'),
+  confirmDisabled = false,
+  cancelButtonMode = 'neutral',
+  cancelButtonDisabled = false,
+  confirmButtonMode = 'warning',
+  displayCancelButton = true,
+  displayConfirmButton = true,
   onCancelPress,
   onConfirmPress,
-  viewWrapperStyle,
-  viewContainerStyle,
+  viewWrapperStyle = null,
+  viewContainerStyle = null,
   actionContainerStyle,
-  childrenContainerStyle,
+  childrenContainerStyle = null,
   verticalButtons,
 }) {
   const { colors } = useTheme();
@@ -116,22 +117,6 @@ export default function ActionContent({
     </View>
   );
 }
-
-ActionContent.defaultProps = {
-  cancelButtonMode: 'neutral',
-  cancelButtonDisabled: false,
-  confirmButtonMode: 'warning',
-  confirmTestID: '',
-  cancelTestID: '',
-  cancelText: strings('action_view.cancel'),
-  confirmText: strings('action_view.confirm'),
-  confirmDisabled: false,
-  displayCancelButton: true,
-  displayConfirmButton: true,
-  viewWrapperStyle: null,
-  viewContainerStyle: null,
-  childrenContainerStyle: null,
-};
 
 ActionContent.propTypes = {
   cancelButtonDisabled: PropTypes.bool,

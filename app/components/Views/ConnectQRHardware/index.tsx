@@ -166,7 +166,7 @@ const ConnectQRHardware = ({ navigation }: IConnectQRHardwareProps) => {
         QRKeyring,
         'cancelSync' | 'submitCryptoAccount' | 'submitCryptoHDKey'
       >
-    >();
+     | undefined>(undefined);
 
   const showScanner = useCallback(() => {
     setScannerVisible(true);
@@ -233,7 +233,7 @@ const ConnectQRHardware = ({ navigation }: IConnectQRHardwareProps) => {
 
     qrInteractionsRef.current = qrInteractions;
     const firstPageAccounts = await connectQRHardwarePromise;
-    delete qrInteractionsRef.current;
+    qrInteractionsRef.current = undefined;
 
     setAccounts(firstPageAccounts);
   }, [resetError, trackEvent, createEventBuilder]);
@@ -281,7 +281,7 @@ const ConnectQRHardware = ({ navigation }: IConnectQRHardwareProps) => {
 
     qrInteractionsRef.current = qrInteractions;
     const nextPageAccounts = await connectQRHardwarePromise;
-    delete qrInteractionsRef.current;
+    qrInteractionsRef.current = undefined;
 
     setAccounts(nextPageAccounts);
   }, [resetError]);
@@ -295,7 +295,7 @@ const ConnectQRHardware = ({ navigation }: IConnectQRHardwareProps) => {
 
     qrInteractionsRef.current = qrInteractions;
     const previousPageAccounts = await connectQRHardwarePromise;
-    delete qrInteractionsRef.current;
+    qrInteractionsRef.current = undefined;
 
     setAccounts(previousPageAccounts);
   }, [resetError]);

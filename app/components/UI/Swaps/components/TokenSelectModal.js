@@ -130,6 +130,9 @@ const createStyles = (colors) =>
 
 const MAX_TOKENS_RESULTS = 20;
 
+/**
+ * @param {{ isVisible?: any, dismiss?: any, title?: any, tokens?: any, initialTokens?: any, onItemPress?: any, excludeAddresses?: any, conversionRate?: any, accounts?: any, currentCurrency?: any, selectedAddress?: any, balances?: any, tokenExchangeRates?: any, chainId?: any, networkConfigurations?: any }} props
+ */
 function TokenSelectModal({
   isVisible,
   dismiss,

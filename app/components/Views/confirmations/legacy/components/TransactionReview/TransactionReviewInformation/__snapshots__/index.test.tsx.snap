@@ -27,7 +27,7 @@ exports[`TransactionReviewInformation should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <Connect(Component)
     EIP1559GasData={{}}
   />
 </ContextProvider>

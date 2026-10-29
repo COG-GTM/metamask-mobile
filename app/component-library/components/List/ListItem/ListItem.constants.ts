@@ -13,7 +13,8 @@ export const DEFAULT_LISTITEM_TOPACCESSORYGAP = 0;
 export const DEFAULT_LISTITEM_BOTTOMACCESSORYGAP = 0;
 
 // Sample consts
-export const SAMPLE_LISTITEM_PROPS: ListItemProps = {
+export const SAMPLE_LISTITEM_PROPS: Omit<ListItemProps, 'onBlur' | 'onFocus'> =
+  {
   gap: DEFAULT_LISTITEM_GAP,
   verticalAlignment: DEFAULT_LISTITEM_VERTICALALIGNMENT,
   topAccessoryGap: DEFAULT_LISTITEM_TOPACCESSORYGAP,

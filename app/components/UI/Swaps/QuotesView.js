@@ -377,6 +377,9 @@ async function addTokenToAssetsController(newToken, chainId, networkClientId) {
   }
 }
 
+/**
+ * @param {{ swapsTokens?: any, accounts?: any, balances?: any, conversionRate?: any, currentCurrency?: any, selectedAddress?: any, chainId?: any, networkClientId?: any, ticker?: any, primaryCurrency?: any, isInPolling?: any, quotesLastFetched?: any, topAggId?: any, aggregatorMetadata?: any, pollingCyclesLeft?: any, quotes?: any, quoteValues?: any, approvalTransaction?: any, error?: any, quoteRefreshSeconds?: any, gasEstimateType?: any, gasFeeEstimates?: any, usedGasEstimate?: any, usedCustomGas?: any, setRecipient?: any, resetTransaction?: any, shouldUseSmartTransaction?: any, isEIP1559Network?: any }} props
+ */
 function SwapsQuotesView({
   swapsTokens,
   accounts,

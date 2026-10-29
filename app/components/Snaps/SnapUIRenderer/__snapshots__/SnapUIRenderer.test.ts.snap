@@ -249,6 +249,11 @@ exports[`SnapUIRenderer prefills interactive inputs with existing state 1`] = `
                   onBlur={[Function]}
                   onChangeText={[Function]}
                   onFocus={[Function]}
+                  ref={
+                    {
+                      "current": null,
+                    }
+                  }
                   style={
                     {
                       "backgroundColor": "#ffffff",
@@ -375,6 +380,11 @@ exports[`SnapUIRenderer re-renders when the interface changes 1`] = `
                   onBlur={[Function]}
                   onChangeText={[Function]}
                   onFocus={[Function]}
+                  ref={
+                    {
+                      "current": null,
+                    }
+                  }
                   style={
                     {
                       "backgroundColor": "#ffffff",
@@ -438,6 +448,11 @@ exports[`SnapUIRenderer re-renders when the interface changes 1`] = `
                   onBlur={[Function]}
                   onChangeText={[Function]}
                   onFocus={[Function]}
+                  ref={
+                    {
+                      "current": null,
+                    }
+                  }
                   secureTextEntry={true}
                   style={
                     {
@@ -564,6 +579,11 @@ exports[`SnapUIRenderer re-syncs state when the interface changes 1`] = `
                   onBlur={[Function]}
                   onChangeText={[Function]}
                   onFocus={[Function]}
+                  ref={
+                    {
+                      "current": null,
+                    }
+                  }
                   style={
                     {
                       "backgroundColor": "#ffffff",
@@ -627,6 +647,11 @@ exports[`SnapUIRenderer re-syncs state when the interface changes 1`] = `
                   onBlur={[Function]}
                   onChangeText={[Function]}
                   onFocus={[Function]}
+                  ref={
+                    {
+                      "current": null,
+                    }
+                  }
                   style={
                     {
                       "backgroundColor": "#ffffff",
@@ -1742,6 +1767,11 @@ exports[`SnapUIRenderer supports fields with multiple components 1`] = `
                     onBlur={[Function]}
                     onChangeText={[Function]}
                     onFocus={[Function]}
+                    ref={
+                      {
+                        "current": null,
+                      }
+                    }
                     style={
                       {
                         "backgroundColor": "#ffffff",
@@ -1899,6 +1929,11 @@ exports[`SnapUIRenderer supports interactive inputs 1`] = `
                   onBlur={[Function]}
                   onChangeText={[Function]}
                   onFocus={[Function]}
+                  ref={
+                    {
+                      "current": null,
+                    }
+                  }
                   style={
                     {
                       "backgroundColor": "#ffffff",

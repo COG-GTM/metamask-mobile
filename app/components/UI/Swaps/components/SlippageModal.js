@@ -38,6 +38,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ isVisible?: any, dismiss?: any, onChange?: any, slippage?: any }} props
+ */
 function SlippageModal({ isVisible, dismiss, onChange, slippage }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);

@@ -140,7 +140,8 @@ describe('TokenDetails', () => {
 
   const mockSelectors = () => {
     const useSelectorSpy = jest.spyOn(reactRedux, 'useSelector');
-    useSelectorSpy.mockImplementation((selectorOrCallback) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    useSelectorSpy.mockImplementation((selectorOrCallback: any) => {
       const SELECTOR_MOCKS = {
         selectIsEvmNetworkSelected: true,
         selectEvmTokenMarketData: {
@@ -238,7 +239,8 @@ describe('TokenDetails', () => {
       selectMultichainAssetsRates: {},
     } as const;
 
-    useSelectorSpy.mockImplementation((selectorOrCallback) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    useSelectorSpy.mockImplementation((selectorOrCallback: any) => {
       if (typeof selectorOrCallback === 'function') {
         const selectorString = selectorOrCallback.toString();
         const matchedSelector = Object.keys(SELECTOR_MOCKS).find((key) =>
@@ -282,7 +284,8 @@ describe('TokenDetails', () => {
 
   it('should render MarketDetails without TokenDetails when tokenList is null', () => {
     const useSelectorSpy = jest.spyOn(reactRedux, 'useSelector');
-    useSelectorSpy.mockImplementation((selectorOrCallback) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    useSelectorSpy.mockImplementation((selectorOrCallback: any) => {
       const SELECTOR_MOCKS = {
         selectEvmTokenMarketData: {
           marketData:
@@ -337,7 +340,8 @@ describe('TokenDetails', () => {
       selectNativeCurrencyByChainId: 'ETH',
     } as const;
 
-    useSelectorSpy.mockImplementation((selectorOrCallback) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    useSelectorSpy.mockImplementation((selectorOrCallback: any) => {
       if (typeof selectorOrCallback === 'function') {
         const selectorString = selectorOrCallback.toString();
         const matchedSelector = Object.keys(SELECTOR_MOCKS).find((key) =>

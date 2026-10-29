@@ -113,6 +113,7 @@ const createStyles = (colors) =>
 
 /**
  * The EditGasFeeLegacy component will be deprecated in favor of EditGasFeeLegacyUpdate as part of the gas polling refactor code that moves gas fee modifications to `app/core/GasPolling`. When the refactoring is completed, the EditGasFeeLegacyUpdate will be renamed EditGasFeeLegacy and this component will be removed. The EditGasFeeLegacyUpdate is currently being used in the Update Transaction(Speed Up/Cancel) flow.
+ * @param {{ selected?: any, gasFee?: any, gasOptions?: any, onChange?: any, onCancel?: any, onSave?: any, gasFeeNative?: any, gasFeeConversion?: any, primaryCurrency?: any, chainId?: any, gasEstimateType?: any, error?: any, warning?: any, ignoreOptions?: any, extendOptions?: any, recommended?: any, warningMinimumEstimateOption?: any, onUpdatingValuesStart?: any, onUpdatingValuesEnd?: any, animateOnChange?: any, isAnimating?: any, analyticsParams?: any, view: any }} props
  */
 
 const EditGasFeeLegacy = ({
@@ -129,10 +130,10 @@ const EditGasFeeLegacy = ({
   gasEstimateType,
   error,
   warning,
-  ignoreOptions,
+  ignoreOptions = [],
   extendOptions = {},
   recommended,
-  warningMinimumEstimateOption,
+  warningMinimumEstimateOption = AppConstants.GAS_OPTIONS.LOW,
   onUpdatingValuesStart,
   onUpdatingValuesEnd,
   animateOnChange,
@@ -513,11 +514,6 @@ const EditGasFeeLegacy = ({
       </ScrollView>
     </View>
   );
-};
-
-EditGasFeeLegacy.defaultProps = {
-  ignoreOptions: [],
-  warningMinimumEstimateOption: AppConstants.GAS_OPTIONS.LOW,
 };
 
 EditGasFeeLegacy.propTypes = {

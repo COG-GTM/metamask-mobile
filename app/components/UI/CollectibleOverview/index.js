@@ -147,6 +147,7 @@ const FieldType = {
 };
 /**
  * View that displays the information of a specific ERC-721 Token
+ * @param {{ chainId?: any, collectible?: any, tradable?: any, onSend?: any, selectedAddress?: any, addFavoriteCollectible?: any, removeFavoriteCollectible?: any, isInFavorites?: any, openLink: any, onTranslation?: any }} props
  */
 const CollectibleOverview = ({
   chainId,

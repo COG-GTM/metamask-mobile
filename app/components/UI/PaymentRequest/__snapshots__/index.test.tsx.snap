@@ -113,6 +113,11 @@ exports[`PaymentRequest renders correctly 1`] = `
             onSubmitEditing={[Function]}
             placeholder="Search assets"
             placeholderTextColor="#9ca1af"
+            ref={
+              {
+                "current": null,
+              }
+            }
             returnKeyType="go"
             style={
               [

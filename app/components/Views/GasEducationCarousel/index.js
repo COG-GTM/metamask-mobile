@@ -140,6 +140,7 @@ const carousel_images = [
 
 /**
  * View that is displayed to first time (new) users
+ * @param {{ navigation?: any, conversionRate?: any, currentCurrency?: any, route?: any, ticker?: any }} props
  */
 const GasEducationCarousel = ({
   navigation,

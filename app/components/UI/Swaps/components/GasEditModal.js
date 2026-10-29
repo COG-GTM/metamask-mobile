@@ -46,6 +46,9 @@ const styles = StyleSheet.create({
 
 const RECOMMENDED = GAS_OPTIONS.HIGH;
 
+/**
+ * @param {{ dismiss?: any, gasEstimateType?: any, gasFeeEstimates?: any, defaultGasFeeOptionFeeMarket?: any, defaultGasFeeOptionLegacy?: any, isVisible?: any, onGasUpdate?: any, customGasFee?: any, initialGasLimit?: any, currentCurrency?: any, conversionRate?: any, tradeGasLimit?: any, primaryCurrency?: any, chainId?: any, ticker?: any, checkEnoughEthBalance?: any, isNativeAsset?: any, tradeValue?: any, sourceAmount?: any, animateOnChange?: any }} props
+ */
 function GasEditModal({
   dismiss,
   gasEstimateType,

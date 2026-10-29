@@ -5,7 +5,6 @@ exports[`BlockingActionModal should render correctly 1`] = `
   animationType="none"
   deviceHeight={null}
   deviceWidth={null}
-  hardwareAccelerated={false}
   hideModalContentWhileAnimating={true}
   onBackdropPress={[Function]}
   onModalHide={[Function]}

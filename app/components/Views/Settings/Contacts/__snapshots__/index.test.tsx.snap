@@ -27,6 +27,6 @@ exports[`Contacts should render correctly 1`] = `
     }
   }
 >
-  <Component />
+  <Connect(Contacts) />
 </ContextProvider>
 `;

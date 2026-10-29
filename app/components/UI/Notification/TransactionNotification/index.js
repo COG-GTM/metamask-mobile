@@ -101,6 +101,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ isInBrowserView?: any, notificationAnimated?: any, onClose?: any, animatedTimingStart?: any, currentNotification?: any, swapsTransactions?: any, swapsTokens?: any, accounts?: any, transactions?: any, smartTransactions?: any, selectedAddress?: any, ticker?: any, chainId?: any, conversionRate?: any, currentCurrency?: any, exchangeRate?: any, contractExchangeRates?: any, collectibleContracts?: any, tokens?: any, primaryCurrency?: any } & Record<string, any>} props
+ */
 function TransactionNotification(props) {
   const {
     accounts,

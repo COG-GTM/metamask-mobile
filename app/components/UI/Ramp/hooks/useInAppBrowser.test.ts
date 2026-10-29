@@ -23,9 +23,12 @@ type DeepPartial<BaseType> = {
 jest.mock('react-native-inappbrowser-reborn');
 jest.mocked(InAppBrowser.isAvailable).mockResolvedValue(true);
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    openURL: jest.fn(),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
@@ -203,10 +206,17 @@ describe('useInAppBrowser', () => {
 
     it('calls Linking.openURL if device is android', async () => {
       // mock Platform.OS to be android
-      jest.mock('react-native/Libraries/Utilities/Platform', () => ({
-        ...jest.requireActual('react-native/Libraries/Utilities/Platform'),
-        OS: 'android',
-      }));
+      jest.mock('react-native/Libraries/Utilities/Platform', () => {
+        const actual = jest.requireActual(
+          'react-native/Libraries/Utilities/Platform',
+        );
+        return {
+          ...actual,
+          __esModule: true,
+          default: { ...actual.default, OS: 'android' },
+          OS: 'android',
+        };
+      });
 
       const { result } = renderHookWithProvider(() => useInAppBrowser(), {
         state: defaultState,

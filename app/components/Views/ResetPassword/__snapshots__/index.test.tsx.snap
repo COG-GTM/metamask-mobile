@@ -27,6 +27,6 @@ exports[`ChoosePassword should render correctly 1`] = `
     }
   }
 >
-  <Component />
+  <Connect(ResetPassword) />
 </ContextProvider>
 `;

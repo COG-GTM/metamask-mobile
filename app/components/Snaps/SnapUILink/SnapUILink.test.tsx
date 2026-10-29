@@ -8,9 +8,12 @@ import Icon, {
   IconSize,
 } from '../../../component-library/components/Icons/Icon';
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    openURL: jest.fn(),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 describe('SnapUILink', () => {
   beforeEach(() => {

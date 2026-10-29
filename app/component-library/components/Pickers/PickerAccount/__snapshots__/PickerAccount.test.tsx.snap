@@ -12,6 +12,7 @@ exports[`PickerAccount should render correctly 1`] = `
 >
   <TouchableOpacity
     onPress={[Function]}
+    ref={null}
     style={
       {
         "alignItems": "center",

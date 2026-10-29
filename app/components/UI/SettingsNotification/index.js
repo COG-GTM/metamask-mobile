@@ -74,15 +74,12 @@ const propTypes = {
   ]),
 };
 
-const defaultProps = {
-  style: {},
-  isWarning: false,
-  isHighlighted: false,
-};
-
+/**
+ * @param {{ style?: any, isWarning?: any, isNotification?: any, children?: any }} props
+ */
 const SettingsNotification = ({
-  style,
-  isWarning,
+  style = {},
+  isWarning = false,
   isNotification,
   children,
 }) => {
@@ -105,6 +102,4 @@ const SettingsNotification = ({
 };
 
 SettingsNotification.propTypes = propTypes;
-SettingsNotification.defaultProps = defaultProps;
-
 export default SettingsNotification;

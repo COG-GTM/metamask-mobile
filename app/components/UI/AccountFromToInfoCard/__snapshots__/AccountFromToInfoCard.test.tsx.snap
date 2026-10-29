@@ -641,7 +641,7 @@ exports[`AccountFromToInfoCard should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <Connect(AccountFromToInfoCard)
     transactionState={
       {
         "selectedAsset": {

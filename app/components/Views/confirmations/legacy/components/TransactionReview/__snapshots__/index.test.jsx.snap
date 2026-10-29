@@ -4,7 +4,6 @@ exports[`TransactionReview should match snapshot 1`] = `
 [
   <View
     collapsable={false}
-    style={{}}
   >
     <View
       style={
@@ -1418,7 +1417,7 @@ exports[`TransactionReview should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <Connect(Component)
     generateTransform={[MockFunction]}
   />
 </ContextProvider>

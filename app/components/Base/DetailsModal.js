@@ -59,6 +59,9 @@ const createStyles = (colors) =>
       marginBottom: 8,
     },
   });
+/**
+ * @param {{ children?: any }} props
+ */
 const DetailsModal = ({ children }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -70,12 +73,18 @@ const DetailsModal = ({ children }) => {
   );
 };
 
+/**
+ * @param {{ style?: any } & Record<string, any>} props
+ */
 const DetailsModalHeader = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return <View style={[styles.header, style]} {...props} />;
 };
+/**
+ * @param {{ style?: any } & Record<string, any>} props
+ */
 const DetailsModalTitle = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -88,6 +97,9 @@ const DetailsModalTitle = ({ style, ...props }) => {
     />
   );
 };
+/**
+ * @param {{ style?: any } & Record<string, any>} props
+ */
 const DetailsModalCloseIcon = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -102,6 +114,9 @@ const DetailsModalCloseIcon = ({ style, ...props }) => {
     </TouchableOpacity>
   );
 };
+/**
+ * @param {{ style?: any } & Record<string, any>} props
+ */
 const DetailsModalBody = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -114,6 +129,9 @@ const DetailsModalBody = ({ style, ...props }) => {
     />
   );
 };
+/**
+ * @param {{ style?: any, borderBottom?: any } & Record<string, any>} props
+ */
 const DetailsModalSection = ({ style, borderBottom, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -125,12 +143,18 @@ const DetailsModalSection = ({ style, borderBottom, ...props }) => {
     />
   );
 };
+/**
+ * @param {{ style?: any } & Record<string, any>} props
+ */
 const DetailsModalSectionTitle = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return <Text style={[styles.sectionTitle, style]} {...props} />;
 };
+/**
+ * @param {{ style?: any, end?: any } & Record<string, any>} props
+ */
 const DetailsModalColumn = ({ style, end, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

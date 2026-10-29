@@ -44,7 +44,9 @@ const TabThumbnail = ({
 }: TabThumbnailProps) => {
   const { colors } = useContext(ThemeContext) || mockTheme;
   const styles = useMemo(() => createStyles(colors), [colors]);
-  const Container: React.ElementType = Device.isAndroid() ? View : ElevatedView;
+  const Container = (
+    Device.isAndroid() ? View : ElevatedView
+  ) as React.ElementType;
   const tabTitle = getHost(tab.url);
 
   // Get permitted accounts for this hostname

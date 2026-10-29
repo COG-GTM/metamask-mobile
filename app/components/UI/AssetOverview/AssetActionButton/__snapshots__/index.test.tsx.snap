@@ -78,7 +78,6 @@ exports[`AssetActionButtons should render type add correctly 1`] = `
     }
   >
     <Icon
-      allowFontScaling={false}
       name="add"
       size={30}
       style={
@@ -139,7 +138,6 @@ exports[`AssetActionButtons should render type information correctly 1`] = `
     }
   >
     <Icon
-      allowFontScaling={false}
       name="information"
       size={30}
       style={
@@ -200,7 +198,6 @@ exports[`AssetActionButtons should render type receive correctly 1`] = `
     }
   >
     <Icon
-      allowFontScaling={false}
       color="#ffffff"
       name="keyboard-tab"
       size={20}
@@ -273,7 +270,6 @@ exports[`AssetActionButtons should render type send correctly 1`] = `
     }
   >
     <Icon
-      allowFontScaling={false}
       name="arrow-top-right"
       size={20}
       style={
@@ -334,7 +330,6 @@ exports[`AssetActionButtons should render type swap correctly 1`] = `
     }
   >
     <Icon
-      allowFontScaling={false}
       name="repeat"
       size={22}
       style={

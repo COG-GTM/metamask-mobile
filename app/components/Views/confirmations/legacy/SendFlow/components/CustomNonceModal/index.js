@@ -116,6 +116,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ proposedNonce: any, nonceValue: any, save: any, close: any }} props
+ */
 const CustomModalNonce = ({ proposedNonce, nonceValue, close, save }) => {
   const [nonce, onChangeText] = React.useState(nonceValue);
   const { colors, themeAppearance } = useTheme();
