@@ -11,6 +11,7 @@ jest.mock('react-native-blob-util', () => ({
   })),
   fs: {
     dirs: { CacheDir: '/cache-dir' },
+    exists: jest.fn().mockResolvedValue(true),
     unlink: jest.fn().mockResolvedValue(undefined),
     isDir: jest.fn((path) => path.endsWith('archive') || path.endsWith('dist')),
     ls: jest.fn((path) => {
@@ -59,5 +60,8 @@ describe('NpmLocation', () => {
     expect(archivePath).toBe('/cache-dir/archive.tgz');
     expect(extractionDir).toMatch(/^\/cache-dir\/snaps-npm-[0-9a-f-]{36}$/u);
     expect(ReactNativeBlobUtil.fs.unlink).toHaveBeenCalledWith(extractionDir);
+    expect(ReactNativeBlobUtil.fs.unlink).toHaveBeenCalledWith(
+      `${extractionDir}.tgz`,
+    );
   });
 });

@@ -5,6 +5,7 @@ import { stringToBytes } from '@metamask/utils';
 import { NativeModules } from 'react-native';
 import ReactNativeBlobUtil, { FetchBlobResponse } from 'react-native-blob-util';
 import { v4 as uuidv4 } from 'uuid';
+import Logger from '../../../util/Logger';
 import {
   BaseNpmLocation,
   getNpmCanonicalBasePath,
@@ -80,11 +81,16 @@ const fetchAndStoreNPMPackage = async (
 };
 
 const cleanupFileSystem = async (path: string) => {
-  ReactNativeBlobUtil.fs.unlink(path).catch((error) => {
-    throw new Error(
+  try {
+    if (await ReactNativeBlobUtil.fs.exists(path)) {
+      await ReactNativeBlobUtil.fs.unlink(path);
+    }
+  } catch (error) {
+    // Cleanup is best-effort and must not mask the original result or error.
+    Logger.log(
       `${SNAPS_NPM_LOG_TAG} cleanupFileSystem failed to clean files at path with error: ${error}`,
     );
-  });
+  }
 };
 
 export class NpmLocation extends BaseNpmLocation {
@@ -111,7 +117,10 @@ export class NpmLocation extends BaseNpmLocation {
 
       files = await Promise.all(paths.map(readAndParseAt));
     } finally {
-      await cleanupFileSystem(extractionDir);
+      await Promise.all([
+        cleanupFileSystem(extractionDir),
+        cleanupFileSystem(`${extractionDir}.tgz`),
+      ]);
     }
 
     const canonicalBase = getNpmCanonicalBasePath(
