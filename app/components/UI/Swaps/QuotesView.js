@@ -69,6 +69,7 @@ import InfoModal from './components/InfoModal';
 import useModalHandler from '../../Base/hooks/useModalHandler';
 import useBalance from './utils/useBalance';
 import { decodeApproveData, getTicker } from '../../../util/transactions';
+import { createInternalSwapsActionId } from '../../../util/transactions/internal-origins';
 import { toLowerCaseEquals } from '../../../util/general';
 import {
   selectSwapsAggregatorMetadata,
@@ -999,6 +1000,7 @@ function SwapsQuotesView({
             deviceConfirmedOn: WalletDevice.MM_MOBILE,
             networkClientId,
             origin: process.env.MM_FOX_CODE,
+            actionId: createInternalSwapsActionId(),
           },
         );
 
@@ -1061,6 +1063,7 @@ function SwapsQuotesView({
             deviceConfirmedOn: WalletDevice.MM_MOBILE,
             networkClientId,
             origin: process.env.MM_FOX_CODE,
+            actionId: createInternalSwapsActionId(),
           },
         );
 
