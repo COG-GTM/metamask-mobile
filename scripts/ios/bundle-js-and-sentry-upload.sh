@@ -27,11 +27,22 @@ export SENTRY_DIST=$CURRENT_PROJECT_VERSION
 export SENTRY_RELEASE="$PRODUCT_BUNDLE_IDENTIFIER@$MARKETING_VERSION+$SENTRY_DIST"
 
 
+# Bundle with Expo CLI (same as android/app/build.gradle)
+if [[ -z "$ENTRY_FILE" ]]; then
+  export ENTRY_FILE="$("$NODE_BINARY" -e "require('expo/scripts/resolveAppEntry')" "$PROJECT_DIR/.." ios absolute | tail -n 1)"
+fi
+if [[ -z "$CLI_PATH" ]]; then
+  export CLI_PATH="$("$NODE_BINARY" --print "require.resolve('@expo/cli', { paths: [require.resolve('expo/package.json')] })")"
+fi
+if [[ -z "$BUNDLE_COMMAND" ]]; then
+  export BUNDLE_COMMAND="export:embed"
+fi
+
 # Generate JS bundle and upload Sentry source maps
+# RN 0.81's with-environment.sh runs its argument as a single command, so call the scripts directly.
 REACT_NATIVE_XCODE="../node_modules/react-native/scripts/react-native-xcode.sh"
 SENTRY_XCODE="../node_modules/@sentry/react-native/scripts/sentry-xcode.sh"
-BUNDLE_REACT_NATIVE="/bin/sh $SENTRY_XCODE $REACT_NATIVE_XCODE"
-/bin/sh -c "$WITH_ENVIRONMENT \"$BUNDLE_REACT_NATIVE\""
+/bin/sh "$SENTRY_XCODE" "$REACT_NATIVE_XCODE"
 
 # Upload Sentry debug symbols
 if [ "$SENTRY_DISABLE_AUTO_UPLOAD" == "false" ]; then
