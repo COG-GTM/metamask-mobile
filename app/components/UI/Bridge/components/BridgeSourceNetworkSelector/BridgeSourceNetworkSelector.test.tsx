@@ -44,14 +44,12 @@ expect.addSnapshotSerializer({
     typeof val === 'object' &&
     typeof val.props?.handlerTag === 'number' &&
     val.props.handlerTag !== -1,
-  serialize: (val, config, indentation, depth, refs, printer) =>
-    printer(
-      { ...val, props: { ...val.props, handlerTag: -1 } },
-      config,
-      indentation,
-      depth,
-      refs,
-    ),
+  serialize: (val, config, indentation, depth, refs, printer) => {
+    const normalized = { ...val, props: { ...val.props, handlerTag: -1 } };
+    // `$$typeof` is non-enumerable on test-renderer JSON, so the spread drops it.
+    Object.defineProperty(normalized, '$$typeof', { value: val.$$typeof });
+    return printer(normalized, config, indentation, depth, refs);
+  },
 });
 
 describe('BridgeSourceNetworkSelector', () => {
