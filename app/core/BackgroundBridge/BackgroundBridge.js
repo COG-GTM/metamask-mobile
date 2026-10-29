@@ -377,6 +377,8 @@ export class BackgroundBridge extends EventEmitter {
     );
 
     this.port.emit('disconnect', { name: this.port.name, data: null });
+    // Drop RPC responses still in flight so they are not injected into the next page
+    this.port.close?.();
   };
 
   /**

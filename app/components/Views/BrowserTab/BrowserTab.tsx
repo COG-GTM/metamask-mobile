@@ -68,6 +68,7 @@ import {
   OLD_HOMEPAGE_URL_HOST,
   NOTIFICATION_NAMES,
   MM_MIXPANEL_TOKEN,
+  MAX_PENDING_BRIDGE_MESSAGES,
 } from './constants';
 import { regex } from '../../../../app/util/regex';
 import { selectEvmChainId } from '../../../selectors/networkController';
@@ -103,7 +104,7 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import { getMaskedUrl, getMessageSenderOrigin, isENSUrl } from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -188,6 +189,13 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     onDisconnect: () => void;
     onMessage: (message: Record<string, unknown>) => void;
   }>();
+  // Bumped whenever the page the bridge may bind to changes, so stale async phishing checks are ignored
+  const navigationIdRef = useRef(0);
+  // Origin approved by the phishing check for the current page; the bridge is only ever bound to it
+  const allowedBridgeOriginRef = useRef<string | null>(null);
+  const pendingBridgeMessagesRef = useRef<
+    { origin: string; message: Record<string, unknown> }[]
+  >([]);
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
   const searchEngine = useSelector(selectSearchEngine);
@@ -350,12 +358,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    * Show a phishing modal when a url is not allowed
    */
   const handleNotAllowedUrl = useCallback(
-    (urlOrigin: string) => {
+    (urlOrigin: string, blockedPageUrl: string = urlOrigin) => {
       if (!shouldShowPhishingModal(urlOrigin)) {
         return;
       }
 
-      setBlockedUrl(urlOrigin);
+      setBlockedUrl(blockedPageUrl);
       setTimeout(() => setShowPhishingModal(true), 1000);
     },
     [shouldShowPhishingModal, setBlockedUrl, setShowPhishingModal],
@@ -877,7 +885,15 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       if (dataParsed.name) {
-        backgroundBridgeRef.current?.onMessage(dataParsed);
+        const senderOrigin = getMessageSenderOrigin(
+          nativeEvent as typeof nativeEvent & {
+            isMainFrame?: boolean;
+            frameOrigin?: string;
+          },
+        );
+        // Drop messages from iframes or senders whose origin the native layer could not verify
+        if (!senderOrigin) return;
+        routeBridgeMessage(senderOrigin, dataParsed);
         return;
       }
     } catch (e: unknown) {
@@ -893,11 +909,15 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     urlBarRef.current?.focus();
   }, []);
 
+  const teardownBackgroundBridge = useCallback(() => {
+    backgroundBridgeRef.current?.onDisconnect();
+    backgroundBridgeRef.current = undefined;
+  }, []);
+
   const initializeBackgroundBridge = useCallback(
     (urlBridge: string, isMainFrame: boolean) => {
       // First disconnect and reset bridge
-      backgroundBridgeRef.current?.onDisconnect();
-      backgroundBridgeRef.current = undefined;
+      teardownBackgroundBridge();
 
       //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
@@ -936,7 +956,68 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       });
       backgroundBridgeRef.current = newBridge;
     },
-    [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
+    [
+      navigation,
+      isHomepage,
+      toggleUrlModal,
+      tabId,
+      injectHomePageScripts,
+      teardownBackgroundBridge,
+    ],
+  );
+
+  /**
+   * Forwards a provider message to a bridge keyed to the sender's verified origin.
+   * The bridge is created lazily from the first message of the approved origin, so it
+   * is only bound once a document of that origin is actually running in the WebView.
+   */
+  const routeBridgeMessage = useCallback(
+    (senderOrigin: string, message: Record<string, unknown>) => {
+      if (senderOrigin !== allowedBridgeOriginRef.current) {
+        // Origin not approved (yet): hold the message until it is, or until the next navigation
+        if (
+          pendingBridgeMessagesRef.current.length < MAX_PENDING_BRIDGE_MESSAGES
+        ) {
+          pendingBridgeMessagesRef.current.push({
+            origin: senderOrigin,
+            message,
+          });
+        }
+        return;
+      }
+      if (
+        !backgroundBridgeRef.current ||
+        new URLParse(backgroundBridgeRef.current.url).origin !== senderOrigin
+      ) {
+        initializeBackgroundBridge(senderOrigin, true);
+      }
+      backgroundBridgeRef.current?.onMessage(message);
+    },
+    [initializeBackgroundBridge],
+  );
+
+  /**
+   * Marks an origin as the one the bridge may be bound to, dropping any bridge
+   * for another origin and replaying held messages sent by that origin.
+   */
+  const approveBridgeOrigin = useCallback(
+    (origin: string) => {
+      allowedBridgeOriginRef.current = origin;
+      if (
+        backgroundBridgeRef.current &&
+        new URLParse(backgroundBridgeRef.current.url).origin !== origin
+      ) {
+        teardownBackgroundBridge();
+      }
+      const pending = pendingBridgeMessagesRef.current;
+      pendingBridgeMessagesRef.current = [];
+      pending
+        .filter((pendingMessage) => pendingMessage.origin === origin)
+        .forEach((pendingMessage) =>
+          routeBridgeMessage(pendingMessage.origin, pendingMessage.message),
+        );
+    },
+    [routeBridgeMessage, teardownBackgroundBridge],
   );
 
   const sendActiveAccount = useCallback(async () => {
@@ -950,6 +1031,16 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   /**
    * Website started to load
    */
+  /**
+   * Detaches the bridge from the current page and starts a new navigation generation.
+   * Returns the generation id so async callers can tell if they have been superseded.
+   */
+  const detachBridgeForNavigation = useCallback(() => {
+    allowedBridgeOriginRef.current = null;
+    teardownBackgroundBridge();
+    return ++navigationIdRef.current;
+  }, [teardownBackgroundBridge]);
+
   const onLoadStart = useCallback(
     async ({ nativeEvent }: WebViewNavigationEvent) => {
       loadingUrlRef.current = nativeEvent.url;
@@ -962,12 +1053,21 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         started: true,
       };
 
+      // Detach the previous page's bridge before any await, so it cannot be used
+      // while the new navigation is checked or before it commits
+      const navigationId = detachBridgeForNavigation();
+      // Held messages belong to the previous document
+      pendingBridgeMessagesRef.current = [];
+
       // Cancel loading the page if we detect its a phishing page
       const isAllowed = await isAllowedOrigin(urlOrigin);
       if (!isAllowed) {
         handleNotAllowedUrl(urlOrigin); // should this be activeUrl.current instead of url?
         return false;
       }
+
+      // A newer navigation or committed page superseded this check while it was pending
+      if (navigationId !== navigationIdRef.current) return;
 
       sendActiveAccount();
 
@@ -976,7 +1076,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         injectHomePageScripts();
       }
 
-      initializeBackgroundBridge(urlOrigin, true);
+      approveBridgeOrigin(urlOrigin);
     },
     [
       isAllowedOrigin,
@@ -984,9 +1084,66 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       sendActiveAccount,
       isHomepage,
       injectHomePageScripts,
-      initializeBackgroundBridge,
+      detachBridgeForNavigation,
+      approveBridgeOrigin,
     ],
   );
+
+  /**
+   * Re-key the bridge to the committed URL once a page has loaded, e.g. after a
+   * cross-origin redirect or a history navigation that did not emit its own load start
+   */
+  const approveCommittedOrigin = useCallback(
+    async (committedUrl: string, departedUrl?: string) => {
+      const { origin: committedOrigin } = new URLParse(committedUrl);
+      if (committedOrigin === allowedBridgeOriginRef.current) return;
+      // The committed page differs from the approved one: detach now so neither the
+      // previous origin nor a pending load-start check can bind to this document
+      const navigationId = detachBridgeForNavigation();
+      // Navigated away and redirected back to the departed origin: held messages from that
+      // origin may come from the departed document, so drop them instead of replaying
+      if (
+        departedUrl !== undefined &&
+        new URLParse(departedUrl).origin === committedOrigin &&
+        new URLParse(loadingUrlRef.current).origin !== committedOrigin
+      ) {
+        pendingBridgeMessagesRef.current =
+          pendingBridgeMessagesRef.current.filter(
+            (pendingMessage) => pendingMessage.origin !== committedOrigin,
+          );
+      }
+      const isAllowed = await isAllowedOrigin(committedOrigin);
+      if (navigationId !== navigationIdRef.current) return;
+      if (!isAllowed) {
+        // Blocked pages reached without a load start (e.g. history) stay without a bridge
+        handleNotAllowedUrl(committedOrigin, committedUrl);
+        return;
+      }
+      approveBridgeOrigin(committedOrigin);
+    },
+    [
+      isAllowedOrigin,
+      approveBridgeOrigin,
+      detachBridgeForNavigation,
+      handleNotAllowedUrl,
+    ],
+  );
+
+  /**
+   * Bind the bridge once the user whitelists the already loaded page from the phishing warning
+   */
+  useEffect(() => {
+    const committedUrl = resolvedUrlRef.current;
+    if (
+      !committedUrl ||
+      loadingUrlRef.current ||
+      allowedBridgeOriginRef.current
+    )
+      return;
+    if (whitelist?.includes(new URLParse(committedUrl).origin)) {
+      approveCommittedOrigin(committedUrl);
+    }
+  }, [whitelist, approveCommittedOrigin]);
 
   /**
    * Check whenever permissions change / account changes for Dapp
@@ -1295,6 +1452,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           case OnLoadProgress:
             return onLoadProgress(syntheticEvent as WebViewProgressEvent);
           case OnLoadEnd:
+            if (!('code' in syntheticEvent.nativeEvent)) {
+              approveCommittedOrigin(
+                syntheticEvent.nativeEvent.url,
+                resolvedUrlRef.current,
+              );
+            }
             return onLoadEnd({
               event: syntheticEvent as
                 | WebViewNavigationEvent
@@ -1306,7 +1469,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             return;
         }
       },
-    [onLoadProgress, onLoadEnd, onLoadStart],
+    [onLoadProgress, onLoadEnd, onLoadStart, approveCommittedOrigin],
   );
 
   const { OnLoadEnd, OnLoadProgress, OnLoadStart } = WebViewNavigationEventName;
@@ -1335,13 +1498,14 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             canGoForward,
           },
         };
+        approveCommittedOrigin(url, resolvedUrlRef.current);
         onLoadEnd({
           event: payload as WebViewNavigationEvent | WebViewErrorEvent,
           forceResolve: true,
         });
       }
     },
-    [onLoadEnd],
+    [onLoadEnd, approveCommittedOrigin],
   );
 
   // Don't render webview unless ready to load. This should save on performance for initial app start.

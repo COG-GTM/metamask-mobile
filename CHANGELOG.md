@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- fix(browser): bind the in-app browser provider bridge to the committed page origin and reject messages from iframes or other origins ([#2087](https://github.com/COG-GTM/metamask-mobile/pull/2087))
 
 ### Added
 

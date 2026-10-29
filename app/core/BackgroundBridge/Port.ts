@@ -17,6 +17,13 @@ class Port extends EventEmitter {
     this._isMainFrame = isMainFrame;
   }
 
+  /**
+   * Stops delivering messages to the WebView, e.g. once the page this port served has navigated away
+   */
+  close = () => {
+    this._window = null;
+  };
+
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   postMessage = (msg: any, origin = '*') => {

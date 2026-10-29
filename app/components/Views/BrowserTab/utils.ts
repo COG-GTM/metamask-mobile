@@ -79,3 +79,23 @@ export const getMaskedUrl = (
   }
   return urlToMask;
 };
+
+/**
+ * Returns the origin of the frame that posted a WebView message, as reported by
+ * the native WebView, or null when the sender is not the main frame or its
+ * origin is unknown or opaque. The page-supplied `origin` field in the message
+ * body is not trusted.
+ */
+export const getMessageSenderOrigin = (nativeEvent: {
+  isMainFrame?: boolean;
+  frameOrigin?: string;
+}): string | null => {
+  if (
+    nativeEvent.isMainFrame !== true ||
+    typeof nativeEvent.frameOrigin !== 'string'
+  ) {
+    return null;
+  }
+  const { origin } = new URLParse(nativeEvent.frameOrigin);
+  return origin && origin !== 'null' ? origin : null;
+};
