@@ -88,4 +88,40 @@ class SessionBindingStoreTest {
         assertEquals("io.dapp", store.bindOrVerify("b", setOf("io.dapp")))
         assertEquals("io.other", store.bindOrVerify("a", setOf("io.other")))
     }
+
+    @Test
+    fun removeWithExpectedOwnerOnlyReleasesThatOwnersBinding() {
+        val storage = InMemoryStorage()
+        val store = SessionBindingStore(storage)
+        store.bindOrVerify("a", setOf("io.dapp"))
+
+        store.remove("a", expectedOwner = "io.attacker")
+        assertEquals("io.dapp", storage.map["a"])
+
+        store.remove("a", expectedOwner = "io.dapp")
+        assertNull(storage.map["a"])
+    }
+
+    @Test
+    fun retainOnlyDropsBindingsForUnknownSessions() {
+        val storage = InMemoryStorage()
+        val store = SessionBindingStore(storage, maxSessionsPerPackage = 2, maxSessions = 10)
+        store.bindOrVerify("approved", setOf("io.dapp"))
+        store.bindOrVerify("abandoned", setOf("io.dapp"))
+        assertNull(store.bindOrVerify("new", setOf("io.dapp")))
+
+        store.retainOnly(setOf("approved"))
+
+        assertEquals("io.dapp", storage.map["approved"])
+        assertNull(storage.map["abandoned"])
+        assertEquals("io.dapp", store.bindOrVerify("new", setOf("io.dapp")))
+    }
+
+    @Test
+    fun decodesLegacyTimestampPrefixedOwners() {
+        assertEquals("io.dapp", decodeOwnerPackage("1720000000000:io.dapp"))
+        assertEquals("io.dapp", decodeOwnerPackage("io.dapp"))
+        assertNull(decodeOwnerPackage("bad:value:x"))
+        assertNull(decodeOwnerPackage(null))
+    }
 }

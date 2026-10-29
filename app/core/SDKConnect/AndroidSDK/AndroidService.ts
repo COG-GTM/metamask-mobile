@@ -102,6 +102,13 @@ export default class AndroidService extends EventEmitter2 {
           `AndroidService::setupEventListeners no previous connections found`,
         );
       }
+
+      // Drop native bindings for sessions the wallet no longer knows about.
+      this.communicationClient
+        ?.retainSessions?.(Object.keys(this.connections))
+        ?.catch?.((err: unknown) => {
+          Logger.log(err, `AndroidService::retainSessions error`);
+        });
     } catch (err) {
       console.error(`AndroidService::setupEventListeners error`, err);
     }
@@ -248,7 +255,6 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::clients_connected sending jsonrpc error to client - connection rejected`,
           );
-          this.releaseNativeSession(clientInfo.clientId);
           this.sendMessage(
             {
               data: {
@@ -265,6 +271,12 @@ export default class AndroidService extends EventEmitter2 {
               `AndroidService::clients_connected error failed sending jsonrpc error to client`,
             );
           });
+          // Queued after the error reply so it is still delivered; only
+          // releases the binding if it belongs to this caller.
+          this.releaseNativeSession(
+            clientInfo.clientId,
+            clientInfo.callerPackage ?? null,
+          );
           SDKConnect.getInstance().state.navigation?.navigate(
             Routes.MODAL.ROOT_MODAL_FLOW,
             {
@@ -527,9 +539,12 @@ export default class AndroidService extends EventEmitter2 {
     this.bridgeByClientId[clientInfo.clientId] = bridge;
   }
 
-  private releaseNativeSession(channelId: string) {
+  private releaseNativeSession(
+    channelId: string,
+    expectedOwner: string | null = null,
+  ) {
     this.communicationClient
-      ?.removeSession?.(channelId)
+      ?.removeSession?.(channelId, expectedOwner)
       ?.catch?.((err: unknown) => {
         Logger.log(err, `AndroidService::releaseNativeSession error`);
       });

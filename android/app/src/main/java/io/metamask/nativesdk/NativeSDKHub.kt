@@ -98,12 +98,25 @@ internal object NativeSDKHub {
         }
     }
 
-    /** Releases the native binding for a session the wallet removed or rejected. */
-    fun removeSession(context: Context, sessionId: String) {
+    /**
+     * Releases the native binding for a session the wallet removed or rejected.
+     * With [expectedOwner], only that package's binding is released.
+     */
+    fun removeSession(context: Context, sessionId: String, expectedOwner: String?) {
         val appContext = context.applicationContext
         executor.execute {
-            store(appContext).remove(sessionId)
-            sessionOwners.remove(sessionId)
+            val store = store(appContext)
+            store.remove(sessionId, expectedOwner)
+            if (store.bindOrVerifyOwner(sessionId) == null) sessionOwners.remove(sessionId)
+        }
+    }
+
+    /** Keeps only bindings for sessions the wallet still has connections for. */
+    fun retainSessions(context: Context, sessionIds: Set<String>) {
+        val appContext = context.applicationContext
+        executor.execute {
+            store(appContext).retainOnly(sessionIds)
+            sessionOwners.keys.retainAll(sessionIds)
         }
     }
 

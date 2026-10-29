@@ -10,11 +10,17 @@ internal interface SessionOwnerStorage {
     fun remove(sessionId: String)
 }
 
+private val TIMESTAMP_PREFIX = Regex("^\\d+:")
+
+/** Package names cannot contain ':', so tolerate a `<millis>:` prefix from older values. */
+internal fun decodeOwnerPackage(raw: String?): String? =
+    raw?.replace(TIMESTAMP_PREFIX, "")?.takeIf { it.isNotEmpty() && ':' !in it }
+
 private class SharedPreferencesOwnerStorage(private val prefs: SharedPreferences) : SessionOwnerStorage {
     override fun owners(): Map<String, String> =
-        prefs.all.mapNotNull { (k, v) -> (v as? String)?.let { k to it } }.toMap()
+        prefs.all.mapNotNull { (k, v) -> decodeOwnerPackage(v as? String)?.let { k to it } }.toMap()
 
-    override fun get(sessionId: String): String? = prefs.getString(sessionId, null)
+    override fun get(sessionId: String): String? = decodeOwnerPackage(prefs.getString(sessionId, null))
 
     override fun put(sessionId: String, ownerPackage: String) {
         prefs.edit().putString(sessionId, ownerPackage).apply()
@@ -63,9 +69,21 @@ internal class SessionBindingStore(
         return owner
     }
 
+    /** Releases [sessionId]; when [expectedOwner] is set, only if that package owns it. */
     @Synchronized
-    fun remove(sessionId: String) {
-        if (sessionId.isNotBlank()) storage.remove(sessionId)
+    fun remove(sessionId: String, expectedOwner: String? = null) {
+        if (sessionId.isBlank()) return
+        if (expectedOwner != null && storage.get(sessionId) != expectedOwner) return
+        storage.remove(sessionId)
+    }
+
+    @Synchronized
+    fun bindOrVerifyOwner(sessionId: String): String? = storage.get(sessionId)
+
+    /** Drops bindings for sessions the wallet no longer has a connection for. */
+    @Synchronized
+    fun retainOnly(sessionIds: Set<String>) {
+        storage.owners().keys.filter { it !in sessionIds }.forEach { storage.remove(it) }
     }
 
     companion object {

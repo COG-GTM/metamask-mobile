@@ -4,6 +4,7 @@ import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
 /**
@@ -57,8 +58,17 @@ class CommunicationClient(
     }
 
     @ReactMethod
-    fun removeSession(sessionId: String, promise: Promise) {
-        NativeSDKHub.removeSession(reactAppContext, sessionId)
+    fun removeSession(sessionId: String, expectedOwner: String?, promise: Promise) {
+        NativeSDKHub.removeSession(reactAppContext, sessionId, expectedOwner)
+        promise.resolve(true)
+    }
+
+    @ReactMethod
+    fun retainSessions(sessionIds: ReadableArray, promise: Promise) {
+        NativeSDKHub.retainSessions(
+            reactAppContext,
+            sessionIds.toArrayList().filterIsInstance<String>().toSet(),
+        )
         promise.resolve(true)
     }
 
