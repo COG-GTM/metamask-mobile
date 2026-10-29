@@ -149,7 +149,7 @@ describe('DeeplinkProtocolService', () => {
       service.rpcQueueManager.isEmpty = jest.fn().mockReturnValue(true);
       service.rpcQueueManager.remove = jest.fn(); // Mock the remove method
 
-      await service.sendMessage({ data: { id: '1' } }, true);
+      await service.sendMessage({ data: { id: '1' } }, 'client1', true);
       expect(service.rpcQueueManager.remove).toHaveBeenCalledWith('1');
     });
 
@@ -163,7 +163,6 @@ describe('DeeplinkProtocolService', () => {
         .mockReturnValue(mockChainRPCs);
       (handleBatchRpcResponse as jest.Mock).mockResolvedValue(true);
 
-      service.currentClientId = 'client1';
       service.bridgeByClientId.client1 = new BackgroundBridge({
         webview: null,
         channelId: 'client1',
@@ -175,7 +174,7 @@ describe('DeeplinkProtocolService', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
-      await service.sendMessage(mockMessage, true);
+      await service.sendMessage(mockMessage, 'client1', true);
       expect(handleBatchRpcResponse).toHaveBeenCalledWith(
         expect.objectContaining({
           chainRpcs: mockChainRPCs,
@@ -198,7 +197,6 @@ describe('DeeplinkProtocolService', () => {
       };
       const openDeeplinkSpy = jest.spyOn(service, 'openDeeplink');
 
-      service.currentClientId = 'client1';
       service.bridgeByClientId.client1 = new BackgroundBridge({
         webview: null,
         channelId: 'client1',
@@ -210,7 +208,7 @@ describe('DeeplinkProtocolService', () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
-      await service.sendMessage(mockMessage, true);
+      await service.sendMessage(mockMessage, 'client1', true);
       expect(openDeeplinkSpy).toHaveBeenCalledWith({
         message: mockMessage,
         clientId: 'client1',
@@ -224,7 +222,7 @@ describe('DeeplinkProtocolService', () => {
       service.rpcQueueManager.getId = jest.fn().mockReturnValue(undefined);
       service.rpcQueueManager.isEmpty = jest.fn().mockReturnValue(true);
 
-      await service.sendMessage(mockMessage);
+      await service.sendMessage(mockMessage, 'client1');
       expect(devLoggerSpy).toHaveBeenCalledWith(
         expect.stringContaining(
           'no rpc method --- rpcMethod=undefined forceRedirect=undefined --- skip goBack()',
@@ -249,7 +247,6 @@ describe('DeeplinkProtocolService', () => {
         .mockReturnValue(mockChainRPCs);
       (handleBatchRpcResponse as jest.Mock).mockResolvedValue(false);
 
-      service.currentClientId = 'client1';
       service.bridgeByClientId.client1 = new BackgroundBridge({
         webview: null,
         channelId: 'client1',
@@ -263,7 +260,7 @@ describe('DeeplinkProtocolService', () => {
 
       service.rpcQueueManager.remove = jest.fn();
 
-      await service.sendMessage(mockMessage, true);
+      await service.sendMessage(mockMessage, 'client1', true);
       expect(devLoggerSpy).toHaveBeenCalledWith(
         expect.stringContaining('NOT last rpc --- skip goBack()'),
         mockChainRPCs,
@@ -301,13 +298,57 @@ describe('DeeplinkProtocolService', () => {
           dappId: 'dappId',
         },
         connected: false,
-        validUntil: Date.now(),
+        validUntil: Date.now() + 1000,
         scheme: 'scheme',
       };
+      service.dappPublicKeyByClientId.channel1 = 'key';
 
       await service.handleConnection(connectionParams);
 
       expect(service.connections.channel1.connected).toBe(true);
+    });
+
+    it('binds each bridge response to the bridge client, not the latest deeplink client', async () => {
+      const openDeeplinkSpy = jest
+        .spyOn(service, 'openDeeplink')
+        .mockResolvedValue(undefined);
+      service.rpcQueueManager.getId = jest
+        .fn()
+        .mockReturnValue('personal_sign');
+      service.rpcQueueManager.isEmpty = jest.fn().mockReturnValue(true);
+
+      const originatorInfo = {
+        url: 'test.com',
+        title: 'Test',
+        platform: 'test',
+        dappId: 'dappId',
+      };
+      service.setupBridge({
+        clientId: 'clientA',
+        originatorInfo,
+        connected: true,
+        scheme: 'schemea',
+      });
+      service.setupBridge({
+        clientId: 'clientB',
+        originatorInfo,
+        connected: true,
+        scheme: 'schemeb',
+      });
+
+      const bridgeACtorArgs = (
+        BackgroundBridge as unknown as jest.Mock
+      ).mock.calls
+        .map(([args]) => args)
+        .find((args) => args.channelId === 'clientA');
+      await bridgeACtorArgs.sendMessage({ data: { id: '7', result: '0x' } });
+
+      expect(openDeeplinkSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ clientId: 'clientA' }),
+      );
+      expect(openDeeplinkSpy).not.toHaveBeenCalledWith(
+        expect.objectContaining({ clientId: 'clientB' }),
+      );
     });
   });
 
@@ -317,9 +358,25 @@ describe('DeeplinkProtocolService', () => {
       await service.openDeeplink({
         message: { test: 'test' },
         clientId: 'client1',
+        scheme: 'testscheme',
       });
-      expect(spy).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(
+        expect.stringMatching(/^testscheme:\/\/mmsdk\?message=/),
+      );
     });
+
+    it.each(['https://evil.example/?x=', 'http', 'javascript', undefined])(
+      'should not open a deeplink for invalid scheme %s',
+      async (scheme) => {
+        const spy = jest.spyOn(Linking, 'openURL');
+        await service.openDeeplink({
+          message: { test: 'test' },
+          clientId: 'unknown',
+          scheme,
+        });
+        expect(spy).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe('checkPermission', () => {
@@ -356,6 +413,90 @@ describe('DeeplinkProtocolService', () => {
       };
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
+    });
+
+    describe('existing session', () => {
+      const originatorInfo = {
+        url: 'test.com',
+        title: 'Test',
+        platform: 'test',
+        dappId: 'dappId',
+      };
+      const baseParams = {
+        dappPublicKey: 'original-key',
+        url: 'url',
+        scheme: 'acme',
+        channelId: 'channel1',
+        originatorInfo: Buffer.from(
+          JSON.stringify({ originatorInfo }),
+        ).toString('base64'),
+        request: JSON.stringify({ id: '1', method: 'eth_accounts' }),
+      };
+      let onMessage: jest.Mock;
+
+      beforeEach(() => {
+        onMessage = jest.fn();
+        service.connections.channel1 = {
+          clientId: 'channel1',
+          originatorInfo,
+          connected: false,
+          validUntil: Date.now() + 60_000,
+          scheme: 'acme',
+        };
+        service.dappPublicKeyByClientId.channel1 = 'original-key';
+        service.bridgeByClientId.channel1 = {
+          onMessage,
+        } as unknown as BackgroundBridge;
+        service.handleConnectionEventAsync = jest
+          .fn()
+          .mockResolvedValue(undefined);
+      });
+
+      it('processes the request when key and scheme match', async () => {
+        await service.handleConnection(baseParams);
+        expect(onMessage).toHaveBeenCalled();
+        expect(service.handleConnectionEventAsync).not.toHaveBeenCalled();
+      });
+
+      it.each([
+        ['pubkey', { dappPublicKey: 'attacker-key' }],
+        ['scheme', { scheme: 'mallory' }],
+      ])(
+        'requires re-approval and does not forward the request when %s changes',
+        async (_label, override) => {
+          await service.handleConnection({ ...baseParams, ...override });
+
+          expect(onMessage).not.toHaveBeenCalled();
+          expect(service.dappPublicKeyByClientId.channel1).toBe('original-key');
+          expect(service.connections.channel1.scheme).toBe('acme');
+          expect(service.handleConnectionEventAsync).toHaveBeenCalledWith(
+            expect.objectContaining({ requiresReapproval: true }),
+          );
+        },
+      );
+
+      it('requires re-approval when the session has expired', async () => {
+        service.connections.channel1.validUntil = Date.now() - 1;
+        await service.handleConnection(baseParams);
+
+        expect(onMessage).not.toHaveBeenCalled();
+        expect(service.handleConnectionEventAsync).toHaveBeenCalledWith(
+          expect.objectContaining({ requiresReapproval: true }),
+        );
+      });
+
+      it('rejects connections with an invalid scheme', async () => {
+        await service.handleConnection({
+          ...baseParams,
+          channelId: 'new-channel',
+          scheme: 'https://evil.example/?x=',
+        });
+
+        expect(service.handleConnectionEventAsync).not.toHaveBeenCalled();
+        expect(
+          SDKConnect.getInstance().addDappConnection,
+        ).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -437,10 +578,48 @@ describe('DeeplinkProtocolService', () => {
         lastAuthorized: expect.any(Number),
         origin: AppConstants.MM_SDK.IOS_SDK,
         originatorInfo: clientInfo.originatorInfo,
-        otherPublicKey: service.dappPublicKeyByClientId[clientInfo.clientId],
+        otherPublicKey: params.dappPublicKey,
         validUntil: expect.any(Number),
         scheme: clientInfo.scheme,
       });
+    });
+
+    it('updates the stored key and scheme only after re-approval succeeds', async () => {
+      service.connections[clientInfo.clientId] = { ...clientInfo };
+      service.dappPublicKeyByClientId[clientInfo.clientId] = 'old-key';
+
+      await service.handleConnectionEventAsync({
+        clientInfo: { ...clientInfo, scheme: 'newscheme' },
+        params: { ...params, dappPublicKey: 'new-key', scheme: 'newscheme' },
+        requiresReapproval: true,
+      });
+
+      expect(service.checkPermission).toHaveBeenCalled();
+      expect(service.dappPublicKeyByClientId[clientInfo.clientId]).toBe(
+        'new-key',
+      );
+      expect(service.connections[clientInfo.clientId].scheme).toBe('newscheme');
+    });
+
+    it('keeps the stored session and sends nothing when re-approval is rejected', async () => {
+      (service.checkPermission as jest.Mock).mockRejectedValue(
+        new Error('User rejected'),
+      );
+      service.connections[clientInfo.clientId] = { ...clientInfo };
+      service.dappPublicKeyByClientId[clientInfo.clientId] = 'old-key';
+
+      await service.handleConnectionEventAsync({
+        clientInfo: { ...clientInfo, scheme: 'mallory' },
+        params: { ...params, dappPublicKey: 'attacker-key', scheme: 'mallory' },
+        requiresReapproval: true,
+      });
+
+      expect(service.dappPublicKeyByClientId[clientInfo.clientId]).toBe(
+        'old-key',
+      );
+      expect(service.connections[clientInfo.clientId].scheme).toBe('scheme1');
+      expect(service.processDappRpcRequest).not.toHaveBeenCalled();
+      expect(service.openDeeplink).not.toHaveBeenCalled();
     });
 
     it('should update existing client connection and process request if exists', async () => {
@@ -454,13 +633,16 @@ describe('DeeplinkProtocolService', () => {
         new Error('Permission error'),
       );
       await service.handleConnectionEventAsync({ clientInfo, params });
-      expect(service.sendMessage).toHaveBeenCalledWith({
-        data: {
-          error: new Error('Permission error'),
-          jsonrpc: '2.0',
+      expect(service.sendMessage).toHaveBeenCalledWith(
+        {
+          data: {
+            error: new Error('Permission error'),
+            jsonrpc: '2.0',
+          },
+          name: 'metamask-provider',
         },
-        name: 'metamask-provider',
-      });
+        clientInfo.clientId,
+      );
       expect(service.openDeeplink).toHaveBeenCalledWith({
         message: {
           data: {
@@ -469,7 +651,7 @@ describe('DeeplinkProtocolService', () => {
           },
           name: 'metamask-provider',
         },
-        clientId: '',
+        clientId: clientInfo.clientId,
         scheme: clientInfo.scheme,
       });
     });

@@ -22,6 +22,7 @@ import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
+import isValidDappScheme from '../utils/isValidDappScheme';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import {
@@ -38,8 +39,6 @@ export default class DeeplinkProtocolService {
   public bridgeByClientId: { [clientId: string]: BackgroundBridge } = {};
   public rpcQueueManager = new RPCQueueManager();
   public batchRPCManager: BatchRPCManager = new BatchRPCManager('deeplink');
-  // To keep track in order to get the associated bridge to handle batch rpc calls
-  public currentClientId?: string;
   public dappPublicKeyByClientId: {
     [clientId: string]: string;
   } = {};
@@ -79,6 +78,11 @@ export default class DeeplinkProtocolService {
 
         this.connections[connection.id] = clientInfo;
 
+        if (connection.otherPublicKey) {
+          this.dappPublicKeyByClientId[connection.id] =
+            connection.otherPublicKey;
+        }
+
         this.setupBridge(clientInfo);
       });
     }
@@ -109,7 +113,7 @@ export default class DeeplinkProtocolService {
       isRemoteConn: true,
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      sendMessage: (msg: any) => this.sendMessage(msg),
+      sendMessage: (msg: any) => this.sendMessage(msg, clientInfo.clientId),
       ...defaultBridgeParams,
     });
 
@@ -118,13 +122,13 @@ export default class DeeplinkProtocolService {
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async sendMessage(message: any, forceRedirect?: boolean) {
+  async sendMessage(message: any, clientId: string, forceRedirect?: boolean) {
     const messageWithMetadata = {
       ...message,
       data: {
         ...message.data,
         chainId: this.getChainId(),
-        accounts: this.getSelectedAccounts(),
+        accounts: this.getSelectedAccounts(clientId),
       },
     };
 
@@ -144,9 +148,9 @@ export default class DeeplinkProtocolService {
       const isLastRpcOrError = await handleBatchRpcResponse({
         chainRpcs: chainRPCs,
         msg: messageWithMetadata,
-        backgroundBridge: this.bridgeByClientId[this.currentClientId ?? ''],
+        backgroundBridge: this.bridgeByClientId[clientId],
         batchRPCManager: this.batchRPCManager,
-        sendMessage: ({ msg }) => this.sendMessage(msg),
+        sendMessage: ({ msg }) => this.sendMessage(msg, clientId),
       });
 
       const hasError = !!message?.data?.error;
@@ -163,7 +167,7 @@ export default class DeeplinkProtocolService {
         if (hasError) {
           this.openDeeplink({
             message: messageWithMetadata,
-            clientId: this.currentClientId ?? '',
+            clientId,
           });
           return;
         }
@@ -226,7 +230,7 @@ export default class DeeplinkProtocolService {
 
       this.openDeeplink({
         message: messageWithMetadata,
-        clientId: this.currentClientId ?? '',
+        clientId,
       });
     } catch (error) {
       Logger.log(
@@ -251,6 +255,13 @@ export default class DeeplinkProtocolService {
       const jsonMessage = JSON.stringify(message);
       const base64Message = Buffer.from(jsonMessage).toString('base64');
       const dappScheme = this.connections[clientId]?.scheme ?? scheme;
+
+      if (!isValidDappScheme(dappScheme)) {
+        Logger.log(
+          `DeeplinkProtocolService::openDeeplink invalid scheme for clientId=${clientId} --- skip`,
+        );
+        return;
+      }
 
       DevLogger.log(
         `DeeplinkProtocolService::openDeeplink scheme=${scheme} dappScheme=${dappScheme} clientId=${clientId}`,
@@ -305,6 +316,7 @@ export default class DeeplinkProtocolService {
   public async handleConnectionEventAsync({
     clientInfo,
     params,
+    requiresReapproval = false,
   }: {
     clientInfo: DappClient;
     params: {
@@ -315,6 +327,7 @@ export default class DeeplinkProtocolService {
       originatorInfo?: string;
       request?: string;
     };
+    requiresReapproval?: boolean;
   }) {
     const keyringController = (
       Engine.context as { KeyringController: KeyringController }
@@ -325,10 +338,14 @@ export default class DeeplinkProtocolService {
       context: 'DeeplinkProtocolService::setupOnClientsConnectedListener',
     });
 
+    const isExistingSession = !!this.connections?.[clientInfo.clientId];
+
     try {
-      if (!this.connections?.[clientInfo.clientId]) {
+      if (!isExistingSession || requiresReapproval) {
         DevLogger.log(
-          `DeeplinkProtocolService::clients_connected - new client ${clientInfo.clientId}}`,
+          `DeeplinkProtocolService::clients_connected - ${
+            isExistingSession ? 're-approving' : 'new'
+          } client ${clientInfo.clientId}`,
           this.connections,
         );
 
@@ -338,6 +355,9 @@ export default class DeeplinkProtocolService {
         });
 
         this.setupBridge(clientInfo);
+
+        this.dappPublicKeyByClientId[clientInfo.clientId] =
+          params.dappPublicKey;
 
         this.connections[clientInfo.clientId] = {
           clientId: clientInfo.clientId,
@@ -368,6 +388,7 @@ export default class DeeplinkProtocolService {
         {
           data: {},
         },
+        clientInfo.clientId,
         true,
       ).catch((err) => {
         Logger.log(
@@ -381,13 +402,22 @@ export default class DeeplinkProtocolService {
         `DeeplinkProtocolService::clients_connected sending jsonrpc error to client - connection rejected`,
       );
 
-      this.sendMessage({
-        data: {
-          error,
-          jsonrpc: '2.0',
+      if (isExistingSession) {
+        // Re-approval was rejected: keep the stored session untouched and do
+        // not send anything to the unverified caller's scheme.
+        return;
+      }
+
+      this.sendMessage(
+        {
+          data: {
+            error,
+            jsonrpc: '2.0',
+          },
+          name: 'metamask-provider',
         },
-        name: 'metamask-provider',
-      }).catch((err) => {
+        clientInfo.clientId,
+      ).catch((err) => {
         Logger.log(
           err,
           `DeeplinkProtocolService::clients_connected error failed sending jsonrpc error to client`,
@@ -404,7 +434,7 @@ export default class DeeplinkProtocolService {
 
       this.openDeeplink({
         message,
-        clientId: this.currentClientId ?? '',
+        clientId: clientInfo.clientId,
         scheme: clientInfo.scheme,
       });
 
@@ -429,7 +459,12 @@ export default class DeeplinkProtocolService {
       return;
     }
 
-    this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
+    if (!isValidDappScheme(params.scheme)) {
+      Logger.log(
+        `DeeplinkProtocolService::handleConnection invalid scheme for channelId=${params.channelId}`,
+      );
+      return;
+    }
 
     const decodedOriginatorInfo = Buffer.from(
       params.originatorInfo,
@@ -448,16 +483,42 @@ export default class DeeplinkProtocolService {
       scheme: params.scheme,
     };
 
-    this.currentClientId = params.channelId;
+    const existingSession = this.connections?.[clientInfo.clientId];
 
-    const isSessionExists = this.connections?.[clientInfo.clientId];
+    if (existingSession) {
+      const isKeyChanged =
+        this.dappPublicKeyByClientId[clientInfo.clientId] !==
+        params.dappPublicKey;
+      const isSchemeChanged = existingSession.scheme !== params.scheme;
+      const isExpired =
+        existingSession.validUntil !== undefined &&
+        existingSession.validUntil < Date.now();
 
-    if (isSessionExists) {
-      // Skip existing client -- bridge has been setup
+      if (isKeyChanged || isSchemeChanged || isExpired) {
+        // The channel id alone does not prove ownership of the session:
+        // never accept a new key/scheme (or revive an expired session)
+        // without the user approving the connection again.
+        DevLogger.log(
+          `DeeplinkProtocolService::handleConnection re-approval required for ${clientInfo.clientId} keyChanged=${isKeyChanged} schemeChanged=${isSchemeChanged} expired=${isExpired}`,
+        );
+
+        this.handleConnectionEventAsync({
+          clientInfo,
+          params,
+          requiresReapproval: true,
+        }).catch((err) => {
+          Logger.log(
+            err,
+            `DeeplinkProtocolService::clients_connected error handling re-approval`,
+          );
+        });
+
+        return;
+      }
 
       // Update connected state
       this.connections[clientInfo.clientId] = {
-        ...this.connections[clientInfo.clientId],
+        ...existingSession,
         connected: true,
       };
 
@@ -468,6 +529,7 @@ export default class DeeplinkProtocolService {
           {
             data: {},
           },
+          clientInfo.clientId,
           true,
         ).catch((err) => {
           Logger.log(
@@ -479,16 +541,6 @@ export default class DeeplinkProtocolService {
 
       return;
     }
-
-    await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
-      lastAuthorized: Date.now(),
-      origin: AppConstants.MM_SDK.IOS_SDK,
-      originatorInfo: clientInfo.originatorInfo,
-      otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
-      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      scheme: clientInfo.scheme,
-    });
 
     this.handleConnectionEventAsync({
       clientInfo,
@@ -567,7 +619,7 @@ export default class DeeplinkProtocolService {
     return hexChainId;
   }
 
-  public getSelectedAccounts() {
+  public getSelectedAccounts(clientId: string) {
     const accountsController = (
       Engine.context as {
         AccountsController: AccountsController;
@@ -578,7 +630,7 @@ export default class DeeplinkProtocolService {
       accountsController.getSelectedAccount().address,
     );
 
-    let connectedAddresses = getPermittedAccounts(this.currentClientId ?? '');
+    let connectedAddresses = getPermittedAccounts(clientId);
 
     DevLogger.log(
       `DeeplinkProtocolService::clients_connected connectedAddresses`,
@@ -639,6 +691,22 @@ export default class DeeplinkProtocolService {
     scheme: string;
     account: string; // account@chainid
   }) {
+    if (!isValidDappScheme(params.scheme)) {
+      Logger.log(
+        `DeeplinkProtocolService::handleMessage invalid scheme for channelId=${params.channelId}`,
+      );
+      return;
+    }
+
+    const storedScheme = this.connections?.[params.channelId]?.scheme;
+
+    if (storedScheme && storedScheme !== params.scheme) {
+      Logger.log(
+        `DeeplinkProtocolService::handleMessage scheme mismatch for channelId=${params.channelId} --- reject`,
+      );
+      return;
+    }
+
     let walletSelectedAddress = '';
     let walletSelectedChainId = '';
     let dappAccountChainId = '';
@@ -747,6 +815,7 @@ export default class DeeplinkProtocolService {
               },
               name: 'metamask-provider',
             },
+            sessionId,
             true,
           ).catch((err) => {
             Logger.log(
@@ -763,13 +832,16 @@ export default class DeeplinkProtocolService {
           `DeeplinkProtocolService::onMessageReceived invalid json param`,
         );
 
-        this.sendMessage({
-          data: {
-            error,
-            jsonrpc: '2.0',
+        this.sendMessage(
+          {
+            data: {
+              error,
+              jsonrpc: '2.0',
+            },
+            name: 'metamask-provider',
           },
-          name: 'metamask-provider',
-        }).catch((err) => {
+          sessionId,
+        ).catch((err) => {
           Logger.log(
             err,
             `DeeplinkProtocolService::onMessageReceived error sending jsonrpc error message to client ${sessionId}`,
@@ -845,7 +917,6 @@ export default class DeeplinkProtocolService {
         }
       }
 
-      this.currentClientId = sessionId;
       // Handle custom rpc method
       const processedRpc = await handleCustomRpcCalls({
         batchRPCManager: this.batchRPCManager,

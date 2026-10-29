@@ -47,7 +47,6 @@ describe('handleMetaMaskProtocol', () => {
 
   const handled = jest.fn();
 
-
   let url = '';
 
   let params = {
@@ -78,7 +77,7 @@ describe('handleMetaMaskProtocol', () => {
         navigation: {
           navigate: mockNavigate,
         },
-      }
+      },
     }));
 
     mockWC2ManagerGetInstance.mockResolvedValue({
@@ -154,6 +153,24 @@ describe('handleMetaMaskProtocol', () => {
         });
       }).toThrow('DeepLinkManager failed to connect - Invalid scheme');
     });
+
+    it.each(['https://evil.example/?x=', 'http', 'javascript', 'bad scheme'])(
+      'should throw an error if params.scheme is not a bare custom scheme (%s)',
+      (scheme) => {
+        params.scheme = scheme;
+
+        expect(() => {
+          handleMetaMaskDeeplink({
+            instance,
+            handled,
+            params,
+            url,
+            origin,
+            wcURL,
+          });
+        }).toThrow('DeepLinkManager failed to connect - Invalid scheme');
+      },
+    );
 
     it('should call handleConnection if params.scheme is defined', () => {
       const mockHandleConnection = jest.fn();
@@ -290,7 +307,6 @@ describe('handleMetaMaskProtocol', () => {
         screen: Routes.SHEET.RETURN_TO_DAPP_MODAL,
       });
     });
-
 
     it('should call handleDeeplink when channel exists and params.redirect is falsy', () => {
       origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
