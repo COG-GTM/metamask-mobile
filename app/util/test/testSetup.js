@@ -85,6 +85,7 @@ jest.mock('@metamask/react-native-webview', () => {
     }));
     return <View {...props} />;
   });
+  WebView.displayName = 'WebView';
 
   return {
     WebView,
