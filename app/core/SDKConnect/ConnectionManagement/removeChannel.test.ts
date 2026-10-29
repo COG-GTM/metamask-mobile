@@ -132,6 +132,7 @@ describe('removeChannel', () => {
     const mockChannelId = 'mockChannelId';
     const mockHost = AppConstants.MM_SDK.SDK_REMOTE_ORIGIN + mockChannelId;
     let mockRevokeAllPermissions: jest.Mock;
+    let mockRejectApproval: jest.Mock;
     let mockEngine: typeof Engine;
     let mockOnDisconnect: jest.Mock;
     let mockRemoteDisconnect: jest.Mock;
@@ -152,8 +153,21 @@ describe('removeChannel', () => {
 
     beforeEach(() => {
       mockRevokeAllPermissions = jest.fn();
+      mockRejectApproval = jest.fn();
       mockEngine = {
         context: {
+          ApprovalController: {
+            state: {
+              pendingApprovals: {
+                approvalForChannel: {
+                  id: 'approvalForChannel',
+                  origin: mockChannelId,
+                },
+                otherApproval: { id: 'otherApproval', origin: 'otherOrigin' },
+              },
+            },
+            reject: mockRejectApproval,
+          },
           PermissionController: {
             getPermissions: jest.fn().mockReturnValue({ eth_accounts: {} }),
             revokeAllPermissions: mockRevokeAllPermissions,
@@ -248,6 +262,59 @@ describe('removeChannel', () => {
 
       expect(mockRevokeAllPermissions).toHaveBeenCalledWith(mockChannelId);
       expect(mockRemoteDisconnect).not.toHaveBeenCalled();
+    });
+    it('rejects in-flight approvals for the removed channel', async () => {
+      setupConnection(jest.fn().mockResolvedValue(true));
+      const connection = mockInstance.state.connected[mockChannelId];
+      connection.approvalPromise = Promise.resolve();
+
+      await removeChannel({
+        channelId: mockChannelId,
+        engine: mockEngine,
+        sendTerminate: true,
+        instance: mockInstance,
+      });
+
+      expect(mockRejectApproval).toHaveBeenCalledTimes(1);
+      expect(mockRejectApproval).toHaveBeenCalledWith(
+        'approvalForChannel',
+        expect.anything(),
+      );
+      expect(connection.approvalPromise).toBeUndefined();
+    });
+
+    it('does not report success or drop the session when revocation fails', async () => {
+      setupConnection(jest.fn().mockResolvedValue(true));
+      mockRevokeAllPermissions.mockImplementation(() => {
+        throw new Error('revoke failed');
+      });
+
+      await expect(
+        removeChannel({
+          channelId: mockChannelId,
+          engine: mockEngine,
+          sendTerminate: true,
+          instance: mockInstance,
+        }),
+      ).rejects.toThrow('revoke failed');
+      expect(mockInstance.state.connections[mockChannelId]).toBeDefined();
+    });
+
+    it('closes the relay even if bridge cleanup throws', async () => {
+      setupConnection(jest.fn().mockResolvedValue(false));
+      mockOnDisconnect.mockImplementation(() => {
+        throw new Error('bridge failed');
+      });
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      await removeChannel({
+        channelId: mockChannelId,
+        engine: mockEngine,
+        sendTerminate: true,
+        instance: mockInstance,
+      });
+
+      expect(mockRemoteDisconnect).toHaveBeenCalled();
     });
   });
 });

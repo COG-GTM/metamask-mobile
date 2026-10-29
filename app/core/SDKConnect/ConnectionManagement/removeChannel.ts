@@ -1,4 +1,6 @@
+import { ApprovalController } from '@metamask/approval-controller';
 import { PermissionController } from '@metamask/permission-controller';
+import { providerErrors } from '@metamask/rpc-errors';
 import {
   removeApprovedHost,
   removeConnection,
@@ -12,6 +14,15 @@ import DevLogger from '../utils/DevLogger';
 
 export const TERMINATE_TIMEOUT_MS = 5000;
 
+/**
+ * Attempts to notify the dapp that the channel was terminated.
+ * Waits at most TERMINATE_TIMEOUT_MS; if the message is not delivered,
+ * the connection's bridge and relay socket are closed locally.
+ *
+ * @param params - The parameters.
+ * @param params.channelId - The channel being removed.
+ * @param params.connection - The connection to terminate.
+ */
 async function sendTerminateBestEffort({
   channelId,
   connection,
@@ -43,9 +54,13 @@ async function sendTerminateBestEffort({
     );
     try {
       connection.backgroundBridge?.onDisconnect();
+    } catch (err) {
+      console.error(`Can't close bridge for ${channelId}`, err);
+    }
+    try {
       connection.remote?.disconnect();
     } catch (err) {
-      console.error(`Can't close connection ${channelId}`, err);
+      console.error(`Can't close relay for ${channelId}`, err);
     }
   }
 }
@@ -78,6 +93,33 @@ async function removeChannel({
   const connection = instance.state.connected[channelId];
 
   // Revoke locally first so an unreachable dapp cannot keep its access.
+  if (connection) {
+    connection.approvalPromise = undefined;
+  }
+  if (engine) {
+    const {
+      ApprovalController: approvalController,
+      PermissionController: permissionsController,
+    } = engine.context as {
+      ApprovalController: ApprovalController;
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      PermissionController: PermissionController<any, any>;
+    };
+    // Cancel any in-flight approval so it cannot re-grant access after removal.
+    Object.values(approvalController?.state?.pendingApprovals ?? {})
+      .filter((approval) => approval.origin === channelId)
+      .forEach((approval) => {
+        approvalController.reject(
+          approval.id,
+          providerErrors.userRejectedRequest(),
+        );
+      });
+    if (permissionsController.getPermissions(channelId)) {
+      permissionsController.revokeAllPermissions(channelId);
+    }
+  }
+
   delete instance.state.connected[channelId];
   delete instance.state.connections[channelId];
   delete instance.state.approvedHosts[
@@ -92,24 +134,6 @@ async function removeChannel({
   store.dispatch(removeApprovedHost(channelId));
 
   delete instance.state.connecting[channelId];
-  if (engine) {
-    try {
-      // Remove matching permissions from controller
-      const permissionsController = (
-        engine.context as {
-          // TODO: Replace "any" with type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          PermissionController: PermissionController<any, any>;
-        }
-      ).PermissionController;
-      if (permissionsController.getPermissions(channelId)) {
-        permissionsController.revokeAllPermissions(channelId);
-      }
-    } catch (err) {
-      console.error(`Can't revoke permissions for ${channelId}`, err);
-    }
-  }
-
   if (connection) {
     await sendTerminateBestEffort({ channelId, connection });
   }
