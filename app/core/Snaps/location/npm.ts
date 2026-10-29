@@ -4,6 +4,8 @@ import { VirtualFile } from '@metamask/snaps-utils';
 import { stringToBytes } from '@metamask/utils';
 import { NativeModules } from 'react-native';
 import ReactNativeBlobUtil, { FetchBlobResponse } from 'react-native-blob-util';
+import { v4 as uuidv4 } from 'uuid';
+import Logger from '../../../util/Logger';
 import {
   BaseNpmLocation,
   getNpmCanonicalBasePath,
@@ -53,9 +55,9 @@ const readAndParseAt = async (path: string) => {
 
 const fetchAndStoreNPMPackage = async (
   inputRequest: RequestInfo,
+  extractionDir: string,
 ): Promise<string> => {
-  const targetDir = ReactNativeBlobUtil.fs.dirs.DocumentDir;
-  const filePath = `${targetDir}/archive.tgz`;
+  const filePath = `${extractionDir}.tgz`;
   const urlToFetch: string =
     typeof inputRequest === 'string' ? inputRequest : inputRequest.url;
 
@@ -64,11 +66,13 @@ const fetchAndStoreNPMPackage = async (
       fileCache: true,
       path: filePath,
     }).fetch('GET', urlToFetch);
-    const dataPath = response.data;
-    const decompressedPath = await decompressFile(dataPath, targetDir);
-    // remove response file from cache
-    response.flush();
-    return decompressedPath;
+    try {
+      const dataPath = response.data;
+      return await decompressFile(dataPath, extractionDir);
+    } finally {
+      // remove response file from cache
+      response.flush();
+    }
   } catch (error) {
     throw new Error(
       `${SNAPS_NPM_LOG_TAG} fetchAndStoreNPMPackage failed to fetch with error: ${error}`,
@@ -77,26 +81,47 @@ const fetchAndStoreNPMPackage = async (
 };
 
 const cleanupFileSystem = async (path: string) => {
-  ReactNativeBlobUtil.fs.unlink(path).catch((error) => {
-    throw new Error(
+  try {
+    if (await ReactNativeBlobUtil.fs.exists(path)) {
+      await ReactNativeBlobUtil.fs.unlink(path);
+    }
+  } catch (error) {
+    // Cleanup is best-effort and must not mask the original result or error.
+    Logger.log(
       `${SNAPS_NPM_LOG_TAG} cleanupFileSystem failed to clean files at path with error: ${error}`,
     );
-  });
+  }
 };
 
 export class NpmLocation extends BaseNpmLocation {
   async fetchNpmTarball(
     tarballUrl: URL,
   ): Promise<Map<string, VirtualFile<unknown>>> {
-    // Fetches and unpacks the NPM package on the local filesystem using native code
-    const npmPackageDataLocation = await fetchAndStoreNPMPackage(
-      tarballUrl.toString(),
-    );
+    // Unpack into a fresh, unique scratch directory (never the Documents root)
+    // so archive entries cannot overwrite existing app files.
+    const extractionDir = `${
+      ReactNativeBlobUtil.fs.dirs.CacheDir
+    }/snaps-npm-${uuidv4()}`;
 
-    // Find all paths contained within the tarball
-    const paths = await findAllPaths(npmPackageDataLocation);
+    let npmPackageDataLocation: string;
+    let files: { path: string; contents: Uint8Array }[];
+    try {
+      // Fetches and unpacks the NPM package on the local filesystem using native code
+      npmPackageDataLocation = await fetchAndStoreNPMPackage(
+        tarballUrl.toString(),
+        extractionDir,
+      );
 
-    const files = await Promise.all(paths.map(readAndParseAt));
+      // Find all paths contained within the tarball
+      const paths = await findAllPaths(npmPackageDataLocation);
+
+      files = await Promise.all(paths.map(readAndParseAt));
+    } finally {
+      await Promise.all([
+        cleanupFileSystem(extractionDir),
+        cleanupFileSystem(`${extractionDir}.tgz`),
+      ]);
+    }
 
     const canonicalBase = getNpmCanonicalBasePath(
       this.meta.registry,
@@ -117,9 +142,6 @@ export class NpmLocation extends BaseNpmLocation {
         }),
       );
     });
-
-    // Cleanup filesystem
-    await cleanupFileSystem(npmPackageDataLocation);
 
     return map;
   }

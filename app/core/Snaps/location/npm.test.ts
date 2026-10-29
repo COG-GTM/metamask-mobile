@@ -1,14 +1,17 @@
+import { NativeModules } from 'react-native';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 import { NpmLocation } from './npm';
 
 jest.mock('react-native-blob-util', () => ({
   config: jest.fn(() => ({
     fetch: jest.fn(() => ({
       flush: jest.fn(),
-      data: '/document-dir/archive.tgz',
+      data: '/cache-dir/archive.tgz',
     })),
   })),
   fs: {
-    dirs: { DocumentDir: '/document-dir/' },
+    dirs: { CacheDir: '/cache-dir' },
+    exists: jest.fn().mockResolvedValue(true),
     unlink: jest.fn().mockResolvedValue(undefined),
     isDir: jest.fn((path) => path.endsWith('archive') || path.endsWith('dist')),
     ls: jest.fn((path) => {
@@ -44,6 +47,21 @@ describe('NpmLocation', () => {
     expect(bundle.path).toStrictEqual('dist/bundle.js');
     expect(bundle.toString()).toStrictEqual(
       `module.exports.onRpcRequest = () => null`,
+    );
+  });
+
+  it('extracts into a unique scratch directory and removes it afterwards', async () => {
+    const location = new NpmLocation(new URL('npm:@metamask/example-snap'));
+    await location.fetch('snap.manifest.json');
+
+    const [archivePath, extractionDir] = (
+      NativeModules.RNTar.unTar as jest.Mock
+    ).mock.calls.at(-1);
+    expect(archivePath).toBe('/cache-dir/archive.tgz');
+    expect(extractionDir).toMatch(/^\/cache-dir\/snaps-npm-[0-9a-f-]{36}$/u);
+    expect(ReactNativeBlobUtil.fs.unlink).toHaveBeenCalledWith(extractionDir);
+    expect(ReactNativeBlobUtil.fs.unlink).toHaveBeenCalledWith(
+      `${extractionDir}.tgz`,
     );
   });
 });
