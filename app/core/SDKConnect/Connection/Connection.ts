@@ -47,6 +47,10 @@ export interface ConnectionProps {
   validUntil?: number;
   scheme?: string;
   lastAuthorized?: number; // timestamp of last received activity
+  /**
+   * Persisted while a changed peer key on this channel is awaiting user re-approval.
+   */
+  requiresReapproval?: boolean;
 }
 
 import packageJSON from '../../../../package.json';
@@ -94,7 +98,17 @@ export class Connection extends EventEmitter2 {
    */
   otps?: number[];
 
+  /**
+   * Set when the peer public key of an existing channel changed; the user must re-approve the channel.
+   */
+  requiresReapproval = false;
+
   approvalPromise?: Promise<unknown>;
+
+  /**
+   * Pending forced re-approval shared by every caller while the user decides.
+   */
+  reapprovalPromise?: Promise<boolean>;
 
   /**
    * Should only be accesses via getter / setter.
@@ -134,6 +148,7 @@ export class Connection extends EventEmitter2 {
     trigger,
     navigation,
     lastAuthorized,
+    requiresReapproval,
     approveHost,
     getApprovedHosts,
     disapprove,
@@ -157,7 +172,9 @@ export class Connection extends EventEmitter2 {
   }) {
     super();
 
-    this.isReady = relayPersistence ?? false;
+    this.requiresReapproval = requiresReapproval === true;
+    // A channel awaiting re-approval must go through the clients_ready handshake again.
+    this.isReady = (relayPersistence ?? false) && !this.requiresReapproval;
     this.origin = origin;
     this.trigger = trigger;
     this.channelId = id;
@@ -317,7 +334,13 @@ export class Connection extends EventEmitter2 {
     this.trigger = trigger;
   }
 
-  disconnect({ terminate, context }: { terminate: boolean; context?: string }): Promise<boolean> {
+  disconnect({
+    terminate,
+    context,
+  }: {
+    terminate: boolean;
+    context?: string;
+  }): Promise<boolean> {
     return disconnect({ instance: this, terminate, context });
   }
 

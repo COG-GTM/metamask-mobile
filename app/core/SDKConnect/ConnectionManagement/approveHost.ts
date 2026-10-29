@@ -28,8 +28,15 @@ function approveHost({
     if (instance.state.connections[channelId]) {
       instance.state.connections[channelId].lastAuthorized = approvedUntil;
     }
-    if (instance.state.connected[channelId]) {
-      instance.state.connected[channelId].lastAuthorized = approvedUntil;
+    const connected = instance.state.connected[channelId];
+    if (connected) {
+      connected.lastAuthorized = approvedUntil;
+      if (
+        !connected.requiresReapproval &&
+        instance.state.connections[channelId]
+      ) {
+        instance.state.connections[channelId].requiresReapproval = false;
+      }
     }
 
     store.dispatch(resetConnections(instance.state.connections));

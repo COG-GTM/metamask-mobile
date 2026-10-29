@@ -77,23 +77,33 @@ const handleDeeplink = async ({
   DevLogger.log(`handleDeeplink:: url=${url}`);
   const connections = sdkConnect.getConnections();
   const channelExists = connections[channelId] !== undefined;
+  const keyChanged =
+    channelExists && connections[channelId].otherPublicKey !== otherPublicKey;
 
   DevLogger.log(
-    `handleDeeplink:: channel=${channelId} exists=${channelExists}`,
+    `handleDeeplink:: channel=${channelId} exists=${channelExists} keyChanged=${keyChanged}`,
   );
 
   try {
     if (channelExists) {
       // is it already connected?
-      let connected = sdkConnect.getConnected()[channelId]?.remote.isConnected() ?? false;
-      if(!connected) {
-        if(sdkConnect.state.connecting[channelId] === true) {
+      let connected =
+        sdkConnect.getConnected()[channelId]?.remote.isConnected() ?? false;
+      // A changed peer key must always go through reconnect, which forces re-approval.
+      if (!connected || keyChanged) {
+        if (!keyChanged && sdkConnect.state.connecting[channelId] === true) {
           // skip reconnect if connecting
-          DevLogger.log(`handleDeeplink:: channel=${channelId} is connecting --- SKIP reconnect`, sdkConnect.state.connecting);
+          DevLogger.log(
+            `handleDeeplink:: channel=${channelId} is connecting --- SKIP reconnect`,
+            sdkConnect.state.connecting,
+          );
           // wait for connection to be established
           await waitForCondition({
             fn: () => {
-              DevLogger.log(`handleDeeplink:: channel=${channelId} is connecting --- wait for connection to be established`, sdkConnect.state.connecting);
+              DevLogger.log(
+                `handleDeeplink:: channel=${channelId} is connecting --- wait for connection to be established`,
+                sdkConnect.state.connecting,
+              );
               return sdkConnect.state.connecting[channelId] === false;
             },
             context: 'handleDeeplink',
@@ -112,13 +122,24 @@ const handleDeeplink = async ({
           });
         }
       } else {
-        DevLogger.log(`handleDeeplink:: channel=${channelId} is already connected`);
+        DevLogger.log(
+          `handleDeeplink:: channel=${channelId} is already connected`,
+        );
       }
 
-      connected = sdkConnect.getConnected()[channelId]?.remote.isConnected() ?? false;
+      connected =
+        sdkConnect.getConnected()[channelId]?.remote.isConnected() ?? false;
       DevLogger.log(
         `handleDeeplink:: channel=${channelId} reconnected=${connected} -- handle rcp`,
       );
+      if (rpc && keyChanged) {
+        // The rpc payload comes from a peer the user has not approved yet.
+        DevLogger.log(
+          `handleDeeplink:: channel=${channelId} peer key changed --- ignore rpc until re-approval`,
+        );
+        return;
+      }
+
       // If msg contains rpc calls, handle them
       if (rpc) {
         const connection = sdkConnect.getConnected()[channelId];
@@ -142,7 +163,9 @@ const handleDeeplink = async ({
         const rpcMethodTracker = connection.remote.getRPCMethodTracker();
         if (rpcMethodTracker?.[message.id ?? '']) {
           // Already received via websocket
-          DevLogger.log(`handleDeeplink:: rpcId=${message.id} already received via websocket`);
+          DevLogger.log(
+            `handleDeeplink:: rpcId=${message.id} already received via websocket`,
+          );
           return;
         }
 

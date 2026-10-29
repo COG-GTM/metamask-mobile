@@ -213,4 +213,79 @@ describe('checkPermissions', () => {
       expect(wait).not.toHaveBeenCalledWith(100);
     });
   });
+
+  describe('forcePrompt', () => {
+    it('revokes existing permissions and prompts even when accounts are permitted', async () => {
+      permissionController.getPermissions = jest.fn().mockReturnValue({});
+      permissionController.revokeAllPermissions = jest.fn();
+      permissionController.getPermission = jest.fn().mockReturnValue(null);
+      requestPermissions.mockResolvedValue({});
+      mockGetPermittedAccounts.mockReturnValue(['0x123']);
+      connection.requiresReapproval = true;
+      connection.approvalPromise = Promise.resolve(true);
+
+      const result = await checkPermissions({
+        connection,
+        engine,
+        forcePrompt: true,
+      });
+
+      expect(permissionController.revokeAllPermissions).toHaveBeenCalledWith(
+        connection.channelId,
+      );
+      expect(requestPermissions).toHaveBeenCalledTimes(1);
+      expect(connection.requiresReapproval).toBe(false);
+      expect(result).toBe(true);
+    });
+
+    it('shares one prompt between concurrent callers', async () => {
+      permissionController.getPermissions = jest.fn().mockReturnValue({});
+      permissionController.revokeAllPermissions = jest.fn();
+      permissionController.getPermission = jest.fn().mockReturnValue(null);
+      requestPermissions.mockResolvedValue({});
+      mockGetPermittedAccounts.mockReturnValue(['0x123']);
+      connection.requiresReapproval = true;
+
+      const first = checkPermissions({ connection, engine, forcePrompt: true });
+      // A concurrent caller must not see the flag cleared before the user decides.
+      expect(connection.requiresReapproval).toBe(true);
+      const second = checkPermissions({
+        connection,
+        engine,
+        forcePrompt: true,
+      });
+
+      await expect(Promise.all([first, second])).resolves.toEqual([true, true]);
+      expect(requestPermissions).toHaveBeenCalledTimes(1);
+      expect(connection.requiresReapproval).toBe(false);
+    });
+
+    it('keeps requiring re-approval when the user rejects', async () => {
+      permissionController.getPermissions = jest.fn().mockReturnValue({});
+      permissionController.revokeAllPermissions = jest.fn();
+      permissionController.getPermission = jest.fn().mockReturnValue(null);
+      requestPermissions.mockRejectedValue(new Error('User rejected'));
+      connection.requiresReapproval = true;
+
+      await expect(
+        checkPermissions({ connection, engine, forcePrompt: true }),
+      ).rejects.toThrow('User rejected');
+      expect(connection.requiresReapproval).toBe(true);
+    });
+
+    it('leaves the channel without permissions when the user rejects', async () => {
+      permissionController.getPermissions = jest.fn().mockReturnValue({});
+      permissionController.revokeAllPermissions = jest.fn();
+      permissionController.getPermission = jest.fn().mockReturnValue(null);
+      requestPermissions.mockRejectedValue(new Error('User rejected'));
+      mockGetPermittedAccounts.mockReturnValue(['0x123']);
+
+      await expect(
+        checkPermissions({ connection, engine, forcePrompt: true }),
+      ).rejects.toThrow('User rejected');
+      expect(permissionController.revokeAllPermissions).toHaveBeenCalledWith(
+        connection.channelId,
+      );
+    });
+  });
 });

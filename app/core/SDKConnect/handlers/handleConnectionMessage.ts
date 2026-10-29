@@ -51,7 +51,9 @@ export const handleConnectionMessage = async ({
   // Check if message has already been processed
   const rpcQueueManager = connection.rpcQueueManager;
   if (message.id && rpcQueueManager.getId(message.id)) {
-    DevLogger.log(`Connection::onMessage rpcId=${message.id} already processed`);
+    DevLogger.log(
+      `Connection::onMessage rpcId=${message.id} already processed`,
+    );
     return;
   }
 
@@ -132,7 +134,16 @@ export const handleConnectionMessage = async ({
   // Wait for bridge to be ready before handling messages.
   // It will wait until user accept/reject the connection request.
   try {
-    await checkPermissions({ message, connection, engine });
+    const forcePrompt = connection.requiresReapproval;
+    const approved = await checkPermissions({
+      message,
+      connection,
+      engine,
+      forcePrompt,
+    });
+    if (forcePrompt && !approved) {
+      throw new Error('SDKConnect channel re-approval rejected');
+    }
     DevLogger.log(
       `[handleConnectionMessage] checkPermissions passed -- method=${
         message.method
