@@ -31,6 +31,7 @@ import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
 import AndroidSDKEventHandler from './AndroidNativeSDKEventHandler';
 import sendMessage from './AndroidService/sendMessage';
+import isBoundCaller from './AndroidService/isBoundCaller';
 import { DappClient, DappConnections } from './dapp-sdk-types';
 import getDefaultBridgeParams from './getDefaultBridgeParams';
 import { AccountsController } from '@metamask/accounts-controller';
@@ -128,6 +129,17 @@ export default class AndroidService extends EventEmitter2 {
       const clientInfo: DappClient = JSON.parse(sClientInfo);
 
       DevLogger.log(`AndroidService::clients_connected`, clientInfo);
+      const existingConnection = this.connections?.[clientInfo.clientId];
+      if (
+        existingConnection &&
+        !isBoundCaller(existingConnection, clientInfo.callerPackage)
+      ) {
+        // Session not bound to this calling app (e.g. created before native
+        // binding existed): require a fresh user approval.
+        delete this.bridgeByClientId[clientInfo.clientId];
+        delete this.connections[clientInfo.clientId];
+      }
+
       if (this.connections?.[clientInfo.clientId]) {
         // Skip existing client -- bridge has been setup
         Logger.log(
@@ -164,6 +176,7 @@ export default class AndroidService extends EventEmitter2 {
         originatorInfo: clientInfo.originatorInfo,
         otherPublicKey: '',
         validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+        callerPackage: clientInfo.callerPackage,
       });
 
       const handleEventAsync = async () => {
@@ -196,6 +209,7 @@ export default class AndroidService extends EventEmitter2 {
               clientId: clientInfo.clientId,
               originatorInfo: clientInfo.originatorInfo,
               validUntil: clientInfo.validUntil,
+              callerPackage: clientInfo.callerPackage,
             };
             await SDKConnect.getInstance().addDappConnection({
               id: clientInfo.clientId,
@@ -204,6 +218,7 @@ export default class AndroidService extends EventEmitter2 {
               originatorInfo: clientInfo.originatorInfo,
               otherPublicKey: '',
               validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+              callerPackage: clientInfo.callerPackage,
             });
           }
 
@@ -298,6 +313,7 @@ export default class AndroidService extends EventEmitter2 {
         let parsedMsg: {
           id: string;
           message: string;
+          callerPackage?: string;
         };
 
         DevLogger.log(`AndroidService::onMessageReceived`, jsonMessage);
@@ -329,9 +345,12 @@ export default class AndroidService extends EventEmitter2 {
 
           // Session ids are bound to the calling app by the native layer; never
           // create connection state for an id that was not approved first.
-          if (!sessionId || !this.connections[sessionId]) {
+          if (
+            !sessionId ||
+            !isBoundCaller(this.connections[sessionId], parsedMsg.callerPackage)
+          ) {
             Logger.log(
-              `AndroidService::onMessageReceived dropping message for unknown session`,
+              `AndroidService::onMessageReceived dropping message for unknown or unbound session`,
             );
             return;
           }

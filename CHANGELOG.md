@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix(android-sdk): bind Android SDK sessions to the calling app (Binder uid/package), use per-app keys, and replace device-wide broadcasts with in-process messaging ([#2084](https://github.com/COG-GTM/metamask-mobile/pull/2084))
 - fix(bridge): show "Auto" slippage for Solana swaps
 
 ### Added

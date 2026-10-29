@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.os.Process
 import android.os.RemoteException
 import org.json.JSONObject
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * In-process router between the exported [MessageService] (dapp side) and the
@@ -19,6 +21,7 @@ import java.util.concurrent.Executors
  */
 internal object NativeSDKHub {
     private const val MAX_PENDING_WALLET_EVENTS = 100
+    private const val MAX_IN_FLIGHT_PER_CALLER = 64
     private const val KEY_MESSAGE = "message"
     private const val KEY_KEY_EXCHANGE = "key_exchange"
 
@@ -33,21 +36,24 @@ internal object NativeSDKHub {
     private val clients = HashMap<Int, DappClient>()
     private val sessionOwners = HashMap<String, Int>()
     private val pendingWalletEvents = ArrayDeque<Pair<String, String>>()
+    private val inFlightByCaller = ConcurrentHashMap<Int, AtomicInteger>()
+
+    @Volatile
     private var walletListener: ((String, String) -> Unit)? = null
     private var bindingStore: SessionBindingStore? = null
 
     fun registerCallback(context: Context, uid: Int, callback: IMessegeServiceCallback?) {
         val appContext = context.applicationContext
-        executor.execute {
-            val client = clientFor(appContext, uid) ?: return@execute
+        submitFromCaller(uid) {
+            val client = clientFor(appContext, uid) ?: return@submitFromCaller
             client.callback = callback
         }
     }
 
     fun onDappKeyExchange(context: Context, uid: Int, json: String) {
         val appContext = context.applicationContext
-        executor.execute {
-            val client = clientFor(appContext, uid) ?: return@execute
+        submitFromCaller(uid) {
+            val client = clientFor(appContext, uid) ?: return@submitFromCaller
             try {
                 handleKeyExchange(client, json)
             } catch (e: Exception) {
@@ -58,31 +64,36 @@ internal object NativeSDKHub {
 
     fun onDappMessage(context: Context, uid: Int, sessionId: String, encrypted: String) {
         val appContext = context.applicationContext
-        executor.execute {
-            val client = clientFor(appContext, uid) ?: return@execute
-            if (!store(appContext).bindOrVerify(sessionId, client.packages)) {
-                Logger.error("NativeSDKHub:: dropping message, session not owned by uid=$uid")
-                return@execute
-            }
+        submitFromCaller(uid) {
+            val client = clientFor(appContext, uid) ?: return@submitFromCaller
             val payload = try {
                 client.keyExchange.decrypt(encrypted)
             } catch (e: Exception) {
                 Logger.error("NativeSDKHub:: unable to decrypt message from uid=$uid")
-                return@execute
+                return@submitFromCaller
+            }
+            val ownerPackage = store(appContext).bindOrVerify(sessionId, client.packages)
+            if (ownerPackage == null) {
+                Logger.error("NativeSDKHub:: dropping message, session not owned by uid=$uid")
+                return@submitFromCaller
             }
             sessionOwners[sessionId] = uid
-            handleMessage(client, sessionId, payload)
+            try {
+                handleMessage(client, sessionId, ownerPackage, payload)
+            } catch (e: Exception) {
+                Logger.error("NativeSDKHub:: invalid message from uid=$uid: ${e.message}")
+            }
         }
     }
 
     fun setWalletListener(listener: ((String, String) -> Unit)?) {
+        walletListener = listener
+        if (listener == null) return
         executor.execute {
-            walletListener = listener
-            if (listener != null) {
-                while (pendingWalletEvents.isNotEmpty()) {
-                    val (event, data) = pendingWalletEvents.removeFirst()
-                    listener(event, data)
-                }
+            val current = walletListener ?: return@execute
+            while (pendingWalletEvents.isNotEmpty()) {
+                val (event, data) = pendingWalletEvents.removeFirst()
+                current(event, data)
             }
         }
     }
@@ -106,10 +117,33 @@ internal object NativeSDKHub {
         }
     }
 
+    /** Drops work from a caller that already has too many queued tasks. */
+    private fun submitFromCaller(uid: Int, task: () -> Unit) {
+        val inFlight = inFlightByCaller.getOrPut(uid) { AtomicInteger() }
+        if (inFlight.incrementAndGet() > MAX_IN_FLIGHT_PER_CALLER) {
+            inFlight.decrementAndGet()
+            Logger.error("NativeSDKHub:: too many pending requests from uid=$uid, dropping")
+            return
+        }
+        executor.execute {
+            try {
+                task()
+            } finally {
+                inFlight.decrementAndGet()
+            }
+        }
+    }
+
     private fun clientFor(context: Context, uid: Int): DappClient? {
         if (uid == Process.myUid()) return null
-        clients[uid]?.let { return it }
+        // Resolve packages on every call so a reused uid never inherits another app's keys.
         val packages = context.packageManager.getPackagesForUid(uid)?.toSet().orEmpty()
+        val cached = clients[uid]
+        if (cached != null && cached.packages == packages) return cached
+        if (cached != null) {
+            clients.remove(uid)
+            sessionOwners.entries.removeAll { it.value == uid }
+        }
         if (packages.isEmpty()) {
             Logger.error("NativeSDKHub:: rejecting caller with unknown uid=$uid")
             return null
@@ -145,16 +179,23 @@ internal object NativeSDKHub {
         }
     }
 
-    private fun handleMessage(client: DappClient, sessionId: String, payload: String) {
+    private fun handleMessage(
+        client: DappClient,
+        sessionId: String,
+        ownerPackage: String,
+        payload: String,
+    ) {
         val payloadJson = JSONObject(payload)
         if (payloadJson.optString("originatorInfo").isNotEmpty()) {
             payloadJson.put("clientId", sessionId)
+            payloadJson.put("callerPackage", ownerPackage)
             emitToWallet(EventType.CLIENTS_CONNECTED.value, payloadJson.toString())
             Analytics.trackEvent(Event.SDK_CONNECTION_ESTABLISHED, sessionId)
             return
         }
         val messageJson = JSONObject()
             .put("id", sessionId)
+            .put("callerPackage", ownerPackage)
             .put("message", payload)
             .toString()
         if (client.keyExchange.keysExchanged) {
