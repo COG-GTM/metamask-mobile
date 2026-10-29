@@ -124,7 +124,7 @@ public extension FileManager {
   private func safePath(baseURL: URL, name: String) throws -> String {
     let components = name.split(separator: "/", omittingEmptySubsequences: true)
     guard !name.hasPrefix("/"), !name.contains("\0"), !name.contains("\\"),
-          !components.contains(where: { $0 == ".." || $0.contains("%") }) else {
+          !components.contains("..") else {
       throw UntarError.unsafeEntryPath(name: name)
     }
     let basePath = (baseURL.path as NSString).standardizingPath
