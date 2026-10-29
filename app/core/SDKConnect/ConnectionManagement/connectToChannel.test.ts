@@ -208,4 +208,54 @@ describe('connectToChannel', () => {
       expect(connectedInstance.remote.state.relayPersistence).toBe(true);
     });
   });
+  describe('Handling removal during the initial permission request', () => {
+    it('completes rejection cleanup when the channel was already removed', async () => {
+      const mockReject = jest.fn().mockResolvedValue(undefined);
+      const mockNavigate = jest.fn();
+      const mockUpdateLoading = jest.fn().mockResolvedValue(undefined);
+      (
+        mockInstance as unknown as { updateSDKLoadingState: jest.Mock }
+      ).updateSDKLoadingState = mockUpdateLoading;
+      MockedConnection.mockImplementation(
+        () =>
+          ({
+            remote: {
+              getKeyInfo: jest.fn().mockReturnValue({
+                ecies: { private: 'k', otherPubKey: 'p' },
+              }),
+              reject: mockReject,
+            },
+            navigation: {
+              getCurrentRoute: () => ({ name: 'SomeRoute' }),
+              navigate: mockNavigate,
+            },
+            connect: jest.fn().mockResolvedValue(undefined),
+            isReady: false,
+          } as unknown as Connection),
+      );
+      delete mockInstance.state.connected[id];
+      (checkPermissions as jest.Mock).mockImplementation(async () => {
+        delete mockInstance.state.connected[id];
+        throw new Error('User rejected the request.');
+      });
+
+      await connectToChannel({
+        instance: mockInstance,
+        id,
+        trigger,
+        otherPublicKey,
+        origin,
+        validUntil,
+        originatorInfo,
+        initialConnection: true,
+      });
+
+      expect(mockReject).toHaveBeenCalledWith({ channelId: id });
+      expect(mockUpdateLoading).toHaveBeenCalledWith({
+        channelId: id,
+        loading: false,
+      });
+      expect(mockNavigate).toHaveBeenCalled();
+    });
+  });
 });
