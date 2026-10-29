@@ -94,6 +94,7 @@ export default class AndroidService extends EventEmitter2 {
             clientId: connection.id,
             originatorInfo: connection.originatorInfo as OriginatorInfo,
             validUntil: connection.validUntil,
+            callerPackage: connection.callerPackage,
           };
         });
       } else {
