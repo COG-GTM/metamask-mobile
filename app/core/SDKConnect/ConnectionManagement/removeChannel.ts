@@ -6,8 +6,49 @@ import {
 import { store } from '../../../../app/store';
 import AppConstants from '../../../core/AppConstants';
 import Engine from '../../Engine';
+import { Connection } from '../Connection';
 import SDKConnect from '../SDKConnect';
 import DevLogger from '../utils/DevLogger';
+
+export const TERMINATE_TIMEOUT_MS = 5000;
+
+async function sendTerminateBestEffort({
+  channelId,
+  connection,
+}: {
+  channelId: string;
+  connection: Connection;
+}): Promise<void> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let terminated = false;
+  try {
+    terminated = await Promise.race([
+      connection.removeConnection({
+        terminate: true,
+        context: 'SDKConnect::removeChannel',
+      }),
+      new Promise<boolean>((resolve) => {
+        timeoutId = setTimeout(() => resolve(false), TERMINATE_TIMEOUT_MS);
+      }),
+    ]);
+  } catch (err) {
+    console.error(`Can't remove connection ${channelId}`, err);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+
+  if (!terminated) {
+    DevLogger.log(
+      `SDKConnect::removeChannel channelId=${channelId} terminate not delivered, closing locally`,
+    );
+    try {
+      connection.backgroundBridge?.onDisconnect();
+      connection.remote?.disconnect();
+    } catch (err) {
+      console.error(`Can't close connection ${channelId}`, err);
+    }
+  }
+}
 
 async function removeChannel({
   channelId,
@@ -34,21 +75,9 @@ async function removeChannel({
     instance.state.deeplinkingService?.removeConnection(channelId);
   }
 
-  if (instance.state.connected[channelId]) {
-    try {
-      const terminated = await instance.state.connected[channelId].removeConnection({
-        terminate: true,
-        context: 'SDKConnect::removeChannel',
-      });
-      if(!terminated) {
-        DevLogger.log(`SDKConnect::removeChannel channelId=${channelId} terminated=${terminated} try again later`);
-        // don't delete channel, try again later
-        return terminated;
-      }
-    } catch (err) {
-      console.error(`Can't remove connection ${channelId}`, err);
-    }
-  }
+  const connection = instance.state.connected[channelId];
+
+  // Revoke locally first so an unreachable dapp cannot keep its access.
   delete instance.state.connected[channelId];
   delete instance.state.connections[channelId];
   delete instance.state.approvedHosts[
@@ -64,17 +93,25 @@ async function removeChannel({
 
   delete instance.state.connecting[channelId];
   if (engine) {
-    // Remove matching permissions from controller
-    const permissionsController = (
-      engine.context as {
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PermissionController: PermissionController<any, any>;
+    try {
+      // Remove matching permissions from controller
+      const permissionsController = (
+        engine.context as {
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          PermissionController: PermissionController<any, any>;
+        }
+      ).PermissionController;
+      if (permissionsController.getPermissions(channelId)) {
+        permissionsController.revokeAllPermissions(channelId);
       }
-    ).PermissionController;
-    if (permissionsController.getPermissions(channelId)) {
-      permissionsController.revokeAllPermissions(channelId);
+    } catch (err) {
+      console.error(`Can't revoke permissions for ${channelId}`, err);
     }
+  }
+
+  if (connection) {
+    await sendTerminateBestEffort({ channelId, connection });
   }
 
   return true;
