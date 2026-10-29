@@ -1,3 +1,5 @@
+import { resetConnections } from '../../../../app/actions/sdk';
+import { store } from '../../../../app/store';
 import Engine from '../../Engine';
 import { Connection, ConnectionProps } from '../Connection';
 import { revokeChannelPermissions } from '../handlers/checkPermissions';
@@ -26,9 +28,18 @@ async function reconnect({
   try {
     const existingConnection: Connection | undefined =
       instance.state.connected[channelId];
+    const storedConnection = instance.state.connections[channelId];
+    // A new peer key on an existing channel is treated as a new, unapproved peer.
+    const keyChanged =
+      updateKey === true &&
+      storedConnection !== undefined &&
+      storedConnection.otherPublicKey !== otherPublicKey;
+
     // Check if already connected
-    if (existingConnection?.remote.isReady()) {
-      DevLogger.log(`SDKConnect::reconnect[${context}] - already ready - ignore`);
+    if (!keyChanged && existingConnection?.remote.isReady()) {
+      DevLogger.log(
+        `SDKConnect::reconnect[${context}] - already ready - ignore`,
+      );
       if (trigger) {
         instance.state.connected[channelId].setTrigger(trigger);
       }
@@ -36,13 +47,6 @@ async function reconnect({
 
       return;
     }
-
-    const storedConnection = instance.state.connections[channelId];
-    // A new peer key on an existing channel is treated as a new, unapproved peer.
-    const keyChanged =
-      updateKey === true &&
-      storedConnection !== undefined &&
-      storedConnection.otherPublicKey !== otherPublicKey;
 
     if (keyChanged) {
       console.warn(
@@ -53,6 +57,9 @@ async function reconnect({
       revokeChannelPermissions({ engine: Engine, channelId });
       instance.disapproveChannel(channelId);
       storedConnection.otherPublicKey = otherPublicKey;
+      // Persisted so the pending re-approval survives an app restart.
+      storedConnection.requiresReapproval = true;
+      store.dispatch(resetConnections(instance.state.connections));
       if (existingConnection) {
         existingConnection.remote.setOtherPublicKey(otherPublicKey);
         existingConnection.requiresReapproval = true;
@@ -74,7 +81,6 @@ async function reconnect({
     const connecting = instance.state.connecting[channelId] === true;
     const socketConnected = existingConnection?.remote.isConnected() ?? false;
 
-
     DevLogger.log(
       `SDKConnect::reconnect[${context}][${trigger}] - channel=${channelId} paused=${
         instance.state.paused
@@ -89,7 +95,7 @@ async function reconnect({
     if (connecting && trigger !== 'deeplink') {
       // Prioritize deeplinks -- interrup other connection attempts.
       interruptReason = 'already connecting';
-    } else  if (!instance.state.connections[channelId]) {
+    } else if (!instance.state.connections[channelId]) {
       interruptReason = 'no connection';
     }
 
@@ -111,7 +117,7 @@ async function reconnect({
         instance.updateSDKLoadingState({ channelId, loading: false });
       }
 
-      if (ready) {
+      if (ready && !keyChanged) {
         DevLogger.log(
           `SDKConnect::reconnect - already connected [ready=${ready}] -- ignoring`,
         );
@@ -153,12 +159,19 @@ async function reconnect({
         instance.removeChannel({ channelId });
       },
     });
-    if (keyChanged || existingConnection?.requiresReapproval) {
+    const requiresReapproval =
+      keyChanged ||
+      connection.requiresReapproval === true ||
+      existingConnection?.requiresReapproval === true;
+    if (requiresReapproval) {
       instance.state.connected[channelId].requiresReapproval = true;
+      instance.state.connected[channelId].isReady = false;
     }
     instance.state.connected[channelId].connect({
       withKeyExchange: true,
-      authorized: connection.originatorInfo !== undefined,
+      // Never pre-authorize a peer the user has not approved yet.
+      authorized:
+        connection.originatorInfo !== undefined && !requiresReapproval,
     });
 
     instance.watchConnection(instance.state.connected[channelId]);

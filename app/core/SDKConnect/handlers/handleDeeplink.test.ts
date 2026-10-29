@@ -340,4 +340,39 @@ describe('handleDeeplink', () => {
     expect(mockDecrypt).not.toHaveBeenCalled();
     expect(handleConnectionMessage).not.toHaveBeenCalled();
   });
+
+  it('reconnects a connected channel when the peer key changes', async () => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({
+      [channelId]: { otherPublicKey: 'approvedPublicKey' },
+    });
+
+    sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
+
+    mockGetConnected.mockReturnValue({
+      [channelId]: {
+        remote: {
+          isConnected: jest.fn().mockReturnValue(true),
+          decrypt: mockDecrypt,
+          getRPCMethodTracker: jest.fn().mockReturnValue({}),
+        },
+      },
+    });
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId,
+      origin,
+      url,
+      otherPublicKey,
+      protocolVersion,
+      context,
+      rpc,
+    });
+
+    expect(sdkConnect.reconnect).toHaveBeenCalledWith(
+      expect.objectContaining({ channelId, otherPublicKey, updateKey: true }),
+    );
+    expect(mockDecrypt).not.toHaveBeenCalled();
+  });
 });

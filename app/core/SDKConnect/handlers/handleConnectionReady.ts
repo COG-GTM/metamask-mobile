@@ -14,6 +14,14 @@ import generateOTP from '../utils/generateOTP.util';
 import { setupBridge } from './setupBridge';
 import { HOUR_IN_MS } from '../SDKConnectConstants';
 
+/**
+ * Forces the user to approve the channel again, ignoring existing permissions.
+ *
+ * @param params - The parameters.
+ * @param params.connection - Connection to re-approve.
+ * @param params.engine - Engine providing the PermissionController.
+ * @throws If the user rejects, so callers never send `authorized`.
+ */
 const requireUserReapproval = async ({
   connection,
   engine,
@@ -126,6 +134,10 @@ export const handleConnectionReady = async ({
       connection.approvalPromise = undefined;
       disapprove(connection.channelId);
       await requireUserReapproval({ connection, engine });
+      const hostname =
+        AppConstants.MM_SDK.SDK_REMOTE_ORIGIN + connection.channelId;
+      // Persists the approval and clears the stored re-approval flag.
+      approveHost({ host: hostname, hostname, context: 'clients_ready' });
       connection.sendAuthorized(true);
       connection.lastAuthorized = Date.now();
     } else if (

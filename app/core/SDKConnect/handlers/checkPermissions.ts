@@ -20,6 +20,13 @@ import {
 } from '../utils/wait.util';
 import { Platform } from 'react-native';
 
+/**
+ * Revokes every permission granted to an SDK channel, if it has any.
+ *
+ * @param params - The parameters.
+ * @param params.engine - Engine providing the PermissionController.
+ * @param params.channelId - SDK channel id, used as the permission subject.
+ */
 export const revokeChannelPermissions = ({
   engine,
   channelId,
@@ -39,14 +46,7 @@ export const revokeChannelPermissions = ({
   }
 };
 
-// TODO: should be more generic and be used in wallet connect and android service as well
-export const checkPermissions = async ({
-  connection,
-  engine,
-  message,
-  lastAuthorized,
-  forcePrompt = false,
-}: {
+interface CheckPermissionsParams {
   connection: Connection;
   engine: typeof Engine;
   message?: CommunicationLayerMessage;
@@ -56,7 +56,16 @@ export const checkPermissions = async ({
    * Existing permissions are revoked first so a rejection leaves the channel without access.
    */
   forcePrompt?: boolean;
-}) => {
+}
+
+// TODO: should be more generic and be used in wallet connect and android service as well
+const runCheckPermissions = async ({
+  connection,
+  engine,
+  message,
+  lastAuthorized,
+  forcePrompt = false,
+}: CheckPermissionsParams): Promise<boolean> => {
   try {
     // close poientially open loading modal
     connection.setLoading(false);
@@ -68,7 +77,6 @@ export const checkPermissions = async ({
     );
 
     if (forcePrompt) {
-      connection.requiresReapproval = false;
       connection.approvalPromise = undefined;
       revokeChannelPermissions({ engine, channelId: connection.channelId });
     }
@@ -117,7 +125,7 @@ export const checkPermissions = async ({
       DevLogger.log(
         `checkPermissions approvalPromise exists currentRouteName=${currentRouteName}`,
       );
-      const allowed = await connection.approvalPromise;
+      const allowed = (await connection.approvalPromise) as boolean;
       DevLogger.log(
         `checkPermissions approvalPromise exists completed -- allowed`,
         allowed,
@@ -176,6 +184,37 @@ export const checkPermissions = async ({
     connection.approvalPromise = undefined;
     throw err;
   }
+};
+
+/**
+ * Ensures the SDK channel is allowed to use the wallet, prompting the user when needed.
+ *
+ * With `forcePrompt`, all concurrent callers share one prompt and
+ * `connection.requiresReapproval` is only cleared once the user approves.
+ *
+ * @param params - The parameters.
+ * @returns Whether the channel has permitted accounts.
+ */
+export const checkPermissions = async (
+  params: CheckPermissionsParams,
+): Promise<boolean> => {
+  const { connection, forcePrompt } = params;
+  if (!forcePrompt) {
+    return runCheckPermissions(params);
+  }
+  if (!connection.reapprovalPromise) {
+    connection.reapprovalPromise = runCheckPermissions(params)
+      .then((approved) => {
+        if (approved) {
+          connection.requiresReapproval = false;
+        }
+        return approved;
+      })
+      .finally(() => {
+        connection.reapprovalPromise = undefined;
+      });
+  }
+  return connection.reapprovalPromise;
 };
 
 export default checkPermissions;

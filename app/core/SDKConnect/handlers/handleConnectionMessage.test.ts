@@ -243,6 +243,21 @@ describe('handleConnectionMessage', () => {
     });
   });
 
+  describe('Forced re-approval', () => {
+    it('does not handle the rpc when re-approval is not granted', async () => {
+      connection.requiresReapproval = true;
+      mockCheckPermissions.mockResolvedValueOnce(false);
+
+      await handleConnectionMessage({ message, engine: Engine, connection });
+
+      expect(mockCheckPermissions).toHaveBeenCalledWith(
+        expect.objectContaining({ forcePrompt: true }),
+      );
+      expect(mockHandleCustomRpcCalls).not.toHaveBeenCalled();
+      expect(mockHandleSendMessage).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('Handling custom RPC calls', () => {
     beforeEach(() => {
       mockCheckPermissions.mockResolvedValueOnce(true);

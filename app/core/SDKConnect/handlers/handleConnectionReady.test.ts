@@ -113,11 +113,15 @@ describe('handleConnectionReady', () => {
     });
 
     it('does not auto-approve deeplink reconnections and forces a prompt', async () => {
-      mockCheckPermissions.mockResolvedValue(true);
+      mockCheckPermissions.mockImplementation(async () => {
+        expect(mockApproveHost).not.toHaveBeenCalled();
+        return true;
+      });
 
       await run();
 
-      expect(mockApproveHost).not.toHaveBeenCalled();
+      // approveHost only persists the approval after the user accepted.
+      expect(mockApproveHost).toHaveBeenCalledTimes(1);
       expect(mockRemoteSendMessage).not.toHaveBeenCalled();
       expect(mockDisapprove).toHaveBeenCalledWith('channel-id');
       expect(mockCheckPermissions).toHaveBeenCalledWith(

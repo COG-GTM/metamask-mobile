@@ -3,6 +3,7 @@ import SDKConnect from '../SDKConnect';
 import { waitForCondition } from '../utils/wait.util';
 import reconnect from './reconnect';
 import { revokeChannelPermissions } from '../handlers/checkPermissions';
+import { store } from '../../../../app/store';
 
 jest.mock('../Connection', () => ({
   Connection: jest.fn(
@@ -22,6 +23,7 @@ jest.mock('../Connection', () => ({
   ),
 }));
 jest.mock('../SDKConnect');
+jest.mock('../../../../app/store', () => ({ store: { dispatch: jest.fn() } }));
 jest.mock('../../Engine', () => ({ context: {} }));
 jest.mock('../handlers/checkPermissions', () => ({
   revokeChannelPermissions: jest.fn(),
@@ -266,13 +268,98 @@ describe('reconnect', () => {
         expect.objectContaining({ channelId: 'test-channel-id' }),
       );
       expect(mockDisapproveChannel).toHaveBeenCalledWith('test-channel-id');
-      expect(mockRemoteSetOtherPublicKey).toHaveBeenCalledWith('new-public-key');
+      expect(mockRemoteSetOtherPublicKey).toHaveBeenCalledWith(
+        'new-public-key',
+      );
       expect(
         mockInstance.state.connections['test-channel-id'].otherPublicKey,
       ).toBe('new-public-key');
       expect(
         mockInstance.state.connected['test-channel-id'].requiresReapproval,
       ).toBe(true);
+    });
+
+    it('persists the pending re-approval and does not pre-authorize the new peer', async () => {
+      mockInstance.state.connections['test-channel-id'].originatorInfo = {
+        url: 'https://dapp.example',
+      } as never;
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'new-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(
+        mockInstance.state.connections['test-channel-id'].requiresReapproval,
+      ).toBe(true);
+      expect(store.dispatch).toHaveBeenCalled();
+      expect(Connection).toHaveBeenCalledWith(
+        expect.objectContaining({ requiresReapproval: true }),
+      );
+      expect(
+        mockInstance.state.connected['test-channel-id'].connect,
+      ).toHaveBeenCalledWith({ withKeyExchange: true, authorized: false });
+    });
+
+    it('replaces a ready connection when the peer key changes', async () => {
+      const mockRemoteDisconnect = jest.fn();
+      const readyConnection = {
+        ...mockConnection,
+        isReady: true,
+        remote: {
+          ...mockConnection.remote,
+          isReady: jest.fn().mockReturnValue(true),
+          isConnected: jest.fn().mockReturnValue(true),
+          disconnect: mockRemoteDisconnect,
+        },
+      } as unknown as Connection;
+      mockInstance.state.connected['test-channel-id'] = readyConnection;
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'new-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(mockRemoteDisconnect).toHaveBeenCalled();
+      expect(Connection).toHaveBeenCalled();
+      expect(
+        mockInstance.state.connected['test-channel-id'].requiresReapproval,
+      ).toBe(true);
+    });
+
+    it('keeps requiring re-approval after a restart with the stored key', async () => {
+      mockInstance.state.connections['test-channel-id'].requiresReapproval =
+        true;
+      mockInstance.state.connections['test-channel-id'].originatorInfo = {
+        url: 'https://dapp.example',
+      } as never;
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'approved-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(
+        mockInstance.state.connected['test-channel-id'].requiresReapproval,
+      ).toBe(true);
+      expect(
+        mockInstance.state.connected['test-channel-id'].connect,
+      ).toHaveBeenCalledWith({ withKeyExchange: true, authorized: false });
     });
 
     it('keeps permissions when the peer key is unchanged', async () => {

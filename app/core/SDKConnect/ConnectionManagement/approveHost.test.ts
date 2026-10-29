@@ -157,4 +157,28 @@ describe('approveHost', () => {
       expect(mockInstance.state.disabledHosts[mockHost]).toBeUndefined();
     });
   });
+
+  it('clears a stored re-approval flag only once the live connection is re-approved', () => {
+    const channelId = 'channel-id';
+    (
+      AppConstants as unknown as { MM_SDK: { SDK_REMOTE_ORIGIN: string } }
+    ).MM_SDK = { SDK_REMOTE_ORIGIN: 'MMSDKREMOTE::' };
+    mockInstance.state.connections[channelId] = {
+      requiresReapproval: true,
+    } as never;
+    mockInstance.state.connected[channelId] = {
+      requiresReapproval: true,
+    } as never;
+
+    approveHost({ host: `MMSDKREMOTE::${channelId}`, instance: mockInstance });
+    expect(mockInstance.state.connections[channelId].requiresReapproval).toBe(
+      true,
+    );
+
+    mockInstance.state.connected[channelId].requiresReapproval = false;
+    approveHost({ host: `MMSDKREMOTE::${channelId}`, instance: mockInstance });
+    expect(mockInstance.state.connections[channelId].requiresReapproval).toBe(
+      false,
+    );
+  });
 });
