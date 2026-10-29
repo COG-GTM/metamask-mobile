@@ -358,12 +358,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    * Show a phishing modal when a url is not allowed
    */
   const handleNotAllowedUrl = useCallback(
-    (urlOrigin: string) => {
+    (urlOrigin: string, blockedPageUrl: string = urlOrigin) => {
       if (!shouldShowPhishingModal(urlOrigin)) {
         return;
       }
 
-      setBlockedUrl(urlOrigin);
+      setBlockedUrl(blockedPageUrl);
       setTimeout(() => setShowPhishingModal(true), 1000);
     },
     [shouldShowPhishingModal, setBlockedUrl, setShowPhishingModal],
@@ -1037,7 +1037,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    */
   const detachBridgeForNavigation = useCallback(() => {
     allowedBridgeOriginRef.current = null;
-    pendingBridgeMessagesRef.current = [];
     teardownBackgroundBridge();
     return ++navigationIdRef.current;
   }, [teardownBackgroundBridge]);
@@ -1057,6 +1056,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       // Detach the previous page's bridge before any await, so it cannot be used
       // while the new navigation is checked or before it commits
       const navigationId = detachBridgeForNavigation();
+      // Held messages belong to the previous document
+      pendingBridgeMessagesRef.current = [];
 
       // Cancel loading the page if we detect its a phishing page
       const isAllowed = await isAllowedOrigin(urlOrigin);
@@ -1103,7 +1104,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       if (navigationId !== navigationIdRef.current) return;
       if (!isAllowed) {
         // Blocked pages reached without a load start (e.g. history) stay without a bridge
-        handleNotAllowedUrl(committedOrigin);
+        handleNotAllowedUrl(committedOrigin, committedUrl);
         return;
       }
       approveBridgeOrigin(committedOrigin);
@@ -1115,6 +1116,22 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       handleNotAllowedUrl,
     ],
   );
+
+  /**
+   * Bind the bridge once the user whitelists the already loaded page from the phishing warning
+   */
+  useEffect(() => {
+    const committedUrl = resolvedUrlRef.current;
+    if (
+      !committedUrl ||
+      loadingUrlRef.current ||
+      allowedBridgeOriginRef.current
+    )
+      return;
+    if (whitelist?.includes(new URLParse(committedUrl).origin)) {
+      approveCommittedOrigin(committedUrl);
+    }
+  }, [whitelist, approveCommittedOrigin]);
 
   /**
    * Check whenever permissions change / account changes for Dapp

@@ -6,6 +6,7 @@ import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsContr
 import BrowserTab from './BrowserTab';
 import AppConstants from '../../../core/AppConstants';
 import { getPhishingTestResultAsync } from '../../../util/phishingDetection';
+import { addToWhitelist } from '../../../actions/browser';
 
 interface MockBridge {
   url: string;
@@ -157,10 +158,12 @@ const deferred = () => {
   return { promise, resolve };
 };
 
+let mockStore: ReturnType<typeof renderWithProvider>['store'];
+
 const renderWebView = async () => {
-  renderWithProvider(<BrowserTab {...mockProps} />, {
+  ({ store: mockStore } = renderWithProvider(<BrowserTab {...mockProps} />, {
     state: mockInitialState,
-  });
+  }));
   return screen.findByTestId('browser-webview');
 };
 
@@ -344,6 +347,8 @@ describe('BrowserTab background bridge origin binding', () => {
       originalCheck.promise as ReturnType<typeof getPhishingTestResultAsync>,
     );
     const originalPending = startLoad(webview, `${ORIGIN_A}/page`);
+    // The redirected document's provider starts sending before its load end
+    postMessage(webview, { frameOrigin: ORIGIN_B, isMainFrame: true });
 
     await act(async () => {
       webview.props.onLoadEnd({
@@ -365,7 +370,7 @@ describe('BrowserTab background bridge origin binding', () => {
     postMessage(webview, { frameOrigin: ORIGIN_B, isMainFrame: true });
     expect(mockBridges).toHaveLength(1);
     expect(mockBridges[0].url).toBe(ORIGIN_B);
-    expect(mockBridges[0].onMessage).toHaveBeenCalledTimes(1);
+    expect(mockBridges[0].onMessage).toHaveBeenCalledTimes(2);
   });
 
   it('does not keep the previous origin approved while a redirect is being checked', async () => {
@@ -458,5 +463,33 @@ describe('BrowserTab background bridge origin binding', () => {
     postMessage(webview, { frameOrigin: ORIGIN_A, isMainFrame: true });
     expect(mockBridges).toHaveLength(1);
     expect(previousBridge.onMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('binds the bridge to a blocked history page once the user whitelists it', async () => {
+    const webview = await renderWebView();
+    mockGetPhishingTestResultAsync.mockResolvedValue({
+      result: true,
+      name: 'blocklist',
+    } as Awaited<ReturnType<typeof getPhishingTestResultAsync>>);
+    await act(async () => {
+      webview.props.onNavigationStateChange({
+        url: `${ATTACKER}/account?id=7`,
+        title: '',
+        loading: false,
+        canGoBack: false,
+        canGoForward: true,
+        navigationType: 'backforward',
+      });
+    });
+    postMessage(webview, { frameOrigin: ATTACKER, isMainFrame: true });
+    expect(mockBridges).toHaveLength(0);
+
+    await act(async () => {
+      mockStore.dispatch(addToWhitelist(ATTACKER));
+    });
+
+    expect(mockBridges).toHaveLength(1);
+    expect(mockBridges[0].url).toBe(ATTACKER);
+    expect(mockBridges[0].onMessage).toHaveBeenCalledTimes(1);
   });
 });
