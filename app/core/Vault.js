@@ -47,6 +47,40 @@ export const getSeedPhrase = async (password = '') => {
 };
 
 /**
+ * Exports the mnemonic and account count of every HD keyring in the vault,
+ * primary keyring first.
+ *
+ * @param password - current password
+ * @returns {Promise<{ mnemonic: Uint8Array, numberOfAccounts: number }[]>}
+ */
+const getHdKeyringsToRestore = async (password) => {
+  const { KeyringController } = Engine.context;
+  const { keyrings, keyringsMetadata } = KeyringController.state;
+
+  if (keyrings[0]?.type !== KeyringTypes.hd) {
+    throw new Error('Primary keyring is not an HD keyring');
+  }
+
+  const hdKeyrings = [];
+  for (let i = 0; i < keyrings.length; i++) {
+    if (keyrings[i].type !== KeyringTypes.hd) continue;
+    const keyringId = keyringsMetadata?.[i]?.id;
+    if (i > 0 && !keyringId) {
+      throw new Error('Missing metadata for HD keyring');
+    }
+    const mnemonic = await KeyringController.exportSeedPhrase(
+      password,
+      keyringId,
+    );
+    hdKeyrings.push({
+      mnemonic,
+      numberOfAccounts: keyrings[i].accounts.length,
+    });
+  }
+  return hdKeyrings;
+};
+
+/**
  * Recreates a vault with the new password
  *
  * @param password - current password
@@ -59,7 +93,8 @@ export const recreateVaultWithNewPassword = async (
   selectedAddress,
 ) => {
   const { KeyringController } = Engine.context;
-  const seedPhrase = await getSeedPhrase(password);
+  const [primaryHdKeyring, ...secondaryHdKeyrings] =
+    await getHdKeyringsToRestore(password);
 
   let importedAccounts = [];
   try {
@@ -83,10 +118,6 @@ export const recreateVaultWithNewPassword = async (
     );
   }
 
-  // Get props to restore vault
-  const hdKeyring = KeyringController.state.keyrings[0];
-  const existingAccountCount = hdKeyring.accounts.length;
-
   const serializedLedgerKeyring = hasKeyringType(
     KeyringController.state,
     KeyringTypes.ledger,
@@ -101,7 +132,10 @@ export const recreateVaultWithNewPassword = async (
     : undefined;
 
   // Recreate keyring with password given to this method
-  await KeyringController.createNewVaultAndRestore(newPassword, seedPhrase);
+  await KeyringController.createNewVaultAndRestore(
+    newPassword,
+    primaryHdKeyring.mnemonic,
+  );
 
   if (serializedQrKeyring !== undefined) {
     await restoreQRKeyring(serializedQrKeyring);
@@ -111,8 +145,16 @@ export const recreateVaultWithNewPassword = async (
   }
 
   // Create previous accounts again
-  for (let i = 0; i < existingAccountCount - 1; i++) {
+  for (let i = 0; i < primaryHdKeyring.numberOfAccounts - 1; i++) {
     await KeyringController.addNewAccount();
+  }
+
+  // Restore every additional Secret Recovery Phrase with its accounts
+  for (const { mnemonic, numberOfAccounts } of secondaryHdKeyrings) {
+    await KeyringController.addNewKeyring(KeyringTypes.hd, {
+      mnemonic,
+      numberOfAccounts,
+    });
   }
 
   try {
