@@ -81,7 +81,7 @@ export const JS_POST_MESSAGE_TO_PROVIDER = (
   origin: string
 ) => `(function () {
   try {
-    window.postMessage(${JSON.stringify(message)}, '${origin}');
+    window.postMessage(${JSON.stringify(message)}, ${JSON.stringify(origin)});
   } catch (e) {
     //Nothing to do
   }
@@ -99,7 +99,7 @@ export const JS_IFRAME_POST_MESSAGE_TO_PROVIDER = (
   for (let frame of iframes){
 
       try {
-        frame.contentWindow.postMessage(${JSON.stringify(_message)}, '${_origin}');
+        frame.contentWindow.postMessage(${JSON.stringify(_message)}, ${JSON.stringify(_origin)});
       } catch (e) {
         //Nothing to do
       }

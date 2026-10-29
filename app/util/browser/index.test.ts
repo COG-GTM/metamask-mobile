@@ -8,6 +8,7 @@ import {
   getHost,
   appendURLParams,
   processUrlForBrowser,
+  isValidOrigin,
 } from '.';
 import { strings } from '../../../locales/i18n';
 
@@ -293,5 +294,31 @@ describe('Browser utils :: appendURLParams', () => {
     const result = appendURLParams(baseUrl, params);
 
     expect(result.toString()).toBe('https://metamask.io/');
+  });
+});
+
+describe('Browser utils :: isValidOrigin', () => {
+  it.each([
+    'https://metamask.io',
+    'http://localhost:3000',
+    'https://sub.domain.example.com',
+    'https://xn--80ak6aa92e.com',
+    'http://[::1]:8080',
+  ])('accepts %s', (origin) => {
+    expect(isValidOrigin(origin)).toBe(true);
+  });
+
+  it.each([
+    "https://x');alert(1);('",
+    'https://x"onload="alert(1)',
+    'https://example.com/path',
+    'https://example.com:443',
+    'javascript:alert(1)',
+    'null',
+    '*',
+    '',
+    undefined,
+  ])('rejects %s', (origin) => {
+    expect(isValidOrigin(origin)).toBe(false);
   });
 });
