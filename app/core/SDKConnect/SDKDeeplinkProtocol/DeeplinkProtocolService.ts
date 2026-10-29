@@ -339,9 +339,10 @@ export default class DeeplinkProtocolService {
     });
 
     const isExistingSession = !!this.connections?.[clientInfo.clientId];
+    let isApprovalPending = !isExistingSession || requiresReapproval;
 
     try {
-      if (!isExistingSession || requiresReapproval) {
+      if (isApprovalPending) {
         DevLogger.log(
           `DeeplinkProtocolService::clients_connected - ${
             isExistingSession ? 're-approving' : 'new'
@@ -376,6 +377,8 @@ export default class DeeplinkProtocolService {
           scheme: clientInfo.scheme,
           validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
         });
+
+        isApprovalPending = false;
       }
 
       if (params.request) {
@@ -402,7 +405,7 @@ export default class DeeplinkProtocolService {
         `DeeplinkProtocolService::clients_connected sending jsonrpc error to client - connection rejected`,
       );
 
-      if (isExistingSession) {
+      if (isExistingSession && isApprovalPending) {
         // Re-approval was rejected: keep the stored session untouched and do
         // not send anything to the unverified caller's scheme.
         return;

@@ -622,6 +622,28 @@ describe('DeeplinkProtocolService', () => {
       expect(service.openDeeplink).not.toHaveBeenCalled();
     });
 
+    it('sends request failures to the client after re-approval succeeds', async () => {
+      (service.processDappRpcRequest as jest.Mock).mockRejectedValue(
+        new Error('Invalid request'),
+      );
+      service.connections[clientInfo.clientId] = { ...clientInfo };
+      service.dappPublicKeyByClientId[clientInfo.clientId] = 'old-key';
+
+      await service.handleConnectionEventAsync({
+        clientInfo: { ...clientInfo, scheme: 'newscheme' },
+        params: { ...params, dappPublicKey: 'new-key', scheme: 'newscheme' },
+        requiresReapproval: true,
+      });
+
+      expect(service.connections[clientInfo.clientId].scheme).toBe('newscheme');
+      expect(service.openDeeplink).toHaveBeenCalledWith(
+        expect.objectContaining({
+          clientId: clientInfo.clientId,
+          scheme: 'newscheme',
+        }),
+      );
+    });
+
     it('should update existing client connection and process request if exists', async () => {
       service.connections[clientInfo.clientId] = clientInfo;
       await service.handleConnectionEventAsync({ clientInfo, params });
