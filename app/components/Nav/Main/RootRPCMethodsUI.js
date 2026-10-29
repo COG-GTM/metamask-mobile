@@ -389,6 +389,7 @@ const RootRPCMethodsUI = (props) => {
           transactionMeta.origin,
           to,
           props.chainId,
+          transactionMeta.actionId,
         )
       ) {
         autoSign(transactionMeta);

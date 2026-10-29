@@ -413,6 +413,65 @@ describe('getRpcMethodMiddleware', () => {
     expect(response.result).toBe('success');
   });
 
+  describe('internal origin spoofing', () => {
+    const mockAddress = '0x0000000000000000000000000000000000000001';
+
+    it.each([
+      [
+        'an SDK hostname equal to the Swaps origin',
+        {
+          isMMSDK: true,
+          hostname: process.env.MM_FOX_CODE as string,
+          channelId: '70a863a4-a756-4660-8c72-dc367d02f625',
+        },
+      ],
+      [
+        'an SDK channelId equal to an internal origin',
+        {
+          isMMSDK: true,
+          hostname: 'example.metamask.io',
+          channelId: 'MetaMask Mobile',
+        },
+      ],
+      [
+        'a WalletConnect hostname equal to the Swaps origin',
+        {
+          isWalletConnect: true,
+          hostname: process.env.MM_FOX_CODE as string,
+        },
+      ],
+    ])('rejects eth_sendTransaction from %s', async (_, options) => {
+      setupGlobalState({
+        addTransactionResult: Promise.resolve('fake-hash'),
+        permittedAccounts: {
+          [process.env.MM_FOX_CODE as string]: [mockAddress],
+          'MetaMask Mobile': [mockAddress],
+        },
+        selectedAddress: mockAddress,
+        selectedNetworkClientId: 'mainnet',
+        networksMetadata: {},
+        networkConfigurationsByChainId: {},
+      });
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalOptions(),
+        ...options,
+      });
+      const request = {
+        jsonrpc,
+        id: 1,
+        method: 'eth_sendTransaction',
+        params: [{ from: mockAddress, chainId: '0x1' }],
+      };
+
+      const response = await callMiddleware({ middleware, request });
+
+      expect((response as JsonRpcFailure).error.code).toBe(
+        providerErrors.unauthorized().code,
+      );
+      expect(mockAddTransaction).not.toHaveBeenCalled();
+    });
+  });
+
   describe('with permission middleware before', () => {
     const engine = new JsonRpcEngine();
     const messenger = new Messenger();

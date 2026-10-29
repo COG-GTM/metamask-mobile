@@ -55,6 +55,7 @@ import {
 import Logger from '../../util/Logger';
 import { handleMethodData } from '../../util/transaction-controller';
 import EthQuery from '@metamask/eth-query';
+import { isInternalSwapsTransaction } from './internal-origins';
 
 const { SAI_ADDRESS } = AppConstants;
 
@@ -1579,6 +1580,7 @@ export const getIsSwapApproveOrSwapTransaction = (
   origin,
   to,
   chainId,
+  actionId,
 ) => {
   if (!data) {
     return false;
@@ -1587,7 +1589,7 @@ export const getIsSwapApproveOrSwapTransaction = (
   // if approval data includes metaswap contract
   // if destination address is metaswap contract
   return (
-    origin === process.env.MM_FOX_CODE &&
+    isInternalSwapsTransaction(origin, actionId) &&
     to &&
     (swapsUtils.isValidContractAddress(chainId, to) ||
       (data?.startsWith(APPROVE_FUNCTION_SIGNATURE) &&
@@ -1599,12 +1601,18 @@ export const getIsSwapApproveOrSwapTransaction = (
 /**
  * For a MM Swap tx: Determines if the transaction is an ERC20 approve tx
  */
-export const getIsSwapApproveTransaction = (data, origin, to, chainId) => {
+export const getIsSwapApproveTransaction = (
+  data,
+  origin,
+  to,
+  chainId,
+  actionId,
+) => {
   if (!data) {
     return false;
   }
 
-  const isFromSwaps = origin === process.env.MM_FOX_CODE;
+  const isFromSwaps = isInternalSwapsTransaction(origin, actionId);
   const isApproveFunction =
     data && getFourByteSignature(data) === APPROVE_FUNCTION_SIGNATURE;
   const isSpenderSwapsContract =
@@ -1617,14 +1625,21 @@ export const getIsSwapApproveTransaction = (data, origin, to, chainId) => {
 /**
  * For a MM Swap tx: Determines if the transaction is the actual swap tx where tokens are transferred
  */
-export const getIsSwapTransaction = (data, origin, to, chainId) => {
+export const getIsSwapTransaction = (data, origin, to, chainId, actionId) => {
   const isSwapApproveOrSwapTransaction = getIsSwapApproveOrSwapTransaction(
     data,
     origin,
     to,
     chainId,
+    actionId,
   );
-  const isSwapApprove = getIsSwapApproveTransaction(data, origin, to, chainId);
+  const isSwapApprove = getIsSwapApproveTransaction(
+    data,
+    origin,
+    to,
+    chainId,
+    actionId,
+  );
 
   return isSwapApproveOrSwapTransaction && !isSwapApprove;
 };

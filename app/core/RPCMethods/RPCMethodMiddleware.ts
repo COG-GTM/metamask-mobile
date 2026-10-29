@@ -45,6 +45,7 @@ import { regex } from '../../../app/util/regex';
 import Logger from '../../../app/util/Logger';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { addTransaction } from '../../util/transaction-controller';
+import { isInternalOrigin } from '../../util/transactions/internal-origins';
 import Routes from '../../constants/navigation/Routes';
 import { endTrace, trace, TraceName } from '../../util/trace';
 import {
@@ -397,6 +398,10 @@ export const getRpcMethodMiddleware = ({
   hostname = hostname.replace(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN, '');
   const origin = isWalletConnect ? hostname : channelId ?? hostname;
   const hooks = getRpcMethodMiddlewareHooks(origin);
+  // Requests handled here always come from external requesters (dapps, SDK,
+  // WalletConnect, Snaps), which must never be able to claim a MetaMask origin.
+  const isSpoofingInternalOrigin =
+    isInternalOrigin(hostname) || isInternalOrigin(channelId);
 
   DevLogger.log(
     `getRpcMethodMiddleware hostname=${hostname} channelId=${channelId}`,
@@ -406,6 +411,12 @@ export const getRpcMethodMiddleware = ({
   return mergeMiddleware([
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     createAsyncMiddleware(async (req: any, res: any, next: any) => {
+      if (isSpoofingInternalOrigin) {
+        throw providerErrors.unauthorized(
+          'Requests from this origin are not allowed.',
+        );
+      }
+
       // Used by eth_accounts and eth_coinbase RPCs.
       const getEthAccounts = async () => {
         const accounts = getPermittedAccounts(origin);

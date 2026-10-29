@@ -7,6 +7,7 @@ import {
   getIsSwapTransaction,
   getIsNativeTokenTransferred,
 } from '../transactions';
+import { isInternalSwapsTransaction } from '../transactions/internal-origins';
 import SmartTransactionsController from '@metamask/smart-transactions-controller';
 import {
   SmartTransaction,
@@ -26,7 +27,10 @@ export const getTransactionType = (
   // process.env.MM_FOX_CODE is from MM Swaps
   const isDapp =
     transactionMeta?.origin !== TransactionTypes.MMM &&
-    transactionMeta?.origin !== process.env.MM_FOX_CODE;
+    !isInternalSwapsTransaction(
+      transactionMeta?.origin,
+      transactionMeta?.actionId,
+    );
 
   const to = transactionMeta.txParams.to?.toLowerCase();
   const data = transactionMeta.txParams.data; // undefined for send txs of gas tokens
@@ -36,18 +40,21 @@ export const getTransactionType = (
     transactionMeta.origin,
     to,
     chainId,
+    transactionMeta.actionId,
   );
   const isSwapApproveTx = getIsSwapApproveTransaction(
     data,
     transactionMeta.origin,
     to,
     chainId,
+    transactionMeta.actionId,
   );
   const isSwapTransaction = getIsSwapTransaction(
     data,
     transactionMeta.origin,
     to,
     chainId,
+    transactionMeta.actionId,
   );
 
   const isNativeTokenTransferred = getIsNativeTokenTransferred(
