@@ -77,6 +77,35 @@ export function getHost(url: string, defaultProtocol = 'https://') {
   return result;
 }
 
+interface BrowserTabsState {
+  tabs?: { id?: number | string; url?: string }[];
+  activeTab?: number | string | null;
+}
+
+/**
+ * Returns the URL of a browser tab whose hostname exactly matches the given
+ * hostname, preferring the active tab. Never returns a URL for another host.
+ *
+ * @param browser - Browser slice of the redux state
+ * @param hostname - Hostname of the requesting origin
+ * @returns - Matching tab URL or undefined
+ */
+export function getTabUrlForHostname(
+  browser: BrowserTabsState | undefined,
+  hostname: string,
+): string | undefined {
+  if (!hostname || !browser?.tabs?.length) return undefined;
+  const host = hostname.includes('://')
+    ? getUrlObj(hostname).hostname
+    : hostname;
+  const matching = browser.tabs.filter(
+    (tab) => tab.url && getUrlObj(tab.url).hostname === host,
+  );
+  const tab =
+    matching.find(({ id }) => id === browser.activeTab) ?? matching[0];
+  return tab?.url;
+}
+
 /**
  * This function verify if the hostname is a TLD
  * @param hostname - Represents the hostname of the URL

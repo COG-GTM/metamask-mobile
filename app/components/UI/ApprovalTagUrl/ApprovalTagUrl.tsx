@@ -12,8 +12,12 @@ import { getHost, prefixUrlWithProtocol } from '../../../util/browser';
 import useFavicon from '../../hooks/useFavicon/useFavicon';
 import stylesheet from './ApprovalTagUrl.styles';
 import { INTERNAL_ORIGINS } from '../../../constants/transaction';
+import { isUUID } from '../../../core/SDKConnect/utils/isUUID';
 
 const { ORIGIN_DEEPLINK, ORIGIN_QR_CODE } = AppConstants.DEEPLINKS;
+
+const isSdkChannelOrigin = (origin: string) =>
+  isUUID(origin) || origin.startsWith(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN);
 export const APPROVAL_TAG_URL_ORIGIN_PILL = 'APPROVAL_TAG_URL_ORIGIN_PILL';
 
 interface ApprovalTagUrlProps {
@@ -56,6 +60,10 @@ const ApprovalTagUrl = ({
       title = prefixUrlWithProtocol(currentEnsName);
     } else if (origin && isOriginDeepLink) {
       title = prefixUrlWithProtocol(origin);
+    } else if (origin && !isSdkChannelOrigin(origin)) {
+      // The request origin is authoritative; `url` may come from UI state
+      // (e.g. the active browser tab) and must not override it.
+      title = prefixUrlWithProtocol(getHost(origin));
     } else if (url) {
       title = prefixUrlWithProtocol(getHost(url));
     } else if (origin) {
@@ -79,7 +87,8 @@ const ApprovalTagUrl = ({
         uri: '',
       };
 
-  const showOrigin = origin && !isOriginDeepLink && !INTERNAL_ORIGINS.includes(origin);
+  const showOrigin =
+    origin && !isOriginDeepLink && !INTERNAL_ORIGINS.includes(origin);
 
   if (showOrigin) {
     return (

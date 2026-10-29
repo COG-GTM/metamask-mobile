@@ -933,6 +933,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             analytics: {},
           }),
         isMainFrame,
+        tabId,
       });
       backgroundBridgeRef.current = newBridge;
     },

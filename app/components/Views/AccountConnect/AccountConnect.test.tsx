@@ -77,7 +77,7 @@ jest.mock('../../../core/Engine', () => {
         }),
         scanUrl: jest.fn((domainName: string) => ({
           domainName,
-          recommendedAction: 'NONE'
+          recommendedAction: 'NONE',
         })),
       },
       PermissionController: {
@@ -335,5 +335,43 @@ describe('AccountConnect', () => {
     });
     // Verify createEventBuilder was called
     expect(mockCreateEventBuilder).toHaveBeenCalled();
+  });
+
+  it('shows the requesting origin instead of the active browser tab', () => {
+    const { getAllByText, queryByText } = renderWithProvider(
+      <AccountConnect
+        route={{
+          params: {
+            hostInfo: {
+              metadata: {
+                id: 'mockId',
+                origin: 'evil.example',
+              },
+              permissions: {
+                eth_accounts: {
+                  parentCapability: 'eth_accounts',
+                },
+              },
+            },
+            permissionRequestId: 'test',
+          },
+        }}
+      />,
+      {
+        state: {
+          ...mockInitialState,
+          browser: {
+            activeTab: 1,
+            tabs: [
+              { id: 1, url: 'https://trusted.example/' },
+              { id: 2, url: 'https://evil.example/airdrop' },
+            ],
+          },
+        },
+      },
+    );
+
+    expect(getAllByText(/evil\.example/).length).toBeGreaterThan(0);
+    expect(queryByText(/trusted\.example/)).toBeNull();
   });
 });

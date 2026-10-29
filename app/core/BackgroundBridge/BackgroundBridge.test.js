@@ -24,10 +24,12 @@ jest.mock('@metamask/eth-query', () => () => ({
   sendAsync: jest.fn().mockResolvedValue(1),
 }));
 
+let mockActiveTab;
 jest.mock('../../store', () => ({
   ...jest.requireActual('../../store'),
   store: {
     getState: () => ({
+      browser: { activeTab: mockActiveTab },
       inpageProvider: {
         networkId: '',
       },
@@ -54,7 +56,7 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url, extraParams = {}) {
   // Arrange
   const {
     AccountsController,
@@ -104,6 +106,7 @@ function setupBackgroundBridge(url) {
     url,
     isRemoteConn: true,
     ...defaultBridgeParams,
+    ...extraParams,
   });
 }
 
@@ -189,6 +192,35 @@ describe('BackgroundBridge', () => {
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+    });
+  });
+
+  describe('permission requests from browser tabs', () => {
+    const { PermissionController } = Engine.context;
+    const url = 'https://evil.example';
+    const requestedPermissions = { somePermission: true };
+
+    it('rejects requestPermissionsForOrigin from a hidden tab', async () => {
+      mockActiveTab = 1;
+      setupBackgroundBridge(url, { tabId: 2 });
+      const hooks = createEip1193MethodMiddleware.mock.calls[0][0];
+
+      await expect(
+        hooks.requestPermissionsForOrigin(requestedPermissions),
+      ).rejects.toMatchObject({ code: 4001 });
+      expect(PermissionController.requestPermissions).not.toHaveBeenCalled();
+    });
+
+    it('allows requestPermissionsForOrigin from the active tab', async () => {
+      mockActiveTab = 2;
+      setupBackgroundBridge(url, { tabId: 2 });
+      const hooks = createEip1193MethodMiddleware.mock.calls[0][0];
+
+      await hooks.requestPermissionsForOrigin(requestedPermissions);
+      expect(PermissionController.requestPermissions).toHaveBeenCalledWith(
+        { origin: 'evil.example' },
+        requestedPermissions,
+      );
     });
   });
 });

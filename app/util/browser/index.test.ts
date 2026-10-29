@@ -8,6 +8,7 @@ import {
   getHost,
   appendURLParams,
   processUrlForBrowser,
+  getTabUrlForHostname,
 } from '.';
 import { strings } from '../../../locales/i18n';
 
@@ -293,5 +294,33 @@ describe('Browser utils :: appendURLParams', () => {
     const result = appendURLParams(baseUrl, params);
 
     expect(result.toString()).toBe('https://metamask.io/');
+  });
+});
+
+describe('Browser utils :: getTabUrlForHostname', () => {
+  const browser = {
+    activeTab: 2,
+    tabs: [
+      { id: 1, url: 'http://evil.example/page' },
+      { id: 2, url: 'https://trusted.example/' },
+      { id: 3, url: 'https://evil.example/other' },
+    ],
+  };
+
+  it('never returns the active tab URL when its host differs', () => {
+    expect(getTabUrlForHostname(browser, 'evil.example')).toBe(
+      'http://evil.example/page',
+    );
+  });
+
+  it('prefers the active tab when it matches the hostname', () => {
+    expect(
+      getTabUrlForHostname({ ...browser, activeTab: 3 }, 'evil.example'),
+    ).toBe('https://evil.example/other');
+  });
+
+  it('returns undefined when no tab matches', () => {
+    expect(getTabUrlForHostname(browser, 'other.example')).toBeUndefined();
+    expect(getTabUrlForHostname(undefined, 'evil.example')).toBeUndefined();
   });
 });

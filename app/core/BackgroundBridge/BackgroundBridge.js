@@ -21,7 +21,7 @@ import WalletConnectPort from './WalletConnectPort';
 import Port from './Port';
 import { store } from '../../store';
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-import { rpcErrors } from '@metamask/rpc-errors';
+import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import snapMethodMiddlewareBuilder from '../Snaps/SnapsMethodMiddleware';
 import { SubjectType } from '@metamask/permission-controller';
 ///: END:ONLY_INCLUDE_IF
@@ -70,6 +70,7 @@ export class BackgroundBridge extends EventEmitter {
     remoteConnHost,
     isMMSDK,
     channelId,
+    tabId,
   }) {
     super();
     this.url = url;
@@ -84,6 +85,7 @@ export class BackgroundBridge extends EventEmitter {
     this.disconnected = false;
     this.getApprovedHosts = getApprovedHosts;
     this.channelId = channelId;
+    this.tabId = tabId;
     this.deprecatedNetworkVersions = {};
 
     this.createMiddleware = getRpcMethodMiddleware;
@@ -350,6 +352,15 @@ export class BackgroundBridge extends EventEmitter {
     return Engine.context.KeyringController.isUnlocked();
   }
 
+  /**
+   * Browser tabs may only raise permission prompts while they are the active
+   * tab, so a hidden tab cannot show a connect sheet over another site.
+   */
+  isTabActive() {
+    if (this.tabId === undefined || this.tabId === null) return true;
+    return store.getState().browser?.activeTab === this.tabId;
+  }
+
   async getProviderState(origin) {
     return {
       isUnlocked: this.isUnlocked(),
@@ -453,11 +464,15 @@ export class BackgroundBridge extends EventEmitter {
           PermissionController,
           origin,
         ),
-        requestPermissionsForOrigin: (requestedPermissions) =>
-          PermissionController.requestPermissions(
+        requestPermissionsForOrigin: async (requestedPermissions) => {
+          if (!this.isTabActive()) {
+            throw providerErrors.userRejectedRequest();
+          }
+          return PermissionController.requestPermissions(
             { origin },
             requestedPermissions,
-          ),
+          );
+        },
         revokePermissionsForOrigin: (permissionKeys) => {
           try {
             PermissionController.revokePermissions({

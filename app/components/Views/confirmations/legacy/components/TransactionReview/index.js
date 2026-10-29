@@ -152,10 +152,6 @@ class TransactionReview extends PureComponent {
      */
     transaction: PropTypes.object,
     /**
-     * Browser/tab information
-     */
-    browser: PropTypes.object,
-    /**
      * ETH to current currency conversion rate
      */
     conversionRate: PropTypes.number,
@@ -475,15 +471,14 @@ class TransactionReview extends PureComponent {
     this.setState({ dataVisible: true });
   };
 
-  getUrlFromBrowser() {
-    const { browser } = this.props;
-    let url;
-    browser.tabs.forEach((tab) => {
-      if (tab.id === browser.activeTab) {
-        url = tab.url;
-      }
-    });
-    return url;
+  getRequestUrl() {
+    const { origin } = this.props.transaction;
+    const sdkConnection =
+      SDKConnect.getInstance().getConnections()[origin ?? ''];
+    if (sdkConnection) {
+      return sdkConnection.originatorInfo?.url;
+    }
+    return origin;
   }
 
   getConfirmButtonState() {
@@ -548,12 +543,9 @@ class TransactionReview extends PureComponent {
 
     const currentConnection = sdkConnections[channelIdOrHostname ?? ''];
 
-    let url = '';
-    if (currentConnection) {
-      url = currentConnection.originatorInfo.url;
-    } else {
-      url = this.getUrlFromBrowser();
-    }
+    const url = currentConnection
+      ? currentConnection.originatorInfo.url
+      : channelIdOrHostname;
 
     const styles = this.getStyles();
 
@@ -682,14 +674,14 @@ class TransactionReview extends PureComponent {
   };
 
   renderQRDetails() {
-    const currentPageInformation = { url: this.getUrlFromBrowser() };
     const {
       QRState,
-      transaction: { from },
+      transaction: { from, origin },
       onCancel,
       onConfirm,
     } = this.props;
 
+    const currentPageInformation = { origin, url: this.getRequestUrl() };
     const styles = this.getStyles();
     return (
       <View style={styles.actionViewQRObject}>
@@ -731,7 +723,6 @@ const mapStateToProps = (state) => {
     chainId,
     showHexData: state.settings.showHexData,
     transaction,
-    browser: state.browser,
     primaryCurrency: state.settings.primaryCurrency,
     tokenList: selectTokenList(state),
     shouldUseSmartTransaction: selectShouldUseSmartTransaction(state, chainId),

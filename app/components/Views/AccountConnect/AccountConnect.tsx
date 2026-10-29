@@ -41,8 +41,8 @@ import {
   getHost,
   getUrlObj,
   prefixUrlWithProtocol,
+  getTabUrlForHostname,
 } from '../../../util/browser';
-import { getActiveTabUrl } from '../../../util/transactions';
 import { Account, useAccounts } from '../../hooks/useAccounts';
 
 // Internal dependencies.
@@ -153,8 +153,6 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const { toastRef } = useContext(ToastContext);
 
-  // origin is set to the last active tab url in the browser which can conflict with sdk
-  const inappBrowserOrigin: string = useSelector(getActiveTabUrl, isEqual);
   const accountsLength = useSelector(selectAccountsLength);
   const { wc2Metadata } = useSelector((state: RootState) => state.sdk);
 
@@ -168,6 +166,17 @@ const AccountConnect = (props: AccountConnectProps) => {
   };
 
   const isChannelId = isUUID(channelIdOrHostname);
+
+  // Display identity must come from the request origin, never from whichever
+  // tab is visible. A tab URL is only used (for its protocol) when its host
+  // matches the requesting origin.
+  const requestTabUrl: string | undefined = useSelector(
+    (state: RootState) =>
+      isChannelId
+        ? undefined
+        : getTabUrlForHostname(state.browser, channelIdOrHostname),
+    isEqual,
+  );
 
   const sdkConnection = SDKConnect.getInstance().getConnection({
     channelId: channelIdOrHostname,
@@ -199,7 +208,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       dappHostname = title;
     } else if (!isChannelId && (dappUrl || channelIdOrHostname)) {
       title = prefixUrlWithProtocol(dappUrl || channelIdOrHostname);
-      dappHostname = inappBrowserOrigin;
+      dappHostname = requestTabUrl || channelIdOrHostname;
     } else {
       title = strings('sdk.unknown');
       setIsSdkUrlUnknown(true);
@@ -208,7 +217,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     return { domainTitle: title, hostname: dappHostname };
   }, [
     isOriginWalletConnect,
-    inappBrowserOrigin,
+    requestTabUrl,
     isOriginMMSDKRemoteConn,
     isChannelId,
     dappUrl,
@@ -265,7 +274,7 @@ const AccountConnect = (props: AccountConnectProps) => {
   }, [dappUrl, channelIdOrHostname]);
 
   const faviconSource = useFavicon(
-    inappBrowserOrigin || (!isChannelId ? channelIdOrHostname : ''),
+    requestTabUrl || (!isChannelId ? channelIdOrHostname : ''),
   );
 
   const actualIcon = useMemo(() => {
@@ -403,7 +412,8 @@ const AccountConnect = (props: AccountConnectProps) => {
      * This logic should be removed and the UI should ensure it cannot continue if no chains are selected.
      * {@link https://github.com/MetaMask/metamask-mobile/pull/13970/files#r2042345624}
      */
-    const chainsToPermit = chainId && selectedChainIds.length === 0 ? [chainId] : selectedChainIds;
+    const chainsToPermit =
+      chainId && selectedChainIds.length === 0 ? [chainId] : selectedChainIds;
     const hexSelectedAddresses = selectedAddresses.map((account) =>
       toHex(account),
     );
@@ -737,7 +747,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       isLoading,
       sdkConnection,
       hostname,
-      handleAccountsSelected
+      handleAccountsSelected,
     ],
   );
 
@@ -751,12 +761,7 @@ const AccountConnect = (props: AccountConnectProps) => {
         defaultSelectedChainIds={selectedChainIds}
       />
     ),
-    [
-      isLoading,
-      urlWithProtocol,
-      handleNetworksSelected,
-      selectedChainIds,
-    ],
+    [isLoading, urlWithProtocol, handleNetworksSelected, selectedChainIds],
   );
 
   const renderPhishingModal = useCallback(
