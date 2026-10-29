@@ -71,7 +71,20 @@ jest.mock('react-native', () => {
 jest.mock('@metamask/react-native-webview', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
   const { View } = require('react-native');
-  const WebView = (props) => <View {...props} />;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+  const { forwardRef, useImperativeHandle } = require('react');
+  const WebView = forwardRef((props, ref) => {
+    useImperativeHandle(ref, () => ({
+      injectJavaScript: jest.fn(),
+      postMessage: jest.fn(),
+      reload: jest.fn(),
+      goBack: jest.fn(),
+      goForward: jest.fn(),
+      stopLoading: jest.fn(),
+      requestFocus: jest.fn(),
+    }));
+    return <View {...props} />;
+  });
 
   return {
     WebView,
