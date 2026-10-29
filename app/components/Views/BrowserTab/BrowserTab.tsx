@@ -26,9 +26,7 @@ import {
   prefixUrlWithProtocol,
   isTLD,
   protocolAllowList,
-  trustedProtocolToDeeplink,
-  getAlertMessage,
-  allowLinkOpen,
+  promptToOpenExternalLink,
   getUrlObj,
 } from '../../../util/browser';
 import {
@@ -772,32 +770,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     if (protocolAllowList.includes(protocol)) return true;
     Logger.log(`Protocol not allowed ${protocol}`);
 
-    // If it is a trusted deeplink protocol, do not show the
-    // warning alert. Allow the OS to deeplink the URL
-    // and stop the webview from loading it.
-    if (trustedProtocolToDeeplink.includes(protocol)) {
-      allowLinkOpen(urlToLoad);
-      return false;
-    }
-
-    // TODO: add logging for untrusted protocol being used
-    // Sentry
-    const alertMsg = getAlertMessage(protocol, strings);
-
-    // Pop up an alert dialog box to prompt the user for permission
-    // to execute the request
-    Alert.alert(strings('onboarding.warning_title'), alertMsg, [
-      {
-        text: strings('browser.protocol_alert_options.ignore'),
-        onPress: () => null,
-        style: 'cancel',
-      },
-      {
-        text: strings('browser.protocol_alert_options.allow'),
-        onPress: () => allowLinkOpen(urlToLoad),
-        style: 'default',
-      },
-    ]);
+    // Every other protocol leaves the webview, so require explicit
+    // user consent before handing it to the OS.
+    promptToOpenExternalLink(urlToLoad);
 
     return false;
   };
@@ -1379,17 +1354,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
               {!!entryScriptWeb3 && firstUrlLoaded && (
                 <>
                   <WebView
-                    originWhitelist={[
-                      'https://',
-                      'http://',
-                      'metamask://',
-                      'dapp://',
-                      'wc://',
-                      'ethereum://',
-                      'file://',
-                      // Needed for Recaptcha
-                      'about:srcdoc',
-                    ]}
+                    // Route every navigation through onShouldStartLoadWithRequest
+                    // so the webview never opens external schemes on its own.
+                    originWhitelist={['*']}
                     decelerationRate={'normal'}
                     ref={webviewRef}
                     renderError={() => (

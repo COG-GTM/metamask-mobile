@@ -1,9 +1,9 @@
-import { Linking } from 'react-native';
 import Share, { ShareOptions } from 'react-native-share';
 import { ShareOpenResult } from 'react-native-share/lib/typescript/types';
 import ReactNativeBlobUtil, { FetchBlobResponse } from 'react-native-blob-util';
 import { strings } from '../../../locales/i18n';
 import Device from '../device';
+import { promptToOpenExternalLink } from '.';
 
 interface DownloadResult {
   success: boolean;
@@ -33,10 +33,10 @@ const checkAppleWalletPass = async (
     response.respInfo.headers['Content-Type'] === APPLE_WALLET_PASS_MIME_TYPE
   ) {
     try {
-      await Linking.openURL(downloadUrl);
+      const allowed = await promptToOpenExternalLink(downloadUrl);
       return {
-        success: true,
-        message: 'success',
+        success: allowed,
+        message: allowed ? 'success' : 'cancelled',
       };
     } catch (err) {
       if (err instanceof Error) {

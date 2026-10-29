@@ -1,7 +1,8 @@
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import isUrl from 'is-url';
 import Url from 'url-parse';
 import { regex, hasProtocol } from '../../util/regex';
+import { strings } from '../../../locales/i18n';
 
 /**
  * Returns URL prefixed with protocol
@@ -97,18 +98,6 @@ export const isTLD = (hostname: string, error: any) =>
 export const protocolAllowList = ['about:', 'http:', 'https:'];
 
 /**
- *
- * List of all trusted protocols for OS Linker to handle
- */
-export const trustedProtocolToDeeplink = [
-  'wc:',
-  'metamask:',
-  'ethereum:',
-  'dapp:',
-  'market:',
-];
-
-/**
  * Returns translated warning message for the
  * warning dialog box the user sees when the to be loaded
  * website tries to automatically start an external
@@ -138,20 +127,54 @@ export const getAlertMessage = (
  * Executes it when a positive response is received.
  *
  * @param url - String containing url
- * @returns Promise<any>
+ * @returns Promise resolving to true if the OS opened the url
  */
-export const allowLinkOpen = (url: string) =>
+export const allowLinkOpen = (url: string): Promise<boolean> =>
   Linking.canOpenURL(url)
-    .then((supported) => {
+    .then(async (supported) => {
       if (supported) {
-        return Linking.openURL(url);
+        await Linking.openURL(url);
+        return true;
       }
       console.warn(`Can't open url: ${url}`);
-      return null;
+      return false;
     })
     .catch((e) => {
       console.warn(`Error opening URL: ${e}`);
+      return false;
     });
+
+/**
+ * Asks the user for consent before handing a URL to the Operating System
+ * to be opened outside the Webview. This is the single consent path for
+ * every external open triggered by web content.
+ *
+ * @param url - String containing url
+ * @returns Promise resolving to true if the user allowed the link and it opened
+ */
+export const promptToOpenExternalLink = (url: string): Promise<boolean> =>
+  new Promise((resolve) => {
+    const { protocol } = new Url(url);
+    Alert.alert(
+      strings('onboarding.warning_title'),
+      getAlertMessage(protocol, strings),
+      [
+        {
+          text: strings('browser.protocol_alert_options.ignore'),
+          onPress: () => resolve(false),
+          style: 'cancel',
+        },
+        {
+          text: strings('browser.protocol_alert_options.allow'),
+          onPress: () => {
+            allowLinkOpen(url).then(resolve);
+          },
+          style: 'default',
+        },
+      ],
+      { cancelable: true, onDismiss: () => resolve(false) },
+    );
+  });
 
 /**
  * Appends search parameters to a URL and returns the complete URL string
