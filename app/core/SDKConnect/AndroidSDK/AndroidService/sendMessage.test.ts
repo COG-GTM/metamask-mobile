@@ -77,9 +77,10 @@ describe('sendMessage', () => {
   it('should send message with reordered accounts if selectedAddress is in result', async () => {
     mockGetId.mockReturnValue(RPC_METHODS.ETH_REQUESTACCOUNTS);
 
-    await sendMessage(instance, message);
+    await sendMessage(instance, message, undefined, 'test-client-id');
 
     expect(mockSendMessage).toHaveBeenCalledWith(
+      'test-client-id',
       JSON.stringify({
         ...message,
         data: {
@@ -103,9 +104,32 @@ describe('sendMessage', () => {
 
     mockGetId.mockReturnValue(RPC_METHODS.ETH_REQUESTACCOUNTS);
 
+    await sendMessage(instance, message, undefined, 'test-client-id');
+
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      'test-client-id',
+      JSON.stringify(message),
+    );
+  });
+
+  it('routes ready messages to the session in the message payload', async () => {
+    mockGetId.mockReturnValue(undefined);
+    const readyMessage = { type: 'ready', data: { id: 'session-a' } };
+
+    await sendMessage(instance, readyMessage, false);
+
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      'session-a',
+      JSON.stringify(readyMessage),
+    );
+  });
+
+  it('does not fall back to the last active client when no target is given', async () => {
+    mockGetId.mockReturnValue('someMethod');
+
     await sendMessage(instance, message);
 
-    expect(mockSendMessage).toHaveBeenCalledWith(JSON.stringify(message));
+    expect(mockSendMessage).not.toHaveBeenCalled();
   });
 
   it('should handle multichain rpc call responses separately', async () => {
@@ -113,18 +137,21 @@ describe('sendMessage', () => {
     mockGetById.mockReturnValue(['rpc1', 'rpc2']);
     (handleBatchRpcResponse as jest.Mock).mockResolvedValue(true);
 
-    await sendMessage(instance, message);
+    await sendMessage(instance, message, undefined, 'test-client-id');
 
     expect(handleBatchRpcResponse).toHaveBeenCalled();
     expect(mockRemove).toHaveBeenCalledWith('test-id');
-    expect(mockSendMessage).toHaveBeenCalledWith(JSON.stringify(message));
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      'test-client-id',
+      JSON.stringify(message),
+    );
   });
 
   it('should not call goBack if rpcQueueManager is not empty', async () => {
     mockGetId.mockReturnValue('someMethod');
     mockIsEmpty.mockReturnValue(false);
 
-    await sendMessage(instance, message);
+    await sendMessage(instance, message, undefined, 'test-client-id');
 
     expect(Minimizer.goBack).not.toHaveBeenCalled();
   });
@@ -133,7 +160,7 @@ describe('sendMessage', () => {
     mockGetId.mockReturnValue('someMethod');
     (wait as jest.Mock).mockRejectedValue(new Error('test error'));
 
-    await sendMessage(instance, message);
+    await sendMessage(instance, message, undefined, 'test-client-id');
 
     expect(Logger.log).toHaveBeenCalledWith(
       expect.any(Error),

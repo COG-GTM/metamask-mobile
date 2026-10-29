@@ -47,6 +47,7 @@ export interface ConnectionProps {
   validUntil?: number;
   scheme?: string;
   lastAuthorized?: number; // timestamp of last received activity
+  callerPackage?: string; // Android SDK: package bound to this session natively
 }
 
 import packageJSON from '../../../../package.json';

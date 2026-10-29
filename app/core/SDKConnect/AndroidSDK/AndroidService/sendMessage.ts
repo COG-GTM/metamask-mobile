@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AccountsController } from '@metamask/accounts-controller';
+import { MessageType } from '@metamask/sdk-communication-layer';
 import Logger from '../../../../util/Logger';
 import Engine from '../../../Engine';
 import { METHODS_TO_DELAY, RPC_METHODS } from '../../SDKConnectConstants';
@@ -12,6 +13,7 @@ async function sendMessage(
   instance: AndroidService,
   message: any,
   forceRedirect?: boolean,
+  clientId?: string,
 ) {
   const id = message?.data?.id;
   let rpcMethod = instance.rpcQueueManager.getId(id);
@@ -58,7 +60,21 @@ async function sendMessage(
     }
   }
 
-  instance.communicationClient.sendMessage(JSON.stringify(message));
+  // Responses are routed natively to the app bound to this session only.
+  const targetClientId =
+    clientId ??
+    (message?.type === MessageType.READY ? message?.data?.id : undefined);
+
+  if (targetClientId) {
+    instance.communicationClient.sendMessage(
+      targetClientId,
+      JSON.stringify(message),
+    );
+  } else {
+    DevLogger.log(
+      `AndroidService::sendMessage no target client --- dropping message`,
+    );
+  }
 
   DevLogger.log(`AndroidService::sendMessage method=${rpcMethod}`, message);
 
@@ -68,10 +84,10 @@ async function sendMessage(
     const isLastRpcOrError = await handleBatchRpcResponse({
       chainRpcs: chainRPCs,
       msg: message,
-      backgroundBridge:
-        instance.bridgeByClientId[instance.currentClientId ?? ''],
+      backgroundBridge: instance.bridgeByClientId[targetClientId ?? ''],
       batchRPCManager: instance.batchRPCManager,
-      sendMessage: ({ msg }) => instance.sendMessage(msg),
+      sendMessage: ({ msg }) =>
+        instance.sendMessage(msg, undefined, targetClientId),
     });
     DevLogger.log(
       `AndroidService::sendMessage isLastRpc=${isLastRpcOrError}`,

@@ -31,6 +31,7 @@ import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
 import AndroidSDKEventHandler from './AndroidNativeSDKEventHandler';
 import sendMessage from './AndroidService/sendMessage';
+import isBoundCaller from './AndroidService/isBoundCaller';
 import { DappClient, DappConnections } from './dapp-sdk-types';
 import getDefaultBridgeParams from './getDefaultBridgeParams';
 import { AccountsController } from '@metamask/accounts-controller';
@@ -93,6 +94,7 @@ export default class AndroidService extends EventEmitter2 {
             clientId: connection.id,
             originatorInfo: connection.originatorInfo as OriginatorInfo,
             validUntil: connection.validUntil,
+            callerPackage: connection.callerPackage,
           };
         });
       } else {
@@ -100,6 +102,13 @@ export default class AndroidService extends EventEmitter2 {
           `AndroidService::setupEventListeners no previous connections found`,
         );
       }
+
+      // Drop native bindings for sessions the wallet no longer knows about.
+      this.communicationClient
+        ?.retainSessions?.(Object.keys(this.connections))
+        ?.catch?.((err: unknown) => {
+          Logger.log(err, `AndroidService::retainSessions error`);
+        });
     } catch (err) {
       console.error(`AndroidService::setupEventListeners error`, err);
     }
@@ -128,6 +137,23 @@ export default class AndroidService extends EventEmitter2 {
       const clientInfo: DappClient = JSON.parse(sClientInfo);
 
       DevLogger.log(`AndroidService::clients_connected`, clientInfo);
+      const existingConnection = this.connections?.[clientInfo.clientId];
+      if (
+        existingConnection &&
+        !isBoundCaller(existingConnection, clientInfo.callerPackage)
+      ) {
+        if (existingConnection.callerPackage) {
+          // Bound to a different app: never let another caller take it over.
+          Logger.log(
+            `AndroidService::clients_connected - ignoring caller not bound to session`,
+          );
+          return;
+        }
+        // Created before native binding existed: require a fresh user approval.
+        delete this.bridgeByClientId[clientInfo.clientId];
+        delete this.connections[clientInfo.clientId];
+      }
+
       if (this.connections?.[clientInfo.clientId]) {
         // Skip existing client -- bridge has been setup
         Logger.log(
@@ -164,6 +190,7 @@ export default class AndroidService extends EventEmitter2 {
         originatorInfo: clientInfo.originatorInfo,
         otherPublicKey: '',
         validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+        callerPackage: clientInfo.callerPackage,
       });
 
       const handleEventAsync = async () => {
@@ -196,6 +223,7 @@ export default class AndroidService extends EventEmitter2 {
               clientId: clientInfo.clientId,
               originatorInfo: clientInfo.originatorInfo,
               validUntil: clientInfo.validUntil,
+              callerPackage: clientInfo.callerPackage,
             };
             await SDKConnect.getInstance().addDappConnection({
               id: clientInfo.clientId,
@@ -204,6 +232,7 @@ export default class AndroidService extends EventEmitter2 {
               originatorInfo: clientInfo.originatorInfo,
               otherPublicKey: '',
               validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+              callerPackage: clientInfo.callerPackage,
             });
           }
 
@@ -226,18 +255,28 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::clients_connected sending jsonrpc error to client - connection rejected`,
           );
-          this.sendMessage({
-            data: {
-              error,
-              jsonrpc: '2.0',
+          this.sendMessage(
+            {
+              data: {
+                error,
+                jsonrpc: '2.0',
+              },
+              name: 'metamask-provider',
             },
-            name: 'metamask-provider',
-          }).catch((err) => {
+            undefined,
+            clientInfo.clientId,
+          ).catch((err) => {
             Logger.log(
               err,
               `AndroidService::clients_connected error failed sending jsonrpc error to client`,
             );
           });
+          // Queued after the error reply so it is still delivered; only
+          // releases the binding if it belongs to this caller.
+          this.releaseNativeSession(
+            clientInfo.clientId,
+            clientInfo.callerPackage ?? null,
+          );
           SDKConnect.getInstance().state.navigation?.navigate(
             Routes.MODAL.ROOT_MODAL_FLOW,
             {
@@ -294,6 +333,7 @@ export default class AndroidService extends EventEmitter2 {
         let parsedMsg: {
           id: string;
           message: string;
+          callerPackage?: string;
         };
 
         DevLogger.log(`AndroidService::onMessageReceived`, jsonMessage);
@@ -312,7 +352,7 @@ export default class AndroidService extends EventEmitter2 {
           Logger.log(error, `AndroidService::onMessageReceived error`);
         }
 
-        let sessionId: string,
+        let sessionId = '',
           message: string,
           // TODO: Replace "any" with type
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -322,6 +362,18 @@ export default class AndroidService extends EventEmitter2 {
           sessionId = parsedMsg.id;
           message = parsedMsg.message;
           data = JSON.parse(message);
+
+          // Session ids are bound to the calling app by the native layer; never
+          // create connection state for an id that was not approved first.
+          if (
+            !sessionId ||
+            !isBoundCaller(this.connections[sessionId], parsedMsg.callerPackage)
+          ) {
+            Logger.log(
+              `AndroidService::onMessageReceived dropping message for unknown or unbound session`,
+            );
+            return;
+          }
 
           // Update connected state
           this.connections[sessionId] = {
@@ -333,13 +385,17 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::onMessageReceived invalid json param`,
           );
-          this.sendMessage({
-            data: {
-              error,
-              jsonrpc: '2.0',
+          this.sendMessage(
+            {
+              data: {
+                error,
+                jsonrpc: '2.0',
+              },
+              name: 'metamask-provider',
             },
-            name: 'metamask-provider',
-          }).catch((err) => {
+            undefined,
+            sessionId || undefined,
+          ).catch((err) => {
             Logger.log(
               err,
               `AndroidService::onMessageReceived error sending jsonrpc error message to client ${sessionId}`,
@@ -473,15 +529,30 @@ export default class AndroidService extends EventEmitter2 {
       isMMSDK: true,
       url: PROTOCOLS.METAMASK + '://' + AppConstants.MM_SDK.SDK_REMOTE_ORIGIN,
       isRemoteConn: true,
-      sendMessage: this.sendMessage.bind(this),
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sendMessage: (msg: any, forceRedirect?: boolean) =>
+        this.sendMessage(msg, forceRedirect, clientInfo.clientId),
       ...defaultBridgeParams,
     });
 
     this.bridgeByClientId[clientInfo.clientId] = bridge;
   }
 
+  private releaseNativeSession(
+    channelId: string,
+    expectedOwner: string | null = null,
+  ) {
+    this.communicationClient
+      ?.removeSession?.(channelId, expectedOwner)
+      ?.catch?.((err: unknown) => {
+        Logger.log(err, `AndroidService::releaseNativeSession error`);
+      });
+  }
+
   async removeConnection(channelId: string) {
     try {
+      this.releaseNativeSession(channelId);
       if (this.connections[channelId]) {
         DevLogger.log(
           `AndroidService::remove client ${channelId} exists --- remove bridge`,
@@ -496,7 +567,7 @@ export default class AndroidService extends EventEmitter2 {
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async sendMessage(message: any, forceRedirect?: boolean) {
-    return sendMessage(this, message, forceRedirect);
+  async sendMessage(message: any, forceRedirect?: boolean, clientId?: string) {
+    return sendMessage(this, message, forceRedirect, clientId);
   }
 }
