@@ -2,6 +2,7 @@ import { Connection } from '../Connection';
 import SDKConnect from '../SDKConnect';
 import { waitForCondition } from '../utils/wait.util';
 import reconnect from './reconnect';
+import { revokeChannelPermissions } from '../handlers/checkPermissions';
 
 jest.mock('../Connection', () => ({
   Connection: jest.fn(
@@ -21,6 +22,10 @@ jest.mock('../Connection', () => ({
   ),
 }));
 jest.mock('../SDKConnect');
+jest.mock('../../Engine', () => ({ context: {} }));
+jest.mock('../handlers/checkPermissions', () => ({
+  revokeChannelPermissions: jest.fn(),
+}));
 jest.mock('../utils/DevLogger');
 jest.mock('../utils/wait.util');
 
@@ -231,6 +236,61 @@ describe('reconnect', () => {
       });
 
       expect(mockInstance.state.connecting['test-channel-id']).toEqual(false);
+    });
+  });
+
+  describe('Handling peer key changes', () => {
+    beforeEach(() => {
+      mockRemoteIsReady.mockReturnValue(false);
+      mockRemoteIsPaused.mockReturnValue(false);
+      mockRemoteIsConnected.mockReturnValue(false);
+      mockInstance.state.connections['test-channel-id'] = {
+        id: 'test-channel-id',
+        origin: 'deeplink',
+        otherPublicKey: 'approved-public-key',
+      };
+    });
+
+    it('revokes permissions and requires re-approval when the peer key changes', async () => {
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'new-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(revokeChannelPermissions).toHaveBeenCalledWith(
+        expect.objectContaining({ channelId: 'test-channel-id' }),
+      );
+      expect(mockDisapproveChannel).toHaveBeenCalledWith('test-channel-id');
+      expect(mockRemoteSetOtherPublicKey).toHaveBeenCalledWith('new-public-key');
+      expect(
+        mockInstance.state.connections['test-channel-id'].otherPublicKey,
+      ).toBe('new-public-key');
+      expect(
+        mockInstance.state.connected['test-channel-id'].requiresReapproval,
+      ).toBe(true);
+    });
+
+    it('keeps permissions when the peer key is unchanged', async () => {
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'approved-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(revokeChannelPermissions).not.toHaveBeenCalled();
+      expect(mockDisapproveChannel).not.toHaveBeenCalled();
+      expect(
+        mockInstance.state.connected['test-channel-id'].requiresReapproval,
+      ).toBeFalsy();
     });
   });
 });

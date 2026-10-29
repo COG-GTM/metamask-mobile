@@ -94,6 +94,11 @@ export class Connection extends EventEmitter2 {
    */
   otps?: number[];
 
+  /**
+   * Set when the peer public key of an existing channel changed; the user must re-approve the channel.
+   */
+  requiresReapproval = false;
+
   approvalPromise?: Promise<unknown>;
 
   /**

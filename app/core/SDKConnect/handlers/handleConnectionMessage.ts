@@ -132,7 +132,12 @@ export const handleConnectionMessage = async ({
   // Wait for bridge to be ready before handling messages.
   // It will wait until user accept/reject the connection request.
   try {
-    await checkPermissions({ message, connection, engine });
+    await checkPermissions({
+      message,
+      connection,
+      engine,
+      forcePrompt: connection.requiresReapproval,
+    });
     DevLogger.log(
       `[handleConnectionMessage] checkPermissions passed -- method=${
         message.method

@@ -1,4 +1,6 @@
+import Engine from '../../Engine';
 import { Connection, ConnectionProps } from '../Connection';
+import { revokeChannelPermissions } from '../handlers/checkPermissions';
 import SDKConnect from '../SDKConnect';
 import DevLogger from '../utils/DevLogger';
 import { waitForCondition } from '../utils/wait.util';
@@ -35,21 +37,25 @@ async function reconnect({
       return;
     }
 
-    if (instance.state.paused && updateKey) {
-      instance.state.connections[channelId].otherPublicKey = otherPublicKey;
-      const currentOtherPublicKey =
-        instance.state.connections[channelId].otherPublicKey;
-      if (currentOtherPublicKey !== otherPublicKey) {
-        console.warn(
-          `SDKConnect::reconnect[${context}] existing=${
-            existingConnection !== undefined
-          } - update otherPublicKey -  ${currentOtherPublicKey} --> ${otherPublicKey}`,
-        );
-        if (existingConnection) {
-          existingConnection.remote.setOtherPublicKey(otherPublicKey);
-        }
-      } else {
-        DevLogger.log(`SDKConnect::reconnect[${context}] - same otherPublicKey`);
+    const storedConnection = instance.state.connections[channelId];
+    // A new peer key on an existing channel is treated as a new, unapproved peer.
+    const keyChanged =
+      updateKey === true &&
+      storedConnection !== undefined &&
+      storedConnection.otherPublicKey !== otherPublicKey;
+
+    if (keyChanged) {
+      console.warn(
+        `SDKConnect::reconnect[${context}] existing=${
+          existingConnection !== undefined
+        } - otherPublicKey changed -- revoking permissions until user re-approves`,
+      );
+      revokeChannelPermissions({ engine: Engine, channelId });
+      instance.disapproveChannel(channelId);
+      storedConnection.otherPublicKey = otherPublicKey;
+      if (existingConnection) {
+        existingConnection.remote.setOtherPublicKey(otherPublicKey);
+        existingConnection.requiresReapproval = true;
       }
     }
 
@@ -147,6 +153,9 @@ async function reconnect({
         instance.removeChannel({ channelId });
       },
     });
+    if (keyChanged || existingConnection?.requiresReapproval) {
+      instance.state.connected[channelId].requiresReapproval = true;
+    }
     instance.state.connected[channelId].connect({
       withKeyExchange: true,
       authorized: connection.originatorInfo !== undefined,

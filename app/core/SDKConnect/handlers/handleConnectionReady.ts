@@ -14,6 +14,25 @@ import generateOTP from '../utils/generateOTP.util';
 import { setupBridge } from './setupBridge';
 import { HOUR_IN_MS } from '../SDKConnectConstants';
 
+const requireUserReapproval = async ({
+  connection,
+  engine,
+}: {
+  connection: Connection;
+  engine: typeof Engine;
+}) => {
+  const approved = await checkPermissions({
+    connection,
+    engine,
+    forcePrompt: true,
+  });
+  if (!approved) {
+    throw new Error(
+      `SDKConnect::CLIENTS_READY channel=${connection.channelId} re-approval rejected`,
+    );
+  }
+};
+
 export const handleConnectionReady = async ({
   originatorInfo,
   engine,
@@ -102,7 +121,14 @@ export const handleConnectionReady = async ({
     // if (connection.protocolVersion < 2) {
     // TODO following logic blocks should be simplified (too many conditions)
     // Should be done in a separate PR to avoid breaking changes and separate SDKConnect / Connection logic in different files.
-    if (
+    if (connection.requiresReapproval) {
+      // Peer key changed on an existing channel: never auto-approve.
+      connection.approvalPromise = undefined;
+      disapprove(connection.channelId);
+      await requireUserReapproval({ connection, engine });
+      connection.sendAuthorized(true);
+      connection.lastAuthorized = Date.now();
+    } else if (
       connection.initialConnection &&
       connection.origin === AppConstants.DEEPLINKS.ORIGIN_QR_CODE
     ) {
@@ -161,10 +187,7 @@ export const handleConnectionReady = async ({
         // Prevent auto approval if metamask is killed and restarted
         disapprove(connection.channelId);
         // Always need to re-approve connection first.
-        await checkPermissions({
-          connection,
-          engine,
-        });
+        await requireUserReapproval({ connection, engine });
         connection.sendAuthorized(true);
         connection.lastAuthorized = Date.now();
       }

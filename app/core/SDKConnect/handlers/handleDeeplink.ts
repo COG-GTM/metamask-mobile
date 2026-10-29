@@ -77,9 +77,11 @@ const handleDeeplink = async ({
   DevLogger.log(`handleDeeplink:: url=${url}`);
   const connections = sdkConnect.getConnections();
   const channelExists = connections[channelId] !== undefined;
+  const keyChanged =
+    channelExists && connections[channelId].otherPublicKey !== otherPublicKey;
 
   DevLogger.log(
-    `handleDeeplink:: channel=${channelId} exists=${channelExists}`,
+    `handleDeeplink:: channel=${channelId} exists=${channelExists} keyChanged=${keyChanged}`,
   );
 
   try {
@@ -119,6 +121,14 @@ const handleDeeplink = async ({
       DevLogger.log(
         `handleDeeplink:: channel=${channelId} reconnected=${connected} -- handle rcp`,
       );
+      if (rpc && keyChanged) {
+        // The rpc payload comes from a peer the user has not approved yet.
+        DevLogger.log(
+          `handleDeeplink:: channel=${channelId} peer key changed --- ignore rpc until re-approval`,
+        );
+        return;
+      }
+
       // If msg contains rpc calls, handle them
       if (rpc) {
         const connection = sdkConnect.getConnected()[channelId];
