@@ -70,7 +70,7 @@ export class BackgroundBridge extends EventEmitter {
     remoteConnHost,
     isMMSDK,
     channelId,
-    tabId,
+    tabId = /** @type {number | string | undefined} */ (undefined),
   }) {
     super();
     this.url = url;
