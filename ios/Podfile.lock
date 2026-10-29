@@ -3381,7 +3381,7 @@ PODS:
     - sovran-react-native
   - Sentry/HybridSDK (8.56.1)
   - SocketRocket (0.7.1)
-  - sovran-react-native (1.0.4):
+  - sovran-react-native (1.1.5):
     - React-Core
   - Yoga (0.0.0)
 
@@ -4028,7 +4028,7 @@ SPEC CHECKSUMS:
   segment-analytics-react-native: 556a3bdd0a28ed4c6110a6c17322cf641d4ef704
   Sentry: b3ec44d01708fce73f99b544beb57e890eca4406
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
-  sovran-react-native: e4721a564ee6ef5b5a0d901bc677018cf371ea01
+  sovran-react-native: adab7580e38f67c0e8679df1cf277d1075b83ed8
   Yoga: 728df40394d49f3f471688747cf558158b3a3bd1
 
 PODFILE CHECKSUM: 0031d29cec6241088e80f2690e4c72a6f99b0472
