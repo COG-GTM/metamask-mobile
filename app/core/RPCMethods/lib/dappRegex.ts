@@ -154,15 +154,19 @@ const analysePattern = (pattern: string) => {
   }
   branchFactors.push(stack[0].alternatives);
 
-  return { quantifiers, branchFactors };
+  // An unanchored pattern is retried at every input position.
+  const anchored = pattern.startsWith('^') && stack[0].alternatives === 1;
+
+  return { quantifiers, branchFactors, anchored };
 };
 
 const estimateBacktrackingCost = (
   quantifiers: QuantifierRange[],
   branchFactors: number[],
+  anchored: boolean,
   inputLength: number,
 ) => {
-  let cost = 1;
+  let cost = anchored ? 1 : inputLength + 1;
   for (const factor of branchFactors) {
     cost *= factor;
   }
@@ -200,12 +204,16 @@ export const createDappRegexMatcher = (
     throw new Error('Invalid regular expression');
   }
 
-  const { quantifiers, branchFactors } = analysePattern(pattern);
+  const { quantifiers, branchFactors, anchored } = analysePattern(pattern);
 
   return (input: string) => {
     if (
-      estimateBacktrackingCost(quantifiers, branchFactors, input.length) >
-      MAX_DAPP_REGEX_BACKTRACKING_COST
+      estimateBacktrackingCost(
+        quantifiers,
+        branchFactors,
+        anchored,
+        input.length,
+      ) > MAX_DAPP_REGEX_BACKTRACKING_COST
     ) {
       throw new Error('Regular expression is too complex for this input');
     }

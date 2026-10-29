@@ -76,6 +76,23 @@ describe('createDappRegexMatcher', () => {
     expect(() => match(`${'a'.repeat(4000)}1`)).toThrow('too complex');
   });
 
+  it('accounts for unanchored patterns being retried at every position', () => {
+    const match = createDappRegexMatcher('a*a*a*a*b');
+    expect(match('aaab')).not.toBeNull();
+    expect(() => match(`${'a'.repeat(250)}1`)).toThrow('too complex');
+  });
+
+  it('treats top-level alternation as unanchored', () => {
+    const match = createDappRegexMatcher('^x|a*a*b');
+    expect(() => match(`${'a'.repeat(250)}1`)).toThrow('too complex');
+  });
+
+  it('rejects repeated groups with a fixed count', () => {
+    expect(() => createDappRegexMatcher('(a+){40}b')).toThrow(
+      'Nested or ambiguous repetition is not allowed',
+    );
+  });
+
   it('refuses long chains of optional atoms', () => {
     const match = createDappRegexMatcher(
       `^${'a?'.repeat(30)}${'a'.repeat(30)}$`,
