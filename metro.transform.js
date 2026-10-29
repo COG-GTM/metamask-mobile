@@ -7,7 +7,9 @@ const {
   lintTransformedFile,
 } = require('@metamask/build-utils');
 const { ESLint } = require('eslint');
-const defaultTransformer = require('metro-react-native-babel-transformer');
+// Expo's transformer passes caller info (e.g. metroSourceType) that babel-preset-expo needs
+// to avoid injecting @babel/runtime requires into polyfill scripts.
+const defaultTransformer = require('@expo/metro-config/babel-transformer');
 const svgTransformer = require('react-native-svg-transformer');
 
 // Code fence removal variables
