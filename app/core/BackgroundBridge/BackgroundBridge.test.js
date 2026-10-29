@@ -54,7 +54,7 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url, permissionUrl) {
   // Arrange
   const {
     AccountsController,
@@ -102,6 +102,7 @@ function setupBackgroundBridge(url) {
     webview: null,
     channelId: 'clientId',
     url,
+    permissionUrl,
     isRemoteConn: true,
     ...defaultBridgeParams,
   });
@@ -111,6 +112,20 @@ describe('BackgroundBridge', () => {
   beforeEach(() => jest.clearAllMocks());
   describe('constructor', () => {
     const { KeyringController, PermissionController } = Engine.context;
+
+    it('uses the permission url as the permission subject when provided', () => {
+      const bridge = setupBackgroundBridge(
+        'https://bafycontent.ipfs.dweb.link',
+        'https://gooddapp.eth',
+      );
+      expect(bridge.url).toBe('https://bafycontent.ipfs.dweb.link');
+      expect(bridge.hostname).toBe('gooddapp.eth');
+    });
+
+    it('uses the url as the permission subject by default', () => {
+      const bridge = setupBackgroundBridge('https://www.mock.io');
+      expect(bridge.hostname).toBe('www.mock.io');
+    });
 
     it('creates Eip1193MethodMiddleware with expected hooks', async () => {
       const url = 'https:www.mock.io';

@@ -1,5 +1,6 @@
 import AppConstants from '../../../core/AppConstants';
 import URLParse from 'url-parse';
+import { encode as encodeContentHash } from 'content-hash';
 import { SessionENSNames } from './types';
 
 /**
@@ -45,6 +46,90 @@ export const isENSUrl = (urlToCheck: string, ensIgnoreList: string[]) => {
   return false;
 };
 
+const BASE32_ALPHABET = 'abcdefghijklmnopqrstuvwxyz234567';
+
+/**
+ * RFC 4648 base32 (lowercase, no padding), the multibase "b" encoding used for CIDs in hostnames
+ */
+const toBase32 = (bytes: number[]) => {
+  let output = '';
+  let bits = 0;
+  let value = 0;
+  for (const byte of bytes) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      output += BASE32_ALPHABET[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+    value &= (1 << bits) - 1;
+  }
+  if (bits > 0) {
+    output += BASE32_ALPHABET[(value << (5 - bits)) & 31];
+  }
+  return output;
+};
+
+/**
+ * Converts a decoded ENS content hash (ipfs-ns / swarm-ns) into a base32 CIDv1,
+ * the case-insensitive form required in a subdomain gateway hostname
+ */
+export const toCidV1Base32 = (type: string, hash: string) => {
+  const hex = encodeContentHash(type, hash);
+  const bytes = (hex.match(/../g) ?? []).map((byte) => parseInt(byte, 16));
+  // Drop the 2-byte varint multicodec prefix (0xe301 / 0xe401) to keep the CID bytes
+  return `b${toBase32(bytes.slice(2))}`;
+};
+
+/**
+ * Encodes a DNS name as a single DNS label for subdomain gateways ("my-app.eth" -> "my--app-eth")
+ */
+export const toInlinedDnsLabel = (name: string) =>
+  name.toLowerCase().replace(/-/g, '--').replace(/\./g, '-');
+
+const MAX_DNS_LABEL_LENGTH = 63;
+
+/**
+ * Builds the gateway url for resolved ENS content.
+ * Subdomain gateways are used so that every ENS site gets its own web origin,
+ * and therefore its own permission subject, instead of sharing the gateway hostname.
+ */
+export const getEnsContentGatewayUrl = ({
+  type,
+  hash,
+  hostname,
+  pathname,
+  query,
+}: {
+  type: string;
+  hash: string;
+  hostname: string;
+  pathname?: string;
+  query?: string;
+}): string | undefined => {
+  const path = `${pathname || '/'}${query || ''}`;
+  if (type === 'ipfs-ns') {
+    return `https://${toCidV1Base32(type, hash)}.${
+      AppConstants.IPFS_SUBDOMAIN_GATEWAY_HOST
+    }${path}`;
+  }
+  if (type === 'swarm-ns') {
+    return `https://${toCidV1Base32(type, hash)}.${
+      AppConstants.SWARM_SUBDOMAIN_GATEWAY_HOST
+    }${path}`;
+  }
+  if (type === 'ipns-ns') {
+    const label = toInlinedDnsLabel(hostname);
+    if (label.length > MAX_DNS_LABEL_LENGTH) {
+      throw new Error(
+        `ENS name "${hostname}" is too long to be loaded through an IPNS subdomain gateway`,
+      );
+    }
+    return `https://${label}.${AppConstants.IPNS_SUBDOMAIN_GATEWAY_HOST}${path}`;
+  }
+  return undefined;
+};
+
 /**
  * Gets the url to be displayed to the user
  * For example, if it's ens then show [site].eth instead of ipfs url
@@ -54,28 +139,40 @@ export const getMaskedUrl = (
   sessionENSNames: SessionENSNames,
 ) => {
   if (!urlToMask) return urlToMask;
-  let replace = null;
-  if (urlToMask.startsWith(AppConstants.IPFS_DEFAULT_GATEWAY_URL)) {
-    replace = (key: string) =>
-      `${AppConstants.IPFS_DEFAULT_GATEWAY_URL}${sessionENSNames[key].hash}/`;
-  } else if (urlToMask.startsWith(AppConstants.IPNS_DEFAULT_GATEWAY_URL)) {
-    replace = (key: string) =>
-      `${AppConstants.IPNS_DEFAULT_GATEWAY_URL}${sessionENSNames[key].hostname}/`;
-  } else if (urlToMask.startsWith(AppConstants.SWARM_DEFAULT_GATEWAY_URL)) {
-    replace = (key: string) =>
-      `${AppConstants.SWARM_DEFAULT_GATEWAY_URL}${sessionENSNames[key].hash}/`; //TODO: This was SWARM_GATEWAY_URL before, it was broken, understand what it does
-  }
+  const { origin } = new URLParse(urlToMask);
+  const key = Object.keys(sessionENSNames)
+    .reverse()
+    .find((ensUrl) => new URLParse(ensUrl).origin === origin);
+  if (!key) return urlToMask;
+  return `https://${sessionENSNames[key].hostname}${urlToMask.slice(
+    origin.length,
+  )}`;
+};
 
-  if (replace) {
-    const key = Object.keys(sessionENSNames).find((ens) =>
-      urlToMask.startsWith(ens),
-    );
-    if (key) {
-      urlToMask = urlToMask.replace(
-        replace(key),
-        `https://${sessionENSNames[key].hostname}/`,
-      );
+/**
+ * Gets the origin used as the permission subject for a url loaded in the browser.
+ * ENS content is keyed by the ENS name rather than by the gateway origin it is served from,
+ * so permissions survive content updates and are never shared between ENS names.
+ */
+export const getPermissionOrigin = (
+  url: string,
+  sessionENSNames: SessionENSNames,
+) => new URLParse(getMaskedUrl(url, sessionENSNames)).origin;
+
+/**
+ * Records the ENS name an ENS content gateway url was resolved from,
+ * replacing any previous ENS name mapped to the same gateway origin
+ */
+export const addSessionENSName = (
+  sessionENSNames: SessionENSNames,
+  gatewayUrl: string,
+  ensInfo: SessionENSNames[string],
+) => {
+  const { origin } = new URLParse(gatewayUrl);
+  Object.keys(sessionENSNames).forEach((ensUrl) => {
+    if (new URLParse(ensUrl).origin === origin) {
+      delete sessionENSNames[ensUrl];
     }
-  }
-  return urlToMask;
+  });
+  sessionENSNames[gatewayUrl] = ensInfo;
 };

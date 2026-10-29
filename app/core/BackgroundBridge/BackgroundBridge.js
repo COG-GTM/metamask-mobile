@@ -60,6 +60,7 @@ export class BackgroundBridge extends EventEmitter {
   constructor({
     webview,
     url,
+    permissionUrl,
     getRpcMethodMiddleware,
     isMainFrame,
     isRemoteConn,
@@ -73,8 +74,10 @@ export class BackgroundBridge extends EventEmitter {
   }) {
     super();
     this.url = url;
+    // Origin used as the permission subject, when it differs from the origin messages are posted to (e.g. ENS content)
+    this.permissionUrl = permissionUrl || url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
-    this.hostname = new URL(url).hostname;
+    this.hostname = new URL(this.permissionUrl).hostname;
     this.remoteConnHost = remoteConnHost;
     this.isMainFrame = isMainFrame;
     this.isWalletConnect = isWalletConnect;
@@ -532,7 +535,7 @@ export class BackgroundBridge extends EventEmitter {
         snapMethodMiddlewareBuilder(
           Engine.context,
           Engine.controllerMessenger,
-          this.url,
+          this.permissionUrl,
           // We assume that origins connecting through the BackgroundBridge are websites
           SubjectType.Website,
         ),
