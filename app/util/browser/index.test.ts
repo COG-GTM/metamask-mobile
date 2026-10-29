@@ -2,13 +2,14 @@ import {
   isTLD,
   getAlertMessage,
   protocolAllowList,
-  trustedProtocolToDeeplink,
+  promptToOpenExternalLink,
   prefixUrlWithProtocol,
   getUrlObj,
   getHost,
   appendURLParams,
   processUrlForBrowser,
 } from '.';
+import { Alert, AlertButton, Linking } from 'react-native';
 import { strings } from '../../../locales/i18n';
 
 describe('Browser utils :: prefixUrlWithProtocol', () => {
@@ -202,46 +203,74 @@ describe('Browser utils :: protocolWhitelist', () => {
   });
 });
 
-describe('Browser utils :: trustedProtocolToDeeplink', () => {
-  it('should match wc: protocol', () => {
-    const { protocol } = new URL('wc:f82jdjfjakjskdfj');
+describe('Browser utils :: promptToOpenExternalLink', () => {
+  let alertSpy: jest.SpyInstance;
+  let openURLSpy: jest.SpyInstance;
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
+  const pressButton = (index: number) => {
+    const buttons = alertSpy.mock.calls[0][2] as AlertButton[];
+    buttons[index].onPress?.();
+  };
+
+  beforeEach(() => {
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true);
+    openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
   });
-  it('should match metamask: protocol', () => {
-    const { protocol } = new URL('metamask://dapp/portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
-  it('should match ethereum: protocol', () => {
-    const { protocol } = new URL('ethereum://tx');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
+  it.each([
+    'metamask://connect?channelId=1',
+    'ethereum:0x0000000000000000000000000000000000000001@1?value=1',
+    'wc:abc@2?relay-protocol=irn',
+    'dapp://portfolio.metamask.io',
+    'market://details?id=io.metamask',
+    'sms:123?body=test',
+    'https://example.com/pass.pkpass',
+  ])('asks for consent before opening %s', (url) => {
+    promptToOpenExternalLink(url);
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    expect(alertSpy.mock.calls[0][1]).toBe(
+      strings('browser.protocol_alerts.generic'),
+    );
+    expect(openURLSpy).not.toHaveBeenCalled();
   });
-  it('should match dapp: protocol', () => {
-    const { protocol } = new URL('dapp://portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
+  it('uses the protocol specific warning message', () => {
+    promptToOpenExternalLink('tel:123');
+
+    expect(alertSpy.mock.calls[0][1]).toBe(
+      strings('browser.protocol_alerts.tel'),
+    );
   });
-  it('should not match eth: protocol', () => {
-    const { protocol } = new URL('eth://portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+  it('does not open the link when the user ignores the prompt', async () => {
+    const result = promptToOpenExternalLink('metamask://connect');
+    pressButton(0);
+
+    expect(await result).toBe(false);
+    expect(openURLSpy).not.toHaveBeenCalled();
   });
-  it('should not match tel: protocol', () => {
-    const { protocol } = new URL('tel://portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+  it('does not open the link when the prompt is dismissed', async () => {
+    const result = promptToOpenExternalLink('metamask://connect');
+    alertSpy.mock.calls[0][3].onDismiss();
+
+    expect(await result).toBe(false);
+    expect(openURLSpy).not.toHaveBeenCalled();
   });
-  it('should not match mailto: protocol', () => {
-    const { protocol } = new URL('mailto://portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
-  });
-  it('should not match ldap: protocol', () => {
-    const { protocol } = new URL('ldap://portfolio.metamask.io');
+  it('opens the link only after the user allows it', async () => {
+    const url = 'ethereum:0x0000000000000000000000000000000000000001@1';
+    const result = promptToOpenExternalLink(url);
+    pressButton(1);
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+    expect(await result).toBe(true);
+    expect(openURLSpy).toHaveBeenCalledWith(url);
   });
 });
 

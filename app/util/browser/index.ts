@@ -1,7 +1,8 @@
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import isUrl from 'is-url';
 import Url from 'url-parse';
 import { regex, hasProtocol } from '../../util/regex';
+import { strings } from '../../../locales/i18n';
 
 /**
  * Returns URL prefixed with protocol
@@ -97,18 +98,6 @@ export const isTLD = (hostname: string, error: any) =>
 export const protocolAllowList = ['about:', 'http:', 'https:'];
 
 /**
- *
- * List of all trusted protocols for OS Linker to handle
- */
-export const trustedProtocolToDeeplink = [
-  'wc:',
-  'metamask:',
-  'ethereum:',
-  'dapp:',
-  'market:',
-];
-
-/**
  * Returns translated warning message for the
  * warning dialog box the user sees when the to be loaded
  * website tries to automatically start an external
@@ -152,6 +141,38 @@ export const allowLinkOpen = (url: string) =>
     .catch((e) => {
       console.warn(`Error opening URL: ${e}`);
     });
+
+/**
+ * Asks the user for consent before handing a URL to the Operating System
+ * to be opened outside the Webview. This is the single consent path for
+ * every external open triggered by web content.
+ *
+ * @param url - String containing url
+ * @returns Promise resolving to true if the user allowed the link to open
+ */
+export const promptToOpenExternalLink = (url: string): Promise<boolean> =>
+  new Promise((resolve) => {
+    const { protocol } = new Url(url);
+    Alert.alert(
+      strings('onboarding.warning_title'),
+      getAlertMessage(protocol, strings),
+      [
+        {
+          text: strings('browser.protocol_alert_options.ignore'),
+          onPress: () => resolve(false),
+          style: 'cancel',
+        },
+        {
+          text: strings('browser.protocol_alert_options.allow'),
+          onPress: () => {
+            allowLinkOpen(url).finally(() => resolve(true));
+          },
+          style: 'default',
+        },
+      ],
+      { cancelable: true, onDismiss: () => resolve(false) },
+    );
+  });
 
 /**
  * Appends search parameters to a URL and returns the complete URL string
