@@ -111,12 +111,14 @@ internal object NativeSDKHub {
         }
     }
 
-    /** Keeps only bindings for sessions the wallet still has connections for. */
+    /**
+     * Drops bindings for sessions the wallet has no connection for, except
+     * sessions active in this process (e.g. awaiting approval).
+     */
     fun retainSessions(context: Context, sessionIds: Set<String>) {
         val appContext = context.applicationContext
         executor.execute {
-            store(appContext).retainOnly(sessionIds)
-            sessionOwners.keys.retainAll(sessionIds)
+            store(appContext).retainOnly(sessionIds + sessionOwners.keys)
         }
     }
 
