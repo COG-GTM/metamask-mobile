@@ -172,3 +172,24 @@ export const appendURLParams = (
 
   return url;
 };
+
+const ORIGIN_REGEX =
+  /^[a-z][a-z0-9+.-]*:\/\/(?:[a-z0-9._-]+|\[[0-9a-f:.]+\])(?::\d{1,5})?$/i;
+
+/**
+ * Checks that a string is a serialized origin (scheme://host[:port]) that is
+ * safe to use as a postMessage target origin in scripts injected into a WebView.
+ *
+ * @param origin - The origin to validate
+ * @returns Whether the origin is well-formed
+ */
+export const isValidOrigin = (origin: unknown): origin is string => {
+  if (typeof origin !== 'string' || !ORIGIN_REGEX.test(origin)) {
+    return false;
+  }
+  try {
+    return new URL(origin).origin === origin.toLowerCase();
+  } catch {
+    return false;
+  }
+};

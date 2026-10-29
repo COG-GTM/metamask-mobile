@@ -30,6 +30,7 @@ import {
   getAlertMessage,
   allowLinkOpen,
   getUrlObj,
+  isValidOrigin,
 } from '../../../util/browser';
 import {
   SPA_urlChangeListener,
@@ -898,6 +899,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       // First disconnect and reset bridge
       backgroundBridgeRef.current?.onDisconnect();
       backgroundBridgeRef.current = undefined;
+
+      if (!isValidOrigin(urlBridge)) {
+        return;
+      }
 
       //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
