@@ -36,6 +36,24 @@ jest.mock('../../../../Views/NetworkSelector/useSwitchNetworks', () => ({
   })),
 }));
 
+// RNGH assigns `handlerTag` in componentDidMount, so whether the rendered tree shows the
+// real tag or -1 depends on whether something re-rendered after mount (timing-dependent).
+expect.addSnapshotSerializer({
+  test: (val) =>
+    !!val &&
+    typeof val === 'object' &&
+    typeof val.props?.handlerTag === 'number' &&
+    val.props.handlerTag !== -1,
+  serialize: (val, config, indentation, depth, refs, printer) =>
+    printer(
+      { ...val, props: { ...val.props, handlerTag: -1 } },
+      config,
+      indentation,
+      depth,
+      refs,
+    ),
+});
+
 describe('BridgeSourceNetworkSelector', () => {
   const mockChainId = '0x1' as Hex;
   const optimismChainId = '0xa' as Hex;
