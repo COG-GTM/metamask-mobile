@@ -31,7 +31,7 @@ import { resemblesAddress, safeToChecksumAddress } from '../../util/address';
 import { store } from '../../store';
 import { removeBookmark } from '../../actions/bookmarks';
 import setOnboardingWizardStep from '../../actions/wizard';
-import { v1 as random } from 'uuid';
+import { v1 as random, v4 as uuidv4 } from 'uuid';
 import { getDefaultCaip25CaveatValue, getPermittedAccounts } from '../Permissions';
 import AppConstants from '../AppConstants';
 import PPOMUtil from '../../lib/ppom/ppom-util';
@@ -215,6 +215,36 @@ export const checkActiveAccountAndChainId = async ({
         message: `Invalid parameters: active chainId is different than the one provided.`,
       });
     }
+  }
+};
+
+/**
+ * Validates a signature request with PPOM, binding the result to a
+ * wallet-generated security alert id stored on the signature request, and
+ * removes that result once both the signature and the validation settle.
+ */
+const withSignatureSecurityAlert = async <T>(
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  req: any,
+  sign: () => Promise<T>,
+): Promise<T> => {
+  const securityAlertId = uuidv4();
+  req.securityAlertResponse = { securityAlertId };
+
+  const validation = trace(
+    { name: TraceName.PPOMValidation, parentContext: req.traceContext },
+    () => PPOMUtil.validateRequest(req, undefined, securityAlertId),
+  );
+
+  try {
+    return await sign();
+  } finally {
+    Promise.resolve(validation)
+      .catch(() => undefined)
+      .then(() =>
+        PPOMUtil.clearSignatureSecurityAlertResponse(securityAlertId),
+      );
   }
 };
 
@@ -690,19 +720,16 @@ export const getRpcMethodMiddleware = ({
 
           DevLogger.log(`personal_sign`, params, pageMeta, hostname);
 
-          trace(
-            { name: TraceName.PPOMValidation, parentContext: req.traceContext },
-            () => PPOMUtil.validateRequest(req),
-          );
-
-          const rawSig = await signatureController.newUnsignedPersonalMessage(
-            {
-              ...params,
-              ...pageMeta,
-              origin: hostname,
-            },
-            req,
-            { traceContext: req.traceContext },
+          const rawSig = await withSignatureSecurityAlert(req, () =>
+            signatureController.newUnsignedPersonalMessage(
+              {
+                ...params,
+                ...pageMeta,
+                origin: hostname,
+              },
+              req,
+              { traceContext: req.traceContext },
+            ),
           );
 
           endTrace({ name: TraceName.Signature, id: req.id });
@@ -752,23 +779,20 @@ export const getRpcMethodMiddleware = ({
             isWalletConnect,
           });
 
-          trace(
-            { name: TraceName.PPOMValidation, parentContext: req.traceContext },
-            () => PPOMUtil.validateRequest(req),
-          );
-
-          const rawSig = await signatureController.newUnsignedTypedMessage(
-            {
-              data: req.params[0],
-              from: req.params[1],
-              requestId: req.id,
-              ...pageMeta,
-              origin: hostname,
-            },
-            req,
-            'V1',
-            { parseJsonData: false },
-            { traceContext: req.traceContext },
+          const rawSig = await withSignatureSecurityAlert(req, () =>
+            signatureController.newUnsignedTypedMessage(
+              {
+                data: req.params[0],
+                from: req.params[1],
+                requestId: req.id,
+                ...pageMeta,
+                origin: hostname,
+              },
+              req,
+              'V1',
+              { parseJsonData: false },
+              { traceContext: req.traceContext },
+            ),
           );
 
           endTrace({ name: TraceName.Signature, id: req.id });
@@ -783,52 +807,46 @@ export const getRpcMethodMiddleware = ({
               : req.params[1];
           const chainId = data.domain.chainId;
 
-          trace(
-            { name: TraceName.PPOMValidation, parentContext: req.traceContext },
-            () => PPOMUtil.validateRequest(req),
+          res.result = await withSignatureSecurityAlert(req, () =>
+            generateRawSignature({
+              version: 'V3',
+              req,
+              hostname,
+              url,
+              title,
+              icon,
+              analytics,
+              isMMSDK,
+              channelId,
+              isWalletConnect,
+              chainId,
+              getSource,
+              checkTabActive,
+            }),
           );
-
-          res.result = await generateRawSignature({
-            version: 'V3',
-            req,
-            hostname,
-            url,
-            title,
-            icon,
-            analytics,
-            isMMSDK,
-            channelId,
-            isWalletConnect,
-            chainId,
-            getSource,
-            checkTabActive,
-          });
         },
 
         eth_signTypedData_v4: async () => {
           const data = JSON.parse(req.params[1]);
           const chainId = data.domain.chainId;
 
-          trace(
-            { name: TraceName.PPOMValidation, parentContext: req.traceContext },
-            () => PPOMUtil.validateRequest(req),
+          res.result = await withSignatureSecurityAlert(req, () =>
+            generateRawSignature({
+              version: 'V4',
+              req,
+              hostname,
+              url,
+              title,
+              icon,
+              analytics,
+              isMMSDK,
+              channelId,
+              isWalletConnect,
+              chainId,
+              getSource,
+              checkTabActive,
+            }),
           );
-
-          res.result = await generateRawSignature({
-            version: 'V4',
-            req,
-            hostname,
-            url,
-            title,
-            icon,
-            analytics,
-            isMMSDK,
-            channelId,
-            isWalletConnect,
-            chainId,
-            getSource,
-            checkTabActive,
-          });
         },
 
         web3_clientVersion: async () => {

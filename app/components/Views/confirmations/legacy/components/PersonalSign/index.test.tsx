@@ -112,20 +112,6 @@ describe('PersonalSign', () => {
 
     useSelectorMock.mockImplementationOnce((callback) =>
       callback({
-        signatureRequest: {
-          securityAlertResponse: {
-            description: '',
-            features: [],
-            providerRequestsCount: { eth_chainId: 1 },
-            reason: '',
-            result_type: 'Benign',
-          },
-        },
-      }),
-    );
-
-    useSelectorMock.mockImplementationOnce((callback) =>
-      callback({
         engine: {
           backgroundState: {
             SignatureController: {
@@ -137,6 +123,14 @@ describe('PersonalSign', () => {
               },
             },
           },
+        },
+      }),
+    );
+
+    useSelectorMock.mockImplementationOnce((callback) =>
+      callback({
+        signatureRequest: {
+          securityAlertResponses: {},
         },
       }),
     );

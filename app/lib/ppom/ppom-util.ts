@@ -22,11 +22,13 @@ import {
   validateWithSecurityAlertsAPI,
 } from './security-alerts-api';
 import { PPOMController } from '@metamask/ppom-validator';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface PPOMRequest {
   method: string;
   params: unknown[];
   origin?: string;
+  securityAlertResponse?: { securityAlertId?: string };
 }
 
 const TRANSACTION_METHOD = 'eth_sendTransaction';
@@ -59,8 +61,17 @@ const SECURITY_ALERT_RESPONSE_IN_PROGRESS = {
 async function validateRequest(
   req: PPOMRequest,
   transactionId?: string,
-  securityAlertId?: string,
+  securityAlertIdArg?: string,
 ) {
+  // Signature results are stored per request. Bind a wallet-generated id to the
+  // request before any await so the SignatureController records it on the
+  // signature request and the UI can look up only this request's result.
+  let securityAlertId = securityAlertIdArg;
+  if (!isTransactionRequest(req)) {
+    securityAlertId = securityAlertId ?? uuidv4();
+    req.securityAlertResponse = { securityAlertId };
+  }
+
   const {
     AccountsController,
     NetworkController,
@@ -196,8 +207,10 @@ function setSecurityAlertResponse(
         { ...response, securityAlertId } as any,
       );
     }
-  } else {
-    store.dispatch(setSignatureRequestSecurityAlertResponse(response));
+  } else if (securityAlertId) {
+    store.dispatch(
+      setSignatureRequestSecurityAlertResponse(securityAlertId, response),
+    );
   }
 }
 
@@ -239,8 +252,11 @@ function normalizeRequest(request: PPOMRequest): PPOMRequest {
   };
 }
 
-function clearSignatureSecurityAlertResponse() {
-  store.dispatch(setSignatureRequestSecurityAlertResponse());
+function clearSignatureSecurityAlertResponse(securityAlertId?: string) {
+  if (!securityAlertId) {
+    return;
+  }
+  store.dispatch(setSignatureRequestSecurityAlertResponse(securityAlertId));
 }
 
 function createValidatorForSecurityAlertId(securityAlertId: string) {

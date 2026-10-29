@@ -515,6 +515,43 @@ export const securityAlertResponse = {
   chainId: '0x1',
 };
 
+export const MOCK_SIGNATURE_SECURITY_ALERT_ID =
+  'mock-signature-security-alert-id';
+
+/**
+ * Binds every signature request in the given state to a security alert id and
+ * stores the given security alert response for that id.
+ */
+export function withSignatureSecurityAlertResponse<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  T extends Record<string, any>,
+>(
+  state: T,
+  response: unknown = securityAlertResponse,
+  securityAlertId: string = MOCK_SIGNATURE_SECURITY_ALERT_ID,
+): T {
+  const signatureRequests =
+    state.engine?.backgroundState?.SignatureController?.signatureRequests ?? {};
+
+  return merge({}, state, {
+    engine: {
+      backgroundState: {
+        SignatureController: {
+          signatureRequests: Object.fromEntries(
+            Object.keys(signatureRequests).map((id) => [
+              id,
+              { securityAlertResponse: { securityAlertId } },
+            ]),
+          ),
+        },
+      },
+    },
+    signatureRequest: {
+      securityAlertResponses: { [securityAlertId]: response },
+    },
+  });
+}
+
 const stakingConfirmationBaseState = {
   engine: {
     backgroundState: {
