@@ -56,6 +56,12 @@ class CommunicationClient(
         promise.resolve(true)
     }
 
+    @ReactMethod
+    fun removeSession(sessionId: String, promise: Promise) {
+        NativeSDKHub.removeSession(reactAppContext, sessionId)
+        promise.resolve(true)
+    }
+
     override fun invalidate() {
         NativeSDKHub.setWalletListener(null)
         super.invalidate()

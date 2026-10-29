@@ -98,6 +98,15 @@ internal object NativeSDKHub {
         }
     }
 
+    /** Releases the native binding for a session the wallet removed or rejected. */
+    fun removeSession(context: Context, sessionId: String) {
+        val appContext = context.applicationContext
+        executor.execute {
+            store(appContext).remove(sessionId)
+            sessionOwners.remove(sessionId)
+        }
+    }
+
     fun isWalletBound(): Boolean = walletListener != null
 
     /** Sends a wallet response only to the dapp client bound to [sessionId]. */

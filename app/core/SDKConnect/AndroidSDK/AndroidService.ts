@@ -135,8 +135,14 @@ export default class AndroidService extends EventEmitter2 {
         existingConnection &&
         !isBoundCaller(existingConnection, clientInfo.callerPackage)
       ) {
-        // Session not bound to this calling app (e.g. created before native
-        // binding existed): require a fresh user approval.
+        if (existingConnection.callerPackage) {
+          // Bound to a different app: never let another caller take it over.
+          Logger.log(
+            `AndroidService::clients_connected - ignoring caller not bound to session`,
+          );
+          return;
+        }
+        // Created before native binding existed: require a fresh user approval.
         delete this.bridgeByClientId[clientInfo.clientId];
         delete this.connections[clientInfo.clientId];
       }
@@ -242,6 +248,7 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::clients_connected sending jsonrpc error to client - connection rejected`,
           );
+          this.releaseNativeSession(clientInfo.clientId);
           this.sendMessage(
             {
               data: {
@@ -520,8 +527,17 @@ export default class AndroidService extends EventEmitter2 {
     this.bridgeByClientId[clientInfo.clientId] = bridge;
   }
 
+  private releaseNativeSession(channelId: string) {
+    this.communicationClient
+      ?.removeSession?.(channelId)
+      ?.catch?.((err: unknown) => {
+        Logger.log(err, `AndroidService::releaseNativeSession error`);
+      });
+  }
+
   async removeConnection(channelId: string) {
     try {
+      this.releaseNativeSession(channelId);
       if (this.connections[channelId]) {
         DevLogger.log(
           `AndroidService::remove client ${channelId} exists --- remove bridge`,
