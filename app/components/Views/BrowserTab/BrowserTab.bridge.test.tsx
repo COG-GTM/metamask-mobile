@@ -71,6 +71,7 @@ const mockNavigation = {
   canGoForward: true,
   addListener: jest.fn(),
   navigate: jest.fn(),
+  setParams: jest.fn(),
 };
 
 jest.mock('@react-navigation/native', () => {
@@ -87,6 +88,9 @@ jest.mock('../../../core/Engine', () => ({
     PhishingController: {
       maybeUpdateState: jest.fn(),
       test: () => ({ result: false, name: 'test' }),
+    },
+    PermissionController: {
+      state: { subjects: {} },
     },
   },
 }));
@@ -330,5 +334,90 @@ describe('BrowserTab background bridge origin binding', () => {
     expect(mockBridges[1].url).toBe(ORIGIN_B);
     expect(mockBridges[1].onMessage).toHaveBeenCalledTimes(1);
     expect(preRedirectBridge.onMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the committed redirect origin when the original load-start check resolves late', async () => {
+    const webview = await renderWebView();
+
+    const originalCheck = deferred();
+    mockGetPhishingTestResultAsync.mockReturnValueOnce(
+      originalCheck.promise as ReturnType<typeof getPhishingTestResultAsync>,
+    );
+    const originalPending = startLoad(webview, `${ORIGIN_A}/page`);
+
+    await act(async () => {
+      webview.props.onLoadEnd({
+        nativeEvent: {
+          url: `${ORIGIN_B}/landing`,
+          title: '',
+          loading: false,
+          canGoBack: true,
+          canGoForward: false,
+        },
+      });
+    });
+    await act(async () => {
+      originalCheck.resolve({ result: false, name: 'test' });
+      await originalPending;
+    });
+
+    postMessage(webview, { frameOrigin: ORIGIN_A, isMainFrame: true });
+    postMessage(webview, { frameOrigin: ORIGIN_B, isMainFrame: true });
+    expect(mockBridges).toHaveLength(1);
+    expect(mockBridges[0].url).toBe(ORIGIN_B);
+    expect(mockBridges[0].onMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not keep the previous origin approved while a redirect is being checked', async () => {
+    const webview = await renderWebView();
+    await loadStart(webview, `${ORIGIN_A}/page`);
+
+    const redirectCheck = deferred();
+    mockGetPhishingTestResultAsync.mockReturnValueOnce(
+      redirectCheck.promise as ReturnType<typeof getPhishingTestResultAsync>,
+    );
+    act(() => {
+      webview.props.onLoadEnd({
+        nativeEvent: {
+          url: `${ORIGIN_B}/landing`,
+          title: '',
+          loading: false,
+          canGoBack: true,
+          canGoForward: false,
+        },
+      });
+    });
+
+    postMessage(webview, { frameOrigin: ORIGIN_A, isMainFrame: true });
+    expect(mockBridges).toHaveLength(0);
+
+    await act(async () => {
+      redirectCheck.resolve({ result: false, name: 'test' });
+    });
+    expect(mockBridges).toHaveLength(0);
+  });
+
+  it('re-keys the bridge after a back/forward navigation without load events', async () => {
+    const webview = await renderWebView();
+    await loadStart(webview, `${ORIGIN_B}/page`);
+    postMessage(webview, { frameOrigin: ORIGIN_B, isMainFrame: true });
+    const previousBridge = mockBridges[0];
+
+    await act(async () => {
+      webview.props.onNavigationStateChange({
+        url: `${ORIGIN_A}/page`,
+        title: '',
+        loading: false,
+        canGoBack: false,
+        canGoForward: true,
+        navigationType: 'backforward',
+      });
+    });
+
+    expect(previousBridge.onDisconnect).toHaveBeenCalled();
+    postMessage(webview, { frameOrigin: ORIGIN_A, isMainFrame: true });
+    expect(mockBridges).toHaveLength(2);
+    expect(mockBridges[1].url).toBe(ORIGIN_A);
+    expect(mockBridges[1].onMessage).toHaveBeenCalledTimes(1);
   });
 });
