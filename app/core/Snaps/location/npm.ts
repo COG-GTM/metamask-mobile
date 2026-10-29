@@ -66,6 +66,19 @@ const readAndParseAt = async (path: string) => {
   }
 };
 
+const cleanupFileSystem = async (path: string) => {
+  try {
+    if (await ReactNativeBlobUtil.fs.exists(path)) {
+      await ReactNativeBlobUtil.fs.unlink(path);
+    }
+  } catch (error) {
+    Logger.error(
+      error as Error,
+      `${SNAPS_NPM_LOG_TAG} cleanupFileSystem failed to clean files at path`,
+    );
+  }
+};
+
 interface StoredNpmPackage {
   extractionDir: string;
   packagePath: string;
@@ -123,19 +136,6 @@ const fetchAndStoreNPMPackage = async (
   } finally {
     // remove downloaded archive
     await cleanupFileSystem(filePath);
-  }
-};
-
-const cleanupFileSystem = async (path: string) => {
-  try {
-    if (await ReactNativeBlobUtil.fs.exists(path)) {
-      await ReactNativeBlobUtil.fs.unlink(path);
-    }
-  } catch (error) {
-    Logger.error(
-      error as Error,
-      `${SNAPS_NPM_LOG_TAG} cleanupFileSystem failed to clean files at path`,
-    );
   }
 };
 
