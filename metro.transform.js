@@ -7,16 +7,30 @@ const {
   lintTransformedFile,
 } = require('@metamask/build-utils');
 const { ESLint } = require('eslint');
-const { parseSync } = require('@babel/core');
-// Expo's transformer passes Metro's source type to babel-preset-expo, which keeps @babel/runtime
-// helper imports out of polyfill scripts (they run before `require` exists).
-const defaultTransformer = require(require.resolve(
-  '@expo/metro-config/babel-transformer',
-  {
-    paths: [require.resolve('expo/package.json')],
-  },
-));
+// Expo's transformer passes caller info (e.g. metroSourceType) that babel-preset-expo needs
+// to avoid injecting @babel/runtime requires into polyfill scripts.
+const defaultTransformer = require('@expo/metro-config/babel-transformer');
 const svgTransformer = require('react-native-svg-transformer');
+const { parseSync } = require('@babel/core');
+
+// Babel returns a null AST for files matched by `ignore` in babel.config.js (e.g. SES).
+// Expo's transform worker then re-parses without a filename, which fails on our
+// filename-based `overrides`, so parse ignored files here without loading the config.
+async function transformWithDefault({ src, filename, options }) {
+  const result = await defaultTransformer.transform({ src, filename, options });
+  if (result.ast) {
+    return result;
+  }
+  return {
+    ...result,
+    ast: parseSync(src, {
+      filename,
+      configFile: false,
+      babelrc: false,
+      sourceType: 'unambiguous',
+    }),
+  };
+}
 
 // Code fence removal variables
 const fileExtsToScan = ['.js', '.jsx', '.cjs', '.mjs', '.ts', '.tsx'];
@@ -71,25 +85,6 @@ function getBuildTypeFeatures() {
   }
 }
 
-const babelTransform = async ({ src, filename, options }) => {
-  const result = await defaultTransformer.transform({ src, filename, options });
-  // Babel returns a null AST for files matched by `ignore` in babel.config.js (e.g. ses.cjs).
-  // Expo's Metro worker would then re-parse them with @babel/core, which loads babel.config.js
-  // without a filename and throws, so parse them here without any config instead.
-  if (!result.ast) {
-    return {
-      ...result,
-      ast: parseSync(src, {
-        filename,
-        sourceType: 'unambiguous',
-        configFile: false,
-        babelrc: false,
-      }),
-    };
-  }
-  return result;
-};
-
 /**
  * The Metro transformer function. Notably, handles code fence removal.
  * See https://github.com/MetaMask/core/tree/main/packages/build-utils for details.
@@ -115,13 +110,13 @@ module.exports.transform = async ({ src, filename, options }) => {
     if (didModify) {
       await lintTransformedFile(getESLintInstance(), filename, processedSource);
     }
-    return babelTransform({
+    return transformWithDefault({
       src: processedSource,
       filename,
       options,
     });
   }
-  return babelTransform({ src, filename, options });
+  return transformWithDefault({ src, filename, options });
 };
 
 /**
