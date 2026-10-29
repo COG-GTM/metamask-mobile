@@ -492,4 +492,47 @@ describe('BrowserTab background bridge origin binding', () => {
     expect(mockBridges[0].url).toBe(ATTACKER);
     expect(mockBridges[0].onMessage).toHaveBeenCalledTimes(1);
   });
+
+  it('does not replay requests from the departed page after a redirect back to its origin', async () => {
+    const webview = await renderWebView();
+    await loadStart(webview, `${ORIGIN_A}/page`);
+    await act(async () => {
+      webview.props.onLoadEnd({
+        nativeEvent: {
+          url: `${ORIGIN_A}/page`,
+          title: '',
+          loading: false,
+          canGoBack: false,
+          canGoForward: false,
+        },
+      });
+    });
+    postMessage(webview, { frameOrigin: ORIGIN_A, isMainFrame: true });
+    const departedBridge = mockBridges[0];
+
+    await loadStart(webview, `${ORIGIN_B}/page`);
+    // The departing A document still sends while B loads
+    postMessage(webview, { frameOrigin: ORIGIN_A, isMainFrame: true });
+
+    // B redirects back to A without a new load start
+    await act(async () => {
+      webview.props.onLoadEnd({
+        nativeEvent: {
+          url: `${ORIGIN_A}/return`,
+          title: '',
+          loading: false,
+          canGoBack: true,
+          canGoForward: false,
+        },
+      });
+    });
+
+    expect(departedBridge.onMessage).toHaveBeenCalledTimes(1);
+    expect(mockBridges).toHaveLength(1);
+
+    postMessage(webview, { frameOrigin: ORIGIN_A, isMainFrame: true });
+    expect(mockBridges).toHaveLength(2);
+    expect(mockBridges[1].url).toBe(ORIGIN_A);
+    expect(mockBridges[1].onMessage).toHaveBeenCalledTimes(1);
+  });
 });

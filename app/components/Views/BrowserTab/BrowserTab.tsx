@@ -1094,12 +1094,24 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    * cross-origin redirect or a history navigation that did not emit its own load start
    */
   const approveCommittedOrigin = useCallback(
-    async (committedUrl: string) => {
+    async (committedUrl: string, departedUrl?: string) => {
       const { origin: committedOrigin } = new URLParse(committedUrl);
       if (committedOrigin === allowedBridgeOriginRef.current) return;
       // The committed page differs from the approved one: detach now so neither the
       // previous origin nor a pending load-start check can bind to this document
       const navigationId = detachBridgeForNavigation();
+      // Navigated away and redirected back to the departed origin: held messages from that
+      // origin may come from the departed document, so drop them instead of replaying
+      if (
+        departedUrl !== undefined &&
+        new URLParse(departedUrl).origin === committedOrigin &&
+        new URLParse(loadingUrlRef.current).origin !== committedOrigin
+      ) {
+        pendingBridgeMessagesRef.current =
+          pendingBridgeMessagesRef.current.filter(
+            (pendingMessage) => pendingMessage.origin !== committedOrigin,
+          );
+      }
       const isAllowed = await isAllowedOrigin(committedOrigin);
       if (navigationId !== navigationIdRef.current) return;
       if (!isAllowed) {
@@ -1441,7 +1453,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             return onLoadProgress(syntheticEvent as WebViewProgressEvent);
           case OnLoadEnd:
             if (!('code' in syntheticEvent.nativeEvent)) {
-              approveCommittedOrigin(syntheticEvent.nativeEvent.url);
+              approveCommittedOrigin(
+                syntheticEvent.nativeEvent.url,
+                resolvedUrlRef.current,
+              );
             }
             return onLoadEnd({
               event: syntheticEvent as
@@ -1483,7 +1498,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             canGoForward,
           },
         };
-        approveCommittedOrigin(url);
+        approveCommittedOrigin(url, resolvedUrlRef.current);
         onLoadEnd({
           event: payload as WebViewNavigationEvent | WebViewErrorEvent,
           forceResolve: true,
