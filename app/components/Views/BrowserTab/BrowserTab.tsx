@@ -68,6 +68,7 @@ import {
   OLD_HOMEPAGE_URL_HOST,
   NOTIFICATION_NAMES,
   MM_MIXPANEL_TOKEN,
+  MAX_PENDING_BRIDGE_MESSAGES,
 } from './constants';
 import { regex } from '../../../../app/util/regex';
 import { selectEvmChainId } from '../../../selectors/networkController';
@@ -103,7 +104,7 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import { getMaskedUrl, getMessageSenderOrigin, isENSUrl } from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -188,6 +189,13 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     onDisconnect: () => void;
     onMessage: (message: Record<string, unknown>) => void;
   }>();
+  // Bumped on every load start so stale async phishing checks are ignored
+  const loadStartIdRef = useRef(0);
+  // Origin approved by the phishing check for the current page; the bridge is only ever bound to it
+  const allowedBridgeOriginRef = useRef<string | null>(null);
+  const pendingBridgeMessagesRef = useRef<
+    { origin: string; message: Record<string, unknown> }[]
+  >([]);
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
   const searchEngine = useSelector(selectSearchEngine);
@@ -877,7 +885,15 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       if (dataParsed.name) {
-        backgroundBridgeRef.current?.onMessage(dataParsed);
+        const senderOrigin = getMessageSenderOrigin(
+          nativeEvent as typeof nativeEvent & {
+            isMainFrame?: boolean;
+            frameOrigin?: string;
+          },
+        );
+        // Drop messages from iframes or senders whose origin the native layer could not verify
+        if (!senderOrigin) return;
+        routeBridgeMessage(senderOrigin, dataParsed);
         return;
       }
     } catch (e: unknown) {
@@ -893,11 +909,15 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     urlBarRef.current?.focus();
   }, []);
 
+  const teardownBackgroundBridge = useCallback(() => {
+    backgroundBridgeRef.current?.onDisconnect();
+    backgroundBridgeRef.current = undefined;
+  }, []);
+
   const initializeBackgroundBridge = useCallback(
     (urlBridge: string, isMainFrame: boolean) => {
       // First disconnect and reset bridge
-      backgroundBridgeRef.current?.onDisconnect();
-      backgroundBridgeRef.current = undefined;
+      teardownBackgroundBridge();
 
       //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
@@ -936,7 +956,68 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       });
       backgroundBridgeRef.current = newBridge;
     },
-    [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
+    [
+      navigation,
+      isHomepage,
+      toggleUrlModal,
+      tabId,
+      injectHomePageScripts,
+      teardownBackgroundBridge,
+    ],
+  );
+
+  /**
+   * Forwards a provider message to a bridge keyed to the sender's verified origin.
+   * The bridge is created lazily from the first message of the approved origin, so it
+   * is only bound once a document of that origin is actually running in the WebView.
+   */
+  const routeBridgeMessage = useCallback(
+    (senderOrigin: string, message: Record<string, unknown>) => {
+      if (senderOrigin !== allowedBridgeOriginRef.current) {
+        // Origin not approved (yet): hold the message until it is, or until the next navigation
+        if (
+          pendingBridgeMessagesRef.current.length < MAX_PENDING_BRIDGE_MESSAGES
+        ) {
+          pendingBridgeMessagesRef.current.push({
+            origin: senderOrigin,
+            message,
+          });
+        }
+        return;
+      }
+      if (
+        !backgroundBridgeRef.current ||
+        new URLParse(backgroundBridgeRef.current.url).origin !== senderOrigin
+      ) {
+        initializeBackgroundBridge(senderOrigin, true);
+      }
+      backgroundBridgeRef.current?.onMessage(message);
+    },
+    [initializeBackgroundBridge],
+  );
+
+  /**
+   * Marks an origin as the one the bridge may be bound to, dropping any bridge
+   * for another origin and replaying held messages sent by that origin.
+   */
+  const approveBridgeOrigin = useCallback(
+    (origin: string) => {
+      allowedBridgeOriginRef.current = origin;
+      if (
+        backgroundBridgeRef.current &&
+        new URLParse(backgroundBridgeRef.current.url).origin !== origin
+      ) {
+        teardownBackgroundBridge();
+      }
+      const pending = pendingBridgeMessagesRef.current;
+      pendingBridgeMessagesRef.current = [];
+      pending
+        .filter((pendingMessage) => pendingMessage.origin === origin)
+        .forEach((pendingMessage) =>
+          routeBridgeMessage(pendingMessage.origin, pendingMessage.message),
+        );
+    },
+    [routeBridgeMessage, teardownBackgroundBridge],
   );
 
   const sendActiveAccount = useCallback(async () => {
@@ -952,6 +1033,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    */
   const onLoadStart = useCallback(
     async ({ nativeEvent }: WebViewNavigationEvent) => {
+      const loadStartId = ++loadStartIdRef.current;
       loadingUrlRef.current = nativeEvent.url;
 
       // Use URL to produce real url. This should be the actual website that the user is viewing.
@@ -962,12 +1044,21 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         started: true,
       };
 
+      // Detach the previous page's bridge before any await, so it cannot be used
+      // while the new navigation is checked or before it commits
+      allowedBridgeOriginRef.current = null;
+      pendingBridgeMessagesRef.current = [];
+      teardownBackgroundBridge();
+
       // Cancel loading the page if we detect its a phishing page
       const isAllowed = await isAllowedOrigin(urlOrigin);
       if (!isAllowed) {
         handleNotAllowedUrl(urlOrigin); // should this be activeUrl.current instead of url?
         return false;
       }
+
+      // A newer navigation started while the check was pending
+      if (loadStartId !== loadStartIdRef.current) return;
 
       sendActiveAccount();
 
@@ -976,7 +1067,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         injectHomePageScripts();
       }
 
-      initializeBackgroundBridge(urlOrigin, true);
+      approveBridgeOrigin(urlOrigin);
     },
     [
       isAllowedOrigin,
@@ -984,8 +1075,27 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       sendActiveAccount,
       isHomepage,
       injectHomePageScripts,
-      initializeBackgroundBridge,
+      teardownBackgroundBridge,
+      approveBridgeOrigin,
     ],
+  );
+
+  /**
+   * Re-approve the bridge origin from the committed URL once a page has loaded,
+   * e.g. after a cross-origin redirect that did not emit its own load start
+   */
+  const approveCommittedOrigin = useCallback(
+    async (event: WebViewNavigationEvent | WebViewErrorEvent) => {
+      if ('code' in event.nativeEvent) return;
+      const { origin: committedOrigin } = new URLParse(event.nativeEvent.url);
+      if (committedOrigin === allowedBridgeOriginRef.current) return;
+      const loadStartId = loadStartIdRef.current;
+      const isAllowed = await isAllowedOrigin(committedOrigin);
+      if (isAllowed && loadStartId === loadStartIdRef.current) {
+        approveBridgeOrigin(committedOrigin);
+      }
+    },
+    [isAllowedOrigin, approveBridgeOrigin],
   );
 
   /**
@@ -1295,6 +1405,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           case OnLoadProgress:
             return onLoadProgress(syntheticEvent as WebViewProgressEvent);
           case OnLoadEnd:
+            approveCommittedOrigin(
+              syntheticEvent as WebViewNavigationEvent | WebViewErrorEvent,
+            );
             return onLoadEnd({
               event: syntheticEvent as
                 | WebViewNavigationEvent
@@ -1306,7 +1419,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             return;
         }
       },
-    [onLoadProgress, onLoadEnd, onLoadStart],
+    [onLoadProgress, onLoadEnd, onLoadStart, approveCommittedOrigin],
   );
 
   const { OnLoadEnd, OnLoadProgress, OnLoadStart } = WebViewNavigationEventName;

@@ -1,4 +1,9 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
+import {
+  isValidUrl,
+  isENSUrl,
+  getMaskedUrl,
+  getMessageSenderOrigin,
+} from './utils';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -90,5 +95,42 @@ describe('BrowserTab utils', () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
     });
+  });
+});
+
+describe('getMessageSenderOrigin', () => {
+  it('returns the normalized origin of a main frame sender', () => {
+    expect(
+      getMessageSenderOrigin({
+        isMainFrame: true,
+        frameOrigin: 'https://Dapp.Example:443',
+      }),
+    ).toBe('https://dapp.example');
+    expect(
+      getMessageSenderOrigin({
+        isMainFrame: true,
+        frameOrigin: 'http://localhost:8080',
+      }),
+    ).toBe('http://localhost:8080');
+  });
+
+  it('returns null for iframe senders', () => {
+    expect(
+      getMessageSenderOrigin({
+        isMainFrame: false,
+        frameOrigin: 'https://dapp.example',
+      }),
+    ).toBeNull();
+  });
+
+  it('returns null when the native sender info is missing or opaque', () => {
+    expect(getMessageSenderOrigin({})).toBeNull();
+    expect(getMessageSenderOrigin({ isMainFrame: true })).toBeNull();
+    expect(
+      getMessageSenderOrigin({ isMainFrame: true, frameOrigin: 'null' }),
+    ).toBeNull();
+    expect(
+      getMessageSenderOrigin({ isMainFrame: true, frameOrigin: 'about:blank' }),
+    ).toBeNull();
   });
 });
