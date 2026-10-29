@@ -23,6 +23,7 @@ jest.mock('react-native-blob-util', () => ({
     dirs: { DocumentDir: '/document-dir' },
     unlink: jest.fn().mockResolvedValue(undefined),
     exists: jest.fn().mockResolvedValue(true),
+    mkdir: jest.fn().mockResolvedValue(undefined),
     stat: jest.fn().mockResolvedValue({ size: 1024 }),
     isDir: jest.fn((path) => path.endsWith('archive') || path.endsWith('dist')),
     ls: jest.fn((path) => {
@@ -85,6 +86,20 @@ describe('NpmLocation', () => {
     expect(ReactNativeBlobUtil.fs.unlink).toHaveBeenCalledWith(
       `${extractionDir}.tgz`,
     );
+  });
+
+  it('creates the snaps-npm base directory before downloading', async () => {
+    const location = new NpmLocation(new URL('npm:@metamask/example-snap'));
+    await location.fetch('snap.manifest.json');
+
+    expect(ReactNativeBlobUtil.fs.mkdir).toHaveBeenCalledWith(
+      '/document-dir/snaps-npm',
+    );
+    const mkdirOrder = (ReactNativeBlobUtil.fs.mkdir as jest.Mock).mock
+      .invocationCallOrder[0];
+    const fetchOrder = (ReactNativeBlobUtil.config as jest.Mock).mock
+      .invocationCallOrder[0];
+    expect(mkdirOrder).toBeLessThan(fetchOrder);
   });
 
   it('rejects tarballs larger than TARBALL_SIZE_SAFETY_LIMIT without extracting', async () => {

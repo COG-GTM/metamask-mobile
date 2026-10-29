@@ -100,8 +100,9 @@ public extension FileManager {
         try createDirectory(atPath: directoryPath, withIntermediateDirectories: true,
                             attributes: nil)
       case "\0": break // Null block
-      case "1": fallthrough
-      case "2": fallthrough
+      case "1", "2": // Hard link / symbolic link
+        let name = try self.name(object: tarObject, offset: location, size: size)
+        throw UntarError.unsafeEntryPath(name: name)
       case "3": fallthrough
       case "4": fallthrough
       case "6": fallthrough
@@ -122,15 +123,16 @@ public extension FileManager {
 
   private func safePath(baseURL: URL, name: String) throws -> String {
     let components = name.split(separator: "/", omittingEmptySubsequences: true)
-    guard !name.hasPrefix("/"), !components.contains("..") else {
+    guard !name.hasPrefix("/"), !name.contains("\0"), !name.contains("\\"),
+          !components.contains(where: { $0 == ".." || $0.contains("%") }) else {
       throw UntarError.unsafeEntryPath(name: name)
     }
-    let entryURL = baseURL.appendingPathComponent(name).standardizedFileURL
-    let basePath = baseURL.path.hasSuffix("/") ? baseURL.path : baseURL.path + "/"
-    guard entryURL.path == baseURL.path || entryURL.path.hasPrefix(basePath) else {
+    let basePath = (baseURL.path as NSString).standardizingPath
+    let entryPath = ((basePath as NSString).appendingPathComponent(name) as NSString).standardizingPath
+    guard entryPath == basePath || entryPath.hasPrefix(basePath + "/") else {
       throw UntarError.unsafeEntryPath(name: name)
     }
-    return entryURL.path
+    return entryPath
   }
 
   private func type(object: Any, offset: UInt64, size: UInt64) throws -> UnicodeScalar {

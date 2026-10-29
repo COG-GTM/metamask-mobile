@@ -83,6 +83,9 @@ const fetchAndStoreNPMPackage = async (
 
   let response: FetchBlobResponse | undefined;
   try {
+    if (!(await ReactNativeBlobUtil.fs.isDir(baseDir))) {
+      await ReactNativeBlobUtil.fs.mkdir(baseDir);
+    }
     let exceededSizeLimit = false;
     const task = ReactNativeBlobUtil.config({
       fileCache: true,
