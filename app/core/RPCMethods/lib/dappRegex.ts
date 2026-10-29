@@ -88,8 +88,13 @@ const analysePattern = (pattern: string) => {
     if (isVariable(quantifier)) {
       quantifiers.push({ min: quantifier.min, max: quantifier.max });
       current.containsVariableQuantifier = true;
+      return true;
     }
+    return false;
   };
+  // A variable quantifier on the final top-level atom never backtracks: once
+  // it is reached, the rest of the pattern is empty and the match succeeds.
+  let endsWithFreeQuantifier = false;
 
   while (i < pattern.length) {
     const char = pattern[i];
@@ -144,8 +149,10 @@ const analysePattern = (pattern: string) => {
 
     const quantifier = readQuantifier(pattern, i);
     if (quantifier) {
-      applyQuantifier(null, quantifier);
+      const isVariableQuantifier = applyQuantifier(null, quantifier);
       i += quantifier.length;
+      endsWithFreeQuantifier =
+        isVariableQuantifier && stack.length === 1 && i === pattern.length;
     }
   }
 
@@ -153,6 +160,9 @@ const analysePattern = (pattern: string) => {
     throw new Error('Unbalanced parenthesis');
   }
   branchFactors.push(stack[0].alternatives);
+  if (endsWithFreeQuantifier) {
+    quantifiers.pop();
+  }
 
   // An unanchored pattern is retried at every input position.
   const anchored = pattern.startsWith('^') && stack[0].alternatives === 1;

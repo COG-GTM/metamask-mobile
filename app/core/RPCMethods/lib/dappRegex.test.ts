@@ -82,6 +82,13 @@ describe('createDappRegexMatcher', () => {
     expect(() => match(`${'a'.repeat(250)}1`)).toThrow('too complex');
   });
 
+  it('does not charge a trailing quantifier for backtracking', () => {
+    const match = createDappRegexMatcher('.*:.*');
+    const input = `prefix:${'1'.repeat(208)}`;
+    expect(match(input)?.[0]).toBe(input);
+    expect(match('1'.repeat(1000))).toBeNull();
+  });
+
   it('treats top-level alternation as unanchored', () => {
     const match = createDappRegexMatcher('^x|a*a*b');
     expect(() => match(`${'a'.repeat(250)}1`)).toThrow('too complex');
