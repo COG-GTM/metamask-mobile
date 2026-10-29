@@ -63,7 +63,11 @@ import {
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
 import { CaveatTypes } from '../Permissions/constants';
-import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
+import {
+  getCaip25PermissionFromLegacyPermissions,
+  rejectOriginPendingApprovals,
+  requestPermittedChainsPermissionIncremental,
+} from '../../util/permissions';
 import { toHex } from '@metamask/controller-utils';
 
 jest.mock('../../util/permissions', () => ({
@@ -307,8 +311,8 @@ function setupGlobalState({
     .mockImplementation(() => ({
       browser: activeTab
         ? {
-          activeTab,
-        }
+            activeTab,
+          }
         : {},
       engine: {
         backgroundState: {
@@ -617,6 +621,71 @@ describe('getRpcMethodMiddleware', () => {
       });
     });
   }
+
+  describe('wallet_scanQRCode', () => {
+    const setup = (params: Json[]) => {
+      const navigate = jest.fn();
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalOptions(),
+        navigation: { navigate },
+      });
+      const request = {
+        jsonrpc,
+        id: 1,
+        method: 'wallet_scanQRCode',
+        params,
+      };
+      const responsePromise = callMiddleware({ middleware, request });
+      const scan = (data: unknown) =>
+        navigate.mock.calls[0][1].onScanSuccess(data);
+      return { navigate, responsePromise, scan };
+    };
+
+    it.each([[[]], [[42]], [['^(([a-z]*)*)*$']], [['(']]])(
+      'rejects invalid or catastrophic regex params %p without opening the scanner',
+      async (params) => {
+        const { navigate, responsePromise } = setup(params as Json[]);
+        const response = await responsePromise;
+        expect(navigate).not.toHaveBeenCalled();
+        expect((response as { error: { code: number } }).error.code).toBe(
+          -32602,
+        );
+      },
+    );
+
+    it('returns the scanned data when it matches the regex', async () => {
+      const { responsePromise, scan } = setup(['^hello']);
+      await new Promise(process.nextTick);
+      scan('hello world');
+      expect(await responsePromise).toEqual({
+        jsonrpc,
+        id: 1,
+        result: 'hello world',
+      });
+    });
+
+    it('rejects when the scanned data does not match the regex', async () => {
+      const { responsePromise, scan } = setup(['^hello$']);
+      await new Promise(process.nextTick);
+      scan('goodbye');
+      const response = await responsePromise;
+      expect((response as { error: { message: string } }).error.message).toBe(
+        'NO_REGEX_MATCH',
+      );
+    });
+
+    it('fails fast when the regex would backtrack heavily on the scanned data', async () => {
+      const { responsePromise, scan } = setup(['^a*a*a*a*b$']);
+      await new Promise(process.nextTick);
+      const start = Date.now();
+      scan(`${'a'.repeat(4000)}1`);
+      const response = await responsePromise;
+      expect(Date.now() - start).toBeLessThan(1000);
+      expect((response as { error: { message: string } }).error.message).toBe(
+        'REGEX_TOO_COMPLEX',
+      );
+    });
+  });
 
   describe('wallet_revokePermissions', () => {
     it(`revokes ${Caip25EndowmentPermissionName} permissions if ${PermissionKeys.eth_accounts} permission key is passed`, async () => {
@@ -1859,7 +1928,8 @@ describe('getRpcMethodMiddlewareHooks', () => {
         autoApprove: true,
       };
 
-      const mockRequestPermittedChainsPermissionIncremental = requestPermittedChainsPermissionIncremental as jest.Mock;
+      const mockRequestPermittedChainsPermissionIncremental =
+        requestPermittedChainsPermissionIncremental as jest.Mock;
       hooks.requestPermittedChainsPermissionIncrementalForOrigin(options);
 
       expect(
@@ -1926,9 +1996,7 @@ describe('getRpcMethodMiddlewareHooks', () => {
     it('should call "rejectOriginPendingApprovals" with correct origin', () => {
       hooks.rejectApprovalRequestsForOrigin();
 
-      expect(rejectOriginPendingApprovals).toHaveBeenCalledWith(
-        testOrigin,
-      );
+      expect(rejectOriginPendingApprovals).toHaveBeenCalledWith(testOrigin);
     });
   });
 });

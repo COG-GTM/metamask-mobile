@@ -8,10 +8,21 @@ import {
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { SetFlowLoadingTextOptions } from '@metamask/approval-controller';
 import { recoverPersonalSignature } from '@metamask/eth-sig-util';
-import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
+import {
+  getCaip25PermissionFromLegacyPermissions,
+  rejectOriginPendingApprovals,
+  requestPermittedChainsPermissionIncremental,
+} from '../../util/permissions';
 import { Hex } from '@metamask/utils';
-import { getPermissionsHandler, requestPermissionsHandler, revokePermissionsHandler } from '@metamask/eip1193-permission-middleware';
-import { Caip25CaveatType, Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
+import {
+  getPermissionsHandler,
+  requestPermissionsHandler,
+  revokePermissionsHandler,
+} from '@metamask/eip1193-permission-middleware';
+import {
+  Caip25CaveatType,
+  Caip25EndowmentPermissionName,
+} from '@metamask/chain-agnostic-permission';
 import RPCMethods from './index.js';
 import { RPC } from '../../constants/network';
 import { ChainId, NetworkType } from '@metamask/controller-utils';
@@ -32,7 +43,10 @@ import { store } from '../../store';
 import { removeBookmark } from '../../actions/bookmarks';
 import setOnboardingWizardStep from '../../actions/wizard';
 import { v1 as random } from 'uuid';
-import { getDefaultCaip25CaveatValue, getPermittedAccounts } from '../Permissions';
+import {
+  getDefaultCaip25CaveatValue,
+  getPermittedAccounts,
+} from '../Permissions';
 import AppConstants from '../AppConstants';
 import PPOMUtil from '../../lib/ppom/ppom-util';
 import {
@@ -42,6 +56,7 @@ import {
 import { setEventStageError, setEventStage } from '../../actions/rpcEvents';
 import { isWhitelistedRPC, RPCStageTypes } from '../../reducers/rpcEvents';
 import { regex } from '../../../app/util/regex';
+import { createDappRegexMatcher } from './lib/dappRegex';
 import Logger from '../../../app/util/Logger';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { addTransaction } from '../../util/transaction-controller';
@@ -52,7 +67,6 @@ import {
   SignatureController,
 } from '@metamask/signature-controller';
 import { createAsyncWalletMiddleware } from './createAsyncWalletMiddleware';
-
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -360,8 +374,7 @@ export const getRpcMethodMiddlewareHooks = (origin: string) => ({
     Engine.context.NetworkController.getNetworkConfigurationByChainId.bind(
       Engine.context.NetworkController,
     ),
-  rejectApprovalRequestsForOrigin: () =>
-    rejectOriginPendingApprovals(origin),
+  rejectApprovalRequestsForOrigin: () => rejectOriginPendingApprovals(origin),
 });
 
 /**
@@ -527,7 +540,8 @@ export const getRpcMethodMiddleware = ({
                   resolve(undefined);
                 },
                 {
-                  getAccounts: (...args) => getPermittedAccounts(origin, ...args),
+                  getAccounts: (...args) =>
+                    getPermittedAccounts(origin, ...args),
                   getCaip25PermissionFromLegacyPermissionsForOrigin: (
                     requestedPermissions,
                   ) =>
@@ -838,20 +852,40 @@ export const getRpcMethodMiddleware = ({
           res.result = `MetaMask/${appVersion}/Mobile`;
         },
 
-        wallet_scanQRCode: () =>
-          new Promise<void>((resolve, reject) => {
-            checkTabActive();
+        wallet_scanQRCode: () => {
+          checkTabActive();
+          let matchScannedData: (input: string) => RegExpExecArray | null;
+          try {
+            matchScannedData = createDappRegexMatcher(req.params?.[0]);
+          } catch (error) {
+            throw rpcErrors.invalidParams({
+              message: `Invalid regular expression: ${
+                (error as Error).message
+              }`,
+            });
+          }
+          return new Promise<void>((resolve, reject) => {
             navigation.navigate(Routes.QR_TAB_SWITCHER, {
               // TODO: Replace "any" with type
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onScanSuccess: (data: any) => {
-                if (!regex.exec(req.params[0], data)) {
+                let match: RegExpExecArray | null;
+                try {
+                  match = matchScannedData(String(data));
+                } catch (error) {
+                  reject({ message: 'REGEX_TOO_COMPLEX', data });
+                  return;
+                }
+                if (!match) {
                   reject({ message: 'NO_REGEX_MATCH', data });
-                } else if (regex.walletAddress.exec(data.target_address)) {
+                  return;
+                }
+                if (regex.walletAddress.exec(data.target_address)) {
                   reject({
                     message: 'INVALID_ETHEREUM_ADDRESS',
                     data: data.target_address,
                   });
+                  return;
                 }
                 let result = data;
                 if (data.target_address) {
@@ -868,7 +902,8 @@ export const getRpcMethodMiddleware = ({
                 throw rpcErrors.internal(e.toString());
               },
             });
-          }),
+          });
+        },
 
         wallet_watchAsset: async () =>
           RPCMethods.wallet_watchAsset({ req, res, hostname, checkTabActive }),
