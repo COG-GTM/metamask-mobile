@@ -31,7 +31,14 @@ import { CustomIdData } from '../../../reducers/fiatOrders/types';
 import { callbackBaseUrl } from './sdk';
 import useFetchRampNetworks from './hooks/useFetchRampNetworks';
 import { getNotificationDetails, stateHasOrder } from './utils';
+import {
+  RAMP_WEBVIEW_ORIGIN_WHITELIST,
+  createRampShouldStartLoadWithRequest,
+} from './utils/webViewNavigation';
 import Routes from '../../../constants/navigation/Routes';
+
+const handleShouldStartLoadWithRequest =
+  createRampShouldStartLoadWithRequest(callbackBaseUrl);
 
 const POLLING_FREQUENCY = AppConstants.FIAT_ORDERS.POLLING_FREQUENCY;
 
@@ -322,6 +329,8 @@ function FiatOrders() {
           key={url}
           style={styles.hiddenView}
           source={{ uri: url }}
+          originWhitelist={RAMP_WEBVIEW_ORIGIN_WHITELIST}
+          onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
           onNavigationStateChange={(navState) =>
             handleNavigationStateChange(navState, url)
           }
