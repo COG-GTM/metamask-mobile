@@ -197,6 +197,32 @@ describe('BrowserUrlBar', () => {
     });
   });
 
+  it.each([
+    ['http://example.com/path', 'http://example.com'],
+    ['https://example.com:8443/path', 'https://example.com:8443'],
+  ])(
+    'opens account permissions for %s with permission subject %s',
+    (activeUrl, expectedOrigin) => {
+      const { getByTestId } = renderWithProvider(
+        <BrowserUrlBar {...propsWithoutUrlBarFocused} activeUrl={activeUrl} />,
+        { state: mockInitialState },
+      );
+
+      fireEvent.press(getByTestId(AccountOverviewSelectorsIDs.ACCOUNT_BUTTON));
+
+      expect(mockNavigate).toHaveBeenCalledWith(Routes.MODAL.ROOT_MODAL_FLOW, {
+        screen: Routes.SHEET.ACCOUNT_PERMISSIONS,
+        params: {
+          hostInfo: {
+            metadata: {
+              origin: expectedOrigin,
+            },
+          },
+        },
+      });
+    },
+  );
+
   it('should handle focus and blur events', () => {
     const { getByTestId } = renderWithProvider(
       <BrowserUrlBar {...defaultProps} />,
