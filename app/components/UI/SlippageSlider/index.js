@@ -100,6 +100,9 @@ const createStyles = (colors, shadows) =>
 const setAnimatedValue = (animatedValue, value) =>
   animatedValue.setValue(value);
 
+/**
+ * @param {{ range?: any, increment?: any, value?: any, onChange?: any, formatTooltipText?: any, disabled?: any, changeOnRelease?: any }} props
+ */
 const SlippageSlider = ({
   range,
   increment,

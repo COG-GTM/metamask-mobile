@@ -7,9 +7,12 @@ import Engine from '../../../../../../core/Engine';
 import { Linking } from 'react-native';
 import AppConstants from '../../../../../../core/AppConstants';
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(() => Promise.resolve()),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    openURL: jest.fn(() => Promise.resolve()),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 jest.mock('../../../../../../core/Engine', () => ({
  context: {

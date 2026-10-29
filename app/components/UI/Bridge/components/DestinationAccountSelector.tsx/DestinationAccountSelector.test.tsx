@@ -51,11 +51,14 @@ jest.mock('../../../../../core/Engine', () => {
 });
 
 // Mock React Native Linking
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  openURL: jest.fn(),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    openURL: jest.fn(),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 // Mock the hooks and utilities
 jest.mock('../../../../hooks/useAccounts', () => ({

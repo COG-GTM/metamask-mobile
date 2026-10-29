@@ -180,6 +180,9 @@ const SWAPS_NATIVE_ADDRESS = swapsUtils.NATIVE_SWAPS_TOKEN_ADDRESS;
 const TOKEN_MINIMUM_SOURCES = 1;
 const MAX_TOP_ASSETS = 20;
 
+/**
+ * @param {{ swapsTokens?: any, swapsControllerTokens?: any, tokensWithBalance?: any, tokensTopAssets?: any, accountsByChainId?: any, selectedAddress?: any, balances?: any, conversionRate?: any, currentCurrency?: any, tokenExchangeRates?: any, chainId?: any, selectedNetworkClientId?: any, networkConfigurations?: any, setLiveness?: any, shouldUseSmartTransaction?: any }} props
+ */
 function SwapsAmountView({
   swapsTokens,
   swapsControllerTokens,

@@ -107,6 +107,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ navigation?: any, showTransactionNotification?: any, showSimpleNotification?: any, hideCurrentNotification?: any, removeNotificationById?: any, showIncomingTransactionsNetworks?: any, providerType?: any, setInfuraAvailabilityBlocked?: any, setInfuraAvailabilityNotBlocked?: any, removeNotVisibleNotifications?: any, route?: any, chainId?: any, backUpSeedphraseVisible?: any, networkClientId?: any, networkConfigurations?: any } & Record<string, any>} props
+ */
 const Main = (props) => {
   const [forceReload, setForceReload] = useState(false);
   const [showRemindLaterModal, setShowRemindLaterModal] = useState(false);

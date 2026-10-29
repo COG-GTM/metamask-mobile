@@ -75,6 +75,7 @@ const IOS_REJECTED_BIOMETRICS_ERROR =
  * View where users can set restore their account
  * using a secret recovery phrase (SRP)
  * The SRP was formally called the seed phrase
+ * @param {{ navigation?: any, passwordSet?: any, setLockTime?: any, seedphraseBackedUp?: any, setOnboardingWizardStep?: any, route?: any }} props
  */
 const ImportFromSecretRecoveryPhrase = ({
   navigation,

@@ -287,6 +287,11 @@ exports[`SnapUIAddressInput renders with an invalid CAIP Account ID 1`] = `
         onBlur={[Function]}
         onChangeText={[Function]}
         onFocus={[Function]}
+        ref={
+          {
+            "current": null,
+          }
+        }
         style={
           {
             "backgroundColor": "#ffffff",

@@ -27,6 +27,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * @param {{ approvalTransaction?: any, originalApprovalTransaction?: any, editQuoteTransactionsVisible?: any, minimumSpendLimit: any, onCancelEditQuoteTransactions?: any, setApprovalTransaction?: any, sourceToken?: any, chainId?: any }} props
+ */
 function ApprovalTransactionEditionModal({
   originalApprovalTransaction,
   approvalTransaction,

@@ -51,6 +51,9 @@ const createStyles = (colors) =>
 
 const astronautImage = require('../../../images/astronaut.png'); // eslint-disable-line import/no-commonjs
 
+/**
+ * @param {{ navigation?: any, infuraBlocked?: any }} props
+ */
 const OfflineMode = ({ navigation, infuraBlocked }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

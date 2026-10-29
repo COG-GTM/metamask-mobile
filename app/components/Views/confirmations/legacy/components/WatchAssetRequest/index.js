@@ -96,6 +96,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ onCancel?: any, onConfirm?: any, suggestedAssetMeta?: any, currentPageInformation?: any }} props
+ */
 const WatchAssetRequest = ({
   suggestedAssetMeta,
   currentPageInformation,

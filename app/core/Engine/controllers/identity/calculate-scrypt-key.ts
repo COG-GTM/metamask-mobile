@@ -25,7 +25,9 @@ const cacheKeyFromParams = (
     ...salt,
     ...new Uint8Array([N, r, p, size]),
   ]);
-  const paramHash = Crypto.createHash('sha256').update(combined).digest('hex');
+  const paramHash = Crypto.createHash('sha256')
+    .update(Buffer.from(combined).toString('hex'), 'hex')
+    .digest('hex');
   return `${LOCAL_KEY_PERSISTENCE}.${paramHash}`;
 };
 

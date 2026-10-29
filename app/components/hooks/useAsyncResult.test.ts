@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '../../util/test/react-hooks-compat';
 import { useAsyncResult, useAsyncResultOrThrow } from './useAsyncResult';
 
 describe('useAsyncResult', () => {

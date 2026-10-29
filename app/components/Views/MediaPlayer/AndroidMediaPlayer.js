@@ -154,12 +154,15 @@ const createStyles = (theme) =>
     },
   });
 
+/**
+ * @param {{ controlsAnimationTiming?: any, controlsToggleTiming?: any, source?: any, displayTopControls?: any, displayBottomControls?: any, onClose?: any, onLoad?: any, onError?: any, selectedTextTrack?: any, textTracks?: any, style?: any }} props
+ */
 export default function VideoPlayer({
-  controlsAnimationTiming,
-  controlsToggleTiming,
+  controlsAnimationTiming = 500,
+  controlsToggleTiming = 5000,
   source,
-  displayTopControls,
-  displayBottomControls,
+  displayTopControls = true,
+  displayBottomControls = true,
   onClose,
   onError,
   textTracks,
@@ -645,10 +648,3 @@ VideoPlayer.propTypes = {
   style: ViewPropTypes.style,
 };
 
-VideoPlayer.defaultProps = {
-  doubleTapTime: 100,
-  controlsAnimationTiming: 500,
-  controlsToggleTiming: 5000,
-  displayTopControls: true,
-  displayBottomControls: true,
-};

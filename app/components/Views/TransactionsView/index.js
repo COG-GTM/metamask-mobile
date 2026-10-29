@@ -43,6 +43,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * @param {{ conversionRate?: any, currentCurrency?: any, selectedInternalAccount?: any, navigation?: any, transactions?: any, networkType?: any, tokens?: any, chainId?: any, tokenNetworkFilter?: any }} props
+ */
 const TransactionsView = ({
   navigation,
   conversionRate,

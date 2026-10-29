@@ -60,6 +60,9 @@ const createStyles = (colors) =>
 
 const QuotesSummary = (props) => <View {...props} />;
 
+/**
+ * @param {{ style?: any, savings?: any, children?: any } & Record<string, any>} props
+ */
 const Header = ({ style, savings, children, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -79,16 +82,25 @@ const Header = ({ style, savings, children, ...props }) => {
   );
 };
 
+/**
+ * @param {{ style?: any } & Record<string, any>} props
+ */
 const Body = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return <View style={[styles.body, style]} {...props} />;
 };
+/**
+ * @param {{ style?: any } & Record<string, any>} props
+ */
 const HeaderText = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   return <Text style={[styles.headerText, style]} {...props} />;
 };
+/**
+ * @param {{ style?: any }} props
+ */
 const Separator = ({ style }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

@@ -4,7 +4,7 @@ exports[`ConnectApproval renders 1`] = `
 <ApprovalModal
   isVisible={true}
 >
-  <Component
+  <Connect(Component)
     navigation={{}}
   />
 </ApprovalModal>
@@ -14,7 +14,7 @@ exports[`ConnectApproval sets isVisible to false if incorrect approval request t
 <ApprovalModal
   isVisible={false}
 >
-  <Component
+  <Connect(Component)
     navigation={{}}
   />
 </ApprovalModal>
@@ -24,7 +24,7 @@ exports[`ConnectApproval sets isVisible to false if no approval request 1`] = `
 <ApprovalModal
   isVisible={false}
 >
-  <Component
+  <Connect(Component)
     navigation={{}}
   />
 </ApprovalModal>

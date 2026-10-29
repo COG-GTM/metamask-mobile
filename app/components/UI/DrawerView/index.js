@@ -1199,8 +1199,9 @@ class DrawerView extends PureComponent {
                               : null,
                           ]}
                           ref={
-                            item.name === strings('drawer.browser') &&
-                            this.browserSectionRef
+                            item.name === strings('drawer.browser')
+                              ? this.browserSectionRef
+                              : undefined
                           }
                           onPress={() => item.action()} // eslint-disable-line
                         >

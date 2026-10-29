@@ -127,6 +127,9 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+/**
+ * @param {{ isVisible?: any, toggleModal?: any, quotes?: any, selectedQuote?: any, destinationToken?: any, sourceToken?: any, conversionRate?: any, currentCurrency?: any, ticker?: any, quoteValues?: any, showOverallValue?: any, multiLayerL1ApprovalFeeTotal?: any }} props
+ */
 function QuotesModal({
   isVisible,
   toggleModal,

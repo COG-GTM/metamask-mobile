@@ -8,6 +8,7 @@ import { useMetrics } from '../../../components/hooks/useMetrics';
 
 /**
  * Account access approval component
+ * @param {{ currentPageInformation?: any, onConfirm?: any, onCancel?: any, customNetworkInformation?: any }} props
  */
 const SwitchCustomNetwork = ({
   customNetworkInformation,

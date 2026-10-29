@@ -27,7 +27,7 @@ exports[`LoginWithBiometricsSwitch should render correctly 1`] = `
     }
   }
 >
-  <Component
+  <Memo(LoginOptionsSwitch)
     biometryChoiceState={true}
     onUpdateBiometryChoice={[Function]}
     onUpdateRememberMe={[Function]}

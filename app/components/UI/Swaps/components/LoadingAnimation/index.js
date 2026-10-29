@@ -112,6 +112,9 @@ function round(value, decimals) {
   return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 }
 
+/**
+ * @param {{ finish?: any, onAnimationEnd?: any, aggregatorMetadata?: any, headPan?: any }} props
+ */
 function LoadingAnimation({
   finish,
   onAnimationEnd,

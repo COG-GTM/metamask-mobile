@@ -45,7 +45,7 @@ const scale = (
     scaleVertical = false,
     scaleUp = false,
     baseSize = undefined,
-    baseModel,
+    baseModel = 0,
   } = {},
 ) => {
   const { currSize, baseScreenSize } = _getSizes(scaleVertical, baseModel);

@@ -11,7 +11,7 @@ import { GestureResponderEvent } from 'react-native-modal';
  */
 export interface ListItemMultiSelectButtonProps
   extends TouchableOpacityProps,
-    Omit<ListItemProps, 'style' | 'hitSlop'> {
+    Omit<ListItemProps, 'style' | 'hitSlop' | 'onBlur' | 'onFocus'> {
   /**
    * Optional prop to determine if the item is selected.
    */

@@ -104,6 +104,7 @@ jest.mock('../../../core/Engine', () => {
     },
     controllerMessenger: {
       subscribe: jest.fn(),
+      unsubscribe: jest.fn(),
     },
   };
 });

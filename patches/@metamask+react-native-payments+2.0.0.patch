@@ -1,5 +1,5 @@
 diff --git a/node_modules/@metamask/react-native-payments/android/build.gradle b/node_modules/@metamask/react-native-payments/android/build.gradle
-index 0d066bd..02caf64 100644
+index 0d066bd..e48aca7 100644
 --- a/node_modules/@metamask/react-native-payments/android/build.gradle
 +++ b/node_modules/@metamask/react-native-payments/android/build.gradle
 @@ -1,12 +1,12 @@
@@ -18,3 +18,21 @@ index 0d066bd..02caf64 100644
          versionCode 1
          versionName "1.0"
          ndk {
+@@ -24,4 +24,5 @@ dependencies {
+     implementation 'com.google.android.gms:play-services-identity:17.0.0'
+     implementation 'com.google.android.gms:play-services-wallet:17.0.0'
+     implementation 'com.android.support:support-v4:23.0.1'
++    implementation 'androidx.annotation:annotation:1.9.1'
+ }
+diff --git a/node_modules/@metamask/react-native-payments/android/src/main/java/com/reactnativepayments/ReactNativePaymentsModule.java b/node_modules/@metamask/react-native-payments/android/src/main/java/com/reactnativepayments/ReactNativePaymentsModule.java
+index a47b50d..aa2d94a 100644
+--- a/node_modules/@metamask/react-native-payments/android/src/main/java/com/reactnativepayments/ReactNativePaymentsModule.java
++++ b/node_modules/@metamask/react-native-payments/android/src/main/java/com/reactnativepayments/ReactNativePaymentsModule.java
+@@ -13,7 +13,6 @@ import android.support.annotation.RequiresPermission;
+ import android.util.Log;
+ 
+ import com.facebook.react.bridge.Callback;
+-import com.facebook.react.bridge.ReactBridge;
+ import com.facebook.react.bridge.ReadableArray;
+ import com.facebook.react.bridge.ReadableMapKeySetIterator;
+ import com.google.android.gms.common.api.GoogleApiClient;

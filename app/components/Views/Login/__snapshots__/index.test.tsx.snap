@@ -161,6 +161,11 @@ exports[`Login should render correctly 1`] = `
                 onSubmitEditing={[Function]}
                 placeholder="Password"
                 placeholderTextColor="#9ca1af"
+                ref={
+                  {
+                    "current": null,
+                  }
+                }
                 returnKeyType="done"
                 secureTextEntry={true}
                 style={

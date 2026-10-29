@@ -78,6 +78,9 @@ const Skeleton = ({ width, noStyle }) => {
   );
 };
 
+/**
+ * @param {{ gasFeeNative?: any, gasFeeConversion?: any, gasFeeMaxNative?: any, gasFeeMaxConversion?: any, primaryCurrency?: any, chainId?: any, onEdit?: any, timeEstimate?: any, timeEstimateColor?: any, timeEstimateId?: any, noMargin?: any, origin?: any, onUpdatingValuesStart?: any, onUpdatingValuesEnd?: any, animateOnChange?: any, isAnimating?: any, gasEstimationReady?: any, legacy?: any, originWarning?: any }} props
+ */
 const TransactionReviewEIP1559 = ({
   gasFeeNative,
   gasFeeConversion,

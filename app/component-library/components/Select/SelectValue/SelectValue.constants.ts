@@ -13,7 +13,10 @@ export const DEFAULT_SELECTVALUE_DESCRIPTION_TEXTVARIANT = TextVariant.BodySM;
 export const DEFAULT_SELECTVALUE_DESCRIPTION_TEXTCOLOR = TextColor.Alternative;
 
 // Sample consts
-export const SAMPLE_SELECTVALUE_PROPS: SelectValueProps = {
+export const SAMPLE_SELECTVALUE_PROPS: Omit<
+  SelectValueProps,
+  'onBlur' | 'onFocus'
+> = {
   iconProps: SAMPLE_AVATAR_PROPS,
   label: 'Sample SelectValue label',
   description: 'Sample SelectValue description',

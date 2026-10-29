@@ -9,7 +9,7 @@ describe('SlippageSlider', () => {
         range={[1, 5]}
         increment={1}
         onChange={() => undefined}
-        formatTooltipText={(text) => `${text}%`}
+        formatTooltipText={(text: string) => `${text}%`}
       />,
     );
     expect(screen.toJSON()).toMatchSnapshot();

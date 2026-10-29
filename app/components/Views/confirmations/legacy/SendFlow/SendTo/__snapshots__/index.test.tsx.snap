@@ -3,9 +3,12 @@
 exports[`SendTo Component should render 1`] = `
 <RNCSafeAreaView
   edges={
-    [
-      "bottom",
-    ]
+    {
+      "bottom": "additive",
+      "left": "off",
+      "right": "off",
+      "top": "off",
+    }
   }
   style={
     {
@@ -263,6 +266,11 @@ exports[`SendTo Component should render 1`] = `
             onSubmitEditing={[Function]}
             placeholder="Search, public address (0x), or ENS"
             placeholderTextColor="#9ca1af"
+            ref={
+              {
+                "current": null,
+              }
+            }
             spellCheck={false}
             style={
               [

@@ -412,6 +412,11 @@ exports[`EditGasFeeLegacyUpdate should match snapshot 1`] = `
                       keyboardType="numeric"
                       onBlur={[Function]}
                       onChangeText={[Function]}
+                      ref={
+                        {
+                          "current": null,
+                        }
+                      }
                       style={
                         {
                           "color": "#121314",
@@ -792,6 +797,11 @@ exports[`EditGasFeeLegacyUpdate should match snapshot 1`] = `
                       keyboardType="numeric"
                       onBlur={[Function]}
                       onChangeText={[Function]}
+                      ref={
+                        {
+                          "current": null,
+                        }
+                      }
                       style={
                         {
                           "color": "#121314",

@@ -27,6 +27,6 @@ exports[`ContactForm should render correctly 1`] = `
     }
   }
 >
-  <Component />
+  <Connect(ContactForm) />
 </ContextProvider>
 `;

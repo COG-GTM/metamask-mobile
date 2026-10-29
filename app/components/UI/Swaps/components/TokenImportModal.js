@@ -56,6 +56,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ isVisible?: any, dismiss?: any, token?: any, onPressImport?: any }} props
+ */
 function TokenImportModal({ isVisible, dismiss, token, onPressImport }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);

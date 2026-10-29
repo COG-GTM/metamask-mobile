@@ -7,8 +7,30 @@ const {
   lintTransformedFile,
 } = require('@metamask/build-utils');
 const { ESLint } = require('eslint');
-const defaultTransformer = require('metro-react-native-babel-transformer');
+// Expo's transformer passes caller info (e.g. metroSourceType) that babel-preset-expo needs
+// to avoid injecting @babel/runtime requires into polyfill scripts.
+const defaultTransformer = require('@expo/metro-config/babel-transformer');
 const svgTransformer = require('react-native-svg-transformer');
+const { parseSync } = require('@babel/core');
+
+// Babel returns a null AST for files matched by `ignore` in babel.config.js (e.g. SES).
+// Expo's transform worker then re-parses without a filename, which fails on our
+// filename-based `overrides`, so parse ignored files here without loading the config.
+async function transformWithDefault({ src, filename, options }) {
+  const result = await defaultTransformer.transform({ src, filename, options });
+  if (result.ast) {
+    return result;
+  }
+  return {
+    ...result,
+    ast: parseSync(src, {
+      filename,
+      configFile: false,
+      babelrc: false,
+      sourceType: 'unambiguous',
+    }),
+  };
+}
 
 // Code fence removal variables
 const fileExtsToScan = ['.js', '.jsx', '.cjs', '.mjs', '.ts', '.tsx'];
@@ -88,13 +110,13 @@ module.exports.transform = async ({ src, filename, options }) => {
     if (didModify) {
       await lintTransformedFile(getESLintInstance(), filename, processedSource);
     }
-    return defaultTransformer.transform({
+    return transformWithDefault({
       src: processedSource,
       filename,
       options,
     });
   }
-  return defaultTransformer.transform({ src, filename, options });
+  return transformWithDefault({ src, filename, options });
 };
 
 /**

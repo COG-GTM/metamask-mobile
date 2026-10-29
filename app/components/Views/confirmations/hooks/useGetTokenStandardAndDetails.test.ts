@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '../../../../util/test/react-hooks-compat';
 import Engine from '../../../../core/Engine';
 import { memoizedGetTokenStandardAndDetails } from '../utils/token';
 import { useGetTokenStandardAndDetails } from './useGetTokenStandardAndDetails';

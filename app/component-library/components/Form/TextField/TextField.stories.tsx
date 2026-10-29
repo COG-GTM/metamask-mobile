@@ -39,7 +39,7 @@ export default TextFieldMeta;
 
 export const TextField = {
   render: (
-    args: JSX.IntrinsicAttributes &
+    args: React.JSX.IntrinsicAttributes &
       TextFieldProps & { children?: React.ReactNode },
   ) => (
     <TextFieldComponent

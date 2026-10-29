@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react-hooks';
+import { act, renderHook } from '../../util/test/react-hooks-compat';
 import {
   PERMISSIONS,
   request,
@@ -12,10 +12,13 @@ import { BluetoothPermissionErrors } from '../../core/Ledger/ledgerErrors';
 import { getSystemVersion } from 'react-native-device-info';
 import { AppState } from 'react-native';
 
-jest.mock('react-native/Libraries/AppState/AppState', () => ({
-  currentState: 'active',
-  addEventListener: jest.fn(),
-}));
+jest.mock('react-native/Libraries/AppState/AppState', () => {
+  const mockModule = {
+    currentState: 'active',
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 jest.mock('react-native-permissions', () => ({
   PERMISSIONS: {
@@ -48,6 +51,9 @@ jest.mock('../../util/device', () => ({
 describe('useBluetoothPermissions', () => {
   beforeEach(() => {
     jest.resetAllMocks();
+    (AppState.addEventListener as jest.Mock).mockImplementation(() => ({
+      remove: jest.fn(),
+    }));
   });
 
   it('grants permissions on iOS', async () => {

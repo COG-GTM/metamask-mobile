@@ -76,7 +76,9 @@ export class ECIES {
         );
         const payload = Buffer.from(data);
         const encryptedData = encrypt(otherPublicKey, payload);
-        encryptedString = Buffer.from(encryptedData).toString('base64');
+        encryptedString = Buffer.from(encryptedData as Uint8Array).toString(
+          'base64',
+        );
       } catch (err) {
         DevLogger.log(`[ECIES: encrypt()] error encrypt:`, err);
         DevLogger.log(`[ECIES: encrypt()] private: `, this.ecies.toHex());

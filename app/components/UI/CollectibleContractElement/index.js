@@ -86,6 +86,7 @@ const splitIntoSubArrays = (array, count) => {
 
 /**
  * Customizable view to render assets in lists
+ * @param {{ asset?: any, contractCollectibles?: any, collectiblesVisible?: any, onPress?: any, selectedAddress?: any, chainId?: any, removeFavoriteCollectible?: any }} props
  */
 function CollectibleContractElement({
   asset,

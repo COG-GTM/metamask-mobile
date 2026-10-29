@@ -3,7 +3,7 @@ import mockRNAsyncStorage from '@react-native-async-storage/async-storage/jest/a
 import mockClipboard from '@react-native-clipboard/clipboard/jest/clipboard-mock.js';
 /* eslint-disable import/no-namespace */
 import { mockTheme } from '../theme';
-import Adapter from 'enzyme-adapter-react-16';
+import Adapter from '@belzile/enzyme-adapter-react-19';
 import Enzyme from 'enzyme';
 import '@shopify/flash-list/jestSetup';
 
@@ -37,18 +37,18 @@ jest.mock('react-native-quick-crypto', () => ({
       return Promise.resolve(new Uint8Array([1, 2, 3, 4]));
     }),
     encrypt: jest.fn((algorithm, key, data) => {
-      return Promise.resolve(new Uint8Array([
-        123,  34, 116, 101, 115,
-        116,  34,  58,  34, 100,
-         97, 116,  97,  34, 125
-      ]));
+      return Promise.resolve(
+        new Uint8Array([
+          123, 34, 116, 101, 115, 116, 34, 58, 34, 100, 97, 116, 97, 34, 125,
+        ]),
+      );
     }),
     decrypt: jest.fn((algorithm, key, data) => {
-      return Promise.resolve(new Uint8Array([
-        123,  34, 116, 101, 115,
-        116,  34,  58,  34, 100,
-         97, 116,  97,  34, 125
-      ]));
+      return Promise.resolve(
+        new Uint8Array([
+          123, 34, 116, 101, 115, 116, 34, 58, 34, 100, 97, 116, 97, 34, 125,
+        ]),
+      );
     }),
   },
 }));
@@ -71,7 +71,21 @@ jest.mock('react-native', () => {
 jest.mock('@metamask/react-native-webview', () => {
   // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
   const { View } = require('react-native');
-  const WebView = (props) => <View {...props} />;
+  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+  const { forwardRef, useImperativeHandle } = require('react');
+  const WebView = forwardRef((props, ref) => {
+    useImperativeHandle(ref, () => ({
+      injectJavaScript: jest.fn(),
+      postMessage: jest.fn(),
+      reload: jest.fn(),
+      goBack: jest.fn(),
+      goForward: jest.fn(),
+      stopLoading: jest.fn(),
+      requestFocus: jest.fn(),
+    }));
+    return <View {...props} />;
+  });
+  WebView.displayName = 'WebView';
 
   return {
     WebView,
@@ -171,7 +185,28 @@ jest.mock('../../store', () => ({
 
 jest.mock('../../core/NotificationManager');
 
-jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter');
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockLinking = {
+    openURL: jest.fn(),
+    canOpenURL: jest.fn(() => Promise.resolve(true)),
+    openSettings: jest.fn(),
+    // Plain function so jest.resetAllMocks() can't strip the subscription
+    addEventListener: () => ({ remove: () => undefined }),
+    getInitialURL: jest.fn(() => Promise.resolve()),
+    sendIntent: jest.fn(),
+  };
+  return { __esModule: true, default: mockLinking, ...mockLinking };
+});
+
+jest.mock('react-native/Libraries/EventEmitter/NativeEventEmitter', () => {
+  class MockNativeEventEmitter {
+    addListener = jest.fn(() => ({ remove: jest.fn() }));
+    removeAllListeners = jest.fn();
+    emit = jest.fn();
+    listenerCount = jest.fn(() => 0);
+  }
+  return { __esModule: true, default: MockNativeEventEmitter };
+});
 
 jest.mock(
   'react-native/Libraries/Utilities/NativePlatformConstantsIOS',
@@ -248,15 +283,60 @@ jest.mock('react-native-reanimated', () =>
   require('react-native-reanimated/mock'),
 );
 
+jest.mock('@sentry/react-native/dist/js/utils/AsyncExpiringMap', () => {
+  const actual = jest.requireActual(
+    '@sentry/react-native/dist/js/utils/AsyncExpiringMap',
+  );
+  class AsyncExpiringMap extends actual.AsyncExpiringMap {
+    startCleanup() {
+      // Avoid Sentry's cleanup interval firing after the Jest environment is torn down.
+    }
+  }
+  return { ...actual, AsyncExpiringMap };
+});
+
 NativeModules.RNGestureHandlerModule = {
   attachGestureHandler: jest.fn(),
   createGestureHandler: jest.fn(),
   dropGestureHandler: jest.fn(),
   updateGestureHandler: jest.fn(),
+  install: jest.fn(),
+  flushOperations: jest.fn(),
   forceTouchAvailable: jest.fn(),
   State: {},
   Directions: {},
 };
+
+// RNGH resolves its native module through TurboModuleRegistry; serve the same mock
+// even in module registries where NativeModules was not patched (e.g. automocks).
+jest.mock(
+  'react-native-gesture-handler/lib/commonjs/specs/NativeRNGestureHandlerModule',
+  () => ({
+    __esModule: true,
+    default: {
+      attachGestureHandler: jest.fn(),
+      createGestureHandler: jest.fn(),
+      dropGestureHandler: jest.fn(),
+      updateGestureHandler: jest.fn(),
+      install: jest.fn(),
+      flushOperations: jest.fn(),
+    },
+  }),
+);
+jest.mock(
+  'react-native-gesture-handler/src/specs/NativeRNGestureHandlerModule',
+  () => ({
+    __esModule: true,
+    default: {
+      attachGestureHandler: jest.fn(),
+      createGestureHandler: jest.fn(),
+      dropGestureHandler: jest.fn(),
+      updateGestureHandler: jest.fn(),
+      install: jest.fn(),
+      flushOperations: jest.fn(),
+    },
+  }),
+);
 
 NativeModules.RNCNetInfo = {
   getCurrentConnectivity: jest.fn(),
@@ -299,23 +379,36 @@ NativeModules.RNTar = {
 
 jest.mock(
   'react-native/Libraries/Components/Touchable/TouchableOpacity',
-  () => 'TouchableOpacity',
+  () => ({
+    __esModule: true,
+    default: 'TouchableOpacity',
+  }),
 );
 jest.mock(
   'react-native/Libraries/Components/Touchable/TouchableHighlight',
-  () => 'TouchableHighlight',
+  () => ({
+    __esModule: true,
+    default: 'TouchableHighlight',
+  }),
 );
-jest.mock(
-  'react-native/Libraries/Components/TextInput/TextInput',
-  () => 'TextInput',
-);
-
-jest.mock('react-native/Libraries/Interaction/InteractionManager', () => ({
-  runAfterInteractions: jest.fn(),
-  createInteractionHandle: jest.fn(),
-  clearInteractionHandle: jest.fn(),
-  setDeadline: jest.fn(),
+jest.mock('react-native/Libraries/Components/TextInput/TextInput', () => ({
+  __esModule: true,
+  default: 'TextInput',
 }));
+
+jest.mock('react-native/Libraries/Interaction/InteractionManager', () => {
+  const mockInteractionManager = {
+    runAfterInteractions: jest.fn(),
+    createInteractionHandle: jest.fn(),
+    clearInteractionHandle: jest.fn(),
+    setDeadline: jest.fn(),
+  };
+  return {
+    __esModule: true,
+    default: mockInteractionManager,
+    ...mockInteractionManager,
+  };
+});
 
 jest.mock('@react-native-clipboard/clipboard', () => mockClipboard);
 

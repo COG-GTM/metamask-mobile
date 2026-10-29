@@ -88,12 +88,15 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ rightLabelComponent?: any, leftLabelComponent?: any, value?: any, unit?: any, onChangeValue?: any, increment?: any, inputInsideLabel?: any, error?: any, min?: any, max?: any, name?: any }} props
+ */
 const RangeInput = ({
   leftLabelComponent,
   rightLabelComponent,
   value,
   unit,
-  increment,
+  increment = new BigNumber(1),
   onChangeValue,
   inputInsideLabel,
   error,
@@ -229,10 +232,6 @@ const RangeInput = ({
       )}
     </View>
   );
-};
-
-RangeInput.defaultProps = {
-  increment: new BigNumber(1),
 };
 
 RangeInput.propTypes = {

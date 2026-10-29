@@ -79,10 +79,9 @@ const propTypes = {
   titleColor: PropTypes.string,
 };
 
-const defaultProps = {
-  onPress: undefined,
-};
-
+/**
+ * @param {{ title?: any, description?: any, noBorder?: any, onPress?: any, warning?: any, renderArrowRight?: any, testID?: any, titleColor?: any }} props
+ */
 const SettingsDrawer = ({
   title,
   description,
@@ -138,6 +137,4 @@ const SettingsDrawer = ({
 };
 
 SettingsDrawer.propTypes = propTypes;
-SettingsDrawer.defaultProps = defaultProps;
-
 export default SettingsDrawer;

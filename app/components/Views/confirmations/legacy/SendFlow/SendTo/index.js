@@ -67,8 +67,20 @@ import { selectAddressBook } from '../../../../../../selectors/addressBookContro
 const dummy = () => true;
 
 /**
+ * Checksums an address only when it is a complete, valid hex address.
+ *
+ * @param {string} [address] - Raw recipient input, possibly partial (e.g. `0x12`) or an ENS name.
+ * @returns {string|undefined} The checksummed address, or `undefined` for empty or invalid input.
+ */
+const toChecksumAddressIfValid = (address) =>
+  address && isValidHexAddress(address)
+    ? toChecksumAddress(address)
+    : undefined;
+
+/**
  * View that wraps the wraps the "Send" screen
  */
+
 class SendFlow extends PureComponent {
   static propTypes = {
     /**
@@ -206,7 +218,10 @@ class SendFlow extends PureComponent {
 
     // Disabling back press for not be able to exit the send flow without reseting the transaction object
     this.hardwareBackPress = () => true;
-    BackHandler.addEventListener('hardwareBackPress', this.hardwareBackPress);
+    this.backHandlerSubscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.hardwareBackPress,
+    );
   };
 
   componentDidUpdate = () => {
@@ -214,17 +229,14 @@ class SendFlow extends PureComponent {
   };
 
   componentWillUnmount() {
-    BackHandler.removeEventListener(
-      'hardwareBackPress',
-      this.hardwareBackPress,
-    );
+    this.backHandlerSubscription?.remove();
   }
 
   isAddressSaved = () => {
     const { toAccount } = this.state;
     const { addressBook, globalChainId, internalAccounts } = this.props;
     const networkAddressBook = addressBook[globalChainId] || {};
-    const checksummedAddress = toChecksumAddress(toAccount);
+    const checksummedAddress = toChecksumAddressIfValid(toAccount);
     return !!(
       networkAddressBook[checksummedAddress] ||
       internalAccounts.find((account) =>
@@ -379,9 +391,10 @@ class SendFlow extends PureComponent {
     const { addressBook, internalAccounts, globalChainId } = this.props;
     if (!toAccount) return;
 
-    const networkAddressBook = addressBook[globalChainId] || {};
+    const checksummedAddress = toChecksumAddressIfValid(toAccount);
+    if (!checksummedAddress) return null;
 
-    const checksummedAddress = toChecksumAddress(toAccount);
+    const networkAddressBook = addressBook[globalChainId] || {};
     const matchingAccount = internalAccounts.find((account) =>
       toLowerCaseEquals(account.address, checksummedAddress),
     );
@@ -499,7 +512,7 @@ class SendFlow extends PureComponent {
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
 
-    const checksummedAddress = toAccount && toChecksumAddress(toAccount);
+    const checksummedAddress = toChecksumAddressIfValid(toAccount);
     const existingAddressName = this.getAddressNameFromBookOrInternalAccounts(
       toEnsAddressResolved || toAccount,
     );

@@ -27,6 +27,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ loadingText?: any }} props
+ */
 const ApprovalFlowLoader = ({ loadingText }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

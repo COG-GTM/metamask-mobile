@@ -5,7 +5,6 @@ exports[`CustomGasModal should render correctly 1`] = `
   animationType="none"
   deviceHeight={null}
   deviceWidth={null}
-  hardwareAccelerated={false}
   hideModalContentWhileAnimating={false}
   onBackdropPress={[Function]}
   onModalHide={[Function]}
@@ -467,6 +466,11 @@ exports[`CustomGasModal should render correctly 1`] = `
                               keyboardType="numeric"
                               onBlur={[Function]}
                               onChangeText={[Function]}
+                              ref={
+                                {
+                                  "current": null,
+                                }
+                              }
                               style={
                                 {
                                   "color": "#121314",
@@ -847,6 +851,11 @@ exports[`CustomGasModal should render correctly 1`] = `
                               keyboardType="numeric"
                               onBlur={[Function]}
                               onChangeText={[Function]}
+                              ref={
+                                {
+                                  "current": null,
+                                }
+                              }
                               style={
                                 {
                                   "color": "#121314",

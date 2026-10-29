@@ -15,6 +15,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * @param {{ isFeatureLive?: any, isNetworkAllowed?: any, isAssetAllowed?: any, onPress?: any }} props
+ */
 function AssetSwapButton({
   isFeatureLive,
   isNetworkAllowed,

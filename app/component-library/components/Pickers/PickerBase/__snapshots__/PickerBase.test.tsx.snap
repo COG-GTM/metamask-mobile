@@ -3,6 +3,7 @@
 exports[`PickerBase should render correctly 1`] = `
 <TouchableOpacity
   onPress={[MockFunction]}
+  ref={null}
   style={
     {
       "alignItems": "center",

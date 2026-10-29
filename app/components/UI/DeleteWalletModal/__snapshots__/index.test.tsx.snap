@@ -31,6 +31,9 @@ exports[`DeleteWalletModal should render correctly 1`] = `
   />
   <View
     collapsable={false}
+    enabled={true}
+    handlerTag={-1}
+    handlerType="PanGestureHandler"
     onGestureHandlerEvent={[Function]}
     onGestureHandlerStateChange={[Function]}
     style={
@@ -72,7 +75,6 @@ exports[`DeleteWalletModal should render correctly 1`] = `
       animationType="none"
       deviceHeight={null}
       deviceWidth={null}
-      hardwareAccelerated={false}
       hideModalContentWhileAnimating={false}
       onBackdropPress={[Function]}
       onModalHide={[Function]}

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 // Third party dependencies.
 import React, { useState, useCallback } from 'react';
-import { GestureResponderEvent } from 'react-native';
+import { GestureResponderEvent, TextProps } from 'react-native';
 
 // External dependencies.
 import Text from '../../../../Texts/Text';
@@ -81,7 +81,7 @@ const ButtonLink: React.FC<ButtonLinkProps> = ({
           onPressOut={triggerOnPressedOut}
           accessibilityRole="link"
           accessible
-          {...props}
+          {...(props as TextProps)}
         >
           {renderLabel()}
         </Text>

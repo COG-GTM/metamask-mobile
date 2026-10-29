@@ -25,7 +25,7 @@ export default BottomSheetMeta;
 
 export const BottomSheet = {
   render: (
-    args: JSX.IntrinsicAttributes &
+    args: React.JSX.IntrinsicAttributes &
       BottomSheetProps &
       React.RefAttributes<BottomSheetRef>,
   ) => {

@@ -48,7 +48,7 @@ class RNFSStorageBackend implements StorageBackend {
       throw new Error('No data found');
     }
 
-    return data;
+    return data as unknown as ArrayBuffer;
   }
 
   public async write(

@@ -57,6 +57,7 @@ const Default = () => {
 
 /**
  * View that renders a warning for existing user in a modal
+ * @param {{ cancelText?: any, cancelButtonDisabled?: any, confirmText?: any, children?: any, cancelTestID?: any, confirmTestID?: any, warningModalVisible: any, onCancelPress: any, onRequestClose: any, onConfirmPress: any }} props
  */
 export default function WarningExistingUserModal({
   warningModalVisible,

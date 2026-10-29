@@ -131,7 +131,7 @@ exports[`BridgeSourceTokenSelector renders with initial state and displays token
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -139,24 +139,8 @@ exports[`BridgeSourceTokenSelector renders with initial state and displays token
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -164,7 +148,6 @@ exports[`BridgeSourceTokenSelector renders with initial state and displays token
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -241,6 +224,9 @@ exports[`BridgeSourceTokenSelector renders with initial state and displays token
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={3}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -339,6 +325,9 @@ exports[`BridgeSourceTokenSelector renders with initial state and displays token
                       />
                       <View
                         collapsable={false}
+                        enabled={true}
+                        handlerTag={2}
+                        handlerType="PanGestureHandler"
                         onGestureHandlerEvent={[Function]}
                         onGestureHandlerStateChange={[Function]}
                         style={
@@ -767,6 +756,7 @@ exports[`BridgeSourceTokenSelector renders with initial state and displays token
                                   onChangeText={[Function]}
                                   onFocus={[Function]}
                                   placeholder="Enter token name or paste address"
+                                  ref={null}
                                   style={
                                     {
                                       "backgroundColor": "#ffffff",
@@ -853,6 +843,8 @@ exports[`BridgeSourceTokenSelector renders with initial state and displays token
                             }
                             getItem={[Function]}
                             getItemCount={[Function]}
+                            handlerTag={1}
+                            handlerType="NativeViewGestureHandler"
                             keyExtractor={[Function]}
                             onContentSizeChange={[Function]}
                             onGestureHandlerEvent={[Function]}
@@ -2259,8 +2251,8 @@ exports[`BridgeSourceTokenSelector renders with initial state and displays token
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;

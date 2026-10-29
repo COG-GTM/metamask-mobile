@@ -15,6 +15,8 @@ const {
   wrapWithReanimatedMetroConfig,
 } = require('react-native-reanimated/metro-config');
 
+const EXPORTS_ONLY_PACKAGES = ['uuid'];
+
 module.exports = function (baseConfig) {
   const defaultConfig = mergeConfig(baseConfig, getDefaultConfig(__dirname));
   const {
@@ -27,6 +29,20 @@ module.exports = function (baseConfig) {
         assetExts: assetExts.filter((ext) => ext !== 'svg'),
         sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
         resolverMainFields: ['sbmodern', 'react-native', 'browser', 'main'],
+        // RN 0.79+ enables package exports by default, which resolves Node builds (e.g. axios) instead of browser builds
+        unstable_enablePackageExports: false,
+        // Some packages (e.g. uuid@14 used by Segment) only declare `exports`, so resolve
+        // them with package exports enabled.
+        resolveRequest: (context, moduleName, platform) => {
+          if (EXPORTS_ONLY_PACKAGES.includes(moduleName)) {
+            return context.resolveRequest(
+              { ...context, unstable_enablePackageExports: true },
+              moduleName,
+              platform,
+            );
+          }
+          return context.resolveRequest(context, moduleName, platform);
+        },
         extraNodeModules: {
           ...defaultConfig.resolver.extraNodeModules,
           crypto: require.resolve('react-native-crypto'),

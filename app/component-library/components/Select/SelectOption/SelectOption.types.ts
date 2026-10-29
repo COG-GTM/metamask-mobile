@@ -7,7 +7,7 @@ import { SelectValueProps } from '../SelectValue/SelectValue.types';
  */
 export interface SelectOptionProps
   extends ListItemSelectProps,
-    Omit<SelectValueProps, 'style'> {}
+    Omit<SelectValueProps, 'style' | 'onBlur' | 'onFocus'> {}
 
 /**
  * Style sheet input parameters.

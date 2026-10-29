@@ -59,8 +59,14 @@ describe('CustomNonceModal', () => {
   });
 
   it('does not decrement the nonce value below 0 when the current nonce is 0', () => {
-    const wrapper = createWrapper();
-    wrapper.setProps({ proposedNonce: 0, nonceValue: 0 });
+    const wrapper = shallow(
+      <CustomNonceModal
+        save={saveMock}
+        close={closeMock}
+        proposedNonce={0}
+        nonceValue={0}
+      />,
+    );
     const decrementButton = wrapper.find({ testID: 'decrement-nonce' });
 
     decrementButton.simulate('press');

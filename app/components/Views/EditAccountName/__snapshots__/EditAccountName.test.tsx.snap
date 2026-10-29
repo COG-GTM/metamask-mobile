@@ -71,6 +71,7 @@ exports[`EditAccountName should render correctly 1`] = `
             onBlur={[Function]}
             onChangeText={[Function]}
             onFocus={[Function]}
+            ref={null}
             style={
               {
                 "backgroundColor": "#ffffff",
@@ -144,6 +145,7 @@ exports[`EditAccountName should render correctly 1`] = `
             onBlur={[Function]}
             onFocus={[Function]}
             placeholder="0x49a016E6736F9Ad381605c...72A6"
+            ref={null}
             style={
               {
                 "backgroundColor": "#ffffff",

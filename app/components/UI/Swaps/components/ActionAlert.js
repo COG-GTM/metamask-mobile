@@ -78,6 +78,9 @@ const getInfoIconStyle = (type, styles) => {
   }
 };
 
+/**
+ * @param {{ type?: any, onPress?: any, children?: any }} props
+ */
 function Button({ type, onPress, children }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -105,6 +108,9 @@ Button.propTypes = {
   children: PropTypes.string,
 };
 
+/**
+ * @param {{ type?: any, style?: any, onPress?: any, onInfoPress?: any, action?: any, children?: any }} props
+ */
 function ActionAlert({ type, style, action, onInfoPress, onPress, children }) {
   const { colors } = useTheme();
   const styles = createStyles(colors);

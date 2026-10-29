@@ -8,6 +8,9 @@ import {
   selectEvmTicker,
 } from '../../../selectors/networkController';
 
+/**
+ * @param {{ chainId?: any, ticker?: any, style?: any, big?: any, biggest?: any, testID?: any }} props
+ */
 function NetworkMainAssetLogo({
   chainId,
   ticker,

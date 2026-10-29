@@ -12,6 +12,8 @@ ignores:
   - '@sentry/react'
   # This is used on the patch for TokenRatesController of Assets controllers, for we to be able to use the last version of it
   - cockatiel
+  # Required by react-native-svg-transformer, used in metro.transform.js
+  - 'metro-react-native-babel-transformer'
 
   # Note: Everything below this line should be removed after investigation
   # TODO: Investigate each dependency to see whether it's used
@@ -75,7 +77,7 @@ ignores:
   - 'react-native-os'
   - 'react-native-randombytes'
   - 'react-native-swipe-gestures'
-  - 'react-native-tcp'
+  - 'react-native-tcp-socket'
   - 'socket.io-client'
   - 'stream-browserify'
   - 'url'

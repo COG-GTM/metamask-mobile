@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook } from '../../../util/test/react-hooks-compat';
 import { SimulationTokenStandard } from '@metamask/transaction-controller';
 import {
   useNftCollectionsMetadata,
@@ -142,7 +142,7 @@ describe('useNftCollectionsMetadata', () => {
     );
 
     await waitForNextUpdate();
-    rerender();
+    rerender({});
 
     expect(mockGetNFTContractInfo).toHaveBeenCalledTimes(1);
   });

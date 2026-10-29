@@ -56,6 +56,9 @@ const styleSheet = ({ theme: { colors }, vars: { isPlaying } }) =>
     },
   });
 
+/**
+ * @param {{ uri?: any, style?: any, onClose?: any, textTracks?: any, selectedTextTrack?: any }} props
+ */
 function MediaPlayer({ uri, style, onClose, textTracks, selectedTextTrack }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -186,10 +189,6 @@ MediaPlayer.propTypes = {
    * The selected text track to display by id, language, title, index
    */
   selectedTextTrack: PropTypes.object,
-};
-
-MediaPlayer.defaultProps = {
-  onError: () => null,
 };
 
 export default MediaPlayer;

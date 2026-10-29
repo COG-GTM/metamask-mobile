@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook } from '../../../util/test/react-hooks-compat';
 import { KeyringTypes } from '@metamask/keyring-controller';
 import { toChecksumAddress } from 'ethereumjs-util';
 import useAccounts from './useAccounts';
@@ -110,9 +110,7 @@ describe('useAccounts', () => {
           balance === '0' ? 'Insufficient funds' : '',
       }),
     );
-    await act(async () => {
-      await waitForNextUpdate();
-    });
+    await waitForNextUpdate();
     expect(result.current.accounts[0].balanceError).toStrictEqual(
       expectedBalanceError,
     );
@@ -125,9 +123,7 @@ describe('useAccounts', () => {
       MOCK_ACCOUNT_2,
     ];
     const { result, waitForNextUpdate } = renderHook(() => useAccounts());
-    await act(async () => {
-      await waitForNextUpdate();
-    });
+    await waitForNextUpdate();
     expect(result.current.accounts).toStrictEqual(expectedInternalAccounts);
   });
 
@@ -136,9 +132,7 @@ describe('useAccounts', () => {
       [MOCK_ACCOUNT_1.address]: MOCK_ENS_CACHED_NAME,
     };
     const { result, waitForNextUpdate } = renderHook(() => useAccounts());
-    await act(async () => {
-      await waitForNextUpdate();
-    });
+    await waitForNextUpdate();
     expect(result.current.ensByAccountAddress).toStrictEqual(expectedENSNames);
   });
 });

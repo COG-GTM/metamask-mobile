@@ -4,7 +4,7 @@ exports[`WalletConnectApproval populates page information using request data 1`]
 <ApprovalModal
   isVisible={true}
 >
-  <Component
+  <Connect(Component)
     currentPageInformation={
       {
         "icon": "testIcon",
@@ -21,7 +21,7 @@ exports[`WalletConnectApproval renders 1`] = `
 <ApprovalModal
   isVisible={true}
 >
-  <Component
+  <Connect(Component)
     currentPageInformation={
       {
         "icon": undefined,
@@ -38,7 +38,7 @@ exports[`WalletConnectApproval sets isVisible to false if incorrect approval req
 <ApprovalModal
   isVisible={false}
 >
-  <Component
+  <Connect(Component)
     currentPageInformation={
       {
         "icon": undefined,
@@ -55,7 +55,7 @@ exports[`WalletConnectApproval sets isVisible to false if no approval request 1`
 <ApprovalModal
   isVisible={false}
 >
-  <Component
+  <Connect(Component)
     currentPageInformation={
       {
         "icon": undefined,

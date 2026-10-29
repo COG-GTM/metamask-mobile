@@ -24,6 +24,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * @param {{ isInBrowserView?: any, notificationAnimated?: any, currentNotification?: any, hideCurrentNotification?: any }} props
+ */
 function SimpleNotification({
   isInBrowserView,
   notificationAnimated,

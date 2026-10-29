@@ -13,9 +13,12 @@ import { IUseMetricsHook } from './useMetrics.types';
 jest.mock('../../../core/Analytics/MetaMetrics');
 
 // allows runAfterInteractions to return immediately
-jest.mock('react-native/Libraries/Interaction/InteractionManager', () => ({
-  runAfterInteractions: (callback: () => Promise<void>) => callback(),
-}));
+jest.mock('react-native/Libraries/Interaction/InteractionManager', () => {
+  const mockModule = {
+    runAfterInteractions: (callback: () => Promise<void>) => callback(),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 const expectedDataDeletionTaskResponse = {
   status: DataDeleteResponseStatus.ok,

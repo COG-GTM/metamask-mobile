@@ -31,7 +31,7 @@ export default function NetworkListBottomSheet({
   selectedNetwork: Hex | null;
   setSelectedNetwork: (network: Hex) => void;
   setOpenNetworkSelector: (open: boolean) => void;
-  sheetRef: React.RefObject<BottomSheetRef>;
+  sheetRef: React.RefObject<BottomSheetRef | null>;
 }) {
   const { styles } = useStyles(styleSheet, {});
   const networkConfigurations = useSelector(

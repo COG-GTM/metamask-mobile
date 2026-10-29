@@ -772,7 +772,7 @@ exports[`Quotes custom action renders correctly after animation with the recomme
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -780,24 +780,8 @@ exports[`Quotes custom action renders correctly after animation with the recomme
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -805,7 +789,6 @@ exports[`Quotes custom action renders correctly after animation with the recomme
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -882,6 +865,9 @@ exports[`Quotes custom action renders correctly after animation with the recomme
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={23}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -1012,6 +998,9 @@ exports[`Quotes custom action renders correctly after animation with the recomme
                       >
                         <View
                           collapsable={false}
+                          enabled={true}
+                          handlerTag={22}
+                          handlerType="PanGestureHandler"
                           onGestureHandlerEvent={[Function]}
                           onGestureHandlerStateChange={[Function]}
                           onLayout={[Function]}
@@ -1285,6 +1274,8 @@ exports[`Quotes custom action renders correctly after animation with the recomme
                           >
                             <RCTScrollView
                               collapsable={false}
+                              handlerTag={24}
+                              handlerType="NativeViewGestureHandler"
                               onGestureHandlerEvent={[Function]}
                               onGestureHandlerStateChange={[Function]}
                               testID="quotes"
@@ -1549,8 +1540,8 @@ exports[`Quotes custom action renders correctly after animation with the recomme
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -1803,7 +1794,7 @@ exports[`Quotes renders animation on first fetching 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -1811,24 +1802,8 @@ exports[`Quotes renders animation on first fetching 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -1836,7 +1811,6 @@ exports[`Quotes renders animation on first fetching 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -1913,6 +1887,9 @@ exports[`Quotes renders animation on first fetching 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={10}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -2043,6 +2020,9 @@ exports[`Quotes renders animation on first fetching 1`] = `
                       >
                         <View
                           collapsable={false}
+                          enabled={true}
+                          handlerTag={9}
+                          handlerType="PanGestureHandler"
                           onGestureHandlerEvent={[Function]}
                           onGestureHandlerStateChange={[Function]}
                           onLayout={[Function]}
@@ -2648,8 +2628,8 @@ exports[`Quotes renders animation on first fetching 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -2902,7 +2882,7 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -2910,24 +2890,8 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -2935,7 +2899,6 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -3012,6 +2975,9 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={17}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -3142,6 +3108,9 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
                       >
                         <View
                           collapsable={false}
+                          enabled={false}
+                          handlerTag={16}
+                          handlerType="PanGestureHandler"
                           onGestureHandlerEvent={[Function]}
                           onGestureHandlerStateChange={[Function]}
                           onLayout={[Function]}
@@ -4467,8 +4436,8 @@ exports[`Quotes renders correctly after animation with expanded quotes 2`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -4721,7 +4690,7 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -4729,24 +4698,8 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -4754,7 +4707,6 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -4831,6 +4783,9 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={14}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -4961,6 +4916,9 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
                       >
                         <View
                           collapsable={false}
+                          enabled={true}
+                          handlerTag={13}
+                          handlerType="PanGestureHandler"
                           onGestureHandlerEvent={[Function]}
                           onGestureHandlerStateChange={[Function]}
                           onLayout={[Function]}
@@ -5234,6 +5192,8 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
                           >
                             <RCTScrollView
                               collapsable={false}
+                              handlerTag={15}
+                              handlerType="NativeViewGestureHandler"
                               onGestureHandlerEvent={[Function]}
                               onGestureHandlerStateChange={[Function]}
                               testID="quotes"
@@ -5650,8 +5610,8 @@ exports[`Quotes renders correctly after animation with the recommended quote 1`]
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -5904,7 +5864,7 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -5912,24 +5872,8 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -5937,7 +5881,6 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -6014,6 +5957,9 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={12}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -6144,6 +6090,9 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
                       >
                         <View
                           collapsable={false}
+                          enabled={true}
+                          handlerTag={11}
+                          handlerType="PanGestureHandler"
                           onGestureHandlerEvent={[Function]}
                           onGestureHandlerStateChange={[Function]}
                           onLayout={[Function]}
@@ -6400,8 +6349,8 @@ exports[`Quotes renders correctly after animation without quotes 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -6654,7 +6603,7 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -6662,24 +6611,8 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -6687,7 +6620,6 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -6764,6 +6696,9 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={80}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -6894,6 +6829,9 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
                       >
                         <View
                           collapsable={false}
+                          enabled={true}
+                          handlerTag={79}
+                          handlerType="PanGestureHandler"
                           onGestureHandlerEvent={[Function]}
                           onGestureHandlerStateChange={[Function]}
                           onLayout={[Function]}
@@ -7150,8 +7088,8 @@ exports[`Quotes renders correctly when fetching quotes errors 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -7404,7 +7342,7 @@ exports[`Quotes renders correctly with sdkError 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -7412,24 +7350,8 @@ exports[`Quotes renders correctly with sdkError 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -7437,7 +7359,6 @@ exports[`Quotes renders correctly with sdkError 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -7514,6 +7435,9 @@ exports[`Quotes renders correctly with sdkError 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={76}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -7644,6 +7568,9 @@ exports[`Quotes renders correctly with sdkError 1`] = `
                       >
                         <View
                           collapsable={false}
+                          enabled={true}
+                          handlerTag={75}
+                          handlerType="PanGestureHandler"
                           onGestureHandlerEvent={[Function]}
                           onGestureHandlerStateChange={[Function]}
                           onLayout={[Function]}
@@ -7900,8 +7827,8 @@ exports[`Quotes renders correctly with sdkError 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;
@@ -8154,7 +8081,7 @@ exports[`Quotes renders quotes expired screen 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -8162,24 +8089,8 @@ exports[`Quotes renders quotes expired screen 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -8187,7 +8098,6 @@ exports[`Quotes renders quotes expired screen 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -8264,6 +8174,9 @@ exports[`Quotes renders quotes expired screen 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={68}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -8394,6 +8307,9 @@ exports[`Quotes renders quotes expired screen 1`] = `
                       >
                         <View
                           collapsable={false}
+                          enabled={true}
+                          handlerTag={67}
+                          handlerType="PanGestureHandler"
                           onGestureHandlerEvent={[Function]}
                           onGestureHandlerStateChange={[Function]}
                           onLayout={[Function]}
@@ -8650,8 +8566,8 @@ exports[`Quotes renders quotes expired screen 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;

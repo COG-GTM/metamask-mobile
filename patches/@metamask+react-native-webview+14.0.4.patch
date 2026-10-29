@@ -1,3 +1,16 @@
+diff --git a/node_modules/@metamask/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt b/node_modules/@metamask/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt
+index e06cbc9..5f0dcc6 100644
+--- a/node_modules/@metamask/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt
++++ b/node_modules/@metamask/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebViewManagerImpl.kt
+@@ -358,7 +358,7 @@ class RNCWebViewManagerImpl {
+             throw RuntimeException("Arguments for loading an url are null!")
+           }
+           webView.progressChangedFilter.setWaitingForCommandLoadUrl(false)
+-          webView.loadUrl(args.getString(0))
++          webView.loadUrl(args.getString(0) ?: throw RuntimeException("Url argument for loadUrl is null!"))
+         }
+         "requestFocus" -> webView.requestFocus()
+         "clearFormData" -> webView.clearFormData()
 diff --git a/node_modules/@metamask/react-native-webview/ios/RNCWebView.xcodeproj/project.pbxproj b/node_modules/@metamask/react-native-webview/ios/RNCWebView.xcodeproj/project.pbxproj
 index 4aa4617..8098026 100644
 --- a/node_modules/@metamask/react-native-webview/ios/RNCWebView.xcodeproj/project.pbxproj

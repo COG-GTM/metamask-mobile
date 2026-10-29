@@ -42,6 +42,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ style?: any } & Record<string, any>} props
+ */
 const KeypadContainer = ({ style, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -62,6 +65,9 @@ const KeypadRow = (props) => {
 
   return <View style={styles.keypadRow} {...props} />;
 };
+/**
+ * @param {{ children?: any, style?: any, textStyle?: any } & Record<string, any>} props
+ */
 const KeypadButton = ({ style, textStyle, children, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -85,6 +91,9 @@ KeypadButton.propTypes = {
   textStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };
 
+/**
+ * @param {{ style?: any, icon?: any } & Record<string, any>} props
+ */
 const KeypadDeleteButton = ({ style, icon, ...props }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

@@ -131,7 +131,7 @@ exports[`NftDetails should render correctly 1`] = `
         </View>
       </View>
     </View>
-    <RNSScreenContainer
+    <View
       onLayout={[Function]}
       style={
         {
@@ -139,24 +139,8 @@ exports[`NftDetails should render correctly 1`] = `
         }
       }
     >
-      <RNSScreen
-        activityState={2}
-        collapsable={false}
-        gestureResponseDistance={
-          {
-            "bottom": -1,
-            "end": -1,
-            "start": -1,
-            "top": -1,
-          }
-        }
-        onGestureCancel={[Function]}
+      <View
         pointerEvents="box-none"
-        sheetAllowedDetents="large"
-        sheetCornerRadius={-1}
-        sheetExpandsWhenScrolledToEdge={true}
-        sheetGrabberVisible={false}
-        sheetLargestUndimmedDetent="all"
         style={
           {
             "bottom": 0,
@@ -164,7 +148,6 @@ exports[`NftDetails should render correctly 1`] = `
             "position": "absolute",
             "right": 0,
             "top": 0,
-            "zIndex": undefined,
           }
         }
       >
@@ -241,6 +224,9 @@ exports[`NftDetails should render correctly 1`] = `
           >
             <View
               collapsable={false}
+              enabled={false}
+              handlerTag={-1}
+              handlerType="PanGestureHandler"
               onGestureHandlerEvent={[Function]}
               onGestureHandlerStateChange={[Function]}
               style={
@@ -320,6 +306,8 @@ exports[`NftDetails should render correctly 1`] = `
                     >
                       <RCTScrollView
                         collapsable={false}
+                        handlerTag={-1}
+                        handlerType="NativeViewGestureHandler"
                         onGestureHandlerEvent={[Function]}
                         onGestureHandlerStateChange={[Function]}
                       >
@@ -333,11 +321,24 @@ exports[`NftDetails should render correctly 1`] = `
                           >
                             <RNGestureHandlerButton
                               collapsable={false}
-                              onGestureEvent={[Function]}
+                              delayLongPress={600}
+                              enabled={true}
+                              exclusive={true}
+                              handlerTag={-1}
+                              handlerType="NativeViewGestureHandler"
+                              innerRef={null}
                               onGestureHandlerEvent={[Function]}
                               onGestureHandlerStateChange={[Function]}
-                              onHandlerStateChange={[Function]}
-                              rippleColor={0}
+                              rippleColor="transparent"
+                              style={
+                                [
+                                  undefined,
+                                  {
+                                    "cursor": undefined,
+                                  },
+                                ]
+                              }
+                              touchSoundDisabled={false}
                             >
                               <View
                                 accessible={true}
@@ -714,11 +715,24 @@ exports[`NftDetails should render correctly 1`] = `
                                   </Text>
                                   <RNGestureHandlerButton
                                     collapsable={false}
-                                    onGestureEvent={[Function]}
+                                    delayLongPress={600}
+                                    enabled={true}
+                                    exclusive={true}
+                                    handlerTag={-1}
+                                    handlerType="NativeViewGestureHandler"
+                                    innerRef={null}
                                     onGestureHandlerEvent={[Function]}
                                     onGestureHandlerStateChange={[Function]}
-                                    onHandlerStateChange={[Function]}
-                                    rippleColor={0}
+                                    rippleColor="transparent"
+                                    style={
+                                      [
+                                        undefined,
+                                        {
+                                          "cursor": undefined,
+                                        },
+                                      ]
+                                    }
+                                    touchSoundDisabled={false}
                                   >
                                     <View
                                       accessible={true}
@@ -888,11 +902,24 @@ exports[`NftDetails should render correctly 1`] = `
                                   </TouchableOpacity>
                                   <RNGestureHandlerButton
                                     collapsable={false}
-                                    onGestureEvent={[Function]}
+                                    delayLongPress={600}
+                                    enabled={true}
+                                    exclusive={true}
+                                    handlerTag={-1}
+                                    handlerType="NativeViewGestureHandler"
+                                    innerRef={null}
                                     onGestureHandlerEvent={[Function]}
                                     onGestureHandlerStateChange={[Function]}
-                                    onHandlerStateChange={[Function]}
-                                    rippleColor={0}
+                                    rippleColor="transparent"
+                                    style={
+                                      [
+                                        undefined,
+                                        {
+                                          "cursor": undefined,
+                                        },
+                                      ]
+                                    }
+                                    touchSoundDisabled={false}
                                   >
                                     <View
                                       accessible={true}
@@ -1221,11 +1248,24 @@ exports[`NftDetails should render correctly 1`] = `
                                 </Text>
                                 <RNGestureHandlerButton
                                   collapsable={false}
-                                  onGestureEvent={[Function]}
+                                  delayLongPress={600}
+                                  enabled={true}
+                                  exclusive={true}
+                                  handlerTag={-1}
+                                  handlerType="NativeViewGestureHandler"
+                                  innerRef={null}
                                   onGestureHandlerEvent={[Function]}
                                   onGestureHandlerStateChange={[Function]}
-                                  onHandlerStateChange={[Function]}
-                                  rippleColor={0}
+                                  rippleColor="transparent"
+                                  style={
+                                    [
+                                      undefined,
+                                      {
+                                        "cursor": undefined,
+                                      },
+                                    ]
+                                  }
+                                  touchSoundDisabled={false}
                                 >
                                   <View
                                     accessible={true}
@@ -1436,8 +1476,8 @@ exports[`NftDetails should render correctly 1`] = `
             </View>
           </View>
         </View>
-      </RNSScreen>
-    </RNSScreenContainer>
+      </View>
+    </View>
   </RNCSafeAreaProvider>
 </View>
 `;

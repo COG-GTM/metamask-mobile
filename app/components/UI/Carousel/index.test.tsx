@@ -89,9 +89,12 @@ jest.mock('../../../../locales/i18n', () => ({
   strings: (key: string) => key,
 }));
 
-jest.mock('react-native/Libraries/Linking/Linking', () => ({
-  openURL: jest.fn(() => Promise.resolve()),
-}));
+jest.mock('react-native/Libraries/Linking/Linking', () => {
+  const mockModule = {
+    openURL: jest.fn(() => Promise.resolve()),
+  };
+  return { __esModule: true, default: mockModule, ...mockModule };
+});
 
 // Mock image requires
 jest.mock('../../../images/banners/banner_image_card.png', () => ({

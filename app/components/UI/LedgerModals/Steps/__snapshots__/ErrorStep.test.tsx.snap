@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ErrorStep AppTheme is dark renders correctly when showViewSettings false 1`] = `
-<Component
+<Memo(ErrorStep)
   onReject={[MockFunction]}
   onRetry={[MockFunction]}
   showViewSettings={false}
@@ -11,7 +11,7 @@ exports[`ErrorStep AppTheme is dark renders correctly when showViewSettings fals
 `;
 
 exports[`ErrorStep AppTheme is dark renders correctly when showViewSettings is true 1`] = `
-<Component
+<Memo(ErrorStep)
   onReject={[MockFunction]}
   onRetry={[MockFunction]}
   showViewSettings={true}
@@ -21,7 +21,7 @@ exports[`ErrorStep AppTheme is dark renders correctly when showViewSettings is t
 `;
 
 exports[`ErrorStep AppTheme is light renders correctly when showViewSettings false 1`] = `
-<Component
+<Memo(ErrorStep)
   onReject={[MockFunction]}
   onRetry={[MockFunction]}
   showViewSettings={false}
@@ -31,7 +31,7 @@ exports[`ErrorStep AppTheme is light renders correctly when showViewSettings fal
 `;
 
 exports[`ErrorStep AppTheme is light renders correctly when showViewSettings is true 1`] = `
-<Component
+<Memo(ErrorStep)
   onReject={[MockFunction]}
   onRetry={[MockFunction]}
   showViewSettings={true}
@@ -41,7 +41,7 @@ exports[`ErrorStep AppTheme is light renders correctly when showViewSettings is 
 `;
 
 exports[`ErrorStep AppTheme is os renders correctly when showViewSettings false 1`] = `
-<Component
+<Memo(ErrorStep)
   onReject={[MockFunction]}
   onRetry={[MockFunction]}
   showViewSettings={false}
@@ -51,7 +51,7 @@ exports[`ErrorStep AppTheme is os renders correctly when showViewSettings false 
 `;
 
 exports[`ErrorStep AppTheme is os renders correctly when showViewSettings is true 1`] = `
-<Component
+<Memo(ErrorStep)
   onReject={[MockFunction]}
   onRetry={[MockFunction]}
   showViewSettings={true}

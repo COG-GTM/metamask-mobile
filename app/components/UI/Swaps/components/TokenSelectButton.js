@@ -12,6 +12,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * @param {{ icon?: any, symbol?: any, label?: any, onPress?: any, disabled?: any }} props
+ */
 function TokenSelectButton({ icon, symbol, onPress, disabled, label }) {
   return (
     <SelectorButton onPress={onPress} disabled={disabled}>

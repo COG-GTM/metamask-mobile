@@ -23,6 +23,9 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * @param {{ nonce?: any, onNonceEdit?: any }} props
+ */
 const CustomNonce = ({ nonce, onNonceEdit }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

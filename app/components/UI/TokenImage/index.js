@@ -20,6 +20,9 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * @param {{ asset?: any, containerStyle?: any, iconStyle?: any, tokenList?: any }} props
+ */
 const TokenImage = ({ asset, containerStyle, iconStyle, tokenList }) => {
   const isIpfsGatewayEnabled = useSelector(selectIsIpfsGatewayEnabled);
 

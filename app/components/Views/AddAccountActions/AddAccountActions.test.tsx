@@ -194,7 +194,7 @@ describe('AddAccountActions', () => {
       AddAccountBottomSheetSelectorsIDs.ADD_HARDWARE_WALLET_BUTTON,
     );
 
-    expect(hardwareWalletButton.findByType(Text).props.children).toBe(
+    expect(hardwareWalletButton.findByType(Text as React.ElementType).props.children).toBe(
       'Hardware wallet',
     );
     fireEvent.press(hardwareWalletButton);

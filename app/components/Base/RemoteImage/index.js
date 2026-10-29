@@ -7,8 +7,6 @@ import {
   Dimensions,
 } from 'react-native';
 import FadeIn from 'react-native-fade-in-image';
-// eslint-disable-next-line import/default
-import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
 import { SvgUri } from 'react-native-svg';
 import isUrl from 'is-url';
 import ComponentErrorBoundary from '../../UI/ComponentErrorBoundary';
@@ -62,10 +60,13 @@ const createStyles = () =>
     },
   });
 
+/**
+ * @param {{ fadeIn?: any, source?: any, style?: any, placeholderStyle?: any, onError?: any, isUrl?: any, address?: any, isTokenImage?: any, isFullRatio?: any, chainId?: any } & Record<string, any>} props
+ */
 const RemoteImage = (props) => {
   const [error, setError] = useState(undefined);
   // Avoid using this component with animated SVG
-  const source = resolveAssetSource(props.source);
+  const source = Image.resolveAssetSource(props.source);
   const isImageUrl = isUrl(props?.source?.uri);
   const ipfsGateway = useIpfsGateway();
   const styles = createStyles();

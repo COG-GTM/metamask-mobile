@@ -224,6 +224,9 @@ const createStyles = (colors) =>
     hitSlop: { top: 50, right: 50, bottom: 50, left: 50 },
   });
 
+/**
+ * @param {{ errorMessage?: any, showExportSeedphrase?: any, copyErrorToClipboard?: any, sentryId?: any } & Record<string, any>} props
+ */
 export const Fallback = (props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);

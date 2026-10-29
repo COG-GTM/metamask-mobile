@@ -24,6 +24,9 @@ const { TRANSACTION, SIMPLE } = NotificationTypes;
 
 const BROWSER_ROUTE = 'BrowserView';
 
+/**
+ * @param {{ currentNotification?: any, currentNotificationIsVisible?: any, hideCurrentNotification?: any, removeCurrentNotification?: any }} props
+ */
 function Notification({
   currentNotification,
   currentNotificationIsVisible,

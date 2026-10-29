@@ -7,9 +7,9 @@ import {
 import { Hex } from '@metamask/utils';
 
 describe('formatWithThreshold', () => {
-  const enUSCurrencyOptions = { style: 'currency', currency: 'USD' };
-  const enEUCurrencyOptions = { style: 'currency', currency: 'EUR' };
-  const jpYenCurrencyOptions = { style: 'currency', currency: 'JPY' };
+  const enUSCurrencyOptions: Intl.NumberFormatOptions = { style: 'currency', currency: 'USD' };
+  const enEUCurrencyOptions: Intl.NumberFormatOptions = { style: 'currency', currency: 'EUR' };
+  const jpYenCurrencyOptions: Intl.NumberFormatOptions = { style: 'currency', currency: 'JPY' };
   const numberOptions = { maximumFractionDigits: 2 };
 
   const cryptoOptions = {

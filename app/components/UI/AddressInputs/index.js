@@ -178,6 +178,9 @@ const createStyles = (colors, layout = 'horizontal') => {
   });
 };
 
+/**
+ * @param {{ toAddressName?: any, confusableCollection?: any }} props
+ */
 const AddressName = ({ toAddressName, confusableCollection = [] }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -219,6 +222,9 @@ AddressName.propTypes = {
   confusableCollection: PropTypes.array,
 };
 
+/**
+ * @param {{ addressToReady?: any, highlighted?: any, inputRef?: any, toSelectedAddress?: any, onToSelectedAddressChange?: any, onScan?: any, onClear?: any, onInputFocus?: any, onSubmit?: any, onInputBlur?: any, toAddressName?: any, inputWidth?: any, confusableCollection?: any, displayExclamation?: any, isConfirmScreen?: any, isFromAddressBook?: any, layout?: any } & Record<string, any>} props
+ */
 export const AddressTo = (props) => {
   const {
     addressToReady,
@@ -557,6 +563,9 @@ AddressTo.propTypes = {
   layout: PropTypes.string,
 };
 
+/**
+ * @param {{ highlighted?: any, onPressIcon?: any, fromAccountAddress?: any, fromAccountName?: any, fromAccountBalance?: any, layout?: any } & Record<string, any>} props
+ */
 export const AddressFrom = (props) => {
   const {
     highlighted,

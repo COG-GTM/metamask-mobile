@@ -55,6 +55,7 @@ const MAX_BROWSER_TABS = 5;
 /**
  * Component that wraps all the browser
  * individual tabs and the tabs view
+ * @param {{ navigation?: any, createNewTab?: any, closeAllTabs?: any, closeTab?: any, setActiveTab?: any, updateTab?: any, tabs?: any, activeTab?: any, route?: any } & Record<string, any>} props
  */
 export const Browser = (props) => {
   const {

@@ -132,6 +132,9 @@ export const useSwapConfirmedEvent = ({ trackSwaps }) => {
   };
 };
 
+/**
+ * @param {{ navigation?: any, setEtherTransaction?: any, setTransactionObject?: any, tokens?: any, selectedAddress?: any, chainId?: any, shouldUseSmartTransaction?: any } & Record<string, any>} props
+ */
 const RootRPCMethodsUI = (props) => {
   const { trackEvent, createEventBuilder } = useMetrics();
   const [transactionModalType, setTransactionModalType] = useState(undefined);

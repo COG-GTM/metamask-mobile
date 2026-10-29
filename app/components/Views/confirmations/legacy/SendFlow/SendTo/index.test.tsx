@@ -8,6 +8,7 @@ import SendTo from './index';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
 import initialRootState from '../../../../../../util/test/initial-root-state';
 import { validateAddressOrENS } from '../../../../../../util/address';
+import { SendViewSelectorsIDs } from '../../../../../../../e2e/selectors/SendFlow/SendView.selectors';
 
 jest.mock('@react-navigation/native', () => {
   const actualNav = jest.requireActual('@react-navigation/native');
@@ -85,5 +86,18 @@ describe('SendTo Component', () => {
     );
     fireEvent.press(screen.getByText('Next'));
     expect(navigate).toHaveBeenCalledWith('Amount');
+  });
+
+  it('does not throw while a partial recipient address is typed', () => {
+    render(
+      <Provider store={store}>
+        <ThemeContext.Provider value={mockTheme}>
+          <SendTo navigation={navigationPropMock} route={routeMock} />
+        </ThemeContext.Provider>
+      </Provider>,
+    );
+    const input = screen.getByTestId(SendViewSelectorsIDs.ADDRESS_INPUT);
+    expect(() => fireEvent.changeText(input, '0')).not.toThrow();
+    expect(() => fireEvent.changeText(input, '0x12')).not.toThrow();
   });
 });

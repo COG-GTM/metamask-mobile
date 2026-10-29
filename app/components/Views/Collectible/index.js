@@ -12,7 +12,13 @@ import { toggleCollectibleContractModal } from '../../../actions/modals';
 import { toLowerCaseEquals } from '../../../util/general';
 import { collectiblesSelector } from '../../../reducers/collectibles';
 import { ThemeContext, mockTheme } from '../../../util/theme';
-import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
+import { createSelector } from 'reselect';
+import {
+  selectAllPopularNetworkConfigurations,
+  selectChainId,
+  selectIsAllNetworks,
+  selectIsPopularNetwork,
+} from '../../../selectors/networkController';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -33,6 +39,10 @@ class Collectible extends PureComponent {
      * Array of assets (in this case Collectibles)
      */
     collectibles: PropTypes.array,
+    /**
+     * Chain ids to run NFT detection for
+     */
+    nftDetectionChainIds: PropTypes.array,
     /**
     /* navigation object required to access the props
     /* passed by the parent component
@@ -79,9 +89,8 @@ class Collectible extends PureComponent {
   onRefresh = async () => {
     this.setState({ refreshing: true });
     const { NftDetectionController } = Engine.context;
-    const chainIdsToDetectNftsFor = useNftDetectionChainIds();
     try {
-      await NftDetectionController.detectNfts(chainIdsToDetectNftsFor);
+      await NftDetectionController.detectNfts(this.props.nftDetectionChainIds);
     } finally {
       this.setState({ refreshing: false });
     }
@@ -168,8 +177,22 @@ class Collectible extends PureComponent {
   };
 }
 
+const selectNftDetectionChainIds = createSelector(
+  selectIsAllNetworks,
+  selectIsPopularNetwork,
+  selectAllPopularNetworkConfigurations,
+  selectChainId,
+  (isAllNetworks, isPopularNetworks, popularNetworkConfigurations, chainId) =>
+    isAllNetworks && isPopularNetworks
+      ? Object.values(popularNetworkConfigurations).map(
+          (network) => network.chainId,
+        )
+      : [chainId],
+);
+
 const mapStateToProps = (state) => ({
   collectibles: collectiblesSelector(state),
+  nftDetectionChainIds: selectNftDetectionChainIds(state),
   collectibleContractModalVisible: state.modals.collectibleContractModalVisible,
 });
 
