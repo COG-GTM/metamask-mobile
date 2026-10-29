@@ -7595,14 +7595,14 @@
     js-base64 "^3.7.5"
     uuid "^14.0.0"
 
-"@segment/sovran-react-native@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@segment/sovran-react-native/-/sovran-react-native-1.0.4.tgz#862c9c01c15f5ea81a77012c6e720ebd56153ccc"
-  integrity sha512-oeIjspLOX9V+YmM7arZ+OXCyjooKdurnyVji+sj8OVkw+tUcXtvy+m9oC8E4yqazR/tghWCYE+tCriNx4jsVTw==
+"@segment/sovran-react-native@^1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@segment/sovran-react-native/-/sovran-react-native-1.1.5.tgz#4081ad09fbefc624faf1f9bc050b95b11e311535"
+  integrity sha512-D7yJYxVIk1Ug4AlbSswlHz2jWUsjYRgARMogyiW0W+v1r+5Uwnpz9pNhektEeZslA+r070WW11X7hM2fus6mng==
   dependencies:
     ansi-regex "5.0.1"
     deepmerge "^4.2.2"
-    shell-quote "1.8.0"
+    uuid "^14.0.0"
 
 "@segment/tsub@2.0.0":
   version "2.0.0"
@@ -26697,11 +26697,6 @@ shebang-regex@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/shebang-regex/-/shebang-regex-3.0.0.tgz#ae16f1644d873ecad843b0307b143362d4c42172"
   integrity sha512-7++dFhtcx3353uBaq8DDR4NuxBetBzC7ZQOhmTQInHEd6bSrXdiEyzCvG07Z44UYdLShWUyXt5M/yhz8ekcb1A==
-
-shell-quote@1.8.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.8.0.tgz#20d078d0eaf71d54f43bd2ba14a1b5b9bfa5c8ba"
-  integrity sha512-QHsz8GgQIGKlRi24yFc6a6lN69Idnx634w49ay6+jA5yFh7a1UY+4Rp6HPx/L/1zcEDPEij8cIsiqR6bQsE5VQ==
 
 shell-quote@1.8.1:
   version "1.8.1"
