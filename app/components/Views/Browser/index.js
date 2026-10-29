@@ -26,7 +26,10 @@ import {
 import { useAccounts } from '../../hooks/useAccounts';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import AppConstants from '../../../core/AppConstants';
-import { getPermittedAccounts } from '../../../core/Permissions';
+import {
+  getBrowserPermissionSubject,
+  getPermittedAccounts,
+} from '../../../core/Permissions';
 import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
@@ -208,8 +211,9 @@ export const Browser = (props) => {
 
   useEffect(() => {
     const checkIfActiveAccountChanged = () => {
-      const hostname = new URL(browserUrl).hostname;
-      const permittedAccounts = getPermittedAccounts(hostname);
+      const permittedAccounts = getPermittedAccounts(
+        getBrowserPermissionSubject(browserUrl),
+      );
       const activeAccountAddress = permittedAccounts?.[0];
 
       if (activeAccountAddress) {
