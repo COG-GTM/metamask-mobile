@@ -415,14 +415,14 @@ const AccountConnect = (props: AccountConnectProps) => {
         ...hostInfo.metadata,
         origin: channelIdOrHostname,
       },
-      permissions: {
-        ...hostInfo.permissions,
-        ...getCaip25PermissionsResponse(
-          requestedCaip25CaveatValue,
-          hexSelectedAddresses,
-          hexChainsToPermit,
-        ),
-      },
+      // Only approve the CAIP-25 permission this sheet displays; any other
+      // permission bundled into the request is dropped rather than granted
+      // without the user's consent.
+      permissions: getCaip25PermissionsResponse(
+        requestedCaip25CaveatValue,
+        hexSelectedAddresses,
+        hexChainsToPermit,
+      ),
     };
     const connectedAccountLength = selectedAddresses.length;
     const activeAddress = selectedAddresses[0];
