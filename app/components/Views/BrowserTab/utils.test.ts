@@ -3,6 +3,8 @@ import {
   isENSUrl,
   getMaskedUrl,
   getEnsContentGatewayUrl,
+  getPermissionOrigin,
+  addSessionENSName,
   toCidV1Base32,
 } from './utils';
 import URLParse from 'url-parse';
@@ -120,6 +122,16 @@ describe('BrowserTab utils', () => {
       expect(new URLParse(good).hostname).not.toBe(new URLParse(bad).hostname);
     });
 
+    it('throws for IPNS names that do not fit in a single DNS label', () => {
+      expect(() =>
+        getEnsContentGatewayUrl({
+          type: 'ipns-ns',
+          hash: 'Qm456',
+          hostname: `${'a'.repeat(60)}.eth`,
+        }),
+      ).toThrow('too long');
+    });
+
     it('returns undefined for unknown content types', () => {
       expect(
         getEnsContentGatewayUrl({
@@ -184,6 +196,64 @@ describe('BrowserTab utils', () => {
       it(`should correctly mask ${input}`, () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
+    });
+  });
+
+  describe('getPermissionOrigin', () => {
+    const gatewayUrl = `https://bafycontent.${AppConstants.IPFS_SUBDOMAIN_GATEWAY_HOST}/`;
+
+    it('uses the ENS name as the permission origin for ENS content', () => {
+      const sessionENSNames: SessionENSNames = {};
+      addSessionENSName(sessionENSNames, gatewayUrl, {
+        hostname: 'gooddapp.eth',
+        hash: 'Qm123',
+        type: 'ipfs-ns',
+      });
+      expect(
+        getPermissionOrigin(`${gatewayUrl}swap?x=1`, sessionENSNames),
+      ).toBe('https://gooddapp.eth');
+    });
+
+    it('keeps the same permission origin when the ENS content changes', () => {
+      const sessionENSNames: SessionENSNames = {};
+      const updatedGatewayUrl = `https://bafyupdated.${AppConstants.IPFS_SUBDOMAIN_GATEWAY_HOST}/`;
+      addSessionENSName(sessionENSNames, gatewayUrl, {
+        hostname: 'shop.eth',
+        hash: 'Qm123',
+        type: 'ipfs-ns',
+      });
+      addSessionENSName(sessionENSNames, updatedGatewayUrl, {
+        hostname: 'shop.eth',
+        hash: 'Qm456',
+        type: 'ipfs-ns',
+      });
+      expect(getPermissionOrigin(gatewayUrl, sessionENSNames)).toBe(
+        getPermissionOrigin(updatedGatewayUrl, sessionENSNames),
+      );
+    });
+
+    it('does not let an ENS name reuse the permissions of another name with the same content', () => {
+      const sessionENSNames: SessionENSNames = {};
+      addSessionENSName(sessionENSNames, gatewayUrl, {
+        hostname: 'gooddapp.eth',
+        hash: 'Qm123',
+        type: 'ipfs-ns',
+      });
+      addSessionENSName(sessionENSNames, `${gatewayUrl}other`, {
+        hostname: 'baddapp.eth',
+        hash: 'Qm123',
+        type: 'ipfs-ns',
+      });
+      expect(getPermissionOrigin(gatewayUrl, sessionENSNames)).toBe(
+        'https://baddapp.eth',
+      );
+      expect(Object.keys(sessionENSNames)).toHaveLength(1);
+    });
+
+    it('uses the loaded origin for non ENS urls', () => {
+      expect(getPermissionOrigin('https://app.uniswap.org/swap', {})).toBe(
+        'https://app.uniswap.org',
+      );
     });
   });
 });

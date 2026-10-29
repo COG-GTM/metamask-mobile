@@ -102,7 +102,13 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getEnsContentGatewayUrl, getMaskedUrl, isENSUrl } from './utils';
+import {
+  addSessionENSName,
+  getEnsContentGatewayUrl,
+  getMaskedUrl,
+  getPermissionOrigin,
+  isENSUrl,
+} from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -191,7 +197,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const searchEngine = useSelector(selectSearchEngine);
   const permittedAccountsList = useSelector((state: RootState) => {
     const permissionsControllerState = selectPermissionControllerState(state);
-    const hostname = new URLParse(resolvedUrlRef.current).hostname;
+    const hostname = new URLParse(
+      getPermissionOrigin(resolvedUrlRef.current, sessionENSNamesRef.current),
+    ).hostname;
     const permittedAcc = getPermittedAccountsByHostname(
       permissionsControllerState,
       hostname,
@@ -444,7 +452,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const triggerDappViewedEvent = useCallback((urlToTrigger: string) => {
     const permissionsControllerState =
       Engine.context.PermissionController.state;
-    const hostname = new URLParse(urlToTrigger).hostname;
+    const hostname = new URLParse(
+      getPermissionOrigin(urlToTrigger, sessionENSNamesRef.current),
+    ).hostname;
     const connectedAccounts = getPermittedAccountsByHostname(
       permissionsControllerState,
       hostname,
@@ -635,7 +645,9 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       return;
     }
     if (!resolvedUrlRef.current) return;
-    const hostname = new URLParse(resolvedUrlRef.current).hostname;
+    const hostname = new URLParse(
+      getPermissionOrigin(resolvedUrlRef.current, sessionENSNamesRef.current),
+    ).hostname;
     const permissionsControllerState =
       Engine.context.PermissionController.state;
     const permittedAccounts = getPermittedAccountsByHostname(
@@ -890,7 +902,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   }, []);
 
   const initializeBackgroundBridge = useCallback(
-    (urlBridge: string, isMainFrame: boolean) => {
+    (urlBridge: string, isMainFrame: boolean, permissionUrl?: string) => {
       // First disconnect and reset bridge
       backgroundBridgeRef.current?.onDisconnect();
       backgroundBridgeRef.current = undefined;
@@ -899,6 +911,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       const newBridge = new BackgroundBridge({
         webview: webviewRef,
         url: urlBridge,
+        permissionUrl,
         getRpcMethodMiddleware: ({
           hostname,
           getProviderState,
@@ -972,7 +985,11 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         injectHomePageScripts();
       }
 
-      initializeBackgroundBridge(urlOrigin, true);
+      initializeBackgroundBridge(
+        urlOrigin,
+        true,
+        getPermissionOrigin(nativeEvent.url, sessionENSNamesRef.current),
+      );
     },
     [
       isAllowedOrigin,
@@ -1071,7 +1088,11 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           return null;
         }
         const { type, hash } = ipfsContent;
-        sessionENSNamesRef.current[ipfsUrl] = { hostname, hash, type };
+        addSessionENSName(sessionENSNamesRef.current, ipfsUrl, {
+          hostname,
+          hash,
+          type,
+        });
         setIsResolvedIpfsUrl(true);
         return ipfsUrl;
       } catch (_) {

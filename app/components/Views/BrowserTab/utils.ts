@@ -48,6 +48,9 @@ export const isENSUrl = (urlToCheck: string, ensIgnoreList: string[]) => {
 
 const BASE32_ALPHABET = 'abcdefghijklmnopqrstuvwxyz234567';
 
+/**
+ * RFC 4648 base32 (lowercase, no padding), the multibase "b" encoding used for CIDs in hostnames
+ */
 const toBase32 = (bytes: number[]) => {
   let output = '';
   let bits = 0;
@@ -84,6 +87,8 @@ export const toCidV1Base32 = (type: string, hash: string) => {
 export const toInlinedDnsLabel = (name: string) =>
   name.toLowerCase().replace(/-/g, '--').replace(/\./g, '-');
 
+const MAX_DNS_LABEL_LENGTH = 63;
+
 /**
  * Builds the gateway url for resolved ENS content.
  * Subdomain gateways are used so that every ENS site gets its own web origin,
@@ -114,9 +119,13 @@ export const getEnsContentGatewayUrl = ({
     }${path}`;
   }
   if (type === 'ipns-ns') {
-    return `https://${toInlinedDnsLabel(hostname)}.${
-      AppConstants.IPNS_SUBDOMAIN_GATEWAY_HOST
-    }${path}`;
+    const label = toInlinedDnsLabel(hostname);
+    if (label.length > MAX_DNS_LABEL_LENGTH) {
+      throw new Error(
+        `ENS name "${hostname}" is too long to be loaded through an IPNS subdomain gateway`,
+      );
+    }
+    return `https://${label}.${AppConstants.IPNS_SUBDOMAIN_GATEWAY_HOST}${path}`;
   }
   return undefined;
 };
@@ -131,11 +140,39 @@ export const getMaskedUrl = (
 ) => {
   if (!urlToMask) return urlToMask;
   const { origin } = new URLParse(urlToMask);
-  const key = Object.keys(sessionENSNames).find(
-    (ensUrl) => new URLParse(ensUrl).origin === origin,
-  );
+  const key = Object.keys(sessionENSNames)
+    .reverse()
+    .find((ensUrl) => new URLParse(ensUrl).origin === origin);
   if (!key) return urlToMask;
   return `https://${sessionENSNames[key].hostname}${urlToMask.slice(
     origin.length,
   )}`;
+};
+
+/**
+ * Gets the origin used as the permission subject for a url loaded in the browser.
+ * ENS content is keyed by the ENS name rather than by the gateway origin it is served from,
+ * so permissions survive content updates and are never shared between ENS names.
+ */
+export const getPermissionOrigin = (
+  url: string,
+  sessionENSNames: SessionENSNames,
+) => new URLParse(getMaskedUrl(url, sessionENSNames)).origin;
+
+/**
+ * Records the ENS name an ENS content gateway url was resolved from,
+ * replacing any previous ENS name mapped to the same gateway origin
+ */
+export const addSessionENSName = (
+  sessionENSNames: SessionENSNames,
+  gatewayUrl: string,
+  ensInfo: SessionENSNames[string],
+) => {
+  const { origin } = new URLParse(gatewayUrl);
+  Object.keys(sessionENSNames).forEach((ensUrl) => {
+    if (new URLParse(ensUrl).origin === origin) {
+      delete sessionENSNames[ensUrl];
+    }
+  });
+  sessionENSNames[gatewayUrl] = ensInfo;
 };
