@@ -295,13 +295,13 @@ android {
 
     buildFeatures {
         buildConfig = true
+        aidl = true
     }
 }
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation(files("../libs/ecies.aar"))
-    implementation(files("../libs/nativesdk.aar"))
     implementation("com.facebook.react:react-android")
     implementation 'org.apache.commons:commons-compress:1.22'
     androidTestImplementation 'org.mockito:mockito-android:4.2.0'

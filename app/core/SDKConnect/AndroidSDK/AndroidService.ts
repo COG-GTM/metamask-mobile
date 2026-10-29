@@ -226,13 +226,17 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::clients_connected sending jsonrpc error to client - connection rejected`,
           );
-          this.sendMessage({
-            data: {
-              error,
-              jsonrpc: '2.0',
+          this.sendMessage(
+            {
+              data: {
+                error,
+                jsonrpc: '2.0',
+              },
+              name: 'metamask-provider',
             },
-            name: 'metamask-provider',
-          }).catch((err) => {
+            undefined,
+            clientInfo.clientId,
+          ).catch((err) => {
             Logger.log(
               err,
               `AndroidService::clients_connected error failed sending jsonrpc error to client`,
@@ -312,7 +316,7 @@ export default class AndroidService extends EventEmitter2 {
           Logger.log(error, `AndroidService::onMessageReceived error`);
         }
 
-        let sessionId: string,
+        let sessionId = '',
           message: string,
           // TODO: Replace "any" with type
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -322,6 +326,15 @@ export default class AndroidService extends EventEmitter2 {
           sessionId = parsedMsg.id;
           message = parsedMsg.message;
           data = JSON.parse(message);
+
+          // Session ids are bound to the calling app by the native layer; never
+          // create connection state for an id that was not approved first.
+          if (!sessionId || !this.connections[sessionId]) {
+            Logger.log(
+              `AndroidService::onMessageReceived dropping message for unknown session`,
+            );
+            return;
+          }
 
           // Update connected state
           this.connections[sessionId] = {
@@ -333,13 +346,17 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::onMessageReceived invalid json param`,
           );
-          this.sendMessage({
-            data: {
-              error,
-              jsonrpc: '2.0',
+          this.sendMessage(
+            {
+              data: {
+                error,
+                jsonrpc: '2.0',
+              },
+              name: 'metamask-provider',
             },
-            name: 'metamask-provider',
-          }).catch((err) => {
+            undefined,
+            sessionId || undefined,
+          ).catch((err) => {
             Logger.log(
               err,
               `AndroidService::onMessageReceived error sending jsonrpc error message to client ${sessionId}`,
@@ -473,7 +490,10 @@ export default class AndroidService extends EventEmitter2 {
       isMMSDK: true,
       url: PROTOCOLS.METAMASK + '://' + AppConstants.MM_SDK.SDK_REMOTE_ORIGIN,
       isRemoteConn: true,
-      sendMessage: this.sendMessage.bind(this),
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sendMessage: (msg: any, forceRedirect?: boolean) =>
+        this.sendMessage(msg, forceRedirect, clientInfo.clientId),
       ...defaultBridgeParams,
     });
 
@@ -496,7 +516,7 @@ export default class AndroidService extends EventEmitter2 {
 
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async sendMessage(message: any, forceRedirect?: boolean) {
-    return sendMessage(this, message, forceRedirect);
+  async sendMessage(message: any, forceRedirect?: boolean, clientId?: string) {
+    return sendMessage(this, message, forceRedirect, clientId);
   }
 }
