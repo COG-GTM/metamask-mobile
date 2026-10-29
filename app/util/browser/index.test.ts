@@ -308,9 +308,14 @@ describe('Browser utils :: getTabUrlForHostname', () => {
   };
 
   it('never returns the active tab URL when its host differs', () => {
-    expect(getTabUrlForHostname(browser, 'evil.example')).toBe(
+    const tabs = [browser.tabs[0], browser.tabs[1]];
+    expect(getTabUrlForHostname({ ...browser, tabs }, 'evil.example')).toBe(
       'http://evil.example/page',
     );
+  });
+
+  it('returns undefined when non-active matching tabs disagree on protocol', () => {
+    expect(getTabUrlForHostname(browser, 'evil.example')).toBeUndefined();
   });
 
   it('prefers the active tab when it matches the hostname', () => {

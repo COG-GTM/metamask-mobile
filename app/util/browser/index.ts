@@ -84,7 +84,8 @@ interface BrowserTabsState {
 
 /**
  * Returns the URL of a browser tab whose hostname exactly matches the given
- * hostname, preferring the active tab. Never returns a URL for another host.
+ * hostname, preferring the active tab. Never returns a URL for another host,
+ * and returns undefined when non-active candidates disagree on protocol.
  *
  * @param browser - Browser slice of the redux state
  * @param hostname - Hostname of the requesting origin
@@ -101,9 +102,15 @@ export function getTabUrlForHostname(
   const matching = browser.tabs.filter(
     (tab) => tab.url && getUrlObj(tab.url).hostname === host,
   );
-  const tab =
-    matching.find(({ id }) => id === browser.activeTab) ?? matching[0];
-  return tab?.url;
+  const activeMatch = matching.find(({ id }) => id === browser.activeTab);
+  if (activeMatch) return activeMatch.url;
+  // Without the active tab we can't tell which tab sent the request, so only
+  // return a URL when every candidate agrees on the protocol (e.g. never
+  // show an HTTPS lock for a request that may have come from an HTTP tab).
+  const protocols = new Set(
+    matching.map((tab) => getUrlObj(tab.url as string).protocol),
+  );
+  return protocols.size === 1 ? matching[0].url : undefined;
 }
 
 /**
