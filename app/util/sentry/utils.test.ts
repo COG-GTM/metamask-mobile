@@ -457,7 +457,7 @@ describe('captureSentryFeedback', () => {
         isNFTAutoDetectionModalViewed: false,
       },
       signatureRequest: {
-        securityAlertResponse: undefined,
+        securityAlertResponses: {},
       },
       sdk: {
         connections: {},

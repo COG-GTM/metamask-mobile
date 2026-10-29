@@ -1,14 +1,21 @@
 import { useSelector } from 'react-redux';
 
-import { selectSignatureSecurityAlertResponse } from '../../selectors/security-alerts';
+import { RootState } from '../../../../../reducers';
+import {
+  getSignatureRequestSecurityAlertId,
+  selectSignatureSecurityAlertResponse,
+} from '../../selectors/security-alerts';
+import { useSignatureRequest } from '../signatures/useSignatureRequest';
 import { useTransactionMetadataRequest } from '../transactions/useTransactionMetadataRequest';
 
 // todo: the hook to be extended to include transactions
 export function useSecurityAlertResponse() {
   const transactionMetadata = useTransactionMetadataRequest();
+  const signatureRequest = useSignatureRequest();
+  const securityAlertId = getSignatureRequestSecurityAlertId(signatureRequest);
 
-  const { securityAlertResponse: signatureSecurityAlertResponse } = useSelector(
-    selectSignatureSecurityAlertResponse,
+  const signatureSecurityAlertResponse = useSelector((state: RootState) =>
+    selectSignatureSecurityAlertResponse(state, securityAlertId),
   );
 
   return {

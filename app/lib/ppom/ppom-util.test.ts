@@ -284,6 +284,57 @@ describe('PPOM Utils', () => {
       expect(spy).toHaveBeenCalledTimes(2);
     });
 
+    it('stores signature validation results per security alert id', async () => {
+      const spy = jest.spyOn(SignatureRequestActions, 'default');
+      const requestA = { ...mockSignatureRequest, id: 1 };
+      const requestB = { ...mockSignatureRequest, id: 2 };
+
+      await PPOMUtil.validateRequest(requestA, undefined, 'alert-a');
+      await PPOMUtil.validateRequest(requestB, undefined, 'alert-b');
+
+      const securityAlertIds = spy.mock.calls.map(([id]) => id);
+      expect(securityAlertIds).toStrictEqual([
+        'alert-a',
+        'alert-a',
+        'alert-b',
+        'alert-b',
+      ]);
+      expect(requestA).toEqual(
+        expect.objectContaining({
+          securityAlertResponse: { securityAlertId: 'alert-a' },
+        }),
+      );
+      expect(requestB).toEqual(
+        expect.objectContaining({
+          securityAlertResponse: { securityAlertId: 'alert-b' },
+        }),
+      );
+    });
+
+    it('binds signature requests without a security alert id to a new one', async () => {
+      const spy = jest.spyOn(SignatureRequestActions, 'default');
+      const requestA = { ...mockSignatureRequest, id: 1 };
+      const requestB = { ...mockSignatureRequest, id: 2 };
+
+      await PPOMUtil.validateRequest(requestA);
+      await PPOMUtil.validateRequest(requestB);
+
+      const securityAlertIdA = (
+        requestA as { securityAlertResponse?: { securityAlertId?: string } }
+      ).securityAlertResponse?.securityAlertId;
+      const securityAlertIdB = (
+        requestB as { securityAlertResponse?: { securityAlertId?: string } }
+      ).securityAlertResponse?.securityAlertId;
+
+      expect(securityAlertIdA).toEqual(expect.any(String));
+      expect(securityAlertIdB).toEqual(expect.any(String));
+      expect(securityAlertIdA).not.toBe(securityAlertIdB);
+      expect(spy).toHaveBeenLastCalledWith(
+        securityAlertIdB,
+        expect.any(Object),
+      );
+    });
+
     it('normalizes transaction requests before validation', async () => {
       const normalizedTransactionParamsMock = {
         ...mockRequest.params[0],
@@ -472,12 +523,17 @@ describe('PPOM Utils', () => {
   });
 
   describe('clearSignatureSecurityAlertResponse', () => {
-    it('set call action to set securityAlertResponse for signature in redux state to undefined', async () => {
+    it('clears the security alert response for the given security alert id only', async () => {
+      const spy = jest.spyOn(SignatureRequestActions, 'default');
+      PPOMUtil.clearSignatureSecurityAlertResponse('alert-a');
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith('alert-a');
+    });
+
+    it('does nothing if no security alert id is provided', async () => {
       const spy = jest.spyOn(SignatureRequestActions, 'default');
       PPOMUtil.clearSignatureSecurityAlertResponse();
-      expect(spy).toHaveBeenCalledTimes(1);
-      // function call with no arguments
-      expect(spy).toHaveBeenCalledWith();
+      expect(spy).not.toHaveBeenCalled();
     });
   });
 });

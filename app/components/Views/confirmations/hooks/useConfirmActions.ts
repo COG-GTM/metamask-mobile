@@ -12,6 +12,8 @@ import { useLedgerContext } from '../context/ledger-context';
 import { useQRHardwareContext } from '../context/qr-hardware-context';
 import useApprovalRequest from './useApprovalRequest';
 import { useSignatureMetrics } from './signatures/useSignatureMetrics';
+import { useSignatureRequest } from './signatures/useSignatureRequest';
+import { getSignatureRequestSecurityAlertId } from '../selectors/security-alerts';
 import { useTransactionMetadataRequest } from './transactions/useTransactionMetadataRequest';
 import { useStandaloneConfirmation } from './ui/useStandaloneConfirmation';
 
@@ -34,6 +36,9 @@ export const useConfirmActions = () => {
     (state: RootState) => selectShouldUseSmartTransaction(state, transactionMetadata?.chainId)
   );
   const { isStandaloneConfirmation } = useStandaloneConfirmation();
+  const signatureRequest = useSignatureRequest();
+  const signatureSecurityAlertId =
+    getSignatureRequestSecurityAlertId(signatureRequest);
 
   const isSignatureReq =
     approvalRequest?.type && isSignatureRequest(approvalRequest?.type);
@@ -44,7 +49,7 @@ export const useConfirmActions = () => {
     navigation.goBack();
     if (isSignatureReq) {
       captureSignatureMetrics(MetaMetricsEvents.SIGNATURE_REJECTED);
-      PPOMUtil.clearSignatureSecurityAlertResponse();
+      PPOMUtil.clearSignatureSecurityAlertResponse(signatureSecurityAlertId);
     }
   }, [
     cancelQRScanRequestIfPresent,
@@ -52,6 +57,7 @@ export const useConfirmActions = () => {
     navigation,
     onRequestReject,
     isSignatureReq,
+    signatureSecurityAlertId,
   ]);
 
   const onConfirm = useCallback(async () => {
@@ -77,7 +83,7 @@ export const useConfirmActions = () => {
 
     if (isSignatureReq) {
       captureSignatureMetrics(MetaMetricsEvents.SIGNATURE_APPROVED);
-      PPOMUtil.clearSignatureSecurityAlertResponse();
+      PPOMUtil.clearSignatureSecurityAlertResponse(signatureSecurityAlertId);
     }
   }, [
     isQRSigningInProgress,
@@ -90,6 +96,7 @@ export const useConfirmActions = () => {
     isSignatureReq,
     isStandaloneConfirmation,
     shouldUseSmartTransaction,
+    signatureSecurityAlertId,
   ]);
 
   return { onConfirm, onReject };

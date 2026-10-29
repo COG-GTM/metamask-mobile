@@ -28,6 +28,10 @@ import { getBlockaidMetricsParams } from '../../../../../../util/blockaid';
 import createExternalSignModelNav from '../../../../../../util/hardwareWallet/signatureUtils';
 import { getDecimalChainId } from '../../../../../../util/networks';
 import { selectSignatureRequestById } from '../../../../../../selectors/signatureController';
+import {
+  getSignatureRequestSecurityAlertId,
+  selectSignatureSecurityAlertResponse,
+} from '../../../selectors/security-alerts';
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { RootState } from '../../../../../../reducers';
 import { Hex } from '@metamask/utils';
@@ -65,14 +69,15 @@ const PersonalSign = ({
   const { trackEvent, createEventBuilder } = useMetrics();
   const [truncateMessage, setTruncateMessage] = useState<boolean>(false);
 
-  const { securityAlertResponse } = useSelector(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (reduxState: any) => reduxState.signatureRequest,
-  );
-
   const signatureRequest = useSelector((state: RootState) =>
     selectSignatureRequestById(state, messageParams.metamaskId),
+  );
+
+  const securityAlertResponse = useSelector((state: RootState) =>
+    selectSignatureSecurityAlertResponse(
+      state,
+      getSignatureRequestSecurityAlertId(signatureRequest),
+    ),
   );
 
   const { chainId } = signatureRequest ?? {};
@@ -110,7 +115,11 @@ const PersonalSign = ({
 
     let blockaidParams: Record<string, unknown> = {};
     if (securityAlertResponse) {
-      blockaidParams = getBlockaidMetricsParams(securityAlertResponse);
+      blockaidParams = getBlockaidMetricsParams(
+        securityAlertResponse as unknown as Parameters<
+          typeof getBlockaidMetricsParams
+        >[0],
+      );
     }
 
     return {
@@ -266,6 +275,7 @@ const PersonalSign = ({
       type="personal_sign"
       fromAddress={messageParams.from}
       origin={messageParams.origin}
+      securityAlertResponse={securityAlertResponse}
       testID={SigningBottomSheetSelectorsIDs.PERSONAL_REQUEST}
       networkType={networkType}
     >

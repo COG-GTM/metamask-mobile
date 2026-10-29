@@ -28,6 +28,10 @@ import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selecto
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { selectSignatureRequestById } from '../../../../../../selectors/signatureController';
+import {
+  getSignatureRequestSecurityAlertId,
+  selectSignatureSecurityAlertResponse,
+} from '../../../selectors/security-alerts';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -283,6 +287,7 @@ class TypedSign extends PureComponent {
         truncateMessage={truncateMessage}
         type={typedSign[messageParams.version]}
         fromAddress={from}
+        securityAlertResponse={this.props.securityAlertResponse}
         testID={SigningBottomSheetSelectorsIDs.TYPED_REQUEST}
         networkType={networkType}
       >
@@ -308,7 +313,10 @@ const mapStateToProps = (state, ownProps) => {
 
   return {
     networkType: selectProviderTypeByChainId(state, signatureRequest?.chainId),
-    securityAlertResponse: state.signatureRequest.securityAlertResponse,
+    securityAlertResponse: selectSignatureSecurityAlertResponse(
+      state,
+      getSignatureRequestSecurityAlertId(signatureRequest),
+    ),
   };
 };
 

@@ -1673,6 +1673,9 @@ describe('getRpcMethodMiddleware', () => {
           meta: expect.any(Object),
           origin: hostMock,
           requestId: 1,
+          ...(addressFirst && {
+            securityAlertResponse: { securityAlertId: expect.any(String) },
+          }),
         },
         expect.any(Object),
         version,
@@ -1699,6 +1702,27 @@ describe('getRpcMethodMiddleware', () => {
       const spy = jest.spyOn(PPOMUtil, 'validateRequest');
       await sendRequest();
       expect(spy).toBeCalledTimes(1);
+    });
+
+    it('binds the signature request to the validated security alert id', async () => {
+      const validateSpy = jest.spyOn(PPOMUtil, 'validateRequest');
+      await sendRequest();
+
+      const [request, , securityAlertId] = validateSpy.mock.calls[0];
+      expect(securityAlertId).toEqual(expect.any(String));
+      expect(request).toEqual(
+        expect.objectContaining({
+          securityAlertResponse: { securityAlertId },
+        }),
+      );
+      expect(
+        MockEngine.context.SignatureController.newUnsignedTypedMessage.mock
+          .calls[0][1],
+      ).toEqual(
+        expect.objectContaining({
+          securityAlertResponse: { securityAlertId },
+        }),
+      );
     });
   });
 

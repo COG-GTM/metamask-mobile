@@ -9,6 +9,7 @@ import {
   stakingDepositConfirmationState,
   stakingWithdrawalConfirmationState,
   typedSignV1ConfirmationState,
+  withSignatureSecurityAlertResponse,
 } from '../../../../../util/test/confirm-data-helpers';
 import renderWithProvider from '../../../../../util/test/renderWithProvider';
 // eslint-disable-next-line import/no-namespace
@@ -228,10 +229,10 @@ describe('Confirm', () => {
 
   it('renders a blockaid banner if the confirmation has blockaid error response', async () => {
     const { getByText } = renderWithProvider(<Confirm />, {
-      state: {
-        ...typedSignV1ConfirmationState,
-        signatureRequest: { securityAlertResponse },
-      },
+      state: withSignatureSecurityAlertResponse(
+        typedSignV1ConfirmationState,
+        securityAlertResponse,
+      ),
     });
 
     await act(async () => {
@@ -247,10 +248,10 @@ describe('Confirm', () => {
       .spyOn(ConfirmationRedesignEnabled, 'useConfirmationRedesignEnabled')
       .mockReturnValue({ isRedesignedEnabled: false });
     const { queryByText } = renderWithProvider(<Confirm />, {
-      state: {
-        ...typedSignV1ConfirmationState,
-        signatureRequest: { securityAlertResponse },
-      },
+      state: withSignatureSecurityAlertResponse(
+        typedSignV1ConfirmationState,
+        securityAlertResponse,
+      ),
     });
     expect(queryByText('Signature request')).toBeNull();
   });

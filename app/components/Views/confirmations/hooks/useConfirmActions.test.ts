@@ -5,7 +5,9 @@ import Routes from '../../../../constants/navigation/Routes';
 import { renderHookWithProvider } from '../../../../util/test/renderWithProvider';
 import {
   personalSignatureConfirmationState,
+  MOCK_SIGNATURE_SECURITY_ALERT_ID,
   stakingDepositConfirmationState,
+  withSignatureSecurityAlertResponse,
 } from '../../../../util/test/confirm-data-helpers';
 import PPOMUtil from '../../../../lib/ppom/ppom-util';
 // eslint-disable-next-line import/no-namespace
@@ -122,13 +124,18 @@ describe('useConfirmAction', () => {
       'clearSignatureSecurityAlertResponse',
     );
     const { result } = renderHookWithProvider(() => useConfirmActions(), {
-      state: personalSignatureConfirmationState,
+      state: withSignatureSecurityAlertResponse(
+        personalSignatureConfirmationState,
+      ),
     });
     result?.current?.onConfirm();
     expect(Engine.acceptPendingApproval).toHaveBeenCalledTimes(1);
     await flushPromises();
     expect(mockCaptureSignatureMetrics).toHaveBeenCalledTimes(1);
     expect(clearSecurityAlertResponseSpy).toHaveBeenCalledTimes(1);
+    expect(clearSecurityAlertResponseSpy).toHaveBeenCalledWith(
+      MOCK_SIGNATURE_SECURITY_ALERT_ID,
+    );
     expect(mockOpenLedgerSignModal).not.toHaveBeenCalled();
   });
 

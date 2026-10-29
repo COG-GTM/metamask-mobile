@@ -1,14 +1,19 @@
 import { MetaMetricsEvents } from '../../../../../core/Analytics';
 import {
+  MOCK_SIGNATURE_SECURITY_ALERT_ID,
   securityAlertResponse,
   typedSignV4ConfirmationState,
   typedSignV4SignatureRequest,
+  withSignatureSecurityAlertResponse,
 } from '../../../../../util/test/confirm-data-helpers';
 import { renderHookWithProvider } from '../../../../../util/test/renderWithProvider';
 import { useSignatureMetrics } from './useSignatureMetrics';
 import { ResultType, Reason, SecurityAlertSource } from '../../../../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 
-const mockTypedSignV4SignatureRequest = typedSignV4SignatureRequest;
+const mockTypedSignV4SignatureRequest = {
+  ...typedSignV4SignatureRequest,
+  securityAlertResponse: { securityAlertId: MOCK_SIGNATURE_SECURITY_ALERT_ID },
+};
 jest.mock('./useSignatureRequest', () => ({
   useSignatureRequest: () => mockTypedSignV4SignatureRequest,
 }));
@@ -76,8 +81,6 @@ const SignatureMetricsLoading = {
   ppom_eth_getCode_count: 3,
 };
 
-const securityAlertResponseUndefined = undefined;
-
 const SignatureMetricsUndefined = {
   account_type: '0x935e73edb9ff52e23bac7f7e043a1ecd06d05477',
   chain_id: '1',
@@ -96,10 +99,10 @@ describe('useSignatureMetrics', () => {
 
   it('should capture metrics events correctly', async () => {
     const { result } = renderHookWithProvider(() => useSignatureMetrics(), {
-      state: {
-        ...typedSignV4ConfirmationState,
-        signatureRequest: { securityAlertResponse },
-      },
+      state: withSignatureSecurityAlertResponse(
+        typedSignV4ConfirmationState,
+        securityAlertResponse,
+      ),
     });
     // first call for 'SIGNATURE_REQUESTED' event
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
@@ -118,10 +121,10 @@ describe('useSignatureMetrics', () => {
 
   it('captures metrics events correctly with loading security alert response', async () => {
     const { result } = renderHookWithProvider(() => useSignatureMetrics(), {
-      state: {
-        ...typedSignV4ConfirmationState,
-        signatureRequest: { securityAlertResponse: securityAlertResponseLoading },
-      },
+      state: withSignatureSecurityAlertResponse(
+        typedSignV4ConfirmationState,
+        securityAlertResponseLoading,
+      ),
     });
 
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
@@ -142,7 +145,7 @@ describe('useSignatureMetrics', () => {
     const { result } = renderHookWithProvider(() => useSignatureMetrics(), {
       state: {
         ...typedSignV4ConfirmationState,
-        signatureRequest: { securityAlertResponse: securityAlertResponseUndefined },
+        signatureRequest: { securityAlertResponses: {} },
       },
     });
 
@@ -152,11 +155,15 @@ describe('useSignatureMetrics', () => {
       MetaMetricsEvents.SIGNATURE_APPROVED,
     );
     expect(mockTrackEvent).toHaveBeenCalledTimes(2);
-    expect(mockAddProperties).toHaveBeenLastCalledWith(SignatureMetricsUndefined);
+    expect(mockAddProperties).toHaveBeenLastCalledWith(
+      SignatureMetricsUndefined,
+    );
     result?.current?.captureSignatureMetrics(
       MetaMetricsEvents.SIGNATURE_REJECTED,
     );
     expect(mockTrackEvent).toHaveBeenCalledTimes(3);
-    expect(mockAddProperties).toHaveBeenLastCalledWith(SignatureMetricsUndefined);
+    expect(mockAddProperties).toHaveBeenLastCalledWith(
+      SignatureMetricsUndefined,
+    );
   });
 });
