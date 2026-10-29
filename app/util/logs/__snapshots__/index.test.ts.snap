@@ -291,7 +291,6 @@ exports[`logs :: generateStateLogs generates a valid json export 1`] = `
         "subscriptionAccountsSeen": [],
       },
       "NotificationServicesPushController": {
-        "fcmToken": "",
         "isPushEnabled": true,
         "isUpdatingFCMToken": false,
       },

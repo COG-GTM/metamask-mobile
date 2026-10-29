@@ -125,6 +125,71 @@ describe('logs :: generateStateLogs', () => {
     );
   });
 
+  it('removes authentication session data and push tokens', () => {
+    const mockStateInput = {
+      engine: {
+        backgroundState: {
+          ...backgroundState,
+          KeyringController: {
+            vault: 'vault mock',
+          },
+          AuthenticationController: {
+            isSignedIn: true,
+            sessionData: {
+              token: {
+                accessToken: 'mock-access-token',
+                expiresIn: 3600,
+                obtainedAt: 0,
+              },
+              profile: {
+                identifierId: 'mock-identifier-id',
+                profileId: 'mock-profile-id',
+              },
+            },
+          },
+          NotificationServicesPushController: {
+            ...backgroundState.NotificationServicesPushController,
+            fcmToken: 'mock-fcm-token',
+          },
+        },
+      },
+    };
+    const logs = generateStateLogs(mockStateInput);
+    const parsedLogs = JSON.parse(logs);
+
+    expect(logs.includes('mock-access-token')).toBe(false);
+    expect(logs.includes('mock-fcm-token')).toBe(false);
+    expect(
+      parsedLogs.engine.backgroundState.AuthenticationController,
+    ).toStrictEqual({ isSignedIn: true });
+    expect(
+      parsedLogs.engine.backgroundState.NotificationServicesPushController,
+    ).not.toHaveProperty('fcmToken');
+  });
+
+  it('removes authentication session data when logged out', () => {
+    const mockStateInput = {
+      engine: {
+        backgroundState: {
+          ...backgroundState,
+          AuthenticationController: {
+            isSignedIn: true,
+            sessionData: {
+              token: {
+                accessToken: 'mock-access-token',
+                expiresIn: 3600,
+                obtainedAt: 0,
+              },
+            },
+          },
+        },
+      },
+    };
+    const logs = generateStateLogs(mockStateInput, false);
+
+    expect(logs.includes('mock-access-token')).toBe(false);
+  });
+
   it('generates extra logs if values added to the state object parameter', () => {
     const mockStateInput = {
       appVersion: '1',
