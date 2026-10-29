@@ -304,6 +304,7 @@ describe('Browser utils :: isValidOrigin', () => {
     'https://sub.domain.example.com',
     'https://xn--80ak6aa92e.com',
     'http://[::1]:8080',
+    'http://my_app.local',
   ])('accepts %s', (origin) => {
     expect(isValidOrigin(origin)).toBe(true);
   });

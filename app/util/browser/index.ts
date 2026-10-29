@@ -174,7 +174,7 @@ export const appendURLParams = (
 };
 
 const ORIGIN_REGEX =
-  /^[a-z][a-z0-9+.-]*:\/\/(?:[a-z0-9.-]+|\[[0-9a-f:.]+\])(?::\d{1,5})?$/i;
+  /^[a-z][a-z0-9+.-]*:\/\/(?:[a-z0-9._-]+|\[[0-9a-f:.]+\])(?::\d{1,5})?$/i;
 
 /**
  * Checks that a string is a serialized origin (scheme://host[:port]) that is
