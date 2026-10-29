@@ -28,6 +28,11 @@ export const generateStateLogs = (state: any, loggedIn = true): string => {
   // Remove Keyring controller data  so that encrypted vault is not included in logs
   delete fullState.engine.backgroundState.KeyringController;
 
+  // Remove auth/push tokens so that shared logs cannot be used to impersonate the user
+  delete fullState.engine.backgroundState.AuthenticationController?.sessionData;
+  delete fullState.engine.backgroundState.NotificationServicesPushController
+    ?.fcmToken;
+
   if (!loggedIn) {
     return JSON.stringify(fullState);
   }
