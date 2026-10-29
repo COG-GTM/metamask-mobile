@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix(rpc): validate and budget dapp-supplied regex in `wallet_scanQRCode` to prevent ReDoS ([#2074](https://github.com/COG-GTM/metamask-mobile/pull/2074))
 - fix(bridge): show "Auto" slippage for Solana swaps
 
 ### Added
