@@ -3981,6 +3981,13 @@
   "snap_ui": {
     "asset_selector": {
       "title": "Select an asset"
+    },
+    "link": {
+      "accessibilityHint": "Opens in a new tab",
+      "leave_metamask_title": "You are leaving MetaMask",
+      "leave_metamask_description": "This link was provided by a Snap and opens outside MetaMask:\n\n{{url}}\n\nOnly continue if you trust this site.",
+      "leave_metamask_cancel": "Cancel",
+      "leave_metamask_confirm": "Continue to site"
     }
   }
 }
