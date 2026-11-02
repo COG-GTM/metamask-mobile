@@ -250,8 +250,14 @@ export const onRequestUserApproval = (origin: string) => async (args: any) => {
   return responseData;
 };
 
-// The approval screen parses pageMeta.url with `new URL`, so it needs an
-// absolute URL even when the session origin is a bare hostname.
+/**
+ * Returns an absolute URL for the chain-switch approval screen, which parses
+ * `pageMeta.url` with `new URL` and so cannot accept a bare hostname.
+ *
+ * @param origin - The WalletConnect session origin.
+ * @param hostname - The permission subject's hostname.
+ * @returns The origin URL, or an HTTPS URL based on the hostname.
+ */
 const getApprovalPageUrl = (origin: string, hostname: string): string => {
   try {
     return new URL(origin).href;
