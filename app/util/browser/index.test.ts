@@ -2,7 +2,11 @@ import {
   isTLD,
   getAlertMessage,
   protocolAllowList,
-  trustedProtocolToDeeplink,
+  inAppDeeplinkProtocols,
+  blockedProtocols,
+  browserWebViewOriginWhitelist,
+  getProtocolNavigationAction,
+  handleProtocolNavigation,
   prefixUrlWithProtocol,
   getUrlObj,
   getHost,
@@ -10,6 +14,9 @@ import {
   processUrlForBrowser,
 } from '.';
 import { strings } from '../../../locales/i18n';
+import { Alert, Linking } from 'react-native';
+import URLParse from 'url-parse';
+import { createOnShouldStartLoadWithRequest } from '@metamask/react-native-webview/src/WebViewShared';
 
 describe('Browser utils :: prefixUrlWithProtocol', () => {
   it('should prefix url with https: protocol', () => {
@@ -176,10 +183,17 @@ describe('Browser utils :: getAlertMessage', () => {
     );
   });
   it('should return generic alert message', () => {
-    const { protocol } = new URL('dapp://testdapp');
+    const { protocol } = new URL('sms:12345');
 
     expect(getAlertMessage(protocol, strings)).toBe(
       strings('browser.protocol_alerts.generic'),
+    );
+  });
+  it('should return MetaMask deeplink alert message', () => {
+    const { protocol } = new URL('dapp://testdapp');
+
+    expect(getAlertMessage(protocol, strings)).toBe(
+      strings('browser.protocol_alerts.metamask'),
     );
   });
 });
@@ -202,46 +216,273 @@ describe('Browser utils :: protocolWhitelist', () => {
   });
 });
 
-describe('Browser utils :: trustedProtocolToDeeplink', () => {
-  it('should match wc: protocol', () => {
-    const { protocol } = new URL('wc:f82jdjfjakjskdfj');
-
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
+describe('Browser utils :: inAppDeeplinkProtocols', () => {
+  it.each([
+    'wc:f82jdjfjakjskdfj',
+    'metamask://dapp/portfolio.metamask.io',
+    'ethereum://tx',
+    'dapp://portfolio.metamask.io',
+  ])('matches %s', (url) => {
+    expect(inAppDeeplinkProtocols.includes(new URL(url).protocol)).toBe(true);
   });
-  it('should match metamask: protocol', () => {
-    const { protocol } = new URL('metamask://dapp/portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
+  it.each([
+    'market://details?id=io.metamask',
+    'eth://portfolio.metamask.io',
+    'tel://portfolio.metamask.io',
+    'mailto://portfolio.metamask.io',
+    'ldap://portfolio.metamask.io',
+  ])('does not match %s', (url) => {
+    expect(inAppDeeplinkProtocols.includes(new URL(url).protocol)).toBe(false);
   });
-  it('should match ethereum: protocol', () => {
-    const { protocol } = new URL('ethereum://tx');
+});
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
+describe('Browser utils :: getProtocolNavigationAction', () => {
+  const actionFor = (url: string, isTopFrame?: boolean) =>
+    getProtocolNavigationAction(new URLParse(url).protocol, isTopFrame);
+
+  it.each(['https://meta.io', 'http://meta.io', 'about:srcdoc', 'about:blank'])(
+    'loads %s in the webview',
+    (url) => {
+      expect(actionFor(url)).toBe('load');
+      expect(actionFor(url, false)).toBe('load');
+    },
+  );
+
+  it.each([
+    'metamask://connect?channelId=abc',
+    'wc:f82jdjfjakjskdfj@2',
+    'ethereum:0x0000000000000000000000000000000000000000',
+    'dapp://portfolio.metamask.io',
+    'METAMASK://connect',
+  ])('prompts before handling MetaMask deeplink %s', (url) => {
+    expect(actionFor(url)).toBe('prompt-deeplink');
   });
-  it('should match dapp: protocol', () => {
-    const { protocol } = new URL('dapp://portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeTruthy();
+  it.each([
+    'market://details?id=com.fake.wallet',
+    'sms:+15555550123?body=test',
+    'tel:+15555550123',
+    'mailto:mallory@example.com',
+    'itms-apps://itunes.apple.com/app/id1',
+    'twitter://post?message=hi',
+    'intent://scan/#Intent;scheme=zxing;end',
+    'file:///etc/hosts',
+    'SMS:+15555550123',
+  ])('prompts before opening external %s', (url) => {
+    expect(actionFor(url)).toBe('prompt-external');
   });
-  it('should not match eth: protocol', () => {
-    const { protocol } = new URL('eth://portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+  it.each([
+    'sms:+15555550123?body=test',
+    'itms-apps://itunes.apple.com/app/id1',
+    'metamask://connect?channelId=abc',
+    'wc:f82jdjfjakjskdfj@2',
+  ])('blocks %s from a sub-frame', (url) => {
+    expect(actionFor(url, false)).toBe('block');
   });
-  it('should not match tel: protocol', () => {
-    const { protocol } = new URL('tel://portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+  it.each(blockedProtocols.map((protocol) => `${protocol}payload`))(
+    'blocks %s',
+    (url) => {
+      expect(actionFor(url)).toBe('block');
+    },
+  );
+});
+
+describe('Browser utils :: browserWebViewOriginWhitelist + handleProtocolNavigation', () => {
+  type AlertButtons = { text: string; onPress: () => void }[];
+
+  const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
+  const openInAppDeeplink = jest.fn();
+
+  let alertSpy: jest.SpyInstance;
+
+  // Drives the real WebView library request filter with the browser handler,
+  // as BrowserTab wires it up
+  const navigate = (
+    url: string,
+    { isTopFrame = true, originWhitelist = browserWebViewOriginWhitelist } = {},
+  ) => {
+    const loadRequest = jest.fn();
+    createOnShouldStartLoadWithRequest(
+      loadRequest,
+      originWhitelist,
+      ({ url: requestUrl, isTopFrame: requestIsTopFrame }) =>
+        handleProtocolNavigation(requestUrl, {
+          isTopFrame: requestIsTopFrame,
+          openInAppDeeplink,
+        }),
+    )({
+      nativeEvent: { url, lockIdentifier: 1, isTopFrame },
+    } as unknown as Parameters<ReturnType<typeof createOnShouldStartLoadWithRequest>>[0]);
+    return loadRequest;
+  };
+
+  const pressAlertButton = (text: string, call = 0) => {
+    const buttons = alertSpy.mock.calls[call][2] as AlertButtons;
+    buttons.find((button) => button.text === text)?.onPress();
+  };
+
+  const allow = (call?: number) =>
+    pressAlertButton(strings('browser.protocol_alert_options.allow'), call);
+  const ignore = (call?: number) =>
+    pressAlertButton(strings('browser.protocol_alert_options.ignore'), call);
+
+  beforeEach(() => {
+    // RN's Linking is a jest.fn in the global setup, so reset call counts here
+    jest.clearAllMocks();
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    (Linking.canOpenURL as jest.Mock).mockResolvedValue(true);
+    (Linking.openURL as jest.Mock).mockResolvedValue(true);
   });
-  it('should not match mailto: protocol', () => {
-    const { protocol } = new URL('mailto://portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+  afterEach(() => {
+    // Close any prompt left open so the next test starts without one
+    if (alertSpy.mock.calls.length) {
+      alertSpy.mock.calls.forEach((_, call) => ignore(call));
+    }
+    alertSpy.mockRestore();
   });
-  it('should not match ldap: protocol', () => {
-    const { protocol } = new URL('ldap://portfolio.metamask.io');
 
-    expect(trustedProtocolToDeeplink.includes(protocol)).toBeFalsy();
+  it('the legacy whitelist lets the library open sms: without the handler', async () => {
+    const handler = jest.fn();
+    const loadRequest = jest.fn();
+    createOnShouldStartLoadWithRequest(
+      loadRequest,
+      ['https://', 'http://', 'metamask://', 'about:srcdoc'],
+      handler,
+    )({
+      nativeEvent: { url: 'sms:12345?body=test', lockIdentifier: 1 },
+    } as unknown as Parameters<ReturnType<typeof createOnShouldStartLoadWithRequest>>[0]);
+    await flushPromises();
+
+    expect(handler).not.toHaveBeenCalled();
+    expect(Linking.openURL).toHaveBeenCalledWith('sms:12345?body=test');
+  });
+
+  it.each([
+    'sms:12345?body=test',
+    'itms-apps://itunes.apple.com/app/id1',
+    'tel:+15555550123',
+    'twitter://post?message=hi',
+    'market://details?id=com.fake.wallet',
+  ])(
+    'prompts and opens nothing for %s until the user allows it',
+    async (url) => {
+      const loadRequest = navigate(url);
+      await flushPromises();
+
+      expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+      expect(alertSpy).toHaveBeenCalledTimes(1);
+      expect(alertSpy.mock.calls[0][0]).toBe(
+        strings('onboarding.warning_title'),
+      );
+      expect(Linking.canOpenURL).not.toHaveBeenCalled();
+      expect(Linking.openURL).not.toHaveBeenCalled();
+
+      allow();
+      await flushPromises();
+      expect(Linking.openURL).toHaveBeenCalledWith(url);
+      expect(openInAppDeeplink).not.toHaveBeenCalled();
+    },
+  );
+
+  it('opens nothing when the user taps Ignore', async () => {
+    navigate('sms:12345?body=test');
+    ignore();
+    await flushPromises();
+
+    expect(Linking.canOpenURL).not.toHaveBeenCalled();
+    expect(Linking.openURL).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    'metamask://connect?channelId=abc',
+    'wc:f82jdjfjakjskdfj@2?relay-protocol=irn&symKey=abc',
+    'ethereum:0x0000000000000000000000000000000000000000@1?value=1e18',
+    'dapp://portfolio.metamask.io',
+  ])(
+    'prompts for MetaMask deeplink %s and hands it to the in-app handler only after Allow',
+    async (url) => {
+      const loadRequest = navigate(url);
+      await flushPromises();
+
+      expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+      expect(alertSpy).toHaveBeenCalledTimes(1);
+      expect(alertSpy.mock.calls[0][1]).toBe(
+        strings('browser.protocol_alerts.metamask'),
+      );
+      expect(openInAppDeeplink).not.toHaveBeenCalled();
+
+      allow();
+      await flushPromises();
+      expect(openInAppDeeplink).toHaveBeenCalledWith(url);
+      // Never bounced through the OS, where it would look like an external link
+      expect(Linking.canOpenURL).not.toHaveBeenCalled();
+      expect(Linking.openURL).not.toHaveBeenCalled();
+    },
+  );
+
+  it('drops further requests while a prompt is showing', async () => {
+    navigate('sms:12345?body=test');
+    navigate('metamask://connect?channelId=abc');
+    navigate('itms-apps://itunes.apple.com/app/id1');
+    await flushPromises();
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+
+    ignore();
+    navigate('itms-apps://itunes.apple.com/app/id1');
+    expect(alertSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('a dismissed prompt allows the next request to prompt again', () => {
+    navigate('sms:12345?body=test');
+    const options = alertSpy.mock.calls[0][3] as { onDismiss: () => void };
+    options.onDismiss();
+
+    navigate('sms:12345?body=test');
+    expect(alertSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    'sms:12345?body=test',
+    'metamask://connect?channelId=abc',
+    'itms-apps://itunes.apple.com/app/id1',
+  ])('blocks %s from a sub-frame without prompting', async (url) => {
+    const loadRequest = navigate(url, { isTopFrame: false });
+    await flushPromises();
+
+    expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(Linking.openURL).not.toHaveBeenCalled();
+    expect(openInAppDeeplink).not.toHaveBeenCalled();
+  });
+
+  it.each(['https://meta.io', 'http://meta.io', 'about:srcdoc'])(
+    'loads %s',
+    async (url) => {
+      const loadRequest = navigate(url);
+      await flushPromises();
+
+      expect(loadRequest).toHaveBeenCalledWith(true, url, 1);
+      expect(alertSpy).not.toHaveBeenCalled();
+      expect(Linking.openURL).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    // eslint-disable-next-line no-script-url
+    'javascript:alert(1)',
+    'data:text/html,<script>alert(1)</script>',
+  ])('blocks %s without prompting or opening it', async (url) => {
+    const loadRequest = navigate(url);
+    await flushPromises();
+
+    expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(Linking.canOpenURL).not.toHaveBeenCalled();
+    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 });
 
