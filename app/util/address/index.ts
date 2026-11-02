@@ -35,7 +35,6 @@ import Logger from '../../../app/util/Logger';
 import type { InternalAccount } from '@metamask/keyring-internal-api';
 import type { AddressBookControllerState } from '@metamask/address-book-controller';
 import {
-  isEqualCaseInsensitive,
   type NetworkType,
   toChecksumHexAddress,
 } from '@metamask/controller-utils';
@@ -301,39 +300,70 @@ export function getInternalAccountByAddress(
   );
 }
 
+interface AccountLabelContext {
+  internalAccountsByAddress: Map<string, InternalAccount>;
+  hdKeyringIndexByAddress: Map<string, number>;
+  hdKeyringIndexById: Map<string, number>;
+  shouldShowSrpPill: boolean;
+}
+
 /**
- * gets account label tag text based on address
- *
- * @param {String} address - String corresponding to an address
- * @returns {String} - Returns address's translated label text
+ * Indexes the AccountsController and KeyringController state once so that
+ * account labels can be resolved with O(1) lookups.
  */
-export function getLabelTextByAddress(address: string) {
-  if (!address) return null;
-  const { KeyringController } = Engine.context;
+function buildAccountLabelContext(): AccountLabelContext {
+  const { KeyringController, AccountsController } = Engine.context;
   const { keyrings, keyringsMetadata } = KeyringController.state;
-  const internalAccount = getInternalAccountByAddress(address);
-  const hdKeyringsWithMetadata = keyrings
-    .map((keyring, index) => ({
-      ...keyring,
-      metadata: keyringsMetadata[index],
-    }))
-    .filter((keyring) => keyring.type === ExtendedKeyringTypes.hd);
+  const { accounts } = AccountsController.state.internalAccounts;
+
+  const internalAccountsByAddress = new Map<string, InternalAccount>();
+  Object.values(accounts).forEach((account: InternalAccount) => {
+    const key = account.address.toLowerCase();
+    if (!internalAccountsByAddress.has(key)) {
+      internalAccountsByAddress.set(key, account);
+    }
+  });
+
+  const hdKeyringIndexByAddress = new Map<string, number>();
+  const hdKeyringIndexById = new Map<string, number>();
+  let hdKeyringIndex = 0;
+  keyrings.forEach((keyring: KeyringObject, index: number) => {
+    if (keyring.type !== ExtendedKeyringTypes.hd) return;
+    keyring.accounts.forEach((account) => {
+      const key = account.toLowerCase();
+      if (!hdKeyringIndexByAddress.has(key)) {
+        hdKeyringIndexByAddress.set(key, hdKeyringIndex);
+      }
+    });
+    const id = keyringsMetadata[index]?.id;
+    if (id !== undefined && !hdKeyringIndexById.has(id)) {
+      hdKeyringIndexById.set(id, hdKeyringIndex);
+    }
+    hdKeyringIndex++;
+  });
+
+  return {
+    internalAccountsByAddress,
+    hdKeyringIndexByAddress,
+    hdKeyringIndexById,
+    // We do show pills only if we have multiple SRPs (and thus, multiple HD keyrings).
+    shouldShowSrpPill: hdKeyringIndex > 1,
+  };
+}
+
+function resolveLabelText(address: string, context: AccountLabelContext) {
+  const addressKey = address.toLowerCase();
+  const internalAccount = context.internalAccountsByAddress.get(addressKey);
   const keyring = internalAccount?.metadata?.keyring;
-  // We do show pills only if we have multiple SRPs (and thus, multiple HD keyrings).
-  const shouldShowSrpPill = hdKeyringsWithMetadata.length > 1;
+  const { shouldShowSrpPill } = context;
 
   if (keyring) {
     switch (keyring.type) {
       case ExtendedKeyringTypes.hd:
         if (shouldShowSrpPill) {
-          const hdKeyringIndex = hdKeyringsWithMetadata.findIndex(
-            (kr: KeyringObject) =>
-              kr.accounts.find((account) =>
-                isEqualCaseInsensitive(account, address),
-              ),
-          );
-          // -1 means the address is not found in any of the hd keyrings
-          if (hdKeyringIndex !== -1) {
+          const hdKeyringIndex =
+            context.hdKeyringIndexByAddress.get(addressKey);
+          if (hdKeyringIndex !== undefined) {
             return strings('accounts.srp_index', { index: hdKeyringIndex + 1 }); // Add 1 to make it 1-indexed
           }
         }
@@ -352,12 +382,13 @@ export function getLabelTextByAddress(address: string) {
         if (shouldShowSrpPill) {
           const { entropySource } = internalAccount?.options || {};
           if (entropySource) {
-            const hdKeyringIndex = hdKeyringsWithMetadata.findIndex(
-              (kr) => kr.metadata.id === entropySource,
+            const hdKeyringIndex = context.hdKeyringIndexById.get(
+              entropySource as string,
             );
-            // -1 means the address is not found in any of the hd keyrings
-            if (hdKeyringIndex !== -1) {
-              return strings('accounts.srp_index', { index: hdKeyringIndex + 1 });
+            if (hdKeyringIndex !== undefined) {
+              return strings('accounts.srp_index', {
+                index: hdKeyringIndex + 1,
+              });
             }
           }
         }
@@ -374,6 +405,37 @@ export function getLabelTextByAddress(address: string) {
     }
   }
   return null;
+}
+
+/**
+ * gets account label tag text based on address
+ *
+ * @param {String} address - String corresponding to an address
+ * @returns {String} - Returns address's translated label text
+ */
+export function getLabelTextByAddress(address: string) {
+  if (!address) return null;
+  return resolveLabelText(address, buildAccountLabelContext());
+}
+
+/**
+ * Gets account label tag texts for many addresses, indexing the controller
+ * state once instead of once per address.
+ *
+ * @param addresses - Addresses to resolve labels for
+ * @returns Map from lowercased address to its translated label text (or null)
+ */
+export function getLabelTextByAddresses(
+  addresses: string[],
+): Map<string, string | null> {
+  const labels = new Map<string, string | null>();
+  if (!addresses.length) return labels;
+  const context = buildAccountLabelContext();
+  addresses.forEach((address) => {
+    if (!address) return;
+    labels.set(address.toLowerCase(), resolveLabelText(address, context));
+  });
+  return labels;
 }
 
 /**

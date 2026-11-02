@@ -22,7 +22,7 @@ import SensitiveText, {
   SensitiveTextLength,
 } from '../../../component-library/components/Texts/SensitiveText';
 import AvatarGroup from '../../../component-library/components/Avatars/AvatarGroup';
-import { formatAddress, getLabelTextByAddress } from '../../../util/address';
+import { formatAddress, getLabelTextByAddresses } from '../../../util/address';
 import { AvatarAccountType } from '../../../component-library/components/Avatars/Avatar/variants/AvatarAccount';
 import { isDefaultAccountName } from '../../../util/ENSUtils';
 import { strings } from '../../../../locales/i18n';
@@ -72,6 +72,23 @@ const AccountSelectorList = ({
     shallowEqual,
   );
   const getKeyExtractor = ({ address }: Account) => address;
+
+  // Labels are read from Engine controller state; these references only
+  // invalidate the memoized map when that state changes.
+  const keyringControllerState = useSelector(
+    (state: RootState) => state.engine.backgroundState.KeyringController,
+  );
+  const internalAccountsState = useSelector(
+    (state: RootState) =>
+      state.engine.backgroundState.AccountsController?.internalAccounts,
+  );
+
+  const labelTextByAddress = useMemo(
+    () =>
+      getLabelTextByAddresses((accounts ?? []).map(({ address }) => address)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [accounts, keyringControllerState, internalAccountsState],
+  );
 
   const selectedAddressesLookup = useMemo(() => {
     if (!selectedAddresses?.length) return null;
@@ -209,7 +226,8 @@ const AccountSelectorList = ({
       index,
     }) => {
       const shortAddress = formatAddress(address, 'short');
-      const tagLabel = getLabelTextByAddress(address);
+      const tagLabel =
+        labelTextByAddress.get(address.toLowerCase()) ?? undefined;
       const ensName = ensByAccountAddress[address];
       const accountName =
         isDefaultAccountName(name) && ensName ? ensName : name;
@@ -292,6 +310,7 @@ const AccountSelectorList = ({
       ensByAccountAddress,
       isLoading,
       selectedAddressesLookup,
+      labelTextByAddress,
       isMultiSelect,
       isSelectWithoutMenu,
       renderRightAccessory,
