@@ -1,12 +1,14 @@
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
-import React from 'react';
-import { Text, StyleSheet, Linking, View } from 'react-native';
+import React, { useContext } from 'react';
+import { Alert, Text, StyleSheet, Linking, View } from 'react-native';
 import Icon, {
   IconColor,
   IconName,
   IconSize,
 } from '../../../component-library/components/Icons/Icon';
 import { strings } from '../../../../locales/i18n';
+import { SnapInterfaceContext } from '../SnapInterfaceContext';
+import PREINSTALLED_SNAPS from '../../../lib/snaps/preinstalled-snaps';
 
 const styles = StyleSheet.create({
   container: {
@@ -24,30 +26,88 @@ export interface SnapUILinkProps {
   href: string;
 }
 
-const validateUrl = (href: string) => {
-  if (!href.startsWith('https://')) {
+// Hosts registered as MetaMask universal links (AndroidManifest.xml and the
+// iOS entitlements). Opening them from a Snap would re-enter the app's own
+// deeplink handler, so Snap links may never target them.
+export const BLOCKED_SNAP_LINK_HOSTS = [
+  'metamask.app.link',
+  'metamask-alternate.app.link',
+  'metamask.test-app.link',
+  'metamask-alternate.test-app.link',
+];
+
+const isBlockedHost = (hostname: string) => {
+  const host = hostname.toLowerCase().replace(/\.$/u, '');
+  return BLOCKED_SNAP_LINK_HOSTS.some(
+    (blocked) => host === blocked || host.endsWith(`.${blocked}`),
+  );
+};
+
+export const validateUrl = (href: string) => {
+  let url: URL;
+  try {
+    url = new URL(href);
+  } catch {
+    throw new Error('Invalid URL');
+  }
+
+  if (!href.startsWith('https://') || url.protocol !== 'https:') {
+    throw new Error('Invalid URL');
+  }
+
+  if (isBlockedHost(url.hostname)) {
     throw new Error('Invalid URL');
   }
 };
 
-const onPress = (href: string) => {
-  validateUrl(href);
-  Linking.openURL(href);
+const confirmLeavingMetaMask = (href: string) => {
+  Alert.alert(
+    strings('snap_ui.link.leave_metamask_title'),
+    strings('snap_ui.link.leave_metamask_description', { url: href }),
+    [
+      {
+        text: strings('snap_ui.link.leave_metamask_cancel'),
+        style: 'cancel',
+      },
+      {
+        text: strings('snap_ui.link.leave_metamask_confirm'),
+        onPress: () => Linking.openURL(href),
+      },
+    ],
+  );
 };
 
-// TODO: This component should show a modal for links when not using preinstalled Snaps
-export const SnapUILink: React.FC<SnapUILinkProps> = ({ href, children }) => (
-  <Text
-    testID="snaps-ui-link"
-    style={styles.container}
-    onPress={() => onPress(href)}
-    accessibilityRole="link"
-    accessibilityHint={strings('snaps.snap_ui.link.accessibilityHint')}
-  >
-    {children}
-    <View style={styles.spacer} />
-    <Icon name={IconName.Export} color={IconColor.Primary} size={IconSize.Sm} />
-  </Text>
-);
+export const SnapUILink: React.FC<SnapUILinkProps> = ({ href, children }) => {
+  const snapId = useContext(SnapInterfaceContext)?.snapId;
+
+  const onPress = () => {
+    validateUrl(href);
+
+    if (snapId && PREINSTALLED_SNAPS.some((snap) => snap.snapId === snapId)) {
+      Linking.openURL(href);
+      return;
+    }
+
+    confirmLeavingMetaMask(href);
+  };
+
+  return (
+    <Text
+      testID="snaps-ui-link"
+      style={styles.container}
+      onPress={onPress}
+      accessibilityRole="link"
+      accessibilityHint={strings('snap_ui.link.accessibilityHint')}
+    >
+      {children}
+      <View style={styles.spacer} />
+      <Icon
+        name={IconName.Export}
+        color={IconColor.Primary}
+        size={IconSize.Sm}
+      />
+    </Text>
+  );
+};
 
 ///: END:ONLY_INCLUDE_IF
