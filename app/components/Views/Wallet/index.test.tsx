@@ -1,7 +1,8 @@
 import React from 'react';
 import Wallet from './';
 import { renderScreen } from '../../../util/test/renderWithProvider';
-import { screen } from '@testing-library/react-native';
+import { act, screen } from '@testing-library/react-native';
+import { AppState, AppStateStatus } from 'react-native';
 import ScrollableTabView from 'react-native-scrollable-tab-view';
 import Routes from '../../../constants/navigation/Routes';
 import { backgroundState } from '../../../util/test/initial-root-state';
@@ -9,6 +10,7 @@ import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsContr
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 import Engine from '../../../core/Engine';
 import { useSelector } from 'react-redux';
+import NotificationsService from '../../../util/notifications/services/NotificationService';
 
 const MOCK_ADDRESS = '0xc4955c0d639d99699bfd7ec54d9fafee40e4d272';
 
@@ -22,6 +24,13 @@ jest.mock('../../../util/address', () => {
 
 jest.mock('../../../util/notifications/constants/config', () => ({
   isNotificationsFeatureEnabled: jest.fn(() => true),
+}));
+
+jest.mock('../../../util/notifications/services/NotificationService', () => ({
+  __esModule: true,
+  default: {
+    isDeviceNotificationEnabled: jest.fn().mockResolvedValue(true),
+  },
 }));
 
 jest.mock('../../../core/Engine', () => {
@@ -266,5 +275,69 @@ describe('Wallet', () => {
     //@ts-expect-error we are ignoring the navigation params on purpose
     const wrapper = render(Wallet);
     expect(wrapper.toJSON()).toMatchSnapshot();
+  });
+
+  describe('device notification permission check', () => {
+    it('checks once on mount and not again on re-render', () => {
+      const WalletWithAnyProps = Wallet as unknown as React.ComponentType<
+        Record<string, unknown>
+      >;
+      let forceRerender: () => void = () => undefined;
+      let renderCount = 0;
+      const WalletHost = (props: Record<string, unknown>) => {
+        const [tick, setTick] = React.useState(0);
+        forceRerender = () => setTick((value) => value + 1);
+        renderCount += 1;
+        return <WalletWithAnyProps {...props} tick={tick} />;
+      };
+
+      render(WalletHost);
+      expect(
+        NotificationsService.isDeviceNotificationEnabled,
+      ).toHaveBeenCalledTimes(1);
+
+      const rendersAfterMount = renderCount;
+      act(() => forceRerender());
+      act(() => forceRerender());
+      expect(renderCount).toBe(rendersAfterMount + 2);
+      expect(
+        NotificationsService.isDeviceNotificationEnabled,
+      ).toHaveBeenCalledTimes(1);
+    });
+
+    it('re-checks only when the app returns to the foreground', () => {
+      const listeners: ((state: AppStateStatus) => void)[] = [];
+      const remove = jest.fn();
+      const addEventListenerSpy = jest
+        .spyOn(AppState, 'addEventListener')
+        .mockImplementation((_type, listener) => {
+          listeners.push(listener as (state: AppStateStatus) => void);
+          return { remove } as ReturnType<typeof AppState.addEventListener>;
+        });
+
+      //@ts-expect-error we are ignoring the navigation params on purpose
+      const wrapper = render(Wallet);
+      expect(addEventListenerSpy).toHaveBeenCalledWith(
+        'change',
+        expect.any(Function),
+      );
+      expect(
+        NotificationsService.isDeviceNotificationEnabled,
+      ).toHaveBeenCalledTimes(1);
+
+      act(() => listeners.forEach((listener) => listener('background')));
+      expect(
+        NotificationsService.isDeviceNotificationEnabled,
+      ).toHaveBeenCalledTimes(1);
+
+      act(() => listeners.forEach((listener) => listener('active')));
+      expect(
+        NotificationsService.isDeviceNotificationEnabled,
+      ).toHaveBeenCalledTimes(2);
+
+      wrapper.unmount();
+      expect(remove).toHaveBeenCalled();
+      addEventListenerSpy.mockRestore();
+    });
   });
 });
