@@ -9,33 +9,44 @@ import { selectTransactionMetadataById } from '../../../../../selectors/transact
 import { RootState } from '../../../../UI/BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
 import useApprovalRequest from '../useApprovalRequest';
 
-// Number of mounted hook instances per chainId. A single confirmation screen
-// mounts many instances of this hook, so the token list is only fetched when
-// the first instance for a chainId mounts.
-const mountedInstancesByChainId = new Map<Hex, number>();
+// Number of mounted hook instances per transaction and chainId.
+const mountedInstancesByKey = new Map<string, number>();
 
-function useFetchTokenListOnce(chainId?: Hex) {
+/**
+ * Fetches the token list for a transaction's chain once per confirmation.
+ *
+ * A single confirmation screen mounts many instances of
+ * `useTransactionMetadataRequest`, so only the first mounted instance for a
+ * given transaction and chain calls `TokenListController.fetchTokenList`.
+ * The fetch runs again for a new transaction (e.g. the next queued approval),
+ * or once all instances have unmounted.
+ *
+ * @param transactionId - ID of the transaction being confirmed.
+ * @param chainId - Chain ID of the transaction being confirmed.
+ */
+function useFetchTokenListOnce(transactionId?: string, chainId?: Hex) {
   useEffect(() => {
     if (!chainId) {
       return undefined;
     }
 
-    const mountedInstances = mountedInstancesByChainId.get(chainId) ?? 0;
-    mountedInstancesByChainId.set(chainId, mountedInstances + 1);
+    const key = `${transactionId}:${chainId}`;
+    const mountedInstances = mountedInstancesByKey.get(key) ?? 0;
+    mountedInstancesByKey.set(key, mountedInstances + 1);
 
     if (mountedInstances === 0) {
       Engine.context.TokenListController.fetchTokenList(chainId);
     }
 
     return () => {
-      const remaining = (mountedInstancesByChainId.get(chainId) ?? 1) - 1;
+      const remaining = (mountedInstancesByKey.get(key) ?? 1) - 1;
       if (remaining > 0) {
-        mountedInstancesByChainId.set(chainId, remaining);
+        mountedInstancesByKey.set(key, remaining);
       } else {
-        mountedInstancesByChainId.delete(chainId);
+        mountedInstancesByKey.delete(key);
       }
     };
-  }, [chainId]);
+  }, [transactionId, chainId]);
 }
 
 export function useTransactionMetadataRequest() {
@@ -48,7 +59,7 @@ export function useTransactionMetadataRequest() {
   // TODO: This is a temporary solution to force token list to be fetched for chainId of
   // transaction in order to get proper display names for simulation details.
   // We may remove this once we have a better way to single token information.
-  useFetchTokenListOnce(transactionMetadata?.chainId);
+  useFetchTokenListOnce(transactionMetadata?.id, transactionMetadata?.chainId);
 
   if (
     approvalRequest?.type === ApprovalType.Transaction &&

@@ -30,7 +30,7 @@ function useMultipleInstances() {
   return useTransactionMetadataRequest();
 }
 
-function stateWithChainId(chainId: string) {
+function stateWithTransaction(chainId: string, id?: string) {
   return merge({}, stakingDepositConfirmationState, {
     engine: {
       backgroundState: {
@@ -40,6 +40,7 @@ function stateWithChainId(chainId: string) {
               ...stakingDepositConfirmationState.engine.backgroundState
                 .TransactionController.transactions[0],
               chainId,
+              ...(id ? { id } : {}),
             },
           ],
         },
@@ -150,10 +151,10 @@ describe('useTransactionMetadataRequest', () => {
 
   it('fetches the token list once per distinct chainId', () => {
     const mainnet = renderHookWithProvider(useMultipleInstances, {
-      state: stateWithChainId('0x1'),
+      state: stateWithTransaction('0x1'),
     });
     const sepolia = renderHookWithProvider(useMultipleInstances, {
-      state: stateWithChainId('0xaa36a7'),
+      state: stateWithTransaction('0xaa36a7'),
     });
 
     expect(fetchTokenListMock).toHaveBeenCalledTimes(2);
@@ -172,5 +173,49 @@ describe('useTransactionMetadataRequest', () => {
     expect(fetchTokenListMock).not.toHaveBeenCalled();
 
     unmount();
+  });
+
+  it('fetches the token list for the next queued transaction on the same chainId', () => {
+    const persistentInstance = renderHookWithProvider(
+      useTransactionMetadataRequest,
+      { state: stakingDepositConfirmationState },
+    );
+
+    const baseState = stateWithTransaction(
+      stakingChainId,
+      'next-transaction-id',
+    );
+    const [currentApproval] = Object.values(
+      baseState.engine.backgroundState.ApprovalController.pendingApprovals,
+    );
+    const nextTransactionState = {
+      ...baseState,
+      engine: {
+        ...baseState.engine,
+        backgroundState: {
+          ...baseState.engine.backgroundState,
+          ApprovalController: {
+            ...baseState.engine.backgroundState.ApprovalController,
+            pendingApprovals: {
+              'next-transaction-id': {
+                ...currentApproval,
+                id: 'next-transaction-id',
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const nextConfirmation = renderHookWithProvider(useMultipleInstances, {
+      state: nextTransactionState,
+    });
+
+    expect(nextConfirmation.result.current?.id).toBe('next-transaction-id');
+    expect(fetchTokenListMock).toHaveBeenCalledTimes(2);
+    expect(fetchTokenListMock).toHaveBeenNthCalledWith(2, stakingChainId);
+
+    persistentInstance.unmount();
+    nextConfirmation.unmount();
   });
 });
