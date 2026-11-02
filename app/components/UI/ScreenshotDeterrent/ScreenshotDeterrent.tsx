@@ -29,6 +29,12 @@ const styles = StyleSheet.create({
   },
 });
 
+/**
+ * Returns whether the app state permits showing sensitive content.
+ *
+ * @param appState - The current application state.
+ * @returns False when the app is inactive or in the background.
+ */
 const isAppInForeground = (appState: AppStateStatus) =>
   appState !== 'inactive' && appState !== 'background';
 
