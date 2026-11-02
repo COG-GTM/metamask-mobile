@@ -1,7 +1,6 @@
 import { createSelector } from 'reselect';
 import { isMainnetByChainId } from '../../util/networks';
 import { safeToChecksumAddress } from '../../util/address';
-import { toLowerCaseEquals } from '../../util/general';
 import { lte } from '../../util/lodash';
 import { selectEvmChainId } from '../../selectors/networkController';
 import {
@@ -200,7 +199,10 @@ const swapsControllerAndUserTokensMultichain = createSelector(
     const allUserTokensCrossChains = allTokensArr.reduce(
       (acc, tokensElement) => {
         const found = tokensElement[currentUserAddress] || [];
-        return [...acc, ...found.flat()];
+        for (const token of found.flat()) {
+          acc.push(token);
+        }
+        return acc;
       },
       [],
     );
@@ -303,11 +305,12 @@ export const swapsTokensWithBalanceSelector = createSelector(
       .filter(([, balance]) => balance !== 0)
       .sort(([, balanceA], [, balanceB]) => (lte(balanceB, balanceA) ? -1 : 1))
       .map(([address]) => address.toLowerCase());
+    const addressesWithBalance = new Set(tokensAddressesWithBalance);
     const tokensWithBalance = [];
     const originalTokens = [];
 
     for (let i = 0; i < baseTokens.length; i++) {
-      if (tokensAddressesWithBalance.includes(baseTokens[i].address)) {
+      if (addressesWithBalance.has(baseTokens[i].address)) {
         tokensWithBalance.push(baseTokens[i]);
       } else {
         originalTokens.push(baseTokens[i]);
@@ -343,9 +346,16 @@ export const swapsTopAssetsSelector = createSelector(
     if (!topAssets || !tokens) {
       return [];
     }
+    const tokensByAddress = new Map();
+    for (const token of tokens) {
+      const key = token.address?.toLowerCase();
+      if (key && !tokensByAddress.has(key)) {
+        tokensByAddress.set(key, token);
+      }
+    }
     const result = topAssets
       .map(({ address }) =>
-        tokens?.find((token) => toLowerCaseEquals(token.address, address)),
+        address ? tokensByAddress.get(address.toLowerCase()) : undefined,
       )
       .filter(Boolean);
     return addMetadata(chainId, result, tokenList);
