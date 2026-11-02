@@ -463,9 +463,14 @@ export default class DeeplinkProtocolService {
         return;
       }
 
-      this.currentClientId = params.channelId;
+      // A session persisted without a key (or past its expiry) has nothing
+      // to prove ownership with, so the user approves it again before the
+      // presented key is bound and any request is run.
+      const isKeyUnbound =
+        !this.dappPublicKeyByClientId[params.channelId] &&
+        !!params.dappPublicKey;
 
-      if (this.isSessionExpired(existingSession)) {
+      if (this.isSessionExpired(existingSession) || isKeyUnbound) {
         this.reauthorizeSession({ session: existingSession, params }).catch(
           (err) => {
             Logger.log(
@@ -476,6 +481,8 @@ export default class DeeplinkProtocolService {
         );
         return;
       }
+
+      this.currentClientId = params.channelId;
 
       // Skip existing client -- bridge has been setup
 
@@ -563,9 +570,10 @@ export default class DeeplinkProtocolService {
   }
 
   /**
-   * Re-approves an expired session for the dapp it was bound to. The stored
-   * key, scheme and dapp metadata are kept, so the prompt shows the dapp that
-   * will actually receive the responses.
+   * Re-approves an expired or keyless session for the dapp it was bound to.
+   * The stored scheme and dapp metadata are kept, so the prompt shows the dapp
+   * that will actually receive the responses; a key is only bound to a keyless
+   * session after the user approves.
    */
   public async reauthorizeSession({
     session,
@@ -608,6 +616,13 @@ export default class DeeplinkProtocolService {
       connected: true,
       validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
     };
+
+    if (
+      !this.dappPublicKeyByClientId[session.clientId] &&
+      params.dappPublicKey
+    ) {
+      this.dappPublicKeyByClientId[session.clientId] = params.dappPublicKey;
+    }
 
     this.connections[session.clientId] = refreshedSession;
     this.setupBridge(refreshedSession);
