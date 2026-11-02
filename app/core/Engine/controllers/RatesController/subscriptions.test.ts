@@ -148,6 +148,25 @@ describe('setupCurrencyRateSync', () => {
     expect(ratesController.setFiatCurrency).toHaveBeenCalledTimes(2);
   });
 
+  it('retries when setFiatCurrency stores the new currency but the fetch fails', async () => {
+    const { ratesController, publish } = setup('usd');
+    ratesController.setFiatCurrency.mockImplementationOnce(
+      async (currency: string) => {
+        ratesController.state.fiatCurrency = currency;
+        throw new Error('network');
+      },
+    );
+
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    await new Promise(process.nextTick);
+    expect(ratesController.state.fiatCurrency).toBe('eur');
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    await new Promise(process.nextTick);
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+
+    expect(ratesController.setFiatCurrency).toHaveBeenCalledTimes(2);
+  });
+
   it('logs when setFiatCurrency rejects', async () => {
     const { ratesController, publish } = setup('usd');
     const error = new Error('network');
