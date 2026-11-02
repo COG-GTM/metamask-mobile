@@ -88,10 +88,20 @@ const MAX_CACHED_ACCOUNT_CHAINS = 1000;
  */
 const formattedChainCache = new Map<string, FormattedChainCacheEntry>();
 
+/**
+ * Empties the shared formatted-token cache. Intended for tests.
+ */
 export const clearFormattedTokensPerChainCache = () => {
   formattedChainCache.clear();
 };
 
+/**
+ * Whether a previously formatted token still describes `token`.
+ *
+ * @param previous - Formatted token from the cache, if any.
+ * @param token - Current token metadata.
+ * @returns True when address, symbol and decimals all match.
+ */
 const isSameToken = (
   previous: TokensWithBalances | undefined,
   token: Token,
@@ -101,6 +111,21 @@ const isSameToken = (
   previous.symbol === token.symbol &&
   previous.decimals === token.decimals;
 
+/**
+ * Formats one account's tokens on one chain, reusing cached output wherever the
+ * inputs are unchanged: BN formatting only runs for tokens whose hex balance or
+ * metadata changed, and fiat only for tokens whose price or rate changed.
+ *
+ * @param params - Formatting inputs.
+ * @param params.accountAddress - Account the tokens belong to.
+ * @param params.chainId - Chain the tokens live on.
+ * @param params.tokens - Imported tokens for this account and chain.
+ * @param params.balances - Hex balances by token address for this account and chain.
+ * @param params.tokenExchangeRates - Token prices by address for this chain.
+ * @param params.conversionRate - Native currency to fiat conversion rate.
+ * @param params.decimalsToShow - Fiat decimals, or undefined for the default.
+ * @returns The formatted chain entry; the cached instance when nothing changed.
+ */
 const formatChainTokens = ({
   accountAddress,
   chainId,
@@ -205,6 +230,13 @@ const formatChainTokens = ({
   return value;
 };
 
+/**
+ * Shallow, element-by-reference array comparison.
+ *
+ * @param a - Previous array, if any.
+ * @param b - Next array.
+ * @returns True when both have the same length and identical elements.
+ */
 const isSameArray = <T,>(a: T[] | undefined, b: T[]) =>
   a !== undefined &&
   a.length === b.length &&
