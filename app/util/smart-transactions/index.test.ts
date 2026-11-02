@@ -387,7 +387,7 @@ describe('Smart Transactions utils', () => {
       } as unknown as SmartTransactionsController;
       controllerMessenger = {
         subscribe: jest.fn(),
-        tryUnsubscribe: jest.fn(),
+        unsubscribe: jest.fn(),
       } as unknown as BaseControllerMessenger;
     });
 
@@ -497,8 +497,8 @@ describe('Smart Transactions utils', () => {
           smart_transaction_timed_out: false,
           smart_transaction_proxied: true,
         });
-        expect(controllerMessenger.tryUnsubscribe).toHaveBeenCalledTimes(1);
-        expect(controllerMessenger.tryUnsubscribe).toHaveBeenCalledWith(
+        expect(controllerMessenger.unsubscribe).toHaveBeenCalledTimes(1);
+        expect(controllerMessenger.unsubscribe).toHaveBeenCalledWith(
           EVENT,
           handler,
         );
@@ -516,66 +516,77 @@ describe('Smart Transactions utils', () => {
         );
         const [, handler] = (controllerMessenger.subscribe as jest.Mock).mock
           .calls[0];
-        expect(controllerMessenger.tryUnsubscribe).not.toHaveBeenCalled();
+        expect(controllerMessenger.unsubscribe).not.toHaveBeenCalled();
 
         jest.advanceTimersByTime(10000);
 
         await expect(resultPromise).resolves.toEqual({});
-        expect(controllerMessenger.tryUnsubscribe).toHaveBeenCalledTimes(1);
-        expect(controllerMessenger.tryUnsubscribe).toHaveBeenCalledWith(
+        expect(controllerMessenger.unsubscribe).toHaveBeenCalledTimes(1);
+        expect(controllerMessenger.unsubscribe).toHaveBeenCalledWith(
           EVENT,
           handler,
         );
       });
 
-      it('leaves no handler subscribed on a real messenger after repeated waits', async () => {
-        const messenger = new ExtendedControllerMessenger<
-          never,
-          {
-            type: typeof EVENT;
-            payload: [SmartTransaction];
+      it.each(['root', 'restricted'] as const)(
+        'leaves no handler subscribed on a real %s messenger after repeated waits',
+        async (kind) => {
+          const rootMessenger = new ExtendedControllerMessenger<
+            never,
+            {
+              type: typeof EVENT;
+              payload: [SmartTransaction];
+            }
+          >();
+          const messenger =
+            kind === 'root'
+              ? rootMessenger
+              : rootMessenger.getRestricted({
+                  name: 'TransactionControllerInit',
+                  allowedActions: [],
+                  allowedEvents: [EVENT],
+                });
+          const subscribeSpy = jest.spyOn(messenger, 'subscribe');
+          const unsubscribeSpy = jest.spyOn(messenger, 'unsubscribe');
+          const smartTransaction = {
+            statusMetadata: { timedOut: true, proxied: false },
+          } as SmartTransaction;
+          const wait = () =>
+            getSmartTransactionMetricsProperties(
+              smartTransactionsController,
+              transactionMeta,
+              true,
+              messenger as unknown as BaseControllerMessenger,
+            );
+
+          for (let i = 0; i < 3; i++) {
+            const resultPromise = wait();
+            rootMessenger.publish(EVENT, smartTransaction);
+            await expect(resultPromise).resolves.toEqual({
+              smart_transaction_timed_out: true,
+              smart_transaction_proxied: false,
+            });
           }
-        >();
-        const subscribeSpy = jest.spyOn(messenger, 'subscribe');
-        const unsubscribeSpy = jest.spyOn(messenger, 'unsubscribe');
-        const smartTransaction = {
-          statusMetadata: { timedOut: true, proxied: false },
-        } as SmartTransaction;
-        const wait = () =>
-          getSmartTransactionMetricsProperties(
-            smartTransactionsController,
-            transactionMeta,
-            true,
-            messenger as unknown as BaseControllerMessenger,
-          );
+          const timedOutPromise = wait();
+          jest.advanceTimersByTime(10000);
+          await expect(timedOutPromise).resolves.toEqual({});
 
-        for (let i = 0; i < 3; i++) {
-          const resultPromise = wait();
-          messenger.publish(EVENT, smartTransaction);
-          await expect(resultPromise).resolves.toEqual({
-            smart_transaction_timed_out: true,
-            smart_transaction_proxied: false,
+          const subscribed = subscribeSpy.mock.calls.map(
+            ([, handler]) => handler as (payload: SmartTransaction) => void,
+          );
+          const unsubscribed = unsubscribeSpy.mock.calls.map(
+            ([, handler]) => handler,
+          );
+          expect(subscribed).toHaveLength(4);
+          expect(unsubscribed).toEqual(subscribed);
+          expect(jest.getTimerCount()).toBe(0);
+          subscribed.forEach((handler) => {
+            expect(() => messenger.unsubscribe(EVENT, handler)).toThrow(
+              'Subscription not found',
+            );
           });
-        }
-        const timedOutPromise = wait();
-        jest.advanceTimersByTime(10000);
-        await expect(timedOutPromise).resolves.toEqual({});
-
-        const subscribed = subscribeSpy.mock.calls.map(
-          ([, handler]) => handler as (payload: SmartTransaction) => void,
-        );
-        const unsubscribed = unsubscribeSpy.mock.calls.map(
-          ([, handler]) => handler,
-        );
-        expect(subscribed).toHaveLength(4);
-        expect(unsubscribed).toEqual(subscribed);
-        expect(jest.getTimerCount()).toBe(0);
-        subscribed.forEach((handler) => {
-          expect(() => messenger.unsubscribe(EVENT, handler)).toThrow(
-            'Subscription not found',
-          );
-        });
-      });
+        },
+      );
     });
 
     it('returns empty object if smartTransaction is not found and waitForSmartTransaction is false', async () => {
