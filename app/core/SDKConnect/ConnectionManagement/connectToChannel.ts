@@ -15,6 +15,7 @@ import { Connection, ConnectionProps } from '../Connection';
 import checkPermissions from '../handlers/checkPermissions';
 import { DEFAULT_SESSION_TIMEOUT_MS } from '../SDKConnectConstants';
 import DevLogger from '../utils/DevLogger';
+import { isValidSDKChannelId } from '../utils/isUUID';
 import { wait, waitForCondition } from '../utils/wait.util';
 import { SDKConnect } from './../SDKConnect';
 
@@ -34,6 +35,14 @@ async function connectToChannel({
 }: ConnectionProps & {
   instance: SDKConnect;
 }) {
+  if (!isValidSDKChannelId(id)) {
+    Logger.error(
+      new Error('SDKConnect::connectToChannel - rejected invalid channel id'),
+      { origin, trigger },
+    );
+    return;
+  }
+
   const existingConnection = instance.state.connected[id] !== undefined;
   const isReady = existingConnection && instance.state.connected[id].isReady;
 
@@ -264,6 +273,22 @@ async function connectToChannel({
     }
   } catch (error) {
     Logger.error(error as Error, 'Failed to connect to channel');
+    // Drop the half-initialised connection created by this call so no phantom
+    // session is left behind. Permissions are intentionally left untouched.
+    const failedConnection = instance.state.connected[id];
+    if (failedConnection) {
+      try {
+        failedConnection.remote?.disconnect();
+      } catch (disconnectError) {
+        DevLogger.log(
+          `SDKConnect::connectToChannel - failed to disconnect ${id}`,
+          disconnectError,
+        );
+      }
+    }
+    delete instance.state.connected[id];
+    delete instance.state.connections[id];
+    store.dispatch(resetConnections(instance.state.connections));
   } finally {
     DevLogger.log(
       `SDKConnect::connectToChannel - finally - state.connecting[${id}]=${instance.state.connecting[id]}`,

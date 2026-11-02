@@ -63,7 +63,11 @@ import {
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
 import { CaveatTypes } from '../Permissions/constants';
-import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
+import {
+  getCaip25PermissionFromLegacyPermissions,
+  rejectOriginPendingApprovals,
+  requestPermittedChainsPermissionIncremental,
+} from '../../util/permissions';
 import { toHex } from '@metamask/controller-utils';
 
 jest.mock('../../util/permissions', () => ({
@@ -240,6 +244,8 @@ function getMinimalWalletConnectOptions() {
  *
  * @returns A minimal set of options for `getRpcMethodMiddleware`
  */
+const MOCK_SDK_CHANNEL_ID = '70a863a4-a756-4660-8c72-dc367d02f625';
+
 function getMinimalSDKOptions() {
   return {
     ...getMinimalOptions(),
@@ -307,8 +313,8 @@ function setupGlobalState({
     .mockImplementation(() => ({
       browser: activeTab
         ? {
-          activeTab,
-        }
+            activeTab,
+          }
         : {},
       engine: {
         backgroundState: {
@@ -566,17 +572,44 @@ describe('getRpcMethodMiddleware', () => {
       });
 
       describe('SDK', () => {
+        it('rejects SDK requests whose channel id is a browser hostname', async () => {
+          const mockAddress1 = '0x0000000000000000000000000000000000000001';
+          setupGlobalState({
+            permittedAccounts: { 'example.metamask.io': [mockAddress1] },
+            selectedAddress: mockAddress1,
+            selectedNetworkClientId: 'testNetworkClientId',
+          });
+          const middleware = getRpcMethodMiddleware({
+            ...getMinimalSDKOptions(),
+            hostname: 'example.metamask.io',
+            channelId: 'example.metamask.io',
+          });
+          const request = {
+            jsonrpc,
+            id: 1,
+            method,
+          };
+
+          const response = await callMiddleware({ middleware, request });
+
+          expect((response as JsonRpcFailure).error.code).toBe(
+            providerErrors.unauthorized().code,
+          );
+          expect((response as JsonRpcSuccess<string>).result).toBeUndefined();
+        });
+
         it('returns permitted account for connected host', async () => {
           const mockAddress1 = '0x0000000000000000000000000000000000000001';
           const mockAddress2 = '0x0000000000000000000000000000000000000002';
           setupGlobalState({
-            permittedAccounts: { 'example.metamask.io': [mockAddress1] },
+            permittedAccounts: { [MOCK_SDK_CHANNEL_ID]: [mockAddress1] },
             selectedAddress: mockAddress2,
             selectedNetworkClientId: 'testNetworkClientId',
           });
           const middleware = getRpcMethodMiddleware({
             ...getMinimalSDKOptions(),
             hostname: 'example.metamask.io',
+            channelId: MOCK_SDK_CHANNEL_ID,
           });
           const request = {
             jsonrpc,
@@ -602,6 +635,7 @@ describe('getRpcMethodMiddleware', () => {
           const middleware = getRpcMethodMiddleware({
             ...getMinimalSDKOptions(),
             hostname: 'example.metamask.io',
+            channelId: MOCK_SDK_CHANNEL_ID,
           });
           const request = {
             jsonrpc,
@@ -1270,7 +1304,7 @@ describe('getRpcMethodMiddleware', () => {
         const middleware = getRpcMethodMiddleware({
           ...getMinimalSDKOptions(),
           hostname: 'example.metamask.io',
-          channelId: '70a863a4-a756-4660-8c72-dc367d02f625',
+          channelId: MOCK_SDK_CHANNEL_ID,
         });
         const request = {
           jsonrpc,
@@ -1291,6 +1325,7 @@ describe('getRpcMethodMiddleware', () => {
           '0x0000000000000000000000000000000000000002';
         const mockTransactionParameters = { from: mockAddress, chainId: '0x1' };
         setupGlobalState({
+          permittedAccounts: {},
           addTransactionResult: Promise.resolve('fake-hash'),
           // Set minimal network controller state to support validation
           selectedNetworkClientId: 'mainnet',
@@ -1317,6 +1352,7 @@ describe('getRpcMethodMiddleware', () => {
         const middleware = getRpcMethodMiddleware({
           ...getMinimalSDKOptions(),
           hostname: 'example.metamask.io',
+          channelId: MOCK_SDK_CHANNEL_ID,
         });
         const request = {
           jsonrpc,
@@ -1859,7 +1895,8 @@ describe('getRpcMethodMiddlewareHooks', () => {
         autoApprove: true,
       };
 
-      const mockRequestPermittedChainsPermissionIncremental = requestPermittedChainsPermissionIncremental as jest.Mock;
+      const mockRequestPermittedChainsPermissionIncremental =
+        requestPermittedChainsPermissionIncremental as jest.Mock;
       hooks.requestPermittedChainsPermissionIncrementalForOrigin(options);
 
       expect(
@@ -1926,9 +1963,7 @@ describe('getRpcMethodMiddlewareHooks', () => {
     it('should call "rejectOriginPendingApprovals" with correct origin', () => {
       hooks.rejectApprovalRequestsForOrigin();
 
-      expect(rejectOriginPendingApprovals).toHaveBeenCalledWith(
-        testOrigin,
-      );
+      expect(rejectOriginPendingApprovals).toHaveBeenCalledWith(testOrigin);
     });
   });
 });

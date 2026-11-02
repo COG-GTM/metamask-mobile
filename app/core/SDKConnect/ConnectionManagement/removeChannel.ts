@@ -8,6 +8,7 @@ import AppConstants from '../../../core/AppConstants';
 import Engine from '../../Engine';
 import SDKConnect from '../SDKConnect';
 import DevLogger from '../utils/DevLogger';
+import { isValidSDKChannelId } from '../utils/isUUID';
 
 async function removeChannel({
   channelId,
@@ -36,12 +37,16 @@ async function removeChannel({
 
   if (instance.state.connected[channelId]) {
     try {
-      const terminated = await instance.state.connected[channelId].removeConnection({
+      const terminated = await instance.state.connected[
+        channelId
+      ].removeConnection({
         terminate: true,
         context: 'SDKConnect::removeChannel',
       });
-      if(!terminated) {
-        DevLogger.log(`SDKConnect::removeChannel channelId=${channelId} terminated=${terminated} try again later`);
+      if (!terminated) {
+        DevLogger.log(
+          `SDKConnect::removeChannel channelId=${channelId} terminated=${terminated} try again later`,
+        );
         // don't delete channel, try again later
         return terminated;
       }
@@ -63,7 +68,8 @@ async function removeChannel({
   store.dispatch(removeApprovedHost(channelId));
 
   delete instance.state.connecting[channelId];
-  if (engine) {
+  // Never revoke a non-UUID subject: it can only be a website's permissions.
+  if (engine && isValidSDKChannelId(channelId)) {
     // Remove matching permissions from controller
     const permissionsController = (
       engine.context as {

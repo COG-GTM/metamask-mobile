@@ -21,6 +21,7 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import { isValidSDKChannelId } from '../utils/isUUID';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -426,6 +427,16 @@ export default class DeeplinkProtocolService {
       );
       Logger.error(deepLinkError, params);
 
+      return;
+    }
+
+    if (!isValidSDKChannelId(params.channelId)) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection invalid channelId',
+        ),
+        { scheme: params.scheme },
+      );
       return;
     }
 

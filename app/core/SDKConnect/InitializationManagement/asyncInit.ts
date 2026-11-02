@@ -9,6 +9,7 @@ import { store } from '../../../store';
 import Logger from '../../../util/Logger';
 import SDKConnect, { ApprovedHosts, SDKSessions } from '../SDKConnect';
 import DevLogger from '../utils/DevLogger';
+import { isValidSDKChannelId } from '../utils/isUUID';
 import { wait } from '../utils/wait.util';
 import AppConstants from '../../../../app/core/AppConstants';
 
@@ -52,7 +53,11 @@ const asyncInit = async ({
         } hostValue:${sdk.approvedHosts[sdkHostId]} now: ${now}`,
         sdk.approvedHosts,
       );
-      if (ttl > 0) {
+      if (!isValidSDKChannelId(id)) {
+        // Sessions with a non-UUID id share a key with browser permissions;
+        // drop them without touching the PermissionController.
+        DevLogger.log(`SDKConnect::init() - removing invalid connection id`);
+      } else if (ttl > 0) {
         DevLogger.log(
           `Connection ${id} / ${sdkHostId} is still valid, TTL: ${ttl}`,
         );
@@ -75,7 +80,11 @@ const asyncInit = async ({
     );
     instance.state.connections = validConnections;
     instance.state.approvedHosts = validHosts;
-    instance.state.dappConnections = sdk.dappConnections;
+    instance.state.dappConnections = Object.fromEntries(
+      Object.entries(sdk.dappConnections ?? {}).filter(([id]) =>
+        isValidSDKChannelId(id),
+      ),
+    );
 
     // Update store with valid connection
     store.dispatch(resetConnections(validConnections));

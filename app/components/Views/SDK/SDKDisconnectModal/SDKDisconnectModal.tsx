@@ -16,6 +16,7 @@ import Text, {
 import { removePermittedAccounts } from '../../../../core/Permissions';
 import SDKConnect from '../../../../core/SDKConnect/SDKConnect';
 import DevLogger from '../../../../core/SDKConnect/utils/DevLogger';
+import { isValidSDKChannelId } from '../../../../core/SDKConnect/utils/isUUID';
 import { useTheme } from '../../../../util/theme';
 import { strings } from '../../../../../locales/i18n';
 import BottomSheet, {
@@ -81,7 +82,7 @@ const SDKDisconnectModal = ({ route }: SDKDisconnectModalProps) => {
   }, [channelId, account]);
 
   const onConfirm = async () => {
-    if (account && channelId) {
+    if (account && isValidSDKChannelId(channelId)) {
       removePermittedAccounts(channelId, [toHex(account)]);
     } else if (!account && channelId) {
       SDKConnect.getInstance().removeChannel({

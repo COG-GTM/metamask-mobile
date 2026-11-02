@@ -31,6 +31,8 @@ const mockInternalAccount = createMockInternalAccount(
   'Account 1',
 );
 
+const MOCK_CHANNEL_ID = '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d';
+
 describe('DeeplinkProtocolService', () => {
   let service: DeeplinkProtocolService;
 
@@ -280,7 +282,7 @@ describe('DeeplinkProtocolService', () => {
         dappPublicKey: 'key',
         url: 'url',
         scheme: 'scheme',
-        channelId: 'channel1',
+        channelId: MOCK_CHANNEL_ID,
         originatorInfo: Buffer.from(
           JSON.stringify({
             originatorInfo: {
@@ -292,8 +294,8 @@ describe('DeeplinkProtocolService', () => {
           }),
         ).toString('base64'),
       };
-      service.connections.channel1 = {
-        clientId: 'channel1',
+      service.connections[MOCK_CHANNEL_ID] = {
+        clientId: MOCK_CHANNEL_ID,
         originatorInfo: {
           url: 'test.com',
           title: 'Test',
@@ -307,7 +309,7 @@ describe('DeeplinkProtocolService', () => {
 
       await service.handleConnection(connectionParams);
 
-      expect(service.connections.channel1.connected).toBe(true);
+      expect(service.connections[MOCK_CHANNEL_ID].connected).toBe(true);
     });
   });
 
@@ -356,6 +358,29 @@ describe('DeeplinkProtocolService', () => {
       };
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
+    });
+  });
+
+  describe('handleConnection channel id validation', () => {
+    it('rejects a channelId that is not a UUID (e.g. a browser hostname)', async () => {
+      const handleEventSpy = jest.spyOn(service, 'handleConnectionEventAsync');
+
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'scheme',
+        channelId: 'swap.example.org',
+        originatorInfo: Buffer.from(
+          JSON.stringify({
+            originatorInfo: { url: 'https://evil.test', title: 'Evil' },
+          }),
+        ).toString('base64'),
+      });
+
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(handleEventSpy).not.toHaveBeenCalled();
+      expect(service.connections['swap.example.org']).toBeUndefined();
+      expect(service.currentClientId).not.toBe('swap.example.org');
     });
   });
 

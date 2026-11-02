@@ -24,7 +24,7 @@ describe('handleDeeplink', () => {
     typeof waitForCondition
   >;
 
-  const channelId = 'channel1';
+  const channelId = '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d';
   const origin = 'testOrigin';
   const url = 'https://example.com';
   const otherPublicKey = 'publicKey';
@@ -303,5 +303,25 @@ describe('handleDeeplink', () => {
     expect(mockConnectToChannel).toHaveBeenCalled();
     expect(mockDecrypt).not.toHaveBeenCalled();
     expect(handleConnectionMessage).not.toHaveBeenCalled();
+  });
+
+  it('rejects a channelId that is not a UUID before connecting', async () => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({});
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId: 'swap.example.org',
+      origin,
+      url,
+      rpc,
+      otherPublicKey,
+      protocolVersion,
+      context,
+    });
+
+    expect(mockConnectToChannel).not.toHaveBeenCalled();
+    expect(mockReconnect).not.toHaveBeenCalled();
+    expect(mockHandleConnectionMessage).not.toHaveBeenCalled();
   });
 });
