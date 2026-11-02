@@ -9,6 +9,8 @@ import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsContr
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 import Engine from '../../../core/Engine';
 import { useSelector } from 'react-redux';
+import { strings } from '../../../../locales/i18n';
+import { prepareNftDetectionEvents } from '../../../util/assets';
 
 const MOCK_ADDRESS = '0xc4955c0d639d99699bfd7ec54d9fafee40e4d272';
 
@@ -154,6 +156,11 @@ jest.mock('react-native-scrollable-tab-view', () => {
   return ScrollableTabViewMock;
 });
 
+jest.mock('../../../util/assets', () => ({
+  ...jest.requireActual('../../../util/assets'),
+  prepareNftDetectionEvents: jest.fn().mockReturnValue([]),
+}));
+
 jest.mock('../../../util/address', () => ({
   ...jest.requireActual('../../../util/address'),
   getInternalAccountByAddress: jest.fn().mockReturnValue({
@@ -266,5 +273,56 @@ describe('Wallet', () => {
     //@ts-expect-error we are ignoring the navigation params on purpose
     const wrapper = render(Wallet);
     expect(wrapper.toJSON()).toMatchSnapshot();
+  });
+
+  it('passes the NFT state references from before and after detection to the analytics diff without copying them', async () => {
+    const nftControllerMock = Engine.context.NftController as unknown as {
+      state: { allNfts: Record<string, unknown> };
+    };
+    const { internalAccounts } = MOCK_ACCOUNTS_CONTROLLER_STATE;
+    const selectedAddress =
+      internalAccounts.accounts[
+        internalAccounts.selectedAccount
+      ].address.toLowerCase();
+    const previousAccountNfts = Object.freeze({ '0x1': Object.freeze([]) });
+    const detectedNft = Object.freeze({
+      address: '0xabc',
+      tokenId: '1',
+      chainId: 1,
+    });
+    const newAccountNfts = Object.freeze({
+      '0x1': Object.freeze([detectedNft]),
+    });
+    nftControllerMock.state = {
+      allNfts: { [selectedAddress]: previousAccountNfts },
+    };
+    jest
+      .mocked(Engine.context.NftDetectionController.detectNfts)
+      .mockImplementationOnce(async () => {
+        nftControllerMock.state = {
+          allNfts: { [selectedAddress]: newAccountNfts },
+        };
+      });
+
+    //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
+    render(Wallet);
+    const { onChangeTab } = jest
+      .mocked(ScrollableTabView)
+      .mock.calls.at(-1)?.[0] as {
+      onChangeTab: (obj: {
+        ref: { props: { tabLabel: string } };
+      }) => Promise<void>;
+    };
+    await onChangeTab({
+      ref: { props: { tabLabel: strings('wallet.collectibles') } },
+    });
+
+    expect(
+      Engine.context.NftDetectionController.detectNfts,
+    ).toHaveBeenCalledTimes(1);
+    const [previousNfts, newNfts] = jest.mocked(prepareNftDetectionEvents).mock
+      .calls[0];
+    expect(previousNfts).toBe(previousAccountNfts);
+    expect(newNfts).toBe(newAccountNfts);
   });
 });

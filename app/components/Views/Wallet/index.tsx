@@ -123,7 +123,6 @@ import SolanaNewFeatureContent from '../../UI/SolanaNewFeatureContent/SolanaNewF
 ///: END:ONLY_INCLUDE_IF
 import { useNftDetectionChainIds } from '../../hooks/useNftDetectionChainIds';
 import Logger from '../../../util/Logger';
-import { cloneDeep } from 'lodash';
 import { prepareNftDetectionEvents } from '../../../util/assets';
 
 const createStyles = ({ colors, typography }: Theme) =>
@@ -649,9 +648,10 @@ const Wallet = ({
         );
         // Call detect nfts
         const { NftDetectionController, NftController } = Engine.context;
-        const previousNfts = cloneDeep(
-          NftController.state.allNfts[selectedAddress.toLowerCase()],
-        );
+        // NftController state is immutable, so the pre-detection reference
+        // stays a valid snapshot without deep-copying it.
+        const previousNfts =
+          NftController.state.allNfts[selectedAddress.toLowerCase()];
 
         try {
           showNftFetchingLoadingIndicator();
@@ -660,9 +660,8 @@ const Wallet = ({
           hideNftFetchingLoadingIndicator();
         }
 
-        const newNfts = cloneDeep(
-          NftController.state.allNfts[selectedAddress.toLowerCase()],
-        );
+        const newNfts =
+          NftController.state.allNfts[selectedAddress.toLowerCase()];
 
         const eventParams = prepareNftDetectionEvents(
           previousNfts,
