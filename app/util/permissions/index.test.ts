@@ -1,6 +1,7 @@
 import Engine from '../../core/Engine';
 import { CaveatSpecificationConstraint, ExtractPermission, PermissionSpecificationConstraint, SubjectPermissions } from '@metamask/permission-controller';
-import { Caip25CaveatType, Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
+import { Caip25CaveatType, Caip25EndowmentPermissionName, caip25CaveatBuilder } from '@metamask/chain-agnostic-permission';
+import { EthAccountType, SolAccountType } from '@metamask/keyring-api';
 import { PermissionKeys } from '../../core/Permissions/specifications';
 import { pick } from 'lodash';
 import { CaveatTypes } from '../../core/Permissions/constants';
@@ -24,14 +25,33 @@ jest.mock('../../core/Engine', () => ({
       requestPermissionsIncremental: jest.fn(),
       grantPermissionsIncremental: jest.fn(),
     },
+    AccountsController: {
+      listAccounts: jest.fn(),
+    },
   },
 }));
 
 const mockRequestPermissionsIncremental = Engine.context.PermissionController.requestPermissionsIncremental as jest.Mock;
 const mockGrantPermissionsIncremental = Engine.context.PermissionController.grantPermissionsIncremental as jest.Mock;
 const mockReject = Engine.context.ApprovalController.reject as jest.Mock;
+const mockListAccounts = Engine.context.AccountsController.listAccounts as jest.Mock;
+
+const WALLET_ADDRESS = '0x0000000000000000000000000000000000000001';
+const WALLET_ADDRESS_MIXED_CASE = '0xAbCdEf0000000000000000000000000000000002';
+const NON_EVM_ADDRESS = '0x0000000000000000000000000000000000000003';
+const UNKNOWN_ADDRESS = '0x00000000000000000000000000000000000000ff';
+const mockWalletAccounts = [
+  { address: WALLET_ADDRESS, type: EthAccountType.Eoa },
+  { address: WALLET_ADDRESS_MIXED_CASE, type: EthAccountType.Erc4337 },
+  { address: '0xdeadbeef', type: EthAccountType.Eoa },
+  { address: NON_EVM_ADDRESS, type: SolAccountType.DataAccount },
+];
 
 describe('Permission Utils', () => {
+  beforeEach(() => {
+    mockListAccounts.mockImplementation(() => mockWalletAccounts);
+  });
+
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -186,6 +206,66 @@ describe('Permission Utils', () => {
   });
 
   describe('getCaip25PermissionFromLegacyPermissions', () => {
+    const requestAccounts = (accounts: unknown[]) =>
+      getCaip25PermissionFromLegacyPermissions('https://mallory.example', {
+        [PermissionKeys.eth_accounts]: {
+          caveats: [
+            {
+              type: CaveatTypes.restrictReturnedAccounts,
+              value: accounts as `0x${string}`[],
+            },
+          ],
+        },
+      });
+
+    const getRequestedWalletAccounts = (accounts: unknown[]) =>
+      (
+        requestAccounts(accounts)[Caip25EndowmentPermissionName].caveats?.[0]
+          .value as { optionalScopes: Record<string, { accounts: string[] }> }
+      ).optionalScopes['wallet:eip155'].accounts;
+
+    it('drops requested addresses that are not in the wallet', () => {
+      expect(getRequestedWalletAccounts([UNKNOWN_ADDRESS])).toStrictEqual([]);
+    });
+
+    it('keeps only wallet addresses (case-insensitive, deduplicated, wallet casing) from a mixed request', () => {
+      expect(
+        getRequestedWalletAccounts([
+          UNKNOWN_ADDRESS,
+          WALLET_ADDRESS_MIXED_CASE.toLowerCase(),
+          WALLET_ADDRESS,
+          WALLET_ADDRESS_MIXED_CASE.toUpperCase().replace('0X', '0x'),
+          42,
+        ]),
+      ).toStrictEqual([
+        `wallet:eip155:${WALLET_ADDRESS_MIXED_CASE}`,
+        `wallet:eip155:${WALLET_ADDRESS}`,
+      ]);
+    });
+
+    it('does not match non-EVM wallet accounts', () => {
+      expect(getRequestedWalletAccounts([NON_EVM_ADDRESS])).toStrictEqual([]);
+    });
+
+    it('passes pre-approval CAIP-25 caveat validation whether or not the requested address is in the wallet', () => {
+      const { validator } = caip25CaveatBuilder({
+        listAccounts: () => mockWalletAccounts as never,
+        findNetworkClientIdByChainId: () => 'mainnet',
+        isNonEvmScopeSupported: () => false,
+        getNonEvmAccountAddresses: () => [],
+      });
+      const validate = (address: string) => () =>
+        validator?.(
+          requestAccounts([address])[Caip25EndowmentPermissionName]
+            .caveats?.[0] as never,
+          'https://mallory.example',
+          Caip25EndowmentPermissionName,
+        );
+
+      expect(validate(WALLET_ADDRESS)).not.toThrow();
+      expect(validate(UNKNOWN_ADDRESS)).not.toThrow();
+    });
+
     it('returns valid CAIP-25 permissions', async () => {
       const permissions = await getCaip25PermissionFromLegacyPermissions(
         'test.com',
