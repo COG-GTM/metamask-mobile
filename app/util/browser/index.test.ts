@@ -424,6 +424,19 @@ describe('Browser utils :: browserWebViewOriginWhitelist + handleProtocolNavigat
     },
   );
 
+  it('lowercases the scheme of an approved MetaMask deeplink', async () => {
+    navigate('METAMASK://connect?channelId=AbC');
+    await flushPromises();
+    expect(alertSpy.mock.calls[0][1]).toBe(
+      strings('browser.protocol_alerts.metamask'),
+    );
+
+    allow();
+    expect(openInAppDeeplink).toHaveBeenCalledWith(
+      'metamask://connect?channelId=AbC',
+    );
+  });
+
   it('drops further requests while a prompt is showing', async () => {
     navigate('sms:12345?body=test');
     navigate('metamask://connect?channelId=abc');

@@ -193,6 +193,13 @@ export const handleConnectionReady = async ({
       // Should ask for confirmation to reconnect?
       await checkPermissions({ connection, engine });
       connection.sendAuthorized(true);
+    } else if (
+      connection.origin === AppConstants.DEEPLINKS.ORIGIN_IN_APP_BROWSER
+    ) {
+      // Links opened from a page in the in-app browser are never auto-approved.
+      disapprove(connection.channelId);
+      await checkPermissions({ connection, engine });
+      connection.sendAuthorized(true);
     }
     // }
 

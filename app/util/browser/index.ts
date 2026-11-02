@@ -245,7 +245,10 @@ export const handleProtocolNavigation = (
   const onAllow = () => {
     isProtocolPromptVisible = false;
     if (action === 'prompt-deeplink') {
-      openInAppDeeplink(url);
+      // Deeplink handlers match lowercase scheme prefixes
+      openInAppDeeplink(
+        `${protocol.toLowerCase()}${url.slice(protocol.length)}`,
+      );
     } else {
       allowLinkOpen(url);
     }
