@@ -68,34 +68,36 @@ export function getCachedENSName(address, chainId) {
 }
 
 export async function doENSReverseLookup(address, chainId) {
-  const { provider } =
-    Engine.context.NetworkController.getProviderAndBlockTracker();
-  const { name: cachedName, timestamp } =
-    ENSCache.cache[chainId + address] || {};
-  const nowTimestamp = Date.now();
-  if (timestamp && nowTimestamp - timestamp < CACHE_REFRESH_THRESHOLD) {
-    return Promise.resolve(cachedName);
+  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
+  if (!networkHasEnsSupport) {
+    return undefined;
   }
 
-  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
+  // Must match the key used by getCachedENSName and the writes below.
+  const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
+  const cacheKey = networkId + address;
+  const { name: cachedName, timestamp } = ENSCache.cache[cacheKey] || {};
+  const nowTimestamp = Date.now();
+  if (timestamp && nowTimestamp - timestamp < CACHE_REFRESH_THRESHOLD) {
+    return cachedName;
+  }
 
-  if (networkHasEnsSupport) {
-    const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
-    this.ens = new ENS({ provider, network: networkId });
-    try {
-      const name = await this.ens.reverse(address);
-      const resolvedAddress = await this.ens.lookup(name);
-      if (toLowerCaseEquals(address, resolvedAddress)) {
-        ENSCache.cache[networkId + address] = { name, timestamp: Date.now() };
-        return name;
-      }
-    } catch (e) {
-      if (
-        e.message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
-        e.message.includes(INVALID_ENS_NAME_ERROR)
-      ) {
-        ENSCache.cache[networkId + address] = { timestamp: Date.now() };
-      }
+  const { provider } =
+    Engine.context.NetworkController.getProviderAndBlockTracker();
+  this.ens = new ENS({ provider, network: networkId });
+  try {
+    const name = await this.ens.reverse(address);
+    const resolvedAddress = await this.ens.lookup(name);
+    if (toLowerCaseEquals(address, resolvedAddress)) {
+      ENSCache.cache[cacheKey] = { name, timestamp: Date.now() };
+      return name;
+    }
+  } catch (e) {
+    if (
+      e.message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
+      e.message.includes(INVALID_ENS_NAME_ERROR)
+    ) {
+      ENSCache.cache[cacheKey] = { timestamp: Date.now() };
     }
   }
 }

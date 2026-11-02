@@ -80,40 +80,62 @@ const SendFlowAddressFrom = ({
     }
   }, [newAssetTransactionAction, selectedAssetAction, ticker]);
 
+  const [selectedAccountEns, setSelectedAccountEns] = useState<
+    string | undefined
+  >();
+
   useEffect(() => {
-    async function getAccount() {
+    let cancelled = false;
+    setSelectedAccountEns(undefined);
+    async function lookupEns() {
       if (checksummedSelectedAddress) {
         const ens = await doENSReverseLookup(
           checksummedSelectedAddress,
           chainId,
         );
-        const balance = `${renderFromWei(
-          accounts[checksummedSelectedAddress].balance,
-        )} ${getTicker(ticker)}`;
-        const balanceIsZero = hexToBN(
-          accounts[checksummedSelectedAddress].balance,
-        ).isZero();
-        setAccountName(ens || selectedInternalAccount?.metadata.name);
-        setAccountBalance(balance);
-        fromAccountBalanceState(balanceIsZero);
+        if (!cancelled) {
+          setSelectedAccountEns(ens);
+        }
       }
     }
-    getAccount();
+    lookupEns();
+    return () => {
+      cancelled = true;
+    };
+  }, [checksummedSelectedAddress, chainId]);
+
+  useEffect(() => {
+    if (checksummedSelectedAddress) {
+      setAccountName(
+        selectedAccountEns || selectedInternalAccount?.metadata.name,
+      );
+    }
   }, [
-    accounts,
     checksummedSelectedAddress,
-    ticker,
-    chainId,
-    fromAccountBalanceState,
+    selectedAccountEns,
     selectedInternalAccount?.metadata.name,
   ]);
+
+  const selectedAccountBalance =
+    checksummedSelectedAddress && accounts?.[checksummedSelectedAddress]
+      ? accounts[checksummedSelectedAddress].balance
+      : undefined;
+
+  useEffect(() => {
+    if (selectedAccountBalance !== undefined) {
+      setAccountBalance(
+        `${renderFromWei(selectedAccountBalance)} ${getTicker(ticker)}`,
+      );
+      fromAccountBalanceState(hexToBN(selectedAccountBalance).isZero());
+    }
+  }, [selectedAccountBalance, ticker, fromAccountBalanceState]);
 
   const onSelectAccount = async (address: string) => {
     const name = selectedInternalAccount?.metadata.name;
     const balance = `${renderFromWei(accounts[address].balance)} ${getTicker(
       ticker,
     )}`;
-    const ens = await doENSReverseLookup(address);
+    const ens = await doENSReverseLookup(address, chainId);
     const accName = ens || name;
     const balanceIsZero = hexToBN(accounts[address].balance).isZero();
     selectedAssetAction(getEther(ticker as string));
