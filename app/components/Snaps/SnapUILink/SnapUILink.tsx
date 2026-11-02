@@ -28,7 +28,9 @@ export interface SnapUILinkProps {
 
 // Hosts registered as MetaMask universal links (AndroidManifest.xml and the
 // iOS entitlements). Opening them from a Snap would re-enter the app's own
-// deeplink handler, so Snap links may never target them.
+// deeplink handler, so Snap links may never target them. Branch link hosts
+// are blocked with their subdomains; `applinks:metamask.io` only covers the
+// exact host.
 export const BLOCKED_SNAP_LINK_HOSTS = [
   'metamask.app.link',
   'metamask-alternate.app.link',
@@ -36,10 +38,15 @@ export const BLOCKED_SNAP_LINK_HOSTS = [
   'metamask-alternate.test-app.link',
 ];
 
+export const BLOCKED_SNAP_LINK_EXACT_HOSTS = ['metamask.io'];
+
 const isBlockedHost = (hostname: string) => {
   const host = hostname.toLowerCase().replace(/\.$/u, '');
-  return BLOCKED_SNAP_LINK_HOSTS.some(
-    (blocked) => host === blocked || host.endsWith(`.${blocked}`),
+  return (
+    BLOCKED_SNAP_LINK_EXACT_HOSTS.includes(host) ||
+    BLOCKED_SNAP_LINK_HOSTS.some(
+      (blocked) => host === blocked || host.endsWith(`.${blocked}`),
+    )
   );
 };
 

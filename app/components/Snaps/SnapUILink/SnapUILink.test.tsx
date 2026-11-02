@@ -44,7 +44,7 @@ describe('SnapUILink', () => {
   });
 
   const validProps = {
-    href: 'https://metamask.io',
+    href: 'https://example.com',
     children: 'Visit MetaMask',
   };
 
@@ -135,6 +135,8 @@ describe('SnapUILink', () => {
     'https://metamask-alternate.app.link/dapp/evil.example',
     'https://metamask.test-app.link/dapp/evil.example',
     'https://metamask-alternate.test-app.link/dapp/evil.example',
+    'https://metamask.io/dapp/evil.example',
+    'https://MetaMask.io./send/0x0000000000000000000000000000000000000000',
   ])('rejects MetaMask universal link %s', (href) => {
     const { getByTestId } = renderWithSnap(
       PREINSTALLED_SNAP_ID,
@@ -148,8 +150,10 @@ describe('SnapUILink', () => {
     expect(Linking.openURL).not.toHaveBeenCalled();
   });
 
-  it('allows hosts that only resemble the universal link host', () => {
-    const href = 'https://notmetamask.app.link.example.com/page';
+  it.each([
+    'https://notmetamask.app.link.example.com/page',
+    'https://support.metamask.io/page',
+  ])('allows hosts that are not MetaMask universal link hosts: %s', (href) => {
     const { getByTestId } = renderWithSnap(
       'npm:third-party-snap',
       <SnapUILink href={href}>Link</SnapUILink>,
