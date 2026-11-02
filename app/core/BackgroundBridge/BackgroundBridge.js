@@ -75,7 +75,7 @@ export class BackgroundBridge extends EventEmitter {
     remoteConnHost,
     isMMSDK,
     channelId,
-    isTabActive,
+    isTabActive = /** @type {(() => boolean) | undefined} */ (undefined),
   }) {
     super();
     this.url = url;

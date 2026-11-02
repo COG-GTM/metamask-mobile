@@ -168,9 +168,8 @@ const AccountConnect = (props: AccountConnectProps) => {
   const isChannelId = isUUID(channelIdOrHostname);
 
   // The sheet must describe the requesting site, never whichever tab happens to be visible.
-  const requestingTabUrl = useSelector(
-    (state: RootState) =>
-      getBrowserTabUrlForOrigin(state.browser, channelIdOrHostname),
+  const requestingTabUrl = useSelector((state: RootState) =>
+    getBrowserTabUrlForOrigin(state.browser, channelIdOrHostname),
   );
   const isRequestingTabAmbiguous = useSelector((state: RootState) =>
     isBrowserTabOriginAmbiguous(state.browser, channelIdOrHostname),
@@ -411,7 +410,8 @@ const AccountConnect = (props: AccountConnectProps) => {
      * This logic should be removed and the UI should ensure it cannot continue if no chains are selected.
      * {@link https://github.com/MetaMask/metamask-mobile/pull/13970/files#r2042345624}
      */
-    const chainsToPermit = chainId && selectedChainIds.length === 0 ? [chainId] : selectedChainIds;
+    const chainsToPermit =
+      chainId && selectedChainIds.length === 0 ? [chainId] : selectedChainIds;
     const hexSelectedAddresses = selectedAddresses.map((account) =>
       toHex(account),
     );
@@ -745,7 +745,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       isLoading,
       sdkConnection,
       hostname,
-      handleAccountsSelected
+      handleAccountsSelected,
     ],
   );
 
@@ -759,12 +759,7 @@ const AccountConnect = (props: AccountConnectProps) => {
         defaultSelectedChainIds={selectedChainIds}
       />
     ),
-    [
-      isLoading,
-      urlWithProtocol,
-      handleNetworksSelected,
-      selectedChainIds,
-    ],
+    [isLoading, urlWithProtocol, handleNetworksSelected, selectedChainIds],
   );
 
   const renderPhishingModal = useCallback(
