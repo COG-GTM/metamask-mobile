@@ -892,6 +892,18 @@ describe('DeeplinkProtocolService', () => {
       expect(Linking.openURL).not.toHaveBeenCalled();
     });
 
+    it('drops messages that omit the public key', async () => {
+      await send({ dappPublicKey: undefined });
+      expect(onMessage).not.toHaveBeenCalled();
+    });
+
+    it('drops messages on a keyless session until it is re-approved', async () => {
+      delete service.dappPublicKeyByClientId.acme;
+      await send({ dappPublicKey: 'mallory-key' });
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.dappPublicKeyByClientId.acme).toBeUndefined();
+    });
+
     it('rejects messages on an expired session', async () => {
       service.connections.acme.validUntil = Date.now() - 1;
       await send({});
