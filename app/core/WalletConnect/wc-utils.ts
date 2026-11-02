@@ -20,6 +20,7 @@ import {
 import { getRpcMethodMiddlewareHooks } from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { wait } from '../SDKConnect/utils/wait.util';
+import { isWalletConnectPermissionSubject } from './wc-verify';
 
 export interface WCMultiVersionParams {
   protocol: string;
@@ -38,6 +39,9 @@ export const getHostname = (uri: string): string => {
   try {
     // Handle empty or invalid URIs
     if (!uri) return '';
+
+    // WalletConnect permission subjects are already normalized
+    if (isWalletConnectPermissionSubject(uri)) return uri;
 
     // For standard URLs, use URL API
     if (uri.includes('://')) {
