@@ -229,7 +229,9 @@ describe('WalletConnect Utils', () => {
 
   describe('getScopedPermissions', () => {
     it('returns correct scoped permissions', async () => {
-      const result = await getScopedPermissions({ origin: 'test' });
+      const result = await getScopedPermissions({
+        origin: 'https://test-dapp.com',
+      });
       expect(result).toEqual({
         eip155: {
           chains: ['eip155:1'],
@@ -238,7 +240,22 @@ describe('WalletConnect Utils', () => {
           accounts: ['eip155:1:0x123'],
         },
       });
+      expect(
+        jest.requireMock('../Permissions').getPermittedAccounts,
+      ).toHaveBeenCalledWith('test-dapp.com', { allowInternalOrigin: false });
     });
+
+    it.each(['MetaMask Mobile', 'metamask', 'https://metamask', 'not a url'])(
+      'returns no accounts or chains for invalid origin %s',
+      async (origin) => {
+        const { getPermittedAccounts: mockGetPermittedAccounts } =
+          jest.requireMock('../Permissions');
+        const result = await getScopedPermissions({ origin });
+        expect(result.eip155.accounts).toEqual([]);
+        expect(result.eip155.chains).toEqual([]);
+        expect(mockGetPermittedAccounts).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe('checkWCPermissions', () => {
@@ -246,9 +263,21 @@ describe('WalletConnect Utils', () => {
       (findExistingNetwork as jest.Mock).mockReturnValue({ chainId: '0x1' });
     });
 
+    it('rejects internal or non-http(s) origins', async () => {
+      await expect(
+        checkWCPermissions({
+          origin: 'MetaMask Mobile',
+          caip2ChainId: 'eip155:1',
+        }),
+      ).rejects.toMatchObject({ code: 4100 });
+      expect(
+        jest.requireMock('../Permissions').getPermittedChains,
+      ).not.toHaveBeenCalled();
+    });
+
     it('returns true for permitted chain', async () => {
       const result = await checkWCPermissions({
-        origin: 'test',
+        origin: 'https://test-dapp.com',
         caip2ChainId: 'eip155:1',
       });
       expect(result).toBe(true);
@@ -258,7 +287,7 @@ describe('WalletConnect Utils', () => {
       (findExistingNetwork as jest.Mock).mockReturnValue(null);
       await expect(
         checkWCPermissions({
-          origin: 'test',
+          origin: 'https://test-dapp.com',
           caip2ChainId: 'eip155:2',
         }),
       ).rejects.toThrow('Invalid parameters');
@@ -270,7 +299,7 @@ describe('WalletConnect Utils', () => {
       mockPermittedChains.mockResolvedValueOnce([]);
       await expect(
         checkWCPermissions({
-          origin: 'test',
+          origin: 'https://test-dapp.com',
           caip2ChainId: 'eip155:2',
         }),
       ).rejects.toThrow('Invalid parameters');
@@ -279,7 +308,7 @@ describe('WalletConnect Utils', () => {
     it('switches network when chainIds differ', async () => {
       (selectProviderConfig as unknown as jest.Mock).mockReturnValue({ chainId: '0x2' });
       await checkWCPermissions({
-        origin: 'test',
+        origin: 'https://test-dapp.com',
         caip2ChainId: 'eip155:1',
       });
       expect(switchToNetwork).toHaveBeenCalled();
@@ -295,7 +324,7 @@ describe('WalletConnect Utils', () => {
 
       // Test with allowSwitchingToNewChain set to true
       const result = await checkWCPermissions({
-        origin: 'test-dapp.com',
+        origin: 'https://test-dapp.com',
         caip2ChainId: 'eip155:3',
         allowSwitchingToNewChain: true,
       });
@@ -382,49 +411,39 @@ describe('WalletConnect Utils', () => {
       expect(getHostname(null as unknown as string)).toBe('');
     });
 
-    it('returns protocol part for protocol-based URIs', () => {
-      expect(getHostname('wc:topic@1')).toBe('wc');
-      expect(getHostname('ethereum:0x123')).toBe('ethereum');
-      expect(getHostname('metamask:pay')).toBe('metamask');
-    });
-
-    it('handles errors gracefully and returns original URI', () => {
-      // Mock a scenario where uri.substring throws an error
-      const expectedError = new Error('Substring failed');
-      const maliciousUri = {
-        includes: () => false,
-        indexOf: () => 1,
-        substring: () => {
-          throw expectedError;
-        },
-        toString: () => 'malicious-uri',
-      };
-
-      expect(getHostname(maliciousUri as unknown as string)).toBe(maliciousUri);
-
-      // Verify that DevLogger.log was called with the error
-      expect(DevLogger.log).toHaveBeenCalledWith(
-        'Error in getHostname:',
-        expectedError,
-      );
-    });
-
-    it('handles standard URLs with hostname extraction', () => {
+    it('returns the hostname of http(s) URLs', () => {
       expect(getHostname('https://example.com/path')).toBe('example.com');
       expect(
         getHostname('http://subdomain.example.org:8080/path?query=1'),
       ).toBe('subdomain.example.org');
     });
 
-    it('falls back to manual parsing when URL parsing fails', () => {
-      // Create a URL with invalid characters that will fail URL parsing
-      const invalidUrl = 'wc:topic@1';
-      expect(getHostname(invalidUrl)).toBe('wc');
+    it('returns empty string for non-http(s) URIs', () => {
+      expect(getHostname('wc:topic@1')).toBe('');
+      expect(getHostname('ethereum:0x123')).toBe('');
+      expect(getHostname('metamask:pay')).toBe('');
+      // eslint-disable-next-line no-script-url
+      expect(getHostname('javascript:alert(1)')).toBe('');
     });
 
-    it('returns original URI when no protocol separator is found', () => {
-      const noProtocolUri = 'example-with-no-protocol';
-      expect(getHostname(noProtocolUri)).toBe(noProtocolUri);
+    it('returns empty string instead of echoing unparseable input', () => {
+      expect(getHostname('example-with-no-protocol')).toBe('');
+      expect(getHostname('MetaMask Mobile')).toBe('');
+      expect(DevLogger.log).toHaveBeenCalledWith(
+        'Error in getHostname:',
+        expect.objectContaining({ message: 'Invalid URL' }),
+      );
+    });
+
+    it('returns empty string for non-string input', () => {
+      expect(getHostname({ toString: () => 'x' } as unknown as string)).toBe(
+        '',
+      );
+    });
+
+    it('returns empty string for hostnames equal to an internal origin', () => {
+      expect(getHostname('https://metamask')).toBe('');
+      expect(getHostname('https://MetaMask/')).toBe('');
     });
   });
 });

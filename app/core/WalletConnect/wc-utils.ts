@@ -7,6 +7,7 @@ import { parseRelayParams } from '@walletconnect/utils';
 import qs from 'qs';
 import Routes from '../../../app/constants/navigation/Routes';
 import { store } from '../../../app/store';
+import { INTERNAL_ORIGINS } from '../../constants/transaction';
 import {
   selectNetworkConfigurations,
   selectProviderConfig,
@@ -34,33 +35,35 @@ export interface WCMultiVersionParams {
   handshakeTopic?: string;
 }
 
+const WALLET_CONNECT_PEER_PROTOCOLS = ['http:', 'https:'];
+
+const isInternalOrigin = (hostname: string): boolean =>
+  INTERNAL_ORIGINS.some(
+    (internalOrigin) =>
+      typeof internalOrigin === 'string' &&
+      internalOrigin.toLowerCase() === hostname.toLowerCase(),
+  );
+
+/**
+ * Returns the permission subject for a WalletConnect peer URL: the hostname of
+ * an http(s) URL. Anything else (bare strings, other schemes, internal origin
+ * values such as "MetaMask Mobile") yields '' so callers fail closed.
+ */
 export const getHostname = (uri: string): string => {
+  if (!uri || typeof uri !== 'string') return '';
+
+  let hostname: string;
   try {
-    // Handle empty or invalid URIs
-    if (!uri) return '';
-
-    // For standard URLs, use URL API
-    if (uri.includes('://')) {
-      try {
-        const url = new URL(uri);
-        return url.hostname;
-      } catch (e) {
-        // If URL parsing fails, continue with manual parsing
-      }
-    }
-
-    // For protocol-based URIs like wc: or ethereum:
-    const pathStart: number = uri.indexOf(':');
-    if (pathStart !== -1) {
-      return uri.substring(0, pathStart);
-    }
-
-    // If no protocol separator found, return the original string
-    return uri;
+    const url = new URL(uri);
+    if (!WALLET_CONNECT_PEER_PROTOCOLS.includes(url.protocol)) return '';
+    hostname = url.hostname;
   } catch (error) {
     DevLogger.log('Error in getHostname:', error);
-    return uri;
+    return '';
   }
+
+  if (!hostname || isInternalOrigin(hostname)) return '';
+  return hostname;
 };
 
 export const parseWalletConnectUri = (uri: string): WCMultiVersionParams => {
@@ -201,8 +204,10 @@ export const getApprovedSessionMethods = (_: { origin: string }): string[] => {
 
 export const getScopedPermissions = async ({ origin }: { origin: string }) => {
   const hostname = getHostname(origin);
-  const approvedAccounts = getPermittedAccounts(hostname);
-  const chains = await getPermittedChains(hostname);
+  const approvedAccounts = hostname
+    ? getPermittedAccounts(hostname, { allowInternalOrigin: false })
+    : [];
+  const chains = hostname ? await getPermittedChains(hostname) : [];
 
   DevLogger.log(
     `WC::getScopedPermissions for ${origin}, found accounts:`,
@@ -255,6 +260,12 @@ export const checkWCPermissions = async ({
   caip2ChainId,
   allowSwitchingToNewChain = false,
 }: { origin: string; caip2ChainId: CaipChainId; allowSwitchingToNewChain?: boolean }) => {
+  const hostname = getHostname(origin);
+  if (!hostname) {
+    DevLogger.log(`WC::checkWCPermissions invalid origin`, origin);
+    throw providerErrors.unauthorized();
+  }
+
   const networkConfigurations = selectNetworkConfigurations(store.getState());
   const decimalChainId = caip2ChainId.split(':')[1];
   const hexChainIdString = toHex(`0x${parseInt(decimalChainId, 10).toString(16)}`);
@@ -271,7 +282,6 @@ export const checkWCPermissions = async ({
     });
   }
 
-  const hostname = getHostname(origin);
   const permittedChains = await getPermittedChains(hostname);
   const isAllowedChainId = permittedChains.includes(caip2ChainId);
 

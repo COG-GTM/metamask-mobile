@@ -383,19 +383,24 @@ export const removePermittedChain = (hostname: string, chainId: string) => {
  * @param {string} origin - The origin whose exposed accounts to retrieve.
  * @param {object} [options] - The options object
  * @param {boolean} [options.ignoreLock] - If accounts should be returned even if the wallet is locked.
+ * @param {boolean} [options.allowInternalOrigin] - If internal origins get the selected account
+ * without a permission. Must be false for subjects derived from dapp-controlled input (e.g. WalletConnect).
  * @returns {string[]} The origin's permitted accounts, or an empty
  * array.
  */
 export const getPermittedAccounts = (
   origin: string,
-  { ignoreLock }: { ignoreLock?: boolean } = {},
+  {
+    ignoreLock,
+    allowInternalOrigin = true,
+  }: { ignoreLock?: boolean; allowInternalOrigin?: boolean } = {},
 ) => {
   const { AccountsController, PermissionController, KeyringController } =
     Engine.context;
 
   let caveat;
   try {
-    if (INTERNAL_ORIGINS.includes(origin)) {
+    if (allowInternalOrigin && INTERNAL_ORIGINS.includes(origin)) {
       const selectedAccountAddress =
         AccountsController.getSelectedAccount().address;
 

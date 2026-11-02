@@ -710,4 +710,57 @@ describe('WalletConnect2Session', () => {
       result: true,
     });
   });
+
+  it('rejects requests whose origin is not a valid http(s) hostname', async () => {
+    const { getHostname } = jest.requireMock('./wc-utils');
+    const { checkWCPermissions } = jest.requireMock('./wc-utils');
+    (getHostname as jest.Mock).mockReturnValueOnce('');
+    (checkWCPermissions as jest.Mock).mockClear();
+    jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const respondSpy = jest
+      .spyOn(mockClient, 'respondSessionRequest')
+      .mockResolvedValue(undefined as never);
+    respondSpy.mockClear();
+    const onMessageSpy = jest.spyOn(
+      (session as any).backgroundBridge,
+      'onMessage',
+    );
+
+    await session.handleRequest({
+      id: 43,
+      topic: mockSession.topic,
+      params: {
+        request: { method: 'eth_sendTransaction', params: [{}] },
+        chainId: 'eip155:1',
+      },
+      verifyContext: { verified: { origin: 'MetaMask Mobile' } },
+    } as any);
+
+    expect(getHostname).toHaveBeenCalledWith('MetaMask Mobile');
+    expect(respondSpy).toHaveBeenCalledWith({
+      topic: mockSession.topic,
+      response: {
+        id: 43,
+        jsonrpc: '2.0',
+        error: { code: 4100, message: 'Invalid origin' },
+      },
+    });
+    expect(checkWCPermissions).not.toHaveBeenCalled();
+    expect(onMessageSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not push accounts to a session whose peer url is invalid', async () => {
+    const { getHostname } = jest.requireMock('./wc-utils');
+    const { getPermittedAccounts } = jest.requireMock('../Permissions');
+    (getHostname as jest.Mock).mockReturnValueOnce('');
+    (getPermittedAccounts as jest.Mock).mockClear();
+    jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const updateSpy = jest.spyOn(mockClient, 'updateSession');
+    updateSpy.mockClear();
+
+    await session.updateSession({ chainId: 1, accounts: [] });
+
+    expect(getPermittedAccounts).not.toHaveBeenCalled();
+    expect(updateSpy).not.toHaveBeenCalled();
+  });
 });
