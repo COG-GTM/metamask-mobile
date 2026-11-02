@@ -747,6 +747,7 @@ describe('WalletConnect2Session', () => {
     });
     expect(checkWCPermissions).not.toHaveBeenCalled();
     expect(onMessageSpy).not.toHaveBeenCalled();
+    expect(session.isHandlingRequest()).toBe(false);
   });
 
   it('does not push accounts to a session whose peer url is invalid', async () => {

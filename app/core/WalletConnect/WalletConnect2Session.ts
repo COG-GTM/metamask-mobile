@@ -486,14 +486,18 @@ class WalletConnect2Session {
       console.warn(
         `WC2::handleRequest rejected request ${requestEvent.id}: invalid origin`,
       );
-      await this.web3Wallet.respondSessionRequest({
-        topic: this.session.topic,
-        response: {
-          id: requestEvent.id,
-          jsonrpc: '2.0',
-          error: { code: 4100, message: ERROR_MESSAGES.INVALID_ORIGIN },
-        },
-      });
+      try {
+        await this.web3Wallet.respondSessionRequest({
+          topic: this.session.topic,
+          response: {
+            id: requestEvent.id,
+            jsonrpc: '2.0',
+            error: { code: 4100, message: ERROR_MESSAGES.INVALID_ORIGIN },
+          },
+        });
+      } finally {
+        this._isHandlingRequest = false;
+      }
       return;
     }
 
