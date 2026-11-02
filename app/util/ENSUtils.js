@@ -67,37 +67,79 @@ export function getCachedENSName(address, chainId) {
   return cacheEntry?.name;
 }
 
-export async function doENSReverseLookup(address, chainId) {
+let ensInstance;
+let ensInstanceProvider;
+let ensInstanceNetworkId;
+
+/**
+ * Returns an ENS client for the given provider and network, reusing the
+ * previous instance when neither has changed.
+ *
+ * @param {object} provider - The network provider.
+ * @param {string} networkId - The legacy network ID.
+ * @returns {ENS} The ENS client.
+ */
+function getENSInstance(provider, networkId) {
+  if (
+    !ensInstance ||
+    ensInstanceProvider !== provider ||
+    ensInstanceNetworkId !== networkId
+  ) {
+    ensInstance = new ENS({ provider, network: networkId });
+    ensInstanceProvider = provider;
+    ensInstanceNetworkId = networkId;
+  }
+  return ensInstance;
+}
+
+const pendingReverseLookups = new Map();
+
+async function fetchENSReverseLookup(address, networkId, cacheKey) {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
-  const { name: cachedName, timestamp } =
-    ENSCache.cache[chainId + address] || {};
-  const nowTimestamp = Date.now();
-  if (timestamp && nowTimestamp - timestamp < CACHE_REFRESH_THRESHOLD) {
-    return Promise.resolve(cachedName);
-  }
-
-  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
-
-  if (networkHasEnsSupport) {
-    const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
-    this.ens = new ENS({ provider, network: networkId });
-    try {
-      const name = await this.ens.reverse(address);
-      const resolvedAddress = await this.ens.lookup(name);
-      if (toLowerCaseEquals(address, resolvedAddress)) {
-        ENSCache.cache[networkId + address] = { name, timestamp: Date.now() };
-        return name;
-      }
-    } catch (e) {
-      if (
-        e.message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
-        e.message.includes(INVALID_ENS_NAME_ERROR)
-      ) {
-        ENSCache.cache[networkId + address] = { timestamp: Date.now() };
-      }
+  const ens = getENSInstance(provider, networkId);
+  try {
+    const name = await ens.reverse(address);
+    const resolvedAddress = await ens.lookup(name);
+    if (toLowerCaseEquals(address, resolvedAddress)) {
+      ENSCache.cache[cacheKey] = { name, timestamp: Date.now() };
+      return name;
+    }
+  } catch (e) {
+    if (
+      e.message.includes(ENS_NAME_NOT_DEFINED_ERROR) ||
+      e.message.includes(INVALID_ENS_NAME_ERROR)
+    ) {
+      ENSCache.cache[cacheKey] = { timestamp: Date.now() };
     }
   }
+}
+
+export async function doENSReverseLookup(address, chainId) {
+  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
+  if (!networkHasEnsSupport) {
+    return undefined;
+  }
+
+  const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
+  const cacheKey = networkId + address;
+  const { name: cachedName, timestamp } = ENSCache.cache[cacheKey] || {};
+  if (timestamp && Date.now() - timestamp < CACHE_REFRESH_THRESHOLD) {
+    return cachedName;
+  }
+
+  const pendingLookup = pendingReverseLookups.get(cacheKey);
+  if (pendingLookup) {
+    return pendingLookup;
+  }
+
+  const lookup = fetchENSReverseLookup(address, networkId, cacheKey).finally(
+    () => {
+      pendingReverseLookups.delete(cacheKey);
+    },
+  );
+  pendingReverseLookups.set(cacheKey, lookup);
+  return lookup;
 }
 
 export async function doENSLookup(ensName, chainId) {
@@ -108,9 +150,9 @@ export async function doENSLookup(ensName, chainId) {
 
   if (networkHasEnsSupport) {
     const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
-    this.ens = new ENS({ provider, network: networkId });
+    const ens = getENSInstance(provider, networkId);
     try {
-      const resolvedAddress = await this.ens.lookup(ensName);
+      const resolvedAddress = await ens.lookup(ensName);
       if (resolvedAddress === EMPTY_ADDRESS) return;
       return resolvedAddress;
       // eslint-disable-next-line no-empty

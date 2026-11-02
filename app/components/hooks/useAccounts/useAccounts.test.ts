@@ -8,6 +8,18 @@ import { Account } from './useAccounts.types';
 import { Hex } from '@metamask/utils';
 // eslint-disable-next-line import/no-namespace
 import * as networks from '../../../util/networks';
+import { doENSReverseLookup } from '../../../util/ENSUtils';
+import { useMultichainBalancesForAllAccounts } from '../useMultichainBalances';
+
+jest.mock('../useMultichainBalances', () => {
+  const actual = jest.requireActual('../useMultichainBalances');
+  return {
+    ...actual,
+    useMultichainBalancesForAllAccounts: jest.fn(
+      actual.useMultichainBalancesForAllAccounts,
+    ),
+  };
+});
 
 jest.mock('../../../core/Engine', () => ({
   getTotalEvmFiatAccountBalance: jest.fn().mockReturnValue({
@@ -140,5 +152,68 @@ describe('useAccounts', () => {
       await waitForNextUpdate();
     });
     expect(result.current.ensByAccountAddress).toStrictEqual(expectedENSNames);
+  });
+
+  it('does not repeat ENS lookups when only balances change', async () => {
+    const actualHook = jest.requireActual(
+      '../useMultichainBalances',
+    ).useMultichainBalancesForAllAccounts;
+    const accountIds = Object.keys(
+      MOCK_ACCOUNTS_CONTROLLER_STATE.internalAccounts.accounts,
+    );
+    const balancesFor = (displayBalance: string) => ({
+      multichainBalancesForAllAccounts: Object.fromEntries(
+        accountIds.map((id) => [
+          id,
+          {
+            displayBalance,
+            totalFiatBalance: 1,
+            totalNativeTokenBalance: '1',
+            nativeTokenUnit: 'ETH',
+          },
+        ]),
+      ),
+    });
+    let currentBalances = balancesFor('$1.00');
+    (useMultichainBalancesForAllAccounts as jest.Mock).mockImplementation(
+      () => currentBalances,
+    );
+
+    const { result, rerender, waitForNextUpdate } = renderHook(() =>
+      useAccounts(),
+    );
+    await act(async () => {
+      await waitForNextUpdate();
+    });
+    expect(doENSReverseLookup).toHaveBeenCalledTimes(accountIds.length);
+
+    for (const displayBalance of ['$2.00', '$3.00', '$4.00']) {
+      currentBalances = balancesFor(displayBalance);
+      await act(async () => {
+        rerender();
+      });
+      expect(result.current.accounts[0].assets?.fiatBalance).toContain(
+        displayBalance,
+      );
+    }
+
+    expect(doENSReverseLookup).toHaveBeenCalledTimes(accountIds.length);
+    expect(result.current.ensByAccountAddress).toStrictEqual({
+      [MOCK_ACCOUNT_1.address]: MOCK_ENS_CACHED_NAME,
+    });
+    (useMultichainBalancesForAllAccounts as jest.Mock).mockImplementation(
+      actualHook,
+    );
+  });
+
+  it('looks up the selected account first', async () => {
+    const { waitForNextUpdate } = renderHook(() => useAccounts());
+    await act(async () => {
+      await waitForNextUpdate();
+    });
+    expect((doENSReverseLookup as jest.Mock).mock.calls[0]).toStrictEqual([
+      MOCK_ACCOUNT_2.address,
+      MOCK_CHAIN_ID,
+    ]);
   });
 });

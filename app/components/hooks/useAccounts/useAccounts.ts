@@ -26,6 +26,8 @@ import {
 } from '../../../core/Multichain/utils';
 import { useMultichainBalancesForAllAccounts } from '../useMultichainBalances';
 
+const ENS_LOOKUP_CONCURRENCY = 4;
+
 /**
  * Hook that returns both wallet accounts and ens name information.
  *
@@ -55,65 +57,6 @@ const useAccounts = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
-  const fetchENSNames = useCallback(
-    async ({
-      flattenedAccounts,
-      startingIndex,
-    }: {
-      flattenedAccounts: Account[];
-      startingIndex: number;
-    }) => {
-      // Ensure index exists in account list.
-      let safeStartingIndex = startingIndex;
-      let mirrorIndex = safeStartingIndex - 1;
-      const latestENSbyAccountAddress: EnsByAccountAddress = {};
-      let hasChanges = false;
-
-      if (startingIndex < 0) {
-        safeStartingIndex = 0;
-      } else if (startingIndex > flattenedAccounts.length) {
-        safeStartingIndex = flattenedAccounts.length - 1;
-      }
-
-      const fetchENSName = async (accountIndex: number) => {
-        const { address } = flattenedAccounts[accountIndex];
-        try {
-          const ens: string | undefined = await doENSReverseLookup(
-            address,
-            chainId,
-          );
-          if (ens) {
-            latestENSbyAccountAddress[address] = ens;
-            hasChanges = true;
-          }
-        } catch (e) {
-          // ENS either doesn't exist or failed to fetch.
-        }
-      };
-
-      // Iterate outwards in both directions starting at the starting index.
-      while (mirrorIndex >= 0 || safeStartingIndex < flattenedAccounts.length) {
-        if (!isMountedRef.current) return;
-        if (safeStartingIndex < flattenedAccounts.length) {
-          await fetchENSName(safeStartingIndex);
-        }
-        if (mirrorIndex >= 0) {
-          await fetchENSName(mirrorIndex);
-        }
-        mirrorIndex--;
-        safeStartingIndex++;
-      }
-      // Only update state if we have new ENS names
-      if (hasChanges && isMountedRef.current) {
-        setENSByAccountAddress((prevState) => ({
-          ...prevState,
-          ...latestENSbyAccountAddress,
-        }));
-      }
-    },
-    [chainId],
-  );
-
   // Memoize the balance calculation to prevent it from causing re-renders
   const accountBalances = useMemo(() => {
     const balances: Record<
@@ -148,16 +91,12 @@ const useAccounts = ({
     if (!isMountedRef.current) return;
     // Keep track of the Y position of account item. Used for scrolling purposes.
     let yOffset = 0;
-    let selectedIndex = 0;
     const flattenedAccounts: Account[] = internalAccounts.map(
-      (internalAccount: InternalAccount, index: number) => {
+      (internalAccount: InternalAccount) => {
         const formattedAddress =
           getFormattedAddressFromInternalAccount(internalAccount);
         const isSelected =
           selectedInternalAccount?.address === internalAccount.address;
-        if (isSelected) {
-          selectedIndex = index;
-        }
 
         const accountBalance = accountBalances[internalAccount.id] || {
           displayBalance: '',
@@ -197,10 +136,8 @@ const useAccounts = ({
     setEVMAccounts(
       flattenedAccounts.filter((account) => !isNonEvmAddress(account.address)),
     );
-    fetchENSNames({ flattenedAccounts, startingIndex: selectedIndex });
   }, [
     internalAccounts,
-    fetchENSNames,
     selectedInternalAccount?.address,
     accountBalances, // Use the memoized balances instead of multichainBalancesForAllAccounts
     isMultiAccountBalancesEnabled,
@@ -216,6 +153,82 @@ const useAccounts = ({
       isMountedRef.current = false;
     };
   }, [getAccounts, isLoading]);
+
+  // ENS names only depend on the chain and the account addresses, so balance
+  // updates must not trigger new lookups.
+  const ensLookupAddressesKey = useMemo(
+    () =>
+      internalAccounts
+        .map(getFormattedAddressFromInternalAccount)
+        .filter((address) => !isNonEvmAddress(address))
+        .join(','),
+    [internalAccounts],
+  );
+  const selectedAddressRef = useRef<string | undefined>();
+  selectedAddressRef.current = selectedInternalAccount?.address;
+
+  useEffect(() => {
+    if (isLoading || !ensLookupAddressesKey) return;
+    let isCancelled = false;
+    const addresses = ensLookupAddressesKey.split(',');
+    const selectedAddress = selectedAddressRef.current?.toLowerCase();
+    const startingIndex = Math.max(
+      addresses.findIndex(
+        (address) => address.toLowerCase() === selectedAddress,
+      ),
+      0,
+    );
+    // Look up the selected account first, then walk outwards from it.
+    const orderedAddresses: string[] = [];
+    for (
+      let after = startingIndex, before = startingIndex - 1;
+      after < addresses.length || before >= 0;
+      after++, before--
+    ) {
+      if (after < addresses.length) orderedAddresses.push(addresses[after]);
+      if (before >= 0) orderedAddresses.push(addresses[before]);
+    }
+
+    const latestENSbyAccountAddress: EnsByAccountAddress = {};
+    let hasChanges = false;
+    let nextIndex = 0;
+    const lookupNext = async (): Promise<void> => {
+      while (nextIndex < orderedAddresses.length) {
+        if (isCancelled) return;
+        const address = orderedAddresses[nextIndex++];
+        try {
+          const ens: string | undefined = await doENSReverseLookup(
+            address,
+            chainId,
+          );
+          if (ens) {
+            latestENSbyAccountAddress[address] = ens;
+            hasChanges = true;
+          }
+        } catch (e) {
+          // ENS either doesn't exist or failed to fetch.
+        }
+      }
+    };
+
+    Promise.all(
+      Array.from(
+        { length: Math.min(ENS_LOOKUP_CONCURRENCY, orderedAddresses.length) },
+        lookupNext,
+      ),
+    ).then(() => {
+      if (hasChanges && !isCancelled) {
+        setENSByAccountAddress((prevState) => ({
+          ...prevState,
+          ...latestENSbyAccountAddress,
+        }));
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [chainId, ensLookupAddressesKey, isLoading]);
 
   return {
     accounts,
