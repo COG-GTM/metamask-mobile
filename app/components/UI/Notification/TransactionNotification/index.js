@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -40,6 +40,8 @@ import { selectSelectedInternalAccountFormattedAddress } from '../../../../selec
 const WINDOW_WIDTH = Dimensions.get('window').width;
 const ACTION_CANCEL = 'cancel';
 const ACTION_SPEEDUP = 'speedup';
+const EMPTY_ARRAY = [];
+const EMPTY_OBJECT = {};
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -111,7 +113,20 @@ function TransactionNotification(props) {
     transactions,
     animatedTimingStart,
     smartTransactions,
+    selectedAddress,
+    ticker,
+    chainId,
+    conversionRate,
+    currentCurrency,
+    exchangeRate,
+    contractExchangeRates,
+    collectibleContracts,
+    tokens,
+    primaryCurrency,
+    swapsTransactions,
+    swapsTokens,
   } = props;
+  const notificationTxId = currentNotification.transaction.id;
 
   const [transactionDetails, setTransactionDetails] = useState(undefined);
   const [transactionElement, setTransactionElement] = useState(undefined);
@@ -121,7 +136,6 @@ function TransactionNotification(props) {
   const [transactionAction, setTransactionAction] = useState(undefined);
   const [transactionActionDisabled, setTransactionActionDisabled] =
     useState(false);
-  const [gasFee, setGasFee] = useState('0x0');
 
   const detailsYAnimated = useSharedValue(0);
   const actionXAnimated = useSharedValue(0);
@@ -214,29 +228,17 @@ function TransactionNotification(props) {
     );
   }, [safelyExecute, tx]);
 
+  const notifiedTx = useMemo(
+    () => transactions.find(({ id }) => id === notificationTxId),
+    [transactions, notificationTxId],
+  );
+
   useEffect(() => {
+    if (!notifiedTx) return;
+    let cancelled = false;
     async function getTransactionInfo() {
-      const tx = transactions.find(
-        ({ id }) => id === currentNotification.transaction.id,
-      );
-      if (!tx) return;
-      const {
-        selectedAddress,
-        ticker,
-        chainId,
-        conversionRate,
-        currentCurrency,
-        exchangeRate,
-        contractExchangeRates,
-        collectibleContracts,
-        tokens,
-        primaryCurrency,
-        swapsTransactions,
-        swapsTokens,
-      } = props;
       const [transactionElement, transactionDetails] = await decodeTransaction({
-        ...props,
-        tx,
+        tx: notifiedTx,
         selectedAddress,
         ticker,
         chainId,
@@ -250,27 +252,42 @@ function TransactionNotification(props) {
         swapsTransactions,
         swapsTokens,
       });
-      const existingGasPrice = new BigNumber(tx?.txParams?.gasPrice || '0x0');
-      const gasFeeValue = fastSplit(
-        existingGasPrice
-          .times(
-            transactionAction === ACTION_CANCEL ? CANCEL_RATE : SPEED_UP_RATE,
-          )
-          .toString(),
-      ); // strips decimals if any, coming from the 'times' operation
-      setGasFee(gasFeeValue);
-      setTx(tx);
+      if (cancelled) return;
+      setTx(notifiedTx);
       setTransactionElement(transactionElement);
       setTransactionDetails(transactionDetails);
     }
     getTransactionInfo();
+    return () => {
+      cancelled = true;
+    };
   }, [
-    transactions,
-    smartTransactions,
-    currentNotification.transaction.id,
-    transactionAction,
-    props,
+    notifiedTx,
+    selectedAddress,
+    ticker,
+    chainId,
+    conversionRate,
+    currentCurrency,
+    exchangeRate,
+    contractExchangeRates,
+    collectibleContracts,
+    tokens,
+    primaryCurrency,
+    swapsTransactions,
+    swapsTokens,
   ]);
+
+  const gasFee = useMemo(() => {
+    const existingGasPrice = new BigNumber(tx?.txParams?.gasPrice || '0x0');
+    // fastSplit strips decimals coming from the 'times' operation
+    return fastSplit(
+      existingGasPrice
+        .times(
+          transactionAction === ACTION_CANCEL ? CANCEL_RATE : SPEED_UP_RATE,
+        )
+        .toString(),
+    );
+  }, [tx, transactionAction]);
 
   useEffect(() => onCloseNotification(), [onCloseNotification]);
 
@@ -443,7 +460,7 @@ const mapStateToProps = (state) => {
   const smartTransactions =
     SmartTransactionsController?.smartTransactionsState?.smartTransactions?.[
       chainId
-    ] || [];
+    ] || EMPTY_ARRAY;
 
   return {
     accounts: selectAccounts(state),
@@ -457,7 +474,7 @@ const mapStateToProps = (state) => {
     conversionRate: selectConversionRate(state),
     currentCurrency: selectCurrentCurrency(state),
     primaryCurrency: state.settings.primaryCurrency,
-    swapsTransactions: TransactionController.swapsTransactions || {},
+    swapsTransactions: TransactionController.swapsTransactions || EMPTY_OBJECT,
     swapsTokens: SwapsController.tokens,
     smartTransactions,
   };
