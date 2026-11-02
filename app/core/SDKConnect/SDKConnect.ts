@@ -33,6 +33,8 @@ import {
   updateSDKLoadingState,
 } from './StateManagement';
 import DevLogger from './utils/DevLogger';
+import { removeDappConnection } from '../../actions/sdk';
+import { store } from '../../store';
 
 export interface ConnectedSessions {
   [id: string]: Connection;
@@ -74,6 +76,9 @@ export interface SDKConnectState {
   deeplinkingServiceStarted: boolean;
   deeplinkingService?: DeeplinkProtocolService;
   dappConnections: SDKSessions;
+  // Android SDK connections awaiting user approval; kept in memory only so a
+  // declined or abandoned request is never persisted.
+  pendingDappConnections: SDKSessions;
   connecting: { [channelId: string]: boolean };
   approvedHosts: ApprovedHosts;
   sdkLoadingState: { [channelId: string]: boolean };
@@ -104,6 +109,7 @@ export class SDKConnect {
     connected: {},
     connections: {},
     dappConnections: {},
+    pendingDappConnections: {},
     androidSDKStarted: false,
     androidSDKBound: false,
     deeplinkingServiceStarted: false,
@@ -237,7 +243,18 @@ export class SDKConnect {
   }
 
   async addDappConnection(connection: ConnectionProps) {
+    delete this.state.pendingDappConnections[connection.id];
     return addDappConnection(connection, this);
+  }
+
+  setPendingDappConnection(connection: ConnectionProps) {
+    this.state.pendingDappConnections[connection.id] = connection;
+  }
+
+  removeDappConnection(channelId: string) {
+    delete this.state.pendingDappConnections[channelId];
+    delete this.state.dappConnections[channelId];
+    store.dispatch(removeDappConnection(channelId));
   }
 
   public async refreshChannel({ channelId }: { channelId: string }) {
@@ -294,7 +311,9 @@ export class SDKConnect {
 
   public getConnection({ channelId }: { channelId: string }) {
     return (
-      this.state.connections[channelId] ?? this.state.dappConnections[channelId]
+      this.state.connections[channelId] ??
+      this.state.dappConnections[channelId] ??
+      this.state.pendingDappConnections[channelId]
     );
   }
 

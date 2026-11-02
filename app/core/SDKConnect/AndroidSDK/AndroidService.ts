@@ -33,6 +33,7 @@ import AndroidSDKEventHandler from './AndroidNativeSDKEventHandler';
 import sendMessage from './AndroidService/sendMessage';
 import { DappClient, DappConnections } from './dapp-sdk-types';
 import getDefaultBridgeParams from './getDefaultBridgeParams';
+import isValidAndroidSDKClientId from './isValidAndroidSDKClientId';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import Routes from '../../../constants/navigation/Routes';
@@ -85,6 +86,13 @@ export default class AndroidService extends EventEmitter2 {
 
       if (rawConnections) {
         Object.values(rawConnections).forEach((connection) => {
+          if (!this.isApprovedClient(connection.id)) {
+            Logger.log(
+              `AndroidService::setupEventListeners dropping unapproved or invalid stored client`,
+            );
+            SDKConnect.getInstance().removeDappConnection(connection.id);
+            return;
+          }
           DevLogger.log(
             `AndroidService::setupEventListeners recover client: ${connection.id}`,
           );
@@ -125,7 +133,13 @@ export default class AndroidService extends EventEmitter2 {
 
   private setupOnClientsConnectedListener() {
     this.eventHandler.onClientsConnected(async (sClientInfo: string) => {
-      const clientInfo: DappClient = JSON.parse(sClientInfo);
+      const clientInfo = AndroidService.parseClientInfo(sClientInfo);
+      if (!clientInfo) {
+        Logger.log(
+          `AndroidService::clients_connected - rejected client with invalid client info`,
+        );
+        return;
+      }
 
       DevLogger.log(`AndroidService::clients_connected`, clientInfo);
       if (this.connections?.[clientInfo.clientId]) {
@@ -157,7 +171,9 @@ export default class AndroidService extends EventEmitter2 {
         return;
       }
 
-      await SDKConnect.getInstance().addDappConnection({
+      // Kept in memory only so the approval screen can show the dapp metadata;
+      // persisted once the user approves the connection.
+      SDKConnect.getInstance().setPendingDappConnection({
         id: clientInfo.clientId,
         lastAuthorized: Date.now(),
         origin: AppConstants.MM_SDK.ANDROID_SDK,
@@ -226,6 +242,7 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::clients_connected sending jsonrpc error to client - connection rejected`,
           );
+          this.discardConnection(clientInfo.clientId);
           this.sendMessage({
             data: {
               error,
@@ -257,6 +274,50 @@ export default class AndroidService extends EventEmitter2 {
         );
       });
     });
+  }
+
+  private static parseClientInfo(sClientInfo: string): DappClient | undefined {
+    let clientInfo: DappClient;
+    try {
+      clientInfo = JSON.parse(sClientInfo);
+    } catch {
+      return undefined;
+    }
+
+    if (
+      !clientInfo ||
+      typeof clientInfo !== 'object' ||
+      !isValidAndroidSDKClientId(clientInfo.clientId) ||
+      !clientInfo.originatorInfo ||
+      typeof clientInfo.originatorInfo !== 'object'
+    ) {
+      return undefined;
+    }
+
+    return clientInfo;
+  }
+
+  private isApprovedClient(clientId: string): boolean {
+    if (!isValidAndroidSDKClientId(clientId)) {
+      return false;
+    }
+    const permissionsController = (
+      Engine.context as {
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PermissionController: PermissionController<any, any>;
+      }
+    ).PermissionController;
+    return permissionsController.hasPermission(
+      clientId,
+      Caip25EndowmentPermissionName,
+    );
+  }
+
+  private discardConnection(clientId: string) {
+    delete this.bridgeByClientId[clientId];
+    delete this.connections[clientId];
+    SDKConnect.getInstance().removeDappConnection(clientId);
   }
 
   private async checkPermission({
@@ -322,12 +383,6 @@ export default class AndroidService extends EventEmitter2 {
           sessionId = parsedMsg.id;
           message = parsedMsg.message;
           data = JSON.parse(message);
-
-          // Update connected state
-          this.connections[sessionId] = {
-            ...this.connections[sessionId],
-            connected: true,
-          };
         } catch (error) {
           Logger.log(
             error,
@@ -347,6 +402,23 @@ export default class AndroidService extends EventEmitter2 {
           });
           return;
         }
+
+        if (
+          !isValidAndroidSDKClientId(sessionId) ||
+          !this.connections[sessionId]?.clientId
+        ) {
+          // Only clients that completed the connect/approval flow may send RPC.
+          Logger.log(
+            `AndroidService::onMessageReceived dropping message from unknown or invalid client`,
+          );
+          return;
+        }
+
+        // Update connected state
+        this.connections[sessionId] = {
+          ...this.connections[sessionId],
+          connected: true,
+        };
 
         let bridge = this.bridgeByClientId[sessionId];
 
@@ -456,6 +528,10 @@ export default class AndroidService extends EventEmitter2 {
   }
 
   private setupBridge(clientInfo: DappClient) {
+    if (!isValidAndroidSDKClientId(clientInfo?.clientId)) {
+      throw new Error('AndroidService::setupBridge invalid client id');
+    }
+
     DevLogger.log(
       `AndroidService::setupBridge for id=${clientInfo.clientId} exists=${!!this
         .bridgeByClientId[clientInfo.clientId]}}`,

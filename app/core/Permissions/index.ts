@@ -10,6 +10,18 @@ import { toHex } from '@metamask/controller-utils';
 
 const INTERNAL_ORIGINS = [process.env.MM_FOX_CODE, TransactionTypes.MMM];
 
+/**
+ * Whether the origin is one of the wallet's own internal origins, which
+ * `getPermittedAccounts` maps to the selected account without a permission lookup.
+ *
+ * @param origin - The origin to check.
+ * @returns True if the origin is a non-empty internal origin.
+ */
+export const isInternalOrigin = (origin?: string | null): boolean =>
+  typeof origin === 'string' &&
+  origin.length > 0 &&
+  INTERNAL_ORIGINS.includes(origin);
+
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Engine = ImportedEngine as any;

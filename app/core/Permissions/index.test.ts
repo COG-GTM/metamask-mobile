@@ -28,6 +28,7 @@ import {
   updatePermittedChains,
   sortAccountsByLastSelected,
   getPermittedAccounts,
+  isInternalOrigin,
 } from '.';
 import { Hex, Json } from '@metamask/utils';
 
@@ -863,6 +864,19 @@ describe('Permission Utility Functions', () => {
       const result = sortAccountsByLastSelected(accounts);
       expect(result).toEqual(['0x2', '0x3', '0x1']);
     });
+  });
+
+  describe('isInternalOrigin', () => {
+    it('matches the wallet internal origin', () => {
+      expect(isInternalOrigin(TransactionTypes.MMM)).toBe(true);
+    });
+
+    it.each(['app.uniswap.org', '3f1c2a9e-8b7d-4c6e-9a5f-1b2c3d4e5f60', '', undefined, null])(
+      'does not match %p',
+      (origin) => {
+        expect(isInternalOrigin(origin)).toBe(false);
+      },
+    );
   });
 
   describe('getPermittedAccounts', () => {
