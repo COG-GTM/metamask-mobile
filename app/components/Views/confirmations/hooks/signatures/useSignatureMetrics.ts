@@ -19,6 +19,25 @@ import { useSelector } from 'react-redux';
 import { selectConfirmationMetricsById } from '../../../../../core/redux/slices/confirmationMetrics';
 import { RootState } from '../../../../../reducers';
 
+const MAX_TRACKED_SIGNATURE_REQUESTS = 100;
+const trackedSignatureRequestIds = new Set<string>();
+
+const markSignatureRequestTracked = (id: string) => {
+  if (trackedSignatureRequestIds.has(id)) {
+    return false;
+  }
+  trackedSignatureRequestIds.add(id);
+  if (trackedSignatureRequestIds.size > MAX_TRACKED_SIGNATURE_REQUESTS) {
+    const [oldestId] = trackedSignatureRequestIds;
+    trackedSignatureRequestIds.delete(oldestId);
+  }
+  return true;
+};
+
+export const resetTrackedSignatureRequests = () => {
+  trackedSignatureRequestIds.clear();
+};
+
 interface MessageParamsType {
   meta: Record<string, unknown>;
   from: string;
@@ -107,8 +126,11 @@ export const useSignatureMetrics = () => {
   );
 
   useEffect(() => {
+    if (!id || !analyticsParams || !markSignatureRequestTracked(id)) {
+      return;
+    }
     captureSignatureMetrics(MetaMetricsEvents.SIGNATURE_REQUESTED);
-  }, [captureSignatureMetrics]);
+  }, [analyticsParams, captureSignatureMetrics, id]);
 
   return { captureSignatureMetrics };
 };

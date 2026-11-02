@@ -1,16 +1,22 @@
+import { act } from '@testing-library/react-native';
 import { MetaMetricsEvents } from '../../../../../core/Analytics';
+import { updateConfirmationMetric } from '../../../../../core/redux/slices/confirmationMetrics';
 import {
   securityAlertResponse,
   typedSignV4ConfirmationState,
   typedSignV4SignatureRequest,
 } from '../../../../../util/test/confirm-data-helpers';
 import { renderHookWithProvider } from '../../../../../util/test/renderWithProvider';
-import { useSignatureMetrics } from './useSignatureMetrics';
+import {
+  resetTrackedSignatureRequests,
+  useSignatureMetrics,
+} from './useSignatureMetrics';
 import { ResultType, Reason, SecurityAlertSource } from '../../../../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 
 const mockTypedSignV4SignatureRequest = typedSignV4SignatureRequest;
+const mockUseSignatureRequest = jest.fn(() => mockTypedSignV4SignatureRequest);
 jest.mock('./useSignatureRequest', () => ({
-  useSignatureRequest: () => mockTypedSignV4SignatureRequest,
+  useSignatureRequest: () => mockUseSignatureRequest(),
 }));
 
 jest.mock('../../../../../util/address', () => ({
@@ -92,6 +98,120 @@ const SignatureMetricsUndefined = {
 describe('useSignatureMetrics', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    resetTrackedSignatureRequests();
+    mockUseSignatureRequest.mockImplementation(
+      () => mockTypedSignV4SignatureRequest,
+    );
+  });
+
+  const requestedEventCount = () => mockTrackEvent.mock.calls.length;
+
+  it('captures SIGNATURE_REQUESTED once when several components use the hook', () => {
+    renderHookWithProvider(
+      () => {
+        useSignatureMetrics();
+        useSignatureMetrics();
+        useSignatureMetrics();
+        useSignatureMetrics();
+        useSignatureMetrics();
+      },
+      {
+        state: {
+          ...typedSignV4ConfirmationState,
+          signatureRequest: { securityAlertResponse },
+        },
+      },
+    );
+
+    expect(requestedEventCount()).toBe(1);
+    expect(mockAddProperties).toHaveBeenCalledWith(SignatureMetrics);
+  });
+
+  it('does not capture SIGNATURE_REQUESTED again when analytics params change', () => {
+    const { store } = renderHookWithProvider(
+      () => {
+        useSignatureMetrics();
+        useSignatureMetrics();
+      },
+      {
+        state: {
+          ...typedSignV4ConfirmationState,
+          signatureRequest: {
+            securityAlertResponse: securityAlertResponseLoading,
+          },
+        },
+      },
+    );
+    expect(requestedEventCount()).toBe(1);
+
+    act(() => {
+      store.dispatch({
+        type: 'SET_SIGNATURE_REQUEST_SECURITY_ALERT_RESPONSE',
+        securityAlertResponse,
+      });
+    });
+    act(() => {
+      store.dispatch(
+        updateConfirmationMetric({
+          id: mockTypedSignV4SignatureRequest.id,
+          params: { properties: { alert_visualized: ['a'] } },
+        }),
+      );
+    });
+
+    expect(requestedEventCount()).toBe(1);
+  });
+
+  it('does not capture SIGNATURE_REQUESTED again when the hook remounts for the same request', () => {
+    const state = {
+      ...typedSignV4ConfirmationState,
+      signatureRequest: { securityAlertResponse },
+    };
+    const { unmount } = renderHookWithProvider(() => useSignatureMetrics(), {
+      state,
+    });
+    unmount();
+    renderHookWithProvider(() => useSignatureMetrics(), { state });
+
+    expect(requestedEventCount()).toBe(1);
+  });
+
+  it('captures SIGNATURE_REQUESTED for each new signature request id', () => {
+    const { rerender } = renderHookWithProvider(() => useSignatureMetrics(), {
+      state: {
+        ...typedSignV4ConfirmationState,
+        signatureRequest: { securityAlertResponse },
+      },
+    });
+    expect(requestedEventCount()).toBe(1);
+
+    mockUseSignatureRequest.mockImplementation(() => ({
+      ...mockTypedSignV4SignatureRequest,
+      id: 'another-signature-request-id',
+    }));
+    rerender({});
+
+    expect(requestedEventCount()).toBe(2);
+  });
+
+  it('does not capture SIGNATURE_REQUESTED until the request is available', () => {
+    mockUseSignatureRequest.mockImplementation(
+      () => undefined as unknown as typeof mockTypedSignV4SignatureRequest,
+    );
+    const { rerender } = renderHookWithProvider(() => useSignatureMetrics(), {
+      state: {
+        ...typedSignV4ConfirmationState,
+        signatureRequest: { securityAlertResponse },
+      },
+    });
+    expect(requestedEventCount()).toBe(0);
+
+    mockUseSignatureRequest.mockImplementation(
+      () => mockTypedSignV4SignatureRequest,
+    );
+    rerender({});
+
+    expect(requestedEventCount()).toBe(1);
   });
 
   it('should capture metrics events correctly', async () => {
