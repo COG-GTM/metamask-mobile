@@ -291,10 +291,21 @@ export const selectDestAddress = createSelector(
   (bridgeState) => bridgeState.destAddress,
 );
 
+/**
+ * Selects the `bridgeConfig` remote feature flag.
+ *
+ * @param state - The Redux root state.
+ * @returns The bridge feature flag config, or undefined if not set.
+ */
 const selectBridgeConfig = (state: RootState) =>
   selectRemoteFeatureFlags(state).bridgeConfig;
 
-// Not part of Redux state, so it is read as a primitive input to keep memoization stable.
+/**
+ * Reads the MetaMetrics opt-in. It is not part of Redux state, so it is
+ * returned as a primitive input to keep `selectControllerFields` memoization stable.
+ *
+ * @returns Whether the user participates in MetaMetrics.
+ */
 const selectParticipateInMetaMetrics = () =>
   MetaMetrics.getInstance().isEnabled();
 
