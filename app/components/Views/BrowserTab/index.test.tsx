@@ -1,8 +1,11 @@
 import React from 'react';
+import { act } from '@testing-library/react-native';
+import { BackHandler } from 'react-native';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 import BrowserTab from './BrowserTab';
+import { setActiveTab } from '../../../actions/browser';
 import AppConstants from '../../../core/AppConstants';
 
 const mockNavigation = {
@@ -10,7 +13,7 @@ const mockNavigation = {
   goForward: jest.fn(),
   canGoBack: true,
   canGoForward: true,
-  addListener: jest.fn(),
+  addListener: jest.fn<() => void, [string, () => void]>(() => jest.fn()),
 };
 
 jest.mock('@react-navigation/native', () => {
@@ -19,6 +22,7 @@ jest.mock('@react-navigation/native', () => {
     ...actualNav,
     useNavigation: () => mockNavigation,
     useIsFocused: () => true,
+    useRoute: () => ({ params: {} }),
   };
 });
 
@@ -40,6 +44,9 @@ jest.mock('../../../core/Engine', () => ({
     PhishingController: {
       maybeUpdateState: jest.fn(),
       test: () => ({ result: true, name: 'test' }),
+    },
+    CurrencyRateController: {
+      updateExchangeRate: jest.fn(),
     },
   },
 }));
@@ -77,5 +84,74 @@ describe('BrowserTab', () => {
       state: mockInitialState,
     });
     expect(toJSON()).toMatchSnapshot();
+  });
+
+  it('unsubscribes navigation focus/blur listeners and the back handler on unmount', () => {
+    const unsubscribers: jest.Mock[] = [];
+    mockNavigation.addListener.mockImplementation(() => {
+      const unsubscribe = jest.fn();
+      unsubscribers.push(unsubscribe);
+      return unsubscribe;
+    });
+    const removeEventListenerSpy = jest.spyOn(
+      BackHandler,
+      'removeEventListener',
+    );
+
+    const { unmount } = renderWithProvider(<BrowserTab {...mockProps} />, {
+      state: mockInitialState,
+    });
+
+    const registeredEvents = mockNavigation.addListener.mock.calls.map(
+      ([event]) => event,
+    );
+    expect(registeredEvents).toEqual(expect.arrayContaining(['focus', 'blur']));
+    expect(unsubscribers.length).toBeGreaterThan(0);
+
+    unmount();
+
+    unsubscribers.forEach((unsubscribe) => {
+      expect(unsubscribe).toHaveBeenCalledTimes(1);
+    });
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'hardwareBackPress',
+      expect.any(Function),
+    );
+  });
+
+  it('keeps one focus and one blur listener while the active tab changes', () => {
+    const liveListeners: Record<string, number> = {};
+    mockNavigation.addListener.mockImplementation((event: string) => {
+      liveListeners[event] = (liveListeners[event] ?? 0) + 1;
+      return jest.fn(() => {
+        liveListeners[event] -= 1;
+      });
+    });
+
+    const { store } = renderWithProvider(<BrowserTab {...mockProps} />, {
+      state: {
+        ...mockInitialState,
+        browser: {
+          activeTab: '',
+          history: [],
+          whitelist: [],
+          tabs: [],
+          favicons: [],
+          visitedDappsByHostname: {},
+        },
+      },
+    });
+
+    for (let i = 0; i < 5; i++) {
+      act(() => {
+        store.dispatch(setActiveTab(mockProps.id));
+      });
+      act(() => {
+        store.dispatch(setActiveTab(mockProps.id + 1));
+      });
+    }
+
+    expect(mockNavigation.addListener.mock.calls.length).toBeGreaterThan(2);
+    expect(liveListeners).toEqual({ focus: 1, blur: 1 });
   });
 });
