@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import Fuse from 'fuse.js';
@@ -25,6 +25,9 @@ const LabelElement = (styles, label) => (
   </View>
 );
 
+const getContractStatusKey = (contact, fallbackChainId) =>
+  `${contact.chainId ?? fallbackChainId}:${contact.address?.toLowerCase()}`;
+
 const AddressList = ({
   chainId,
   inputSearch,
@@ -36,8 +39,7 @@ const AddressList = ({
 }) => {
   const { colors } = useTheme();
   const styles = styleSheet(colors);
-  const [contactElements, setContactElements] = useState([]);
-  const [fuse, setFuse] = useState(undefined);
+  const [smartContractStatus, setSmartContractStatus] = useState({});
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
@@ -48,104 +50,140 @@ const AddressList = ({
     () => addressBook[chainId] || {},
     [addressBook, chainId],
   );
-  const parseAddressBook = useCallback(
-    (networkAddressBookList) => {
-      const contacts = networkAddressBookList.map((contact) => {
-        const isAmbiguousAddress =
-          chainId &&
-          ambiguousAddressEntries?.[chainId]?.includes(contact.address);
-        return {
-          ...contact,
-          ...(isAmbiguousAddress && { isAmbiguousAddress }),
-          isSmartContract: false,
-        };
-      });
 
-      Promise.all(
-        contacts.map((contact) =>
-          isSmartContractAddress(contact.address, contact.chainId)
-            .then((isSmartContract) => {
-              if (isSmartContract) {
-                return { ...contact, isSmartContract: true };
-              }
-              return contact;
-            })
-            .catch(() => contact),
-        ),
-      ).then((updatedContacts) => {
-        const newContactElements = [];
-        const addressBookTree = {};
-
-        updatedContacts.forEach((contact) => {
-          const contactNameInitial = contact?.name?.[0];
-          const nameInitial = regex.nameInitial.exec(contactNameInitial);
-          const initial = nameInitial
-            ? nameInitial[0].toLowerCase()
-            : strings('address_book.others');
-          if (Object.keys(addressBookTree).includes(initial)) {
-            addressBookTree[initial].push(contact);
-          } else if (contact.isSmartContract && !onlyRenderAddressBook) {
-            return;
-          } else {
-            addressBookTree[initial] = [contact];
-          }
-        });
-
-        Object.keys(addressBookTree)
-          .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-          .forEach((initial) => {
-            newContactElements.push(initial);
-            addressBookTree[initial].forEach((contact) => {
-              newContactElements.push(contact);
-            });
-          });
-
-        setContactElements(newContactElements);
-      });
-    },
-    [onlyRenderAddressBook, ambiguousAddressEntries, chainId],
+  const networkAddressBookList = useMemo(
+    () =>
+      Object.keys(networkAddressBook).map(
+        (address) => networkAddressBook[address],
+      ),
+    // reloadAddressList lets parent screens force a fresh list snapshot
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [networkAddressBook, reloadAddressList],
   );
 
+  const fuse = useMemo(
+    () =>
+      new Fuse(networkAddressBookList, {
+        shouldSort: true,
+        threshold: 0.45,
+        location: 0,
+        distance: 10,
+        maxPatternLength: 32,
+        minMatchCharLength: 1,
+        keys: [
+          { name: 'name', weight: 0.5 },
+          { name: 'address', weight: 0.5 },
+        ],
+      }),
+    [networkAddressBookList],
+  );
+
+  // Contract status per (chainId, address) is resolved once for the whole
+  // network address book; searching only filters the cached results.
   useEffect(() => {
-    const networkAddressBookList = Object.keys(networkAddressBook).map(
-      (address) => networkAddressBook[address],
+    let cancelled = false;
+    const pendingContacts = networkAddressBookList.filter(
+      (contact) =>
+        smartContractStatus[getContractStatusKey(contact, chainId)] ===
+        undefined,
     );
-    const newFuse = new Fuse(networkAddressBookList, {
-      shouldSort: true,
-      threshold: 0.45,
-      location: 0,
-      distance: 10,
-      maxPatternLength: 32,
-      minMatchCharLength: 1,
-      keys: [
-        { name: 'name', weight: 0.5 },
-        { name: 'address', weight: 0.5 },
-      ],
+    if (!pendingContacts.length) return;
+
+    Promise.all(
+      pendingContacts.map((contact) =>
+        isSmartContractAddress(contact.address, contact.chainId ?? chainId)
+          .then((isSmartContract) => [contact, Boolean(isSmartContract)])
+          .catch(() => [contact, false]),
+      ),
+    ).then((results) => {
+      if (cancelled) return;
+      setSmartContractStatus((prevStatus) => {
+        const nextStatus = { ...prevStatus };
+        results.forEach(([contact, isSmartContract]) => {
+          nextStatus[getContractStatusKey(contact, chainId)] = isSmartContract;
+        });
+        return nextStatus;
+      });
     });
-    setFuse(newFuse);
-    parseAddressBook(networkAddressBookList);
-  }, [networkAddressBook, parseAddressBook]);
 
-  const getNetworkAddressBookList = useCallback(() => {
-    if (inputSearch && fuse) {
-      return fuse.search(inputSearch);
-    }
+    return () => {
+      cancelled = true;
+    };
+    // smartContractStatus is intentionally omitted: storing results must not
+    // re-trigger lookups, and pending addresses are recomputed when the
+    // address book or chain changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [networkAddressBookList, chainId]);
 
-    return Object.keys(networkAddressBook).map(
-      (address) => networkAddressBook[address],
-    );
-  }, [fuse, inputSearch, networkAddressBook]);
+  const isContractStatusResolved = useMemo(
+    () =>
+      networkAddressBookList.every(
+        (contact) =>
+          smartContractStatus[getContractStatusKey(contact, chainId)] !==
+          undefined,
+      ),
+    [networkAddressBookList, smartContractStatus, chainId],
+  );
 
-  useEffect(() => {
-    const networkAddressBookList = getNetworkAddressBookList();
-    parseAddressBook(networkAddressBookList);
+  const contactElements = useMemo(() => {
+    if (!isContractStatusResolved) return [];
+
+    const filteredContacts = inputSearch
+      ? fuse.search(inputSearch)
+      : networkAddressBookList;
+
+    const newContactElements = [];
+    const addressBookTree = {};
+
+    filteredContacts.forEach((addressBookContact) => {
+      const isAmbiguousAddress =
+        chainId &&
+        ambiguousAddressEntries?.[chainId]?.includes(
+          addressBookContact.address,
+        );
+      const contact = {
+        ...addressBookContact,
+        ...(isAmbiguousAddress && { isAmbiguousAddress }),
+        isSmartContract: Boolean(
+          smartContractStatus[
+            getContractStatusKey(addressBookContact, chainId)
+          ],
+        ),
+      };
+
+      const contactNameInitial = contact?.name?.[0];
+      const nameInitial = regex.nameInitial.exec(contactNameInitial);
+      const initial = nameInitial
+        ? nameInitial[0].toLowerCase()
+        : strings('address_book.others');
+      if (Object.keys(addressBookTree).includes(initial)) {
+        addressBookTree[initial].push(contact);
+      } else if (contact.isSmartContract && !onlyRenderAddressBook) {
+        return;
+      } else {
+        addressBookTree[initial] = [contact];
+      }
+    });
+
+    Object.keys(addressBookTree)
+      .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+      .forEach((initial) => {
+        newContactElements.push(initial);
+        addressBookTree[initial].forEach((contact) => {
+          newContactElements.push(contact);
+        });
+      });
+
+    return newContactElements;
   }, [
+    isContractStatusResolved,
     inputSearch,
-    addressBook,
+    fuse,
+    networkAddressBookList,
     chainId,
-    reloadAddressList,
-    getNetworkAddressBookList,
-    parseAddressBook,
+    ambiguousAddressEntries,
+    smartContractStatus,
+    onlyRenderAddressBook,
   ]);
 
   const renderMyAccounts = () => {
