@@ -11,22 +11,24 @@ import { selectConfirmationRedesignFlagsFromRemoteFeatureFlags } from '../../../
 import { addTransaction } from '../../../../util/transaction-controller';
 import { generateTransferData } from '../../../../util/transactions';
 import { safeToChecksumAddress } from '../../../../util/address';
-import { getGlobalNetworkClientId } from '../../../../util/networks/global-network';
 import { ETH_ACTIONS } from '../../../../constants/deeplinks';
 import Engine from '../../../../core/Engine';
 import Logger from '../../../../util/Logger';
 
 const getNetworkClientIdForChainId = (chainId: Hex) => {
   const { NetworkController } = Engine.context;
-  const selectedNetworkClientId = getGlobalNetworkClientId();
+  let networkClientId: string | undefined;
   try {
-    return (
-      NetworkController.findNetworkClientIdByChainId(chainId) ??
-      selectedNetworkClientId
-    );
+    networkClientId = NetworkController.findNetworkClientIdByChainId(chainId);
   } catch {
-    return selectedNetworkClientId;
+    networkClientId = undefined;
   }
+
+  if (!networkClientId) {
+    throw new Error(`Unable to find network with chain id ${chainId}`);
+  }
+
+  return networkClientId;
 };
 
 export function isDeeplinkRedesignedConfirmationCompatible(
@@ -71,54 +73,56 @@ export async function addTransactionForDeeplink({
 
   isAddingDeeplinkTransaction = true;
 
-  const selectedAccountAddress =
-    AccountsController.getSelectedAccount().address;
+  try {
+    const selectedAccountAddress =
+      AccountsController.getSelectedAccount().address;
 
-  let chainId: Hex;
-  if (chain_id) {
-    chainId = toHex(chain_id as string);
-  } else {
-    // Deeplinks are fallback to mainnet rather than the selected network
-    chainId = CHAIN_IDS.MAINNET;
+    let chainId: Hex;
+    if (chain_id) {
+      chainId = toHex(chain_id as string);
+    } else {
+      // Deeplinks are fallback to mainnet rather than the selected network
+      chainId = CHAIN_IDS.MAINNET;
+    }
+
+    // This should be anything *except* 'MMM' (MetaMask Mobile) to avoid layout issues in redesigned confirmations
+    const origin = 'deeplink';
+    const networkClientId = getNetworkClientIdForChainId(chainId);
+    const from = safeToChecksumAddress(selectedAccountAddress) as string;
+    const to = safeToChecksumAddress(target_address);
+    const checkSummedParamAddress = safeToChecksumAddress(parameters?.address ?? '');
+
+    if (function_name === ETH_ACTIONS.TRANSFER) {
+      // ERC20 transfer
+      const txParams: TransactionParams = {
+        from,
+        to,
+        data: generateTransferData('transfer', {
+          toAddress: checkSummedParamAddress,
+          amount: toHex(parameters?.uint256 as string),
+        }),
+      };
+
+      await addTransaction(txParams, {
+        networkClientId,
+        origin,
+        type: TransactionType.tokenMethodTransfer,
+      });
+    } else {
+      // Native transfer
+      const txParams: TransactionParams = {
+        from,
+        to,
+        value: toHex(parameters?.value as string),
+      };
+
+      await addTransaction(txParams, {
+        networkClientId,
+        origin,
+        type: TransactionType.simpleSend,
+      });
+    }
+  } finally {
+    isAddingDeeplinkTransaction = false;
   }
-
-  // This should be anything *except* 'MMM' (MetaMask Mobile) to avoid layout issues in redesigned confirmations
-  const origin = 'deeplink';
-  const networkClientId = getNetworkClientIdForChainId(chainId);
-  const from = safeToChecksumAddress(selectedAccountAddress) as string;
-  const to = safeToChecksumAddress(target_address);
-  const checkSummedParamAddress = safeToChecksumAddress(parameters?.address ?? '');
-
-  if (function_name === ETH_ACTIONS.TRANSFER) {
-    // ERC20 transfer
-    const txParams: TransactionParams = {
-      from,
-      to,
-      data: generateTransferData('transfer', {
-        toAddress: checkSummedParamAddress,
-        amount: toHex(parameters?.uint256 as string),
-      }),
-    };
-
-    await addTransaction(txParams, {
-      networkClientId,
-      origin,
-      type: TransactionType.tokenMethodTransfer,
-    });
-  } else {
-    // Native transfer
-    const txParams: TransactionParams = {
-      from,
-      to,
-      value: toHex(parameters?.value as string),
-    };
-
-    await addTransaction(txParams, {
-      networkClientId,
-      origin,
-      type: TransactionType.simpleSend,
-    });
-  }
-
-  isAddingDeeplinkTransaction = false;
 }

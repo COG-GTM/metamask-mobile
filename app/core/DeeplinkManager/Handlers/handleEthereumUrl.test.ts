@@ -218,6 +218,32 @@ describe('handleEthereumUrl', () => {
     });
   });
 
+  it('shows network not found alert and skips network switch when addTransactionForDeeplink rejects for an unknown chain', async () => {
+    const spyAlert = jest.spyOn(Alert, 'alert');
+    mockIsDeeplinkRedesignedConfirmationCompatible.mockReturnValue(true);
+    mockAddTransactionForDeeplink.mockRejectedValue(
+      new Error('Unable to find network with chain id 0x38'),
+    );
+    mockParse.mockReturnValue({
+      chain_id: '56',
+      parameters: { value: '1000000000000000000' },
+    });
+
+    await handleEthereumUrl({
+      deeplinkManager,
+      url: 'ethereum:0x6D404AfE1a6A07Aa3CbcBf9Fd027671Df628ebFc@56',
+      origin: 'test_origin',
+    });
+
+    expect(mockHandleNetworkSwitch).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockGetDecimalChainId).toHaveBeenCalledWith('56');
+    expect(spyAlert).toHaveBeenCalledWith(
+      'send.network_not_found_title',
+      'send.network_not_found_description',
+    );
+  });
+
   it('shows alert when there is an unknown error during Ethereum URL handling', () => {
     const spyAlert = jest.spyOn(Alert, 'alert');
 

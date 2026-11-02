@@ -201,6 +201,104 @@ describe('addTransactionForDeeplink', () => {
     expect(mockAddTransaction).toHaveBeenCalledTimes(1);
   });
 
+  it('throws and does not add a transaction when chain_id is not a configured network', async () => {
+    mockFindNetworkClientIdByChainId.mockImplementation(() => {
+      throw new Error("Couldn't find networkClientId for chainId");
+    });
+
+    await expect(
+      addTransactionForDeeplink({
+        chain_id: '56',
+        parameters: {
+          value: '1000000000000000000',
+        },
+        target_address: TO_ADDRESS_MOCK,
+      } as unknown as ParseOutput),
+    ).rejects.toThrow('Unable to find network with chain id 0x38');
+
+    expect(mockFindNetworkClientIdByChainId).toHaveBeenCalledWith('0x38');
+    expect(mockAddTransaction).not.toHaveBeenCalled();
+  });
+
+  it('throws and does not add a transaction when no network client is found for chain_id', async () => {
+    mockFindNetworkClientIdByChainId.mockReturnValue(
+      undefined as unknown as string,
+    );
+
+    await expect(
+      addTransactionForDeeplink({
+        chain_id: '56',
+        function_name: ETH_ACTIONS.TRANSFER,
+        parameters: {
+          address: TO_ADDRESS_MOCK,
+          uint256: '1000',
+        },
+        target_address: TO_ADDRESS_MOCK,
+      } as unknown as ParseOutput),
+    ).rejects.toThrow('Unable to find network with chain id 0x38');
+
+    expect(mockAddTransaction).not.toHaveBeenCalled();
+  });
+
+  it('accepts a new deeplink transaction after a previous one failed', async () => {
+    mockFindNetworkClientIdByChainId.mockImplementationOnce(() => {
+      throw new Error("Couldn't find networkClientId for chainId");
+    });
+
+    await expect(
+      addTransactionForDeeplink({
+        chain_id: '56',
+        parameters: { value: '1000' },
+        target_address: TO_ADDRESS_MOCK,
+      } as unknown as ParseOutput),
+    ).rejects.toThrow();
+
+    await addTransactionForDeeplink({
+      parameters: { value: '1000' },
+      target_address: TO_ADDRESS_MOCK,
+    } as unknown as ParseOutput);
+
+    expect(mockAddTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it('accepts a new deeplink transaction after addTransaction rejected', async () => {
+    mockAddTransaction.mockRejectedValueOnce(new Error('addTransaction failed'));
+
+    await expect(
+      addTransactionForDeeplink({
+        parameters: { value: '1000' },
+        target_address: TO_ADDRESS_MOCK,
+      } as unknown as ParseOutput),
+    ).rejects.toThrow('addTransaction failed');
+
+    await addTransactionForDeeplink({
+      parameters: { value: '2000' },
+      target_address: TO_ADDRESS_MOCK,
+    } as unknown as ParseOutput);
+
+    expect(mockAddTransaction).toHaveBeenCalledTimes(2);
+    expect(mockAddTransaction).toHaveBeenLastCalledWith(
+      expect.objectContaining({ value: '0x7d0' }),
+      expect.objectContaining({ networkClientId: 'mainnet' }),
+    );
+  });
+
+  it('accepts a new deeplink transaction after an invalid value was rejected', async () => {
+    await expect(
+      addTransactionForDeeplink({
+        parameters: { value: 'not-a-number' },
+        target_address: TO_ADDRESS_MOCK,
+      } as unknown as ParseOutput),
+    ).rejects.toThrow();
+
+    await addTransactionForDeeplink({
+      parameters: { value: '1000' },
+      target_address: TO_ADDRESS_MOCK,
+    } as unknown as ParseOutput);
+
+    expect(mockAddTransaction).toHaveBeenCalledTimes(1);
+  });
+
   it('adds an ERC20 transfer transaction', async () => {
     const mockGeneratedDataForTransfer = 'generated-data-for-transfer';
 
