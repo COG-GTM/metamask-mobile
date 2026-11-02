@@ -457,6 +457,22 @@ describe('resolveFavicon function', () => {
     expect(await resolveFavicon('dapp.test')).toBeUndefined();
   });
 
+  it.each([
+    '<meta content="<body>">',
+    "<meta content='</head>'>",
+    '<meta name="x" content="a > </head> <body>">',
+  ])('finds an icon link placed after quoted tag text in %s', async (meta) => {
+    global.fetch = jest.fn(() =>
+      htmlResponse(
+        `<html><head>${meta}<link rel="icon" href="/icon.png"></head><body></body></html>`,
+      ),
+    );
+
+    expect(await resolveFavicon('dapp.test')).toBe(
+      'https://dapp.test/icon.png',
+    );
+  });
+
   it('stops at <body> when the closing head tag is omitted', async () => {
     global.fetch = jest.fn(() =>
       htmlResponse(

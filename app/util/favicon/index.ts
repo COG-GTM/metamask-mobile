@@ -43,10 +43,40 @@ const fetchHtmlSource = async (url: URL) => {
 
 const RAW_TEXT_ELEMENT = /^<(script|style|title|textarea|noscript)[\s/>]/i;
 const HEAD_BOUNDARY = /^(<\/head\s*>|<body[\s/>])/i;
+const TAG_START = /^<\/?[a-z]/i;
 
 /**
- * Finds where `<head>` really ends, skipping comments and raw-text elements
- * (such as scripts) whose content can contain `</head>` as plain text
+ * Finds the end of the tag starting at `start`, ignoring `>` inside quoted
+ * attribute values
+ * @param htmlSource - the HTML source
+ * @param start - index of the tag's `<`
+ * @returns - the index just after the tag, or -1 when it is never closed
+ */
+const findTagEnd = (htmlSource: string, start: number) => {
+  let quote: string | undefined;
+  let expectingValue = false;
+  for (let index = start + 1; index < htmlSource.length; index++) {
+    const char = htmlSource[index];
+    if (quote) {
+      if (char === quote) quote = undefined;
+    } else if (char === '>') {
+      return index + 1;
+    } else if (char === '=') {
+      expectingValue = true;
+    } else if (expectingValue && (char === '"' || char === "'")) {
+      quote = char;
+      expectingValue = false;
+    } else if (!/\s/.test(char)) {
+      expectingValue = false;
+    }
+  }
+  return -1;
+};
+
+/**
+ * Finds where `<head>` really ends, skipping comments, quoted attribute values
+ * and raw-text elements (such as scripts) whose content can contain `</head>`
+ * as plain text
  * @param htmlSource - the HTML source
  * @returns - the boundary index, or -1 when it cannot be identified safely
  */
@@ -61,18 +91,22 @@ const findHeadEnd = (htmlSource: string) => {
       index = commentEnd + 3;
     } else if (HEAD_BOUNDARY.test(rest)) {
       return index;
-    } else {
+    } else if (TAG_START.test(rest)) {
+      const tagEnd = findTagEnd(htmlSource, index);
+      if (tagEnd === -1) return -1;
       const rawText = RAW_TEXT_ELEMENT.exec(rest);
       if (rawText) {
         const closeIndex = lowerSource.indexOf(
           `</${rawText[1].toLowerCase()}`,
-          index + rawText[0].length,
+          tagEnd,
         );
         if (closeIndex === -1) return -1;
         index = closeIndex + 2;
       } else {
-        index += 1;
+        index = tagEnd;
       }
+    } else {
+      index += 1;
     }
     index = htmlSource.indexOf('<', index);
   }
