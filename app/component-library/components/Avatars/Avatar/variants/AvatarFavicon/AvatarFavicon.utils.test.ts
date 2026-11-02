@@ -57,6 +57,20 @@ describe('checkSvgContentType', () => {
     expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 
+  it('does not cache non-2xx responses', async () => {
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        headers: new Headers({ 'Content-Type': 'text/html' }),
+      })
+      .mockResolvedValueOnce(headResponse('image/svg+xml'));
+
+    expect(await checkSvgContentType(SVG_URI)).toBe(false);
+    expect(await checkSvgContentType(SVG_URI)).toBe(true);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
   it('checks each URI separately', async () => {
     (global.fetch as jest.Mock).mockResolvedValue(
       headResponse('image/svg+xml'),
