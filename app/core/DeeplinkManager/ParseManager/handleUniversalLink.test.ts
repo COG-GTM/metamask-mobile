@@ -163,7 +163,7 @@ describe('handleUniversalLinks', () => {
 
   describe('ACTIONS.CONNECT with channelId and params.redirect is falsy', () => {
     beforeEach(() => {
-      params.channelId = 'test-channel-id';
+      params.channelId = 'b3f2a6c1-9d4e-4f7a-8c2b-1e5d6f7a8b9c';
       params.redirect = '';
     });
 
@@ -186,7 +186,7 @@ describe('handleUniversalLinks', () => {
 
       expect(handled).toHaveBeenCalled();
       expect(mockHandleDeeplink).toHaveBeenCalledWith({
-        channelId: 'test-channel-id',
+        channelId: 'b3f2a6c1-9d4e-4f7a-8c2b-1e5d6f7a8b9c',
         origin: 'test-origin',
         context: 'deeplink_universal',
         url: 'test-url',
@@ -202,6 +202,34 @@ describe('handleUniversalLinks', () => {
         },
       });
     });
+  });
+
+  describe('ACTIONS.CONNECT with an invalid channelId', () => {
+    it.each(['MetaMask Mobile', 'metamask', 'not-a-uuid'])(
+      'throws and does not call handleDeeplink for channelId %s',
+      (channelId) => {
+        params.channelId = channelId;
+        params.redirect = '';
+        urlObj = {
+          hostname: AppConstants.MM_UNIVERSAL_LINK_HOST,
+          pathname: `/${ACTIONS.CONNECT}/additional/path`,
+        } as ReturnType<typeof extractURLParams>['urlObj'];
+
+        expect(() =>
+          handleUniversalLink({
+            instance,
+            handled,
+            urlObj,
+            params,
+            browserCallBack: mockBrowserCallBack,
+            origin,
+            wcURL,
+            url,
+          }),
+        ).toThrow('DeepLinkManager failed to connect - Invalid channelId');
+        expect(mockHandleDeeplink).not.toHaveBeenCalled();
+      },
+    );
   });
 
   describe('ACTIONS.WC with wcURL', () => {
