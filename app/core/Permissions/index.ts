@@ -3,8 +3,19 @@ import Logger from '../../util/Logger';
 import TransactionTypes from '../TransactionTypes';
 import { CaipChainId, Hex, KnownCaipNamespace } from '@metamask/utils';
 import { InternalAccount } from '@metamask/keyring-internal-api';
-import { Caip25CaveatType, Caip25CaveatValue, Caip25EndowmentPermissionName, getEthAccounts, getPermittedEthChainIds, setEthAccounts, setPermittedEthChainIds } from '@metamask/chain-agnostic-permission';
-import { CaveatConstraint, PermissionDoesNotExistError } from '@metamask/permission-controller';
+import {
+  Caip25CaveatType,
+  Caip25CaveatValue,
+  Caip25EndowmentPermissionName,
+  getEthAccounts,
+  getPermittedEthChainIds,
+  setEthAccounts,
+  setPermittedEthChainIds,
+} from '@metamask/chain-agnostic-permission';
+import {
+  CaveatConstraint,
+  PermissionDoesNotExistError,
+} from '@metamask/permission-controller';
 import { captureException } from '@sentry/react-native';
 import { toHex } from '@metamask/controller-utils';
 
@@ -93,11 +104,18 @@ export const sortAccountsByLastSelected = (accounts: Hex[]) => {
   });
 };
 
+/**
+ * Returns the permitted evm accounts for a single permission subject, sorted
+ * by most recently selected.
+ *
+ * @param subject - The PermissionController subject entry, if any.
+ * @returns The permitted evm account addresses.
+ */
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getAccountsFromSubject(subject: any) {
+export function getAccountsFromSubject(subject: any): string[] {
   const caveats =
-    subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
+    subject?.permissions?.[Caip25EndowmentPermissionName]?.caveats;
   if (!caveats) {
     return [];
   }
@@ -122,28 +140,17 @@ export const getPermittedAccountsByHostname = (
   state: any,
   hostname: string,
 ): string[] => {
-  const { subjects } = state;
-  const accountsByHostname = Object.keys(subjects).reduce(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (acc: any, subjectKey) => {
-      const accounts = getAccountsFromSubject(subjects[subjectKey]);
-      if (accounts.length > 0) {
-        acc[subjectKey] = accounts;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return accountsByHostname?.[hostname] || [];
+  const subjects = state?.subjects;
+  if (!subjects || !Object.prototype.hasOwnProperty.call(subjects, hostname)) {
+    return [];
+  }
+  return getAccountsFromSubject(subjects[hostname]);
 };
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getPermittedChainIdsFromSubject(subject: any) {
-  const caveats =
-    subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
+  const caveats = subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
   if (!caveats) {
     return [];
   }
@@ -369,7 +376,9 @@ export const removePermittedChain = (hostname: string, chainId: string) => {
   );
 
   const permittedChainIds = getPermittedEthChainIds(caveat);
-  const newPermittedChains = permittedChainIds.filter((chain: string) => chain !== chainId);
+  const newPermittedChains = permittedChainIds.filter(
+    (chain: string) => chain !== chainId,
+  );
   updatePermittedChains(hostname, newPermittedChains, true);
 };
 
@@ -437,7 +446,7 @@ export const getPermittedChains = async (
   const caveat = PermissionController.getCaveat(
     hostname,
     Caip25EndowmentPermissionName,
-    Caip25CaveatType
+    Caip25CaveatType,
   );
 
   if (caveat) {
