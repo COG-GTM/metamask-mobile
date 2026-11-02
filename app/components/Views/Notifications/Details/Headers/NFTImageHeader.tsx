@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 import Badge, {
   BadgeVariant,
 } from '../../../../../component-library/components/Badges/Badge';
@@ -8,12 +8,15 @@ import BadgeWrapper, {
 } from '../../../../../component-library/components/Badges/BadgeWrapper';
 import { ModalHeaderNFTImage } from '../../../../../util/notifications/notification-states/types/NotificationModalDetails';
 import RemoteImage from '../../../../Base/RemoteImage';
+import { useShouldDisplayNftMedia } from '../../../../../util/notifications/hooks/useShouldDisplayNftMedia';
+import NftFallbackImage from '../../../../../../docs/assets/nft-fallback.png';
 import useStyles from '../useStyles';
 
 type NFTImageHeaderProps = ModalHeaderNFTImage;
 
 export default function NFTImageHeader(props: NFTImageHeaderProps) {
   const { styles } = useStyles();
+  const showNftMedia = useShouldDisplayNftMedia(props.nftImageUrl);
 
   const badgeSource = useMemo(() => {
     const networkUrl = props.networkBadgeUrl;
@@ -38,11 +41,19 @@ export default function NFTImageHeader(props: NFTImageHeaderProps) {
         }
         style={styles.badgeWrapper}
       >
-        <RemoteImage
-          source={{ uri: props.nftImageUrl }}
-          style={styles.squareLogoLarge}
-          placeholderStyle={styles.squareLogoLargePlaceholder}
-        />
+        {showNftMedia ? (
+          <RemoteImage
+            source={{ uri: props.nftImageUrl }}
+            style={styles.squareLogoLarge}
+            placeholderStyle={styles.squareLogoLargePlaceholder}
+          />
+        ) : (
+          <Image
+            testID={'nft-image-header-fallback'}
+            source={NftFallbackImage}
+            style={styles.squareLogoLarge}
+          />
+        )}
       </BadgeWrapper>
     </View>
   );
