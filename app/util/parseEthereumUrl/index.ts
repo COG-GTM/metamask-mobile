@@ -21,6 +21,13 @@ const ETHEREUM_URL_ALLOWLIST = new RegExp(
     '(?:\\?\\S*)?$',
 );
 
+/**
+ * Checks whether a URL is a length-capped EIP-681 `ethereum:` URL that is
+ * safe to pass to `eth-url-parser`.
+ *
+ * @param url - Untrusted value to check.
+ * @returns True if the URL matches the allowlist.
+ */
 export const isValidEthereumUrl = (url: unknown): url is string =>
   typeof url === 'string' &&
   url.length <= MAX_ETHEREUM_URL_LENGTH &&
