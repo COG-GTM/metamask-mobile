@@ -3,6 +3,8 @@ import {
   isFromCurrentChain,
   sortTransactions,
   filterByAddressAndNetwork,
+  dedupeTransactionsById,
+  getNoncesSentFromAddress,
 } from '.';
 import { Token } from '../../components/UI/Swaps/utils/token-list-utils';
 import { TX_SUBMITTED, TX_UNAPPROVED } from '../../constants/transaction';
@@ -321,5 +323,60 @@ describe('Activity utils :: filterByAddressAndNetwork', () => {
     );
     // Despite chainId mismatch, the condition becomes true
     expect(result).toEqual(true);
+  });
+});
+
+describe('Activity utils :: dedupeTransactionsById', () => {
+  it('keeps the first occurrence of each id and preserves order', () => {
+    const txs = [
+      { id: 'a', time: 5, n: 1 },
+      { id: 'b', time: 4 },
+      { id: 'a', time: 3, n: 2 },
+      { id: 'c', time: 2 },
+      { id: 'b', time: 1 },
+    ];
+
+    expect(dedupeTransactionsById(txs)).toEqual([
+      { id: 'a', time: 5, n: 1 },
+      { id: 'b', time: 4 },
+      { id: 'c', time: 2 },
+    ]);
+  });
+
+  it('matches the previous findIndex dedupe on a large list', () => {
+    const txs = Array.from({ length: 2000 }, (_, i) => ({
+      id: `tx-${i % 700}`,
+      time: 2000 - i,
+    }));
+    const expected = txs.filter(
+      (tx, index, self) => self.findIndex((_tx) => _tx.id === tx.id) === index,
+    );
+
+    expect(dedupeTransactionsById(txs)).toEqual(expected);
+    expect(dedupeTransactionsById(txs)).toHaveLength(700);
+  });
+});
+
+describe('Activity utils :: getNoncesSentFromAddress', () => {
+  it('returns nonces of txs sent from the address, case-insensitively', () => {
+    const txs = [
+      { txParams: { from: TEST_ADDRESS_THREE.toLowerCase(), nonce: '0x1' } },
+      { txParams: { from: TEST_ADDRESS_THREE, nonce: '0x2' } },
+      { txParams: { from: TEST_ADDRESS_ONE, nonce: '0x3' } },
+      { txParams: { nonce: '0x4' } },
+      {},
+    ];
+
+    expect(getNoncesSentFromAddress(txs, TEST_ADDRESS_THREE)).toEqual(
+      new Set(['0x1', '0x2']),
+    );
+  });
+
+  it('returns an empty set when no address is selected', () => {
+    const txs = [{ txParams: { from: TEST_ADDRESS_ONE, nonce: '0x1' } }];
+
+    expect(
+      getNoncesSentFromAddress(txs, undefined as unknown as string).size,
+    ).toBe(0);
   });
 });
