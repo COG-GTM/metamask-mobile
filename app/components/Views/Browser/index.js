@@ -1,11 +1,5 @@
 import PropTypes from 'prop-types';
-import React, {
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useContext, useEffect, useRef } from 'react';
 import { View } from 'react-native';
 import { captureScreen } from 'react-native-view-shot';
 import { connect, useSelector } from 'react-redux';
@@ -77,7 +71,7 @@ export const Browser = (props) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
-  const [_tabIdleTimes, setTabIdleTimes] = useState({});
+  const tabIdleTimes = useRef({});
   const accountAvatarType = useSelector((state) =>
     state.settings.useBlockieIcon
       ? AvatarAccountType.Blockies
@@ -172,34 +166,26 @@ export const Browser = (props) => {
   useEffect(() => {
     const interval = setInterval(() => {
       // every so often calc each tab's idle time
-      setTabIdleTimes((prevIdleTimes) => {
-        const newIdleTimes = { ...prevIdleTimes };
-        // for each existing tab
-        tabs.forEach((tab) => {
-          // if it isn't the active tab
-          if (tab.id !== activeTabId) {
-            // add idle time for each non-active tab
-            newIdleTimes[tab.id] =
-              (newIdleTimes[tab.id] || 0) + IDLE_TIME_CALC_INTERVAL;
-            // if the tab has surpassed the maximum
-            if (newIdleTimes[tab.id] > IDLE_TIME_MAX) {
-              // then "archive" it
-              updateTab(tab.id, {
-                isArchived: true,
-              });
-            }
-          } else {
-            // set any active tab as NOT "archived"
-            // this can mean "unarchiving" a tab so that, for example,
-            // the actual browser tab window is mounted again
+      const idleTimes = tabIdleTimes.current;
+      tabs.forEach((tab) => {
+        if (tab.id !== activeTabId) {
+          idleTimes[tab.id] =
+            (idleTimes[tab.id] || 0) + IDLE_TIME_CALC_INTERVAL;
+          // "archive" tabs idle past the maximum; only dispatch on a transition
+          if (idleTimes[tab.id] > IDLE_TIME_MAX && !tab.isArchived) {
+            updateTab(tab.id, {
+              isArchived: true,
+            });
+          }
+        } else {
+          // unarchive the active tab so its browser window is mounted again
+          if (tab.isArchived) {
             updateTab(tab.id, {
               isArchived: false,
             });
-            // also set new tab idle time back to zero
-            newIdleTimes[tab.id] = 0;
           }
-        });
-        return newIdleTimes;
+          idleTimes[tab.id] = 0;
+        }
       });
     }, IDLE_TIME_CALC_INTERVAL);
 
