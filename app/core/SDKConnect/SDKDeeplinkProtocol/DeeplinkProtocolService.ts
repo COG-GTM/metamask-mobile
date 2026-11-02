@@ -89,6 +89,13 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        if (!isValidDappScheme(connection.scheme)) {
+          DevLogger.log(
+            `DeeplinkProtocolService::init skip connection id=${connection.id} with invalid scheme`,
+          );
+          return;
+        }
+
         const clientInfo = {
           connected: false,
           clientId: connection.id,
@@ -354,8 +361,10 @@ export default class DeeplinkProtocolService {
       context: 'DeeplinkProtocolService::setupOnClientsConnectedListener',
     });
 
+    const isNewClient = !this.connections?.[clientInfo.clientId];
+
     try {
-      if (!this.connections?.[clientInfo.clientId]) {
+      if (isNewClient) {
         DevLogger.log(
           `DeeplinkProtocolService::clients_connected - new client ${clientInfo.clientId}}`,
           this.connections,
@@ -410,6 +419,10 @@ export default class DeeplinkProtocolService {
         error,
         `DeeplinkProtocolService::clients_connected sending jsonrpc error to client - connection rejected`,
       );
+
+      if (isNewClient) {
+        this.discardPendingClient(clientInfo.clientId);
+      }
 
       this.sendMessage(
         {
@@ -471,8 +484,6 @@ export default class DeeplinkProtocolService {
       return;
     }
 
-    this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
-
     const decodedOriginatorInfo = Buffer.from(
       params.originatorInfo,
       'base64',
@@ -520,6 +531,10 @@ export default class DeeplinkProtocolService {
 
       return;
     }
+
+    // Only a new, not yet approved channel may set its public key; an existing
+    // session keeps the key it was approved with.
+    this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
 
     // The connection is persisted by handleConnectionEventAsync once the user approves it.
     this.handleConnectionEventAsync({
@@ -908,6 +923,20 @@ export default class DeeplinkProtocolService {
         `DeeplinkProtocolService::onMessageReceived error handling event`,
       );
     });
+  }
+
+  private discardPendingClient(clientId: string) {
+    const bridge = this.bridgeByClientId[clientId];
+
+    try {
+      bridge?.onDisconnect?.();
+    } catch (err) {
+      Logger.log(err, `DeeplinkProtocolService::discardPendingClient error`);
+    }
+
+    delete this.bridgeByClientId[clientId];
+    delete this.connections[clientId];
+    delete this.dappPublicKeyByClientId[clientId];
   }
 
   removeConnection(channelId: string) {

@@ -650,6 +650,41 @@ describe('DeeplinkProtocolService', () => {
       );
     });
 
+    it('does not reroute a pending response to an app that sends a connect deeplink before approval', async () => {
+      const bridgeA = service.bridgeByClientId.channelA;
+      service.checkPermission = jest
+        .fn()
+        .mockReturnValue(new Promise(() => undefined));
+
+      service.handleMessage(deeplinkMessage('channelA', '1', 'personal_sign'));
+      await flushUntil(
+        () => (bridgeA.onMessage as jest.Mock).mock.calls.length > 0,
+      );
+
+      await service.handleConnection({
+        dappPublicKey: 'attackerKey',
+        url: 'url',
+        scheme: 'puzzlepop',
+        channelId: 'attackerChannel',
+        originatorInfo: Buffer.from(
+          JSON.stringify({ originatorInfo: { url: 'p', title: 'p' } }),
+        ).toString('base64'),
+      });
+
+      await bridgeSendMessage('channelA')({
+        name: 'metamask-provider',
+        data: { id: '1', jsonrpc: '2.0', result: '0xsignature' },
+      });
+
+      const urls: string[] = (Linking.openURL as jest.Mock).mock.calls.map(
+        ([u]) => u,
+      );
+      expect(urls).toHaveLength(1);
+      expect(urls[0].startsWith('acme://mmsdk?message=')).toBe(true);
+      expect(decodeDeeplink(urls[0]).data.result).toBe('0xsignature');
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+    });
+
     it('binds batch responses to the requesting client bridge', async () => {
       service.batchRPCManager.getById = jest
         .fn()
@@ -797,6 +832,103 @@ describe('DeeplinkProtocolService', () => {
       const urls = (Linking.openURL as jest.Mock).mock.calls.map(([u]) => u);
       expect(urls).toHaveLength(1);
       expect(urls[0].startsWith('acme://mmsdk?message=')).toBe(true);
+    });
+  });
+
+  describe('pending connection hardening', () => {
+    const originatorInfo = {
+      url: 'acme.com',
+      title: 'Acme',
+      platform: 'test',
+      dappId: 'dappId',
+    };
+    const connectParams = (overrides = {}) => ({
+      dappPublicKey: 'key',
+      url: 'url',
+      scheme: 'acme',
+      channelId: 'newClient',
+      originatorInfo: Buffer.from(
+        JSON.stringify({ originatorInfo: { url: 'acme.com', title: 'Acme' } }),
+      ).toString('base64'),
+      ...overrides,
+    });
+
+    beforeEach(() => {
+      (
+        Engine.context as unknown as {
+          KeyringController: { isUnlocked: () => boolean };
+        }
+      ).KeyringController.isUnlocked = jest.fn().mockReturnValue(true);
+    });
+
+    it('does not restore persisted connections with an invalid scheme', async () => {
+      (
+        SDKConnect.getInstance().loadDappConnections as jest.Mock
+      ).mockResolvedValue({
+        good: {
+          id: 'good',
+          originatorInfo: { url: 'a', title: 'a' },
+          validUntil: Date.now(),
+          scheme: 'acme',
+        },
+        bad: {
+          id: 'bad',
+          originatorInfo: { url: 'b', title: 'b' },
+          validUntil: Date.now(),
+          scheme: 'https://evil.example/?x=',
+        },
+      });
+      const fresh = new DeeplinkProtocolService();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(fresh.connections.good).toBeDefined();
+      expect(fresh.connections.bad).toBeUndefined();
+      expect(fresh.bridgeByClientId.bad).toBeUndefined();
+    });
+
+    it('keeps the approved public key of an existing session when a connect deeplink reuses its channelId', async () => {
+      service.connections.existing = {
+        clientId: 'existing',
+        originatorInfo,
+        connected: false,
+        validUntil: Date.now(),
+        scheme: 'acme',
+      };
+      service.dappPublicKeyByClientId.existing = 'approvedKey';
+      service.bridgeByClientId.existing = {} as BackgroundBridge;
+
+      await service.handleConnection(
+        connectParams({ channelId: 'existing', dappPublicKey: 'attackerKey' }),
+      );
+
+      expect(service.dappPublicKeyByClientId.existing).toBe('approvedKey');
+    });
+
+    it('discards the bridge and key of a new connection when the user rejects it', async () => {
+      service.checkPermission = jest
+        .fn()
+        .mockRejectedValue(new Error('User rejected the request.'));
+
+      await service.handleConnection(connectParams());
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(service.connections.newClient).toBeUndefined();
+      expect(service.bridgeByClientId.newClient).toBeUndefined();
+      expect(service.dappPublicKeyByClientId.newClient).toBeUndefined();
+    });
+
+    it('tears down a new connection if persisting it fails after approval', async () => {
+      service.checkPermission = jest.fn().mockResolvedValue(null);
+      (
+        SDKConnect.getInstance().addDappConnection as jest.Mock
+      ).mockRejectedValue(new Error('storage failure'));
+
+      await service.handleConnection(connectParams());
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(service.connections.newClient).toBeUndefined();
+      expect(service.bridgeByClientId.newClient).toBeUndefined();
+      expect(service.dappPublicKeyByClientId.newClient).toBeUndefined();
     });
   });
 });
