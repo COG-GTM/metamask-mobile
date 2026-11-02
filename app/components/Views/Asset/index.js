@@ -30,7 +30,10 @@ import {
   selectRpcUrl,
 } from '../../../selectors/networkController';
 import { selectTokens } from '../../../selectors/tokensController';
-import { sortTransactions } from '../../../util/activity';
+import {
+  sortTransactions,
+  uniqueTransactionsById,
+} from '../../../util/activity';
 import { safeToChecksumAddress } from '../../../util/address';
 import { toLowerCaseEquals } from '../../../util/general';
 import {
@@ -395,9 +398,8 @@ class Asset extends PureComponent {
 
     const { chainId, transactions } = this.props;
     if (transactions.length) {
-      const sortedTransactions = sortTransactions(transactions).filter(
-        (tx, index, self) =>
-          self.findIndex((_tx) => _tx.id === tx.id) === index,
+      const sortedTransactions = uniqueTransactionsById(
+        sortTransactions(transactions),
       );
       const filteredTransactions = sortedTransactions.filter((tx) => {
         const filterResult = this.filter(tx);

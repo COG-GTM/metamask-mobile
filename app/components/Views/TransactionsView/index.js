@@ -15,6 +15,7 @@ import {
 import {
   sortTransactions,
   filterByAddressAndNetwork,
+  uniqueTransactionsById,
 } from '../../../util/activity';
 import { safeToChecksumAddress } from '../../../util/address';
 import { addAccountTimeFlagFilter } from '../../../util/transactions';
@@ -75,9 +76,8 @@ const TransactionsView = ({
       const confirmedTxs = [];
       const submittedNonces = [];
 
-      const allTransactionsSorted = sortTransactions(transactions).filter(
-        (tx, index, self) =>
-          self.findIndex((_tx) => _tx.id === tx.id) === index,
+      const allTransactionsSorted = uniqueTransactionsById(
+        sortTransactions(transactions),
       );
 
       const allTransactions = allTransactionsSorted.filter((tx) => {

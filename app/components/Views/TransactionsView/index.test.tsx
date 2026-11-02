@@ -12,6 +12,8 @@ import { Store } from 'redux';
 jest.mock('../../../util/activity', () => ({
   sortTransactions: jest.fn((txs) => txs),
   filterByAddressAndNetwork: jest.fn(() => true),
+  uniqueTransactionsById: jest.requireActual('../../../util/activity')
+    .uniqueTransactionsById,
 }));
 
 jest.mock('../../../util/transactions', () => ({
