@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Linking, InteractionManager } from 'react-native';
+import {
+  View,
+  Linking,
+  InteractionManager,
+  AppState,
+  AppStateStatus,
+  Platform,
+  StyleSheet,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import PreventScreenshot from '../../../core/PreventScreenshot';
 import { MetaMetricsEvents } from '../../../core/Analytics';
@@ -8,6 +16,59 @@ import { SRP_GUIDE_URL } from '../../../constants/urls';
 import Routes from '../../../constants/navigation/Routes';
 import { strings } from '../../../../locales/i18n';
 import { useMetrics } from '../../../components/hooks/useMetrics';
+import { useTheme } from '../../../util/theme';
+
+export const SCREENSHOT_DETERRENT_PRIVACY_OVERLAY_TEST_ID =
+  'screenshot-deterrent-privacy-overlay';
+
+const styles = StyleSheet.create({
+  privacyOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 9999,
+    elevation: 9999,
+  },
+});
+
+const isAppInForeground = (appState: AppStateStatus) =>
+  appState !== 'inactive' && appState !== 'background';
+
+/**
+ * iOS has no FLAG_SECURE equivalent, and the system snapshots the current
+ * screen for the app switcher when the app resigns active. Cover the
+ * sensitive content while the app is not in the foreground so the secret is
+ * never captured in that snapshot.
+ */
+const IOSPrivacyOverlay = ({ enabled }: { enabled: boolean }) => {
+  const { colors } = useTheme();
+  const [isForeground, setIsForeground] = useState<boolean>(() =>
+    isAppInForeground(AppState.currentState),
+  );
+
+  useEffect(() => {
+    if (Platform.OS !== 'ios') {
+      return;
+    }
+    const subscription = AppState.addEventListener('change', (nextState) =>
+      setIsForeground(isAppInForeground(nextState)),
+    );
+    return () => subscription.remove();
+  }, []);
+
+  if (Platform.OS !== 'ios' || !enabled || isForeground) {
+    return <View />;
+  }
+
+  return (
+    <View
+      testID={SCREENSHOT_DETERRENT_PRIVACY_OVERLAY_TEST_ID}
+      pointerEvents="none"
+      style={[
+        styles.privacyOverlay,
+        { backgroundColor: colors.background.default },
+      ]}
+    />
+  );
+};
 
 const ScreenshotDeterrentWithoutNavigation = ({
   enabled,
@@ -26,7 +87,7 @@ const ScreenshotDeterrentWithoutNavigation = ({
     };
   }, [enabled]);
 
-  return <View />;
+  return <IOSPrivacyOverlay enabled={enabled} />;
 };
 
 const ScreenshotDeterrentWithNavigation = ({
@@ -91,7 +152,7 @@ const ScreenshotDeterrentWithNavigation = ({
     };
   }, [alertPresent, enableScreenshotWarning, enabled]);
 
-  return <View />;
+  return <IOSPrivacyOverlay enabled={enabled} />;
 };
 
 const ScreenshotDeterrent = ({
