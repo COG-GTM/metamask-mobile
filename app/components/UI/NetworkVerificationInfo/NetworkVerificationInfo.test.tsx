@@ -222,7 +222,7 @@ describe('NetworkVerificationInfo', () => {
       },
     );
 
-    it('still flags an RPC mismatch against the popular network', () => {
+    it('still flags an RPC mismatch and names no requester in the review', () => {
       (useSelector as jest.Mock).mockReturnValue(true);
       jest.spyOn(console, 'error').mockImplementation(() => undefined);
 
@@ -233,7 +233,7 @@ describe('NetworkVerificationInfo', () => {
         alerts: [],
       };
 
-      const { getByTestId } = render(
+      const { getByTestId, getByText } = render(
         <NetworkVerificationInfo
           // @ts-expect-error - The CustomNetworkInformation type is missing the pageMeta property
           customNetworkInformation={popularNetworkWithMalformedPageUrl}
@@ -242,7 +242,14 @@ describe('NetworkVerificationInfo', () => {
         />,
       );
 
-      expect(getByTestId(MISSMATCH_RPC_URL_TEST_ID)).toBeTruthy();
+      fireEvent.press(getByTestId(MISSMATCH_RPC_URL_TEST_ID));
+      expect(
+        getByText(
+          strings(
+            'switch_custom_network.request_update_network_url_unknown_origin',
+          ),
+        ),
+      ).toBeTruthy();
       (console.error as jest.Mock).mockRestore();
     });
   });

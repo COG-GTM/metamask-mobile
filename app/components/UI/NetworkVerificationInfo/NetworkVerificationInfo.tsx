@@ -320,9 +320,13 @@ const NetworkVerificationInfo = ({
         </View>
         <View style={styles.networkUrlMissmatchDetails}>
           <Text style={styles.textSection}>
-            {strings('switch_custom_network.request_update_network_url', {
-              dapp_origin: dappOrigin,
-            })}
+            {dappOrigin
+              ? strings('switch_custom_network.request_update_network_url', {
+                  dapp_origin: dappOrigin,
+                })
+              : strings(
+                  'switch_custom_network.request_update_network_url_unknown_origin',
+                )}
           </Text>
           <Text variant={TextVariant.BodyMDBold}>
             {strings('networks.current_label')}
