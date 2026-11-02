@@ -36,6 +36,7 @@ import {
   getPermittedEthChainIds,
 } from '@metamask/chain-agnostic-permission';
 import { Json } from '@metamask/utils';
+import { isWalletConnectPermissionSubject } from '../../../../core/WalletConnect/wc-verify';
 
 interface SDKSessionsManagerProps {
   navigation: NavigationProp<ParamListBase>;
@@ -92,6 +93,7 @@ const PermissionsManager = (props: SDKSessionsManagerProps) => {
 
       if (
         !uuidRegex.test(key) &&
+        !isWalletConnectPermissionSubject(key) &&
         !walletConnectRegex.test((value as { origin: string }).origin)
       ) {
         inAppBrowserSubjects.push(value);

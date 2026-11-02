@@ -27,5 +27,7 @@ export interface PermissionsSummaryProps {
   accountAddresses?: string[];
   networkAvatars?: ({ name: string; imageSource: string } | null)[];
   isNonDappNetworkSwitch?: boolean;
+  /** Warning shown under the title, e.g. for an unverified dapp origin. */
+  originWarning?: string;
   onChooseFromPermittedNetworks?: () => void;
 }

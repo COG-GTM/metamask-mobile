@@ -80,6 +80,7 @@ import { AvatarSize } from '../../../component-library/components/Avatars/Avatar
 import { selectEvmNetworkConfigurationsByChainId } from '../../../selectors/networkController';
 import { isUUID } from '../../../core/SDKConnect/utils/isUUID';
 import useOriginSource from '../../hooks/useOriginSource';
+import { parseWalletConnectPermissionSubject } from '../../../core/WalletConnect/wc-verify';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 import {
   getCaip25PermissionsResponse,
@@ -178,6 +179,16 @@ const AccountConnect = (props: AccountConnectProps) => {
   const isOriginWalletConnect =
     !isOriginMMSDKRemoteConn && wc2Metadata?.id && wc2Metadata?.id.length > 0;
 
+  // WalletConnect requests use a dedicated permission subject that records
+  // whether the dapp's origin was attested by the WalletConnect Verify API.
+  const wcPermissionSubject = useMemo(
+    () =>
+      isOriginWalletConnect
+        ? parseWalletConnectPermissionSubject(channelIdOrHostname)
+        : undefined,
+    [isOriginWalletConnect, channelIdOrHostname],
+  );
+
   const dappIconUrl = sdkConnection?.originatorInfo?.icon;
   const dappUrl = sdkConnection?.originatorInfo?.url ?? '';
 
@@ -195,8 +206,8 @@ const AccountConnect = (props: AccountConnectProps) => {
         channelIdOrHostname.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1],
       ).origin;
     } else if (isOriginWalletConnect) {
-      title = channelIdOrHostname;
-      dappHostname = title;
+      title = wcPermissionSubject?.hostname ?? channelIdOrHostname;
+      dappHostname = channelIdOrHostname;
     } else if (!isChannelId && (dappUrl || channelIdOrHostname)) {
       title = prefixUrlWithProtocol(dappUrl || channelIdOrHostname);
       dappHostname = inappBrowserOrigin;
@@ -208,6 +219,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     return { domainTitle: title, hostname: dappHostname };
   }, [
     isOriginWalletConnect,
+    wcPermissionSubject,
     inappBrowserOrigin,
     isOriginMMSDKRemoteConn,
     isChannelId,
@@ -215,10 +227,18 @@ const AccountConnect = (props: AccountConnectProps) => {
     channelIdOrHostname,
   ]);
 
-  const urlWithProtocol =
-    hostname && !isUUID(hostname)
-      ? prefixUrlWithProtocol(getHost(hostname))
-      : domainTitle;
+  const urlWithProtocol = wcPermissionSubject
+    ? prefixUrlWithProtocol(wcPermissionSubject.hostname)
+    : hostname && !isUUID(hostname)
+    ? prefixUrlWithProtocol(getHost(hostname))
+    : domainTitle;
+
+  const originWarning =
+    wcPermissionSubject && !wcPermissionSubject.isVerified
+      ? strings('permissions.wc_unverified_origin_warning', {
+          dappUrl: wcPermissionSubject.hostname,
+        })
+      : undefined;
 
   const { chainId } = useNetworkInfo(hostname);
 
@@ -246,7 +266,8 @@ const AccountConnect = (props: AccountConnectProps) => {
   }, [networkConfigurations]);
 
   useEffect(() => {
-    let url = dappUrl || channelIdOrHostname || '';
+    let url =
+      dappUrl || wcPermissionSubject?.hostname || channelIdOrHostname || '';
 
     const checkOrigin = async () => {
       if (isProductSafetyDappScanningEnabled()) {
@@ -262,7 +283,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     return () => {
       isMountedRef.current = false;
     };
-  }, [dappUrl, channelIdOrHostname]);
+  }, [dappUrl, channelIdOrHostname, wcPermissionSubject]);
 
   const faviconSource = useFavicon(
     inappBrowserOrigin || (!isChannelId ? channelIdOrHostname : ''),
@@ -287,13 +308,16 @@ const AccountConnect = (props: AccountConnectProps) => {
     return { uri: '' };
   }, [dappIconUrl, wc2Metadata, faviconSource, isOriginWalletConnect]);
 
-  const secureIcon = useMemo(
-    () =>
-      (getUrlObj(hostname) as URLParse<string>).protocol === 'https:'
+  const secureIcon = useMemo(() => {
+    if (wcPermissionSubject) {
+      return wcPermissionSubject.isVerified
         ? IconName.Lock
-        : IconName.LockSlash,
-    [hostname],
-  );
+        : IconName.LockSlash;
+    }
+    return (getUrlObj(hostname) as URLParse<string>).protocol === 'https:'
+      ? IconName.Lock
+      : IconName.LockSlash;
+  }, [hostname, wcPermissionSubject]);
 
   const eventSource = useOriginSource({ origin: channelIdOrHostname });
 
@@ -681,11 +705,13 @@ const AccountConnect = (props: AccountConnectProps) => {
       accounts,
       // @ts-expect-error imageSource not yet typed
       networkAvatars: selectedNetworkAvatars,
+      originWarning,
     };
     return <PermissionsSummary {...permissionsSummaryProps} />;
   }, [
     faviconSource,
     urlWithProtocol,
+    originWarning,
     selectedAddresses,
     selectedNetworkAvatars,
     accounts,
