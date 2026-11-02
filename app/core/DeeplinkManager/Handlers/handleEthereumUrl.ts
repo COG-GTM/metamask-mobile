@@ -13,6 +13,10 @@ import {
   addTransactionForDeeplink,
   isDeeplinkRedesignedConfirmationCompatible,
 } from '../../../components/Views/confirmations/utils/deeplink';
+import { store } from '../../../store';
+import { selectEvmNetworkConfigurationsByChainId } from '../../../selectors/networkController';
+import { selectSelectedNonEvmNetworkName } from '../../../selectors/multichainNetworkController';
+import { requestDeeplinkNetworkSwitchApproval } from './switchNetwork';
 
 async function handleEthereumUrl({
   deeplinkManager,
@@ -36,9 +40,6 @@ async function handleEthereumUrl({
   try {
     const { MultichainNetworkController } = Engine.context;
 
-    if (!MultichainNetworkController.state.isEvmSelected) {
-      await MultichainNetworkController.setActiveNetwork(MAINNET);
-    }
     // If the deeplink has a goerli chainId, show deprecation modal and return
     if (
       ethUrl.chain_id === getDecimalChainId(CHAIN_IDS.GOERLI) ||
@@ -46,6 +47,20 @@ async function handleEthereumUrl({
     ) {
       deeplinkManager.navigation.navigate('DeprecatedNetworkDetails', {});
       return;
+    }
+
+    if (!MultichainNetworkController.state.isEvmSelected) {
+      const state = store.getState();
+      const approved = await requestDeeplinkNetworkSwitchApproval({
+        currentNetworkName: selectSelectedNonEvmNetworkName(state) ?? '',
+        networkName:
+          selectEvmNetworkConfigurationsByChainId(state)?.[CHAIN_IDS.MAINNET]
+            ?.name ?? 'Ethereum Mainnet',
+      });
+      if (!approved) {
+        return;
+      }
+      await MultichainNetworkController.setActiveNetwork(MAINNET);
     }
 
     if (isDeeplinkRedesignedConfirmationCompatible(ethUrl.function_name)) {

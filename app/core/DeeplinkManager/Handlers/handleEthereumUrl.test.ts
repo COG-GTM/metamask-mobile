@@ -42,6 +42,26 @@ jest.mock('../../Engine', () => ({
 
 jest.mock('../../../components/Views/confirmations/utils/deeplink');
 
+jest.mock('../../../store', () => ({
+  store: { getState: jest.fn(() => ({})) },
+}));
+
+jest.mock('../../../selectors/networkController', () => ({
+  selectEvmNetworkConfigurationsByChainId: jest.fn(() => ({
+    '0x1': { name: 'Ethereum Mainnet' },
+  })),
+}));
+
+jest.mock('../../../selectors/multichainNetworkController', () => ({
+  selectSelectedNonEvmNetworkName: jest.fn(() => 'Solana'),
+}));
+
+const mockRequestApproval = jest.fn();
+jest.mock('./switchNetwork', () => ({
+  requestDeeplinkNetworkSwitchApproval: (...args: unknown[]) =>
+    mockRequestApproval(...args),
+}));
+
 describe('handleEthereumUrl', () => {
   let deeplinkManager: DeeplinkManager;
   const mockParse = parse as jest.Mock;
@@ -72,6 +92,7 @@ describe('handleEthereumUrl', () => {
     });
 
     mockHandleNetworkSwitch.mockResolvedValue(true);
+    mockRequestApproval.mockResolvedValue(true);
 
     mockNavigate.mockImplementation(() => {
       // do nothing
@@ -344,8 +365,46 @@ describe('handleEthereumUrl', () => {
 
     await handleEthereumUrl({ deeplinkManager, url, origin });
 
+    expect(mockRequestApproval).toHaveBeenCalledWith({
+      currentNetworkName: 'Solana',
+      networkName: 'Ethereum Mainnet',
+    });
     expect(mockSetActiveNetwork).toHaveBeenCalledWith(MAINNET);
   });
+
+  it.each([true, false])(
+    'does not leave a non-EVM network when the user declines (redesigned: %s)',
+    async (redesigned) => {
+      mockIsDeeplinkRedesignedConfirmationCompatible.mockReturnValue(
+        redesigned,
+      );
+      mockParse.mockReturnValue({
+        function_name: ETH_ACTIONS.TRANSFER,
+        chain_id: 1,
+        parameters: {},
+      });
+      (
+        Engine.context.MultichainNetworkController.state as {
+          isEvmSelected: boolean;
+        }
+      ).isEvmSelected = false;
+      const mockSetActiveNetwork = jest.fn();
+      Engine.context.MultichainNetworkController.setActiveNetwork =
+        mockSetActiveNetwork;
+      mockRequestApproval.mockResolvedValue(false);
+
+      await handleEthereumUrl({
+        deeplinkManager,
+        url: 'ethereum:transfer',
+        origin: 'test_origin',
+      });
+
+      expect(mockSetActiveNetwork).not.toHaveBeenCalled();
+      expect(mockAddTransactionForDeeplink).not.toHaveBeenCalled();
+      expect(mockHandleNetworkSwitch).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    },
+  );
   describe('network switch consent', () => {
     const url = 'ethereum:0x0000000000000000000000000000000000000001@59144';
     const origin = 'test_origin';
