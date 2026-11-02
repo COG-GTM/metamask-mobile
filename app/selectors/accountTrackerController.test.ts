@@ -139,6 +139,42 @@ describe('selectNativeBalanceByChainIdAndAddress', () => {
     ).toBe('0x0');
   });
 
+  it('reuses the lowercase address index across unrelated store updates', () => {
+    let ownKeysCalls = 0;
+    const accounts = new Proxy(
+      { [CHECKSUM_ADDRESS]: { balance: '0x123' } },
+      {
+        ownKeys(target) {
+          ownKeysCalls++;
+          return Reflect.ownKeys(target);
+        },
+      },
+    );
+    const accountTrackerControllerState = {
+      accountsByChainId: { [MOCK_CHAIN_ID]: accounts },
+    };
+    const buildState = (unrelated: number) =>
+      ({
+        unrelated,
+        engine: {
+          backgroundState: {
+            AccountTrackerController: accountTrackerControllerState,
+          },
+        },
+      } as unknown as RootState);
+
+    for (let i = 0; i < 5; i++) {
+      expect(
+        selectNativeBalanceByChainIdAndAddress(
+          buildState(i),
+          MOCK_CHAIN_ID,
+          CHECKSUM_ADDRESS.toLowerCase(),
+        ),
+      ).toBe('0x123');
+    }
+    expect(ownKeysCalls).toBe(1);
+  });
+
   it('returns 0x0 when accountsByChainId is undefined', () => {
     expect(
       selectNativeBalanceByChainIdAndAddress(

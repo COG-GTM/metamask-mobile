@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- fix(confirmations): read the native balance in `useAccountNativeBalance` with a direct per-chain lookup instead of re-normalizing every chain and account on each balance poll
+- fix(confirmations): read the native balance in `useAccountNativeBalance` with a direct per-chain lookup instead of re-normalizing every chain and account on each balance poll ([#2125](https://github.com/COG-GTM/metamask-mobile/pull/2125))
 - fix(multi-srp): display multichain accounts in SRP list ([#14724](https://github.com/MetaMask/metamask-mobile/pull/14724))
 - fix(confirmations): remove transaction simulations from wallet initiated send flow ([#14994](https://github.com/MetaMask/metamask-mobile/pull/14994))
 - fix(bridge): add auto slippage option and improve slippage selection UI ([#15159](https://github.com/MetaMask/metamask-mobile/pull/15159))

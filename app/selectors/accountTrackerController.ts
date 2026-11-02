@@ -15,9 +15,27 @@ export const selectAccountsByChainId = createDeepEqualSelector(
     accountTrackerControllerState.accountsByChainId,
 );
 
+const lowercaseAddressIndexCache = new WeakMap<object, Map<string, string>>();
+
+const getLowercaseAddressIndex = (accounts: Record<string, unknown>) => {
+  let index = lowercaseAddressIndexCache.get(accounts);
+  if (!index) {
+    index = new Map(
+      Object.keys(accounts).map((accountAddress) => [
+        accountAddress.toLowerCase(),
+        accountAddress,
+      ]),
+    );
+    lowercaseAddressIndexCache.set(accounts, index);
+  }
+  return index;
+};
+
 /**
  * Returns the native balance (hex wei) of `address` on `chainId`, matching the
- * address case-insensitively and scanning only that chain's accounts.
+ * address case-insensitively within that chain only. The lowercase address
+ * index is cached per chain accounts object, so unrelated store updates do not
+ * re-scan the chain's accounts.
  */
 export const selectNativeBalanceByChainIdAndAddress = (
   state: RootState,
@@ -33,17 +51,11 @@ export const selectNativeBalanceByChainIdAndAddress = (
     return '0x0';
   }
 
-  const exactMatch = accounts[address];
-  if (exactMatch) {
-    return exactMatch.balance ?? '0x0';
-  }
+  const accountKey = Object.prototype.hasOwnProperty.call(accounts, address)
+    ? address
+    : getLowercaseAddressIndex(accounts).get(address.toLowerCase());
 
-  const lowercaseAddress = address.toLowerCase();
-  const matchingKey = Object.keys(accounts).find(
-    (accountAddress) => accountAddress.toLowerCase() === lowercaseAddress,
-  );
-
-  return (matchingKey && accounts[matchingKey]?.balance) || '0x0';
+  return (accountKey && accounts[accountKey]?.balance) || '0x0';
 };
 
 export const selectAccounts = createDeepEqualSelector(
