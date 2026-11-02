@@ -12,13 +12,24 @@ import { mockNetworkState } from '../../util/test/network';
 import { Hex } from '@metamask/utils';
 import { KeyringControllerState } from '@metamask/keyring-controller';
 import { backupVault } from '../BackupVault';
+import { NetworkState, NetworkStatus } from '@metamask/network-controller';
+import { deprecatedGetNetworkId } from '../../util/networks/engineNetworkUtils';
+import { store } from '../../store';
+import {
+  networkIdUpdated,
+  networkIdWillUpdate,
+} from '../redux/slices/inpageProvider';
 
 jest.mock('../BackupVault', () => ({
   backupVault: jest.fn().mockResolvedValue({ success: true, vault: 'vault' }),
 }));
 jest.unmock('./Engine');
 jest.mock('../../store', () => ({
-  store: { getState: jest.fn(() => ({ engine: {} })) },
+  store: { getState: jest.fn(() => ({ engine: {} })), dispatch: jest.fn() },
+}));
+jest.mock('../../util/networks/engineNetworkUtils', () => ({
+  ...jest.requireActual('../../util/networks/engineNetworkUtils'),
+  deprecatedGetNetworkId: jest.fn(),
 }));
 jest.mock('../../selectors/smartTransactionsController', () => ({
   selectShouldUseSmartTransaction: jest.fn().mockReturnValue(false),
@@ -591,6 +602,154 @@ describe('Engine', () => {
         ticker: 'ETH',
         totalNativeTokenBalance: '1',
       });
+    });
+  });
+
+  describe('network ID updates', () => {
+    const mockDeprecatedGetNetworkId = jest.mocked(deprecatedGetNetworkId);
+    const mockDispatch = jest.mocked(store.dispatch);
+    let engine: EngineClass;
+
+    const flushPromises = () =>
+      new Promise(jest.requireActual('timers').setImmediate);
+
+    const buildNetworkState = (
+      selectedNetworkClientId: string,
+      status: NetworkStatus = NetworkStatus.Unknown,
+    ): NetworkState => ({
+      ...engine.context.NetworkController.state,
+      selectedNetworkClientId,
+      networksMetadata: {
+        [selectedNetworkClientId]: { status, EIPS: {} },
+      },
+    });
+
+    const publishStateChange = async (state: NetworkState) => {
+      engine.controllerMessenger.publish(
+        'NetworkController:stateChange',
+        state,
+        [],
+      );
+      await flushPromises();
+    };
+
+    const publishNetworkWillChange = async (state: NetworkState) => {
+      engine.controllerMessenger.publish(
+        'NetworkController:networkWillChange',
+        state,
+      );
+      await flushPromises();
+    };
+
+    beforeEach(async () => {
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      mockDeprecatedGetNetworkId.mockResolvedValue('1');
+      engine = Engine.init({});
+      await publishNetworkWillChange(buildNetworkState('mainnet'));
+      mockDeprecatedGetNetworkId.mockClear();
+      mockDispatch.mockClear();
+    });
+
+    it('fetches and dispatches the network ID on the first state change', async () => {
+      await publishStateChange(buildNetworkState('mainnet'));
+
+      expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(1);
+      expect(mockDispatch).toHaveBeenCalledWith(networkIdUpdated('1'));
+    });
+
+    it('does not query net_version again when the selected network is unchanged', async () => {
+      await publishStateChange(buildNetworkState('mainnet'));
+      await publishStateChange(
+        buildNetworkState('mainnet', NetworkStatus.Available),
+      );
+      await publishStateChange({
+        ...buildNetworkState('mainnet'),
+        networksMetadata: {
+          mainnet: { status: NetworkStatus.Unknown, EIPS: { 1559: true } },
+          'other-client': { status: NetworkStatus.Available, EIPS: {} },
+        },
+      });
+
+      expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(1);
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+    });
+
+    it('queries net_version once per selected network change', async () => {
+      await publishStateChange(buildNetworkState('mainnet'));
+      mockDeprecatedGetNetworkId.mockResolvedValue('59144');
+      await publishStateChange(buildNetworkState('linea-mainnet'));
+      await publishStateChange(buildNetworkState('linea-mainnet'));
+
+      expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(2);
+      expect(mockDispatch).toHaveBeenLastCalledWith(networkIdUpdated('59144'));
+    });
+
+    it('retries on the next state change after a failed lookup', async () => {
+      mockDeprecatedGetNetworkId.mockRejectedValueOnce(new Error('offline'));
+      await publishStateChange(buildNetworkState('mainnet'));
+      expect(mockDispatch).not.toHaveBeenCalled();
+
+      await publishStateChange(buildNetworkState('mainnet'));
+      await publishStateChange(buildNetworkState('mainnet'));
+
+      expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(2);
+      expect(mockDispatch).toHaveBeenCalledWith(networkIdUpdated('1'));
+    });
+
+    it('refetches after networkWillChange even if the selected client is unchanged', async () => {
+      await publishStateChange(buildNetworkState('mainnet'));
+      await publishNetworkWillChange(buildNetworkState('mainnet'));
+      expect(mockDispatch).toHaveBeenLastCalledWith(networkIdWillUpdate());
+
+      await publishStateChange(buildNetworkState('mainnet'));
+
+      expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(2);
+      expect(mockDispatch).toHaveBeenLastCalledWith(networkIdUpdated('1'));
+    });
+
+    const deferNetworkId = () => {
+      let resolve: (networkId: string) => void = () => undefined;
+      let reject: (error: Error) => void = () => undefined;
+      mockDeprecatedGetNetworkId.mockImplementationOnce(
+        () =>
+          new Promise<string>((res, rej) => {
+            resolve = res;
+            reject = rej;
+          }),
+      );
+      return {
+        resolve: (networkId: string) => resolve(networkId),
+        reject: (error: Error) => reject(error),
+      };
+    };
+
+    it('ignores a lookup that resolves after the selected network changed', async () => {
+      const mainnetLookup = deferNetworkId();
+      await publishStateChange(buildNetworkState('mainnet'));
+      mockDeprecatedGetNetworkId.mockResolvedValue('59144');
+      await publishStateChange(buildNetworkState('linea-mainnet'));
+
+      mainnetLookup.resolve('1');
+      await flushPromises();
+      await publishStateChange(buildNetworkState('linea-mainnet'));
+
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+      expect(mockDispatch).toHaveBeenLastCalledWith(networkIdUpdated('59144'));
+      expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not re-arm the lookup when a superseded lookup fails', async () => {
+      const staleLookup = deferNetworkId();
+      await publishStateChange(buildNetworkState('mainnet'));
+      await publishNetworkWillChange(buildNetworkState('mainnet'));
+      await publishStateChange(buildNetworkState('mainnet'));
+
+      staleLookup.reject(new Error('connection reset'));
+      await flushPromises();
+      await publishStateChange(buildNetworkState('mainnet'));
+
+      expect(mockDeprecatedGetNetworkId).toHaveBeenCalledTimes(2);
+      expect(mockDispatch).toHaveBeenLastCalledWith(networkIdUpdated('1'));
     });
   });
 });
