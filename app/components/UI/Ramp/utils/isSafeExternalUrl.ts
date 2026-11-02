@@ -11,12 +11,28 @@ const EXTERNAL_LINK_PROTOCOLS = protocolAllowList.filter(
  * Linking.openURL, so custom schemes such as `intent:` or `metamask:` are
  * never launched from Ramp screens.
  */
+const hasWhitespaceOrControlChar = (value: string) => {
+  for (let i = 0; i < value.length; i++) {
+    const code = value.charCodeAt(i);
+    if (code <= 0x20 || code === 0x7f) {
+      return true;
+    }
+  }
+  return false;
+};
+
 export default function isSafeExternalUrl(url?: string | null): url is string {
-  if (typeof url !== 'string' || url.trim().length === 0) {
+  // Validate the exact string that will be launched: url-parse silently strips
+  // leading whitespace/control characters, which the OS URL parser may not.
+  if (
+    typeof url !== 'string' ||
+    url.length === 0 ||
+    hasWhitespaceOrControlChar(url)
+  ) {
     return false;
   }
   try {
-    const { protocol, hostname } = new Url(url.trim(), {});
+    const { protocol, hostname } = new Url(url, {});
     return (
       EXTERNAL_LINK_PROTOCOLS.includes(protocol.toLowerCase()) &&
       hostname.length > 0

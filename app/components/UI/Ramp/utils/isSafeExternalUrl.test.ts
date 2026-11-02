@@ -7,7 +7,6 @@ describe('isSafeExternalUrl', () => {
     'https://provider.example/privacy',
     'http://provider.example',
     'HTTPS://PROVIDER.EXAMPLE/terms',
-    '  https://provider.example/support  ',
   ])('accepts http(s) url %s', (url) => {
     expect(isSafeExternalUrl(url)).toBe(true);
   });
@@ -17,6 +16,10 @@ describe('isSafeExternalUrl', () => {
     null,
     '',
     '   ',
+    '  https://provider.example/support  ',
+    'https://provider.example/support\n',
+    '\u0000https://provider.example',
+    'https://provider.example/a b',
     'evilapp://x',
     'metamask://wc?uri=attacker',
     'intent://scan/#Intent;scheme=zxing;end',
