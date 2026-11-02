@@ -27,6 +27,7 @@ import { selectAccountTokensAcrossChainsForAddress } from '../../../../../select
 import { BridgeToken } from '../../types';
 import { RootState } from '../../../../../reducers';
 import { renderNumber, renderFiat } from '../../../../../util/number';
+import { useStableArray } from '../../../../hooks/useStableArray';
 interface CalculateFiatBalancesParams {
   assets: TokenI[];
   multiChainMarketData: ReturnType<typeof selectTokenMarketData>;
@@ -115,7 +116,9 @@ export const useTokensWithBalance: ({
   chainIds,
 }: {
   chainIds: (Hex | CaipChainId)[] | undefined;
-}) => BridgeToken[] = ({ chainIds }) => {
+}) => BridgeToken[] = ({ chainIds: chainIdsProp }) => {
+  // Callers often pass inline arrays; keep the reference stable so the memo below only reruns on real changes
+  const chainIds = useStableArray(chainIdsProp);
   const tokenSortConfig = useSelector(selectTokenSortConfig);
   const currentCurrency = useSelector(selectCurrentCurrency);
   const networkConfigurationsByChainId = useSelector(

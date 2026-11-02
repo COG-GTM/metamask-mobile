@@ -72,18 +72,24 @@ export const BridgeSourceTokenSelector: React.FC = () => {
     selectedNetworkName,
   });
 
-  let balanceChainIds;
-  if (bridgeViewMode === BridgeViewMode.Bridge) {
-    balanceChainIds = selectedSourceChainIds;
-  } else {
+  const selectedSourceTokenChainId = selectedSourceToken?.chainId;
+  const balanceChainIds = useMemo(() => {
+    if (bridgeViewMode === BridgeViewMode.Bridge) {
+      return selectedSourceChainIds;
+    }
     // Really only for Solana Swap
-    balanceChainIds = selectedSourceToken?.chainId ? [selectedSourceToken?.chainId] : undefined;
-  }
+    return selectedSourceTokenChainId ? [selectedSourceTokenChainId] : undefined;
+  }, [bridgeViewMode, selectedSourceChainIds, selectedSourceTokenChainId]);
+
+  const tokensToExclude = useMemo(
+    () => (selectedDestToken ? [selectedDestToken] : []),
+    [selectedDestToken],
+  );
 
   const { tokens: tokensList, pending } = useTokens({
-    topTokensChainId: selectedSourceToken?.chainId,
+    topTokensChainId: selectedSourceTokenChainId,
     balanceChainIds,
-    tokensToExclude: selectedDestToken ? [selectedDestToken] : [],
+    tokensToExclude,
   });
 
   const renderItem = useCallback(

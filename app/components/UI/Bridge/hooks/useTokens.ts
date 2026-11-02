@@ -3,6 +3,7 @@ import { Hex, CaipChainId } from '@metamask/utils';
 import { useMemo } from 'react';
 import { useTopTokens } from './useTopTokens';
 import { BridgeToken } from '../types';
+import { useStableArray } from '../../../hooks/useStableArray';
 
 interface UseTokensProps {
   topTokensChainId?: Hex | CaipChainId;
@@ -21,8 +22,9 @@ interface UseTokensProps {
 export function useTokens({
   topTokensChainId,
   balanceChainIds,
-  tokensToExclude
+  tokensToExclude: tokensToExcludeProp,
 }: UseTokensProps): { tokens: BridgeToken[], pending: boolean } {
+  const tokensToExclude = useStableArray(tokensToExcludeProp);
   const tokensWithBalance = useTokensWithBalance({
     chainIds: balanceChainIds
   });
