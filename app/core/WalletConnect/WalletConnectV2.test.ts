@@ -519,6 +519,28 @@ describe('WC2Manager', () => {
   });
 
   describe('WC2Manager removeAll', () => {
+    it('removes listeners from every local session before clearing them', async () => {
+      const managerSessions = (
+        manager as unknown as {
+          sessions: { [topic: string]: WalletConnect2Session };
+        }
+      ).sessions;
+      const removeListenersA = jest.fn();
+      const removeListenersB = jest.fn();
+      managerSessions['topic-a'] = {
+        removeListeners: removeListenersA,
+      } as unknown as WalletConnect2Session;
+      managerSessions['topic-b'] = {
+        removeListeners: removeListenersB,
+      } as unknown as WalletConnect2Session;
+
+      await manager.removeAll();
+
+      expect(removeListenersA).toHaveBeenCalledTimes(1);
+      expect(removeListenersB).toHaveBeenCalledTimes(1);
+      expect((manager as unknown as { sessions: object }).sessions).toEqual({});
+    });
+
     it('should remove all sessions and clear storage', async () => {
       const clearStorageSpy = jest.spyOn(StorageWrapper, 'setItem');
 

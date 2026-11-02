@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fix(bridge): show "Auto" slippage for Solana swaps
 
+### Fixed
+
+- fix(walletconnect): release each WalletConnect v2 session's Redux store subscription when the session is removed, so disconnected sessions stop reacting to chain switches and can be garbage-collected ([#2121](https://github.com/COG-GTM/metamask-mobile/pull/2121))
+
 ### Added
 
 - feat: migrate eth_accounts and permittedChains to CAIP-25 endowment ([#13970](https://github.com/MetaMask/metamask-mobile/pull/13970))

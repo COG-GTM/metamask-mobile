@@ -435,6 +435,91 @@ describe('WalletConnect2Session', () => {
     consoleWarnSpy.mockRestore();
   });
 
+  describe('store subscription lifecycle', () => {
+    let listeners: Set<() => void>;
+    const dispatch = () => listeners.forEach((listener) => listener());
+
+    beforeEach(() => {
+      listeners = new Set();
+      (store.subscribe as jest.Mock).mockImplementation(
+        (listener: () => void) => {
+          listeners.add(listener);
+          return () => {
+            listeners.delete(listener);
+          };
+        },
+      );
+      (selectEvmChainId as unknown as jest.Mock).mockReturnValue('0x1');
+    });
+
+    const createSession = () =>
+      new WalletConnect2Session({
+        web3Wallet: mockClient,
+        session: mockSession,
+        channelId: 'test-channel',
+        deeplink: true,
+        navigation: mockNavigation,
+      });
+
+    it('unsubscribes from the store when listeners are removed', async () => {
+      session = createSession();
+      expect(listeners.size).toBe(1);
+
+      const handleChainChangeSpy = jest.spyOn(
+        session as any,
+        'handleChainChange',
+      );
+
+      await session.removeListeners();
+      expect(listeners.size).toBe(0);
+
+      (selectEvmChainId as unknown as jest.Mock).mockReturnValue('0x2');
+      dispatch();
+      await new Promise(process.nextTick);
+
+      expect(handleChainChangeSpy).not.toHaveBeenCalled();
+    });
+
+    it('only notifies live sessions of chain changes', async () => {
+      const removedSession = createSession();
+      const liveSession = createSession();
+      expect(listeners.size).toBe(2);
+
+      const removedSpy = jest
+        .spyOn(removedSession as any, 'handleChainChange')
+        .mockResolvedValue(undefined);
+      const liveSpy = jest
+        .spyOn(liveSession as any, 'handleChainChange')
+        .mockResolvedValue(undefined);
+
+      await removedSession.removeListeners();
+      expect(listeners.size).toBe(1);
+
+      (selectEvmChainId as unknown as jest.Mock).mockReturnValue('0x2');
+      dispatch();
+      await new Promise(process.nextTick);
+
+      expect(removedSpy).not.toHaveBeenCalled();
+      expect(liveSpy).toHaveBeenCalledWith(2);
+    });
+
+    it('is safe to call removeListeners more than once', async () => {
+      const unsubscribe = jest.fn();
+      (store.subscribe as jest.Mock).mockImplementation(() => unsubscribe);
+      session = createSession();
+      const onDisconnect = jest.spyOn(
+        (session as any).backgroundBridge,
+        'onDisconnect',
+      );
+
+      await session.removeListeners();
+      await session.removeListeners();
+
+      expect(unsubscribe).toHaveBeenCalledTimes(1);
+      expect(onDisconnect).toHaveBeenCalledTimes(2);
+    });
+  });
+
   describe('redirect', () => {
     beforeEach(() => {
       jest.clearAllMocks();
