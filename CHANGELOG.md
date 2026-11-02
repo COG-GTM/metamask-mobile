@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- fix(sdk): skip the 200ms UI-ready delay for Android native SDK messages once the service is bound and unlocked
+- fix(sdk): skip the 200ms UI-ready delay for Android native SDK messages once the service is bound and unlocked ([#2099](https://github.com/cog-gtm/metamask-mobile/pull/2099))
 - fix(bridge): show "Auto" slippage for Solana swaps
 
 ### Added
