@@ -167,11 +167,11 @@ describe('checkWCPermissions wallet_switchEthereumChain approval', () => {
   });
 
   it.each([
-    ['a bare hostname', SUBJECT],
-    ['a full URL', `https://${SUBJECT}/app`],
+    ['a bare hostname', SUBJECT, `https://${SUBJECT}`],
+    ['a full URL', `https://${SUBJECT}/app`, `https://${SUBJECT}/app`],
   ])(
     'prompts before switching to an unpermitted chain when the origin is %s',
-    async (_label, origin) => {
+    async (_label, origin, expectedPageUrl) => {
       const allowed = await checkWCPermissions({
         origin,
         caip2ChainId: 'eip155:137',
@@ -184,9 +184,14 @@ describe('checkWCPermissions wallet_switchEthereumChain approval', () => {
         expect.objectContaining({
           origin: SUBJECT,
           type: 'SWITCH_ETHEREUM_CHAIN',
-          requestData: expect.objectContaining({ chainId: '0x89' }),
+          requestData: expect.objectContaining({
+            chainId: '0x89',
+            pageMeta: { url: expectedPageUrl },
+          }),
         }),
       );
+      const { pageMeta } = ApprovalController.add.mock.calls[0][0].requestData;
+      expect(new URL(pageMeta.url).hostname).toBe(SUBJECT);
       expect(PermissionController.updateCaveat).not.toHaveBeenCalled();
       expect(permittedChains(SUBJECT)).toEqual(['0x1', '0x89']);
       expect(Object.keys(mockSubjects)).toEqual([SUBJECT]);

@@ -250,6 +250,16 @@ export const onRequestUserApproval = (origin: string) => async (args: any) => {
   return responseData;
 };
 
+// The approval screen parses pageMeta.url with `new URL`, so it needs an
+// absolute URL even when the session origin is a bare hostname.
+const getApprovalPageUrl = (origin: string, hostname: string): string => {
+  try {
+    return new URL(origin).href;
+  } catch {
+    return `https://${hostname}`;
+  }
+};
+
 export const checkWCPermissions = async ({
   origin,
   caip2ChainId,
@@ -311,7 +321,22 @@ export const checkWCPermissions = async ({
       await switchToNetwork({
         network: existingNetwork,
         chainId: hexChainIdString,
-        requestUserApproval: onRequestUserApproval(hostname),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        requestUserApproval: (args: any) =>
+          onRequestUserApproval(hostname)(
+            args?.requestData?.pageMeta
+              ? {
+                  ...args,
+                  requestData: {
+                    ...args.requestData,
+                    pageMeta: {
+                      ...args.requestData.pageMeta,
+                      url: getApprovalPageUrl(origin, hostname),
+                    },
+                  },
+                }
+              : args,
+          ),
         analytics: {},
         origin: hostname,
         isAddNetworkFlow: false,
