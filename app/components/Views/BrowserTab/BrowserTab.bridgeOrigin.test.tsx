@@ -357,4 +357,42 @@ describe('BrowserTab background bridge across navigations', () => {
     ]);
     expect(mockBridges[0].onMessage).not.toHaveBeenCalled();
   });
+
+  it('keeps a newer navigation and its bridge isolated when an older blocked scan resolves late', async () => {
+    const scans = deferredScan();
+    const getWebView = await renderWebView();
+
+    let first: Promise<unknown> = Promise.resolve();
+    let second: Promise<unknown> = Promise.resolve();
+    act(() => {
+      first = getWebView().props.onLoadStart({
+        nativeEvent: { url: 'https://mallory.example/' },
+      });
+      second = getWebView().props.onLoadStart({
+        nativeEvent: { url: 'https://acme-swap.example/' },
+      });
+    });
+    await act(async () => {
+      scans['https://acme-swap.example'](SAFE);
+      await second;
+    });
+    await act(async () => {
+      scans['https://mallory.example']({
+        result: true,
+        name: 'DAPP_SCANNING',
+      } as typeof SAFE);
+      await first;
+    });
+    act(() => {
+      getWebView().props.onMessage(
+        providerMessage('https://mallory.example/', 1),
+      );
+    });
+
+    expect(mockBridges.map(({ url }) => url)).toEqual([
+      'https://acme-swap.example',
+    ]);
+    expect(mockBridges[0].onDisconnect).not.toHaveBeenCalled();
+    expect(mockBridges[0].onMessage).not.toHaveBeenCalled();
+  });
 });
