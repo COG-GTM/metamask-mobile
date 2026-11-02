@@ -4,7 +4,7 @@ import { isWalletOnlyQRContent } from '../../util/validators';
 export const MAX_SCAN_QR_CODE_PATTERN_LENGTH = 256;
 // Largest payload a QR code can hold (version 40, numeric mode).
 export const MAX_SCAN_QR_CODE_MATCH_LENGTH = 7089;
-const MAX_SCAN_QR_CODE_MATCH_COST = 2.5e8;
+const MAX_SCAN_QR_CODE_MATCH_COST = 1e7;
 export const SCAN_QR_CODE_USER_CANCELLED = 'USER_CANCELLED';
 export const SCAN_QR_CODE_WALLET_ONLY_CONTENT = 'DAPP_SCAN_WALLET_ONLY_CONTENT';
 
@@ -31,7 +31,7 @@ interface PatternGroup {
  * Backreferences, lookarounds and quantified groups that themselves contain a
  * quantifier or alternation are refused outright; for the rest, the product of
  * every quantifier's range and alternation's branches, times the number of start
- * positions, must stay within MAX_SCAN_QR_CODE_MATCH_COST for inputs of up to
+ * positions (one for patterns anchored with a leading ^), must stay within MAX_SCAN_QR_CODE_MATCH_COST for inputs of up to
  * MAX_SCAN_QR_CODE_MATCH_LENGTH characters.
  *
  * @param pattern - Dapp-supplied regular expression source.
@@ -39,7 +39,7 @@ interface PatternGroup {
 export function assertSafeScanPattern(pattern: string): void {
   const n = MAX_SCAN_QR_CODE_MATCH_LENGTH;
   const stack: PatternGroup[] = [{ quantified: false, branches: 1 }];
-  let cost = n;
+  let cost = 1;
   let lastAtomWasComplexGroup = false;
   let canQuantify = false;
   let i = 0;
@@ -156,6 +156,9 @@ export function assertSafeScanPattern(pattern: string): void {
     throw invalidPatternError('unbalanced parentheses');
   }
   cost *= stack[0].branches;
+  if (!pattern.startsWith('^') || stack[0].branches > 1) {
+    cost *= n;
+  }
   if (cost > MAX_SCAN_QR_CODE_MATCH_COST) {
     throw invalidPatternError('pattern is too complex');
   }

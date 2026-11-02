@@ -48,11 +48,16 @@ describe('parseSeedPhrase', () => {
 describe('isSecretKeyMaterial', () => {
   const PRIVATE_KEY =
     '4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318';
-  const SOLANA_KEYPAIR_BYTES = Array.from(
-    { length: 64 },
-    (_, i) => (i * 37 + 11) % 256,
-  );
+  const SOLANA_KEYPAIR_BYTES = [
+    11, 48, 85, 122, 159, 196, 233, 14, 51, 88, 125, 162, 199, 236, 17, 54, 91,
+    128, 165, 202, 239, 20, 57, 94, 131, 168, 205, 242, 23, 60, 97, 134, 36,
+    195, 164, 148, 250, 34, 153, 98, 102, 68, 185, 101, 169, 19, 45, 167, 156,
+    254, 103, 21, 31, 220, 66, 222, 96, 12, 240, 144, 151, 219, 130, 71,
+  ];
   const SOLANA_KEYPAIR_BASE58 =
+    'DyXZZCSiBREJ8YZ5cULd7PVdKpbkhHvHJ7otbJmLJaj9oF4jPDkNCpVKJBYHDHNDVMx8Bbkd1X5mfi2bufFMFRY';
+  // 64 bytes like a keypair, but the second half is not the first half's public key.
+  const SOLANA_SIGNATURE_BASE58 =
     'DyXZZCSiBREJ8YZ5cULd7PVdKpbkhHvHJ7otbJmLJajJtRsyq1irMMqKimYeKvRmZ8Sc2qWLhKjYR4ekM8RSzkV';
 
   it.each([
@@ -103,6 +108,17 @@ describe('isSecretKeyMaterial', () => {
     ['Solana address', '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV'],
     ['Solana URI', 'solana:7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV'],
     ['63 element byte array', JSON.stringify(Array(63).fill(1))],
+    ['Solana transaction signature', SOLANA_SIGNATURE_BASE58],
+    [
+      'Solana signature with a label',
+      `Transaction signature: ${SOLANA_SIGNATURE_BASE58}`,
+    ],
+    [
+      '64 byte array that is not a keypair',
+      JSON.stringify(
+        SOLANA_KEYPAIR_BYTES.slice(0, 32).concat(Array(32).fill(7)),
+      ),
+    ],
   ])('returns false for an %s', (_, content) => {
     expect(isSecretKeyMaterial(content)).toBe(false);
   });
