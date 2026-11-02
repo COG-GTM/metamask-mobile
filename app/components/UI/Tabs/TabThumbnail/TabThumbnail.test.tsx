@@ -4,6 +4,23 @@ import { backgroundState } from '../../../../util/test/initial-root-state';
 import TabThumbnail from './TabThumbnail';
 import { fireEvent } from '@testing-library/react-native';
 import { strings } from '../../../../../locales/i18n';
+import {
+  Caip25CaveatType,
+  Caip25EndowmentPermissionName,
+} from '@metamask/chain-agnostic-permission';
+import {
+  MOCK_ACCOUNTS_CONTROLLER_STATE,
+  MOCK_ADDRESS_1,
+} from '../../../../util/test/accountsControllerTestUtils';
+import { useAccounts } from '../../../hooks/useAccounts';
+
+jest.mock('../../../hooks/useAccounts', () => ({
+  useAccounts: jest.fn(() => ({
+    accounts: [],
+    evmAccounts: [],
+    ensByAccountAddress: {},
+  })),
+}));
 
 const mockTab = {
   url: 'https://example.com',
@@ -123,5 +140,58 @@ describe('TabThumbnail', () => {
     );
 
     expect(queryByTestId('footer-container')).toBeNull();
+  });
+
+  it('renders the permitted account without running useAccounts', () => {
+    const { getByTestId, getByText } = renderWithProvider(
+      <TabThumbnail
+        tab={mockTab}
+        isActiveTab={false}
+        onClose={mockOnClose}
+        onSwitch={mockOnSwitch}
+      />,
+      {
+        state: {
+          engine: {
+            backgroundState: {
+              ...backgroundState,
+              AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
+              PermissionController: {
+                subjects: {
+                  'example.com': {
+                    permissions: {
+                      [Caip25EndowmentPermissionName]: {
+                        caveats: [
+                          {
+                            type: Caip25CaveatType,
+                            value: {
+                              requiredScopes: {},
+                              optionalScopes: {
+                                'eip155:1': {
+                                  accounts: [
+                                    `eip155:1:${MOCK_ADDRESS_1.toLowerCase()}`,
+                                  ],
+                                },
+                              },
+                              isMultichainOrigin: false,
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+              // TODO: Replace "any" with type
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            } as any,
+          },
+        },
+      },
+    );
+
+    expect(getByTestId('footer-container')).toBeTruthy();
+    expect(getByText(/^Account 1/)).toBeTruthy();
+    expect(useAccounts).not.toHaveBeenCalled();
   });
 });

@@ -95,7 +95,7 @@ export const sortAccountsByLastSelected = (accounts: Hex[]) => {
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function getAccountsFromSubject(subject: any) {
+export function getAccountsFromSubject(subject: any) {
   const caveats =
     subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
   if (!caveats) {
