@@ -3,7 +3,14 @@ import {
   isFromCurrentChain,
   sortTransactions,
   filterByAddressAndNetwork,
+  uniqueTransactionsById,
 } from '.';
+import { safeToChecksumAddress } from '../address';
+
+jest.mock('../address', () => ({
+  ...jest.requireActual('../address'),
+  safeToChecksumAddress: jest.fn(),
+}));
 import { Token } from '../../components/UI/Swaps/utils/token-list-utils';
 import { TX_SUBMITTED, TX_UNAPPROVED } from '../../constants/transaction';
 
@@ -44,6 +51,42 @@ describe('Activity utils :: isFromOrToSelectedAddress', () => {
     const selectedAddress = TEST_ADDRESS_THREE;
     const result = isFromOrToSelectedAddress(from, to, selectedAddress);
     expect(result).toEqual(false);
+  });
+
+  it('should match addresses regardless of case', () => {
+    expect(
+      isFromOrToSelectedAddress(
+        TEST_ADDRESS_ONE.toUpperCase().replace('0X', '0x'),
+        TEST_ADDRESS_TWO,
+        '0x5A3cA5cd63807Ce5e4d7841AB32Ce6B6d9BbBa2D',
+      ),
+    ).toEqual(true);
+    expect(
+      isFromOrToSelectedAddress(
+        TEST_ADDRESS_TWO,
+        TEST_ADDRESS_THREE,
+        TEST_ADDRESS_THREE.toLowerCase(),
+      ),
+    ).toEqual(true);
+  });
+
+  it('should return false when to is undefined (contract deployment) and from does not match', () => {
+    expect(
+      isFromOrToSelectedAddress(
+        TEST_ADDRESS_ONE,
+        undefined as unknown as string,
+        TEST_ADDRESS_TWO,
+      ),
+    ).toEqual(false);
+  });
+
+  it('should not compute checksums', () => {
+    isFromOrToSelectedAddress(
+      TEST_ADDRESS_ONE,
+      TEST_ADDRESS_TWO,
+      TEST_ADDRESS_THREE,
+    );
+    expect(safeToChecksumAddress).not.toHaveBeenCalled();
   });
 
   it('should return false if no address is provided', () => {
@@ -321,5 +364,39 @@ describe('Activity utils :: filterByAddressAndNetwork', () => {
     );
     // Despite chainId mismatch, the condition becomes true
     expect(result).toEqual(true);
+  });
+});
+
+describe('Activity utils :: uniqueTransactionsById', () => {
+  it('should keep the first occurrence of each id and preserve order', () => {
+    const transactions = [
+      { id: 'a', time: 3 },
+      { id: 'b', time: 2 },
+      { id: 'a', time: 1 },
+      { id: 'c', time: 1 },
+      { id: 'b', time: 0 },
+    ];
+    const result = uniqueTransactionsById(transactions);
+    expect(result).toEqual([
+      { id: 'a', time: 3 },
+      { id: 'b', time: 2 },
+      { id: 'c', time: 1 },
+    ]);
+    expect(result[0]).toBe(transactions[0]);
+  });
+
+  it('should match the previous findIndex-based dedupe', () => {
+    const transactions = Array.from({ length: 200 }, (_, i) => ({
+      id: String((i * 7) % 61),
+      time: i,
+    }));
+    const expected = transactions.filter(
+      (tx, index, self) => self.findIndex((_tx) => _tx.id === tx.id) === index,
+    );
+    expect(uniqueTransactionsById(transactions)).toEqual(expected);
+  });
+
+  it('should return an empty array for no transactions', () => {
+    expect(uniqueTransactionsById([])).toEqual([]);
   });
 });

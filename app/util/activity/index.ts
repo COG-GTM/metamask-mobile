@@ -1,4 +1,3 @@
-import { safeToChecksumAddress } from '../../util/address';
 import { toLowerCaseEquals } from '../../util/general';
 import { TX_UNAPPROVED } from '../../constants/transaction';
 
@@ -14,8 +13,8 @@ export const isFromOrToSelectedAddress = (
   to: string,
   selectedAddress: string,
 ): boolean =>
-  toLowerCaseEquals(safeToChecksumAddress(from), selectedAddress) ||
-  toLowerCaseEquals(safeToChecksumAddress(to), selectedAddress);
+  toLowerCaseEquals(from, selectedAddress) ||
+  toLowerCaseEquals(to, selectedAddress);
 
 /**
  * Determines if a transaction was executed in the current chain/network
@@ -46,6 +45,22 @@ export const sortTransactions = (transactions: any[]): any[] =>
     if (a.time < b.time) return 1;
     return 0;
   });
+
+/**
+ * Removes transactions with a duplicate id, keeping the first occurrence
+ * @param transactions Array of transactions
+ * @returns Array without duplicate ids, in the original order
+ */
+export const uniqueTransactionsById = <T extends { id: string }>(
+  transactions: T[],
+): T[] => {
+  const seenIds = new Set<string>();
+  return transactions.filter(({ id }) => {
+    if (seenIds.has(id)) return false;
+    seenIds.add(id);
+    return true;
+  });
+};
 
 /**
  * Filter based on the following conditions:
