@@ -215,4 +215,18 @@ public class RNTarTest {
     assertTrue(error.getMessage().contains("must be new or empty"));
     assertFalse(new File(output, "package").exists());
   }
+
+  @Test
+  public void testUnTar_rejectsDuplicateFileEntries() throws Exception {
+    File base = Files.createTempDirectory("rntar-duplicate").toFile();
+    File output = new File(base, "output");
+    File tgz = writeTgz(base,
+        file("package/dist/bundle.js", "original"),
+        file("package/dist/bundle.js", "tampered"));
+
+    Throwable error = runUnTar(tgz, output);
+
+    assertTrue("Expected rejection for duplicate entry", error != null);
+    assertTrue(error.getMessage().contains("Duplicate tar entry"));
+  }
 }

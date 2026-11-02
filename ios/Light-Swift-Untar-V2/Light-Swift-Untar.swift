@@ -17,6 +17,7 @@ enum UntarError: Error, LocalizedError {
   case corruptFile(type: UnicodeScalar)
   case unsafeEntry(name: String)
   case unsupportedEntry(type: UnicodeScalar)
+  case duplicateEntry(name: String)
   case truncatedArchive
   case malformedArchive(offset: UInt64)
   case sizeLimitExceeded(limit: UInt64)
@@ -26,6 +27,7 @@ enum UntarError: Error, LocalizedError {
     case let .corruptFile(type: type): return "Invalid block type \(type) found"
     case let .unsafeEntry(name: name): return "Entry \(name) resolves outside the destination"
     case let .unsupportedEntry(type: type): return "Unsupported tar entry type \(type)"
+    case let .duplicateEntry(name: name): return "Entry \(name) appears more than once"
     case .truncatedArchive: return "Archive entry extends past the end of the archive"
     case let .malformedArchive(offset: offset): return "Malformed tar header at offset \(offset)"
     case let .sizeLimitExceeded(limit: limit): return "Archive exceeds limit of \(limit) bytes"
@@ -79,6 +81,8 @@ public extension FileManager {
         guard extractedSize <= FileManager.tarMaxExtractedSize else {
           throw UntarError.sizeLimitExceeded(limit: FileManager.tarMaxExtractedSize)
         }
+        // A later duplicate entry must not replace a file that was already extracted.
+        guard !fileExists(atPath: filePath) else { throw UntarError.duplicateEntry(name: name) }
         if size == 0 { try "".write(toFile: filePath, atomically: true, encoding: .utf8) } else {
           try writeFileData(object: tarObject, location: dataStart, length: size, path: filePath)
         }

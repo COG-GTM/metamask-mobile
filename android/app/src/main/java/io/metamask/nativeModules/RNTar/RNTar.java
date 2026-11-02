@@ -132,6 +132,10 @@ public class RNTar extends ReactContextBaseJavaModule {
           if (entry.isDirectory()) {
             createDirectories(outputFile.getAbsolutePath());
           } else {
+            // A later duplicate entry must not replace a file that was already extracted.
+            if (outputFile.exists()) {
+              throw new IOException("Duplicate tar entry: " + entry.getName());
+            }
             // Create parent directories if they don't exist
             createDirectories(outputFile.getParent());
 
