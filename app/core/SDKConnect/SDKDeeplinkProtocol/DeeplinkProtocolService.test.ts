@@ -545,6 +545,63 @@ describe('DeeplinkProtocolService', () => {
       });
     });
 
+    it('requires re-approval before binding a key to a keyless session', async () => {
+      delete service.dappPublicKeyByClientId.acme;
+      (
+        Engine.context.PermissionController.requestPermissions as jest.Mock
+      ).mockRejectedValue(new Error('User rejected'));
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'mallory-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.dappPublicKeyByClientId.acme).toBeUndefined();
+      expect(service.currentClientId).not.toBe('acme');
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).toHaveBeenCalledWith({ origin: 'acme' }, expect.any(Object));
+    });
+
+    it('binds the key to a keyless session once the user re-approves', async () => {
+      delete service.dappPublicKeyByClientId.acme;
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'acme-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(service.dappPublicKeyByClientId.acme).toBe('acme-key');
+      expect(service.connections.acme.originatorInfo.title).toBe('Acme Swap');
+      expect(onMessage).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not change currentClientId when the link is rejected', async () => {
+      service.currentClientId = 'other';
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'mallory',
+        dappPublicKey: 'mallory-key',
+        originatorInfo,
+        request,
+      });
+
+      expect(service.currentClientId).toBe('other');
+    });
+
     it('runs the request without a prompt when key, scheme and expiry match', async () => {
       await service.handleConnection({
         channelId: 'acme',
