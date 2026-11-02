@@ -48,6 +48,7 @@ const createStyles = (colors: Colors) =>
   });
 
 const MAX_TOKENS_RESULTS = 20;
+const NO_EXCLUDED_ADDRESSES: CryptoCurrency['address'][] = [];
 
 interface Props {
   isVisible: boolean;
@@ -65,7 +66,7 @@ function TokenSelectModal({
   description,
   tokens,
   onItemPress,
-  excludeAddresses = [],
+  excludeAddresses = NO_EXCLUDED_ADDRESSES,
 }: Props) {
   const { colors } = useTheme();
   const styles = createStyles(colors);
