@@ -31,6 +31,7 @@ import NavigationService from '../NavigationService';
 import Routes from '../../constants/navigation/Routes';
 import { TraceName, TraceOperation, endTrace, trace } from '../../util/trace';
 import ReduxService from '../redux';
+import { flushRegisteredPersistedState } from '../../store/persistFlushRegistry';
 ///: BEGIN:ONLY_INCLUDE_IF(beta)
 import {
   MultichainWalletSnapFactory,
@@ -479,6 +480,7 @@ class AuthenticationService {
     }
     this.authData = { currentAuthType: AUTHENTICATION_TYPE.UNKNOWN };
     this.dispatchLogout();
+    await flushRegisteredPersistedState();
     NavigationService.navigation?.reset({
       routes: [{ name: Routes.ONBOARDING.LOGIN, params: { locked } }],
     });

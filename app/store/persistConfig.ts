@@ -13,13 +13,42 @@ import { getPersistentState } from '@metamask/base-controller';
 
 const TIMEOUT = 40000;
 const STORAGE_DEBOUNCE_DELAY = 200;
+// Coalescing window for redux-persist: changed keys are transformed and
+// serialized together at most once per window, always from the latest state.
+// See patches/redux-persist+6.0.0.patch for the drain-all-keys-per-tick change.
+export const PERSIST_THROTTLE = 1000;
 
-const debouncedSetItem = debounce(
-  async (key: string, value: string) =>
-    await FilesystemStorage.setItem(key, value, Device.isIos()),
-  STORAGE_DEBOUNCE_DELAY,
-  { leading: false, trailing: true },
-);
+let pendingStorageWrite: Promise<unknown> = Promise.resolve();
+
+/**
+ * Chains filesystem writes so an older in-flight write can never complete
+ * after, and overwrite, a newer one.
+ */
+const enqueueStorageWrite = (key: string, value: string) => {
+  const write = pendingStorageWrite.then(() =>
+    FilesystemStorage.setItem(key, value, Device.isIos()),
+  );
+  pendingStorageWrite = write.catch(() => undefined);
+  return write;
+};
+
+const debouncedSetItem = debounce(enqueueStorageWrite, STORAGE_DEBOUNCE_DELAY, {
+  leading: false,
+  trailing: true,
+});
+
+/**
+ * Immediately performs a pending debounced storage write, if any, and waits
+ * for every queued write to settle.
+ */
+export const flushStorageWrite = async () => {
+  try {
+    await debouncedSetItem.flush();
+    await pendingStorageWrite;
+  } catch (error) {
+    Logger.error(error as Error, { message: 'Failed to flush storage write' });
+  }
+};
 
 const MigratedStorage = {
   async getItem(key: string) {
@@ -67,6 +96,46 @@ const MigratedStorage = {
   },
 };
 
+interface PersistentStateCacheEntry {
+  state: object;
+  metadata: unknown;
+  persistentState: Record<string, unknown>;
+}
+
+const persistentStateCache = new Map<string, PersistentStateCacheEntry>();
+
+/**
+ * Returns `getPersistentState(state, metadata)`, reusing the previous result
+ * for a controller whose state and metadata references are unchanged, so a
+ * persist pass only walks the controllers that actually changed.
+ */
+export const getMemoizedPersistentState = (
+  controllerName: string,
+  state: object,
+  metadata: Parameters<typeof getPersistentState>[1] | undefined,
+): Record<string, unknown> => {
+  const cached = persistentStateCache.get(controllerName);
+  if (cached && cached.state === state && cached.metadata === metadata) {
+    return cached.persistentState;
+  }
+  const persistentState = getPersistentState(
+    state as Parameters<typeof getPersistentState>[0],
+    metadata as Parameters<typeof getPersistentState>[1],
+  ) as Record<string, unknown>;
+  persistentStateCache.set(controllerName, {
+    state,
+    metadata,
+    persistentState,
+  });
+  return persistentState;
+};
+
+/**
+ * Drops every memoized `getPersistentState` result so the next persist pass
+ * recomputes all controllers. Intended for tests and for resetting state.
+ */
+export const clearPersistentStateCache = () => persistentStateCache.clear();
+
 /**
  * Transform middleware that blacklists fields from redux persist that we deem too large for persisted storage
  */
@@ -99,12 +168,12 @@ const persistTransform = createTransform(
     for (const [key, value] of Object.entries(controllers)) {
       if (!value || typeof value !== 'object') continue;
 
-      const persistedState = getPersistentState(
+      persistableControllersState[key] = getMemoizedPersistentState(
+        key,
         value,
         // @ts-expect-error - EngineContext have stateless controllers, so metadata is not available
         Engine.context[key as keyof EngineContext]?.metadata,
       );
-      persistableControllersState[key] = persistedState;
     }
     // Reconstruct data to persist
     const newState = {
@@ -139,6 +208,7 @@ const persistConfig = {
   stateReconciler: autoMergeLevel2, // see "Merge Process" section for details.
   migrate: createMigrate(migrations, { debug: false }),
   timeout: TIMEOUT,
+  throttle: PERSIST_THROTTLE,
   writeFailHandler: (error: Error) =>
     Logger.error(error, { message: 'Error persisting data' }), // Log error if saving state fails
 };

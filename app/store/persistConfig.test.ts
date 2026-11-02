@@ -1,7 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FilesystemStorage from 'redux-persist-filesystem-storage';
 import Device from '../util/device';
-import persistConfig from './persistConfig';
+import persistConfig, {
+  clearPersistentStateCache,
+  flushStorageWrite,
+  getMemoizedPersistentState,
+  PERSIST_THROTTLE,
+} from './persistConfig';
+import { getPersistentState } from '@metamask/base-controller';
 import { version } from './migrations';
 import Engine from '../core/Engine';
 import { Transform } from 'redux-persist';
@@ -22,22 +28,24 @@ jest.mock('redux-persist-filesystem-storage');
 jest.mock('../util/device');
 jest.mock('../util/Logger');
 jest.mock('@metamask/base-controller', () => ({
-  getPersistentState: (
-    state: Record<string, unknown>,
-    metadata: ControllerMetadata | undefined,
-  ) => {
-    if (!metadata) return {};
-    return Object.entries(state).reduce<Record<string, unknown>>(
-      (acc, [key, value]) => {
-        const fieldMetadata = metadata[key];
-        if (fieldMetadata?.persist) {
-          acc[key] = value;
-        }
-        return acc;
-      },
-      {},
-    );
-  },
+  getPersistentState: jest.fn(
+    (
+      state: Record<string, unknown>,
+      metadata: ControllerMetadata | undefined,
+    ) => {
+      if (!metadata) return {};
+      return Object.entries(state).reduce<Record<string, unknown>>(
+        (acc, [key, value]) => {
+          const fieldMetadata = metadata[key];
+          if (fieldMetadata?.persist) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {},
+      );
+    },
+  ),
 }));
 
 // Mock redux-persist
@@ -94,13 +102,16 @@ jest.mock('./migrations', () => ({
 }));
 
 // Mock debounce
+const mockDebounceFlush = jest.fn();
 jest.mock('lodash', () => ({
-  debounce: <T extends (...args: unknown[]) => unknown>(fn: T) => fn,
+  debounce: <T extends (...args: unknown[]) => unknown>(fn: T) =>
+    Object.assign(fn, { flush: () => mockDebounceFlush() }),
 }));
 
 describe('persistConfig', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    clearPersistentStateCache();
     // Mock Device.isIos
     (Device.isIos as jest.Mock).mockReturnValue(true);
     // Clear Engine mock context
@@ -118,6 +129,11 @@ describe('persistConfig', () => {
         'accounts',
         'confirmationMetrics',
       ]);
+    });
+
+    it('throttles persist processing so engine updates are coalesced', () => {
+      expect(PERSIST_THROTTLE).toBe(1000);
+      expect(persistConfig.throttle).toBe(PERSIST_THROTTLE);
     });
 
     it('have correct storage configuration', () => {
@@ -222,6 +238,89 @@ describe('persistConfig', () => {
         mockValue,
         true,
       );
+    });
+
+    it('flushStorageWrite flushes the pending debounced write', async () => {
+      await flushStorageWrite();
+      expect(mockDebounceFlush).toHaveBeenCalledTimes(1);
+    });
+
+    describe('write ordering', () => {
+      const flushMicrotasks = () => new Promise((r) => setImmediate(r));
+
+      // Deferred filesystem writes that settle only when told to; a write
+      // records its value to "disk" at the moment it completes.
+      const deferDiskWrites = () => {
+        const disk: { value?: string } = {};
+        const completions: (() => void)[] = [];
+        (FilesystemStorage.setItem as jest.Mock).mockImplementation(
+          (_key: string, value: string) =>
+            new Promise<void>((resolve) =>
+              completions.push(() => {
+                disk.value = value;
+                resolve();
+              }),
+            ),
+        );
+        return { disk, completions };
+      };
+
+      it('does not let an older in-flight write overwrite a newer one', async () => {
+        const { disk, completions } = deferDiskWrites();
+
+        const older = persistConfig.storage.setItem(mockKey, 'older');
+        const newer = persistConfig.storage.setItem(mockKey, 'newer');
+        await flushMicrotasks();
+
+        // The newer write must wait for the in-flight one instead of racing it
+        expect(completions).toHaveLength(1);
+
+        completions[0]();
+        await older;
+        await flushMicrotasks();
+        expect(completions).toHaveLength(2);
+        completions[1]();
+        await newer;
+
+        expect(disk.value).toBe('newer');
+      });
+
+      it('flushStorageWrite resolves only after in-flight writes complete', async () => {
+        const { disk, completions } = deferDiskWrites();
+
+        persistConfig.storage.setItem(mockKey, 'older');
+        persistConfig.storage.setItem(mockKey, 'newer');
+        let flushed = false;
+        const flush = flushStorageWrite().then(() => {
+          flushed = true;
+        });
+
+        await flushMicrotasks();
+        expect(flushed).toBe(false);
+        completions[0]();
+        await flushMicrotasks();
+        expect(flushed).toBe(false);
+        completions[1]();
+        await flush;
+
+        expect(flushed).toBe(true);
+        expect(disk.value).toBe('newer');
+      });
+
+      it('keeps writing after a failed write', async () => {
+        (FilesystemStorage.setItem as jest.Mock)
+          .mockRejectedValueOnce(new Error('disk full'))
+          .mockResolvedValueOnce(undefined);
+
+        await persistConfig.storage.setItem(mockKey, 'first');
+        await persistConfig.storage.setItem(mockKey, 'second');
+
+        expect(FilesystemStorage.setItem).toHaveBeenLastCalledWith(
+          mockKey,
+          'second',
+          true,
+        );
+      });
     });
 
     it('remove item using FilesystemStorage', async () => {
@@ -441,6 +540,121 @@ describe('persistConfig', () => {
             },
           },
         });
+      });
+    });
+  });
+
+  describe('getMemoizedPersistentState', () => {
+    const metadata = {
+      vault: { persist: true, anonymous: false },
+      isUnlocked: { persist: false, anonymous: true },
+    };
+    const mockGetPersistentState = getPersistentState as jest.Mock;
+
+    it('reuses the result while state and metadata references are unchanged', () => {
+      const state = { vault: 'v1', isUnlocked: true };
+
+      const first = getMemoizedPersistentState(
+        'KeyringController',
+        state,
+        metadata,
+      );
+      const second = getMemoizedPersistentState(
+        'KeyringController',
+        state,
+        metadata,
+      );
+
+      expect(first).toEqual({ vault: 'v1' });
+      expect(second).toBe(first);
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(1);
+    });
+
+    it('recomputes when the controller state reference changes', () => {
+      const state = { vault: 'v1', isUnlocked: true };
+      getMemoizedPersistentState('KeyringController', state, metadata);
+
+      const result = getMemoizedPersistentState(
+        'KeyringController',
+        { ...state, vault: 'v2' },
+        metadata,
+      );
+
+      expect(result).toEqual({ vault: 'v2' });
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(2);
+    });
+
+    it('recomputes when the metadata reference changes', () => {
+      const state = { vault: 'v1', isUnlocked: true };
+      getMemoizedPersistentState('KeyringController', state, metadata);
+
+      const result = getMemoizedPersistentState('KeyringController', state, {
+        ...metadata,
+        isUnlocked: { persist: true, anonymous: true },
+      });
+
+      expect(result).toEqual({ vault: 'v1', isUnlocked: true });
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(2);
+    });
+
+    it('caches each controller independently', () => {
+      const state = { vault: 'v1', isUnlocked: true };
+      getMemoizedPersistentState('A', state, metadata);
+      getMemoizedPersistentState('B', state, metadata);
+      getMemoizedPersistentState('A', state, metadata);
+      getMemoizedPersistentState('B', state, metadata);
+
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(2);
+    });
+
+    it('persistTransform only walks controllers whose state changed', () => {
+      const mockContext = {
+        KeyringController: { metadata },
+        PreferencesController: {
+          metadata: { selectedAddress: { persist: true, anonymous: false } },
+        },
+      } as unknown as EngineContext;
+      (Engine as unknown as MockEngine).setMockContext(mockContext);
+      const engineTransform = persistConfig.transforms[0] as Transform<
+        unknown,
+        unknown
+      >;
+
+      const keyring = { vault: 'v1', isUnlocked: true };
+      const preferences = { selectedAddress: '0x1' };
+      engineTransform.in(
+        {
+          backgroundState: {
+            KeyringController: keyring,
+            PreferencesController: preferences,
+          },
+        },
+        'engine',
+        {},
+      );
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(2);
+
+      const result = engineTransform.in(
+        {
+          backgroundState: {
+            KeyringController: keyring,
+            PreferencesController: { selectedAddress: '0x2' },
+          },
+        },
+        'engine',
+        {},
+      );
+
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(3);
+      expect(mockGetPersistentState).toHaveBeenLastCalledWith(
+        { selectedAddress: '0x2' },
+        mockContext.PreferencesController.metadata,
+      );
+      expect(result).toEqual({
+        backgroundState: {
+          KeyringController: { vault: 'v1' },
+          PreferencesController: { selectedAddress: '0x2' },
+        },
       });
     });
   });
