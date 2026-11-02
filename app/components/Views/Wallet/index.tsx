@@ -11,6 +11,8 @@ import {
   View,
   TextStyle,
   Linking,
+  AppState,
+  AppStateStatus,
 } from 'react-native';
 import type { Theme } from '@metamask/design-tokens';
 import { connect, useSelector } from 'react-redux';
@@ -416,14 +418,26 @@ const Wallet = ({
   }, [chainId, handleNetworkFilter]);
 
   /**
-   * Check to see if notifications are enabled
+   * Check to see if notifications are enabled on mount and whenever the app
+   * returns to the foreground (the OS permission can only change while backgrounded)
    */
   useEffect(() => {
-    async function checkIfNotificationsAreEnabled() {
-      await NotificationsService.isDeviceNotificationEnabled();
-    }
+    const checkIfNotificationsAreEnabled = () => {
+      NotificationsService.isDeviceNotificationEnabled().catch((error) =>
+        Logger.error(error as Error, 'Wallet.isDeviceNotificationEnabled'),
+      );
+    };
     checkIfNotificationsAreEnabled();
-  });
+    const subscription = AppState.addEventListener(
+      'change',
+      (nextAppState: AppStateStatus) => {
+        if (nextAppState === 'active') {
+          checkIfNotificationsAreEnabled();
+        }
+      },
+    );
+    return () => subscription.remove();
+  }, []);
 
   /**
    * Check to see if we need to show What's New modal

@@ -90,10 +90,12 @@ class NotificationsService {
     const isAuthorized =
       permission.authorizationStatus === AuthorizationStatus.AUTHORIZED;
 
-    store.dispatch({
-      type: 'TOGGLE_DEVICE_NOTIFICATIONS',
-      deviceNotificationEnabled: isAuthorized,
-    });
+    if (store.getState().settings?.deviceNotificationEnabled !== isAuthorized) {
+      store.dispatch({
+        type: 'TOGGLE_DEVICE_NOTIFICATIONS',
+        deviceNotificationEnabled: isAuthorized,
+      });
+    }
     return isAuthorized;
   }
 

@@ -61,6 +61,7 @@ jest.mock('../settings', () => ({
 jest.mock('../../../store', () => ({
   store: {
     dispatch: jest.fn(),
+    getState: jest.fn(() => ({ settings: {} })),
   },
 }));
 jest.mock('../../../util/Logger', () => ({
@@ -223,6 +224,48 @@ describe('NotificationService - isDeviceNotificationEnabled', () => {
     expect(mocks.mockDispatch).toHaveBeenCalledWith(
       expect.objectContaining({ deviceNotificationEnabled: false }),
     );
+  });
+});
+
+describe('NotificationService - isDeviceNotificationEnabled dedupe', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it.each([true, false])(
+    'does not dispatch when the stored flag already equals %s',
+    async (authorized) => {
+      jest.mocked(notifee.getNotificationSettings).mockResolvedValue({
+        authorizationStatus: authorized
+          ? AuthorizationStatus.AUTHORIZED
+          : AuthorizationStatus.DENIED,
+      } as NotificationSettings);
+      jest.mocked(store.getState).mockReturnValue({
+        settings: { deviceNotificationEnabled: authorized },
+      } as ReturnType<typeof store.getState>);
+      const mockDispatch = jest.spyOn(store, 'dispatch');
+
+      expect(await NotificationService.isDeviceNotificationEnabled()).toBe(
+        authorized,
+      );
+      expect(mockDispatch).not.toHaveBeenCalled();
+    },
+  );
+
+  it('dispatches when the permission differs from the stored flag', async () => {
+    jest.mocked(notifee.getNotificationSettings).mockResolvedValue({
+      authorizationStatus: AuthorizationStatus.DENIED,
+    } as NotificationSettings);
+    jest.mocked(store.getState).mockReturnValue({
+      settings: { deviceNotificationEnabled: true },
+    } as ReturnType<typeof store.getState>);
+    const mockDispatch = jest.spyOn(store, 'dispatch');
+
+    expect(await NotificationService.isDeviceNotificationEnabled()).toBe(false);
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'TOGGLE_DEVICE_NOTIFICATIONS',
+      deviceNotificationEnabled: false,
+    });
   });
 });
 
