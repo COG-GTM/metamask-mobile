@@ -602,15 +602,17 @@ describe('DeeplinkProtocolService', () => {
 
       expect(service.setupBridge).not.toHaveBeenCalled();
       expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
-      expect(
-        SDKConnect.getInstance().removeDappConnection,
-      ).toHaveBeenCalledWith(clientInfo.clientId);
-      expect(revokeAllPermissions).toHaveBeenCalledWith(clientInfo.clientId);
       expect(service.connections[clientInfo.clientId]).toBeUndefined();
       expect(
         service.dappPublicKeyByClientId[clientInfo.clientId],
       ).toBeUndefined();
       expect(service.processDappRpcRequest).not.toHaveBeenCalled();
+      // The channel id comes from the caller, so a rejection must not touch
+      // another dapp's stored session or permissions.
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).not.toHaveBeenCalled();
+      expect(revokeAllPermissions).not.toHaveBeenCalled();
     });
 
     it('should send error message if connection event fails', async () => {

@@ -364,7 +364,7 @@ export default class DeeplinkProtocolService {
             originatorInfo: clientInfo.originatorInfo,
           });
         } catch (permissionError) {
-          await this.discardUnapprovedConnection(clientInfo.clientId);
+          this.discardUnapprovedConnection(clientInfo.clientId);
           throw permissionError;
         }
 
@@ -443,30 +443,15 @@ export default class DeeplinkProtocolService {
     }
   }
 
-  private async discardUnapprovedConnection(clientId: string) {
-    try {
-      this.removeConnection(clientId);
-      delete this.dappPublicKeyByClientId[clientId];
-
-      await SDKConnect.getInstance().removeDappConnection(clientId);
-
-      const permissionsController = (
-        Engine.context as {
-          // TODO: Replace "any" with type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          PermissionController: PermissionController<any, any>;
-        }
-      ).PermissionController;
-
-      if (permissionsController?.getPermissions?.(clientId)) {
-        permissionsController.revokeAllPermissions(clientId);
-      }
-    } catch (err) {
-      Logger.log(
-        err,
-        `DeeplinkProtocolService::discardUnapprovedConnection error id=${clientId}`,
-      );
-    }
+  /**
+   * Drops the in-memory state handleConnection created for a connect request
+   * the user rejected. Persisted sessions and permissions are left untouched:
+   * nothing is persisted before approval, and the channel id is caller-chosen,
+   * so it may belong to another dapp's stored session.
+   */
+  private discardUnapprovedConnection(clientId: string) {
+    this.removeConnection(clientId);
+    delete this.dappPublicKeyByClientId[clientId];
   }
 
   private parseOriginatorInfo(
