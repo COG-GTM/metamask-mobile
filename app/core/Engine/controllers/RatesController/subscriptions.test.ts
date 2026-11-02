@@ -1,0 +1,183 @@
+import { Messenger } from '@metamask/base-controller';
+import type {
+  CurrencyRateState,
+  RatesController,
+} from '@metamask/assets-controllers';
+import Logger from '../../../../util/Logger';
+import { setupCurrencyRateSync } from './subscriptions';
+
+jest.mock('../../../../util/Logger', () => ({
+  error: jest.fn(),
+}));
+
+const buildCurrencyRateState = (
+  overrides: Partial<CurrencyRateState> = {},
+): CurrencyRateState => ({
+  currentCurrency: 'usd',
+  currencyRates: {
+    ETH: {
+      conversionDate: 1,
+      conversionRate: 2000,
+      usdConversionRate: 2000,
+    },
+  },
+  ...overrides,
+});
+
+const setup = (fiatCurrency = 'usd') => {
+  const messenger = new Messenger<
+    never,
+    {
+      type: 'CurrencyRateController:stateChange';
+      payload: [CurrencyRateState, []];
+    }
+  >();
+  const ratesController = {
+    state: { fiatCurrency },
+    setFiatCurrency: jest.fn(async (currency: string) => {
+      ratesController.state.fiatCurrency = currency;
+    }),
+  };
+  setupCurrencyRateSync(
+    messenger.getRestricted({
+      name: 'RatesController',
+      allowedActions: [],
+      allowedEvents: ['CurrencyRateController:stateChange'],
+    }) as unknown as Parameters<typeof setupCurrencyRateSync>[0],
+    ratesController as unknown as RatesController,
+  );
+  const publish = (state: CurrencyRateState) =>
+    messenger.publish('CurrencyRateController:stateChange', state, []);
+  return { ratesController, publish };
+};
+
+describe('setupCurrencyRateSync', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('does not call setFiatCurrency when currentCurrency is unchanged', () => {
+    const { ratesController, publish } = setup('usd');
+
+    publish(buildCurrencyRateState());
+    publish(
+      buildCurrencyRateState({
+        currencyRates: {
+          ETH: {
+            conversionDate: 2,
+            conversionRate: 2100,
+            usdConversionRate: 2100,
+          },
+        },
+      }),
+    );
+
+    expect(ratesController.setFiatCurrency).not.toHaveBeenCalled();
+  });
+
+  it('calls setFiatCurrency once when currentCurrency changes', async () => {
+    const { ratesController, publish } = setup('usd');
+
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    await Promise.resolve();
+    publish(
+      buildCurrencyRateState({
+        currentCurrency: 'eur',
+        currencyRates: {},
+      }),
+    );
+
+    expect(ratesController.setFiatCurrency).toHaveBeenCalledTimes(1);
+    expect(ratesController.setFiatCurrency).toHaveBeenCalledWith('eur');
+  });
+
+  it('ignores an empty currentCurrency', () => {
+    const { ratesController, publish } = setup('usd');
+
+    publish(buildCurrencyRateState({ currentCurrency: '' }));
+
+    expect(ratesController.setFiatCurrency).not.toHaveBeenCalled();
+  });
+
+  it('does not re-sync while a sync for the same currency is in flight', async () => {
+    const { ratesController, publish } = setup('usd');
+    let resolveSync: () => void = () => undefined;
+    ratesController.setFiatCurrency.mockImplementationOnce(
+      (currency: string) =>
+        new Promise<void>((resolve) => {
+          resolveSync = () => {
+            ratesController.state.fiatCurrency = currency;
+            resolve();
+          };
+        }),
+    );
+
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    resolveSync();
+    await new Promise(process.nextTick);
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+
+    expect(ratesController.setFiatCurrency).toHaveBeenCalledTimes(1);
+  });
+
+  it('syncs a new currency chosen while another sync is in flight', async () => {
+    const { ratesController, publish } = setup('usd');
+    ratesController.setFiatCurrency.mockImplementationOnce(
+      () => new Promise<void>(() => undefined),
+    );
+
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    publish(buildCurrencyRateState({ currentCurrency: 'gbp' }));
+
+    expect(ratesController.setFiatCurrency.mock.calls).toEqual([
+      ['eur'],
+      ['gbp'],
+    ]);
+  });
+
+  it('retries on the next state change after a failed sync', async () => {
+    const { ratesController, publish } = setup('usd');
+    ratesController.setFiatCurrency.mockRejectedValueOnce(new Error('network'));
+
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    await new Promise(process.nextTick);
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+
+    expect(ratesController.setFiatCurrency).toHaveBeenCalledTimes(2);
+  });
+
+  it('retries when setFiatCurrency stores the new currency but the fetch fails', async () => {
+    const { ratesController, publish } = setup('usd');
+    ratesController.setFiatCurrency.mockImplementationOnce(
+      async (currency: string) => {
+        ratesController.state.fiatCurrency = currency;
+        throw new Error('network');
+      },
+    );
+
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    await new Promise(process.nextTick);
+    expect(ratesController.state.fiatCurrency).toBe('eur');
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+    await new Promise(process.nextTick);
+    publish(buildCurrencyRateState({ currentCurrency: 'eur' }));
+
+    expect(ratesController.setFiatCurrency).toHaveBeenCalledTimes(2);
+  });
+
+  it('logs when setFiatCurrency rejects', async () => {
+    const { ratesController, publish } = setup('usd');
+    const error = new Error('network');
+    ratesController.setFiatCurrency.mockRejectedValueOnce(error);
+
+    publish(buildCurrencyRateState({ currentCurrency: 'gbp' }));
+    await new Promise(process.nextTick);
+
+    expect(Logger.error).toHaveBeenCalledWith(
+      error,
+      'RatesController: Failed to sync fiat currency with CurrencyRateController',
+    );
+  });
+});
