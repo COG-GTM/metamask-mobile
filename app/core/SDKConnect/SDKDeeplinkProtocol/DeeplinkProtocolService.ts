@@ -21,6 +21,7 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import { isUUID } from '../utils/isUUID';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -69,6 +70,13 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        if (!isUUID(connection.id)) {
+          DevLogger.log(
+            `DeeplinkProtocolService::init skipping connection with invalid id`,
+          );
+          return;
+        }
+
         const clientInfo = {
           connected: false,
           clientId: connection.id,
@@ -420,6 +428,15 @@ export default class DeeplinkProtocolService {
     originatorInfo?: string;
     request?: string;
   }) {
+    if (!isUUID(params.channelId)) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection invalid channelId',
+        ),
+      );
+      return;
+    }
+
     if (!params.originatorInfo) {
       const deepLinkError = new Error(
         'DeeplinkProtocolService::handleConnection no originatorInfo',
@@ -578,7 +595,9 @@ export default class DeeplinkProtocolService {
       accountsController.getSelectedAccount().address,
     );
 
-    let connectedAddresses = getPermittedAccounts(this.currentClientId ?? '');
+    let connectedAddresses: string[] = getPermittedAccounts(
+      this.currentClientId ?? '',
+    );
 
     DevLogger.log(
       `DeeplinkProtocolService::clients_connected connectedAddresses`,
@@ -639,6 +658,13 @@ export default class DeeplinkProtocolService {
     scheme: string;
     account: string; // account@chainid
   }) {
+    if (!isUUID(params.channelId)) {
+      Logger.error(
+        new Error('DeeplinkProtocolService::handleMessage invalid channelId'),
+      );
+      return;
+    }
+
     let walletSelectedAddress = '';
     let walletSelectedChainId = '';
     let dappAccountChainId = '';

@@ -29,6 +29,7 @@ import BatchRPCManager from '../BatchRPCManager';
 import { DEFAULT_SESSION_TIMEOUT_MS } from '../SDKConnectConstants';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import { INTERNAL_ORIGINS } from '../../../constants/transaction';
 import AndroidSDKEventHandler from './AndroidNativeSDKEventHandler';
 import sendMessage from './AndroidService/sendMessage';
 import { DappClient, DappConnections } from './dapp-sdk-types';
@@ -85,6 +86,12 @@ export default class AndroidService extends EventEmitter2 {
 
       if (rawConnections) {
         Object.values(rawConnections).forEach((connection) => {
+          if (INTERNAL_ORIGINS.includes(connection.id)) {
+            DevLogger.log(
+              `AndroidService::setupEventListeners skipping connection with reserved id`,
+            );
+            return;
+          }
           DevLogger.log(
             `AndroidService::setupEventListeners recover client: ${connection.id}`,
           );

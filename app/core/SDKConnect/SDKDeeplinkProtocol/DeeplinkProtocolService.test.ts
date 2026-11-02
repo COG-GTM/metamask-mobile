@@ -38,8 +38,8 @@ describe('DeeplinkProtocolService', () => {
     jest.clearAllMocks();
     (SDKConnect.getInstance as jest.Mock).mockReturnValue({
       loadDappConnections: jest.fn().mockResolvedValue({
-        connection1: {
-          id: 'connection1',
+        '9b8a7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d': {
+          id: '9b8a7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d',
           originatorInfo: { url: 'test.com', title: 'Test' },
           validUntil: Date.now(),
           scheme: 'scheme1',
@@ -95,9 +95,48 @@ describe('DeeplinkProtocolService', () => {
       });
     });
 
+    it('drops persisted connections whose id is not a UUID', async () => {
+      (
+        SDKConnect.getInstance().loadDappConnections as jest.Mock
+      ).mockResolvedValue({
+        'MetaMask Mobile': {
+          id: 'MetaMask Mobile',
+          originatorInfo: { url: 'evil.example', title: 'Uniswap' },
+          validUntil: Date.now(),
+          scheme: 'mallorygame',
+        },
+        '9b8a7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d': {
+          id: '9b8a7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d',
+          originatorInfo: { url: 'test.com', title: 'Test' },
+          validUntil: Date.now(),
+          scheme: 'scheme1',
+        },
+      });
+      const setupBridgeSpy = jest
+        .spyOn(DeeplinkProtocolService.prototype, 'setupBridge')
+        .mockImplementation(() => undefined);
+
+      service = new DeeplinkProtocolService();
+      await new Promise(process.nextTick);
+
+      expect(service.connections['MetaMask Mobile']).toBeUndefined();
+      expect(
+        service.connections['9b8a7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d'],
+      ).toBeDefined();
+      expect(setupBridgeSpy).toHaveBeenCalledTimes(1);
+      expect(setupBridgeSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          clientId: '9b8a7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d',
+        }),
+      );
+      setupBridgeSpy.mockRestore();
+    });
+
     it('should initialize with raw connections', async () => {
       await service.init();
-      expect(service.connections.connection1).toBeDefined();
+      expect(
+        service.connections['9b8a7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d'],
+      ).toBeDefined();
     });
   });
 
@@ -280,7 +319,7 @@ describe('DeeplinkProtocolService', () => {
         dappPublicKey: 'key',
         url: 'url',
         scheme: 'scheme',
-        channelId: 'channel1',
+        channelId: '5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b',
         originatorInfo: Buffer.from(
           JSON.stringify({
             originatorInfo: {
@@ -292,8 +331,8 @@ describe('DeeplinkProtocolService', () => {
           }),
         ).toString('base64'),
       };
-      service.connections.channel1 = {
-        clientId: 'channel1',
+      service.connections['5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b'] = {
+        clientId: '5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b',
         originatorInfo: {
           url: 'test.com',
           title: 'Test',
@@ -307,7 +346,9 @@ describe('DeeplinkProtocolService', () => {
 
       await service.handleConnection(connectionParams);
 
-      expect(service.connections.channel1.connected).toBe(true);
+      expect(
+        service.connections['5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b'].connected,
+      ).toBe(true);
     });
   });
 
@@ -329,7 +370,7 @@ describe('DeeplinkProtocolService', () => {
         'requestPermissions',
       );
       await service.checkPermission({
-        channelId: 'channel1',
+        channelId: '5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b',
         originatorInfo: {
           url: 'test.com',
           title: 'Test',
@@ -347,7 +388,7 @@ describe('DeeplinkProtocolService', () => {
         dappPublicKey: 'key',
         url: 'url',
         scheme: 'scheme',
-        channelId: 'channel1',
+        channelId: '5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b',
         originatorInfo: Buffer.from(
           JSON.stringify({
             originatorInfo: { url: 'test.com', title: 'Test' },
@@ -355,8 +396,42 @@ describe('DeeplinkProtocolService', () => {
         ).toString('base64'),
       };
       await service.handleConnection(connectionParams);
-      expect(service.connections.connection1).toBeDefined();
+      expect(
+        service.connections['9b8a7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d'],
+      ).toBeDefined();
     });
+  });
+
+  describe('handleConnection with a non-UUID channelId', () => {
+    it.each(['MetaMask Mobile', 'metamask', 'not-a-uuid'])(
+      'rejects %p without persisting, responding or changing currentClientId',
+      async (channelId) => {
+        const openDeeplinkSpy = jest.spyOn(service, 'openDeeplink');
+        await service.handleConnection({
+          dappPublicKey: 'key',
+          url: 'url',
+          scheme: 'mallorygame',
+          channelId,
+          originatorInfo: Buffer.from(
+            JSON.stringify({
+              originatorInfo: { url: 'evil.example', title: 'Uniswap' },
+            }),
+          ).toString('base64'),
+        });
+
+        expect(service.connections[channelId]).toBeUndefined();
+        expect(service.currentClientId).toBeUndefined();
+        expect(
+          SDKConnect.getInstance().addDappConnection,
+        ).not.toHaveBeenCalled();
+        expect(openDeeplinkSpy).not.toHaveBeenCalled();
+        expect(Logger.error).toHaveBeenCalledWith(
+          new Error(
+            'DeeplinkProtocolService::handleConnection invalid channelId',
+          ),
+        );
+      },
+    );
   });
 
   describe('handleConnectionEventAsync', () => {
@@ -481,13 +556,15 @@ describe('DeeplinkProtocolService', () => {
         dappPublicKey: 'key',
         url: 'url',
         scheme: 'scheme',
-        channelId: 'channel1',
+        channelId: '5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b',
         originatorInfo: 'info',
         request: JSON.stringify({ id: '1', method: 'test', params: [] }),
       };
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      service.bridgeByClientId.channel1 = { onMessage: jest.fn() } as any;
+      service.bridgeByClientId['5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b'] = {
+        onMessage: jest.fn(),
+      } as any;
       await service.processDappRpcRequest(params);
       expect(handleCustomRpcCalls).toHaveBeenCalled();
     });
@@ -501,7 +578,7 @@ describe('DeeplinkProtocolService', () => {
         message: Buffer.from(
           JSON.stringify({ id: '1', method: 'test', params: [] }),
         ).toString('base64'),
-        channelId: 'channel1',
+        channelId: '5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b',
         scheme: 'scheme',
         account: `${toChecksumHexAddress(MOCK_ADDRESS)}@1`,
       };
@@ -510,13 +587,42 @@ describe('DeeplinkProtocolService', () => {
     });
   });
 
+  describe('handleMessage with a non-UUID channelId', () => {
+    it('drops the message for an internal-origin channelId', () => {
+      const onMessage = jest.fn();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      service.bridgeByClientId['MetaMask Mobile'] = { onMessage } as any;
+      service.handleMessage({
+        dappPublicKey: 'key',
+        url: 'url',
+        message: Buffer.from(
+          JSON.stringify({ id: '1', method: 'eth_requestAccounts' }),
+        ).toString('base64'),
+        channelId: 'MetaMask Mobile',
+        scheme: 'mallorygame',
+        account: '@',
+      });
+
+      expect(Logger.error).toHaveBeenCalledWith(
+        new Error('DeeplinkProtocolService::handleMessage invalid channelId'),
+      );
+      expect(DevLogger.log).not.toHaveBeenCalledWith(
+        'DeeplinkProtocolService:: handleMessage params from deeplink',
+        expect.anything(),
+      );
+      expect(onMessage).not.toHaveBeenCalled();
+    });
+  });
+
   describe('removeConnection', () => {
     it('should remove a connection', () => {
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      service.connections.channel1 = {} as any;
-      service.removeConnection('channel1');
-      expect(service.connections.channel1).toBeUndefined();
+      service.connections['5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b'] = {} as any;
+      service.removeConnection('5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b');
+      expect(
+        service.connections['5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b'],
+      ).toBeUndefined();
     });
   });
 });

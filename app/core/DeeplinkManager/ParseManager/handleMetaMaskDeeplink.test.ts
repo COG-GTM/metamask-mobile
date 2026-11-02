@@ -134,7 +134,7 @@ describe('handleMetaMaskProtocol', () => {
     beforeEach(() => {
       url = `${PREFIXES.METAMASK}${ACTIONS.CONNECT}`;
       params.comm = 'deeplinking';
-      params.channelId = 'test-channel-id';
+      params.channelId = '8a3c1f2e-5b6d-4e7f-9a0b-1c2d3e4f5a6b';
       params.pubkey = 'test-pubkey';
       params.originatorInfo = 'test-originator-info';
       params.request = 'test-request';
@@ -154,6 +154,34 @@ describe('handleMetaMaskProtocol', () => {
         });
       }).toThrow('DeepLinkManager failed to connect - Invalid scheme');
     });
+
+    it.each(['MetaMask Mobile', 'metamask', 'not-a-uuid'])(
+      'rejects non-UUID channelId %p without calling handleConnection',
+      (channelId) => {
+        const mockHandleConnection = jest.fn();
+        mockSDKConnectGetInstance.mockImplementation(() => ({
+          state: {
+            deeplinkingService: {
+              handleConnection: mockHandleConnection,
+            },
+          },
+        }));
+        params.scheme = 'test-scheme';
+        params.channelId = channelId;
+
+        expect(() => {
+          handleMetaMaskDeeplink({
+            instance,
+            handled,
+            params,
+            url,
+            origin,
+            wcURL,
+          });
+        }).toThrow('DeepLinkManager failed to connect - Invalid channelId');
+        expect(mockHandleConnection).not.toHaveBeenCalled();
+      },
+    );
 
     it('should call handleConnection if params.scheme is defined', () => {
       const mockHandleConnection = jest.fn();
@@ -190,7 +218,7 @@ describe('handleMetaMaskProtocol', () => {
   describe('when url starts with ${PREFIXES.METAMASK}${ACTIONS.MMSDK}', () => {
     beforeEach(() => {
       url = `${PREFIXES.METAMASK}${ACTIONS.MMSDK}`;
-      params.channelId = 'test-channel-id';
+      params.channelId = '8a3c1f2e-5b6d-4e7f-9a0b-1c2d3e4f5a6b';
       params.pubkey = 'test-pubkey';
       params.account = 'test-account';
     });
@@ -229,6 +257,37 @@ describe('handleMetaMaskProtocol', () => {
         'DeepLinkManager: deeplinkingService failed to handleMessage - Invalid scheme',
       );
     });
+
+    it.each(['MetaMask Mobile', 'not-a-uuid', ''])(
+      'rejects non-UUID channelId %p without calling handleMessage',
+      (channelId) => {
+        const mockHandleMessage = jest.fn();
+        mockSDKConnectGetInstance.mockImplementation(() => ({
+          state: {
+            deeplinkingService: {
+              handleMessage: mockHandleMessage,
+            },
+          },
+        }));
+        params.message = 'test-message';
+        params.scheme = 'test-scheme';
+        params.channelId = channelId;
+
+        expect(() => {
+          handleMetaMaskDeeplink({
+            instance,
+            handled,
+            params,
+            url,
+            origin,
+            wcURL,
+          });
+        }).toThrow(
+          'DeepLinkManager: deeplinkingService failed to handleMessage - Invalid channelId',
+        );
+        expect(mockHandleMessage).not.toHaveBeenCalled();
+      },
+    );
 
     it('should call handleMessage if params.message and params.scheme are defined', () => {
       const mockHandleMessage = jest.fn();
@@ -294,9 +353,9 @@ describe('handleMetaMaskProtocol', () => {
 
     it('should call handleDeeplink when channel exists and params.redirect is falsy', () => {
       origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
-      params.channelId = 'ABC';
+      params.channelId = 'c0ffee00-1234-4abc-8def-0123456789ab';
       params.redirect = '';
-      mockGetApprovedHosts.mockReturnValue({ ABC: true });
+      mockGetApprovedHosts.mockReturnValue({ 'c0ffee00-1234-4abc-8def-0123456789ab': true });
 
       handleMetaMaskDeeplink({
         instance,
@@ -330,6 +389,25 @@ describe('handleMetaMaskProtocol', () => {
           },
         },
       });
+    });
+
+    it('rejects a non-UUID channelId on the socket connect path', () => {
+      origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
+      params.channelId = 'MetaMask Mobile';
+      params.redirect = '';
+      params.comm = '';
+
+      expect(() => {
+        handleMetaMaskDeeplink({
+          instance,
+          handled,
+          params,
+          url,
+          origin,
+          wcURL,
+        });
+      }).toThrow('DeepLinkManager failed to connect - Invalid channelId');
+      expect(mockHandleDeeplink).not.toHaveBeenCalled();
     });
   });
 

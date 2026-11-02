@@ -6,6 +6,7 @@ import AppConstants from '../../AppConstants';
 import SDKConnect from '../../SDKConnect/SDKConnect';
 import handleDeeplink from '../../SDKConnect/handlers/handleDeeplink';
 import DevLogger from '../../SDKConnect/utils/DevLogger';
+import { isUUID } from '../../SDKConnect/utils/isUUID';
 import WC2Manager from '../../WalletConnect/WalletConnectV2';
 import DeeplinkManager from '../DeeplinkManager';
 import parseOriginatorInfo from '../parseOriginatorInfo';
@@ -58,6 +59,10 @@ function handleUniversalLink({
           screen: Routes.SHEET.RETURN_TO_DAPP_MODAL,
         });
       } else if (params.channelId) {
+        if (!isUUID(params.channelId)) {
+          throw new Error(`DeepLinkManager failed to connect - Invalid channelId`);
+        }
+
         const protocolVersion = parseInt(params.v ?? '1', 10);
 
         DevLogger.log(

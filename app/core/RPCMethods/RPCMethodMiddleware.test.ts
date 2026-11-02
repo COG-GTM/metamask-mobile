@@ -391,6 +391,44 @@ function setupSignature() {
 
 describe('getRpcMethodMiddleware', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it.each(['MetaMask Mobile', 'metamask'])(
+    'refuses to build an SDK middleware whose channelId is the internal origin %p',
+    (channelId) => {
+      expect(() =>
+        getRpcMethodMiddleware({
+          ...getMinimalOptions(),
+          hostname: 'evil.example',
+          channelId,
+          isMMSDK: true,
+        }),
+      ).toThrow(
+        'getRpcMethodMiddleware: external connections cannot use an internal origin',
+      );
+    },
+  );
+
+  it('refuses to build a middleware whose hostname is an internal origin', () => {
+    expect(() =>
+      getRpcMethodMiddleware({
+        ...getMinimalOptions(),
+        hostname: 'MetaMask Mobile',
+      }),
+    ).toThrow(
+      'getRpcMethodMiddleware: external connections cannot use an internal origin',
+    );
+  });
+
+  it('builds an SDK middleware for a UUID channelId', () => {
+    expect(() =>
+      getRpcMethodMiddleware({
+        ...getMinimalOptions(),
+        hostname: 'dapp.example',
+        channelId: '5f0e2a3b-7c4d-4e1f-8a9b-0c1d2e3f4a5b',
+        isMMSDK: true,
+      }),
+    ).not.toThrow();
+  });
   it('allows unrecognized methods to pass through without PermissionController middleware', async () => {
     const engine = new JsonRpcEngine();
     const middleware = getRpcMethodMiddleware(getMinimalOptions());

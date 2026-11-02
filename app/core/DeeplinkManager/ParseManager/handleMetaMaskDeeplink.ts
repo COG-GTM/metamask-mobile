@@ -6,6 +6,7 @@ import AppConstants from '../../AppConstants';
 import SDKConnect from '../../SDKConnect/SDKConnect';
 import handleDeeplink from '../../SDKConnect/handlers/handleDeeplink';
 import DevLogger from '../../SDKConnect/utils/DevLogger';
+import { isUUID } from '../../SDKConnect/utils/isUUID';
 import WC2Manager from '../../WalletConnect/WalletConnectV2';
 import DeeplinkManager from '../DeeplinkManager';
 import parseOriginatorInfo from '../parseOriginatorInfo';
@@ -44,6 +45,10 @@ export function handleMetaMaskDeeplink({
         screen: Routes.SHEET.RETURN_TO_DAPP_MODAL,
       });
     } else if (params.channelId) {
+      if (!isUUID(params.channelId)) {
+        throw new Error(`DeepLinkManager failed to connect - Invalid channelId`);
+      }
+
       // differentiate between  deeplink callback and socket connection
       if (params.comm === 'deeplinking') {
         if (!params.scheme) {
@@ -99,6 +104,12 @@ export function handleMetaMaskDeeplink({
     if (!params.scheme) {
       throw new Error(
         `DeepLinkManager: deeplinkingService failed to handleMessage - Invalid scheme`,
+      );
+    }
+
+    if (!isUUID(params.channelId)) {
+      throw new Error(
+        `DeepLinkManager: deeplinkingService failed to handleMessage - Invalid channelId`,
       );
     }
 
