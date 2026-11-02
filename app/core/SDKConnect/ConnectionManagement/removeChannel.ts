@@ -6,6 +6,7 @@ import {
 import { store } from '../../../../app/store';
 import AppConstants from '../../../core/AppConstants';
 import Engine from '../../Engine';
+import removeDappConnection from '../AndroidSDK/removeDappConnection';
 import SDKConnect from '../SDKConnect';
 import DevLogger from '../utils/DevLogger';
 
@@ -32,6 +33,7 @@ async function removeChannel({
   if (isDappConnection) {
     instance.state.androidService?.removeConnection(channelId);
     instance.state.deeplinkingService?.removeConnection(channelId);
+    removeDappConnection(channelId, instance);
   }
 
   if (instance.state.connected[channelId]) {

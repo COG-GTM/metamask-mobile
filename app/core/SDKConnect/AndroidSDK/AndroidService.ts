@@ -33,6 +33,7 @@ import AndroidSDKEventHandler from './AndroidNativeSDKEventHandler';
 import sendMessage from './AndroidService/sendMessage';
 import { DappClient, DappConnections } from './dapp-sdk-types';
 import getDefaultBridgeParams from './getDefaultBridgeParams';
+import isDappConnectionExpired from './isDappConnectionExpired';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import Routes from '../../../constants/navigation/Routes';
@@ -85,6 +86,13 @@ export default class AndroidService extends EventEmitter2 {
 
       if (rawConnections) {
         Object.values(rawConnections).forEach((connection) => {
+          if (isDappConnectionExpired(connection.validUntil)) {
+            DevLogger.log(
+              `AndroidService::setupEventListeners dropping expired client: ${connection.id}`,
+            );
+            this.forgetConnection(connection.id);
+            return;
+          }
           DevLogger.log(
             `AndroidService::setupEventListeners recover client: ${connection.id}`,
           );
@@ -128,6 +136,14 @@ export default class AndroidService extends EventEmitter2 {
       const clientInfo: DappClient = JSON.parse(sClientInfo);
 
       DevLogger.log(`AndroidService::clients_connected`, clientInfo);
+      const existing = this.connections?.[clientInfo.clientId];
+      if (existing && isDappConnectionExpired(existing.validUntil)) {
+        DevLogger.log(
+          `AndroidService::clients_connected - client ${clientInfo.clientId} session expired, re-approval required`,
+        );
+        this.forgetConnection(clientInfo.clientId);
+      }
+
       if (this.connections?.[clientInfo.clientId]) {
         // Skip existing client -- bridge has been setup
         Logger.log(
@@ -157,15 +173,6 @@ export default class AndroidService extends EventEmitter2 {
         return;
       }
 
-      await SDKConnect.getInstance().addDappConnection({
-        id: clientInfo.clientId,
-        lastAuthorized: Date.now(),
-        origin: AppConstants.MM_SDK.ANDROID_SDK,
-        originatorInfo: clientInfo.originatorInfo,
-        otherPublicKey: '',
-        validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      });
-
       const handleEventAsync = async () => {
         const keyringController = (
           Engine.context as { KeyringController: KeyringController }
@@ -189,21 +196,22 @@ export default class AndroidService extends EventEmitter2 {
             });
 
             this.setupBridge(clientInfo);
-            // Save session to SDKConnect
-            // Save to local connections
+            // Persist only after the user approved the connection
+            const lastAuthorized = Date.now();
+            const validUntil = lastAuthorized + DEFAULT_SESSION_TIMEOUT_MS;
             this.connections[clientInfo.clientId] = {
               connected: true,
               clientId: clientInfo.clientId,
               originatorInfo: clientInfo.originatorInfo,
-              validUntil: clientInfo.validUntil,
+              validUntil,
             };
             await SDKConnect.getInstance().addDappConnection({
               id: clientInfo.clientId,
-              lastAuthorized: Date.now(),
+              lastAuthorized,
               origin: AppConstants.MM_SDK.ANDROID_SDK,
               originatorInfo: clientInfo.originatorInfo,
               otherPublicKey: '',
-              validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+              validUntil,
             });
           }
 
@@ -226,6 +234,9 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::clients_connected sending jsonrpc error to client - connection rejected`,
           );
+          if (!this.connections?.[clientInfo.clientId]) {
+            this.forgetConnection(clientInfo.clientId);
+          }
           this.sendMessage({
             data: {
               error,
@@ -429,6 +440,10 @@ export default class AndroidService extends EventEmitter2 {
   private restorePreviousConnections() {
     if (Object.keys(this.connections ?? {}).length) {
       Object.values(this.connections).forEach((clientInfo) => {
+        if (isDappConnectionExpired(clientInfo.validUntil)) {
+          this.forgetConnection(clientInfo.clientId);
+          return;
+        }
         try {
           this.setupBridge(clientInfo);
           this.sendMessage(
@@ -478,6 +493,27 @@ export default class AndroidService extends EventEmitter2 {
     });
 
     this.bridgeByClientId[clientInfo.clientId] = bridge;
+  }
+
+  private forgetConnection(channelId: string) {
+    delete this.bridgeByClientId[channelId];
+    delete this.connections[channelId];
+    try {
+      SDKConnect.getInstance().removeDappConnection(channelId);
+
+      const permissionsController = (
+        Engine.context as {
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          PermissionController: PermissionController<any, any>;
+        }
+      ).PermissionController;
+      if (permissionsController?.getPermissions(channelId)) {
+        permissionsController.revokeAllPermissions(channelId);
+      }
+    } catch (err) {
+      Logger.log(err, `AndroidService::forgetConnection error ${channelId}`);
+    }
   }
 
   async removeConnection(channelId: string) {
