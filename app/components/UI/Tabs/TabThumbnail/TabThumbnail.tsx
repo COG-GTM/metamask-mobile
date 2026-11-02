@@ -25,11 +25,8 @@ import Device from '../../../../util/device';
 import { ThemeContext, mockTheme } from '../../../../util/theme';
 import createStyles from './TabThumbnail.styles';
 import { TabThumbnailProps } from './TabThumbnail.types';
-import { useSelector } from 'react-redux';
-import { selectPermissionControllerState } from '../../../../selectors/snaps/permissionController';
-import { getPermittedAccountsByHostname } from '../../../../core/Permissions';
-import { useAccounts } from '../../../hooks/useAccounts';
 import { useFavicon } from '../../../hooks/useFavicon';
+import usePermittedAccount from './usePermittedAccount';
 
 /**
  * View that renders a tab thumbnail to be displayed in the in-app browser.
@@ -47,17 +44,7 @@ const TabThumbnail = ({
   const Container: React.ElementType = Device.isAndroid() ? View : ElevatedView;
   const tabTitle = getHost(tab.url);
 
-  // Get permitted accounts for this hostname
-  const permittedAccountsList = useSelector(selectPermissionControllerState);
-  const permittedAccountsByHostname = getPermittedAccountsByHostname(
-    permittedAccountsList,
-    tabTitle,
-  );
-  const activeAddress = permittedAccountsByHostname[0];
-  const { evmAccounts: accounts } = useAccounts({});
-  const selectedAccount = accounts.find(
-    (account) => account.address.toLowerCase() === activeAddress?.toLowerCase(),
-  );
+  const selectedAccount = usePermittedAccount(tabTitle);
   const { networkName, networkImageSource } = useNetworkInfo(tabTitle);
   const faviconSource = useFavicon(tab.url);
 
