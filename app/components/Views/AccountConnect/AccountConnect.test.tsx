@@ -404,9 +404,9 @@ describe('AccountConnect', () => {
       const [caveat] =
         request.permissions[Caip25EndowmentPermissionName].caveats;
       expect(caveat.type).toBe(Caip25CaveatType);
-      expect(
-        Object.keys(caveat.value.optionalScopes).length,
-      ).toBeGreaterThan(0);
+      expect(Object.keys(caveat.value.optionalScopes).length).toBeGreaterThan(
+        0,
+      );
     });
   });
 });
