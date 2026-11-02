@@ -9,7 +9,6 @@ export interface RegexTypes {
   decimalString: RegExp;
   defaultAccount: RegExp;
   ensName: RegExp;
-  exec: (exp: string, input: string) => RegExpExecArray | null;
   fractions: RegExp;
   hasOneDigit: RegExp;
   hexPrefix: RegExp;
