@@ -28,12 +28,15 @@ export const selectTokenListArray = createDeepEqualSelector(
   tokenListToArray,
 );
 
-const selectERC20TokensByChainInternal = createDeepEqualSelector(
-  selectTokenListConstrollerState,
-  (tokenListControllerState) => tokenListControllerState?.tokensChainsCache,
-);
+const selectTokensChainsCache = (state: RootState) =>
+  selectTokenListConstrollerState(state)?.tokensChainsCache;
 
+/**
+ * Return the multi-chain token list cache from TokenListController.
+ * The deep compare only runs when the cache reference changes, and keeps the
+ * returned reference stable when the content is equal.
+ */
 export const selectERC20TokensByChain = createDeepEqualSelector(
-  selectERC20TokensByChainInternal,
+  selectTokensChainsCache,
   (tokensChainsCache) => tokensChainsCache,
 );
