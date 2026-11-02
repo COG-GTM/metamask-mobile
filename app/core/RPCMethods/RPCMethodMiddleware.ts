@@ -34,6 +34,7 @@ import setOnboardingWizardStep from '../../actions/wizard';
 import { v1 as random } from 'uuid';
 import { getDefaultCaip25CaveatValue, getPermittedAccounts } from '../Permissions';
 import AppConstants from '../AppConstants';
+import { INTERNAL_ORIGINS } from '../../constants/transaction';
 import PPOMUtil from '../../lib/ppom/ppom-util';
 import {
   selectEvmChainId,
@@ -396,6 +397,11 @@ export const getRpcMethodMiddleware = ({
   // Make sure to always have the correct origin
   hostname = hostname.replace(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN, '');
   const origin = isWalletConnect ? hostname : channelId ?? hostname;
+  if (INTERNAL_ORIGINS.includes(origin)) {
+    throw new Error(
+      'getRpcMethodMiddleware: external connections cannot use an internal origin',
+    );
+  }
   const hooks = getRpcMethodMiddlewareHooks(origin);
 
   DevLogger.log(
