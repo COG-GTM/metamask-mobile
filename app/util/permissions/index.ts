@@ -10,11 +10,57 @@ import { providerErrors } from '@metamask/rpc-errors';
 import { ApprovalRequest } from '@metamask/approval-controller';
 import { ApprovalType } from '@metamask/controller-utils';
 import { DIALOG_APPROVAL_TYPES } from '@metamask/snaps-rpc-methods';
+import { EthAccountType } from '@metamask/keyring-api';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { SNAP_MANAGE_ACCOUNTS_CONFIRMATION_TYPES } from '../../core/RPCMethods/RPCMethodMiddleware';
 ///: END:ONLY_INCLUDE_IF
 
 const approvalLog = createProjectLogger('approval-utils');
+
+const SUPPORTED_EVM_ACCOUNT_TYPES: string[] = [
+  EthAccountType.Eoa,
+  EthAccountType.Erc4337,
+];
+
+/**
+ * Reduces the site-supplied `restrictReturnedAccounts` addresses to the ones
+ * the wallet actually holds. Unknown addresses are dropped silently so the
+ * request reaches the connect prompt either way; otherwise the CAIP-25 caveat
+ * validator would reject them before any prompt and let the site probe which
+ * addresses belong to the wallet.
+ *
+ * @param requestedAccounts - Addresses requested by the site.
+ * @returns The wallet's own (checksum-cased) addresses that were requested.
+ */
+const filterRequestedAccountsToWalletAccounts = (
+  requestedAccounts: unknown,
+): Hex[] => {
+  if (!Array.isArray(requestedAccounts) || requestedAccounts.length === 0) {
+    return [];
+  }
+
+  const walletAddresses = new Map<string, Hex>();
+  for (const account of Engine.context.AccountsController.listAccounts()) {
+    if (SUPPORTED_EVM_ACCOUNT_TYPES.includes(account.type)) {
+      walletAddresses.set(
+        account.address.toLowerCase(),
+        account.address as Hex,
+      );
+    }
+  }
+
+  const accounts = new Set<Hex>();
+  for (const requested of requestedAccounts) {
+    if (typeof requested !== 'string') {
+      continue;
+    }
+    const walletAddress = walletAddresses.get(requested.toLowerCase());
+    if (walletAddress) {
+      accounts.add(walletAddress);
+    }
+  }
+  return [...accounts];
+};
 
 /**
  * Requests user approval for the CAIP-25 permission for the specified origin
@@ -58,10 +104,11 @@ export const getCaip25PermissionFromLegacyPermissions = (
     delete permissions[PermissionKeys.permittedChains];
   }
 
-  const requestedAccounts =
+  const requestedAccounts = filterRequestedAccountsToWalletAccounts(
     permissions[PermissionKeys.eth_accounts]?.caveats?.find(
       (caveat) => caveat.type === CaveatTypes.restrictReturnedAccounts,
-    )?.value ?? [];
+    )?.value,
+  );
 
   const requestedChains =
     permissions[PermissionKeys.permittedChains]?.caveats?.find(
