@@ -29,6 +29,14 @@ jest.mock('../../../selectors/tokenSearchDiscoveryDataController', () => ({
     selectTokenDisplayData: () => mockSelectTokenDisplayData(),
 }));
 
+const mockSelectCurrentCurrency = jest.fn().mockReturnValue('usd');
+jest.mock('../../../selectors/currencyRateController', () => ({
+    // A fresh selector per render so useSelector re-reads the mocked currency.
+    get selectCurrentCurrency() {
+        return () => mockSelectCurrentCurrency();
+    },
+}));
+
 const mockState = {
     engine: {
         backgroundState: {
@@ -50,6 +58,7 @@ describe('AssetLoader', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockSelectCurrentCurrency.mockReturnValue('usd');
   });
 
   it('should show activity indicator while loading token', () => {
@@ -108,5 +117,18 @@ describe('AssetLoader', () => {
     rerender(<AssetLoader route={{ params: { ...assetData, address: '0x456' } }} />);
     expect(mockFetchTokenDisplayData).toHaveBeenCalledTimes(2);
     expect(mockFetchTokenDisplayData).toHaveBeenLastCalledWith(assetData.chainId, '0x456');
+  });
+
+  it('fetches again when the currency changes and no result exists for it', () => {
+    mockSelectTokenDisplayData.mockReturnValue({ found: false });
+    const { rerender } = renderWithProvider(<AssetLoader route={{ params: assetData }} />, { state: mockState });
+    expect(mockFetchTokenDisplayData).not.toHaveBeenCalled();
+
+    mockSelectCurrentCurrency.mockReturnValue('eur');
+    mockSelectTokenDisplayData.mockReturnValue(undefined);
+    rerender(<AssetLoader route={{ params: assetData }} />);
+
+    expect(mockFetchTokenDisplayData).toHaveBeenCalledTimes(1);
+    expect(mockFetchTokenDisplayData).toHaveBeenCalledWith(assetData.chainId, assetData.address);
   });
 });

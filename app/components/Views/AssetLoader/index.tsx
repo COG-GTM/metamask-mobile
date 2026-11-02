@@ -7,6 +7,7 @@ import Engine from '../../../core/Engine';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../reducers';
 import { selectTokenDisplayData } from '../../../selectors/tokenSearchDiscoveryDataController';
+import { selectCurrentCurrency } from '../../../selectors/currencyRateController';
 import { useStyles } from '../../../component-library/hooks';
 import styleSheet from './styles';
 
@@ -21,6 +22,7 @@ export interface AssetLoaderProps {
 
 export const AssetLoader: React.FC<AssetLoaderProps> = ({ route: { params: { address, chainId } } }) => {
     const tokenResult = useSelector((state: RootState) => selectTokenDisplayData(state, chainId, address));
+    const currentCurrency = useSelector(selectCurrentCurrency);
     const navigation = useNavigation();
 
     const { styles } = useStyles(styleSheet, {});
@@ -33,7 +35,7 @@ export const AssetLoader: React.FC<AssetLoaderProps> = ({ route: { params: { add
             return;
         }
         Engine.context.TokenSearchDiscoveryDataController.fetchTokenDisplayData(chainId, address);
-    }, [address, chainId]);
+    }, [address, chainId, currentCurrency]);
 
     useEffect(() => {
         if (tokenResult?.found) {
