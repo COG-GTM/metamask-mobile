@@ -1,7 +1,7 @@
 import React from 'react';
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
-import { renderHook } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 
 import Engine from '../../../core/Engine';
 import { Asset } from './useAddressBalance.types';
@@ -69,12 +69,45 @@ const mockInitialState = {
   },
 };
 const store = mockStore(mockInitialState);
+let mockCurrentState = mockInitialState;
+
+const MOCK_TOKEN_ADDRESS = '0x326836cc6cd09B5aa59B81A7F72F25FcC0136b95';
+
+const withBalances = (
+  accountBalances: Record<string, string>,
+  selectedTokenBalance: string,
+) => ({
+  ...mockInitialState,
+  engine: {
+    ...mockInitialState.engine,
+    backgroundState: {
+      ...mockInitialState.engine.backgroundState,
+      AccountTrackerController: {
+        accountsByChainId: {
+          '0x1': Object.fromEntries(
+            Object.entries(accountBalances).map(([account, balance]) => [
+              account,
+              { balance },
+            ]),
+          ),
+        },
+      },
+      TokenBalancesController: {
+        tokenBalances: {
+          [MOCK_ADDRESS_1]: {
+            '0x1': { [MOCK_TOKEN_ADDRESS]: selectedTokenBalance },
+          },
+        },
+      },
+    },
+  },
+});
 
 jest.mock('react-redux', () => ({
   ...jest.requireActual('react-redux'),
   useSelector: jest
     .fn()
-    .mockImplementation((callback) => callback(mockInitialState)),
+    .mockImplementation((callback) => callback(mockCurrentState)),
 }));
 
 // TODO: Replace "any" with type
@@ -90,6 +123,7 @@ describe('useAddressBalance', () => {
     networkClientId?: string | undefined,
   ) => Promise<BN5>;
   beforeEach(() => {
+    mockCurrentState = mockInitialState;
     mockGetERC20BalanceOf = jest
       .fn()
       .mockReturnValue(Promise.resolve(0x0186a0));
@@ -160,5 +194,103 @@ describe('useAddressBalance', () => {
     );
     expect(mockGetERC20BalanceOf).toBeCalledTimes(0);
     expect(res.result.current.addressBalance).toStrictEqual('0.0005 TST');
+  });
+
+  it('does not re-issue getERC20BalanceOf when unrelated account or token balances change', async () => {
+    const asset = { address: MOCK_TOKEN_ADDRESS, symbol: 'TST', decimals: 4 };
+    const { result, rerender } = renderHook(
+      () => useAddressBalance(asset, MOCK_ADDRESS_2),
+      { wrapper: Wrapper },
+    );
+    await waitFor(() =>
+      expect(result.current.addressBalance).toStrictEqual('10 TST'),
+    );
+
+    for (const balance of ['0x10', '0x20', '0x30']) {
+      mockCurrentState = withBalances(
+        { [MOCK_ADDRESS_1]: balance, [MOCK_ADDRESS_2]: '0x5' },
+        balance,
+      );
+      rerender({});
+    }
+    await act(async () => undefined);
+
+    expect(mockGetERC20BalanceOf).toHaveBeenCalledTimes(1);
+    expect(result.current.addressBalance).toStrictEqual('10 TST');
+  });
+
+  it('does not re-issue getERC20BalanceOf when the asset object identity changes', async () => {
+    const { rerender } = renderHook(
+      () =>
+        useAddressBalance(
+          { address: MOCK_TOKEN_ADDRESS, symbol: 'TST', decimals: 4 },
+          MOCK_ADDRESS_2,
+        ),
+      { wrapper: Wrapper },
+    );
+    rerender({});
+    rerender({});
+    await act(async () => undefined);
+
+    expect(mockGetERC20BalanceOf).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a stale getERC20BalanceOf response after the address changes', async () => {
+    const resolvers: Record<string, (value: number) => void> = {};
+    (mockGetERC20BalanceOf as jest.Mock).mockImplementation(
+      (_contract: string, owner: string) =>
+        new Promise((resolve) => {
+          resolvers[owner] = resolve;
+        }),
+    );
+    const asset = { address: MOCK_TOKEN_ADDRESS, symbol: 'TST', decimals: 0 };
+    const { result, rerender } = renderHook(
+      ({ from }: { from: string }) => useAddressBalance(asset, from),
+      { wrapper: Wrapper, initialProps: { from: MOCK_ADDRESS_2 } },
+    );
+    rerender({ from: '0x2' });
+    expect(mockGetERC20BalanceOf).toHaveBeenCalledTimes(2);
+
+    await act(async () => resolvers['0x2'](7));
+    await act(async () => resolvers[MOCK_ADDRESS_2](3));
+
+    expect(result.current.addressBalance).toStrictEqual('7 TST');
+  });
+
+  it('updates the selected account token balance from TokenBalancesController without RPC', () => {
+    const asset = { address: MOCK_TOKEN_ADDRESS, symbol: 'TST', decimals: 4 };
+    const { result, rerender } = renderHook(
+      () => useAddressBalance(asset, MOCK_ADDRESS_1),
+      { wrapper: Wrapper },
+    );
+    expect(result.current.addressBalance).toStrictEqual('0.0005 TST');
+
+    mockCurrentState = withBalances(
+      { [MOCK_ADDRESS_1]: '0x4a7036655fab2ca3', [MOCK_ADDRESS_2]: '0x5' },
+      '0x2710',
+    );
+    rerender({});
+
+    expect(result.current.addressBalance).toStrictEqual('1 TST');
+    expect(mockGetERC20BalanceOf).toHaveBeenCalledTimes(0);
+  });
+
+  it('updates the native balance when the address balance changes', () => {
+    const { result, rerender } = renderHook(
+      () => useAddressBalance({ isETH: true } as Asset, MOCK_ADDRESS_2),
+      { wrapper: Wrapper },
+    );
+    expect(result.current.addressBalance).toStrictEqual('< 0.00001 ETH');
+
+    mockCurrentState = withBalances(
+      {
+        [MOCK_ADDRESS_1]: '0x4a7036655fab2ca3',
+        [MOCK_ADDRESS_2]: '0xde0b6b3a7640000',
+      },
+      '0x5',
+    );
+    rerender({});
+
+    expect(result.current.addressBalance).toStrictEqual('1 ETH');
   });
 });
