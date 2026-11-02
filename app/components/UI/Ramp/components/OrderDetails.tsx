@@ -27,6 +27,7 @@ import { PROVIDER_LINKS } from '../types';
 import Account from './Account';
 import { FIAT_ORDER_STATES } from '../../../../constants/on-ramp';
 import { getOrderAmount } from '../utils';
+import isSafeExternalUrl from '../utils/isSafeExternalUrl';
 import { selectEvmNetworkConfigurationsByChainId } from '../../../../selectors/networkController';
 import ListItem from '../../../../component-library/components/List/ListItem';
 import ListItemColumn, {
@@ -258,6 +259,9 @@ const OrderDetails: React.FC<Props> = ({ order }: Props) => {
 
   const handleExplorerLinkPress = useCallback(
     (url: string) => {
+      if (!isSafeExternalUrl(url)) {
+        return;
+      }
       Linking.openURL(url);
       trackEvent('ONRAMP_EXTERNAL_LINK_CLICKED', {
         location: 'Order Details Screen',
@@ -270,6 +274,9 @@ const OrderDetails: React.FC<Props> = ({ order }: Props) => {
 
   const handleProviderLinkPress = useCallback(
     (url: string) => {
+      if (!isSafeExternalUrl(url)) {
+        return;
+      }
       Linking.openURL(url);
       trackEvent('ONRAMP_EXTERNAL_LINK_CLICKED', {
         location: 'Order Details Screen',
@@ -321,7 +328,7 @@ const OrderDetails: React.FC<Props> = ({ order }: Props) => {
           )}
         </Group>
 
-        {Boolean(orderLink) && (
+        {isSafeExternalUrl(orderLink) && (
           <Row>
             <TouchableOpacity
               onPress={() => handleProviderLinkPress(orderLink as string)}
@@ -398,7 +405,7 @@ const OrderDetails: React.FC<Props> = ({ order }: Props) => {
               <ListItemColumnEnd widthType={WidthType.Fill}>
                 <Text variant={TextVariant.BodySM}>
                   {providerName}
-                  {supportLinkUrl ? (
+                  {isSafeExternalUrl(supportLinkUrl) ? (
                     <>
                       {' '}
                       •{' '}

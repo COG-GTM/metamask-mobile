@@ -1,4 +1,5 @@
 import React from 'react';
+import { Linking } from 'react-native';
 import { processFiatOrder } from '../../index';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react-native';
 import {
@@ -505,6 +506,37 @@ describe('OrderDetails', () => {
         text: 'Provider Order Tracking',
         url_domain: 'https://example.com',
       },
+    );
+  });
+
+  it('does not render or open non-http(s) provider links', () => {
+    (Linking.openURL as jest.Mock).mockClear();
+    const testOrder = {
+      ...mockOrder,
+      state: FIAT_ORDER_STATES.COMPLETED,
+      data: {
+        ...mockOrder.data,
+        provider: {
+          name: 'Test Provider',
+          links: [
+            {
+              name: PROVIDER_LINKS.SUPPORT,
+              url: 'evilapp://support',
+            },
+          ],
+        },
+        providerOrderLink: 'metamask://wc?uri=attacker',
+      },
+    };
+
+    render(OrderDetails, [testOrder]);
+
+    expect(screen.queryByText('Contact Support')).toBeNull();
+    expect(screen.queryByText('View order status on Test Provider')).toBeNull();
+    expect(Linking.openURL).not.toHaveBeenCalled();
+    expect(mockTrackEvent).not.toHaveBeenCalledWith(
+      'ONRAMP_EXTERNAL_LINK_CLICKED',
+      expect.anything(),
     );
   });
 
