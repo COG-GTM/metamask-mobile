@@ -9,6 +9,7 @@ import {
   selectEvmTokens,
   selectEvmTokensWithZeroBalanceFilter,
   makeSelectAssetByAddressAndChainId,
+  selectEvmTokenLookup,
 } from './evm';
 import { SolScope } from '@metamask/keyring-api';
 import { GetByQuery } from '@testing-library/react-native/build/queries/make-queries';
@@ -921,6 +922,120 @@ describe('Multichain Selectors', () => {
       expect(result).toHaveProperty('chainId', ETH_CHAIN_ID);
       expect(result).toHaveProperty('symbol', 'USDC');
       expect(result).toHaveProperty('name', 'USDC');
+    });
+
+    it('builds the token lookup once and shares it across selector instances', () => {
+      const rows = [
+        {
+          address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+          chainId: ETH_CHAIN_ID,
+        },
+        {
+          address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+          chainId: ETH_CHAIN_ID,
+        },
+        {
+          address: '0x0D1E753a25eBda689453309112904807625bEFBe',
+          chainId: POLYGON_CHAIN_ID,
+        },
+      ];
+      const selectors = rows.map(() => makeSelectAssetByAddressAndChainId());
+      const sharedState = {
+        ...testState,
+        engine: {
+          ...testState.engine,
+          backgroundState: {
+            ...testState.engine.backgroundState,
+            TokensController: {
+              allTokens: JSON.parse(JSON.stringify(mockAllTokens)),
+            },
+          },
+        },
+      } as unknown as RootState;
+      const before = selectEvmTokenLookup.recomputations();
+
+      const results = selectors.map((selector, i) =>
+        selector(sharedState, rows[i]),
+      );
+
+      expect(results.map((token) => token?.symbol)).toEqual([
+        'USDC',
+        'DAI',
+        'CAKE',
+      ]);
+      expect(
+        selectEvmTokenLookup.recomputations() - before,
+      ).toBeLessThanOrEqual(1);
+    });
+
+    it('indexes tokens by chainId, checksummed address and isStaked', () => {
+      const lookup = selectEvmTokenLookup(testState);
+
+      expect(
+        lookup
+          .get(ETH_CHAIN_ID)
+          ?.get('0x6B175474E89094C44Da98b954EedeAC495271d0F')
+          ?.get(false)?.symbol,
+      ).toBe('DAI');
+      expect(
+        lookup
+          .get(ETH_CHAIN_ID)
+          ?.has('0x6b175474e89094c44da98b954eedeac495271d0f'),
+      ).toBe(false);
+    });
+  });
+
+  describe('makeSelectAssetByAddressAndChainId staked assets', () => {
+    it('distinguishes native and staked assets that share an address', () => {
+      const nativeAndStakedTestState = {
+        ...mockState,
+        engine: {
+          backgroundState: {
+            ...mockState.engine.backgroundState,
+            MultichainNetworkController: {
+              ...mockState.engine.backgroundState.MultichainNetworkController,
+              isEvmSelected: true,
+            },
+            TokensController: {
+              allTokens: {},
+            },
+            AccountTrackerController: {
+              accountsByChainId: {
+                [ETH_CHAIN_ID]: {
+                  '0xAddress1': {
+                    balance: '0x1',
+                    stakedBalance: '0x2',
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+      const selector = makeSelectAssetByAddressAndChainId();
+      const nativeAndStakedTokens = selectEvmTokens(nativeAndStakedTestState);
+      const native = nativeAndStakedTokens.find(
+        (token) => token.chainId === ETH_CHAIN_ID && !token.isStaked,
+      );
+      const staked = nativeAndStakedTokens.find(
+        (token) => token.chainId === ETH_CHAIN_ID && token.isStaked,
+      );
+      expect(native).toBeDefined();
+      expect(staked).toBeDefined();
+
+      const nativeResult = selector(nativeAndStakedTestState, {
+        address: native?.address as string,
+        chainId: ETH_CHAIN_ID,
+        isStaked: false,
+      });
+      const stakedResult = selector(nativeAndStakedTestState, {
+        address: staked?.address as string,
+        chainId: ETH_CHAIN_ID,
+        isStaked: true,
+      });
+
+      expect(nativeResult).toBe(native);
+      expect(stakedResult).toBe(staked);
     });
   });
 });
