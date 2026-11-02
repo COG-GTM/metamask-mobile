@@ -1,5 +1,6 @@
 import { CHAIN_IDS } from '@metamask/transaction-controller';
 import { ParseOutput, parse } from 'eth-url-parser';
+import { toHex } from '@metamask/controller-utils';
 import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import { ETH_ACTIONS } from '../../../constants/deeplinks';
@@ -13,6 +14,10 @@ import {
   addTransactionForDeeplink,
   isDeeplinkRedesignedConfirmationCompatible,
 } from '../../../components/Views/confirmations/utils/deeplink';
+import { store } from '../../../store';
+import { selectEvmNetworkConfigurationsByChainId } from '../../../selectors/networkController';
+import { selectSelectedNonEvmNetworkName } from '../../../selectors/multichainNetworkController';
+import { requestDeeplinkNetworkSwitchApproval } from './switchNetwork';
 
 async function handleEthereumUrl({
   deeplinkManager,
@@ -36,9 +41,6 @@ async function handleEthereumUrl({
   try {
     const { MultichainNetworkController } = Engine.context;
 
-    if (!MultichainNetworkController.state.isEvmSelected) {
-      await MultichainNetworkController.setActiveNetwork(MAINNET);
-    }
     // If the deeplink has a goerli chainId, show deprecation modal and return
     if (
       ethUrl.chain_id === getDecimalChainId(CHAIN_IDS.GOERLI) ||
@@ -48,15 +50,61 @@ async function handleEthereumUrl({
       return;
     }
 
-    if (isDeeplinkRedesignedConfirmationCompatible(ethUrl.function_name)) {
+    const isRedesignedConfirmation = isDeeplinkRedesignedConfirmationCompatible(
+      ethUrl.function_name,
+    );
+    let isOnRequestedNetwork = false;
+
+    if (!MultichainNetworkController.state.isEvmSelected) {
+      /**
+       * Ask once for the final EVM network so a declined prompt never leaves
+       * the wallet on an intermediate network.
+       */
+      const state = store.getState();
+      const targetChainId =
+        !isRedesignedConfirmation && ethUrl.chain_id
+          ? toHex(ethUrl.chain_id)
+          : CHAIN_IDS.MAINNET;
+      const targetNetwork =
+        selectEvmNetworkConfigurationsByChainId(state)?.[targetChainId];
+      if (targetChainId !== CHAIN_IDS.MAINNET && !targetNetwork) {
+        throw new Error(
+          `Unable to find network with chain id ${ethUrl.chain_id}`,
+        );
+      }
+      const approved = await requestDeeplinkNetworkSwitchApproval({
+        currentNetworkName: selectSelectedNonEvmNetworkName(state) ?? '',
+        networkName: targetNetwork?.name ?? 'Ethereum Mainnet',
+      });
+      if (!approved) {
+        return;
+      }
+      await MultichainNetworkController.setActiveNetwork(
+        targetChainId === CHAIN_IDS.MAINNET || !targetNetwork
+          ? MAINNET
+          : targetNetwork.rpcEndpoints[targetNetwork.defaultRpcEndpointIndex]
+              .networkClientId,
+      );
+      isOnRequestedNetwork = true;
+    }
+
+    if (isRedesignedConfirmation) {
       await addTransactionForDeeplink(txMeta);
       return;
     }
 
     /**
-     * Validate and switch network before performing any other action
+     * The legacy send/approve flows act on the globally selected network, so
+     * the requested network is only activated after the user approves it.
      */
-    deeplinkManager._handleNetworkSwitch(ethUrl.chain_id);
+    if (!isOnRequestedNetwork) {
+      isOnRequestedNetwork = await deeplinkManager._handleNetworkSwitch(
+        ethUrl.chain_id,
+      );
+    }
+    if (!isOnRequestedNetwork) {
+      return;
+    }
 
     switch (ethUrl.function_name) {
       case ETH_ACTIONS.TRANSFER: {
