@@ -51,6 +51,8 @@ export default class AndroidService extends EventEmitter2 {
   public batchRPCManager: BatchRPCManager = new BatchRPCManager('android');
   // To keep track in order to get the associated bridge to handle batch rpc calls
   public currentClientId?: string;
+  // Set once a message has gone through the startup readiness waits.
+  private uiReady = false;
 
   constructor() {
     super();
@@ -288,6 +290,14 @@ export default class AndroidService extends EventEmitter2 {
     );
   }
 
+  private isReadyForMessages(keyringController: KeyringController): boolean {
+    return (
+      this.uiReady &&
+      SDKConnect.getInstance().isAndroidSDKBound() &&
+      keyringController.isUnlocked()
+    );
+  }
+
   private setupOnMessageReceivedListener() {
     this.eventHandler.onMessageReceived((jsonMessage: string) => {
       const handleEventAsync = async () => {
@@ -298,16 +308,20 @@ export default class AndroidService extends EventEmitter2 {
 
         DevLogger.log(`AndroidService::onMessageReceived`, jsonMessage);
         try {
-          await wait(200); // Extra wait to make sure ui is ready
-
-          await waitForAndroidServiceBinding();
           const keyringController = (
             Engine.context as { KeyringController: KeyringController }
           ).KeyringController;
-          await waitForKeychainUnlocked({
-            keyringController,
-            context: 'AndroidService::setupOnMessageReceivedListener',
-          });
+
+          if (!this.isReadyForMessages(keyringController)) {
+            await wait(200); // Extra wait to make sure ui is ready
+
+            await waitForAndroidServiceBinding();
+            await waitForKeychainUnlocked({
+              keyringController,
+              context: 'AndroidService::setupOnMessageReceivedListener',
+            });
+            this.uiReady = true;
+          }
         } catch (error) {
           Logger.log(error, `AndroidService::onMessageReceived error`);
         }
