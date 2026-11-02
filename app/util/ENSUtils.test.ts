@@ -3,6 +3,7 @@ import {
   isDefaultAccountName,
   getCachedENSName,
   doENSReverseLookup,
+  isENSNameConfirmedAbsent,
   ENSCache,
 } from './ENSUtils';
 
@@ -154,6 +155,26 @@ describe('doENSReverseLookup', () => {
     expect(await doENSReverseLookup(mockAddress, '0x89')).toBeUndefined();
     expect(MockENS).not.toHaveBeenCalled();
     expect(mockReverse).not.toHaveBeenCalled();
+  });
+
+  it('confirms a missing ENS name only after a lookup found none and until it expires', async () => {
+    expect(isENSNameConfirmedAbsent(mockAddress, mainnetChainId)).toBe(false);
+    mockReverse.mockRejectedValue(new Error('ENS name not defined.'));
+    await doENSReverseLookup(mockAddress, mainnetChainId);
+    expect(isENSNameConfirmedAbsent(mockAddress, mainnetChainId)).toBe(true);
+    jest.spyOn(Date, 'now').mockReturnValue(1_000_000 + 60 * 60 * 1000 + 1);
+    expect(isENSNameConfirmedAbsent(mockAddress, mainnetChainId)).toBe(false);
+  });
+
+  it('does not confirm a missing ENS name after a transient lookup failure', async () => {
+    mockReverse.mockRejectedValue(new Error('network error'));
+    await doENSReverseLookup(mockAddress, mainnetChainId);
+    expect(isENSNameConfirmedAbsent(mockAddress, mainnetChainId)).toBe(false);
+  });
+
+  it('does not confirm a missing ENS name when a name is cached', async () => {
+    await doENSReverseLookup(mockAddress, mainnetChainId);
+    expect(isENSNameConfirmedAbsent(mockAddress, mainnetChainId)).toBe(false);
   });
 });
 

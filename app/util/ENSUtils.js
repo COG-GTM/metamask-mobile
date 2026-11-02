@@ -67,6 +67,26 @@ export function getCachedENSName(address, chainId) {
   return cacheEntry?.name;
 }
 
+/**
+ * Whether the latest unexpired cache entry confirms the address has no ENS name.
+ *
+ * @param {string} address - The address to check.
+ * @param {string} chainId - The chain ID.
+ * @returns {boolean} True when a lookup confirmed there is no verified name.
+ */
+export function isENSNameConfirmedAbsent(address, chainId) {
+  if (!ENS_SUPPORTED_CHAIN_IDS.includes(chainId)) {
+    return false;
+  }
+  const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
+  const cacheEntry = ENSCache.cache[networkId + address];
+  return Boolean(
+    cacheEntry?.timestamp &&
+      !cacheEntry.name &&
+      Date.now() - cacheEntry.timestamp < CACHE_REFRESH_THRESHOLD,
+  );
+}
+
 let ensInstance;
 let ensInstanceProvider;
 let ensInstanceNetworkId;

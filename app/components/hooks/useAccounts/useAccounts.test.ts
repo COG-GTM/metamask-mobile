@@ -8,7 +8,10 @@ import { Account } from './useAccounts.types';
 import { Hex } from '@metamask/utils';
 // eslint-disable-next-line import/no-namespace
 import * as networks from '../../../util/networks';
-import { doENSReverseLookup } from '../../../util/ENSUtils';
+import {
+  doENSReverseLookup,
+  isENSNameConfirmedAbsent,
+} from '../../../util/ENSUtils';
 import { useMultichainBalancesForAllAccounts } from '../useMultichainBalances';
 
 jest.mock('../useMultichainBalances', () => {
@@ -96,6 +99,7 @@ jest.mock('../../../util/ENSUtils', () => ({
       };
       return MOCK_ENS_CACHE[cacheKey];
     }),
+  isENSNameConfirmedAbsent: jest.fn().mockReturnValue(false),
 }));
 
 jest.mock('react-redux', () => ({
@@ -232,6 +236,34 @@ describe('useAccounts', () => {
       });
       expect(doENSReverseLookup).toHaveBeenCalledTimes(initialCalls * 2);
     } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('clears an ENS name once a refresh confirms the reverse record is gone', async () => {
+    const lookupMock = doENSReverseLookup as jest.Mock;
+    const confirmedAbsentMock = isENSNameConfirmedAbsent as jest.Mock;
+    const originalLookup = lookupMock.getMockImplementation();
+    jest.useFakeTimers({ legacyFakeTimers: false });
+    try {
+      const { result, waitForNextUpdate } = renderHook(() => useAccounts());
+      await act(async () => {
+        await waitForNextUpdate();
+      });
+      expect(
+        result.current.ensByAccountAddress[MOCK_ACCOUNT_1.address],
+      ).toStrictEqual(MOCK_ENS_CACHED_NAME);
+
+      lookupMock.mockImplementation(() => undefined);
+      confirmedAbsentMock.mockReturnValue(true);
+      await act(async () => {
+        jest.advanceTimersByTime(ENS_REFRESH_INTERVAL);
+      });
+
+      expect(result.current.ensByAccountAddress).toStrictEqual({});
+    } finally {
+      lookupMock.mockImplementation(originalLookup);
+      confirmedAbsentMock.mockReturnValue(false);
       jest.useRealTimers();
     }
   });

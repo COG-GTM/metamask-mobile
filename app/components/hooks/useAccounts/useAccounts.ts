@@ -7,6 +7,7 @@ import { KeyringTypes } from '@metamask/keyring-controller';
 import {
   CACHE_REFRESH_THRESHOLD,
   doENSReverseLookup,
+  isENSNameConfirmedAbsent,
 } from '../../../util/ENSUtils';
 import { selectChainId } from '../../../selectors/networkController';
 import { selectIsMultiAccountBalancesEnabled } from '../../../selectors/preferencesController';
@@ -204,6 +205,8 @@ const useAccounts = ({
     }
 
     const latestENSbyAccountAddress: EnsByAccountAddress = {};
+    // Names whose reverse record was removed, so stale entries get cleared.
+    const addressesWithoutENS: string[] = [];
     let hasChanges = false;
     let nextIndex = 0;
     const lookupNext = async (): Promise<void> => {
@@ -217,6 +220,9 @@ const useAccounts = ({
           );
           if (ens) {
             latestENSbyAccountAddress[address] = ens;
+            hasChanges = true;
+          } else if (isENSNameConfirmedAbsent(address, chainId)) {
+            addressesWithoutENS.push(address);
             hasChanges = true;
           }
         } catch (e) {
@@ -232,10 +238,11 @@ const useAccounts = ({
       ),
     ).then(() => {
       if (hasChanges && !isCancelled) {
-        setENSByAccountAddress((prevState) => ({
-          ...prevState,
-          ...latestENSbyAccountAddress,
-        }));
+        setENSByAccountAddress((prevState) => {
+          const nextState = { ...prevState, ...latestENSbyAccountAddress };
+          addressesWithoutENS.forEach((address) => delete nextState[address]);
+          return nextState;
+        });
       }
     });
 
