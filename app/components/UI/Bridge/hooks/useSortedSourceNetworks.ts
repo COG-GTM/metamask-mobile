@@ -11,6 +11,8 @@ import { isSolanaChainId } from '@metamask/bridge-controller';
 import { useTokensWithBalance } from './useTokensWithBalance';
 import { SolScope } from '@metamask/keyring-api';
 
+const SOLANA_CHAIN_IDS = [SolScope.Mainnet];
+
 export const useSortedSourceNetworks = () => {
   const enabledSourceChains = useSelector(selectEnabledSourceChains);
 
@@ -49,7 +51,7 @@ export const useSortedSourceNetworks = () => {
 
   // Calculate total fiat value per Solana chain (native + tokens)
   const solTokensWithBalance = useTokensWithBalance({
-    chainIds: [SolScope.Mainnet],
+    chainIds: SOLANA_CHAIN_IDS,
   });
   const solFiatTotal = solTokensWithBalance.reduce(
     (sum, token) => sum + (token.tokenFiatAmount ?? 0)

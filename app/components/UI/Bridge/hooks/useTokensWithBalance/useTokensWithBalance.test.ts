@@ -178,4 +178,44 @@ describe('useTokensWithBalance', () => {
       expect(token3?.balanceFiat).toBe('$0');
     });
   });
+
+  describe('memoization', () => {
+    it('returns the same array when re-rendered with an equal inline chainIds array', () => {
+      const { result, rerender } = renderHookWithProvider(
+        () =>
+          useTokensWithBalance({
+            chainIds: [mockChainId, optimismChainId],
+          }),
+        { state: initialState },
+      );
+
+      const first = result.current;
+      expect(first.length).toBeGreaterThan(0);
+
+      rerender({});
+      rerender({});
+      expect(result.current).toBe(first);
+    });
+
+    it('recomputes when the chainIds content changes', () => {
+      let chainId: Hex = mockChainId;
+      const { result, rerender } = renderHookWithProvider(
+        () => useTokensWithBalance({ chainIds: [chainId] }),
+        { state: initialState },
+      );
+
+      const mainnetOnly = result.current;
+      expect(mainnetOnly.length).toBeGreaterThan(0);
+      expect(mainnetOnly.every((t) => t.chainId === mockChainId)).toBe(true);
+
+      rerender({});
+      expect(result.current).toBe(mainnetOnly);
+
+      chainId = optimismChainId;
+      rerender({});
+      expect(result.current).not.toBe(mainnetOnly);
+      expect(result.current.length).toBeGreaterThan(0);
+      expect(result.current.every((t) => t.chainId === optimismChainId)).toBe(true);
+    });
+  });
 });

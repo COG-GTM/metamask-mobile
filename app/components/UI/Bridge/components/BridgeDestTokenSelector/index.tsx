@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { Hex } from '@metamask/utils';
@@ -35,10 +35,18 @@ export const BridgeDestTokenSelector: React.FC = () => {
   const selectedDestToken = useSelector(selectDestToken);
   const selectedDestChainId = useSelector(selectSelectedDestChainId);
   const selectedSourceToken = useSelector(selectSourceToken);
+  const balanceChainIds = useMemo(
+    () => (selectedDestChainId ? [selectedDestChainId] : []),
+    [selectedDestChainId],
+  );
+  const tokensToExclude = useMemo(
+    () => (selectedSourceToken ? [selectedSourceToken] : []),
+    [selectedSourceToken],
+  );
   const { tokens: tokensList, pending } = useTokens({
     topTokensChainId: selectedDestChainId,
-    balanceChainIds: selectedDestChainId ? [selectedDestChainId] : [],
-    tokensToExclude: selectedSourceToken ? [selectedSourceToken] : [],
+    balanceChainIds,
+    tokensToExclude,
   });
   const handleTokenPress = useCallback(
     (token: BridgeToken) => {
