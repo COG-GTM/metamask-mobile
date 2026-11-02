@@ -42,6 +42,46 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { selectConfirmationRedesignFlags } from '../../../../../selectors/featureFlagController/confirmations';
 import { selectStablecoinLendingEnabledFlag } from '../../selectors/featureFlags';
 
+const STAKING_NAV_BAR_OPTIONS = {
+  hasCancelButton: true,
+  hasBackButton: false,
+};
+const STAKING_NAV_BAR_EVENT_OPTIONS = {
+  cancelButtonEvent: {
+    event: MetaMetricsEvents.UNSTAKE_CANCEL_CLICKED,
+    properties: {
+      selected_provider: EVENT_PROVIDERS.CONSENSYS,
+      location: EVENT_LOCATIONS.UNSTAKE_INPUT_VIEW,
+    },
+  },
+};
+const EARN_NAV_BAR_OPTIONS = {
+  hasCancelButton: false,
+  hasBackButton: true,
+  hasIconButton: true,
+  // TODO: STAKE-903
+  // handleIconPress: ???,
+};
+const EARN_NAV_BAR_EVENT_OPTIONS = {
+  backButtonEvent: {
+    event: MetaMetricsEvents.UNSTAKE_CANCEL_CLICKED,
+    properties: {
+      selected_provider: EVENT_PROVIDERS.CONSENSYS,
+      location: EVENT_LOCATIONS.UNSTAKE_INPUT_VIEW,
+    },
+  },
+  // TODO: STAKE-903
+  // iconButtonEvent: {
+  //   event: MetaMetricsEvents.TOOLTIP_OPENED,
+  //   properties: {
+  //     selected_provider: EVENT_PROVIDERS.CONSENSYS,
+  //     text: 'Tooltip Opened',
+  //     location: EVENT_LOCATIONS.UNSTAKE_CANCEL_CLICKED,
+  //     tooltip_name: '???',
+  //   },
+  // },
+};
+
 const EarnWithdrawInputView = () => {
   const route = useRoute<EarnWithdrawInputViewProps['route']>();
   const { token } = route.params;
@@ -108,51 +148,12 @@ const EarnWithdrawInputView = () => {
 
   const buttonLabel = getButtonLabel();
 
-  const stakingNavBarOptions = {
-    hasCancelButton: true,
-    hasBackButton: false,
-  };
-  const stakingNavBarEventOptions = {
-    cancelButtonEvent: {
-      event: MetaMetricsEvents.UNSTAKE_CANCEL_CLICKED,
-      properties: {
-        selected_provider: EVENT_PROVIDERS.CONSENSYS,
-        location: EVENT_LOCATIONS.UNSTAKE_INPUT_VIEW,
-      },
-    },
-  };
-  const earnNavBarOptions = {
-    hasCancelButton: false,
-    hasBackButton: true,
-    hasIconButton: true,
-    // TODO: STAKE-903
-    // handleIconPress: ???,
-  };
-  const earnNavBarEventOptions = {
-    backButtonEvent: {
-      event: MetaMetricsEvents.UNSTAKE_CANCEL_CLICKED,
-      properties: {
-        selected_provider: EVENT_PROVIDERS.CONSENSYS,
-        location: EVENT_LOCATIONS.UNSTAKE_INPUT_VIEW,
-      },
-    },
-    // TODO: STAKE-903
-    // iconButtonEvent: {
-    //   event: MetaMetricsEvents.TOOLTIP_OPENED,
-    //   properties: {
-    //     selected_provider: EVENT_PROVIDERS.CONSENSYS,
-    //     text: 'Tooltip Opened',
-    //     location: EVENT_LOCATIONS.UNSTAKE_CANCEL_CLICKED,
-    //     tooltip_name: '???',
-    //   },
-    // },
-  };
   const navBarOptions = isStablecoinLendingEnabled
-    ? earnNavBarOptions
-    : stakingNavBarOptions;
+    ? EARN_NAV_BAR_OPTIONS
+    : STAKING_NAV_BAR_OPTIONS;
   const navBarEventOptions = isStablecoinLendingEnabled
-    ? earnNavBarEventOptions
-    : stakingNavBarEventOptions;
+    ? EARN_NAV_BAR_EVENT_OPTIONS
+    : STAKING_NAV_BAR_EVENT_OPTIONS;
   useEffect(() => {
     navigation.setOptions(
       getStakingNavbar(
