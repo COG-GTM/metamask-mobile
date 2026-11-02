@@ -178,7 +178,13 @@ const AccountConnect = (props: AccountConnectProps) => {
   const isOriginWalletConnect =
     !isOriginMMSDKRemoteConn && wc2Metadata?.id && wc2Metadata?.id.length > 0;
 
-  const dappIconUrl = sdkConnection?.originatorInfo?.icon;
+  // Deeplink-protocol (iOS SDK) links carry a self-asserted dapp url/title/icon
+  // with no key exchange, so that identity is shown as unverified.
+  const isSdkOriginUnverified =
+    sdkConnection?.origin === AppConstants.MM_SDK.IOS_SDK;
+  const dappIconUrl = isSdkOriginUnverified
+    ? undefined
+    : sdkConnection?.originatorInfo?.icon;
   const dappUrl = sdkConnection?.originatorInfo?.url ?? '';
 
   const [isSdkUrlUnknown, setIsSdkUrlUnknown] = useState(false);
@@ -289,10 +295,11 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const secureIcon = useMemo(
     () =>
+      !isSdkOriginUnverified &&
       (getUrlObj(hostname) as URLParse<string>).protocol === 'https:'
         ? IconName.Lock
         : IconName.LockSlash,
-    [hostname],
+    [hostname, isSdkOriginUnverified],
   );
 
   const eventSource = useOriginSource({ origin: channelIdOrHostname });
@@ -647,9 +654,11 @@ const AccountConnect = (props: AccountConnectProps) => {
         favicon={actualIcon}
         secureIcon={secureIcon}
         urlWithProtocol={urlWithProtocol}
+        isOriginUnverified={isSdkOriginUnverified}
       />
     );
   }, [
+    isSdkOriginUnverified,
     accounts,
     ensByAccountAddress,
     selectedAddresses,
@@ -667,9 +676,10 @@ const AccountConnect = (props: AccountConnectProps) => {
     const permissionsSummaryProps: PermissionsSummaryProps = {
       currentPageInformation: {
         currentEnsName: '',
-        icon: faviconSource as string,
+        icon: isSdkOriginUnverified ? '' : (faviconSource as string),
         url: urlWithProtocol,
       },
+      isOriginUnverified: isSdkOriginUnverified,
       onEdit: () => {
         setScreen(AccountConnectScreens.MultiConnectSelector);
       },
@@ -684,6 +694,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     };
     return <PermissionsSummary {...permissionsSummaryProps} />;
   }, [
+    isSdkOriginUnverified,
     faviconSource,
     urlWithProtocol,
     selectedAddresses,

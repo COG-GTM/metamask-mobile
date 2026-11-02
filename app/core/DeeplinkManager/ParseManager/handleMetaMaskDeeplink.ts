@@ -6,6 +6,10 @@ import AppConstants from '../../AppConstants';
 import SDKConnect from '../../SDKConnect/SDKConnect';
 import handleDeeplink from '../../SDKConnect/handlers/handleDeeplink';
 import DevLogger from '../../SDKConnect/utils/DevLogger';
+import {
+  isValidDappScheme,
+  parseDeeplinkOriginatorInfo,
+} from '../../SDKConnect/SDKDeeplinkProtocol/deeplinkProtocolValidation';
 import WC2Manager from '../../WalletConnect/WalletConnectV2';
 import DeeplinkManager from '../DeeplinkManager';
 import parseOriginatorInfo from '../parseOriginatorInfo';
@@ -46,14 +50,22 @@ export function handleMetaMaskDeeplink({
     } else if (params.channelId) {
       // differentiate between  deeplink callback and socket connection
       if (params.comm === 'deeplinking') {
-        if (!params.scheme) {
+        if (!isValidDappScheme(params.scheme)) {
           throw new Error(`DeepLinkManager failed to connect - Invalid scheme`);
+        }
+
+        try {
+          parseDeeplinkOriginatorInfo(params.originatorInfo ?? '');
+        } catch (error) {
+          throw new Error(
+            `DeepLinkManager failed to connect - Invalid originatorInfo`,
+          );
         }
 
         SDKConnect.getInstance().state.deeplinkingService?.handleConnection({
           channelId: params.channelId,
           url,
-          scheme: params.scheme ?? '',
+          scheme: params.scheme,
           dappPublicKey: params.pubkey,
           originatorInfo: params.originatorInfo,
           request: params.request,
@@ -96,7 +108,7 @@ export function handleMetaMaskDeeplink({
       );
     }
 
-    if (!params.scheme) {
+    if (!isValidDappScheme(params.scheme)) {
       throw new Error(
         `DeepLinkManager: deeplinkingService failed to handleMessage - Invalid scheme`,
       );

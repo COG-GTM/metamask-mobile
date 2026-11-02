@@ -13,6 +13,7 @@ import {
   MOCK_ADDRESS_1 as mockAddress1,
   MOCK_ADDRESS_2 as mockAddress2,
 } from '../../../util/test/accountsControllerTestUtils';
+import { ConnectAccountBottomSheetSelectorsIDs } from '../../../../e2e/selectors/Browser/ConnectAccountBottomSheet.selectors';
 
 const mockedNavigate = jest.fn();
 const mockedGoBack = jest.fn();
@@ -77,7 +78,7 @@ jest.mock('../../../core/Engine', () => {
         }),
         scanUrl: jest.fn((domainName: string) => ({
           domainName,
-          recommendedAction: 'NONE'
+          recommendedAction: 'NONE',
         })),
       },
       PermissionController: {
@@ -107,11 +108,12 @@ jest.mock('../../../core/Engine', () => {
 });
 
 const mockRemoveChannel = jest.fn();
+const mockGetConnection = jest.fn();
 
 // Mock SDKConnect
 jest.mock('../../../core/SDKConnect/SDKConnect', () => ({
   getInstance: () => ({
-    getConnection: () => undefined,
+    getConnection: (...args: unknown[]) => mockGetConnection(...args),
     removeChannel: mockRemoveChannel,
   }),
 }));
@@ -249,6 +251,61 @@ describe('AccountConnect', () => {
       );
 
       expect(getByTestId('permission-summary-container')).toBeDefined();
+    });
+  });
+
+  describe('SDK deeplink-protocol connections', () => {
+    const renderForSdkConnection = (connectionOrigin: string) => {
+      mockGetConnection.mockReturnValue({
+        id: 'attacker-channel',
+        origin: connectionOrigin,
+        originatorInfo: {
+          url: 'https://app.uniswap.org',
+          title: 'Uniswap',
+          icon: 'https://attacker.example/uniswap.png',
+        },
+      });
+      return renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: { id: 'mockId', origin: 'attacker-channel' },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        { state: mockInitialState },
+      );
+    };
+
+    afterEach(() => {
+      mockGetConnection.mockReset();
+    });
+
+    it('marks the self-asserted dapp identity of a deeplink-protocol session as unverified', () => {
+      const { getByTestId } = renderForSdkConnection('iOSSDK');
+
+      expect(getByTestId('permission-summary-container')).toBeDefined();
+      expect(
+        getByTestId(
+          ConnectAccountBottomSheetSelectorsIDs.UNVERIFIED_ORIGIN_BANNER,
+        ),
+      ).toBeDefined();
+    });
+
+    it('does not show the unverified banner for other SDK connections', () => {
+      const { queryByTestId } = renderForSdkConnection('qr-code');
+
+      expect(
+        queryByTestId(
+          ConnectAccountBottomSheetSelectorsIDs.UNVERIFIED_ORIGIN_BANNER,
+        ),
+      ).toBeNull();
     });
   });
 

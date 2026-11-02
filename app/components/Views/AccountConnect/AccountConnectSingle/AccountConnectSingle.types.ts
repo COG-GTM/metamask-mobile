@@ -21,4 +21,9 @@ export interface AccountConnectSingleProps {
   favicon: ImageSourcePropType;
   secureIcon: IconName;
   connection?: ConnectionProps;
+  /**
+   * True when the dapp url/icon were self-reported (e.g. SDK connect link)
+   * and cannot be verified by the wallet.
+   */
+  isOriginUnverified?: boolean;
 }

@@ -284,7 +284,7 @@ describe('DeeplinkProtocolService', () => {
         originatorInfo: Buffer.from(
           JSON.stringify({
             originatorInfo: {
-              url: 'test.com',
+              url: 'https://test.com',
               title: 'Test',
               platform: 'test',
               dappId: 'dappId',
@@ -317,8 +317,43 @@ describe('DeeplinkProtocolService', () => {
       await service.openDeeplink({
         message: { test: 'test' },
         clientId: 'client1',
+        scheme: 'scheme',
       });
-      expect(spy).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(
+        expect.stringMatching(/^scheme:\/\/mmsdk\?message=/),
+      );
+    });
+
+    it('should not open a deeplink when the scheme is not a plain custom scheme', async () => {
+      const spy = jest.spyOn(Linking, 'openURL');
+      await service.openDeeplink({
+        message: { accounts: ['0x1'] },
+        clientId: 'client1',
+        scheme: 'https://mallory.example/c?d=',
+      });
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('should not open a deeplink for a stored connection with an invalid scheme', async () => {
+      const spy = jest.spyOn(Linking, 'openURL');
+      service.connections.client1 = {
+        clientId: 'client1',
+        connected: true,
+        validUntil: Date.now(),
+        scheme: 'https://mallory.example/c?d=',
+        originatorInfo: {
+          url: 'https://app.example.com',
+          title: 'Example',
+          platform: 'ios',
+          dappId: 'example',
+        },
+      };
+      await service.openDeeplink({
+        message: { accounts: ['0x1'] },
+        clientId: 'client1',
+        scheme: 'scheme',
+      });
+      expect(spy).not.toHaveBeenCalled();
     });
   });
 
@@ -350,13 +385,51 @@ describe('DeeplinkProtocolService', () => {
         channelId: 'channel1',
         originatorInfo: Buffer.from(
           JSON.stringify({
-            originatorInfo: { url: 'test.com', title: 'Test' },
+            originatorInfo: { url: 'https://test.com/path', title: 'Test' },
           }),
         ).toString('base64'),
       };
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
+      expect(SDKConnect.getInstance().addDappConnection).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'channel1',
+          scheme: 'scheme',
+          originatorInfo: { url: 'https://test.com', title: 'Test' },
+        }),
+      );
     });
+
+    it.each([
+      [
+        'https scheme',
+        'https://mallory.example/c?d=',
+        { url: 'https://app.uniswap.org', title: 'Uniswap' },
+      ],
+      ['non-web dapp url', 'scheme', { url: 'ftp://app.uniswap.org', title: 'Uniswap' }],
+      ['missing title', 'scheme', { url: 'https://app.uniswap.org' }],
+    ])(
+      'should reject a connection with %s',
+      async (_label, scheme, originatorInfo) => {
+        const requestPermissions = Engine.context.PermissionController
+          .requestPermissions as jest.Mock;
+        await service.handleConnection({
+          dappPublicKey: 'key',
+          url: 'url',
+          scheme,
+          channelId: 'attacker-channel',
+          originatorInfo: Buffer.from(
+            JSON.stringify({ originatorInfo }),
+          ).toString('base64'),
+        });
+        expect(
+          SDKConnect.getInstance().addDappConnection,
+        ).not.toHaveBeenCalled();
+        expect(requestPermissions).not.toHaveBeenCalled();
+        expect(service.connections['attacker-channel']).toBeUndefined();
+        expect(Logger.error).toHaveBeenCalled();
+      },
+    );
   });
 
   describe('handleConnectionEventAsync', () => {
@@ -507,6 +580,25 @@ describe('DeeplinkProtocolService', () => {
       };
       service.handleMessage(params);
       expect(DevLogger.log).toHaveBeenCalled();
+    });
+
+    it('should drop a message whose scheme is not a plain custom scheme', () => {
+      const params = {
+        dappPublicKey: 'key',
+        url: 'url',
+        message: Buffer.from(
+          JSON.stringify({ id: '1', method: 'personal_sign', params: [] }),
+        ).toString('base64'),
+        channelId: 'channel1',
+        scheme: 'https://mallory.example/c?d=',
+        account: `${toChecksumHexAddress(MOCK_ADDRESS)}@1`,
+      };
+      service.handleMessage(params);
+      expect(Logger.error).toHaveBeenCalled();
+      expect(DevLogger.log).not.toHaveBeenCalledWith(
+        'DeeplinkProtocolService:: message',
+        params.message,
+      );
     });
   });
 
