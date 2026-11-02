@@ -42,6 +42,10 @@ import {
 import { setEventStageError, setEventStage } from '../../actions/rpcEvents';
 import { isWhitelistedRPC, RPCStageTypes } from '../../reducers/rpcEvents';
 import { regex } from '../../../app/util/regex';
+import {
+  compileUntrustedRegExp,
+  MAX_UNTRUSTED_INPUT_LENGTH,
+} from '../../../app/util/regex/untrustedRegExp';
 import Logger from '../../../app/util/Logger';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { addTransaction } from '../../util/transaction-controller';
@@ -838,20 +842,44 @@ export const getRpcMethodMiddleware = ({
           res.result = `MetaMask/${appVersion}/Mobile`;
         },
 
-        wallet_scanQRCode: () =>
-          new Promise<void>((resolve, reject) => {
+        wallet_scanQRCode: () => {
+          const pattern = req.params?.[0];
+          let scanFilter: RegExp | undefined;
+          if (pattern !== undefined) {
+            try {
+              scanFilter = compileUntrustedRegExp(pattern);
+            } catch (error) {
+              throw rpcErrors.invalidParams({
+                message: (error as Error).message,
+              });
+            }
+          }
+          return new Promise<void>((resolve, reject) => {
             checkTabActive();
             navigation.navigate(Routes.QR_TAB_SWITCHER, {
               // TODO: Replace "any" with type
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onScanSuccess: (data: any) => {
-                if (!regex.exec(req.params[0], data)) {
-                  reject({ message: 'NO_REGEX_MATCH', data });
-                } else if (regex.walletAddress.exec(data.target_address)) {
+                if (scanFilter) {
+                  const input = String(data);
+                  if (input.length > MAX_UNTRUSTED_INPUT_LENGTH) {
+                    reject({ message: 'SCAN_RESULT_TOO_LONG' });
+                    return;
+                  }
+                  if (!scanFilter.test(input)) {
+                    reject({ message: 'NO_REGEX_MATCH', data });
+                    return;
+                  }
+                }
+                if (
+                  data?.target_address &&
+                  !regex.walletAddress.test(data.target_address)
+                ) {
                   reject({
                     message: 'INVALID_ETHEREUM_ADDRESS',
                     data: data.target_address,
                   });
+                  return;
                 }
                 let result = data;
                 if (data.target_address) {
@@ -862,13 +890,12 @@ export const getRpcMethodMiddleware = ({
                 res.result = result;
                 resolve();
               },
-              // TODO: Replace "any" with type
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onScanError: (e: { toString: () => any }) => {
-                throw rpcErrors.internal(e.toString());
+              onScanError: (e: { toString: () => string }) => {
+                reject(rpcErrors.internal(e.toString()));
               },
             });
-          }),
+          });
+        },
 
         wallet_watchAsset: async () =>
           RPCMethods.wallet_watchAsset({ req, res, hostname, checkTabActive }),
