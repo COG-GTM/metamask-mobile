@@ -293,4 +293,64 @@ describe('useAddressBalance', () => {
 
     expect(result.current.addressBalance).toStrictEqual('1 ETH');
   });
+
+  it('re-fetches when the displayed owner token balance is updated by polling', async () => {
+    const asset = { address: MOCK_TOKEN_ADDRESS, symbol: 'TST', decimals: 4 };
+    const withOwnerTokenBalance = (balance: string) => {
+      const state = withBalances(
+        { [MOCK_ADDRESS_1]: '0x4a7036655fab2ca3', [MOCK_ADDRESS_2]: '0x5' },
+        '0x5',
+      );
+      state.engine.backgroundState.TokenBalancesController = {
+        tokenBalances: {
+          ...state.engine.backgroundState.TokenBalancesController.tokenBalances,
+          [MOCK_ADDRESS_2]: { '0x1': { [MOCK_TOKEN_ADDRESS]: balance } },
+        },
+      } as typeof state.engine.backgroundState.TokenBalancesController;
+      return state;
+    };
+    mockCurrentState = withOwnerTokenBalance('0x5');
+    const { rerender } = renderHook(
+      () => useAddressBalance(asset, MOCK_ADDRESS_2),
+      { wrapper: Wrapper },
+    );
+    mockCurrentState = withOwnerTokenBalance('0x5');
+    rerender({});
+    await act(async () => undefined);
+    expect(mockGetERC20BalanceOf).toHaveBeenCalledTimes(1);
+
+    mockCurrentState = withOwnerTokenBalance('0x8');
+    rerender({});
+    await act(async () => undefined);
+    expect(mockGetERC20BalanceOf).toHaveBeenCalledTimes(2);
+  });
+
+  it('re-fetches when the selected network changes even if the ticker is the same', async () => {
+    const asset = { address: MOCK_TOKEN_ADDRESS, symbol: 'TST', decimals: 4 };
+    const { rerender } = renderHook(
+      () => useAddressBalance(asset, MOCK_ADDRESS_2),
+      { wrapper: Wrapper },
+    );
+    await act(async () => undefined);
+    expect(mockGetERC20BalanceOf).toHaveBeenCalledTimes(1);
+
+    mockCurrentState = {
+      ...mockInitialState,
+      engine: {
+        ...mockInitialState.engine,
+        backgroundState: {
+          ...mockInitialState.engine.backgroundState,
+          NetworkController: mockNetworkState({
+            chainId: '0xa',
+            id: 'optimism',
+            nickname: 'OP Mainnet',
+            ticker: 'ETH',
+          }),
+        },
+      },
+    };
+    rerender({});
+    await act(async () => undefined);
+    expect(mockGetERC20BalanceOf).toHaveBeenCalledTimes(2);
+  });
 });

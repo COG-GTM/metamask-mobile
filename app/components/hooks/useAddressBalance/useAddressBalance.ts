@@ -2,6 +2,7 @@ import { ERC1155, ERC721 } from '@metamask/controller-utils';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import BN4 from 'bnjs4';
+import { Hex } from '@metamask/utils';
 
 import Engine from '../../../core/Engine';
 import { getTicker } from '../../../util/transactions';
@@ -11,11 +12,15 @@ import {
 } from '../../../util/number';
 import { safeToChecksumAddress } from '../../../util/address';
 import {
+  selectEvmChainId,
   selectEvmTicker,
   selectSelectedNetworkClientId,
 } from '../../../selectors/networkController';
 import { selectAccounts } from '../../../selectors/accountTrackerController';
-import { selectContractBalances } from '../../../selectors/tokenBalancesController';
+import {
+  selectContractBalances,
+  selectTokensBalances,
+} from '../../../selectors/tokenBalancesController';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../selectors/accountsController';
 import { Asset } from './useAddressBalance.types';
 
@@ -33,6 +38,8 @@ const useAddressBalance = (
   );
   const ticker = useSelector(selectEvmTicker);
   const selectedNetworkClientId = useSelector(selectSelectedNetworkClientId);
+  const chainId = useSelector(selectEvmChainId);
+  const allTokenBalances = useSelector(selectTokensBalances);
 
   useEffect(() => {
     if (asset && !asset.isETH && !asset.tokenId) {
@@ -85,6 +92,13 @@ const useAddressBalance = (
   const trackedTokenBalance =
     contractAddress && selectedAddress === address
       ? contractBalances[contractAddress]
+      : undefined;
+  // Polled balance for the displayed owner, used only as a refresh signal for the RPC branch.
+  const ownerTokenBalance =
+    contractAddress && address
+      ? allTokenBalances?.[address.toLowerCase() as Hex]?.[chainId as Hex]?.[
+          contractAddress as Hex
+        ]
       : undefined;
 
   useEffect(() => {
@@ -151,6 +165,8 @@ const useAddressBalance = (
     contractAddress,
     isNativeOrNftAsset,
     nativeBalance,
+    ownerTokenBalance,
+    selectedNetworkClientId,
     ticker,
     tokenDecimals,
     tokenSymbol,
