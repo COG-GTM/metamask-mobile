@@ -10,9 +10,21 @@ import Logger from '../../../util/Logger';
 
 const EMPTY_ACCOUNTS: string[] = [];
 
+/**
+ * URL of the active browser tab.
+ *
+ * @param state - Root redux state.
+ * @returns The active tab URL, or `undefined` when no tab is active.
+ */
 const selectActiveTabUrl = (state: RootState): string | undefined =>
   getActiveTabUrl(state);
 
+/**
+ * Hostname of the active browser tab. Re-parsed only when the active tab URL changes.
+ *
+ * @param state - Root redux state.
+ * @returns The hostname, or `undefined` when no tab is active or its URL is invalid.
+ */
 export const selectActiveTabHostname = createSelector(
   selectActiveTabUrl,
   (activeTabUrl): string | undefined => {
