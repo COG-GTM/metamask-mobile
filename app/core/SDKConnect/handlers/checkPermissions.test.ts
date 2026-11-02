@@ -99,7 +99,7 @@ describe('checkPermissions', () => {
     mockGetPermittedAccounts.mockReturnValue([]);
 
     connection = {
-      channelId: 'channelId',
+      channelId: '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d',
       isApproved: mockIsApproved,
       revalidate: mockRevalidate,
       initialConnection: true,
@@ -212,5 +212,15 @@ describe('checkPermissions', () => {
       await checkPermissions({ connection, engine });
       expect(wait).not.toHaveBeenCalledWith(100);
     });
+  });
+
+  it('never auto-approves a non-UUID channel that matches a browser hostname', async () => {
+    mockGetPermittedAccounts.mockReturnValue(['0x1']);
+    connection.channelId = 'swap.example.org';
+
+    await expect(checkPermissions({ connection, engine })).rejects.toThrow(
+      'invalid SDK channel id',
+    );
+    expect(mockGetPermittedAccounts).not.toHaveBeenCalled();
   });
 });

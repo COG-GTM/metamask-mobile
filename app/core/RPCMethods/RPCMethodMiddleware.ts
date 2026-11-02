@@ -8,10 +8,21 @@ import {
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { SetFlowLoadingTextOptions } from '@metamask/approval-controller';
 import { recoverPersonalSignature } from '@metamask/eth-sig-util';
-import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
+import {
+  getCaip25PermissionFromLegacyPermissions,
+  rejectOriginPendingApprovals,
+  requestPermittedChainsPermissionIncremental,
+} from '../../util/permissions';
 import { Hex } from '@metamask/utils';
-import { getPermissionsHandler, requestPermissionsHandler, revokePermissionsHandler } from '@metamask/eip1193-permission-middleware';
-import { Caip25CaveatType, Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
+import {
+  getPermissionsHandler,
+  requestPermissionsHandler,
+  revokePermissionsHandler,
+} from '@metamask/eip1193-permission-middleware';
+import {
+  Caip25CaveatType,
+  Caip25EndowmentPermissionName,
+} from '@metamask/chain-agnostic-permission';
 import RPCMethods from './index.js';
 import { RPC } from '../../constants/network';
 import { ChainId, NetworkType } from '@metamask/controller-utils';
@@ -32,7 +43,10 @@ import { store } from '../../store';
 import { removeBookmark } from '../../actions/bookmarks';
 import setOnboardingWizardStep from '../../actions/wizard';
 import { v1 as random } from 'uuid';
-import { getDefaultCaip25CaveatValue, getPermittedAccounts } from '../Permissions';
+import {
+  getDefaultCaip25CaveatValue,
+  getPermittedAccounts,
+} from '../Permissions';
 import AppConstants from '../AppConstants';
 import PPOMUtil from '../../lib/ppom/ppom-util';
 import {
@@ -44,6 +58,7 @@ import { isWhitelistedRPC, RPCStageTypes } from '../../reducers/rpcEvents';
 import { regex } from '../../../app/util/regex';
 import Logger from '../../../app/util/Logger';
 import DevLogger from '../SDKConnect/utils/DevLogger';
+import { isValidSDKChannelId } from '../SDKConnect/utils/isUUID';
 import { addTransaction } from '../../util/transaction-controller';
 import Routes from '../../constants/navigation/Routes';
 import { endTrace, trace, TraceName } from '../../util/trace';
@@ -52,7 +67,6 @@ import {
   SignatureController,
 } from '@metamask/signature-controller';
 import { createAsyncWalletMiddleware } from './createAsyncWalletMiddleware';
-
 
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -360,8 +374,7 @@ export const getRpcMethodMiddlewareHooks = (origin: string) => ({
     Engine.context.NetworkController.getNetworkConfigurationByChainId.bind(
       Engine.context.NetworkController,
     ),
-  rejectApprovalRequestsForOrigin: () =>
-    rejectOriginPendingApprovals(origin),
+  rejectApprovalRequestsForOrigin: () => rejectOriginPendingApprovals(origin),
 });
 
 /**
@@ -397,6 +410,10 @@ export const getRpcMethodMiddleware = ({
   hostname = hostname.replace(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN, '');
   const origin = isWalletConnect ? hostname : channelId ?? hostname;
   const hooks = getRpcMethodMiddlewareHooks(origin);
+  // SDK channel ids share the permission namespace with browser hostnames,
+  // so a non-UUID SDK origin could act on a website's permissions.
+  const isInvalidSDKOrigin =
+    Boolean(isMMSDK) && !isWalletConnect && !isValidSDKChannelId(channelId);
 
   DevLogger.log(
     `getRpcMethodMiddleware hostname=${hostname} channelId=${channelId}`,
@@ -406,6 +423,10 @@ export const getRpcMethodMiddleware = ({
   return mergeMiddleware([
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     createAsyncMiddleware(async (req: any, res: any, next: any) => {
+      if (isInvalidSDKOrigin) {
+        throw providerErrors.unauthorized('Invalid SDK channel id.');
+      }
+
       // Used by eth_accounts and eth_coinbase RPCs.
       const getEthAccounts = async () => {
         const accounts = getPermittedAccounts(origin);
@@ -527,7 +548,8 @@ export const getRpcMethodMiddleware = ({
                   resolve(undefined);
                 },
                 {
-                  getAccounts: (...args) => getPermittedAccounts(origin, ...args),
+                  getAccounts: (...args) =>
+                    getPermittedAccounts(origin, ...args),
                   getCaip25PermissionFromLegacyPermissionsForOrigin: (
                     requestedPermissions,
                   ) =>

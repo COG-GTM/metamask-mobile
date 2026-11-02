@@ -15,6 +15,7 @@ import { Connection, ConnectionProps } from '../Connection';
 import checkPermissions from '../handlers/checkPermissions';
 import { DEFAULT_SESSION_TIMEOUT_MS } from '../SDKConnectConstants';
 import DevLogger from '../utils/DevLogger';
+import { isValidSDKChannelId } from '../utils/isUUID';
 import { wait, waitForCondition } from '../utils/wait.util';
 import { SDKConnect } from './../SDKConnect';
 
@@ -34,6 +35,14 @@ async function connectToChannel({
 }: ConnectionProps & {
   instance: SDKConnect;
 }) {
+  if (!isValidSDKChannelId(id)) {
+    Logger.error(
+      new Error('SDKConnect::connectToChannel - rejected invalid channel id'),
+      { origin, trigger },
+    );
+    return;
+  }
+
   const existingConnection = instance.state.connected[id] !== undefined;
   const isReady = existingConnection && instance.state.connected[id].isReady;
 
@@ -73,6 +82,7 @@ async function connectToChannel({
 
   instance.state.connecting[id] = true;
 
+  let established = false;
   try {
     instance.state.connections[id] = {
       id,
@@ -201,6 +211,7 @@ async function connectToChannel({
       withKeyExchange: true,
       authorized,
     });
+    established = true;
     DevLogger.log(
       `SDKConnect::connectToChannel - connected - state after connect`,
       instance.state,
@@ -264,6 +275,21 @@ async function connectToChannel({
     }
   } catch (error) {
     Logger.error(error as Error, 'Failed to connect to channel');
+    // If the channel never connected, drop the half-initialised connection so
+    // no phantom session is left behind. Permissions are intentionally left untouched.
+    if (!established) {
+      try {
+        instance.state.connected[id]?.remote?.disconnect();
+      } catch (disconnectError) {
+        DevLogger.log(
+          `SDKConnect::connectToChannel - failed to disconnect ${id}`,
+          disconnectError,
+        );
+      }
+      delete instance.state.connected[id];
+      delete instance.state.connections[id];
+      store.dispatch(resetConnections(instance.state.connections));
+    }
   } finally {
     DevLogger.log(
       `SDKConnect::connectToChannel - finally - state.connecting[${id}]=${instance.state.connecting[id]}`,

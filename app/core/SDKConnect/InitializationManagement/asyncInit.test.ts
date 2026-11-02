@@ -2,6 +2,8 @@ import { NavigationContainerRef } from '@react-navigation/native';
 import SDKConnect from '../SDKConnect';
 import { wait } from '../utils/wait.util';
 import asyncInit from './asyncInit';
+import { store } from '../../../store';
+import { resetDappConnections } from '../../../actions/sdk';
 
 jest.mock('@react-navigation/native');
 jest.mock('../../../store/storage-wrapper', () => ({
@@ -102,5 +104,43 @@ describe('asyncInit', () => {
     });
 
     expect(mockInstance.state._initialized).toEqual(true);
+  });
+
+  it('drops persisted sessions whose id is not a UUID', async () => {
+    const validUntil = Date.now() + 60_000;
+    (store.getState as jest.Mock).mockReturnValueOnce({
+      sdk: {
+        connections: {
+          '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d': {
+            id: '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d',
+            validUntil,
+          },
+          'swap.example.org': { id: 'swap.example.org', validUntil },
+        },
+        approvedHosts: {},
+        dappConnections: {
+          '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d': {
+            id: '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d',
+            validUntil,
+          },
+          'swap.example.org': { id: 'swap.example.org', validUntil },
+        },
+      },
+    });
+
+    await asyncInit({
+      instance: mockInstance,
+      navigation: mockNavigation,
+    });
+
+    expect(Object.keys(mockInstance.state.connections)).toEqual([
+      '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d',
+    ]);
+    expect(Object.keys(mockInstance.state.dappConnections)).toEqual([
+      '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d',
+    ]);
+    expect(store.dispatch).toHaveBeenCalledWith(
+      resetDappConnections(mockInstance.state.dappConnections),
+    );
   });
 });

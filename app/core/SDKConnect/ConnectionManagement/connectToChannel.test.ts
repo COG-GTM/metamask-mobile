@@ -45,7 +45,7 @@ describe('connectToChannel', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    id = 'test-id';
+    id = '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d';
     trigger = 'deeplink';
     otherPublicKey = 'test-otherPublicKey';
     origin = 'test-origin';
@@ -206,6 +206,102 @@ describe('connectToChannel', () => {
       connectedInstance.remote.state.relayPersistence = true;
 
       expect(connectedInstance.remote.state.relayPersistence).toBe(true);
+    });
+  });
+
+  describe('Channel id validation', () => {
+    it('rejects a non-UUID channel id without creating a connection or checking permissions', async () => {
+      const hostnameId = 'swap.example.org';
+
+      await connectToChannel({
+        instance: mockInstance,
+        id: hostnameId,
+        trigger,
+        otherPublicKey,
+        origin,
+        validUntil,
+        originatorInfo,
+        initialConnection: true,
+      });
+
+      expect(MockedConnection).not.toHaveBeenCalled();
+      expect(checkPermissions).not.toHaveBeenCalled();
+      expect(mockInstance.state.connections[hostnameId]).toBeUndefined();
+      expect(mockInstance.state.connected[hostnameId]).toBeUndefined();
+    });
+  });
+
+  describe('Failed connection cleanup', () => {
+    it('removes the half-initialised connection when connecting fails', async () => {
+      const newId = '0f1e2d3c-4b5a-4968-8776-655443322110';
+      const mockDisconnect = jest.fn();
+      MockedConnection.mockImplementation(
+        () =>
+          ({
+            remote: {
+              getKeyInfo: jest.fn().mockReturnValue({
+                ecies: { private: 'k', otherPubKey: 'p' },
+              }),
+              disconnect: mockDisconnect,
+            },
+            connect: jest.fn().mockRejectedValue(new Error('Invalid channel')),
+            isReady: false,
+          } as unknown as Connection),
+      );
+
+      await connectToChannel({
+        instance: mockInstance,
+        id: newId,
+        trigger,
+        otherPublicKey,
+        origin,
+        validUntil,
+        initialConnection: true,
+      });
+
+      expect(mockDisconnect).toHaveBeenCalled();
+      expect(mockInstance.state.connected[newId]).toBeUndefined();
+      expect(mockInstance.state.connections[newId]).toBeUndefined();
+      expect(mockInstance.state.connecting[newId]).toBe(false);
+      expect(mockRemoveChannel).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Post-connect failure', () => {
+    it('keeps an established session when a later step fails', async () => {
+      const newId = '1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
+      const mockDisconnect = jest.fn();
+      mockWatchConnection.mockImplementationOnce(() => {
+        throw new Error('post-connect failure');
+      });
+      MockedConnection.mockImplementation(
+        () =>
+          ({
+            remote: {
+              getKeyInfo: jest.fn().mockReturnValue({
+                ecies: { private: 'k', otherPubKey: 'p' },
+              }),
+              disconnect: mockDisconnect,
+              state: {},
+            },
+            connect: jest.fn().mockResolvedValue(undefined),
+            isReady: false,
+          } as unknown as Connection),
+      );
+
+      await connectToChannel({
+        instance: mockInstance,
+        id: newId,
+        trigger,
+        otherPublicKey,
+        origin,
+        validUntil,
+        initialConnection: true,
+      });
+
+      expect(mockDisconnect).not.toHaveBeenCalled();
+      expect(mockInstance.state.connected[newId]).toBeDefined();
+      expect(mockInstance.state.connections[newId]).toBeDefined();
     });
   });
 });

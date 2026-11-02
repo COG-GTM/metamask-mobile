@@ -22,6 +22,7 @@ import {
   getPermittedAccountsByHostname,
 } from '../../../../core/Permissions';
 import DevLogger from '../../../../core/SDKConnect/utils/DevLogger';
+import { isValidSDKChannelId } from '../../../../core/SDKConnect/utils/isUUID';
 import BottomSheet, {
   BottomSheetRef,
 } from '../../../../component-library/components/BottomSheets/BottomSheet';
@@ -111,10 +112,10 @@ const SDKSessionModal = ({ route }: SDKSEssionMoodalProps) => {
   );
 
   useEffect(() => {
-    if (channelId) {
-      const origin = channelId;
-      const permittedAccountsForOrigin = getPermittedAccounts(origin);
-      setPermittedAccountsAddresses(permittedAccountsForOrigin);
+    if (isValidSDKChannelId(channelId)) {
+      setPermittedAccountsAddresses(getPermittedAccounts(channelId));
+    } else {
+      setPermittedAccountsAddresses([]);
     }
   }, [channelId]);
 

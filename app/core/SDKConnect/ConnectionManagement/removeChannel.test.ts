@@ -127,4 +127,48 @@ describe('removeChannel', () => {
 
     expect(mockInstance.state.connecting[mockChannelId]).toBeUndefined();
   });
+
+  describe('Permission revocation', () => {
+    const makeEngine = () => {
+      const permissionController = {
+        getPermissions: jest.fn().mockReturnValue({ caip25: {} }),
+        revokeAllPermissions: jest.fn(),
+      };
+      return {
+        permissionController,
+        engine: { context: { PermissionController: permissionController } },
+      };
+    };
+
+    it('revokes permissions for a UUID channel', async () => {
+      const { engine, permissionController } = makeEngine();
+      const channelId = '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d';
+      mockInstance.state.connections[channelId] = {} as never;
+
+      await removeChannel({
+        channelId,
+        engine: engine as never,
+        instance: mockInstance,
+      });
+
+      expect(permissionController.revokeAllPermissions).toHaveBeenCalledWith(
+        channelId,
+      );
+    });
+
+    it('never revokes a non-UUID subject (a browser site permission)', async () => {
+      const { engine, permissionController } = makeEngine();
+      const channelId = 'swap.example.org';
+      mockInstance.state.connections[channelId] = {} as never;
+
+      await removeChannel({
+        channelId,
+        engine: engine as never,
+        instance: mockInstance,
+      });
+
+      expect(permissionController.revokeAllPermissions).not.toHaveBeenCalled();
+      expect(mockInstance.state.connections[channelId]).toBeUndefined();
+    });
+  });
 });

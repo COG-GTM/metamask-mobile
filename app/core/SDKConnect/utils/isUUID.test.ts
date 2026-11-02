@@ -1,4 +1,4 @@
-import { isUUID } from './isUUID';
+import { isUUID, isValidSDKChannelId } from './isUUID';
 
 describe('isUUID', () => {
   it('should return true for valid UUIDs', () => {
@@ -31,5 +31,26 @@ describe('isUUID', () => {
       // @ts-expect-error Testing invalid inputs
       expect(isUUID(uuid)).toBe(false);
     });
+  });
+});
+
+describe('isValidSDKChannelId', () => {
+  it('accepts UUID channel ids', () => {
+    expect(isValidSDKChannelId('5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d')).toBe(
+      true,
+    );
+  });
+
+  it.each([
+    'swap.example.org',
+    'metamask.io',
+    'MMSDKREMOTE::5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d',
+    ' 5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d',
+    '',
+    undefined,
+    null,
+    123,
+  ])('rejects %p', (value) => {
+    expect(isValidSDKChannelId(value)).toBe(false);
   });
 });

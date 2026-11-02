@@ -21,6 +21,7 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import { isValidSDKChannelId } from '../utils/isUUID';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -429,6 +430,16 @@ export default class DeeplinkProtocolService {
       return;
     }
 
+    if (!isValidSDKChannelId(params.channelId)) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection invalid channelId',
+        ),
+        { scheme: params.scheme },
+      );
+      return;
+    }
+
     this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
 
     const decodedOriginatorInfo = Buffer.from(
@@ -679,6 +690,13 @@ export default class DeeplinkProtocolService {
       };
 
       const sessionId: string = params.channelId;
+
+      if (!isValidSDKChannelId(sessionId)) {
+        Logger.error(
+          new Error('DeeplinkProtocolService::handleMessage invalid channelId'),
+        );
+        return;
+      }
 
       try {
         await wait(200); // Extra wait to make sure ui is ready

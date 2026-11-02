@@ -13,6 +13,7 @@ import {
 } from '../../Permissions';
 import { Connection } from '../Connection';
 import DevLogger from '../utils/DevLogger';
+import { isValidSDKChannelId } from '../utils/isUUID';
 import {
   wait,
   waitForCondition,
@@ -41,6 +42,10 @@ export const checkPermissions = async ({
       `checkPermissions initialConnection=${connection.initialConnection} method=${message?.method} lastAuthorized=${lastAuthorized}`,
       connection.originatorInfo,
     );
+
+    if (!isValidSDKChannelId(connection.channelId)) {
+      throw new Error('checkPermissions - invalid SDK channel id');
+    }
 
     const permittedAccounts = getPermittedAccounts(connection.channelId);
     DevLogger.log(`checkPermissions permittedAccounts`, permittedAccounts);
