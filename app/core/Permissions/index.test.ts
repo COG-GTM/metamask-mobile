@@ -172,6 +172,60 @@ describe('Permission Utility Functions', () => {
       );
       expect(result).toEqual([]);
     });
+
+    it('only computes accounts for the requested hostname', () => {
+      const buildSubject = () => ({
+        permissions: {
+          [Caip25EndowmentPermissionName]: {
+            caveats: [
+              {
+                type: Caip25CaveatType,
+                value: { optionalScopes: {}, requiredScopes: {} },
+              },
+            ],
+          },
+        },
+      });
+      const requested = buildSubject();
+      const mockState = {
+        subjects: {
+          'stale.example': buildSubject(),
+          'dapp.example': requested,
+          'other.example': buildSubject(),
+        },
+      };
+
+      mockListAccounts.mockReturnValue([
+        { address: '0x1', metadata: { lastSelected: 1 } },
+        { address: '0x2', metadata: { lastSelected: 2 } },
+      ]);
+      (getEthAccounts as jest.Mock).mockImplementation((value) =>
+        value === requested.permissions[Caip25EndowmentPermissionName]
+          .caveats[0].value
+          ? ['0x1', '0x2']
+          : // Accounts unknown to the wallet: sorting these would throw.
+            ['0xdead', '0xbeef'],
+      );
+
+      const result = getPermittedAccountsByHostname(mockState, 'dapp.example');
+
+      expect(result).toEqual(['0x2', '0x1']);
+      expect(getEthAccounts).toHaveBeenCalledTimes(1);
+      expect(mockListAccounts).toHaveBeenCalledTimes(1);
+      expect(captureException).not.toHaveBeenCalled();
+    });
+
+    it('returns an empty array for inherited object keys', () => {
+      const mockState = { subjects: {} };
+
+      expect(getPermittedAccountsByHostname(mockState, 'constructor')).toEqual(
+        [],
+      );
+      expect(getPermittedAccountsByHostname(mockState, '__proto__')).toEqual(
+        [],
+      );
+      expect(mockListAccounts).not.toHaveBeenCalled();
+    });
   });
 
   describe('getPermittedChainIdsByHostname', () => {
@@ -297,6 +351,37 @@ describe('Permission Utility Functions', () => {
         'https://example.com',
       );
       expect(result).toEqual([]);
+    });
+
+    it('only computes chainIds for the requested hostname', () => {
+      const requestedValue = { optionalScopes: {}, requiredScopes: {} };
+      const buildSubject = (value: object) => ({
+        permissions: {
+          [Caip25EndowmentPermissionName]: {
+            caveats: [{ type: Caip25CaveatType, value }],
+          },
+        },
+      });
+      const mockState = {
+        subjects: {
+          'a.example': buildSubject({ optionalScopes: {}, requiredScopes: {} }),
+          'dapp.example': buildSubject(requestedValue),
+          'b.example': buildSubject({ optionalScopes: {}, requiredScopes: {} }),
+        },
+      };
+      (getPermittedEthChainIds as jest.Mock).mockImplementation((value) =>
+        value === requestedValue ? ['0x1'] : ['0x2'],
+      );
+
+      expect(getPermittedChainIdsByHostname(mockState, 'dapp.example')).toEqual(
+        ['0x1'],
+      );
+      expect(getPermittedEthChainIds).toHaveBeenCalledTimes(1);
+      expect(
+        getPermittedChainIdsByHostname(mockState, 'missing.example'),
+      ).toEqual([]);
+      expect(getPermittedChainIdsByHostname(mockState, 'toString')).toEqual([]);
+      expect(getPermittedEthChainIds).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -862,6 +947,20 @@ describe('Permission Utility Functions', () => {
 
       const result = sortAccountsByLastSelected(accounts);
       expect(result).toEqual(['0x2', '0x3', '0x1']);
+    });
+
+    it('uses the first internal account when addresses are duplicated', () => {
+      mockListAccounts.mockReturnValue([
+        { address: '0x1', metadata: { lastSelected: 100 } },
+        { address: '0x2', metadata: { lastSelected: 200 } },
+        { address: '0X1', metadata: { lastSelected: 300 } },
+      ]);
+
+      expect(sortAccountsByLastSelected(['0x1', '0x2'])).toEqual([
+        '0x2',
+        '0x1',
+      ]);
+      expect(mockListAccounts).toHaveBeenCalledTimes(1);
     });
   });
 
