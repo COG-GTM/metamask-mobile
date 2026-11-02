@@ -136,7 +136,14 @@ describe('getScanQRCodeResult', () => {
     ).toThrow(expect.objectContaining({ code: 4100 }));
   });
 
-  it('does not run the dapp pattern on over-long content', () => {
+  it('matches long QR payloads against the dapp pattern', () => {
+    const text = `https://example.com/ticket?d=${'a'.repeat(1500)}`;
+    expect(getScanQRCodeResult({ content: text }, text, /^https:\/\//u)).toBe(
+      text,
+    );
+  });
+
+  it('does not run the dapp pattern on content longer than any QR code', () => {
     const text = `0x${'a'.repeat(MAX_SCAN_QR_CODE_MATCH_LENGTH)}`;
     const matcher = /^0x/u;
     const exec = jest.spyOn(matcher, 'exec');

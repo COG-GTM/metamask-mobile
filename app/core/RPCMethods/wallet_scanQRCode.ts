@@ -2,8 +2,9 @@ import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { isWalletOnlyQRContent } from '../../util/validators';
 
 export const MAX_SCAN_QR_CODE_PATTERN_LENGTH = 256;
-export const MAX_SCAN_QR_CODE_MATCH_LENGTH = 1024;
-const MAX_SCAN_QR_CODE_MATCH_COST = 1e7;
+// Largest payload a QR code can hold (version 40, numeric mode).
+export const MAX_SCAN_QR_CODE_MATCH_LENGTH = 7089;
+const MAX_SCAN_QR_CODE_MATCH_COST = 2.5e8;
 export const SCAN_QR_CODE_USER_CANCELLED = 'USER_CANCELLED';
 export const SCAN_QR_CODE_WALLET_ONLY_CONTENT = 'DAPP_SCAN_WALLET_ONLY_CONTENT';
 
