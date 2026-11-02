@@ -3,8 +3,19 @@ import Logger from '../../util/Logger';
 import TransactionTypes from '../TransactionTypes';
 import { CaipChainId, Hex, KnownCaipNamespace } from '@metamask/utils';
 import { InternalAccount } from '@metamask/keyring-internal-api';
-import { Caip25CaveatType, Caip25CaveatValue, Caip25EndowmentPermissionName, getEthAccounts, getPermittedEthChainIds, setEthAccounts, setPermittedEthChainIds } from '@metamask/chain-agnostic-permission';
-import { CaveatConstraint, PermissionDoesNotExistError } from '@metamask/permission-controller';
+import {
+  Caip25CaveatType,
+  Caip25CaveatValue,
+  Caip25EndowmentPermissionName,
+  getEthAccounts,
+  getPermittedEthChainIds,
+  setEthAccounts,
+  setPermittedEthChainIds,
+} from '@metamask/chain-agnostic-permission';
+import {
+  CaveatConstraint,
+  PermissionDoesNotExistError,
+} from '@metamask/permission-controller';
 import { captureException } from '@sentry/react-native';
 import { toHex } from '@metamask/controller-utils';
 
@@ -103,7 +114,8 @@ export const sortAccountsByLastSelected = (accounts: Hex[]) => {
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function getAccountsFromSubject(subject: any): string[] {
-  const caveats = subject?.permissions?.[Caip25EndowmentPermissionName]?.caveats;
+  const caveats =
+    subject?.permissions?.[Caip25EndowmentPermissionName]?.caveats;
   if (!caveats) {
     return [];
   }
@@ -138,8 +150,7 @@ export const getPermittedAccountsByHostname = (
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getPermittedChainIdsFromSubject(subject: any) {
-  const caveats =
-    subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
+  const caveats = subject.permissions?.[Caip25EndowmentPermissionName]?.caveats;
   if (!caveats) {
     return [];
   }
@@ -365,7 +376,9 @@ export const removePermittedChain = (hostname: string, chainId: string) => {
   );
 
   const permittedChainIds = getPermittedEthChainIds(caveat);
-  const newPermittedChains = permittedChainIds.filter((chain: string) => chain !== chainId);
+  const newPermittedChains = permittedChainIds.filter(
+    (chain: string) => chain !== chainId,
+  );
   updatePermittedChains(hostname, newPermittedChains, true);
 };
 
@@ -433,7 +446,7 @@ export const getPermittedChains = async (
   const caveat = PermissionController.getCaveat(
     hostname,
     Caip25EndowmentPermissionName,
-    Caip25CaveatType
+    Caip25CaveatType,
   );
 
   if (caveat) {
