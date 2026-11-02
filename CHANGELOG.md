@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- fix(walletconnect): release each WalletConnect v2 session's Redux store subscription when the session is removed, so disconnected sessions stop reacting to chain switches and can be garbage-collected
+- fix(walletconnect): release each WalletConnect v2 session's Redux store subscription when the session is removed, so disconnected sessions stop reacting to chain switches and can be garbage-collected ([#2121](https://github.com/COG-GTM/metamask-mobile/pull/2121))
 
 ### Added
 
