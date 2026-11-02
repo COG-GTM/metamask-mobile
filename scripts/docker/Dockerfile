@@ -1,13 +1,17 @@
 # syntax=docker/dockerfile:1.4
-FROM node:20-bookworm
+# node 20 is EOL (last image 20.20.2, 2026-04-22); apt-get upgrade picks up Debian security fixes
+FROM node:20.20.2-bookworm-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0
 
 RUN apt-get update \
+  && apt-get upgrade -y \
   && apt-get install -y \
-    git curl jq time \
-    sudo locales \
-    build-essential ccache cmake cmake-format distcc \
+    ca-certificates git curl jq time \
+    sudo locales procps openssh-client unzip xz-utils \
+    build-essential ccache cmake cmake-format distcc pkg-config python3 \
+    libffi-dev libgdbm-dev libgmp-dev libncurses-dev libreadline-dev libssl-dev libyaml-dev zlib1g-dev \
   && sed -i '/en_US.UTF-8/s/^# //' /etc/locale.gen \
-  && locale-gen
+  && locale-gen \
+  && rm -rf /var/lib/apt/lists/*
 
 ENV YARN_VERSION 1.22.22
 # replace base image yarn 1.19
