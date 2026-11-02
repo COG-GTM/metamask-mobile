@@ -271,7 +271,9 @@ const AccountConnect = (props: AccountConnectProps) => {
   }, [dappUrl, channelIdOrHostname]);
 
   const faviconSource = useFavicon(
-    inappBrowserOrigin || (!isChannelId ? channelIdOrHostname : ''),
+    isSdkOriginUnverified
+      ? ''
+      : inappBrowserOrigin || (!isChannelId ? channelIdOrHostname : ''),
   );
 
   const actualIcon = useMemo(() => {
