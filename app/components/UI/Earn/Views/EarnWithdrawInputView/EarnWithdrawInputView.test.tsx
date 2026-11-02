@@ -17,6 +17,7 @@ import {
 import EarnWithdrawInputView from './EarnWithdrawInputView';
 import { EarnWithdrawInputViewProps } from './EarnWithdrawInputView.types';
 import { flushPromises } from '../../../../../util/test/utils';
+import { selectStablecoinLendingEnabledFlag } from '../../selectors/featureFlags';
 
 jest.mock('../../../../../selectors/multichain', () => ({
   selectAccountTokensAcrossChains: jest.fn(() => ({
@@ -70,18 +71,28 @@ const mockPop = jest.fn();
 
 jest.mock('@react-navigation/native', () => {
   const actualReactNavigation = jest.requireActual('@react-navigation/native');
+  // Keep the navigation object referentially stable per screen, like the real hook.
+  const mockNavigationByScreen = new WeakMap();
   return {
     ...actualReactNavigation,
-    useNavigation: () => ({
-      navigate: mockNavigate,
-      setOptions: mockSetOptions.mockImplementation(
-        actualReactNavigation.useNavigation().setOptions,
-      ),
-      reset: mockReset,
-      dangerouslyGetParent: () => ({
-        pop: mockPop,
-      }),
-    }),
+    useNavigation: () => {
+      const actualNavigation = actualReactNavigation.useNavigation();
+      let navigation = mockNavigationByScreen.get(actualNavigation);
+      if (!navigation) {
+        navigation = {
+          navigate: mockNavigate,
+          setOptions: mockSetOptions.mockImplementation(
+            actualNavigation.setOptions,
+          ),
+          reset: mockReset,
+          dangerouslyGetParent: () => ({
+            pop: mockPop,
+          }),
+        };
+        mockNavigationByScreen.set(actualNavigation, navigation);
+      }
+      return navigation;
+    },
   };
 });
 
@@ -144,9 +155,14 @@ describe('UnstakeInputView', () => {
   const selectConfirmationRedesignFlagsMock = jest.mocked(
     selectConfirmationRedesignFlags,
   );
+  const selectStablecoinLendingEnabledFlagMock = jest.mocked(
+    selectStablecoinLendingEnabledFlag,
+  );
 
   beforeEach(() => {
     jest.useFakeTimers();
+    mockSetOptions.mockClear();
+    selectStablecoinLendingEnabledFlagMock.mockReturnValue(false);
 
     selectConfirmationRedesignFlagsMock.mockReturnValue({
       staking_confirmations: false,
@@ -165,6 +181,32 @@ describe('UnstakeInputView', () => {
       fireEvent.press(screen.getByText('2'));
 
       expect(screen.getByText('4000 USD')).toBeTruthy();
+    });
+  });
+
+  describe('navigation header', () => {
+    it('sets the header options once and not again on keypad presses', () => {
+      render(EarnWithdrawInputView);
+
+      expect(mockSetOptions).toHaveBeenCalledTimes(1);
+
+      fireEvent.press(screen.getByText('1'));
+      fireEvent.press(screen.getByText('2'));
+      fireEvent.press(screen.getByText('3'));
+
+      expect(mockSetOptions).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the header options stable with stablecoin lending enabled', () => {
+      selectStablecoinLendingEnabledFlagMock.mockReturnValue(true);
+      render(EarnWithdrawInputView);
+
+      expect(mockSetOptions).toHaveBeenCalledTimes(1);
+
+      fireEvent.press(screen.getByText('1'));
+      fireEvent.press(screen.getByText('2'));
+
+      expect(mockSetOptions).toHaveBeenCalledTimes(1);
     });
   });
 
