@@ -13,6 +13,7 @@ import { approveHostProps } from '../SDKConnect';
 import generateOTP from '../utils/generateOTP.util';
 import { setupBridge } from './setupBridge';
 import { HOUR_IN_MS } from '../SDKConnectConstants';
+import { getUrlOrigin } from '../../../util/url';
 
 export const handleConnectionReady = async ({
   originatorInfo,
@@ -62,31 +63,21 @@ export const handleConnectionReady = async ({
     return;
   }
 
-  let dappUrl = '';
-
-  try {
-    const urlObj = new URL(originatorInfo?.url);
-    const hasPort = !!urlObj.port;
-    if (hasPort) {
-      dappUrl = `${urlObj.protocol}//${urlObj.hostname}:${urlObj.port}`;
-    } else {
-      dappUrl = `${urlObj.protocol}//${urlObj.hostname}`;
-    }
-  } catch (e) {
+  const dappUrl = getUrlOrigin(originatorInfo?.url) ?? '';
+  if (!dappUrl) {
     DevLogger.log('Invalid URL:', originatorInfo?.url);
   }
 
-  connection.originatorInfo = {
+  const normalizedOriginatorInfo: OriginatorInfo = {
     ...originatorInfo,
     url: dappUrl,
   };
 
+  connection.originatorInfo = normalizedOriginatorInfo;
+
   updateOriginatorInfos({
     channelId: connection.channelId,
-    originatorInfo: {
-      ...originatorInfo,
-      url: dappUrl,
-    },
+    originatorInfo: normalizedOriginatorInfo,
   });
   DevLogger.log(
     `SDKConnect::CLIENTS_READY originatorInfo updated`,
@@ -198,7 +189,7 @@ export const handleConnectionReady = async ({
 
     DevLogger.log(`SDKConnect::CLIENTS_READY setup bridge`);
     connection.backgroundBridge = setupBridge({
-      originatorInfo,
+      originatorInfo: normalizedOriginatorInfo,
       connection,
     });
     connection.isReady = true;
