@@ -1,6 +1,5 @@
 // Third party dependencies.
 import { useNavigation } from '@react-navigation/native';
-import { isEqual } from 'lodash';
 import React, {
   useCallback,
   useContext,
@@ -10,7 +9,7 @@ import React, {
   useState,
 } from 'react';
 import Modal from 'react-native-modal';
-import { useSelector } from 'react-redux';
+import { useSelector, useStore } from 'react-redux';
 // External dependencies.
 import { strings } from '../../../../locales/i18n';
 import BottomSheet, {
@@ -42,7 +41,6 @@ import {
   getUrlObj,
   prefixUrlWithProtocol,
 } from '../../../util/browser';
-import { getActiveTabUrl } from '../../../util/transactions';
 import { Account, useAccounts } from '../../hooks/useAccounts';
 
 // Internal dependencies.
@@ -82,6 +80,8 @@ import { isUUID } from '../../../core/SDKConnect/utils/isUUID';
 import useOriginSource from '../../hooks/useOriginSource';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 import {
+  getRequesterDisplayUrl,
+  resolveRequestingBrowserTab,
   getCaip25PermissionsResponse,
   getRequestedCaip25CaveatValue,
 } from './utils';
@@ -153,8 +153,6 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const { toastRef } = useContext(ToastContext);
 
-  // origin is set to the last active tab url in the browser which can conflict with sdk
-  const inappBrowserOrigin: string = useSelector(getActiveTabUrl, isEqual);
   const accountsLength = useSelector(selectAccountsLength);
   const { wc2Metadata } = useSelector((state: RootState) => state.sdk);
 
@@ -168,6 +166,20 @@ const AccountConnect = (props: AccountConnectProps) => {
   };
 
   const isChannelId = isUUID(channelIdOrHostname);
+
+  // The sheet must describe the requesting site, never whichever tab happens to be visible.
+  // Resolved once: only the active tab can raise a prompt, so later tab switches must not relabel it.
+  const reduxStore = useStore<RootState>();
+  const requestingTab = useMemo(
+    () =>
+      resolveRequestingBrowserTab(
+        reduxStore.getState().browser,
+        channelIdOrHostname,
+      ),
+    [reduxStore, channelIdOrHostname],
+  );
+  const requestingTabUrl = requestingTab.url;
+  const isRequestingTabAmbiguous = requestingTab.ambiguous;
 
   const sdkConnection = SDKConnect.getInstance().getConnection({
     channelId: channelIdOrHostname,
@@ -183,9 +195,10 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const [isSdkUrlUnknown, setIsSdkUrlUnknown] = useState(false);
 
-  const { domainTitle, hostname } = useMemo(() => {
+  const { domainTitle, hostname, isBrowserRequest } = useMemo(() => {
     let title = '';
     let dappHostname = dappUrl || channelIdOrHostname;
+    let browserRequest = false;
 
     if (
       isOriginMMSDKRemoteConn &&
@@ -199,16 +212,21 @@ const AccountConnect = (props: AccountConnectProps) => {
       dappHostname = title;
     } else if (!isChannelId && (dappUrl || channelIdOrHostname)) {
       title = prefixUrlWithProtocol(dappUrl || channelIdOrHostname);
-      dappHostname = inappBrowserOrigin;
+      dappHostname = requestingTabUrl || dappHostname;
+      browserRequest = !dappUrl;
     } else {
       title = strings('sdk.unknown');
       setIsSdkUrlUnknown(true);
     }
 
-    return { domainTitle: title, hostname: dappHostname };
+    return {
+      domainTitle: title,
+      hostname: dappHostname,
+      isBrowserRequest: browserRequest,
+    };
   }, [
     isOriginWalletConnect,
-    inappBrowserOrigin,
+    requestingTabUrl,
     isOriginMMSDKRemoteConn,
     isChannelId,
     dappUrl,
@@ -216,9 +234,11 @@ const AccountConnect = (props: AccountConnectProps) => {
   ]);
 
   const urlWithProtocol =
-    hostname && !isUUID(hostname)
-      ? prefixUrlWithProtocol(getHost(hostname))
-      : domainTitle;
+    !hostname || isUUID(hostname)
+      ? domainTitle
+      : isBrowserRequest
+      ? getRequesterDisplayUrl(channelIdOrHostname, requestingTab)
+      : prefixUrlWithProtocol(getHost(hostname));
 
   const { chainId } = useNetworkInfo(hostname);
 
@@ -265,7 +285,8 @@ const AccountConnect = (props: AccountConnectProps) => {
   }, [dappUrl, channelIdOrHostname]);
 
   const faviconSource = useFavicon(
-    inappBrowserOrigin || (!isChannelId ? channelIdOrHostname : ''),
+    requestingTabUrl ||
+      (!isChannelId && !isRequestingTabAmbiguous ? channelIdOrHostname : ''),
   );
 
   const actualIcon = useMemo(() => {
@@ -403,7 +424,8 @@ const AccountConnect = (props: AccountConnectProps) => {
      * This logic should be removed and the UI should ensure it cannot continue if no chains are selected.
      * {@link https://github.com/MetaMask/metamask-mobile/pull/13970/files#r2042345624}
      */
-    const chainsToPermit = chainId && selectedChainIds.length === 0 ? [chainId] : selectedChainIds;
+    const chainsToPermit =
+      chainId && selectedChainIds.length === 0 ? [chainId] : selectedChainIds;
     const hexSelectedAddresses = selectedAddresses.map((account) =>
       toHex(account),
     );
@@ -737,7 +759,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       isLoading,
       sdkConnection,
       hostname,
-      handleAccountsSelected
+      handleAccountsSelected,
     ],
   );
 
@@ -751,12 +773,7 @@ const AccountConnect = (props: AccountConnectProps) => {
         defaultSelectedChainIds={selectedChainIds}
       />
     ),
-    [
-      isLoading,
-      urlWithProtocol,
-      handleNetworksSelected,
-      selectedChainIds,
-    ],
+    [isLoading, urlWithProtocol, handleNetworksSelected, selectedChainIds],
   );
 
   const renderPhishingModal = useCallback(
