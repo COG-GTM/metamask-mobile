@@ -137,6 +137,12 @@ function NotificationsListItemComponent(props: NotificationsListItemProps) {
 
 export const NotificationsListItem = memo(NotificationsListItemComponent);
 
+/**
+ * FlatList key extractor for notifications.
+ *
+ * @param item - The notification rendered by the row.
+ * @returns The notification ID, used as the list key.
+ */
 const notificationKeyExtractor = (item: INotification) => item.id;
 
 function useNotificationListProps(props: {
