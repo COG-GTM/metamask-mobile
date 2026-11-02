@@ -12,6 +12,10 @@ import { PreferencesState } from '@metamask/preferences-controller';
 
 // eslint-disable-next-line import/no-namespace
 import * as allSelectors from '../../../../app/reducers/collectibles/index.js';
+import {
+  showNftFetchingLoadingIndicator,
+  hideNftFetchingLoadingIndicator,
+} from '../../../../app/reducers/collectibles/index.js';
 // eslint-disable-next-line import/no-namespace
 import * as networkSelectors from '../../../selectors/networkController';
 import { cleanup, waitFor } from '@testing-library/react-native';
@@ -907,5 +911,135 @@ describe('CollectibleContracts', () => {
 
     spyOnDetectNfts.mockRestore();
     spyOnCheckOwnership.mockRestore();
+  });
+
+  describe('NFT metadata refresh', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    const contract = {
+      address: '0x72b1FDb6443338A158DeC2FbF411B71aeB157A42',
+      name: 'MyToken',
+      symbol: 'MTK',
+    };
+    const createNft = (tokenId: string) => ({
+      address: contract.address,
+      favorite: false,
+      image: `https://api.pudgypenguins.io/lil/image/${tokenId}`,
+      isCurrentlyOwned: true,
+      name: `Lil Pudgy #${tokenId}`,
+      standard: 'ERC721',
+      tokenId,
+      chainId: '0x1',
+    });
+    const metadataRefreshState: DeepPartial<RootState> = {
+      collectibles: {
+        favorites: {},
+      },
+      engine: {
+        backgroundState: {
+          ...backgroundState,
+          NetworkController: {
+            ...mockNetworkState({
+              chainId: CHAIN_IDS.MAINNET,
+              id: 'mainnet',
+              nickname: 'Ethereum Mainnet',
+              ticker: 'ETH',
+            }),
+          },
+          AccountTrackerController: {
+            accountsByChainId: {
+              '0x1': {
+                [MOCK_ADDRESS]: { balance: '0' },
+              },
+            },
+          },
+          PreferencesController: {
+            useNftDetection: false,
+            displayNftMedia: true,
+          } as unknown as PreferencesState,
+          AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
+        },
+      },
+    };
+
+    const toggleFetchingIndicator = async (
+      reduxStore: ReturnType<typeof renderWithProvider>['store'],
+    ) => {
+      await act(async () => {
+        reduxStore.dispatch(showNftFetchingLoadingIndicator());
+      });
+      await act(async () => {
+        reduxStore.dispatch(hideNftFetchingLoadingIndicator());
+      });
+    };
+
+    it('refreshes metadata once per owned NFT set instead of on every render', async () => {
+      const ownedNfts = { '0x1': [createNft('1'), createNft('2')] };
+      jest
+        .spyOn(allSelectors, 'multichainCollectiblesSelector')
+        .mockReturnValue(ownedNfts);
+      jest
+        .spyOn(allSelectors, 'multichainCollectibleContractsSelector')
+        .mockReturnValue({ '0x1': [contract] });
+      const spyOnUpdateNftMetadata = jest
+        .spyOn(Engine.context.NftController, 'updateNftMetadata')
+        .mockImplementation(async () => undefined);
+
+      const { store: reduxStore } = renderWithProvider(
+        <CollectibleContracts />,
+        {
+          state: metadataRefreshState,
+        },
+      );
+
+      await waitFor(() =>
+        expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(1),
+      );
+      expect(spyOnUpdateNftMetadata.mock.calls[0][0].nfts).toHaveLength(2);
+
+      await toggleFetchingIndicator(reduxStore);
+      await toggleFetchingIndicator(reduxStore);
+
+      expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(1);
+    });
+
+    it('refreshes metadata again when the owned NFT set changes', async () => {
+      let ownedNfts = { '0x1': [createNft('1')] };
+      jest
+        .spyOn(allSelectors, 'multichainCollectiblesSelector')
+        .mockImplementation(() => ownedNfts);
+      jest
+        .spyOn(allSelectors, 'multichainCollectibleContractsSelector')
+        .mockReturnValue({ '0x1': [contract] });
+      const spyOnUpdateNftMetadata = jest
+        .spyOn(Engine.context.NftController, 'updateNftMetadata')
+        .mockImplementation(async () => undefined);
+
+      const { store: reduxStore } = renderWithProvider(
+        <CollectibleContracts />,
+        {
+          state: metadataRefreshState,
+        },
+      );
+
+      await waitFor(() =>
+        expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(1),
+      );
+
+      // Same NFTs with new object references (e.g. after a metadata update)
+      ownedNfts = { '0x1': [{ ...createNft('1'), image: 'updated.png' }] };
+      await toggleFetchingIndicator(reduxStore);
+      expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(1);
+
+      ownedNfts = { '0x1': [createNft('1'), createNft('2')] };
+      await toggleFetchingIndicator(reduxStore);
+
+      await waitFor(() =>
+        expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(2),
+      );
+      expect(spyOnUpdateNftMetadata.mock.calls[1][0].nfts).toHaveLength(2);
+    });
   });
 });
