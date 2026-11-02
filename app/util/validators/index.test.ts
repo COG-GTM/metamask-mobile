@@ -48,6 +48,12 @@ describe('parseSeedPhrase', () => {
 describe('isSecretKeyMaterial', () => {
   const PRIVATE_KEY =
     '4c0883a69102937d6231471b5dbb6204fe5129617082792ae468d01a3f362318';
+  const SOLANA_KEYPAIR_BYTES = Array.from(
+    { length: 64 },
+    (_, i) => (i * 37 + 11) % 256,
+  );
+  const SOLANA_KEYPAIR_BASE58 =
+    'DyXZZCSiBREJ8YZ5cULd7PVdKpbkhHvHJ7otbJmLJajJtRsyq1irMMqKimYeKvRmZ8Sc2qWLhKjYR4ekM8RSzkV';
 
   it.each([
     ['12 word mnemonic', VALID_12],
@@ -73,6 +79,9 @@ describe('isSecretKeyMaterial', () => {
       'extended private key',
       'xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi',
     ],
+    ['base58 Solana keypair', SOLANA_KEYPAIR_BASE58],
+    ['labelled Solana keypair', `Solana private key: ${SOLANA_KEYPAIR_BASE58}`],
+    ['Solana keypair byte array', JSON.stringify(SOLANA_KEYPAIR_BYTES)],
   ])('returns true for a %s', (_, content) => {
     expect(isSecretKeyMaterial(content)).toBe(true);
   });
@@ -91,6 +100,9 @@ describe('isSecretKeyMaterial', () => {
       '12 words with an invalid checksum',
       `${VALID_12.split(' ').slice(0, 11).join(' ')} abandon`,
     ],
+    ['Solana address', '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV'],
+    ['Solana URI', 'solana:7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV'],
+    ['63 element byte array', JSON.stringify(Array(63).fill(1))],
   ])('returns false for an %s', (_, content) => {
     expect(isSecretKeyMaterial(content)).toBe(false);
   });

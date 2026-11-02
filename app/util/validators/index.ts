@@ -48,7 +48,56 @@ const RAW_PRIVATE_KEY_REGEX = /^(0x)?[0-9a-f]{64}$/iu;
 const EMBEDDED_PRIVATE_KEY_REGEX = /(?:^|[^0-9a-z])(?:0x)?[0-9a-f]{64}(?![0-9a-z])/iu;
 const EXTENDED_PRIVATE_KEY_REGEX = /[tuvxyz]prv[1-9A-HJ-NP-Za-km-z]{100,}/u;
 const NUMBER_ONLY_REGEX = /^\d+$/u;
+const BASE58_ALPHABET =
+  '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+const BASE58_TOKEN_REGEX = /[1-9A-HJ-NP-Za-km-z]{80,96}/gu;
+const BYTE_ARRAY_REGEX = /\[\s*\d{1,3}(?:\s*,\s*\d{1,3})*\s*,?\s*\]/gu;
+const SOLANA_KEYPAIR_LENGTH = 64;
 const MNEMONIC_LENGTHS = [12, 15, 18, 21, 24];
+
+/**
+ * Number of bytes a base58 string decodes to.
+ *
+ * @param text - Base58 text (alphabet already validated).
+ * @returns Decoded byte length.
+ */
+const base58ByteLength = (text: string): number => {
+  const bytes: number[] = [];
+  for (const char of text) {
+    let carry = BASE58_ALPHABET.indexOf(char);
+    for (let i = 0; i < bytes.length; i++) {
+      carry += bytes[i] * 58;
+      bytes[i] = carry & 0xff;
+      carry >>= 8;
+    }
+    while (carry > 0) {
+      bytes.push(carry & 0xff);
+      carry >>= 8;
+    }
+  }
+  let leadingZeros = 0;
+  while (text[leadingZeros] === '1') leadingZeros++;
+  return bytes.length + leadingZeros;
+};
+
+/**
+ * Whether the text contains a 64-byte Solana keypair secret, either base58
+ * encoded (wallet export format) or as a JSON byte array (solana-keygen file).
+ *
+ * @param text - Text to inspect.
+ * @returns True if a 64-byte keypair is present.
+ */
+const containsSolanaKeypair = (text: string): boolean =>
+  Array.from(text.matchAll(BASE58_TOKEN_REGEX)).some(
+    ([token]) => base58ByteLength(token) === SOLANA_KEYPAIR_LENGTH,
+  ) ||
+  Array.from(text.matchAll(BYTE_ARRAY_REGEX)).some(([array]) => {
+    const values = array.match(/\d+/gu) ?? [];
+    return (
+      values.length === SOLANA_KEYPAIR_LENGTH &&
+      values.every((value) => Number(value) <= 255)
+    );
+  });
 
 /**
  * Whether the text contains a BIP-39 (English) mnemonic anywhere, e.g. wrapped
@@ -84,8 +133,8 @@ const containsMnemonic = (text: string): boolean => {
 
 /**
  * Whether QR content contains secret key material: a Secret Recovery Phrase
- * (bare, numbered, labelled or oddly spaced), a raw private key or an extended
- * private key.
+ * (bare, numbered, labelled or oddly spaced), a raw private key, an extended
+ * private key or a Solana keypair.
  *
  * @param content - Raw scanned text.
  * @returns True if the content must be treated as a wallet secret.
@@ -98,7 +147,8 @@ export const isSecretKeyMaterial = (content: string): boolean => {
   if (
     RAW_PRIVATE_KEY_REGEX.test(trimmed) ||
     EMBEDDED_PRIVATE_KEY_REGEX.test(trimmed) ||
-    EXTENDED_PRIVATE_KEY_REGEX.test(trimmed)
+    EXTENDED_PRIVATE_KEY_REGEX.test(trimmed) ||
+    containsSolanaKeypair(trimmed)
   ) {
     return true;
   }
