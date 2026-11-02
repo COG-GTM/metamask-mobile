@@ -642,6 +642,57 @@ describe('DeeplinkProtocolService', () => {
         SDKConnect.getInstance().removeDappConnection,
       ).toHaveBeenCalledWith('channel1');
     });
+
+    it('should drop an expired session before the account-change check', async () => {
+      const onMessage = jest.fn();
+      const onDisconnect = jest.fn();
+      service.bridgeByClientId.channel1 = {
+        onMessage,
+        onDisconnect,
+      } as unknown as BackgroundBridge;
+      service.connections.channel1 = {
+        clientId: 'channel1',
+        originatorInfo: {
+          url: 'test.com',
+          title: 'Test',
+        } as DappClient['originatorInfo'],
+        connected: true,
+        validUntil: Date.now() - 1,
+        scheme: 'scheme',
+      };
+      const openDeeplinkSpy = jest
+        .spyOn(service, 'openDeeplink')
+        .mockResolvedValue(undefined);
+
+      service.handleMessage({
+        dappPublicKey: 'key',
+        url: 'url',
+        message: Buffer.from(
+          JSON.stringify({ id: '1', method: 'eth_accounts', params: [] }),
+        ).toString('base64'),
+        channelId: 'channel1',
+        scheme: 'scheme',
+        account: `0x0000000000000000000000000000000000000001@0x1`,
+      });
+
+      await waitFor(() => expect(openDeeplinkSpy).toHaveBeenCalled());
+
+      expect(openDeeplinkSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.objectContaining({
+            data: expect.objectContaining({
+              error: { code: 4100, message: 'Unauthorized request' },
+            }),
+          }),
+        }),
+      );
+      expect(onDisconnect).toHaveBeenCalledTimes(1);
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.connections.channel1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith('channel1');
+    });
   });
 
   describe('removeConnection', () => {

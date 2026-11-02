@@ -704,6 +704,25 @@ export default class DeeplinkProtocolService {
         DevLogger.log('DeeplinkProtocolService:: parsed message:-', message);
         data = message;
 
+        if (this.forgetIfExpired(sessionId)) {
+          this.openDeeplink({
+            message: {
+              data: {
+                id: data.id,
+                error: {
+                  code: 4100,
+                  message: 'Unauthorized request',
+                },
+                jsonrpc: '2.0',
+              },
+              name: 'metamask-provider',
+            },
+            clientId: sessionId,
+            scheme: params.scheme,
+          });
+          return;
+        }
+
         const isAccountChanged = dappAccountAddress !== walletSelectedAddress;
         const isChainChanged = dappAccountChainId !== walletSelectedChainId;
 
@@ -782,8 +801,6 @@ export default class DeeplinkProtocolService {
 
         return;
       }
-
-      this.forgetIfExpired(sessionId);
 
       const isSessionExists = this.connections?.[sessionId];
 
@@ -882,14 +899,16 @@ export default class DeeplinkProtocolService {
   }
 
   /** Drops the session if its `validUntil` has passed so it must be re-approved. */
-  private forgetIfExpired(channelId: string) {
+  private forgetIfExpired(channelId: string): boolean {
     const connection = this.connections?.[channelId];
     if (connection && isDappConnectionExpired(connection.validUntil)) {
       DevLogger.log(
         `DeeplinkProtocolService:: client ${channelId} session expired, re-approval required`,
       );
       this.forgetConnection(channelId);
+      return true;
     }
+    return false;
   }
 
   /**
