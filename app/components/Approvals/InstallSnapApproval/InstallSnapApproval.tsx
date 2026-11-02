@@ -122,6 +122,19 @@ const InstallSnapApproval = () => {
   const snapId = installSnapId ?? connectSnapIds[0];
   const snapName = getSnapMetadata(snapId).name;
 
+  // The connection screen only shows the `wallet_snap` permission, so only
+  // that permission may be approved from it. Anything else bundled into the
+  // same request (e.g. a CAIP-25 account permission) must not be granted.
+  const onConnectionConfirm = () =>
+    onConfirm(undefined, {
+      permissions: {
+        [WALLET_SNAP_PERMISSION_KEY]:
+          approvalRequest.requestData?.permissions?.[
+            WALLET_SNAP_PERMISSION_KEY
+          ],
+      },
+    });
+
   // TODO: This component should support connecting to multiple Snaps at once.
   const renderModalContent = () => {
     switch (installState) {
@@ -131,7 +144,7 @@ const InstallSnapApproval = () => {
             approvalRequest={approvalRequest}
             snapId={snapId}
             snapName={snapName}
-            onConfirm={onConfirm}
+            onConfirm={onConnectionConfirm}
             onCancel={onReject}
           />
         );
