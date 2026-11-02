@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Hex } from '@metamask/utils';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { StackActions, useNavigation } from '@react-navigation/native';
@@ -25,8 +25,17 @@ export const AssetLoader: React.FC<AssetLoaderProps> = ({ route: { params: { add
 
     const { styles } = useStyles(styleSheet, {});
 
+    const hasTokenResultRef = useRef(Boolean(tokenResult));
+    hasTokenResultRef.current = Boolean(tokenResult);
+
     useEffect(() => {
+        if (hasTokenResultRef.current) {
+            return;
+        }
         Engine.context.TokenSearchDiscoveryDataController.fetchTokenDisplayData(chainId, address);
+    }, [address, chainId]);
+
+    useEffect(() => {
         if (tokenResult?.found) {
             navigation.dispatch(
                 StackActions.replace(Routes.BROWSER.ASSET_VIEW, {
@@ -36,7 +45,7 @@ export const AssetLoader: React.FC<AssetLoaderProps> = ({ route: { params: { add
                 })
             );
         }
-    }, [tokenResult, address, chainId, navigation]);
+    }, [tokenResult, chainId, navigation]);
 
     if (tokenResult && !tokenResult.found) {
         return (
