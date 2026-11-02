@@ -233,4 +233,99 @@ describe('reconnect', () => {
       expect(mockInstance.state.connecting['test-channel-id']).toEqual(false);
     });
   });
+
+  describe('Pinned dapp key', () => {
+    beforeEach(() => {
+      mockRemoteIsReady.mockReturnValue(false);
+      mockRemoteIsPaused.mockReturnValue(false);
+      mockRemoteIsConnected.mockReturnValue(false);
+      jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it.each([false, true])(
+      'refuses a deeplink reconnect with a different otherPublicKey (paused=%s)',
+      async (paused) => {
+        mockInstance.state.paused = paused;
+        mockInstance.state.connections['test-channel-id'] = {
+          id: 'test-channel-id',
+          otherPublicKey: 'stored-dapp-key',
+          originatorInfo: { url: 'https://dapp.example' },
+        } as unknown as SDKConnect['state']['connections'][string];
+
+        await reconnect({
+          initialConnection: false,
+          instance: mockInstance,
+          channelId: 'test-channel-id',
+          trigger: 'deeplink',
+          updateKey: true,
+          otherPublicKey: 'attacker-key',
+          context: 'test-context',
+        });
+
+        expect(
+          mockInstance.state.connections['test-channel-id'].otherPublicKey,
+        ).toBe('stored-dapp-key');
+        expect(Connection).not.toHaveBeenCalled();
+        expect(mockRemoteConnect).not.toHaveBeenCalled();
+        expect(mockRemoteSetOtherPublicKey).not.toHaveBeenCalled();
+        expect(mockInstance.state.connected['test-channel-id']).toBe(
+          mockConnection,
+        );
+        expect(mockUpdateSDKLoadingState).toHaveBeenCalledWith({
+          channelId: 'test-channel-id',
+          loading: false,
+        });
+      },
+    );
+
+    it('refuses a deeplink reconnect when no key is stored for the channel', async () => {
+      mockInstance.state.connections['test-channel-id'] = {
+        id: 'test-channel-id',
+      } as unknown as SDKConnect['state']['connections'][string];
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        updateKey: true,
+        otherPublicKey: 'attacker-key',
+        context: 'test-context',
+      });
+
+      expect(Connection).not.toHaveBeenCalled();
+      expect(
+        mockInstance.state.connections['test-channel-id'].otherPublicKey,
+      ).toBeUndefined();
+    });
+
+    it('reconnects a deeplink whose otherPublicKey matches the stored key', async () => {
+      mockInstance.state.connections['test-channel-id'] = {
+        id: 'test-channel-id',
+        otherPublicKey: 'stored-dapp-key',
+        originatorInfo: { url: 'https://dapp.example' },
+      } as unknown as SDKConnect['state']['connections'][string];
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        updateKey: true,
+        otherPublicKey: 'stored-dapp-key',
+        context: 'test-context',
+      });
+
+      expect(Connection).toHaveBeenCalledWith(
+        expect.objectContaining({ otherPublicKey: 'stored-dapp-key' }),
+      );
+      expect(
+        mockInstance.state.connected['test-channel-id'].connect,
+      ).toHaveBeenCalledWith({ withKeyExchange: true, authorized: true });
+    });
+  });
 });

@@ -9,7 +9,7 @@ import handleSendMessage from './handleSendMessage';
 
 import { providerErrors } from '@metamask/rpc-errors';
 import Engine from '../../Engine';
-import { approveHostProps } from '../SDKConnect';
+import SDKConnect, { approveHostProps } from '../SDKConnect';
 import generateOTP from '../utils/generateOTP.util';
 import { setupBridge } from './setupBridge';
 import { HOUR_IN_MS } from '../SDKConnectConstants';
@@ -60,6 +60,35 @@ export const handleConnectionReady = async ({
   );
   if (!originatorInfo) {
     return;
+  }
+
+  const isDeeplinkReconnection =
+    !connection.initialConnection &&
+    connection.origin !== AppConstants.DEEPLINKS.ORIGIN_QR_CODE &&
+    (connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK ||
+      connection.trigger === 'deeplink');
+
+  // Deeplink re-connections are auto-approved below, so they must still use the
+  // dapp key pinned when the session was created. Checked before any session
+  // metadata is updated so a rejected client cannot overwrite it.
+  if (!connection.isReady && isDeeplinkReconnection) {
+    const storedOtherPublicKey =
+      SDKConnect.getInstance().getConnections()[connection.channelId]
+        ?.otherPublicKey;
+    const currentOtherPublicKey =
+      connection.remote.getKeyInfo()?.ecies.otherPubKey;
+    if (
+      storedOtherPublicKey === undefined ||
+      currentOtherPublicKey !== storedOtherPublicKey
+    ) {
+      disapprove(connection.channelId);
+      onError?.(
+        new Error(
+          `SDKConnect::CLIENTS_READY channel=${connection.channelId} dapp key does not match the stored session key`,
+        ),
+      );
+      return;
+    }
   }
 
   let dappUrl = '';

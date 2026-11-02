@@ -35,22 +35,19 @@ async function reconnect({
       return;
     }
 
-    if (instance.state.paused && updateKey) {
-      instance.state.connections[channelId].otherPublicKey = otherPublicKey;
-      const currentOtherPublicKey =
-        instance.state.connections[channelId].otherPublicKey;
-      if (currentOtherPublicKey !== otherPublicKey) {
+    if (updateKey) {
+      // updateKey is only set by untrusted callers (deeplinks). A session's dapp
+      // key is pinned when the channel is created; never rebind it silently.
+      const storedOtherPublicKey =
+        instance.state.connections[channelId]?.otherPublicKey;
+      if (storedOtherPublicKey !== otherPublicKey) {
         console.warn(
-          `SDKConnect::reconnect[${context}] existing=${
-            existingConnection !== undefined
-          } - update otherPublicKey -  ${currentOtherPublicKey} --> ${otherPublicKey}`,
+          `SDKConnect::reconnect[${context}] channel=${channelId} - otherPublicKey does not match the stored session key -- refusing to reconnect`,
         );
-        if (existingConnection) {
-          existingConnection.remote.setOtherPublicKey(otherPublicKey);
-        }
-      } else {
-        DevLogger.log(`SDKConnect::reconnect[${context}] - same otherPublicKey`);
+        instance.updateSDKLoadingState({ channelId, loading: false });
+        return;
       }
+      DevLogger.log(`SDKConnect::reconnect[${context}] - same otherPublicKey`);
     }
 
     // Update initial connection state
