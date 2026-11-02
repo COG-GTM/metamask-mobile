@@ -569,6 +569,64 @@ describe('DeeplinkProtocolService', () => {
       ).toHaveBeenCalledWith({ origin: 'acme' }, expect.any(Object));
     });
 
+    it('tells the dapp when the user rejects the renewal', async () => {
+      service.connections.acme.validUntil = Date.now() - 1;
+      (
+        Engine.context.PermissionController.requestPermissions as jest.Mock
+      ).mockRejectedValue(new Error('User rejected'));
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'acme-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(Linking.openURL).toHaveBeenCalledTimes(1);
+      const sent = (Linking.openURL as jest.Mock).mock.calls[0][0] as string;
+      expect(sent.startsWith('acmeswap://mmsdk?message=')).toBe(true);
+      const payload = JSON.parse(
+        Buffer.from(
+          decodeURIComponent(sent.split('message=')[1].split('&')[0]),
+          'base64',
+        ).toString('utf-8'),
+      );
+      expect(payload.data).toMatchObject({ id: '1', error: { code: 4001 } });
+    });
+
+    it('does not run a concurrent renewal whose key lost the race', async () => {
+      delete service.dappPublicKeyByClientId.acme;
+      let approve: (value?: unknown) => void = () => undefined;
+      (
+        Engine.context.PermissionController.requestPermissions as jest.Mock
+      ).mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            approve = resolve;
+          }),
+      );
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: 'mallory-key',
+        originatorInfo,
+        request,
+      });
+      await flush();
+      service.dappPublicKeyByClientId.acme = 'acme-key';
+      approve();
+      await flush();
+
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.dappPublicKeyByClientId.acme).toBe('acme-key');
+    });
+
     it('binds the key to a keyless session once the user re-approves', async () => {
       delete service.dappPublicKeyByClientId.acme;
 
