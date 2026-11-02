@@ -99,6 +99,8 @@ interface BuildQuoteParams {
 export const createBuildQuoteNavDetails =
   createNavigationDetails<BuildQuoteParams>(Routes.RAMP.BUILD_QUOTE);
 
+const NO_CRYPTO_CURRENCIES: CryptoCurrency[] = [];
+
 const BuildQuote = () => {
   const navigation = useNavigation();
   const params = useParams<BuildQuoteParams>();
@@ -1067,7 +1069,7 @@ const BuildQuote = () => {
               strings('fiat_on_ramp_aggregator.this_network'),
           },
         )}
-        tokens={cryptoCurrencies ?? []}
+        tokens={cryptoCurrencies ?? NO_CRYPTO_CURRENCIES}
         onItemPress={handleAssetPress}
       />
       <FiatSelectModal
