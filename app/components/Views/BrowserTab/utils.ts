@@ -1,3 +1,4 @@
+import { MutableRefObject } from 'react';
 import AppConstants from '../../../core/AppConstants';
 import URLParse from 'url-parse';
 import { SessionENSNames } from './types';
@@ -79,3 +80,28 @@ export const getMaskedUrl = (
   }
   return urlToMask;
 };
+
+/**
+ * Returns the origin (e.g. `https://app.example`) of a url, or undefined when missing
+ */
+export const getUrlOrigin = (url: string | undefined) =>
+  url ? new URLParse(url).origin : undefined;
+
+/**
+ * Wraps a page metadata ref so it only exposes its value while the resolved page
+ * belongs to `origin`, returning `fallback` otherwise. Keeps approvals raised by a
+ * bridge from being labelled with another site's url, title or icon.
+ */
+export const scopeRefToOrigin = <T>(
+  ref: MutableRefObject<T>,
+  pageUrlRef: MutableRefObject<string>,
+  origin: string,
+  fallback: T,
+): MutableRefObject<T> => ({
+  get current() {
+    return getUrlOrigin(pageUrlRef.current) === origin ? ref.current : fallback;
+  },
+  set current(value: T) {
+    ref.current = value;
+  },
+});
