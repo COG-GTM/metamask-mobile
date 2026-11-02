@@ -13,6 +13,7 @@ import getDefaultBridgeParams from '../AndroidSDK/getDefaultBridgeParams';
 import BatchRPCManager from '../BatchRPCManager';
 import RPCQueueManager from '../RPCQueueManager';
 import SDKConnect from '../SDKConnect';
+import { ConnectionProps } from '../Connection';
 import {
   DEFAULT_SESSION_TIMEOUT_MS,
   METHODS_TO_DELAY,
@@ -69,6 +70,28 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        const isExpired =
+          typeof connection.validUntil !== 'number' ||
+          connection.validUntil <= Date.now();
+        const permitted = isExpired
+          ? false
+          : this.hasGrantedPermissions(connection.id);
+
+        if (permitted === false) {
+          DevLogger.log(
+            `DeeplinkProtocolService::init dropping stale connection ${connection.id}`,
+          );
+          SDKConnect.getInstance()
+            .removeDappConnection(connection.id)
+            .catch((err) => {
+              Logger.log(
+                err,
+                `DeeplinkProtocolService::init error removing stale connection`,
+              );
+            });
+          return;
+        }
+
         const clientInfo = {
           connected: false,
           clientId: connection.id,
@@ -79,8 +102,44 @@ export default class DeeplinkProtocolService {
 
         this.connections[connection.id] = clientInfo;
 
-        this.setupBridge(clientInfo);
+        // Without confirmed permissions, leave the bridge unset so handleMessage re-prompts.
+        if (permitted) {
+          this.setupBridge(clientInfo);
+        }
       });
+    }
+  }
+
+  /**
+   * Removes a channel after a failed permission prompt, but only once permissions are
+   * confirmed absent; an unreadable PermissionController keeps the stored session.
+   */
+  private removeConnectionIfUnpermitted(channelId: string) {
+    if (this.hasGrantedPermissions(channelId) === false) {
+      this.removeConnection(channelId);
+    }
+  }
+
+  /**
+   * Whether the PermissionController holds permissions for a deeplink channel.
+   * Returns undefined when the controller cannot be read (e.g. Engine not ready).
+   */
+  private hasGrantedPermissions(channelId: string): boolean | undefined {
+    try {
+      const permissionsController = (
+        Engine.context as {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          PermissionController: PermissionController<any, any>;
+        }
+      ).PermissionController;
+
+      return Boolean(permissionsController.getPermissions(channelId));
+    } catch (err) {
+      Logger.log(
+        err,
+        `DeeplinkProtocolService unable to read permissions for ${channelId}`,
+      );
+      return undefined;
     }
   }
 
@@ -325,6 +384,8 @@ export default class DeeplinkProtocolService {
       context: 'DeeplinkProtocolService::setupOnClientsConnectedListener',
     });
 
+    let permissionPending = false;
+
     try {
       if (!this.connections?.[clientInfo.clientId]) {
         DevLogger.log(
@@ -332,10 +393,12 @@ export default class DeeplinkProtocolService {
           this.connections,
         );
 
+        permissionPending = true;
         await this.checkPermission({
           channelId: clientInfo.clientId,
           originatorInfo: clientInfo.originatorInfo,
         });
+        permissionPending = false;
 
         this.setupBridge(clientInfo);
 
@@ -380,6 +443,10 @@ export default class DeeplinkProtocolService {
         error,
         `DeeplinkProtocolService::clients_connected sending jsonrpc error to client - connection rejected`,
       );
+
+      if (permissionPending) {
+        this.removeConnectionIfUnpermitted(clientInfo.clientId);
+      }
 
       this.sendMessage({
         data: {
@@ -451,8 +518,14 @@ export default class DeeplinkProtocolService {
     this.currentClientId = params.channelId;
 
     const isSessionExists = this.connections?.[clientInfo.clientId];
+    const hasLiveBridge =
+      Boolean(this.bridgeByClientId[clientInfo.clientId]) &&
+      this.hasGrantedPermissions(clientInfo.clientId) === true;
 
-    if (isSessionExists) {
+    if (isSessionExists && !hasLiveBridge) {
+      // Restored without a bridge, or permissions revoked: re-prompt via handleConnectionEventAsync
+      delete this.bridgeByClientId[clientInfo.clientId];
+    } else if (isSessionExists) {
       // Skip existing client -- bridge has been setup
 
       // Update connected state
@@ -479,16 +552,6 @@ export default class DeeplinkProtocolService {
 
       return;
     }
-
-    await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
-      lastAuthorized: Date.now(),
-      origin: AppConstants.MM_SDK.IOS_SDK,
-      originatorInfo: clientInfo.originatorInfo,
-      otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
-      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      scheme: clientInfo.scheme,
-    });
 
     this.handleConnectionEventAsync({
       clientInfo,
@@ -823,7 +886,14 @@ export default class DeeplinkProtocolService {
         connected: true,
       };
 
-      let bridge = this.bridgeByClientId[sessionId];
+      let bridge: BackgroundBridge | undefined =
+        this.bridgeByClientId[sessionId];
+
+      if (bridge && this.hasGrantedPermissions(sessionId) !== true) {
+        // Permissions were revoked (or can't be confirmed) - drop the bridge and re-prompt
+        delete this.bridgeByClientId[sessionId];
+        bridge = undefined;
+      }
 
       if (!bridge) {
         try {
@@ -841,6 +911,7 @@ export default class DeeplinkProtocolService {
             err,
             `DeeplinkProtocolService::onMessageReceived error checking permissions`,
           );
+          this.removeConnectionIfUnpermitted(sessionId);
           return;
         }
       }
@@ -886,8 +957,18 @@ export default class DeeplinkProtocolService {
       }
 
       delete this.connections[channelId];
+      delete this.dappPublicKeyByClientId[channelId];
     } catch (err) {
       Logger.log(err, `DeeplinkProtocolService::remove error`);
     }
+
+    SDKConnect.getInstance()
+      .removeDappConnection(channelId)
+      .catch((err) => {
+        Logger.log(
+          err,
+          `DeeplinkProtocolService::remove error removing stored connection`,
+        );
+      });
   }
 }
