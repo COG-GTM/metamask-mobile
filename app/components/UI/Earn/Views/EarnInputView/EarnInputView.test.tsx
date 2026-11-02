@@ -67,6 +67,14 @@ const mockNavigate = jest.fn();
 const mockReset = jest.fn();
 const mockPop = jest.fn();
 const mockConversionRate = 2000;
+const mockNavigation = {
+  navigate: mockNavigate,
+  setOptions: mockSetOptions,
+  reset: mockReset,
+  dangerouslyGetParent: () => ({
+    pop: mockPop,
+  }),
+};
 
 jest.mock('../../../../hooks/useMetrics/useMetrics');
 
@@ -78,14 +86,7 @@ jest.mock('@react-navigation/native', () => {
   const actualReactNavigation = jest.requireActual('@react-navigation/native');
   return {
     ...actualReactNavigation,
-    useNavigation: () => ({
-      navigate: mockNavigate,
-      setOptions: mockSetOptions,
-      reset: mockReset,
-      dangerouslyGetParent: () => ({
-        pop: mockPop,
-      }),
-    }),
+    useNavigation: () => mockNavigation,
   };
 });
 
@@ -376,6 +377,56 @@ describe('EarnInputView', () => {
       });
 
       expect(getByText('4000 USD')).toBeTruthy();
+    });
+  });
+
+  describe('navigation header', () => {
+    it.each([
+      ['staking', false],
+      ['lending', true],
+    ])(
+      'does not call navigation.setOptions again on keypad input (%s)',
+      async (_, isStablecoinLendingEnabled) => {
+        selectStablecoinLendingEnabledFlagMock.mockReturnValue(
+          isStablecoinLendingEnabled,
+        );
+        const { getByText } = renderComponent();
+        const setOptionsCalls = mockSetOptions.mock.calls.length;
+        const navbarCalls = mockGetStakingNavbar.mock.calls.length;
+        expect(setOptionsCalls).toBeGreaterThan(0);
+
+        await act(async () => {
+          fireEvent.press(getByText('1'));
+        });
+        await act(async () => {
+          fireEvent.press(getByText('2'));
+        });
+
+        expect(getByText('12')).toBeTruthy();
+        expect(mockSetOptions).toHaveBeenCalledTimes(setOptionsCalls);
+        expect(mockGetStakingNavbar).toHaveBeenCalledTimes(navbarCalls);
+      },
+    );
+
+    it('passes the same nav bar option objects across renders', async () => {
+      const { getByText } = renderComponent();
+      const [, , , firstOptions, firstEventOptions] =
+        mockGetStakingNavbar.mock.calls[0];
+
+      await act(async () => {
+        fireEvent.press(getByText('3'));
+      });
+
+      mockGetStakingNavbar.mock.calls.forEach(
+        ([, , , options, eventOptions]) => {
+          expect(options).toBe(firstOptions);
+          expect(eventOptions).toBe(firstEventOptions);
+        },
+      );
+      expect(firstOptions).toEqual({
+        hasCancelButton: true,
+        hasBackButton: false,
+      });
     });
   });
 
