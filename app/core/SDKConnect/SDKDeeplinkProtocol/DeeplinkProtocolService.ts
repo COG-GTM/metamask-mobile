@@ -608,6 +608,15 @@ export default class DeeplinkProtocolService {
         error,
         `DeeplinkProtocolService::reauthorizeSession re-approval rejected for ${session.clientId}`,
       );
+      this.sendReauthorizationError(session, params.request);
+      return;
+    }
+
+    // Another renewal may have bound a key while this prompt was open.
+    if (!this.isSessionBindingMatching(session, params)) {
+      Logger.log(
+        `DeeplinkProtocolService::reauthorizeSession dropped link for ${session.clientId}: public key no longer matches the session`,
+      );
       return;
     }
 
@@ -647,6 +656,36 @@ export default class DeeplinkProtocolService {
       Logger.log(
         err,
         `DeeplinkProtocolService::reauthorizeSession error sending READY message to client`,
+      );
+    });
+  }
+
+  private sendReauthorizationError(session: DappClient, request?: string) {
+    let id: string | undefined;
+    try {
+      id = request ? JSON.parse(request)?.id : undefined;
+    } catch {
+      id = undefined;
+    }
+
+    this.openDeeplink({
+      message: {
+        data: {
+          id,
+          error: {
+            code: 4001,
+            message: 'User rejected the request.',
+          },
+          jsonrpc: '2.0',
+        },
+        name: 'metamask-provider',
+      },
+      clientId: session.clientId,
+      scheme: session.scheme,
+    }).catch((err) => {
+      Logger.log(
+        err,
+        `DeeplinkProtocolService::reauthorizeSession error sending rejection to ${session.clientId}`,
       );
     });
   }
