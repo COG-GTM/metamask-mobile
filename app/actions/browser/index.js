@@ -123,13 +123,15 @@ export function updateTab(id, data) {
  * Stores the favicon url using the origin as key
  * @param {Object} favicon - favicon to store
  * @param {string} favicon.origin - the origin of the favicon as key
- * @param {string} favicon.url - the favicon image url
+ * @param {string} favicon.url - the favicon image url, empty string for a cached miss
+ * @param {number} [favicon.expiresAt] - epoch ms after which the entry is stale
  * @returns {{favicon, type: string}}
  */
-export function storeFavicon({ origin, url }) {
+export function storeFavicon({ origin, url, expiresAt }) {
   return {
     type: 'STORE_FAVICON_URL',
     origin,
     url,
+    ...(expiresAt !== undefined && { expiresAt }),
   };
 }
