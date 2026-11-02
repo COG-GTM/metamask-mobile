@@ -4,6 +4,12 @@ export interface RemainingTimeStore {
   subscribe: (listener: () => void) => () => void;
 }
 
+/**
+ * Creates a remaining-time store whose subscribers are notified when its value changes.
+ *
+ * @param initialValue - Initial remaining time in milliseconds.
+ * @returns A store for reading, setting, and subscribing to the remaining time.
+ */
 export function createRemainingTimeStore(
   initialValue: number,
 ): RemainingTimeStore {
