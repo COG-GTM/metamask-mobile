@@ -6,10 +6,8 @@ const EXTERNAL_LINK_PROTOCOLS = protocolAllowList.filter(
 );
 
 /**
- * Checks that a remotely supplied URL (e.g. a provider link returned by the
- * on-ramp aggregator API) is an absolute http(s) URL before it is handed to
- * Linking.openURL, so custom schemes such as `intent:` or `metamask:` are
- * never launched from Ramp screens.
+ * Returns true if the value contains whitespace or an ASCII control character
+ * (code point <= 0x20 or DEL), which URL parsers may silently strip.
  */
 const hasWhitespaceOrControlChar = (value: string) => {
   for (let i = 0; i < value.length; i++) {
@@ -21,9 +19,15 @@ const hasWhitespaceOrControlChar = (value: string) => {
   return false;
 };
 
+/**
+ * Checks that a remotely supplied URL (e.g. a provider link returned by the
+ * on-ramp aggregator API) is an absolute http(s) URL before it is handed to
+ * Linking.openURL, so custom schemes such as `intent:` or `metamask:` are
+ * never launched from Ramp screens. The exact string is validated (no
+ * trimming) and values containing whitespace or control characters are
+ * rejected, so the validated value is the one that gets launched.
+ */
 export default function isSafeExternalUrl(url?: string | null): url is string {
-  // Validate the exact string that will be launched: url-parse silently strips
-  // leading whitespace/control characters, which the OS URL parser may not.
   if (
     typeof url !== 'string' ||
     url.length === 0 ||
