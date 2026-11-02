@@ -13,6 +13,7 @@ import getDefaultBridgeParams from '../AndroidSDK/getDefaultBridgeParams';
 import BatchRPCManager from '../BatchRPCManager';
 import RPCQueueManager from '../RPCQueueManager';
 import SDKConnect from '../SDKConnect';
+import { ConnectionProps } from '../Connection';
 import {
   DEFAULT_SESSION_TIMEOUT_MS,
   METHODS_TO_DELAY,
@@ -69,6 +70,21 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        if (!this.isStoredConnectionUsable(connection)) {
+          DevLogger.log(
+            `DeeplinkProtocolService::init dropping stale connection ${connection.id}`,
+          );
+          SDKConnect.getInstance()
+            .removeDappConnection(connection.id)
+            .catch((err) => {
+              Logger.log(
+                err,
+                `DeeplinkProtocolService::init error removing stale connection`,
+              );
+            });
+          return;
+        }
+
         const clientInfo = {
           connected: false,
           clientId: connection.id,
@@ -81,6 +97,33 @@ export default class DeeplinkProtocolService {
 
         this.setupBridge(clientInfo);
       });
+    }
+  }
+
+  private isStoredConnectionUsable(connection: ConnectionProps): boolean {
+    if (
+      typeof connection.validUntil !== 'number' ||
+      connection.validUntil <= Date.now()
+    ) {
+      return false;
+    }
+
+    try {
+      const permissionsController = (
+        Engine.context as {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          PermissionController: PermissionController<any, any>;
+        }
+      ).PermissionController;
+
+      return Boolean(permissionsController.getPermissions(connection.id));
+    } catch (err) {
+      // Engine not ready yet: keep the entry, handleMessage re-prompts if the bridge is missing.
+      Logger.log(
+        err,
+        `DeeplinkProtocolService::init unable to read permissions for ${connection.id}`,
+      );
+      return true;
     }
   }
 
@@ -325,6 +368,8 @@ export default class DeeplinkProtocolService {
       context: 'DeeplinkProtocolService::setupOnClientsConnectedListener',
     });
 
+    let permissionPending = false;
+
     try {
       if (!this.connections?.[clientInfo.clientId]) {
         DevLogger.log(
@@ -332,10 +377,12 @@ export default class DeeplinkProtocolService {
           this.connections,
         );
 
+        permissionPending = true;
         await this.checkPermission({
           channelId: clientInfo.clientId,
           originatorInfo: clientInfo.originatorInfo,
         });
+        permissionPending = false;
 
         this.setupBridge(clientInfo);
 
@@ -380,6 +427,10 @@ export default class DeeplinkProtocolService {
         error,
         `DeeplinkProtocolService::clients_connected sending jsonrpc error to client - connection rejected`,
       );
+
+      if (permissionPending) {
+        this.removeConnection(clientInfo.clientId);
+      }
 
       this.sendMessage({
         data: {
@@ -479,16 +530,6 @@ export default class DeeplinkProtocolService {
 
       return;
     }
-
-    await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
-      lastAuthorized: Date.now(),
-      origin: AppConstants.MM_SDK.IOS_SDK,
-      originatorInfo: clientInfo.originatorInfo,
-      otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
-      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      scheme: clientInfo.scheme,
-    });
 
     this.handleConnectionEventAsync({
       clientInfo,
@@ -886,8 +927,18 @@ export default class DeeplinkProtocolService {
       }
 
       delete this.connections[channelId];
+      delete this.dappPublicKeyByClientId[channelId];
     } catch (err) {
       Logger.log(err, `DeeplinkProtocolService::remove error`);
     }
+
+    SDKConnect.getInstance()
+      .removeDappConnection(channelId)
+      .catch((err) => {
+        Logger.log(
+          err,
+          `DeeplinkProtocolService::remove error removing stored connection`,
+        );
+      });
   }
 }
