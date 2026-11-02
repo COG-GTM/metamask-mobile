@@ -111,6 +111,16 @@ export default class DeeplinkProtocolService {
   }
 
   /**
+   * Removes a channel after a failed permission prompt, but only once permissions are
+   * confirmed absent; an unreadable PermissionController keeps the stored session.
+   */
+  private removeConnectionIfUnpermitted(channelId: string) {
+    if (this.hasGrantedPermissions(channelId) === false) {
+      this.removeConnection(channelId);
+    }
+  }
+
+  /**
    * Whether the PermissionController holds permissions for a deeplink channel.
    * Returns undefined when the controller cannot be read (e.g. Engine not ready).
    */
@@ -435,7 +445,7 @@ export default class DeeplinkProtocolService {
       );
 
       if (permissionPending) {
-        this.removeConnection(clientInfo.clientId);
+        this.removeConnectionIfUnpermitted(clientInfo.clientId);
       }
 
       this.sendMessage({
@@ -508,8 +518,14 @@ export default class DeeplinkProtocolService {
     this.currentClientId = params.channelId;
 
     const isSessionExists = this.connections?.[clientInfo.clientId];
+    const hasLiveBridge =
+      Boolean(this.bridgeByClientId[clientInfo.clientId]) &&
+      this.hasGrantedPermissions(clientInfo.clientId) === true;
 
-    if (isSessionExists) {
+    if (isSessionExists && !hasLiveBridge) {
+      // Restored without a bridge, or permissions revoked: re-prompt via handleConnectionEventAsync
+      delete this.bridgeByClientId[clientInfo.clientId];
+    } else if (isSessionExists) {
       // Skip existing client -- bridge has been setup
 
       // Update connected state
@@ -895,7 +911,7 @@ export default class DeeplinkProtocolService {
             err,
             `DeeplinkProtocolService::onMessageReceived error checking permissions`,
           );
-          this.removeConnection(sessionId);
+          this.removeConnectionIfUnpermitted(sessionId);
           return;
         }
       }
