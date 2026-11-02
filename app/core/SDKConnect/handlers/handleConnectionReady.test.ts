@@ -108,6 +108,8 @@ describe('handleConnectionReady deeplink re-connection', () => {
       expect(connection.isReady).toBe(false);
       expect(mockDisapprove).toHaveBeenCalledWith(channelId);
       expect(mockOnError).toHaveBeenCalledWith(expect.any(Error));
+      expect(mockUpdateOriginatorInfos).not.toHaveBeenCalled();
+      expect(connection.originatorInfo).toBeUndefined();
     },
   );
 

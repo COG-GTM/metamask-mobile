@@ -62,6 +62,35 @@ export const handleConnectionReady = async ({
     return;
   }
 
+  const isDeeplinkReconnection =
+    !connection.initialConnection &&
+    connection.origin !== AppConstants.DEEPLINKS.ORIGIN_QR_CODE &&
+    (connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK ||
+      connection.trigger === 'deeplink');
+
+  // Deeplink re-connections are auto-approved below, so they must still use the
+  // dapp key pinned when the session was created. Checked before any session
+  // metadata is updated so a rejected client cannot overwrite it.
+  if (!connection.isReady && isDeeplinkReconnection) {
+    const storedOtherPublicKey =
+      SDKConnect.getInstance().getConnections()[connection.channelId]
+        ?.otherPublicKey;
+    const currentOtherPublicKey =
+      connection.remote.getKeyInfo()?.ecies.otherPubKey;
+    if (
+      storedOtherPublicKey === undefined ||
+      currentOtherPublicKey !== storedOtherPublicKey
+    ) {
+      disapprove(connection.channelId);
+      onError?.(
+        new Error(
+          `SDKConnect::CLIENTS_READY channel=${connection.channelId} dapp key does not match the stored session key`,
+        ),
+      );
+      return;
+    }
+  }
+
   let dappUrl = '';
 
   try {
@@ -173,22 +202,7 @@ export const handleConnectionReady = async ({
       (connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK ||
         connection.trigger === 'deeplink')
     ) {
-      // Deeplink channels are automatically approved on re-connection, but only
-      // while the dapp key matches the one pinned when the session was created.
-      const storedOtherPublicKey =
-        SDKConnect.getInstance().getConnections()[connection.channelId]
-          ?.otherPublicKey;
-      const currentOtherPublicKey =
-        connection.remote.getKeyInfo()?.ecies.otherPubKey;
-      if (
-        storedOtherPublicKey === undefined ||
-        currentOtherPublicKey !== storedOtherPublicKey
-      ) {
-        disapprove(connection.channelId);
-        throw new Error(
-          `SDKConnect::CLIENTS_READY channel=${connection.channelId} dapp key does not match the stored session key`,
-        );
-      }
+      // Deeplink channels are automatically approved on re-connection.
       const hostname =
         AppConstants.MM_SDK.SDK_REMOTE_ORIGIN + connection.channelId;
       approveHost({
