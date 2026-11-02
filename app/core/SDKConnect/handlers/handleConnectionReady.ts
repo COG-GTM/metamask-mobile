@@ -9,7 +9,7 @@ import handleSendMessage from './handleSendMessage';
 
 import { providerErrors } from '@metamask/rpc-errors';
 import Engine from '../../Engine';
-import { approveHostProps } from '../SDKConnect';
+import SDKConnect, { approveHostProps } from '../SDKConnect';
 import generateOTP from '../utils/generateOTP.util';
 import { setupBridge } from './setupBridge';
 import { HOUR_IN_MS } from '../SDKConnectConstants';
@@ -173,7 +173,22 @@ export const handleConnectionReady = async ({
       (connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK ||
         connection.trigger === 'deeplink')
     ) {
-      // Deeplink channels are automatically approved on re-connection.
+      // Deeplink channels are automatically approved on re-connection, but only
+      // while the dapp key matches the one pinned when the session was created.
+      const storedOtherPublicKey =
+        SDKConnect.getInstance().getConnections()[connection.channelId]
+          ?.otherPublicKey;
+      const currentOtherPublicKey =
+        connection.remote.getKeyInfo()?.ecies.otherPubKey;
+      if (
+        storedOtherPublicKey === undefined ||
+        currentOtherPublicKey !== storedOtherPublicKey
+      ) {
+        disapprove(connection.channelId);
+        throw new Error(
+          `SDKConnect::CLIENTS_READY channel=${connection.channelId} dapp key does not match the stored session key`,
+        );
+      }
       const hostname =
         AppConstants.MM_SDK.SDK_REMOTE_ORIGIN + connection.channelId;
       approveHost({

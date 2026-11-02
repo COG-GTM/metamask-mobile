@@ -130,7 +130,7 @@ describe('handleDeeplink', () => {
 
   it('should reconnects to an existing channel', async () => {
     mockHasInitialized.mockReturnValue(true);
-    mockGetConnections.mockReturnValue({ [channelId]: {} });
+    mockGetConnections.mockReturnValue({ [channelId]: { otherPublicKey } });
 
     // Mock the getConnected method to return a connection that's not connected
     mockGetConnected.mockReturnValue({
@@ -161,6 +161,45 @@ describe('handleDeeplink', () => {
       initialConnection: false,
       trigger: 'deeplink',
       updateKey: true,
+    });
+  });
+
+  it('should ignore a deeplink whose pubkey differs from the stored session key', async () => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({
+      [channelId]: { otherPublicKey: 'stored-dapp-key' },
+    });
+    const mockIsConnected = jest.fn().mockReturnValue(false);
+    mockGetConnected.mockReturnValue({
+      [channelId]: {
+        remote: {
+          isConnected: mockIsConnected,
+          decrypt: mockDecrypt,
+          getRPCMethodTracker: jest.fn().mockReturnValue({}),
+        },
+      },
+    });
+
+    sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId,
+      origin,
+      url,
+      otherPublicKey: 'attacker-key',
+      protocolVersion,
+      context,
+      rpc,
+    });
+
+    expect(sdkConnect.reconnect).not.toHaveBeenCalled();
+    expect(sdkConnect.connectToChannel).not.toHaveBeenCalled();
+    expect(mockDecrypt).not.toHaveBeenCalled();
+    expect(handleConnectionMessage).not.toHaveBeenCalled();
+    expect(mockUpdateSDKLoadingState).toHaveBeenCalledWith({
+      channelId,
+      loading: false,
     });
   });
 
@@ -212,7 +251,7 @@ describe('handleDeeplink', () => {
 
   it('should handle rpc calls for existing connections', async () => {
     mockHasInitialized.mockReturnValue(true);
-    mockGetConnections.mockReturnValue({ [channelId]: {} });
+    mockGetConnections.mockReturnValue({ [channelId]: { otherPublicKey } });
 
     sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
 

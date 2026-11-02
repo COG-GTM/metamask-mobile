@@ -84,6 +84,14 @@ const handleDeeplink = async ({
 
   try {
     if (channelExists) {
+      if (connections[channelId].otherPublicKey !== otherPublicKey) {
+        // Never let a deeplink rebind an existing session to a different dapp key.
+        Logger.log(
+          `handleDeeplink:: channel=${channelId} pubkey does not match the stored session key --- ignore deeplink`,
+        );
+        sdkConnect.updateSDKLoadingState({ channelId, loading: false });
+        return;
+      }
       // is it already connected?
       let connected = sdkConnect.getConnected()[channelId]?.remote.isConnected() ?? false;
       if(!connected) {
