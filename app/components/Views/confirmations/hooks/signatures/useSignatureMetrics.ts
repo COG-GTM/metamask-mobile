@@ -19,6 +19,36 @@ import { useSelector } from 'react-redux';
 import { selectConfirmationMetricsById } from '../../../../../core/redux/slices/confirmationMetrics';
 import { RootState } from '../../../../../reducers';
 
+const MAX_TRACKED_SIGNATURE_REQUESTS = 100;
+const trackedSignatureRequestIds = new Set<string>();
+
+/**
+ * Records that SIGNATURE_REQUESTED was emitted for a signature request id.
+ * Keeps at most MAX_TRACKED_SIGNATURE_REQUESTS ids, evicting the oldest.
+ *
+ * @param id - The signature request id.
+ * @returns True if the id was not tracked yet, false if it was already tracked.
+ */
+const markSignatureRequestTracked = (id: string) => {
+  if (trackedSignatureRequestIds.has(id)) {
+    return false;
+  }
+  trackedSignatureRequestIds.add(id);
+  if (trackedSignatureRequestIds.size > MAX_TRACKED_SIGNATURE_REQUESTS) {
+    const [oldestId] = trackedSignatureRequestIds;
+    trackedSignatureRequestIds.delete(oldestId);
+  }
+  return true;
+};
+
+/**
+ * Forgets all signature request ids for which SIGNATURE_REQUESTED was emitted.
+ * Intended for tests.
+ */
+export const resetTrackedSignatureRequests = () => {
+  trackedSignatureRequestIds.clear();
+};
+
 interface MessageParamsType {
   meta: Record<string, unknown>;
   from: string;
@@ -107,8 +137,11 @@ export const useSignatureMetrics = () => {
   );
 
   useEffect(() => {
+    if (!id || !analyticsParams || !markSignatureRequestTracked(id)) {
+      return;
+    }
     captureSignatureMetrics(MetaMetricsEvents.SIGNATURE_REQUESTED);
-  }, [captureSignatureMetrics]);
+  }, [analyticsParams, captureSignatureMetrics, id]);
 
   return { captureSignatureMetrics };
 };
