@@ -254,11 +254,15 @@ const Settings: React.FC = () => {
     }
   };
 
+  /**
+   * Applies the biometrics/passcode login option.
+   * @returns whether the option is enabled once this completes
+   */
   const storeCredentials = async (
     password: string,
     enabled: boolean,
     authChoice: string,
-  ) => {
+  ): Promise<boolean> => {
     try {
       await Authentication.resetPassword();
 
@@ -275,9 +279,10 @@ const Settings: React.FC = () => {
           await StorageWrapper.setItem(PASSCODE_DISABLED, TRUE);
         }
 
-        return;
+        return false;
       }
 
+      let stored = false;
       try {
         let authType;
         if (authChoice === BIOMETRY_CHOICE_STRING) {
@@ -287,7 +292,7 @@ const Settings: React.FC = () => {
         } else {
           authType = AUTHENTICATION_TYPE.PASSWORD;
         }
-        await Authentication.storePassword(password, authType);
+        stored = await Authentication.storePassword(password, authType);
       } catch (error) {
         Logger.error(error as unknown as Error, {});
       }
@@ -298,6 +303,14 @@ const Settings: React.FC = () => {
         dispatch(setLockTime(AppConstants.DEFAULT_LOCK_TIMEOUT));
       }
       setLoading(false);
+
+      if (!stored) {
+        Alert.alert(
+          strings('biometrics.setup_not_completed_title'),
+          strings('biometrics.setup_not_completed_message'),
+        );
+      }
+      return stored;
     } catch (e) {
       const errorWithMessage = e as { message: string };
       if (errorWithMessage.message === 'Invalid password') {
@@ -314,10 +327,14 @@ const Settings: React.FC = () => {
         Logger.error(e as unknown as Error, 'SecuritySettings:biometrics');
       }
       setLoading(false);
+      return false;
     }
   };
 
-  const setPassword = async (enabled: boolean, passwordType: string) => {
+  const setPassword = async (
+    enabled: boolean,
+    passwordType: string,
+  ): Promise<boolean> => {
     setLoading(true);
     let credentials;
     try {
@@ -327,24 +344,23 @@ const Settings: React.FC = () => {
     }
 
     if (credentials && credentials.password !== '') {
-      storeCredentials(credentials.password, enabled, passwordType);
-    } else {
-      setLoading(false);
+      return storeCredentials(credentials.password, enabled, passwordType);
+    }
+    setLoading(false);
+    return new Promise<boolean>((resolve) => {
       navigation.navigate('EnterPasswordSimple', {
         onPasswordSet: (password: string) => {
-          storeCredentials(password, enabled, passwordType);
+          storeCredentials(password, enabled, passwordType).then(resolve);
         },
       });
-    }
+    });
   };
 
-  const onSignInWithPasscode = async (enabled: boolean) => {
-    await setPassword(enabled, PASSCODE_CHOICE_STRING);
-  };
+  const onSignInWithPasscode = (enabled: boolean) =>
+    setPassword(enabled, PASSCODE_CHOICE_STRING);
 
-  const onSingInWithBiometrics = async (enabled: boolean) => {
-    await setPassword(enabled, BIOMETRY_CHOICE_STRING);
-  };
+  const onSingInWithBiometrics = (enabled: boolean) =>
+    setPassword(enabled, BIOMETRY_CHOICE_STRING);
 
   const goToSDKSessionManager = () => {
     navigation.navigate('SDKSessionsManager');
