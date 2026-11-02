@@ -35,6 +35,7 @@ import { createStyles } from './styles';
 
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import { Authentication } from '../../../core';
+import { storedPasswordRequiresDeviceAuth } from '../../../util/authentication';
 import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ManualBackUpSteps.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
@@ -75,7 +76,13 @@ const ManualBackupStep1 = ({ route, navigation, appTheme }) => {
     const getSeedphrase = async () => {
       if (!words.length) {
         try {
-          const credentials = await Authentication.getPassword();
+          const { currentAuthType } = await Authentication.getType();
+          const canAutoUnlock = await storedPasswordRequiresDeviceAuth(
+            currentAuthType,
+          );
+          const credentials = canAutoUnlock
+            ? await Authentication.getPassword()
+            : null;
           if (credentials) {
             setWords(await tryExportSeedPhrase(credentials.password));
           } else {
