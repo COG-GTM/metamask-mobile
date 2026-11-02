@@ -12,6 +12,7 @@ import AppConstants from '../../AppConstants';
 import { DappClient } from '../AndroidSDK/dapp-sdk-types';
 import { createMockInternalAccount } from '../../../util/test/accountsControllerTestUtils';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
+import { waitFor } from '@testing-library/react-native';
 
 jest.mock('../SDKConnect');
 jest.mock('react-native');
@@ -41,11 +42,12 @@ describe('DeeplinkProtocolService', () => {
         connection1: {
           id: 'connection1',
           originatorInfo: { url: 'test.com', title: 'Test' },
-          validUntil: Date.now(),
+          validUntil: Date.now() + 60_000,
           scheme: 'scheme1',
         },
       }),
       addDappConnection: jest.fn().mockResolvedValue(null),
+      removeDappConnection: jest.fn(),
     });
 
     // TODO: Replace "any" with type
@@ -98,6 +100,28 @@ describe('DeeplinkProtocolService', () => {
     it('should initialize with raw connections', async () => {
       await service.init();
       expect(service.connections.connection1).toBeDefined();
+    });
+
+    it('should drop expired connections without setting up a bridge', async () => {
+      (
+        SDKConnect.getInstance().loadDappConnections as jest.Mock
+      ).mockResolvedValue({
+        connection1: {
+          id: 'connection1',
+          originatorInfo: { url: 'test.com', title: 'Test' },
+          validUntil: Date.now() - 1,
+          scheme: 'scheme1',
+        },
+      });
+      service.isInitialized = false;
+      service.connections = {};
+      service.bridgeByClientId = {};
+      await service.init();
+      expect(service.connections.connection1).toBeUndefined();
+      expect(service.bridgeByClientId.connection1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith('connection1');
     });
   });
 
@@ -301,13 +325,72 @@ describe('DeeplinkProtocolService', () => {
           dappId: 'dappId',
         },
         connected: false,
-        validUntil: Date.now(),
+        validUntil: Date.now() + 60_000,
         scheme: 'scheme',
       };
 
       await service.handleConnection(connectionParams);
 
       expect(service.connections.channel1.connected).toBe(true);
+    });
+
+    it('should require re-approval when the existing session has expired', async () => {
+      const onDisconnect = jest.fn();
+      service.bridgeByClientId.channel1 = {
+        onDisconnect,
+      } as unknown as BackgroundBridge;
+      service.connections.channel1 = {
+        clientId: 'channel1',
+        originatorInfo: {
+          url: 'test.com',
+          title: 'Test',
+        } as DappClient['originatorInfo'],
+        connected: false,
+        validUntil: Date.now() - 1,
+        scheme: 'scheme',
+      };
+      const eventSpy = jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockResolvedValue(undefined);
+
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'scheme',
+        channelId: 'channel1',
+        originatorInfo: Buffer.from(
+          JSON.stringify({
+            originatorInfo: { url: 'test.com', title: 'Test' },
+          }),
+        ).toString('base64'),
+      });
+
+      expect(onDisconnect).toHaveBeenCalledTimes(1);
+      expect(service.bridgeByClientId.channel1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith('channel1');
+      expect(eventSpy).toHaveBeenCalled();
+    });
+
+    it('should not persist a new connection before it is approved', async () => {
+      jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockResolvedValue(undefined);
+
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'scheme',
+        channelId: 'channel2',
+        originatorInfo: Buffer.from(
+          JSON.stringify({
+            originatorInfo: { url: 'test.com', title: 'Test' },
+          }),
+        ).toString('base64'),
+      });
+
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
     });
   });
 
@@ -507,6 +590,108 @@ describe('DeeplinkProtocolService', () => {
       };
       service.handleMessage(params);
       expect(DevLogger.log).toHaveBeenCalled();
+    });
+
+    it('should reject messages for an expired session and drop it', async () => {
+      const onMessage = jest.fn();
+      const onDisconnect = jest.fn();
+      service.bridgeByClientId.channel1 = {
+        onMessage,
+        onDisconnect,
+      } as unknown as BackgroundBridge;
+      service.connections.channel1 = {
+        clientId: 'channel1',
+        originatorInfo: {
+          url: 'test.com',
+          title: 'Test',
+        } as DappClient['originatorInfo'],
+        connected: true,
+        validUntil: Date.now() - 1,
+        scheme: 'scheme',
+      };
+      const openDeeplinkSpy = jest
+        .spyOn(service, 'openDeeplink')
+        .mockResolvedValue(undefined);
+
+      service.handleMessage({
+        dappPublicKey: 'key',
+        url: 'url',
+        message: Buffer.from(
+          JSON.stringify({ id: '1', method: 'eth_accounts', params: [] }),
+        ).toString('base64'),
+        channelId: 'channel1',
+        scheme: 'scheme',
+        account: `${toChecksumHexAddress(MOCK_ADDRESS)}@0x1`,
+      });
+
+      await waitFor(() => expect(openDeeplinkSpy).toHaveBeenCalled());
+
+      expect(openDeeplinkSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.objectContaining({
+            data: expect.objectContaining({
+              error: { code: 4100, message: 'Unauthorized request' },
+            }),
+          }),
+        }),
+      );
+      expect(onDisconnect).toHaveBeenCalledTimes(1);
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.connections.channel1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith('channel1');
+    });
+
+    it('should drop an expired session before the account-change check', async () => {
+      const onMessage = jest.fn();
+      const onDisconnect = jest.fn();
+      service.bridgeByClientId.channel1 = {
+        onMessage,
+        onDisconnect,
+      } as unknown as BackgroundBridge;
+      service.connections.channel1 = {
+        clientId: 'channel1',
+        originatorInfo: {
+          url: 'test.com',
+          title: 'Test',
+        } as DappClient['originatorInfo'],
+        connected: true,
+        validUntil: Date.now() - 1,
+        scheme: 'scheme',
+      };
+      const openDeeplinkSpy = jest
+        .spyOn(service, 'openDeeplink')
+        .mockResolvedValue(undefined);
+
+      service.handleMessage({
+        dappPublicKey: 'key',
+        url: 'url',
+        message: Buffer.from(
+          JSON.stringify({ id: '1', method: 'eth_accounts', params: [] }),
+        ).toString('base64'),
+        channelId: 'channel1',
+        scheme: 'scheme',
+        account: `0x0000000000000000000000000000000000000001@0x1`,
+      });
+
+      await waitFor(() => expect(openDeeplinkSpy).toHaveBeenCalled());
+
+      expect(openDeeplinkSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.objectContaining({
+            data: expect.objectContaining({
+              error: { code: 4100, message: 'Unauthorized request' },
+            }),
+          }),
+        }),
+      );
+      expect(onDisconnect).toHaveBeenCalledTimes(1);
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.connections.channel1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith('channel1');
     });
   });
 

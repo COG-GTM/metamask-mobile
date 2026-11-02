@@ -1,6 +1,8 @@
 import AppConstants from '../../../core/AppConstants';
 import SDKConnect from '../SDKConnect';
 import removeChannel from './removeChannel';
+import { store } from '../../../store';
+import { removeDappConnection } from '../../../actions/sdk';
 
 jest.mock('../../../core/AppConstants');
 jest.mock('../SDKConnect');
@@ -126,5 +128,29 @@ describe('removeChannel', () => {
     });
 
     expect(mockInstance.state.connecting[mockChannelId]).toBeUndefined();
+  });
+  describe('Removing an Android SDK dapp connection', () => {
+    it('removes the persisted dapp connection so it is not restored on relaunch', async () => {
+      const mockChannelId = 'androidClientId';
+      const dispatchSpy = jest.spyOn(store, 'dispatch');
+      const mockAndroidRemove = jest.fn();
+      const state = mockInstance.state as unknown as Record<string, unknown>;
+      state.dappConnections = { [mockChannelId]: { id: mockChannelId } };
+      state.androidService = { removeConnection: mockAndroidRemove };
+
+      await removeChannel({
+        channelId: mockChannelId,
+        instance: mockInstance,
+      });
+
+      expect(mockAndroidRemove).toHaveBeenCalledWith(mockChannelId);
+      expect(
+        (state.dappConnections as Record<string, unknown>)[mockChannelId],
+      ).toBeUndefined();
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        removeDappConnection(mockChannelId),
+      );
+      dispatchSpy.mockRestore();
+    });
   });
 });

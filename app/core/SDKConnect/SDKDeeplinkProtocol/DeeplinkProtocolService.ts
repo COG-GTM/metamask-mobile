@@ -10,6 +10,7 @@ import Logger from '../../../util/Logger';
 import BackgroundBridge from '../../BackgroundBridge/BackgroundBridge';
 import { DappClient, DappConnections } from '../AndroidSDK/dapp-sdk-types';
 import getDefaultBridgeParams from '../AndroidSDK/getDefaultBridgeParams';
+import isDappConnectionExpired from '../AndroidSDK/isDappConnectionExpired';
 import BatchRPCManager from '../BatchRPCManager';
 import RPCQueueManager from '../RPCQueueManager';
 import SDKConnect from '../SDKConnect';
@@ -69,6 +70,14 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        if (isDappConnectionExpired(connection.validUntil)) {
+          DevLogger.log(
+            `DeeplinkProtocolService::init dropping expired client: ${connection.id}`,
+          );
+          this.forgetConnection(connection.id);
+          return;
+        }
+
         const clientInfo = {
           connected: false,
           clientId: connection.id,
@@ -339,10 +348,13 @@ export default class DeeplinkProtocolService {
 
         this.setupBridge(clientInfo);
 
+        // Persist only after the user approved the connection
+        const lastAuthorized = Date.now();
+        const validUntil = lastAuthorized + DEFAULT_SESSION_TIMEOUT_MS;
         this.connections[clientInfo.clientId] = {
           clientId: clientInfo.clientId,
           connected: true,
-          validUntil: clientInfo.validUntil,
+          validUntil,
           scheme: clientInfo.scheme,
           originatorInfo: clientInfo.originatorInfo,
         };
@@ -350,11 +362,11 @@ export default class DeeplinkProtocolService {
         await SDKConnect.getInstance().addDappConnection({
           id: clientInfo.clientId,
           origin: AppConstants.MM_SDK.IOS_SDK,
-          lastAuthorized: Date.now(),
+          lastAuthorized,
           otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
           originatorInfo: clientInfo.originatorInfo,
           scheme: clientInfo.scheme,
-          validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+          validUntil,
         });
       }
 
@@ -450,6 +462,8 @@ export default class DeeplinkProtocolService {
 
     this.currentClientId = params.channelId;
 
+    this.forgetIfExpired(clientInfo.clientId);
+
     const isSessionExists = this.connections?.[clientInfo.clientId];
 
     if (isSessionExists) {
@@ -479,16 +493,6 @@ export default class DeeplinkProtocolService {
 
       return;
     }
-
-    await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
-      lastAuthorized: Date.now(),
-      origin: AppConstants.MM_SDK.IOS_SDK,
-      originatorInfo: clientInfo.originatorInfo,
-      otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
-      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      scheme: clientInfo.scheme,
-    });
 
     this.handleConnectionEventAsync({
       clientInfo,
@@ -700,6 +704,25 @@ export default class DeeplinkProtocolService {
         DevLogger.log('DeeplinkProtocolService:: parsed message:-', message);
         data = message;
 
+        if (this.forgetIfExpired(sessionId)) {
+          this.openDeeplink({
+            message: {
+              data: {
+                id: data.id,
+                error: {
+                  code: 4100,
+                  message: 'Unauthorized request',
+                },
+                jsonrpc: '2.0',
+              },
+              name: 'metamask-provider',
+            },
+            clientId: sessionId,
+            scheme: params.scheme,
+          });
+          return;
+        }
+
         const isAccountChanged = dappAccountAddress !== walletSelectedAddress;
         const isChainChanged = dappAccountChainId !== walletSelectedChainId;
 
@@ -873,6 +896,48 @@ export default class DeeplinkProtocolService {
         `DeeplinkProtocolService::onMessageReceived error handling event`,
       );
     });
+  }
+
+  /** Drops the session if its `validUntil` has passed so it must be re-approved. */
+  private forgetIfExpired(channelId: string): boolean {
+    const connection = this.connections?.[channelId];
+    if (connection && isDappConnectionExpired(connection.validUntil)) {
+      DevLogger.log(
+        `DeeplinkProtocolService:: client ${channelId} session expired, re-approval required`,
+      );
+      this.forgetConnection(channelId);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Drops a connection everywhere: disconnects its bridge, removes the
+   * in-memory and persisted entries and revokes its permissions.
+   */
+  private forgetConnection(channelId: string) {
+    try {
+      this.bridgeByClientId[channelId]?.onDisconnect?.();
+    } catch (err) {
+      Logger.log(err, `DeeplinkProtocolService::forgetConnection bridge`);
+    }
+    delete this.bridgeByClientId[channelId];
+    delete this.connections[channelId];
+    try {
+      SDKConnect.getInstance().removeDappConnection(channelId);
+
+      const permissionsController = (
+        Engine.context as {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          PermissionController: PermissionController<any, any>;
+        }
+      ).PermissionController;
+      if (permissionsController?.getPermissions(channelId)) {
+        permissionsController.revokeAllPermissions(channelId);
+      }
+    } catch (err) {
+      Logger.log(err, `DeeplinkProtocolService::forgetConnection error`);
+    }
   }
 
   removeConnection(channelId: string) {
