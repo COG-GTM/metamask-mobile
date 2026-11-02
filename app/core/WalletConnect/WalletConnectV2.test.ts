@@ -228,6 +228,9 @@ describe('WC2Manager', () => {
 
     await manager.onSessionProposal(mockSessionProposal);
 
+    expect(
+      jest.requireMock('../Permissions').getPermittedAccounts,
+    ).toHaveBeenCalledWith('example.com', { allowInternalOrigin: false });
     expect(mockApproveSession).toHaveBeenCalledWith({
       id: 1,
       namespaces: {
@@ -607,6 +610,55 @@ describe('WC2Manager', () => {
         reason: expect.any(Object),
       });
     });
+
+    it.each(['MetaMask Mobile', 'metamask', 'https://metamask', 'wc:abc'])(
+      'rejects a proposal whose metadata url is %s',
+      async (url) => {
+        const mockPermissionController = Engine.context.PermissionController;
+        const { getPermittedAccounts } = jest.requireMock('../Permissions');
+        const mockWeb3Wallet = (
+          manager as unknown as { web3Wallet: IWalletKit }
+        ).web3Wallet;
+        const rejectSessionSpy = jest.spyOn(mockWeb3Wallet, 'rejectSession');
+        (mockPermissionController.requestPermissions as jest.Mock).mockClear();
+        (getPermittedAccounts as jest.Mock).mockClear();
+        mockApproveSession.mockClear();
+        jest.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+        await manager.onSessionProposal({
+          id: 7,
+          params: {
+            id: 7,
+            pairingTopic: 'test-pairing',
+            proposer: {
+              publicKey: 'test-public-key',
+              metadata: { name: url, description: url, url, icons: [] },
+            },
+            requiredNamespaces: {},
+            optionalNamespaces: {},
+            expiryTimestamp: 10000000,
+            relays: [{ protocol: 'irn' }],
+          },
+          verifyContext: {
+            verified: {
+              verifyUrl: '',
+              validation: 'UNKNOWN' as const,
+              origin: url,
+            },
+          },
+        });
+
+        expect(rejectSessionSpy).toHaveBeenCalledWith({
+          id: 7,
+          reason: expect.objectContaining({ code: expect.any(Number) }),
+        });
+        expect(
+          mockPermissionController.requestPermissions,
+        ).not.toHaveBeenCalled();
+        expect(getPermittedAccounts).not.toHaveBeenCalled();
+        expect(mockApproveSession).not.toHaveBeenCalled();
+      },
+    );
 
     it('logs "invalid wallet status" error to console on session proposal with invalid wallet status', async () => {
       const mockSessionProposal = {

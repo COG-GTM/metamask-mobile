@@ -42,6 +42,7 @@ export const ERROR_MESSAGES = {
   USER_REJECT: 'User reject',
   AUTO_REMOVE: 'Automatic removal',
   INVALID_ID: 'Invalid Id',
+  INVALID_ORIGIN: 'Invalid origin',
 };
 
 export class WC2Manager {
@@ -118,6 +119,20 @@ export class WC2Manager {
     if (activeSessions) {
       activeSessions.forEach(async (session) => {
         const sessionKey = session.topic;
+        if (!getHostname(session.peer.metadata.url)) {
+          console.warn(
+            `WC2::init disconnecting session ${sessionKey} with invalid peer url`,
+          );
+          web3Wallet
+            .disconnectSession({
+              topic: sessionKey,
+              reason: getSdkError('USER_DISCONNECTED'),
+            })
+            .catch((err) =>
+              DevLogger.log(`WC2::init can't disconnect ${sessionKey}`, err),
+            );
+          return;
+        }
         try {
           this.sessions[sessionKey] = new WalletConnect2Session({
             web3Wallet,
@@ -147,7 +162,8 @@ export class WC2Manager {
 
           const hostname = getHostname(session.peer.metadata.url);
           let approvedAccounts =
-            getPermittedAccounts(hostname) ?? [];
+            getPermittedAccounts(hostname, { allowInternalOrigin: false }) ??
+            [];
 
           DevLogger.log(
             `WC2::init approvedAccounts id ${accountPermission?.id}`,
@@ -420,6 +436,17 @@ export class WC2Manager {
     // Keep the full url for logging and UI display
     const origin = url;
 
+    if (!hostname) {
+      console.warn(
+        `WC2::session_proposal rejected id=${id}: peer metadata url is not a valid http(s) origin`,
+      );
+      await this.web3Wallet.rejectSession({
+        id: proposal.id,
+        reason: getSdkError('USER_REJECTED', 'invalid dapp metadata url'),
+      });
+      return;
+    }
+
     DevLogger.log(
       `WC2::session_proposal metadata url=${origin} normalized to hostname=${hostname}`,
     );
@@ -482,7 +509,9 @@ export class WC2Manager {
 
     try {
       // Use the hostname for consistent permissions
-      const approvedAccounts = getPermittedAccounts(hostname);
+      const approvedAccounts = getPermittedAccounts(hostname, {
+        allowInternalOrigin: false,
+      });
 
       DevLogger.log(`WC2::session_proposal getScopedPermissions`, {
         hostname,

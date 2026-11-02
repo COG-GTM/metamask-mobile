@@ -397,8 +397,17 @@ class WalletConnect2Session {
         `WC2::updateSession origin=${origin} hostname=${hostname} - chainId=${chainId} - accounts=${accounts}`,
       );
 
+      if (!hostname) {
+        console.warn(
+          `WC2::updateSession invalid peer url for topic=${this.session.topic}`,
+        );
+        return;
+      }
+
       if (accounts.length === 0) {
-        const approvedAccounts = getPermittedAccounts(hostname);
+        const approvedAccounts = getPermittedAccounts(hostname, {
+          allowInternalOrigin: false,
+        });
         if (approvedAccounts.length > 0) {
           DevLogger.log(
             `WC2::updateSession found approved accounts`,
@@ -472,6 +481,25 @@ class WalletConnect2Session {
     DevLogger.log(
       `WalletConnect2Session::handleRequest caip2ChainId=${caip2ChainId} method=${method} origin=${origin}`,
     );
+
+    if (!getHostname(origin)) {
+      console.warn(
+        `WC2::handleRequest rejected request ${requestEvent.id}: invalid origin`,
+      );
+      try {
+        await this.web3Wallet.respondSessionRequest({
+          topic: this.session.topic,
+          response: {
+            id: requestEvent.id,
+            jsonrpc: '2.0',
+            error: { code: 4100, message: ERROR_MESSAGES.INVALID_ORIGIN },
+          },
+        });
+      } finally {
+        this._isHandlingRequest = false;
+      }
+      return;
+    }
 
     try {
       const allowed = await checkWCPermissions({ origin, caip2ChainId, allowSwitchingToNewChain: isSwitchingChain });
