@@ -591,6 +591,40 @@ describe('Network Selector', () => {
     traceSpy.mockRestore();
   });
 
+  it('starts a new NetworkSwitch trace after an in-place switch from a connected dapp', async () => {
+    jest.spyOn(networks, 'isMultichainV1Enabled').mockReturnValue(true);
+    jest
+      .spyOn(selectedNetworkControllerFcts, 'useNetworkInfo')
+      .mockImplementation(() => ({
+        networkName: '',
+        networkImageSource: '',
+        domainNetworkClientId: '',
+        chainId: CHAIN_IDS.MAINNET,
+        rpcUrl: '',
+        domainIsConnectedDapp: true,
+      }));
+    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
+    const traceSpy = jest.spyOn(traceUtils, 'trace');
+    const countNetworkSwitchTraces = () =>
+      traceSpy.mock.calls.filter(
+        ([request]) => request.name === TraceName.NetworkSwitch,
+      ).length;
+
+    const { getByText } = renderComponent(initialState);
+    expect(countNetworkSwitchTraces()).toBe(1);
+
+    fireEvent.press(getByText('Avalanche Mainnet C-Chain'));
+    await waitFor(() => {
+      expect(
+        mockEngine.context.SelectedNetworkController
+          .setNetworkClientIdForDomain,
+      ).toHaveBeenCalled();
+      expect(countNetworkSwitchTraces()).toBe(2);
+    });
+
+    traceSpy.mockRestore();
+  });
+
   it('passes stable parentSpan and dismissModal to useSwitchNetworks across renders', () => {
     (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
     const hookSpy = jest.spyOn(switchNetworksHook, 'useSwitchNetworks');

@@ -120,6 +120,13 @@ interface NetworkSelectorRouteParams {
   };
 }
 
+const startNetworkSwitchTrace = () =>
+  trace({
+    name: TraceName.NetworkSwitch,
+    tags: getTraceTags(store.getState()),
+    op: TraceOperation.NetworkSwitch,
+  });
+
 const NetworkSelector = () => {
   const [showPopularNetworkModal, setShowPopularNetworkModal] = useState(false);
   const [popularNetwork, setPopularNetwork] = useState<ExtendedNetwork>();
@@ -154,14 +161,12 @@ const NetworkSelector = () => {
   // origin is defined if network selector is opened from a dapp
   const origin = route.params?.hostInfo?.metadata?.origin || '';
   const browserEvmChainId = route.params?.evmChainId || null;
-  // Started once per sheet open; ended by useSwitchNetworks when a switch completes.
-  const [parentSpan] = useState(() =>
-    trace({
-      name: TraceName.NetworkSwitch,
-      tags: getTraceTags(store.getState()),
-      op: TraceOperation.NetworkSwitch,
-    }),
-  );
+  // Started once per sheet open (and again after an in-place switch); ended by useSwitchNetworks.
+  const [parentSpan, setParentSpan] = useState(startNetworkSwitchTrace);
+  const restartNetworkSwitchTrace = useCallback(() => {
+    const span = startNetworkSwitchTrace();
+    setParentSpan(() => span);
+  }, []);
   const {
     chainId: selectedChainId,
     rpcUrl: selectedRpcUrl,
@@ -365,6 +370,7 @@ const NetworkSelector = () => {
     dismissModal: dismissSheet,
     closeRpcModal,
     parentSpan,
+    restartNetworkSwitchTrace,
   });
 
   const renderMainnet = () => {
