@@ -25,6 +25,10 @@ const LabelElement = (styles, label) => (
   </View>
 );
 
+// A failed lookup renders the contact as a regular account but is retried the
+// next time the address book, chain or reloadAddressList changes.
+const LOOKUP_FAILED = null;
+
 const getContractStatusKey = (contact, fallbackChainId) =>
   `${contact.chainId ?? fallbackChainId}:${contact.address?.toLowerCase()}`;
 
@@ -84,8 +88,7 @@ const AddressList = ({
     let cancelled = false;
     const pendingContacts = networkAddressBookList.filter(
       (contact) =>
-        smartContractStatus[getContractStatusKey(contact, chainId)] ===
-        undefined,
+        smartContractStatus[getContractStatusKey(contact, chainId)] == null,
     );
     if (!pendingContacts.length) return;
 
@@ -93,7 +96,7 @@ const AddressList = ({
       pendingContacts.map((contact) =>
         isSmartContractAddress(contact.address, contact.chainId ?? chainId)
           .then((isSmartContract) => [contact, Boolean(isSmartContract)])
-          .catch(() => [contact, false]),
+          .catch(() => [contact, LOOKUP_FAILED]),
       ),
     ).then((results) => {
       if (cancelled) return;
@@ -144,11 +147,10 @@ const AddressList = ({
       const contact = {
         ...addressBookContact,
         ...(isAmbiguousAddress && { isAmbiguousAddress }),
-        isSmartContract: Boolean(
+        isSmartContract:
           smartContractStatus[
             getContractStatusKey(addressBookContact, chainId)
-          ],
-        ),
+          ] === true,
       };
 
       const contactNameInitial = contact?.name?.[0];

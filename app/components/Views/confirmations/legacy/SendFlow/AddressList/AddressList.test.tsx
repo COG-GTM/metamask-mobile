@@ -115,12 +115,14 @@ interface AddressListTestProps {
   chainId?: string;
   inputSearch?: string;
   onlyRenderAddressBook?: boolean;
+  reloadAddressList?: boolean;
 }
 
 const addressList = ({
   chainId = '0x1',
   inputSearch = '',
   onlyRenderAddressBook = false,
+  reloadAddressList = false,
 }: AddressListTestProps = {}) => (
   <AddressList
     onIconPress={() => null}
@@ -129,7 +131,7 @@ const addressList = ({
     chainId={chainId}
     inputSearch={inputSearch}
     onlyRenderAddressBook={onlyRenderAddressBook}
-    reloadAddressList={false}
+    reloadAddressList={reloadAddressList}
   />
 );
 
@@ -216,5 +218,39 @@ describe('AddressList', () => {
 
     await waitFor(() => expect(queryByText('Bob Goerli')).toBeTruthy());
     expect(queryByText('Alice')).toBeNull();
+  });
+
+  it('retries failed lookups on the next address book reload, not on keystrokes', async () => {
+    mockIsSmartContractAddress.mockImplementation(async (address: string) => {
+      if (address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase()) {
+        throw new Error('RPC unavailable');
+      }
+      return false;
+    });
+
+    const { findByText, queryByText, rerender } = renderWithProvider(
+      addressList(),
+      { state: stateWithContacts },
+    );
+    expect(await findByText('Contract')).toBeTruthy();
+
+    rerender(addressList({ inputSearch: 'Con' }));
+    rerender(addressList({ inputSearch: 'Cont' }));
+    await findByText('Contract');
+    expect(mockIsSmartContractAddress).toHaveBeenCalledTimes(4);
+
+    mockIsSmartContractAddress.mockImplementation(
+      async (address: string) =>
+        address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase(),
+    );
+    rerender(addressList({ reloadAddressList: true }));
+
+    await waitFor(() => expect(queryByText('Contract')).toBeNull());
+    expect(queryByText('Alice')).toBeTruthy();
+    expect(mockIsSmartContractAddress).toHaveBeenCalledTimes(5);
+    expect(mockIsSmartContractAddress).toHaveBeenLastCalledWith(
+      CONTRACT_ADDRESS,
+      '0x1',
+    );
   });
 });
