@@ -9,6 +9,7 @@ import {
   getCaip25PermissionsResponse,
   getBrowserTabUrlForOrigin,
   isBrowserTabOriginAmbiguous,
+  getRequesterDisplayUrl,
 } from './utils';
 
 describe('getRequestedCaip25CaveatValue', () => {
@@ -415,5 +416,37 @@ describe('getBrowserTabUrlForOrigin', () => {
     expect(
       getBrowserTabUrlForOrigin({ activeTab: 2, tabs }, ''),
     ).toBeUndefined();
+  });
+});
+
+describe('getRequesterDisplayUrl', () => {
+  it('uses the http protocol of the requesting tab', () => {
+    expect(
+      getRequesterDisplayUrl('evil.example', {
+        url: 'http://evil.example/other',
+        ambiguous: false,
+      }),
+    ).toBe('http://evil.example');
+  });
+
+  it('uses the https protocol of the requesting tab', () => {
+    expect(
+      getRequesterDisplayUrl('evil.example', {
+        url: 'https://evil.example/landing',
+        ambiguous: false,
+      }),
+    ).toBe('https://evil.example');
+  });
+
+  it('does not invent https when the requesting protocol is ambiguous', () => {
+    expect(getRequesterDisplayUrl('evil.example', { ambiguous: true })).toBe(
+      'http://evil.example',
+    );
+  });
+
+  it('falls back to https for the bare origin when no tab matches', () => {
+    expect(getRequesterDisplayUrl('evil.example', { ambiguous: false })).toBe(
+      'https://evil.example',
+    );
   });
 });

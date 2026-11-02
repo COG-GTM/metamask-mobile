@@ -125,10 +125,24 @@ interface BrowserTabsState {
   tabs?: { id: number; url: string }[];
 }
 
-function resolveBrowserTabsForOrigin(
+export interface RequestingBrowserTab {
+  url?: string;
+  ambiguous: boolean;
+}
+
+/**
+ * Identifies the in-app browser tab that issued a request from the given
+ * hostname. See {@link getBrowserTabUrlForOrigin} and
+ * {@link isBrowserTabOriginAmbiguous}.
+ *
+ * @param browser - The browser slice of the redux state.
+ * @param origin - The hostname that issued the permission request.
+ * @returns The requesting tab URL (if identifiable) and an ambiguity flag.
+ */
+export function resolveRequestingBrowserTab(
   browser: BrowserTabsState | undefined,
   origin: string,
-): { url?: string; ambiguous: boolean } {
+): RequestingBrowserTab {
   if (!origin || !browser?.tabs?.length) {
     return { ambiguous: false };
   }
@@ -169,7 +183,7 @@ export function getBrowserTabUrlForOrigin(
   browser: BrowserTabsState | undefined,
   origin: string,
 ): string | undefined {
-  return resolveBrowserTabsForOrigin(browser, origin).url;
+  return resolveRequestingBrowserTab(browser, origin).url;
 }
 
 /**
@@ -184,5 +198,27 @@ export function isBrowserTabOriginAmbiguous(
   browser: BrowserTabsState | undefined,
   origin: string,
 ): boolean {
-  return resolveBrowserTabsForOrigin(browser, origin).ambiguous;
+  return resolveRequestingBrowserTab(browser, origin).ambiguous;
+}
+
+/**
+ * Builds the URL shown in the connect sheet for a browser request. The
+ * protocol comes from the requesting tab; when it is unknown because same-host
+ * tabs disagree, the less trusted `http://` is shown rather than inventing
+ * `https://`.
+ *
+ * @param origin - The hostname that issued the permission request.
+ * @param requester - The result of {@link resolveRequestingBrowserTab}.
+ * @returns A URL with protocol and host only.
+ */
+export function getRequesterDisplayUrl(
+  origin: string,
+  requester: RequestingBrowserTab,
+): string {
+  const host = getHost(requester.url || origin);
+  if (requester.url) {
+    const { protocol } = getUrlObj(prefixUrlWithProtocol(requester.url));
+    return protocol === 'http:' ? `http://${host}` : `https://${host}`;
+  }
+  return requester.ambiguous ? `http://${host}` : prefixUrlWithProtocol(host);
 }

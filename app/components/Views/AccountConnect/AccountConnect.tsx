@@ -9,7 +9,7 @@ import React, {
   useState,
 } from 'react';
 import Modal from 'react-native-modal';
-import { useSelector } from 'react-redux';
+import { useSelector, useStore } from 'react-redux';
 // External dependencies.
 import { strings } from '../../../../locales/i18n';
 import BottomSheet, {
@@ -80,8 +80,8 @@ import { isUUID } from '../../../core/SDKConnect/utils/isUUID';
 import useOriginSource from '../../hooks/useOriginSource';
 import { selectIsEvmNetworkSelected } from '../../../selectors/multichainNetworkController';
 import {
-  getBrowserTabUrlForOrigin,
-  isBrowserTabOriginAmbiguous,
+  getRequesterDisplayUrl,
+  resolveRequestingBrowserTab,
   getCaip25PermissionsResponse,
   getRequestedCaip25CaveatValue,
 } from './utils';
@@ -168,12 +168,18 @@ const AccountConnect = (props: AccountConnectProps) => {
   const isChannelId = isUUID(channelIdOrHostname);
 
   // The sheet must describe the requesting site, never whichever tab happens to be visible.
-  const requestingTabUrl = useSelector((state: RootState) =>
-    getBrowserTabUrlForOrigin(state.browser, channelIdOrHostname),
+  // Resolved once: only the active tab can raise a prompt, so later tab switches must not relabel it.
+  const reduxStore = useStore<RootState>();
+  const requestingTab = useMemo(
+    () =>
+      resolveRequestingBrowserTab(
+        reduxStore.getState().browser,
+        channelIdOrHostname,
+      ),
+    [reduxStore, channelIdOrHostname],
   );
-  const isRequestingTabAmbiguous = useSelector((state: RootState) =>
-    isBrowserTabOriginAmbiguous(state.browser, channelIdOrHostname),
-  );
+  const requestingTabUrl = requestingTab.url;
+  const isRequestingTabAmbiguous = requestingTab.ambiguous;
 
   const sdkConnection = SDKConnect.getInstance().getConnection({
     channelId: channelIdOrHostname,
@@ -189,9 +195,10 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const [isSdkUrlUnknown, setIsSdkUrlUnknown] = useState(false);
 
-  const { domainTitle, hostname } = useMemo(() => {
+  const { domainTitle, hostname, isBrowserRequest } = useMemo(() => {
     let title = '';
     let dappHostname = dappUrl || channelIdOrHostname;
+    let browserRequest = false;
 
     if (
       isOriginMMSDKRemoteConn &&
@@ -206,12 +213,17 @@ const AccountConnect = (props: AccountConnectProps) => {
     } else if (!isChannelId && (dappUrl || channelIdOrHostname)) {
       title = prefixUrlWithProtocol(dappUrl || channelIdOrHostname);
       dappHostname = requestingTabUrl || dappHostname;
+      browserRequest = !dappUrl;
     } else {
       title = strings('sdk.unknown');
       setIsSdkUrlUnknown(true);
     }
 
-    return { domainTitle: title, hostname: dappHostname };
+    return {
+      domainTitle: title,
+      hostname: dappHostname,
+      isBrowserRequest: browserRequest,
+    };
   }, [
     isOriginWalletConnect,
     requestingTabUrl,
@@ -222,9 +234,11 @@ const AccountConnect = (props: AccountConnectProps) => {
   ]);
 
   const urlWithProtocol =
-    hostname && !isUUID(hostname)
-      ? prefixUrlWithProtocol(getHost(hostname))
-      : domainTitle;
+    !hostname || isUUID(hostname)
+      ? domainTitle
+      : isBrowserRequest
+      ? getRequesterDisplayUrl(channelIdOrHostname, requestingTab)
+      : prefixUrlWithProtocol(getHost(hostname));
 
   const { chainId } = useNetworkInfo(hostname);
 

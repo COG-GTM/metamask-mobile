@@ -5,7 +5,9 @@ import renderWithProvider, {
 import AccountConnect from './AccountConnect';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { RootState } from '../../../reducers';
-import { fireEvent } from '@testing-library/react-native';
+import { act, fireEvent } from '@testing-library/react-native';
+import useFavicon from '../../hooks/useFavicon/useFavicon';
+import { setActiveTab } from '../../../actions/browser';
 import AccountConnectMultiSelector from './AccountConnectMultiSelector/AccountConnectMultiSelector';
 import Engine from '../../../core/Engine';
 import {
@@ -122,6 +124,14 @@ jest.mock('../../../core/SDKConnect/utils/isUUID', () => ({
 }));
 
 // Mock useAccounts to return test accounts
+jest.mock('../../hooks/useFavicon/useFavicon', () => {
+  const actual = jest.requireActual('../../hooks/useFavicon/useFavicon');
+  return {
+    __esModule: true,
+    default: jest.fn((...args: unknown[]) => actual.default(...args)),
+  };
+});
+
 jest.mock('../../hooks/useAccounts', () => ({
   useAccounts: jest.fn(() => ({
     evmAccounts: [
@@ -377,6 +387,45 @@ describe('AccountConnect', () => {
 
       expect(getByText('evil.example wants to:')).toBeOnTheScreen();
       expect(queryByText(/app\.uniswap\.org/)).toBeNull();
+    });
+
+    it('keeps describing the requesting tab after the user switches tabs', () => {
+      const { store } = renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: { id: 'mockId', origin: 'evil.example' },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        {
+          state: {
+            ...mockInitialState,
+            browser: {
+              activeTab: 1,
+              tabs: [
+                { id: 1, url: 'http://evil.example/landing' },
+                { id: 3, url: 'https://evil.example/other' },
+              ],
+            },
+          } as DeepPartial<RootState>,
+        },
+      );
+
+      act(() => {
+        store.dispatch(setActiveTab(3));
+      });
+
+      const faviconCalls = (useFavicon as jest.Mock).mock.calls;
+      expect(faviconCalls[faviconCalls.length - 1][0]).toBe(
+        'http://evil.example',
+      );
     });
   });
 });
