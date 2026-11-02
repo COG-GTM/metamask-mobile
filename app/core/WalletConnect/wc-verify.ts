@@ -28,12 +28,12 @@ export interface WalletConnectPermissionSubject {
   pairingTopic: string;
 }
 
-const safeHostname = (url?: string): string => {
-  if (!url) return '';
+const safeUrl = (url?: string): URL | undefined => {
+  if (!url) return undefined;
   try {
-    return new URL(url).hostname.toLowerCase();
+    return new URL(url);
   } catch {
-    return '';
+    return undefined;
   }
 };
 
@@ -47,14 +47,19 @@ export const getWalletConnectVerification = (
       ? verified.validation
       : 'UNKNOWN';
   const isScam = verified?.isScam === true;
-  const claimedHostname = safeHostname(metadataUrl);
-  const attestedHostname = safeHostname(verified?.origin);
+  const claimedUrl = safeUrl(metadataUrl);
+  const attestedUrl = safeUrl(verified?.origin);
+  const claimedHostname = claimedUrl?.hostname.toLowerCase() ?? '';
+  const attestedHostname = attestedUrl?.hostname.toLowerCase() ?? '';
 
+  // Compare full origins (scheme + host + port), not just hostnames.
   const isVerified =
     validation === 'VALID' &&
     !isScam &&
-    attestedHostname !== '' &&
-    attestedHostname === claimedHostname;
+    attestedUrl !== undefined &&
+    claimedUrl !== undefined &&
+    attestedUrl.origin !== 'null' &&
+    attestedUrl.origin === claimedUrl.origin;
 
   // For INVALID the Verify API reports the origin the request really came
   // from, which is more truthful than the dapp's self-declared URL.
