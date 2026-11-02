@@ -4,7 +4,10 @@ import { useSelector } from 'react-redux';
 import { KeyringTypes } from '@metamask/keyring-controller';
 
 // External Dependencies.
-import { doENSReverseLookup } from '../../../util/ENSUtils';
+import {
+  CACHE_REFRESH_THRESHOLD,
+  doENSReverseLookup,
+} from '../../../util/ENSUtils';
 import { selectChainId } from '../../../selectors/networkController';
 import { selectIsMultiAccountBalancesEnabled } from '../../../selectors/preferencesController';
 import {
@@ -27,6 +30,8 @@ import {
 import { useMultichainBalancesForAllAccounts } from '../useMultichainBalances';
 
 const ENS_LOOKUP_CONCURRENCY = 4;
+// Re-check ENS names while mounted so expired cache entries get refreshed.
+export const ENS_REFRESH_INTERVAL = CACHE_REFRESH_THRESHOLD / 2;
 
 /**
  * Hook that returns both wallet accounts and ens name information.
@@ -166,6 +171,15 @@ const useAccounts = ({
   );
   const selectedAddressRef = useRef<string | undefined>();
   selectedAddressRef.current = selectedInternalAccount?.address;
+  const [ensRefreshTick, setENSRefreshTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(
+      () => setENSRefreshTick((tick) => tick + 1),
+      ENS_REFRESH_INTERVAL,
+    );
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (isLoading || !ensLookupAddressesKey) return;
@@ -228,7 +242,7 @@ const useAccounts = ({
     return () => {
       isCancelled = true;
     };
-  }, [chainId, ensLookupAddressesKey, isLoading]);
+  }, [chainId, ensLookupAddressesKey, isLoading, ensRefreshTick]);
 
   return {
     accounts,

@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react-hooks';
 import { KeyringTypes } from '@metamask/keyring-controller';
 import { toChecksumAddress } from 'ethereumjs-util';
-import useAccounts from './useAccounts';
+import useAccounts, { ENS_REFRESH_INTERVAL } from './useAccounts';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
 import { Account } from './useAccounts.types';
@@ -215,5 +215,24 @@ describe('useAccounts', () => {
       MOCK_ACCOUNT_2.address,
       MOCK_CHAIN_ID,
     ]);
+  });
+
+  it('re-checks ENS names periodically so expired cache entries refresh', async () => {
+    jest.useFakeTimers({ legacyFakeTimers: false });
+    try {
+      const { waitForNextUpdate } = renderHook(() => useAccounts());
+      await act(async () => {
+        await waitForNextUpdate();
+      });
+      const initialCalls = (doENSReverseLookup as jest.Mock).mock.calls.length;
+      expect(initialCalls).toBeGreaterThan(0);
+
+      await act(async () => {
+        jest.advanceTimersByTime(ENS_REFRESH_INTERVAL);
+      });
+      expect(doENSReverseLookup).toHaveBeenCalledTimes(initialCalls * 2);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

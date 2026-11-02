@@ -9,7 +9,7 @@ import {
 const ENS_NAME_NOT_DEFINED_ERROR = 'ENS name not defined';
 const INVALID_ENS_NAME_ERROR = 'invalid ENS name';
 // One hour cache threshold.
-const CACHE_REFRESH_THRESHOLD = 60 * 60 * 1000;
+export const CACHE_REFRESH_THRESHOLD = 60 * 60 * 1000;
 import { EMPTY_ADDRESS } from '../constants/transaction';
 import { regex } from '../../app/util/regex';
 
@@ -94,6 +94,17 @@ function getENSInstance(provider, networkId) {
 
 const pendingReverseLookups = new Map();
 
+/**
+ * Reverse-resolves an address and verifies the name resolves back to it.
+ * Verified names are cached under `cacheKey`; "not defined" and "invalid
+ * name" errors are cached as a nameless entry so they are not retried until
+ * the entry expires. Other errors are not cached.
+ *
+ * @param {string} address - The address to reverse-resolve.
+ * @param {string} networkId - The legacy network ID.
+ * @param {string} cacheKey - The `ENSCache` key (`networkId + address`).
+ * @returns {Promise<string|undefined>} The verified ENS name, if any.
+ */
 async function fetchENSReverseLookup(address, networkId, cacheKey) {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
