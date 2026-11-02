@@ -97,7 +97,9 @@ const useAddressBalance = (
       if (!checksumAddress) {
         return;
       }
-      setAddressBalance(`${renderFromWei(nativeBalance)} ${getTicker(ticker)}`);
+      setAddressBalance(
+        `${renderFromWei(nativeBalance ?? '0')} ${getTicker(ticker)}`,
+      );
       return;
     }
 
