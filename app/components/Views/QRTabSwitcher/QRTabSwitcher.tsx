@@ -49,6 +49,11 @@ export interface QRTabSwitcherParams {
   disableTabber?: boolean;
   origin?: string;
   networkName?: string;
+  /**
+   * Hostname of a dapp that requested the scan (wallet_scanQRCode). When set,
+   * the scanner returns raw text only and never classifies wallet secrets.
+   */
+  dappOrigin?: string;
 }
 
 export const createQRScannerNavDetails =
@@ -64,6 +69,7 @@ const QRTabSwitcher = () => {
     origin,
     disableTabber,
     networkName,
+    dappOrigin,
   } = route.params as QRTabSwitcherParams;
 
   const [selectedIndex, setSelectedIndex] = useState(
@@ -109,6 +115,7 @@ const QRTabSwitcher = () => {
           onScanSuccess={onScanSuccess}
           onStartScan={onStartScan}
           origin={origin}
+          dappOrigin={dappOrigin}
         />
       ) : null}
 
