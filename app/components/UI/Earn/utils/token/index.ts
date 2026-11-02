@@ -73,3 +73,15 @@ export const isSupportedLendingTokenByChainId = (
   chainId: string,
 ) =>
   SUPPORTED_LENDING_TOKENS.has(tokenSymbol) && SUPPORTED_CHAIN_IDS.has(chainId);
+
+/**
+ * Builds the lookup key used to match a token against the earn-eligible token set.
+ *
+ * @param chainId - Token chain ID (hex).
+ * @param symbol - Token symbol.
+ * @returns A `${chainId}:${symbol}` key.
+ */
+export const getEarnTokenKey = (
+  chainId: string | undefined,
+  symbol: string | undefined,
+) => `${chainId}:${symbol}`;

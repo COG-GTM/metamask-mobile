@@ -4,7 +4,7 @@ import {
   DeepPartial,
   renderHookWithProvider,
 } from '../../../../util/test/renderWithProvider';
-import useEarnTokens from './useEarnTokens';
+import useEarnTokens, { useEarnTokenKeys } from './useEarnTokens';
 import {
   MOCK_USDC_BASE_MAINNET_ASSET,
   MOCK_USDC_MAINNET_ASSET,
@@ -255,5 +255,73 @@ describe('useEarnTokens', () => {
     });
 
     expect(result.current.length).toBe(0);
+  });
+
+  describe('useEarnTokenKeys', () => {
+    it('returns chainId:symbol keys for every eligible earn token', () => {
+      mockEarnFeatureFlagSelectors({
+        pooledStakingEnabledFlag: true,
+        stablecoinLendingEnabledFlag: true,
+      });
+
+      const { result } = renderHookWithProvider(() => useEarnTokenKeys(), {
+        state: initialState,
+      });
+
+      expect([...result.current].sort()).toStrictEqual(
+        [
+          `${MOCK_ETH_MAINNET_ASSET.chainId}:${MOCK_ETH_MAINNET_ASSET.symbol}`,
+          `${MOCK_USDC_MAINNET_ASSET.chainId}:${MOCK_USDC_MAINNET_ASSET.symbol}`,
+          `${MOCK_USDT_MAINNET_ASSET.chainId}:${MOCK_USDT_MAINNET_ASSET.symbol}`,
+          `${MOCK_DAI_MAINNET_ASSET.chainId}:${MOCK_DAI_MAINNET_ASSET.symbol}`,
+          `${MOCK_USDC_BASE_MAINNET_ASSET.chainId}:${MOCK_USDC_BASE_MAINNET_ASSET.symbol}`,
+        ].sort(),
+      );
+    });
+
+    it('matches the tokens returned by useEarnTokens', () => {
+      mockEarnFeatureFlagSelectors({
+        pooledStakingEnabledFlag: false,
+        stablecoinLendingEnabledFlag: true,
+      });
+
+      const { result: keys } = renderHookWithProvider(
+        () => useEarnTokenKeys(),
+        { state: initialState },
+      );
+      const { result: tokens } = renderHookWithProvider(() => useEarnTokens(), {
+        state: initialState,
+      });
+
+      expect(keys.current.size).toBe(tokens.current.length);
+      tokens.current.forEach((token) => {
+        expect(keys.current.has(`${token.chainId}:${token.symbol}`)).toBe(true);
+      });
+    });
+
+    it('returns the same Set instance across re-renders when inputs do not change', () => {
+      mockEarnFeatureFlagSelectors({
+        pooledStakingEnabledFlag: true,
+        stablecoinLendingEnabledFlag: true,
+      });
+
+      const { result, rerender } = renderHookWithProvider(
+        () => useEarnTokenKeys(),
+        { state: initialState },
+      );
+      const first = result.current;
+
+      rerender({});
+
+      expect(result.current).toBe(first);
+    });
+
+    it('returns an empty Set when earn features are disabled', () => {
+      const { result } = renderHookWithProvider(() => useEarnTokenKeys(), {
+        state: initialState,
+      });
+
+      expect(result.current.size).toBe(0);
+    });
   });
 });

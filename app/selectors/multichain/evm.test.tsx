@@ -213,6 +213,29 @@ describe('Multichain Selectors', () => {
       expect(tk1Token?.isNative).toBe(false);
     });
 
+    it('does not recompute when an unrelated part of state changes', () => {
+      const first = selectAccountTokensAcrossChains(mockState);
+      const recomputations = selectAccountTokensAcrossChains.recomputations();
+
+      const unrelatedChange = {
+        ...mockState,
+        engine: {
+          backgroundState: {
+            ...mockState.engine.backgroundState,
+            UnrelatedController: { counter: 1 },
+          },
+        },
+        settings: { unrelated: true },
+      } as unknown as RootState;
+
+      const second = selectAccountTokensAcrossChains(unrelatedChange);
+
+      expect(second).toBe(first);
+      expect(selectAccountTokensAcrossChains.recomputations()).toBe(
+        recomputations,
+      );
+    });
+
     it('should handle multiple chains correctly', () => {
       const result = selectAccountTokensAcrossChains(mockState);
       expect(result).toHaveProperty('0x89');
