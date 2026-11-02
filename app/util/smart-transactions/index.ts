@@ -86,17 +86,32 @@ export const getShouldUpdateApprovalRequest = (
 ): boolean =>
   !mobileReturnTxHashAsap && (isDapp || isSend || isSwapTransaction);
 
+const SMART_TRANSACTION_CONFIRMATION_DONE_EVENT =
+  'SmartTransactionsController:smartTransactionConfirmationDone';
+
 const waitForSmartTransactionConfirmationDone = (
   controllerMessenger: BaseControllerMessenger,
 ): Promise<SmartTransaction | undefined> =>
   new Promise((resolve) => {
+    const pending: { timeoutId?: ReturnType<typeof setTimeout> } = {};
+    const onConfirmationDone = (smartTransaction: SmartTransaction) => {
+      clearTimeout(pending.timeoutId);
+      controllerMessenger.tryUnsubscribe(
+        SMART_TRANSACTION_CONFIRMATION_DONE_EVENT,
+        onConfirmationDone,
+      );
+      resolve(smartTransaction);
+    };
+
     controllerMessenger.subscribe(
-      'SmartTransactionsController:smartTransactionConfirmationDone',
-      async (smartTransaction: SmartTransaction) => {
-        resolve(smartTransaction);
-      },
+      SMART_TRANSACTION_CONFIRMATION_DONE_EVENT,
+      onConfirmationDone,
     );
-    setTimeout(() => {
+    pending.timeoutId = setTimeout(() => {
+      controllerMessenger.tryUnsubscribe(
+        SMART_TRANSACTION_CONFIRMATION_DONE_EVENT,
+        onConfirmationDone,
+      );
       resolve(undefined); // In a rare case we don't get the "smartTransactionConfirmationDone" event within 10 seconds, we resolve with undefined to continue.
     }, TIMEOUT_FOR_SMART_TRANSACTION_CONFIRMATION_DONE_EVENT);
   });
