@@ -18,7 +18,6 @@ import { store } from '../../../store';
 import { selectEvmNetworkConfigurationsByChainId } from '../../../selectors/networkController';
 import { selectSelectedNonEvmNetworkName } from '../../../selectors/multichainNetworkController';
 import { requestDeeplinkNetworkSwitchApproval } from './switchNetwork';
-import { handleNetworkSwitch } from '../../../util/networks/handleNetworkSwitch';
 
 async function handleEthereumUrl({
   deeplinkManager,
@@ -80,11 +79,12 @@ async function handleEthereumUrl({
       if (!approved) {
         return;
       }
-      if (targetChainId === CHAIN_IDS.MAINNET) {
-        await MultichainNetworkController.setActiveNetwork(MAINNET);
-      } else {
-        handleNetworkSwitch(targetChainId);
-      }
+      await MultichainNetworkController.setActiveNetwork(
+        targetChainId === CHAIN_IDS.MAINNET || !targetNetwork
+          ? MAINNET
+          : targetNetwork.rpcEndpoints[targetNetwork.defaultRpcEndpointIndex]
+              .networkClientId,
+      );
       isOnRequestedNetwork = true;
     }
 

@@ -49,18 +49,16 @@ jest.mock('../../../store', () => ({
 jest.mock('../../../selectors/networkController', () => ({
   selectEvmNetworkConfigurationsByChainId: jest.fn(() => ({
     '0x1': { name: 'Ethereum Mainnet' },
-    '0xe708': { name: 'Linea' },
+    '0xe708': {
+      name: 'Linea',
+      defaultRpcEndpointIndex: 0,
+      rpcEndpoints: [{ networkClientId: 'linea-mainnet' }],
+    },
   })),
 }));
 
 jest.mock('../../../selectors/multichainNetworkController', () => ({
   selectSelectedNonEvmNetworkName: jest.fn(() => 'Solana'),
-}));
-
-const mockUtilHandleNetworkSwitch = jest.fn();
-jest.mock('../../../util/networks/handleNetworkSwitch', () => ({
-  handleNetworkSwitch: (...args: unknown[]) =>
-    mockUtilHandleNetworkSwitch(...args),
 }));
 
 const mockRequestApproval = jest.fn();
@@ -440,8 +438,8 @@ describe('handleEthereumUrl', () => {
         currentNetworkName: 'Solana',
         networkName: 'Linea',
       });
-      expect(mockUtilHandleNetworkSwitch).toHaveBeenCalledWith('0xe708');
-      expect(mockSetActiveNetwork).not.toHaveBeenCalled();
+      expect(mockSetActiveNetwork).toHaveBeenCalledTimes(1);
+      expect(mockSetActiveNetwork).toHaveBeenCalledWith('linea-mainnet');
       expect(mockHandleNetworkSwitch).not.toHaveBeenCalled();
       expect(mockNavigate).toHaveBeenCalledWith('SendView', expect.any(Object));
     });
@@ -451,7 +449,6 @@ describe('handleEthereumUrl', () => {
 
       await handleEthereumUrl({ deeplinkManager, url, origin });
 
-      expect(mockUtilHandleNetworkSwitch).not.toHaveBeenCalled();
       expect(mockSetActiveNetwork).not.toHaveBeenCalled();
       expect(mockHandleNetworkSwitch).not.toHaveBeenCalled();
       expect(mockNavigate).not.toHaveBeenCalled();
@@ -463,7 +460,6 @@ describe('handleEthereumUrl', () => {
       await handleEthereumUrl({ deeplinkManager, url, origin });
 
       expect(mockRequestApproval).not.toHaveBeenCalled();
-      expect(mockUtilHandleNetworkSwitch).not.toHaveBeenCalled();
       expect(mockSetActiveNetwork).not.toHaveBeenCalled();
       expect(mockNavigate).not.toHaveBeenCalled();
     });
