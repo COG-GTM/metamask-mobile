@@ -10,6 +10,7 @@ import {
   MOCK_ACCOUNTS_CONTROLLER_STATE,
   MOCK_ADDRESS_1,
   MOCK_ADDRESS_2,
+  expectedUuid,
 } from '../../../util/test/accountsControllerTestUtils';
 import { updateBgState } from '../../../core/redux/slices/engine';
 import { networkIdUpdated } from '../../../core/redux/slices/inpageProvider';
@@ -182,7 +183,6 @@ describe('Asset normalizeTransactions', () => {
 
   it('dedups by id and splits submitted / pending / confirmed transactions', async () => {
     renderAsset(history);
-    // eslint-disable-next-line no-console
 
     await waitFor(() =>
       expect(lastTransactionsProps().transactions.length).toBeGreaterThan(0),
@@ -268,5 +268,29 @@ describe('Asset normalizeTransactions', () => {
     await waitFor(() =>
       expect(ids(lastTransactionsProps().transactions)).toContain('legacy'),
     );
+  });
+
+  it('re-filters against the new account when the selected account changes', async () => {
+    const { store } = renderAsset(history);
+    await waitFor(() =>
+      expect(lastTransactionsProps().transactions.length).toBeGreaterThan(0),
+    );
+
+    mockEngineState.AccountsController = {
+      internalAccounts: {
+        ...MOCK_ACCOUNTS_CONTROLLER_STATE.internalAccounts,
+        selectedAccount: expectedUuid,
+      },
+    };
+    act(() => {
+      store.dispatch(updateBgState({ key: 'AccountsController' }));
+    });
+
+    await waitFor(() =>
+      expect(ids(lastTransactionsProps().transactions)).toEqual(['in1', 'x1']),
+    );
+    expect(ids(lastTransactionsProps().submittedTransactions)).toEqual([
+      's-other',
+    ]);
   });
 });

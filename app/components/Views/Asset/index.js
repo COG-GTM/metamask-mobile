@@ -303,6 +303,10 @@ class Asset extends PureComponent {
       prevProps.selectedInternalAccount.address !==
         this.props.selectedInternalAccount?.address
     ) {
+      this.selectedAddress = toChecksumHexAddress(
+        this.props.selectedInternalAccount?.address,
+      );
+      this.selectedAddressLowerCase = this.selectedAddress?.toLowerCase();
       this.showLoaderAndNormalize();
     } else if (
       prevProps.transactions !== this.props.transactions ||
