@@ -104,6 +104,18 @@ jest.mock('../../sdk', () => ({
   useRampSDK: () => mockUseRampSDKValues,
 }));
 
+const mockQuoteRender = jest.fn();
+jest.mock('../../components/Quote', () => {
+  const ActualQuote = jest.requireActual('../../components/Quote').default;
+  return {
+    __esModule: true,
+    default: (props: Record<string, unknown>) => {
+      mockQuoteRender();
+      return <ActualQuote {...props} />;
+    },
+  };
+});
+
 jest.mock('../../hooks/useAnalytics', () => () => mockTrackEvent);
 jest.mock('../../hooks/useInAppBrowser', () => () => mockRenderInAppBrowser);
 jest.mock('../../hooks/useFiatCurrencies', () => () => ({
@@ -805,6 +817,28 @@ describe('Quotes', () => {
     expect(description).toBeTruthy();
 
     act(() => {
+      jest.useFakeTimers({ legacyFakeTimers: true });
+    });
+  });
+
+  it('updates the countdown every second without re-rendering the quotes', async () => {
+    render(Quotes);
+    act(() => {
+      jest.advanceTimersByTime(3000);
+    });
+    expect(screen.getByText('0:07')).toBeTruthy();
+    const quoteRendersBeforeTicks = mockQuoteRender.mock.calls.length;
+    expect(quoteRendersBeforeTicks).toBeGreaterThan(0);
+
+    act(() => {
+      jest.advanceTimersByTime(5000);
+    });
+
+    expect(screen.getByText('0:02')).toBeTruthy();
+    expect(mockQuoteRender).toHaveBeenCalledTimes(quoteRendersBeforeTicks);
+    expect(mockQueryGetQuotes).not.toHaveBeenCalled();
+    act(() => {
+      jest.clearAllTimers();
       jest.useFakeTimers({ legacyFakeTimers: true });
     });
   });
