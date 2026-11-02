@@ -23,6 +23,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.ArgumentMatchers.anyString;
 import java.nio.file.StandardCopyOption;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.util.zip.GZIPOutputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -48,9 +56,10 @@ public class RNTarTest {
     CountDownLatch latch = new CountDownLatch(1); // Create a CountDownLatch
 
     try {
-      File tgzFile = new File(reactContext.getCacheDir(), "validTestTGZFile.tgz");
+      File baseDir = Files.createTempDirectory("rntar-valid").toFile();
+      File tgzFile = new File(baseDir, "validTestTGZFile.tgz");
       Files.copy(tgzResource, tgzFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-      String outputPath = reactContext.getCacheDir().getAbsolutePath() + "/output";
+      String outputPath = baseDir.getAbsolutePath() + "/output";
 
       // Set up the promise to count down the latch when resolved
       doAnswer(invocation -> {
@@ -87,4 +96,137 @@ public class RNTarTest {
     }
   }
 
+  private static final class TarEntrySpec {
+    final String name;
+    final byte type;
+    final String contents;
+
+    TarEntrySpec(String name, byte type, String contents) {
+      this.name = name;
+      this.type = type;
+      this.contents = contents;
+    }
+  }
+
+  private static TarEntrySpec file(String name, String contents) {
+    return new TarEntrySpec(name, TarArchiveEntry.LF_NORMAL, contents);
+  }
+
+  private static File writeTgz(File dir, TarEntrySpec... specs) throws IOException {
+    File tgz = new File(dir, "archive.tgz");
+    try (OutputStream fos = new FileOutputStream(tgz);
+         GZIPOutputStream gzip = new GZIPOutputStream(fos);
+         TarArchiveOutputStream tar = new TarArchiveOutputStream(gzip)) {
+      tar.setLongFileMode(TarArchiveOutputStream.LONGFILE_POSIX);
+      for (TarEntrySpec spec : specs) {
+        TarArchiveEntry entry = new TarArchiveEntry(spec.name, spec.type, true);
+        byte[] bytes = spec.contents.getBytes(StandardCharsets.UTF_8);
+        if (spec.type == TarArchiveEntry.LF_SYMLINK) {
+          entry.setLinkName(spec.contents);
+        } else {
+          entry.setSize(bytes.length);
+        }
+        tar.putArchiveEntry(entry);
+        if (spec.type != TarArchiveEntry.LF_SYMLINK) {
+          tar.write(bytes);
+        }
+        tar.closeArchiveEntry();
+      }
+    }
+    return tgz;
+  }
+
+  // Runs unTar and returns null on success or the rejection error.
+  private Throwable runUnTar(File tgz, File output) throws InterruptedException {
+    Promise result = mock(Promise.class);
+    CountDownLatch latch = new CountDownLatch(1);
+    Throwable[] error = new Throwable[1];
+    doAnswer(invocation -> {
+      latch.countDown();
+      return null;
+    }).when(result).resolve(anyString());
+    doAnswer(invocation -> {
+      error[0] = invocation.getArgument(1);
+      latch.countDown();
+      return null;
+    }).when(result).reject(anyString(), any(Throwable.class));
+    tar.unTar(tgz.getAbsolutePath(), output.getAbsolutePath(), result);
+    if (!latch.await(5, TimeUnit.SECONDS)) {
+      fail("Timed out waiting for unTar operation to complete");
+    }
+    return error[0];
+  }
+
+  @Test
+  public void testUnTar_rejectsParentTraversalEntries() throws Exception {
+    File base = Files.createTempDirectory("rntar-traversal").toFile();
+    File output = new File(base, "output");
+    File tgz = writeTgz(base, file("package/index.js", "ok"), file("../evil.txt", "pwned"));
+
+    Throwable error = runUnTar(tgz, output);
+
+    assertTrue("Expected rejection for ../evil.txt", error != null);
+    assertTrue(error.getMessage().contains("outside the destination"));
+    assertFalse(new File(base, "evil.txt").exists());
+  }
+
+  @Test
+  public void testUnTar_doesNotWriteEntriesOutsidePackage() throws Exception {
+    File base = Files.createTempDirectory("rntar-outside-package").toFile();
+    File output = new File(base, "output");
+    File tgz = writeTgz(base,
+        file("package/snap.manifest.json", "{}"),
+        file("persistStore/persist-root", "{\"attacker\":true}"),
+        file("package/../persistStore/persist-root", "{\"attacker\":true}"));
+
+    Throwable error = runUnTar(tgz, output);
+
+    assertTrue("Unexpected error: " + error, error == null);
+    assertTrue(new File(output, "package/snap.manifest.json").exists());
+    assertFalse(new File(output, "persistStore").exists());
+    assertFalse(new File(base, "persistStore").exists());
+  }
+
+  @Test
+  public void testUnTar_rejectsSymlinkEntries() throws Exception {
+    File base = Files.createTempDirectory("rntar-symlink").toFile();
+    File output = new File(base, "output");
+    File tgz = writeTgz(base,
+        new TarEntrySpec("package/link", TarArchiveEntry.LF_SYMLINK, "../../"),
+        file("package/link/evil.txt", "pwned"));
+
+    Throwable error = runUnTar(tgz, output);
+
+    assertTrue("Expected rejection for symlink entry", error != null);
+    assertTrue(error.getMessage().contains("Unsupported tar entry type"));
+    assertFalse(new File(base, "evil.txt").exists());
+  }
+
+  @Test
+  public void testUnTar_refusesNonEmptyOutputDirectory() throws Exception {
+    File base = Files.createTempDirectory("rntar-non-empty").toFile();
+    File output = new File(base, "output");
+    assertTrue(new File(output, "persistStore").mkdirs());
+    File tgz = writeTgz(base, file("package/index.js", "ok"));
+
+    Throwable error = runUnTar(tgz, output);
+
+    assertTrue("Expected rejection for non-empty output", error != null);
+    assertTrue(error.getMessage().contains("must be new or empty"));
+    assertFalse(new File(output, "package").exists());
+  }
+
+  @Test
+  public void testUnTar_rejectsDuplicateFileEntries() throws Exception {
+    File base = Files.createTempDirectory("rntar-duplicate").toFile();
+    File output = new File(base, "output");
+    File tgz = writeTgz(base,
+        file("package/dist/bundle.js", "original"),
+        file("package/dist/bundle.js", "tampered"));
+
+    Throwable error = runUnTar(tgz, output);
+
+    assertTrue("Expected rejection for duplicate entry", error != null);
+    assertTrue(error.getMessage().contains("Duplicate tar entry"));
+  }
 }
