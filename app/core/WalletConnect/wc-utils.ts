@@ -12,7 +12,7 @@ import {
   selectProviderConfig,
 } from '../../selectors/networkController';
 import Engine from '../Engine';
-import { getPermittedAccounts, getPermittedChains, removePermittedChain, updatePermittedChains } from '../Permissions';
+import { getPermittedAccounts, getPermittedChains } from '../Permissions';
 import {
   findExistingNetwork,
   switchToNetwork,
@@ -250,6 +250,22 @@ export const onRequestUserApproval = (origin: string) => async (args: any) => {
   return responseData;
 };
 
+/**
+ * Returns an absolute URL for the chain-switch approval screen, which parses
+ * `pageMeta.url` with `new URL` and so cannot accept a bare hostname.
+ *
+ * @param origin - The WalletConnect session origin.
+ * @param hostname - The permission subject's hostname.
+ * @returns The origin URL, or an HTTPS URL based on the hostname.
+ */
+const getApprovalPageUrl = (origin: string, hostname: string): string => {
+  try {
+    return new URL(origin).href;
+  } catch {
+    return `https://${hostname}`;
+  }
+};
+
 export const checkWCPermissions = async ({
   origin,
   caip2ChainId,
@@ -301,37 +317,42 @@ export const checkWCPermissions = async ({
     existingNetwork,
   );
 
-  if (caip2ChainId !== activeCaip2ChainId) {
+  // A chain the dapp is not yet permitted on must always go through
+  // switchToNetwork so the user approves it there; the CAIP-25 caveat is only
+  // updated once that approval resolves.
+  if (caip2ChainId !== activeCaip2ChainId || !isAllowedChainId) {
     try {
-      if (!isAllowedChainId && allowSwitchingToNewChain) {
-        // Preemptively add the chain to the permitted chains
-        // This is to prevent a race condition where WalletConnect is told about the chain switch before permissions are updated
-        DevLogger.log(`WC::checkWCPermissions adding permitted chain for ${hostname}:`, hexChainIdString);
-        updatePermittedChains(hostname, [hexChainIdString]);
-      }
-
+      // The permission subject for a WalletConnect session is the hostname, so
+      // every caveat lookup, grant and approval must use the same key.
       await switchToNetwork({
         network: existingNetwork,
         chainId: hexChainIdString,
-        requestUserApproval: onRequestUserApproval(origin),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        requestUserApproval: (args: any) =>
+          onRequestUserApproval(hostname)(
+            args?.requestData?.pageMeta
+              ? {
+                  ...args,
+                  requestData: {
+                    ...args.requestData,
+                    pageMeta: {
+                      ...args.requestData.pageMeta,
+                      url: getApprovalPageUrl(origin, hostname),
+                    },
+                  },
+                }
+              : args,
+          ),
         analytics: {},
-        origin,
+        origin: hostname,
         isAddNetworkFlow: false,
-        hooks: getRpcMethodMiddlewareHooks(origin),
+        hooks: getRpcMethodMiddlewareHooks(hostname),
       });
     } catch (error) {
       DevLogger.log(
         `WC::checkWCPermissions error switching to network:`,
         error,
       );
-
-      if (!isAllowedChainId && allowSwitchingToNewChain) {
-        // If we failed to switch to the network, remove the chain from the permitted chains
-        // This is so we don't leave any dangling permissions if the user rejects the switch
-        DevLogger.log(`WC::checkWCPermissions removing permitted chain for ${hostname}:`, hexChainIdString);
-        removePermittedChain(hostname, hexChainIdString);
-      }
-
       return false;
     }
   }
