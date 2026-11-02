@@ -22,6 +22,7 @@ import {
 } from '../RPCMethods/lib/ethereum-chain-utils';
 
 import Engine from '../Engine';
+import { getRpcMethodMiddlewareHooks } from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 
 // Mock dependencies
@@ -285,28 +286,62 @@ describe('WalletConnect Utils', () => {
       expect(switchToNetwork).toHaveBeenCalled();
     });
 
-    it('adds permitted chain when allowSwitchingToNewChain is true', async () => {
-      // Mock that the chain is not permitted
-      const mockPermittedChains = jest.requireMock('../Permissions').getPermittedChains;
-      mockPermittedChains.mockResolvedValueOnce([]);
+    it('does not pre-grant an unpermitted chain before switchToNetwork prompts', async () => {
+      const permissions = jest.requireMock('../Permissions');
+      permissions.getPermittedChains.mockResolvedValueOnce(['eip155:1']);
+      const hooks = { getCaveat: jest.fn() };
+      (getRpcMethodMiddlewareHooks as jest.Mock).mockReturnValue(hooks);
 
-      // Mock the updatePermittedChains function
-      const mockUpdatePermittedChain = jest.requireMock('../Permissions').updatePermittedChains;
+      const result = await checkWCPermissions({
+        origin: 'https://test-dapp.com/path',
+        caip2ChainId: 'eip155:3',
+        allowSwitchingToNewChain: true,
+      });
 
-      // Test with allowSwitchingToNewChain set to true
+      expect(permissions.updatePermittedChains).not.toHaveBeenCalled();
+      expect(getRpcMethodMiddlewareHooks).toHaveBeenCalledWith('test-dapp.com');
+      expect(switchToNetwork).toHaveBeenCalledWith(
+        expect.objectContaining({
+          chainId: '0x3',
+          origin: 'test-dapp.com',
+          isAddNetworkFlow: false,
+          hooks,
+        }),
+      );
+      expect(result).toBe(true);
+    });
+
+    it('goes through switchToNetwork for an unpermitted chain that is already active', async () => {
+      (selectProviderConfig as unknown as jest.Mock).mockReturnValue({ chainId: '0x3' });
+      const permissions = jest.requireMock('../Permissions');
+      permissions.getPermittedChains.mockResolvedValueOnce(['eip155:1']);
+
       const result = await checkWCPermissions({
         origin: 'test-dapp.com',
         caip2ChainId: 'eip155:3',
         allowSwitchingToNewChain: true,
       });
 
-      // Verify addPermittedChain was called with the right parameters
-      expect(mockUpdatePermittedChain).toHaveBeenCalledWith(
-        'test-dapp.com',
-        ['0x3']
+      expect(switchToNetwork).toHaveBeenCalledWith(
+        expect.objectContaining({ chainId: '0x3', origin: 'test-dapp.com' }),
       );
-      expect(switchToNetwork).toHaveBeenCalled();
       expect(result).toBe(true);
+    });
+
+    it('returns false without touching permissions when the switch is rejected', async () => {
+      (selectProviderConfig as unknown as jest.Mock).mockReturnValue({ chainId: '0x1' });
+      const permissions = jest.requireMock('../Permissions');
+      permissions.getPermittedChains.mockResolvedValueOnce(['eip155:1']);
+      (switchToNetwork as jest.Mock).mockRejectedValueOnce(new Error('User rejected'));
+
+      const result = await checkWCPermissions({
+        origin: 'test-dapp.com',
+        caip2ChainId: 'eip155:3',
+        allowSwitchingToNewChain: true,
+      });
+
+      expect(result).toBe(false);
+      expect(permissions.updatePermittedChains).not.toHaveBeenCalled();
     });
   });
 
