@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import {
   TextInput,
   View,
@@ -10,7 +16,7 @@ import { Hex } from '@metamask/utils';
 import { fontStyles } from '../../../styles/common';
 import { strings } from '../../../../locales/i18n';
 import Fuse from 'fuse.js';
-import { toLowerCaseEquals } from '../../../util/general';
+import { debounce } from 'lodash';
 import { useSelector } from 'react-redux';
 import { TokenListToken } from '@metamask/assets-controllers';
 import { useTheme } from '../../../util/theme';
@@ -73,6 +79,10 @@ const createStyles = (colors: any) =>
       borderColor: colors.primary.alternative,
     },
   });
+
+export const SEARCH_DEBOUNCE_MS = 250;
+
+const ADDRESS_REGEX = /^0x[0-9a-f]{40}$/i;
 
 const fuse = new Fuse<TokenListToken>([], {
   shouldSort: true,
@@ -144,6 +154,21 @@ const AssetSearch = ({
     }));
   }, [allNetworksEnabled, tokenListForAllChains, chainId]);
 
+  const tokensByAddress = useMemo(() => {
+    const index = new Map<string, TokenListToken[]>();
+    tokenList.forEach((token) => {
+      const key = token.address?.toLowerCase();
+      if (!key) return;
+      const tokens = index.get(key);
+      if (tokens) {
+        tokens.push(token);
+      } else {
+        index.set(key, [token]);
+      }
+    });
+    return index;
+  }, [tokenList]);
+
   useEffect(() => {
     setTimeout(() => {
       setInputDimensions('86%');
@@ -157,17 +182,42 @@ const AssetSearch = ({
     }
   }, [tokenList]);
 
+  const runSearch = useCallback(
+    (searchText: string) => {
+      const query = searchText.trim();
+      const results = ADDRESS_REGEX.test(query)
+        ? tokensByAddress.get(query.toLowerCase()) ?? []
+        : fuse.search(searchText);
+      onSearch({ searchQuery: searchText, results });
+    },
+    [onSearch, tokensByAddress],
+  );
+
+  const runSearchRef = useRef(runSearch);
+  runSearchRef.current = runSearch;
+
+  const debouncedSearch = useMemo(
+    () =>
+      debounce(
+        (searchText: string) => runSearchRef.current(searchText),
+        SEARCH_DEBOUNCE_MS,
+      ),
+    [],
+  );
+
+  useEffect(() => () => debouncedSearch.cancel(), [debouncedSearch]);
+
   const handleSearch = useCallback(
     (searchText: string) => {
       setSearchQuery(searchText);
-      const fuseSearchResult = fuse.search(searchText);
-      const addressSearchResult = tokenList?.filter((token: TokenListToken) =>
-        toLowerCaseEquals(token.address, searchText),
-      );
-      const results = [...addressSearchResult, ...fuseSearchResult];
-      onSearch({ searchQuery: searchText, results });
+      if (!searchText.trim()) {
+        debouncedSearch.cancel();
+        onSearch({ searchQuery: searchText, results: [] });
+        return;
+      }
+      debouncedSearch(searchText);
     },
-    [setSearchQuery, onSearch, tokenList],
+    [debouncedSearch, onSearch],
   );
 
   useEffect(() => {
