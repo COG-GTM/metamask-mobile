@@ -2,9 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import FilesystemStorage from 'redux-persist-filesystem-storage';
 import Device from '../util/device';
 import persistConfig, {
+  clearPersistentStateCache,
   flushStorageWrite,
+  getMemoizedPersistentState,
   PERSIST_THROTTLE,
 } from './persistConfig';
+import { getPersistentState } from '@metamask/base-controller';
 import { version } from './migrations';
 import Engine from '../core/Engine';
 import { Transform } from 'redux-persist';
@@ -25,22 +28,24 @@ jest.mock('redux-persist-filesystem-storage');
 jest.mock('../util/device');
 jest.mock('../util/Logger');
 jest.mock('@metamask/base-controller', () => ({
-  getPersistentState: (
-    state: Record<string, unknown>,
-    metadata: ControllerMetadata | undefined,
-  ) => {
-    if (!metadata) return {};
-    return Object.entries(state).reduce<Record<string, unknown>>(
-      (acc, [key, value]) => {
-        const fieldMetadata = metadata[key];
-        if (fieldMetadata?.persist) {
-          acc[key] = value;
-        }
-        return acc;
-      },
-      {},
-    );
-  },
+  getPersistentState: jest.fn(
+    (
+      state: Record<string, unknown>,
+      metadata: ControllerMetadata | undefined,
+    ) => {
+      if (!metadata) return {};
+      return Object.entries(state).reduce<Record<string, unknown>>(
+        (acc, [key, value]) => {
+          const fieldMetadata = metadata[key];
+          if (fieldMetadata?.persist) {
+            acc[key] = value;
+          }
+          return acc;
+        },
+        {},
+      );
+    },
+  ),
 }));
 
 // Mock redux-persist
@@ -106,6 +111,7 @@ jest.mock('lodash', () => ({
 describe('persistConfig', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    clearPersistentStateCache();
     // Mock Device.isIos
     (Device.isIos as jest.Mock).mockReturnValue(true);
     // Clear Engine mock context
@@ -534,6 +540,121 @@ describe('persistConfig', () => {
             },
           },
         });
+      });
+    });
+  });
+
+  describe('getMemoizedPersistentState', () => {
+    const metadata = {
+      vault: { persist: true, anonymous: false },
+      isUnlocked: { persist: false, anonymous: true },
+    };
+    const mockGetPersistentState = getPersistentState as jest.Mock;
+
+    it('reuses the result while state and metadata references are unchanged', () => {
+      const state = { vault: 'v1', isUnlocked: true };
+
+      const first = getMemoizedPersistentState(
+        'KeyringController',
+        state,
+        metadata,
+      );
+      const second = getMemoizedPersistentState(
+        'KeyringController',
+        state,
+        metadata,
+      );
+
+      expect(first).toEqual({ vault: 'v1' });
+      expect(second).toBe(first);
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(1);
+    });
+
+    it('recomputes when the controller state reference changes', () => {
+      const state = { vault: 'v1', isUnlocked: true };
+      getMemoizedPersistentState('KeyringController', state, metadata);
+
+      const result = getMemoizedPersistentState(
+        'KeyringController',
+        { ...state, vault: 'v2' },
+        metadata,
+      );
+
+      expect(result).toEqual({ vault: 'v2' });
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(2);
+    });
+
+    it('recomputes when the metadata reference changes', () => {
+      const state = { vault: 'v1', isUnlocked: true };
+      getMemoizedPersistentState('KeyringController', state, metadata);
+
+      const result = getMemoizedPersistentState('KeyringController', state, {
+        ...metadata,
+        isUnlocked: { persist: true, anonymous: true },
+      });
+
+      expect(result).toEqual({ vault: 'v1', isUnlocked: true });
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(2);
+    });
+
+    it('caches each controller independently', () => {
+      const state = { vault: 'v1', isUnlocked: true };
+      getMemoizedPersistentState('A', state, metadata);
+      getMemoizedPersistentState('B', state, metadata);
+      getMemoizedPersistentState('A', state, metadata);
+      getMemoizedPersistentState('B', state, metadata);
+
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(2);
+    });
+
+    it('persistTransform only walks controllers whose state changed', () => {
+      const mockContext = {
+        KeyringController: { metadata },
+        PreferencesController: {
+          metadata: { selectedAddress: { persist: true, anonymous: false } },
+        },
+      } as unknown as EngineContext;
+      (Engine as unknown as MockEngine).setMockContext(mockContext);
+      const engineTransform = persistConfig.transforms[0] as Transform<
+        unknown,
+        unknown
+      >;
+
+      const keyring = { vault: 'v1', isUnlocked: true };
+      const preferences = { selectedAddress: '0x1' };
+      engineTransform.in(
+        {
+          backgroundState: {
+            KeyringController: keyring,
+            PreferencesController: preferences,
+          },
+        },
+        'engine',
+        {},
+      );
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(2);
+
+      const result = engineTransform.in(
+        {
+          backgroundState: {
+            KeyringController: keyring,
+            PreferencesController: { selectedAddress: '0x2' },
+          },
+        },
+        'engine',
+        {},
+      );
+
+      expect(mockGetPersistentState).toHaveBeenCalledTimes(3);
+      expect(mockGetPersistentState).toHaveBeenLastCalledWith(
+        { selectedAddress: '0x2' },
+        mockContext.PreferencesController.metadata,
+      );
+      expect(result).toEqual({
+        backgroundState: {
+          KeyringController: { vault: 'v1' },
+          PreferencesController: { selectedAddress: '0x2' },
+        },
       });
     });
   });
