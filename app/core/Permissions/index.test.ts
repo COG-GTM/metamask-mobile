@@ -172,6 +172,49 @@ describe('Permission Utility Functions', () => {
       );
       expect(result).toEqual([]);
     });
+
+    it('only resolves accounts for the requested hostname', () => {
+      const buildSubject = () => ({
+        permissions: {
+          [Caip25EndowmentPermissionName]: {
+            caveats: [
+              {
+                type: Caip25CaveatType,
+                value: { optionalScopes: {}, requiredScopes: {} },
+              },
+            ],
+          },
+        },
+      });
+      const mockState = {
+        subjects: {
+          'https://a.com': buildSubject(),
+          'https://b.com': buildSubject(),
+          'https://c.com': buildSubject(),
+        },
+      };
+      mockListAccounts.mockReturnValue([
+        { address: '0x1', metadata: { lastSelected: 1 } },
+      ]);
+      (getEthAccounts as jest.Mock).mockReturnValue(['0x1']);
+
+      expect(
+        getPermittedAccountsByHostname(mockState, 'https://b.com'),
+      ).toEqual(['0x1']);
+      expect(getEthAccounts).toHaveBeenCalledTimes(1);
+      expect(mockListAccounts).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns empty array for prototype keys and missing subjects', () => {
+      const mockState = { subjects: {} };
+      expect(getPermittedAccountsByHostname(mockState, 'constructor')).toEqual(
+        [],
+      );
+      expect(getPermittedAccountsByHostname(mockState, '__proto__')).toEqual(
+        [],
+      );
+      expect(getPermittedAccountsByHostname({}, 'https://a.com')).toEqual([]);
+    });
   });
 
   describe('getPermittedChainIdsByHostname', () => {
@@ -187,11 +230,11 @@ describe('Permission Utility Functions', () => {
                     value: {
                       optionalScopes: {
                         'eip155:1': {
-                          accounts: []
+                          accounts: [],
                         },
                         'eip155:2': {
-                          accounts: []
-                        }
+                          accounts: [],
+                        },
                       },
                       requiredScopes: {},
                     },
@@ -209,8 +252,8 @@ describe('Permission Utility Functions', () => {
                     value: {
                       optionalScopes: {
                         'eip155:3': {
-                          accounts: []
-                        }
+                          accounts: [],
+                        },
                       },
                       requiredScopes: {},
                     },
@@ -232,7 +275,7 @@ describe('Permission Utility Functions', () => {
           return ['0x1', '0x2'];
         }
         return ['0x3'];
-          });
+      });
 
       const result = getPermittedChainIdsByHostname(
         mockState,
@@ -252,9 +295,9 @@ describe('Permission Utility Functions', () => {
                     type: Caip25CaveatType,
                     value: {
                       optionalScopes: {
-                        'wallet': {
-                          accounts: []
-                        }
+                        wallet: {
+                          accounts: [],
+                        },
                       },
                       requiredScopes: {},
                     },
@@ -266,7 +309,6 @@ describe('Permission Utility Functions', () => {
         },
       };
 
-
       (getPermittedEthChainIds as jest.Mock).mockImplementation((value) => {
         if (
           value ===
@@ -276,7 +318,7 @@ describe('Permission Utility Functions', () => {
         ) {
           return [];
         }
-          });
+      });
 
       const result = getPermittedChainIdsByHostname(
         mockState,
@@ -736,7 +778,9 @@ describe('Permission Utility Functions', () => {
       // Mock getCaip25Caveat to return undefined
       mockGetCaveat.mockReturnValue(undefined);
 
-      expect(() => updatePermittedChains('https://example.com', ['0x1'])).toThrow(
+      expect(() =>
+        updatePermittedChains('https://example.com', ['0x1']),
+      ).toThrow(
         'Cannot add chain permissions for origin "https://example.com": no permission currently exists for this origin.',
       );
     });
