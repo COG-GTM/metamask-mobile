@@ -56,9 +56,10 @@ public class RNTarTest {
     CountDownLatch latch = new CountDownLatch(1); // Create a CountDownLatch
 
     try {
-      File tgzFile = new File(reactContext.getCacheDir(), "validTestTGZFile.tgz");
+      File baseDir = Files.createTempDirectory("rntar-valid").toFile();
+      File tgzFile = new File(baseDir, "validTestTGZFile.tgz");
       Files.copy(tgzResource, tgzFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-      String outputPath = Files.createTempDirectory("rntar-valid").toFile().getAbsolutePath() + "/output";
+      String outputPath = baseDir.getAbsolutePath() + "/output";
 
       // Set up the promise to count down the latch when resolved
       doAnswer(invocation -> {
