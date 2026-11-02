@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { selectCurrentCurrency } from '../../../../../selectors/currencyRateController';
 import { BridgeToken } from '../../types';
@@ -10,6 +10,9 @@ import {
 } from '../../../../../core/redux/slices/bridge';
 import useThunkDispatch from '../../../../hooks/useThunkDispatch';
 import { RootState } from '../../../../../reducers';
+
+export const EXCHANGE_RATE_RETRY_DELAY_MS = 30000;
+export const MAX_EXCHANGE_RATE_FETCH_ATTEMPTS = 3;
 
 /**
  * Fetches the exchange rate for a token and stores it in the Redux store
@@ -40,31 +43,60 @@ export const useBridgeExchangeRates = ({
         )
       : undefined,
   );
-  const lastRequestedKey = useRef<string>();
+  const lastRequest = useRef<{
+    key: string;
+    attempts: number;
+    retryDue: boolean;
+  }>();
+  const retryTimer = useRef<ReturnType<typeof setTimeout>>();
+  const [retryTick, setRetryTick] = useState(0);
 
   // If a currency override is provided, use it, otherwise use the current currency
   // Used in places like metrics, when we want to get a rate specifically in USD
   const currency = currencyOverride ?? currentCurrency;
   const currencyExchangeRate = token?.currencyExchangeRate;
 
+  useEffect(
+    () => () => {
+      clearTimeout(retryTimer.current);
+    },
+    [],
+  );
+
   // Fetch exchange rates for selected token if not found in marketData
   useEffect(() => {
-    if (!chainId || !address) {
-      return;
-    }
+    const cancelRetry = () => {
+      clearTimeout(retryTimer.current);
+      retryTimer.current = undefined;
+    };
 
-    if (exchangeRateInNativeAsset || currencyExchangeRate) {
+    if (
+      !chainId ||
+      !address ||
+      exchangeRateInNativeAsset ||
+      currencyExchangeRate
+    ) {
       // Allow a new fetch if the rate goes missing again later
-      lastRequestedKey.current = undefined;
+      lastRequest.current = undefined;
+      cancelRetry();
       return;
     }
 
-    // Unpriced tokens resolve to no rate, so don't re-request the same token and currency
+    // Only re-request the same token and currency when a delayed retry is due,
+    // so unpriced tokens aren't fetched on every render
     const requestKey = `${chainId}:${address}:${currency}`;
-    if (lastRequestedKey.current === requestKey) {
+    const previous =
+      lastRequest.current?.key === requestKey ? lastRequest.current : undefined;
+    if (
+      previous &&
+      (!previous.retryDue ||
+        previous.attempts >= MAX_EXCHANGE_RATE_FETCH_ATTEMPTS)
+    ) {
       return;
     }
-    lastRequestedKey.current = requestKey;
+    const attempts = (previous?.attempts ?? 0) + 1;
+    lastRequest.current = { key: requestKey, attempts, retryDue: false };
+    cancelRetry();
 
     dispatch(
       action({
@@ -73,6 +105,16 @@ export const useBridgeExchangeRates = ({
         currency,
       }),
     );
+
+    if (attempts < MAX_EXCHANGE_RATE_FETCH_ATTEMPTS) {
+      retryTimer.current = setTimeout(() => {
+        retryTimer.current = undefined;
+        if (lastRequest.current?.key === requestKey) {
+          lastRequest.current.retryDue = true;
+          setRetryTick((tick) => tick + 1);
+        }
+      }, EXCHANGE_RATE_RETRY_DELAY_MS);
+    }
   }, [
     currency,
     dispatch,
@@ -81,5 +123,6 @@ export const useBridgeExchangeRates = ({
     exchangeRateInNativeAsset,
     action,
     currencyExchangeRate,
+    retryTick,
   ]);
 };

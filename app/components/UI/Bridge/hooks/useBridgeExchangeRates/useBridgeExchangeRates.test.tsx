@@ -3,7 +3,11 @@ import { Provider } from 'react-redux';
 import { AnyAction, createStore } from 'redux';
 import { act, renderHook } from '@testing-library/react-native';
 import { Hex } from '@metamask/utils';
-import { useBridgeExchangeRates } from '.';
+import {
+  EXCHANGE_RATE_RETRY_DELAY_MS,
+  MAX_EXCHANGE_RATE_FETCH_ATTEMPTS,
+  useBridgeExchangeRates,
+} from '.';
 import { BridgeToken } from '../../types';
 import useThunkDispatch from '../../../../hooks/useThunkDispatch';
 
@@ -94,9 +98,20 @@ describe('useBridgeExchangeRates', () => {
   };
 
   beforeEach(() => {
+    jest.useFakeTimers();
     jest.clearAllMocks();
     (useThunkDispatch as jest.Mock).mockReturnValue(mockDispatch);
   });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const advanceRetryDelay = () => {
+    act(() => {
+      jest.advanceTimersByTime(EXCHANGE_RATE_RETRY_DELAY_MS);
+    });
+  };
 
   it('fetches once for an unlisted token and does not refetch on unrelated rate updates', () => {
     const store = createTestStore({});
@@ -218,5 +233,56 @@ describe('useBridgeExchangeRates', () => {
     renderUseBridgeExchangeRates(store, { token: undefined });
 
     expect(mockAction).not.toHaveBeenCalled();
+  });
+
+  it('retries an unsuccessful lookup after a delay, up to a bounded number of attempts', () => {
+    const store = createTestStore({});
+    renderUseBridgeExchangeRates(store, {
+      token: buildToken(UNLISTED_ADDRESS),
+    });
+    expect(mockAction).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      jest.advanceTimersByTime(EXCHANGE_RATE_RETRY_DELAY_MS - 1);
+    });
+    pollRates(store, 3);
+    expect(mockAction).toHaveBeenCalledTimes(1);
+
+    for (let i = 0; i < MAX_EXCHANGE_RATE_FETCH_ATTEMPTS + 2; i++) {
+      advanceRetryDelay();
+      pollRates(store, 2);
+    }
+
+    expect(mockAction).toHaveBeenCalledTimes(MAX_EXCHANGE_RATE_FETCH_ATTEMPTS);
+    expect(mockAction).toHaveBeenLastCalledWith({
+      chainId: CHAIN_ID,
+      tokenAddress: UNLISTED_ADDRESS,
+      currency: 'usd',
+    });
+  });
+
+  it('does not retry once a rate has been fetched', () => {
+    const store = createTestStore({});
+    const token = buildToken(UNLISTED_ADDRESS);
+    const { rerender } = renderUseBridgeExchangeRates(store, { token });
+
+    rerender({ token: { ...token, currencyExchangeRate: 3 } });
+    advanceRetryDelay();
+    advanceRetryDelay();
+
+    expect(mockAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels a pending retry on unmount', () => {
+    const store = createTestStore({});
+    const { unmount } = renderUseBridgeExchangeRates(store, {
+      token: buildToken(UNLISTED_ADDRESS),
+    });
+
+    unmount();
+    advanceRetryDelay();
+
+    expect(mockAction).toHaveBeenCalledTimes(1);
+    expect(jest.getTimerCount()).toBe(0);
   });
 });
