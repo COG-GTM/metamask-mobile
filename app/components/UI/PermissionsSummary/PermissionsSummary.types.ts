@@ -28,4 +28,9 @@ export interface PermissionsSummaryProps {
   networkAvatars?: ({ name: string; imageSource: string } | null)[];
   isNonDappNetworkSwitch?: boolean;
   onChooseFromPermittedNetworks?: () => void;
+  /**
+   * True when the dapp url/icon were self-reported (e.g. SDK connect link)
+   * and cannot be verified by the wallet.
+   */
+  isOriginUnverified?: boolean;
 }

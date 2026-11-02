@@ -21,6 +21,10 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import {
+  isValidDappScheme,
+  parseDeeplinkOriginatorInfo,
+} from './deeplinkProtocolValidation';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -252,6 +256,14 @@ export default class DeeplinkProtocolService {
       const base64Message = Buffer.from(jsonMessage).toString('base64');
       const dappScheme = this.connections[clientId]?.scheme ?? scheme;
 
+      if (!isValidDappScheme(dappScheme)) {
+        Logger.error(
+          new Error('DeeplinkProtocolService::openDeeplink invalid scheme'),
+          { clientId },
+        );
+        return;
+      }
+
       DevLogger.log(
         `DeeplinkProtocolService::openDeeplink scheme=${scheme} dappScheme=${dappScheme} clientId=${clientId}`,
       );
@@ -429,16 +441,30 @@ export default class DeeplinkProtocolService {
       return;
     }
 
+    if (!isValidDappScheme(params.scheme)) {
+      Logger.error(
+        new Error('DeeplinkProtocolService::handleConnection invalid scheme'),
+        { channelId: params.channelId },
+      );
+
+      return;
+    }
+
+    let originatorInfo: OriginatorInfo;
+    try {
+      originatorInfo = parseDeeplinkOriginatorInfo(params.originatorInfo);
+    } catch (error) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection invalid originatorInfo',
+        ),
+        { channelId: params.channelId, reason: (error as Error).message },
+      );
+
+      return;
+    }
+
     this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
-
-    const decodedOriginatorInfo = Buffer.from(
-      params.originatorInfo,
-      'base64',
-    ).toString('utf-8');
-
-    const originatorInfoJson = JSON.parse(decodedOriginatorInfo);
-
-    const originatorInfo = originatorInfoJson.originatorInfo;
 
     const clientInfo: DappClient = {
       clientId: params.channelId,
@@ -639,6 +665,14 @@ export default class DeeplinkProtocolService {
     scheme: string;
     account: string; // account@chainid
   }) {
+    if (!isValidDappScheme(params.scheme)) {
+      Logger.error(
+        new Error('DeeplinkProtocolService::handleMessage invalid scheme'),
+        { channelId: params.channelId },
+      );
+      return;
+    }
+
     let walletSelectedAddress = '';
     let walletSelectedChainId = '';
     let dappAccountChainId = '';

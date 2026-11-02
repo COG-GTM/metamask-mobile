@@ -47,7 +47,6 @@ describe('handleMetaMaskProtocol', () => {
 
   const handled = jest.fn();
 
-
   let url = '';
 
   let params = {
@@ -78,7 +77,7 @@ describe('handleMetaMaskProtocol', () => {
         navigation: {
           navigate: mockNavigate,
         },
-      }
+      },
     }));
 
     mockWC2ManagerGetInstance.mockResolvedValue({
@@ -136,8 +135,64 @@ describe('handleMetaMaskProtocol', () => {
       params.comm = 'deeplinking';
       params.channelId = 'test-channel-id';
       params.pubkey = 'test-pubkey';
-      params.originatorInfo = 'test-originator-info';
+      params.originatorInfo = Buffer.from(
+        JSON.stringify({
+          originatorInfo: { url: 'https://app.example.com', title: 'Example' },
+        }),
+      ).toString('base64');
       params.request = 'test-request';
+    });
+
+    it.each(['https://mallory.example/c?d=', 'http', 'javascript'])(
+      'should throw and not connect if params.scheme is %s',
+      (scheme) => {
+        const mockHandleConnection = jest.fn();
+        mockSDKConnectGetInstance.mockImplementation(() => ({
+          state: {
+            deeplinkingService: { handleConnection: mockHandleConnection },
+          },
+        }));
+        params.scheme = scheme;
+
+        expect(() => {
+          handleMetaMaskDeeplink({
+            instance,
+            handled,
+            params,
+            url,
+            origin,
+            wcURL,
+          });
+        }).toThrow('DeepLinkManager failed to connect - Invalid scheme');
+        expect(mockHandleConnection).not.toHaveBeenCalled();
+      },
+    );
+
+    it('should throw and not connect if params.originatorInfo is invalid', () => {
+      const mockHandleConnection = jest.fn();
+      mockSDKConnectGetInstance.mockImplementation(() => ({
+        state: {
+          deeplinkingService: { handleConnection: mockHandleConnection },
+        },
+      }));
+      params.scheme = 'test-scheme';
+      params.originatorInfo = Buffer.from(
+        JSON.stringify({
+          originatorInfo: { url: 'ftp://app.uniswap.org', title: 'Uniswap' },
+        }),
+      ).toString('base64');
+
+      expect(() => {
+        handleMetaMaskDeeplink({
+          instance,
+          handled,
+          params,
+          url,
+          origin,
+          wcURL,
+        });
+      }).toThrow('DeepLinkManager failed to connect - Invalid originatorInfo');
+      expect(mockHandleConnection).not.toHaveBeenCalled();
     });
 
     it('should throw an error if params.scheme is not defined', () => {
@@ -230,6 +285,31 @@ describe('handleMetaMaskProtocol', () => {
       );
     });
 
+    it('should throw and not forward the message if params.scheme is an https url', () => {
+      const mockHandleMessage = jest.fn();
+      mockSDKConnectGetInstance.mockImplementation(() => ({
+        state: {
+          deeplinkingService: { handleMessage: mockHandleMessage },
+        },
+      }));
+      params.message = 'test-message';
+      params.scheme = 'https://mallory.example/c?d=';
+
+      expect(() => {
+        handleMetaMaskDeeplink({
+          instance,
+          handled,
+          params,
+          url,
+          origin,
+          wcURL,
+        });
+      }).toThrow(
+        'DeepLinkManager: deeplinkingService failed to handleMessage - Invalid scheme',
+      );
+      expect(mockHandleMessage).not.toHaveBeenCalled();
+    });
+
     it('should call handleMessage if params.message and params.scheme are defined', () => {
       const mockHandleMessage = jest.fn();
       mockSDKConnectGetInstance.mockImplementation(() => ({
@@ -290,7 +370,6 @@ describe('handleMetaMaskProtocol', () => {
         screen: Routes.SHEET.RETURN_TO_DAPP_MODAL,
       });
     });
-
 
     it('should call handleDeeplink when channel exists and params.redirect is falsy', () => {
       origin = AppConstants.DEEPLINKS.ORIGIN_DEEPLINK;
