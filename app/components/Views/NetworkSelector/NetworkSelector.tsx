@@ -120,6 +120,11 @@ interface NetworkSelectorRouteParams {
   };
 }
 
+/**
+ * Starts the parent NetworkSwitch trace, capturing wallet tags at call time.
+ *
+ * @returns The trace context passed to useSwitchNetworks as `parentSpan`.
+ */
 const startNetworkSwitchTrace = () =>
   trace({
     name: TraceName.NetworkSwitch,
