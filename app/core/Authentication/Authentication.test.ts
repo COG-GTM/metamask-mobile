@@ -183,6 +183,40 @@ describe('Authentication', () => {
     expect(methodCalled).toBeTruthy();
   });
 
+  it('storePassword resolves false when biometric setup was cancelled', async () => {
+    jest.spyOn(SecureKeychain, 'setGenericPassword').mockResolvedValue(false);
+    const result = await Authentication.storePassword(
+      '1234',
+      AUTHENTICATION_TYPE.BIOMETRIC,
+    );
+    expect(SecureKeychain.setGenericPassword).toHaveBeenCalledWith(
+      '1234',
+      SecureKeychain.TYPES.BIOMETRICS,
+    );
+    expect(result).toBe(false);
+  });
+
+  it('storePassword resolves true when biometric credential was stored', async () => {
+    jest.spyOn(SecureKeychain, 'setGenericPassword').mockResolvedValue(true);
+    const result = await Authentication.storePassword(
+      '1234',
+      AUTHENTICATION_TYPE.BIOMETRIC,
+    );
+    expect(result).toBe(true);
+  });
+
+  it('getType reports PASSWORD (not REMEMBER_ME) after a cancelled biometric setup', async () => {
+    SecureKeychain.getSupportedBiometryType = jest
+      .fn()
+      .mockReturnValue(Keychain.BIOMETRY_TYPE.FACE_ID);
+    await StorageWrapper.setItem(EXISTING_USER, TRUE);
+    await StorageWrapper.setItem(BIOMETRY_CHOICE_DISABLED, TRUE);
+    await StorageWrapper.setItem(PASSCODE_DISABLED, TRUE);
+    jest.spyOn(SecureKeychain, 'getGenericPassword').mockResolvedValue(null);
+    const result = await Authentication.getType();
+    expect(result.currentAuthType).toEqual(AUTHENTICATION_TYPE.PASSWORD);
+  });
+
   describe('Multichain - discoverAccounts', () => {
     it('calls discoverAccounts after vault creation in newWalletAndKeychain', async () => {
       jest.spyOn(ReduxService, 'store', 'get').mockReturnValue({

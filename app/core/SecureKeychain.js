@@ -115,6 +115,12 @@ export default {
     return null;
   },
 
+  /**
+   * Stores the password in the keychain protected according to `type`.
+   * Resolves to `false` when the credential could not be stored with the
+   * requested protection (the user cancelled the iOS biometric prompt); in
+   * that case nothing is left in the keychain.
+   */
   async setGenericPassword(password, type) {
     const authOptions = {
       accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
@@ -162,29 +168,14 @@ export default {
         try {
           await this.getGenericPassword();
         } catch (error) {
-          // Specifically check for user cancellation
+          // If the user cancels the biometric prompt, drop the credential
+          // entirely so the wallet falls back to password login. Never
+          // re-store it without access control: that would silently turn
+          // into a no-prompt "Remember me" unlock.
           if (error.message === 'User canceled the operation.') {
-            // Store password without biometrics
-            const encryptedPassword = await instance.encryptPassword(password);
-            await Keychain.setGenericPassword(
-              'metamask-user',
-              encryptedPassword,
-              {
-                ...defaultOptions,
-              },
-            );
-
-            // Update storage to reflect disabled biometrics
-            await StorageWrapper.removeItem(BIOMETRY_CHOICE);
+            await this.resetGenericPassword();
             await StorageWrapper.setItem(BIOMETRY_CHOICE_DISABLED, TRUE);
-
-            // Update metrics
-            await metrics.addTraitsToUser({
-              [UserProfileProperty.AUTHENTICATION_TYPE]:
-                AUTHENTICATION_TYPE.PASSWORD,
-            });
-
-            return;
+            return false;
           }
         }
       }
@@ -200,6 +191,7 @@ export default {
       await StorageWrapper.setItem(BIOMETRY_CHOICE_DISABLED, TRUE);
       //Don't need to add any parameter
     }
+    return true;
   },
   ACCESS_CONTROL: Keychain.ACCESS_CONTROL,
   ACCESSIBLE: Keychain.ACCESSIBLE,

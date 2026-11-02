@@ -2044,7 +2044,9 @@
     "enable_fingerprint": "Unlock with Fingerprint?",
     "enable_biometrics": "Unlock with Biometrics?",
     "enable_device_passcode_ios": "Unlock with device passcode?",
-    "enable_device_passcode_android": "Unlock with device PIN?"
+    "enable_device_passcode_android": "Unlock with device PIN?",
+    "setup_not_completed_title": "Biometric unlock not turned on",
+    "setup_not_completed_message": "Authentication was cancelled, so biometric unlock was not turned on. You'll need your password to unlock MetaMask."
   },
   "authentication": {
     "auth_prompt_title": "Authentication required",

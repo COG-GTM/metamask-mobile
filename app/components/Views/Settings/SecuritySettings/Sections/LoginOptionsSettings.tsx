@@ -18,8 +18,9 @@ import createStyles from '../SecuritySettings.styles';
 import { SecurityPrivacyViewSelectorsIDs } from '../../../../../../e2e/selectors/Settings/SecurityAndPrivacy/SecurityPrivacyView.selectors';
 
 interface BiometricOptionSectionProps {
-  onSignWithBiometricsOptionUpdated: (enabled: boolean) => Promise<void>;
-  onSignWithPasscodeOptionUpdated: (enabled: boolean) => Promise<void>;
+  /** Resolves to whether the option is enabled once the update completes */
+  onSignWithBiometricsOptionUpdated: (enabled: boolean) => Promise<boolean>;
+  onSignWithPasscodeOptionUpdated: (enabled: boolean) => Promise<boolean>;
 }
 
 const LoginOptionsSettings = ({
@@ -68,15 +69,13 @@ const LoginOptionsSettings = ({
 
   const onBiometricsOptionUpdated = useCallback(
     async (enabled: boolean) => {
-      await onSignWithBiometricsOptionUpdated(enabled);
-      setBiometryChoice(enabled);
+      setBiometryChoice(await onSignWithBiometricsOptionUpdated(enabled));
     },
     [onSignWithBiometricsOptionUpdated],
   );
   const onPasscodeOptionUpdated = useCallback(
     async (enabled: boolean) => {
-      await onSignWithPasscodeOptionUpdated(enabled);
-      setPasscodeChoice(enabled);
+      setPasscodeChoice(await onSignWithPasscodeOptionUpdated(enabled));
     },
     [onSignWithPasscodeOptionUpdated],
   );

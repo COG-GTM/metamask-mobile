@@ -151,14 +151,34 @@ describe('SecureKeychain - setGenericPassword', () => {
         new Error('User canceled the operation.'),
       );
 
-      await SecureKeychain.setGenericPassword(
+      const resetSpy = jest.spyOn(SecureKeychain, 'resetGenericPassword');
+
+      const result = await SecureKeychain.setGenericPassword(
         mockPassword,
         SecureKeychain.TYPES.BIOMETRICS,
       );
 
+      expect(result).toBe(false);
+      // Only the biometric-protected write; never re-stored without access control
+      expect(Keychain.setGenericPassword).toHaveBeenCalledTimes(1);
+      expect(Keychain.setGenericPassword).toHaveBeenCalledWith(
+        'metamask-user',
+        expect.any(String),
+        expect.objectContaining({
+          accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+        }),
+      );
+      expect(resetSpy).toHaveBeenCalled();
+      expect(Keychain.resetGenericPassword).toHaveBeenCalledWith({
+        service: 'com.metamask',
+      });
       expect(StorageWrapper.removeItem).toHaveBeenCalledWith(BIOMETRY_CHOICE);
       expect(StorageWrapper.setItem).toHaveBeenCalledWith(
         BIOMETRY_CHOICE_DISABLED,
+        TRUE,
+      );
+      expect(StorageWrapper.setItem).toHaveBeenCalledWith(
+        PASSCODE_DISABLED,
         TRUE,
       );
       expect(mockAddTraitsToUser).toHaveBeenLastCalledWith(
@@ -167,6 +187,21 @@ describe('SecureKeychain - setGenericPassword', () => {
             AUTHENTICATION_TYPE.PASSWORD,
         }),
       );
+    });
+
+    it('should keep the biometric entry when the read-back fails for another reason', async () => {
+      (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+        new Error('Some other keychain error'),
+      );
+
+      const result = await SecureKeychain.setGenericPassword(
+        mockPassword,
+        SecureKeychain.TYPES.BIOMETRICS,
+      );
+
+      expect(result).toBe(true);
+      expect(Keychain.setGenericPassword).toHaveBeenCalledTimes(1);
+      expect(Keychain.resetGenericPassword).not.toHaveBeenCalled();
     });
 
     it('should successfully set up biometric authentication', async () => {
