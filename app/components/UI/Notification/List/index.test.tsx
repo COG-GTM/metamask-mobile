@@ -17,6 +17,9 @@ import {
 // eslint-disable-next-line import/no-namespace
 import * as Actions from '../../../../actions/notification/helpers';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { FlatList } from 'react-native';
+import { NotificationMenuItem } from '../NotificationMenuItem';
+import { INotification } from '../../../../util/notifications';
 
 const mockNavigation = createNavigationProps({});
 
@@ -43,6 +46,35 @@ jest.mock(
     setBadgeCount: jest.fn(),
   }),
 );
+
+const mockListNotifications = jest.fn();
+const mockUseListNotifications = jest.fn(() => ({
+  listNotifications: mockListNotifications,
+  notificationsData: [] as INotification[],
+  isLoading: false,
+  error: null as unknown,
+}));
+
+jest.mock('../../../../util/notifications/hooks/useNotifications', () => ({
+  ...jest.requireActual(
+    '../../../../util/notifications/hooks/useNotifications',
+  ),
+  useListNotifications: () => mockUseListNotifications(),
+}));
+
+jest.mock('react-native-scrollable-tab-view', () => {
+  const { View } = jest.requireActual('react-native');
+  const MockScrollableTabView = ({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) => <View>{children}</View>;
+  return {
+    __esModule: true,
+    default: MockScrollableTabView,
+    DefaultTabBar: () => null,
+  };
+});
 
 jest.mock('../../../hooks/useMetrics', () => ({
   useMetrics: () => ({
@@ -120,6 +152,93 @@ describe('NotificationsList', () => {
     );
 
     expect(mockCreateMenuItem).toHaveBeenCalledWith(MOCK_NOTIFICATIONS[2]);
+  });
+
+  describe('tabbed list', () => {
+    const walletNotifications = [MOCK_NOTIFICATIONS[1]];
+    const web3Notifications = [MOCK_NOTIFICATIONS[0]];
+    const renderTabbedList = () =>
+      renderWithProvider(
+        <NotificationsList
+          navigation={mockNavigation}
+          allNotifications={MOCK_NOTIFICATIONS}
+          walletNotifications={walletNotifications}
+          web3Notifications={web3Notifications}
+          loading={false}
+        />,
+      );
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('passes each tab its own data source', () => {
+      const { UNSAFE_getAllByType } = renderTabbedList();
+      const lists = UNSAFE_getAllByType(FlatList);
+
+      expect(lists.map((list) => list.props.data)).toEqual([
+        MOCK_NOTIFICATIONS,
+        walletNotifications,
+        web3Notifications,
+      ]);
+    });
+
+    it('does not re-render rows when the refreshing state toggles', () => {
+      const { UNSAFE_getAllByType, rerender } = renderTabbedList();
+      const initialLists = UNSAFE_getAllByType(FlatList);
+      const rowRenders = jest.mocked(NotificationMenuItem.Content).mock.calls
+        .length;
+      expect(rowRenders).toBeGreaterThan(0);
+
+      mockUseListNotifications.mockReturnValue({
+        listNotifications: mockListNotifications,
+        notificationsData: [],
+        isLoading: true,
+        error: null,
+      });
+      rerender(
+        <NotificationsList
+          navigation={mockNavigation}
+          allNotifications={MOCK_NOTIFICATIONS}
+          walletNotifications={walletNotifications}
+          web3Notifications={web3Notifications}
+          loading={false}
+        />,
+      );
+
+      const refreshedLists = UNSAFE_getAllByType(FlatList);
+      refreshedLists.forEach((list, index) => {
+        expect(list.props.refreshing).toBe(true);
+        expect(list.props.renderItem).toBe(
+          initialLists[index].props.renderItem,
+        );
+        expect(list.props.keyExtractor).toBe(
+          initialLists[index].props.keyExtractor,
+        );
+      });
+      expect(jest.mocked(NotificationMenuItem.Content).mock.calls).toHaveLength(
+        rowRenders,
+      );
+    });
+  });
+
+  it('memoizes list items with unchanged props', () => {
+    jest.clearAllMocks();
+    const notification = MOCK_NOTIFICATIONS[2];
+    const { rerender } = renderWithProvider(
+      <NotificationsListItem
+        notification={notification}
+        navigation={mockNavigation}
+      />,
+    );
+    rerender(
+      <NotificationsListItem
+        notification={notification}
+        navigation={mockNavigation}
+      />,
+    );
+
+    expect(jest.mocked(NotificationMenuItem.Content)).toHaveBeenCalledTimes(1);
   });
 });
 

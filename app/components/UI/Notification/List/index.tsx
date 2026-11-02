@@ -1,5 +1,5 @@
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
-import React, { useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
 import NotificationsService from '../../../../util/notifications/services/NotificationService';
 import { ActivityIndicator, FlatList, FlatListProps, View } from 'react-native';
 import ScrollableTabView, {
@@ -35,10 +35,6 @@ interface NotificationsListProps {
   loading: boolean;
 }
 
-interface NotificationsListItemProps {
-  navigation: NavigationProp<ParamListBase>;
-  notification: INotification;
-}
 interface NotificationsListItemProps {
   navigation: NavigationProp<ParamListBase>;
   notification: INotification;
@@ -102,7 +98,7 @@ export function useNotificationOnClick(
   return onNotificationClick;
 }
 
-export function NotificationsListItem(props: NotificationsListItemProps) {
+function NotificationsListItemComponent(props: NotificationsListItemProps) {
   const onNotificationClick = useNotificationOnClick(props);
 
   const menuItemState = useMemo(() => {
@@ -115,13 +111,18 @@ export function NotificationsListItem(props: NotificationsListItemProps) {
     return notificationState?.createMenuItem(props.notification);
   }, [props.notification]);
 
+  const handleOnPress = useCallback(
+    () => onNotificationClick(props.notification),
+    [onNotificationClick, props.notification],
+  );
+
   if (!hasNotificationComponents(props.notification.type) || !menuItemState) {
     return null;
   }
 
   return (
     <NotificationMenuItem.Root
-      handleOnPress={() => onNotificationClick(props.notification)}
+      handleOnPress={handleOnPress}
       isRead={props.notification.isRead}
       testID={NotificationMenuViewSelectorsIDs.ITEM(props.notification.id)}
     >
@@ -134,29 +135,47 @@ export function NotificationsListItem(props: NotificationsListItemProps) {
   );
 }
 
+export const NotificationsListItem = memo(NotificationsListItemComponent);
+
+const notificationKeyExtractor = (item: INotification) => item.id;
+
 function useNotificationListProps(props: {
   navigation: NavigationProp<ParamListBase>;
 }) {
   const { styles } = useStyles();
   const { listNotifications, isLoading } = useListNotifications();
+  const { navigation } = props;
+
+  const renderItem = useCallback(
+    ({ item }: { item: INotification }) => (
+      <NotificationsListItem notification={item} navigation={navigation} />
+    ),
+    [navigation],
+  );
+
+  const onRefresh = useCallback(
+    async () => await listNotifications(),
+    [listNotifications],
+  );
+
+  const listEmptyComponent = useMemo(
+    () => (
+      <Empty
+        testID={NotificationsViewSelectorsIDs.NO_NOTIFICATIONS_CONTAINER}
+      />
+    ),
+    [],
+  );
+
   const getListProps = useCallback(
     (data: INotification[], tabLabel?: string) => {
       const listProps: FlatListProps<INotification> = {
-        keyExtractor: (item: INotification) => item.id,
+        keyExtractor: notificationKeyExtractor,
         data,
-        ListEmptyComponent: (
-          <Empty
-            testID={NotificationsViewSelectorsIDs.NO_NOTIFICATIONS_CONTAINER}
-          />
-        ),
+        ListEmptyComponent: listEmptyComponent,
         contentContainerStyle: styles.list,
-        renderItem: ({ item }: { item: INotification }) => (
-          <NotificationsListItem
-            notification={item}
-            navigation={props.navigation}
-          />
-        ),
-        onRefresh: async () => await listNotifications(),
+        renderItem,
+        onRefresh,
         refreshing: isLoading,
         initialNumToRender: 10,
         maxToRenderPerBatch: 2,
@@ -165,7 +184,7 @@ function useNotificationListProps(props: {
 
       return { ...listProps, tabLabel: tabLabel ?? '' };
     },
-    [isLoading, listNotifications, props.navigation, styles.list],
+    [isLoading, listEmptyComponent, onRefresh, renderItem, styles.list],
   );
 
   return getListProps;
@@ -240,7 +259,7 @@ function TabbedNotificationList(props: NotificationsListProps) {
       {/* Tab 2 - Wallet Notifications */}
       <FlatList
         {...getListProps(
-          props.allNotifications,
+          props.walletNotifications,
           strings(`notifications.list.1`),
         )}
       />
