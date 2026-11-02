@@ -8,6 +8,7 @@
  */
 let activeSuppressions = 0;
 
+/** Returns whether any flow currently suppresses auto-lock. */
 export const isAutoLockSuppressed = (): boolean => activeSuppressions > 0;
 
 /**
