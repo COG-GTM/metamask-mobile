@@ -57,6 +57,7 @@ const state: NotificationState<ERC1155Notification> = {
     image: {
       url: notification.data.nft?.image,
       variant: 'square',
+      isNftMedia: true,
     },
 
     badgeIcon: getNotificationBadge(notification.type),

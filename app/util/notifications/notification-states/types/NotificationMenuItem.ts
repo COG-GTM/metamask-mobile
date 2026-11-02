@@ -24,6 +24,11 @@ export interface NotificationMenuItem {
   image?: {
     url?: string | ImageSourcePropType;
     variant?: 'circle' | 'square';
+    /**
+     * Marks `url` as third-party NFT media, which is only fetched when the
+     * Display NFT media preference allows it.
+     */
+    isNftMedia?: boolean;
   };
 
   /**

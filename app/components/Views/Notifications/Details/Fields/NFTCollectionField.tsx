@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View } from 'react-native';
+import { Image, View } from 'react-native';
 import { strings } from '../../../../../../locales/i18n';
 import Badge, {
   BadgeVariant,
@@ -13,12 +13,15 @@ import Text, {
 } from '../../../../../component-library/components/Texts/Text';
 import { ModalFieldNFTCollectionImage } from '../../../../../util/notifications/notification-states/types/NotificationModalDetails';
 import RemoteImage from '../../../../Base/RemoteImage';
+import { useShouldDisplayNftMedia } from '../../../../../util/notifications/hooks/useShouldDisplayNftMedia';
+import NftFallbackImage from '../../../../../../docs/assets/nft-fallback.png';
 import useStyles from '../useStyles';
 
 type NFTCollectionFieldProps = ModalFieldNFTCollectionImage;
 
 function NFTCollectionField(props: NFTCollectionFieldProps) {
   const { styles } = useStyles();
+  const showNftMedia = useShouldDisplayNftMedia(props.collectionImageUrl);
 
   const badgeSource = useMemo(() => {
     const networkUrl = props.networkBadgeUrl;
@@ -43,11 +46,19 @@ function NFTCollectionField(props: NFTCollectionFieldProps) {
         }
         style={styles.badgeWrapper}
       >
-        <RemoteImage
-          source={{ uri: props.collectionImageUrl }}
-          style={styles.squareLogo}
-          placeholderStyle={styles.squareLogoPlaceholder}
-        />
+        {showNftMedia ? (
+          <RemoteImage
+            source={{ uri: props.collectionImageUrl }}
+            style={styles.squareLogo}
+            placeholderStyle={styles.squareLogoPlaceholder}
+          />
+        ) : (
+          <Image
+            testID={'nft-collection-field-fallback'}
+            source={NftFallbackImage}
+            style={styles.squareLogo}
+          />
+        )}
       </BadgeWrapper>
 
       {/* Collection Description */}

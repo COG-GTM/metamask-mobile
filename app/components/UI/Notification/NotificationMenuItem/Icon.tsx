@@ -8,7 +8,9 @@ import Badge, {
 import { BOTTOM_BADGEWRAPPER_BADGEPOSITION } from '../../../../component-library/components/Badges/BadgeWrapper/BadgeWrapper.constants';
 import RemoteImage from '../../../../components/Base/RemoteImage';
 import METAMASK_FOX from '../../../../images/branding/fox.png';
-import { View } from 'react-native';
+import NftFallbackImage from '../../../../../docs/assets/nft-fallback.png';
+import { useShouldDisplayNftMedia } from '../../../../util/notifications/hooks/useShouldDisplayNftMedia';
+import { Image, View } from 'react-native';
 
 type NotificationIconProps = Pick<
   NotificationMenuItem,
@@ -27,6 +29,9 @@ function MenuIcon(props: NotificationIconProps) {
         : styles.circleLogoPlaceholder,
   };
 
+  const isNftMedia = Boolean(props.image?.isNftMedia);
+  const showNftMedia = useShouldDisplayNftMedia(props.image?.url);
+
   const source = useMemo(() => {
     if (!props.image?.url) {
       return METAMASK_FOX;
@@ -36,6 +41,16 @@ function MenuIcon(props: NotificationIconProps) {
     }
     return props.image.url;
   }, [props.image?.url]);
+
+  if (isNftMedia && !showNftMedia) {
+    return (
+      <Image
+        testID={'notification-menu-icon-nft-fallback'}
+        source={NftFallbackImage}
+        style={menuIconStyles.style}
+      />
+    );
+  }
 
   return (
     <RemoteImage
