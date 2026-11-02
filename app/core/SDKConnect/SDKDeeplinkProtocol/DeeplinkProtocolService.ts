@@ -595,7 +595,9 @@ export default class DeeplinkProtocolService {
       accountsController.getSelectedAccount().address,
     );
 
-    let connectedAddresses = getPermittedAccounts(this.currentClientId ?? '');
+    let connectedAddresses: string[] = getPermittedAccounts(
+      this.currentClientId ?? '',
+    );
 
     DevLogger.log(
       `DeeplinkProtocolService::clients_connected connectedAddresses`,
