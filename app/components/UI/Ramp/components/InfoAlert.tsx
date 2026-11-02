@@ -12,6 +12,7 @@ import { useTheme } from '../../../../util/theme';
 import { strings } from '../../../../../locales/i18n';
 import { Colors } from '../../../../util/theme/models';
 import useAnalytics from '../hooks/useAnalytics';
+import isSafeExternalUrl from '../utils/isSafeExternalUrl';
 
 type Logos = QuoteResponse['provider']['logos'];
 
@@ -76,6 +77,9 @@ const InfoAlert: React.FC<Props> = ({
 
   const handleProviderHomepageLinkPress = useCallback(
     (url: string) => {
+      if (!isSafeExternalUrl(url)) {
+        return;
+      }
       Linking.openURL(url);
       trackEvent('ONRAMP_EXTERNAL_LINK_CLICKED', {
         location: 'Quotes Screen',
@@ -88,6 +92,9 @@ const InfoAlert: React.FC<Props> = ({
 
   const handleProviderPrivacyPolicyLinkPress = useCallback(
     (url: string) => {
+      if (!isSafeExternalUrl(url)) {
+        return;
+      }
       Linking.openURL(url);
       trackEvent('ONRAMP_EXTERNAL_LINK_CLICKED', {
         location: 'Quotes Screen',
@@ -100,6 +107,9 @@ const InfoAlert: React.FC<Props> = ({
 
   const handleTermsOfServiceLinkPress = useCallback(
     (url: string) => {
+      if (!isSafeExternalUrl(url)) {
+        return;
+      }
       Linking.openURL(url);
       trackEvent('ONRAMP_EXTERNAL_LINK_CLICKED', {
         location: 'Quotes Screen',
@@ -112,6 +122,9 @@ const InfoAlert: React.FC<Props> = ({
 
   const handleProviderSupportLinkPress = useCallback(
     (url: string) => {
+      if (!isSafeExternalUrl(url)) {
+        return;
+      }
       Linking.openURL(url);
       trackEvent('ONRAMP_EXTERNAL_LINK_CLICKED', {
         location: 'Quotes Screen',
@@ -161,7 +174,7 @@ const InfoAlert: React.FC<Props> = ({
             </View>
           )}
           <View style={styles.row}>{Boolean(body) && <Text>{body}</Text>}</View>
-          {Boolean(providerWebsite) && (
+          {isSafeExternalUrl(providerWebsite) && (
             <TouchableOpacity
               onPress={() =>
                 handleProviderHomepageLinkPress(providerWebsite as string)
@@ -172,7 +185,7 @@ const InfoAlert: React.FC<Props> = ({
               </Text>
             </TouchableOpacity>
           )}
-          {Boolean(providerPrivacyPolicy) && (
+          {isSafeExternalUrl(providerPrivacyPolicy) && (
             <TouchableOpacity
               onPress={() =>
                 handleProviderPrivacyPolicyLinkPress(
@@ -185,7 +198,7 @@ const InfoAlert: React.FC<Props> = ({
               </Text>
             </TouchableOpacity>
           )}
-          {Boolean(providerTermsOfService) && (
+          {isSafeExternalUrl(providerTermsOfService) && (
             <TouchableOpacity
               onPress={() =>
                 handleTermsOfServiceLinkPress(providerTermsOfService as string)
@@ -196,7 +209,7 @@ const InfoAlert: React.FC<Props> = ({
               </Text>
             </TouchableOpacity>
           )}
-          {Boolean(providerSupport) && (
+          {isSafeExternalUrl(providerSupport) && (
             <TouchableOpacity
               onPress={() =>
                 handleProviderSupportLinkPress(providerSupport as string)
