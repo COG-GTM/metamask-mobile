@@ -12,6 +12,8 @@ import {
   isDeeplinkRedesignedConfirmationCompatible,
 } from '../../../components/Views/confirmations/utils/deeplink';
 
+const MOCK_ADDRESS = '0x0000000000000000000000000000000000000001';
+
 jest.mock('react-native');
 
 jest.mock('eth-url-parser', () => ({
@@ -82,10 +84,10 @@ describe('handleEthereumUrl', () => {
     );
   });
 
-  it('alerts and throws on invalid URL', () => {
+  it('alerts when eth-url-parser rejects an allowlisted URL', () => {
     const spyAlert = jest.spyOn(Alert, 'alert');
 
-    const url = 'invalid_url';
+    const url = `ethereum:${MOCK_ADDRESS}`;
     const origin = 'test_origin';
 
     mockParse.mockImplementation(() => {
@@ -100,8 +102,40 @@ describe('handleEthereumUrl', () => {
     );
   });
 
+  it('alerts on a non-EIP-681 URL without calling eth-url-parser', () => {
+    const spyAlert = jest.spyOn(Alert, 'alert');
+
+    handleEthereumUrl({
+      deeplinkManager,
+      url: 'invalid_url',
+      origin: 'test_origin',
+    });
+
+    expect(mockParse).not.toHaveBeenCalled();
+    expect(spyAlert).toHaveBeenCalledWith(
+      'deeplink.invalid',
+      'Error: Invalid Ethereum URL',
+    );
+  });
+
+  it('rejects a regex-injection prefix without calling eth-url-parser', () => {
+    const spyAlert = jest.spyOn(Alert, 'alert');
+    const url = `ethereum:(.+)+!-0x${'~'.repeat(40)}`;
+
+    const start = Date.now();
+    handleEthereumUrl({ deeplinkManager, url, origin: 'test_origin' });
+
+    expect(Date.now() - start).toBeLessThan(100);
+    expect(mockParse).not.toHaveBeenCalled();
+    expect(spyAlert).toHaveBeenCalledWith(
+      'deeplink.invalid',
+      'Error: Invalid Ethereum URL',
+    );
+    expect(deeplinkManager.navigation.navigate).not.toHaveBeenCalled();
+  });
+
   it('shows deprecation modal if url is a goerli url', () => {
-    const url = 'ethereum:transfer';
+    const url = `ethereum:${MOCK_ADDRESS}@1/transfer`;
     const origin = 'test_origin';
     mockParse.mockReturnValue({
       function_name: ETH_ACTIONS.TRANSFER,
@@ -120,7 +154,7 @@ describe('handleEthereumUrl', () => {
   });
 
   it('navigates to SendView for TRANSFER action', () => {
-    const url = 'ethereum:transfer';
+    const url = `ethereum:${MOCK_ADDRESS}@1/transfer`;
     const origin = 'test_origin';
     mockParse.mockReturnValue({
       function_name: ETH_ACTIONS.TRANSFER,
@@ -138,7 +172,7 @@ describe('handleEthereumUrl', () => {
   it('shows alert when there is a network switch error', () => {
     const spyAlert = jest.spyOn(Alert, 'alert');
 
-    const url = 'ethereum:transfer';
+    const url = `ethereum:${MOCK_ADDRESS}@1/transfer`;
     const origin = 'test_origin';
 
     mockParse.mockReturnValue({
@@ -159,7 +193,7 @@ describe('handleEthereumUrl', () => {
   });
 
   it('calls _approveTransaction for APPROVE action', () => {
-    const url = 'ethereum:approve';
+    const url = `ethereum:${MOCK_ADDRESS}@1/approve`;
     const origin = 'test_origin';
     mockParse.mockReturnValue({
       function_name: ETH_ACTIONS.APPROVE,
@@ -176,7 +210,7 @@ describe('handleEthereumUrl', () => {
   });
 
   it('navigates to SendFlowView for default action', () => {
-    const url = 'ethereum:unknownAction';
+    const url = `ethereum:${MOCK_ADDRESS}@1/unknownAction`;
     const origin = 'test_origin';
     mockParse.mockReturnValue({
       function_name: 'unknownAction',
@@ -194,7 +228,7 @@ describe('handleEthereumUrl', () => {
 
   it('calls addTransactionForDeeplink if deeplink is compatible with redesigned confirmation', () => {
     mockIsDeeplinkRedesignedConfirmationCompatible.mockReturnValue(true);
-    const url = 'ethereum:transfer';
+    const url = `ethereum:${MOCK_ADDRESS}@1/transfer`;
     const origin = 'test_origin';
     mockParse.mockReturnValue({
       function_name: ETH_ACTIONS.TRANSFER,
@@ -221,7 +255,7 @@ describe('handleEthereumUrl', () => {
   it('shows alert when there is an unknown error during Ethereum URL handling', () => {
     const spyAlert = jest.spyOn(Alert, 'alert');
 
-    const url = 'ethereum:transfer';
+    const url = `ethereum:${MOCK_ADDRESS}@1/transfer`;
     const origin = 'test_origin';
     mockParse.mockReturnValue({
       function_name: ETH_ACTIONS.TRANSFER,
@@ -244,7 +278,7 @@ describe('handleEthereumUrl', () => {
   });
 
   it('navigates to SendFlowView for unknown function_name', () => {
-    const url = 'ethereum:sign';
+    const url = `ethereum:${MOCK_ADDRESS}@1/sign`;
     const origin = 'test_origin';
 
     mockParse.mockReturnValue({
@@ -262,7 +296,7 @@ describe('handleEthereumUrl', () => {
   });
 
   it('shows alert when there is a generic error during network switch', () => {
-    const url = 'ethereum:sign';
+    const url = `ethereum:${MOCK_ADDRESS}@1/sign`;
     const origin = 'test_origin';
     const mockError = new Error('Generic network switch error');
     const spyAlert = jest.spyOn(Alert, 'alert');
@@ -285,7 +319,7 @@ describe('handleEthereumUrl', () => {
   });
 
   it('shows an alert when approval process fails', () => {
-    const url = 'ethereum:approve';
+    const url = `ethereum:${MOCK_ADDRESS}@1/approve`;
     const origin = 'test_origin';
     const mockError = new Error('Approval process failed');
     const spyAlert = jest.spyOn(Alert, 'alert');
@@ -309,7 +343,7 @@ describe('handleEthereumUrl', () => {
   });
 
   it('shows alert when there are missing or incomplete parameters in URL for TRANSFER action', () => {
-    const url = 'ethereum:transfer';
+    const url = `ethereum:${MOCK_ADDRESS}@1/transfer`;
     const origin = 'test_origin';
 
     mockParse.mockReturnValue({
@@ -327,7 +361,7 @@ describe('handleEthereumUrl', () => {
   });
 
   it('switches to mainnet when isEvmSelected is false', async () => {
-    const url = 'ethereum:transfer';
+    const url = `ethereum:${MOCK_ADDRESS}@1/transfer`;
     const origin = 'test_origin';
     const mockSetActiveNetwork = jest.fn();
 

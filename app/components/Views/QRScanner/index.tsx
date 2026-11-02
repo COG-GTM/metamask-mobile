@@ -3,7 +3,6 @@
 
 'use strict';
 import { useNavigation } from '@react-navigation/native';
-import { parse } from 'eth-url-parser';
 import { isValidAddress } from 'ethereumjs-util';
 import React, { useCallback, useRef } from 'react';
 import { Alert, Image, InteractionManager, View, Linking } from 'react-native';
@@ -22,6 +21,9 @@ import Engine from '../../../core/Engine';
 import { selectChainId } from '../../../selectors/networkController';
 import { isValidAddressInputViaQRCode } from '../../../util/address';
 import { getURLProtocol } from '../../../util/general';
+import parseEthereumUrl, {
+  isValidEthereumUrl,
+} from '../../../util/parseEthereumUrl';
 import {
   failedSeedPhraseRequirements,
   isValidMnemonic,
@@ -181,15 +183,15 @@ const QRScanner = ({
         }
         // Let ethereum:address and address go forward
         if (
-          (content.split(`${PROTOCOLS.ETHEREUM}:`).length > 1 &&
-            !parse(content).function_name) ||
+          (isValidEthereumUrl(content) &&
+            !parseEthereumUrl(content).function_name) ||
           (content.startsWith('0x') && isValidAddress(content))
         ) {
           const handledContent = content.startsWith('0x')
             ? `${PROTOCOLS.ETHEREUM}:${content}@${currentChainId}`
             : content;
           shouldReadBarCodeRef.current = false;
-          data = parse(handledContent);
+          data = parseEthereumUrl(handledContent);
           const action = 'send-eth';
           data = { ...data, action };
           end();
