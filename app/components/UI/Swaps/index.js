@@ -685,6 +685,26 @@ function SwapsAmountView({
     hasBalance,
   });
 
+  const sourceExcludeAddresses = useMemo(
+    () => [destinationToken?.address],
+    [destinationToken?.address],
+  );
+
+  const destinationExcludeAddresses = useMemo(
+    () => [sourceToken?.address],
+    [sourceToken?.address],
+  );
+
+  const destinationInitialTokens = useMemo(() => {
+    const nativeSwapsToken = swapsUtils.getNativeSwapsToken(chainId);
+    return [
+      nativeSwapsToken,
+      ...tokensTopAssets
+        .slice(0, MAX_TOP_ASSETS)
+        .filter((asset) => asset.address !== nativeSwapsToken.address),
+    ];
+  }, [chainId, tokensTopAssets]);
+
   return (
     <ScreenView
       style={styles.container}
@@ -718,7 +738,7 @@ function SwapsAmountView({
             tokens={swapsTokens}
             initialTokens={tokensWithBalance}
             onItemPress={handleSourceTokenPress}
-            excludeAddresses={[destinationToken?.address]}
+            excludeAddresses={sourceExcludeAddresses}
           />
         </View>
         <View
@@ -798,18 +818,9 @@ function SwapsAmountView({
             dismiss={toggleDestinationModal}
             title={strings('swaps.convert_to')}
             tokens={swapsTokens}
-            initialTokens={[
-              swapsUtils.getNativeSwapsToken(chainId),
-              ...tokensTopAssets
-                .slice(0, MAX_TOP_ASSETS)
-                .filter(
-                  (asset) =>
-                    asset.address !==
-                    swapsUtils.getNativeSwapsToken(chainId).address,
-                ),
-            ]}
+            initialTokens={destinationInitialTokens}
             onItemPress={handleDestinationTokenPress}
-            excludeAddresses={[sourceToken?.address]}
+            excludeAddresses={destinationExcludeAddresses}
           />
         </View>
         <View>

@@ -129,6 +129,7 @@ const createStyles = (colors) =>
   });
 
 const MAX_TOKENS_RESULTS = 20;
+const NO_EXCLUDED_ADDRESSES = [];
 
 function TokenSelectModal({
   isVisible,
@@ -137,7 +138,7 @@ function TokenSelectModal({
   tokens,
   initialTokens,
   onItemPress,
-  excludeAddresses = [],
+  excludeAddresses = NO_EXCLUDED_ADDRESSES,
   accounts,
   selectedAddress,
   currentCurrency,
