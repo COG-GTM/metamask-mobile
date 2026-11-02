@@ -41,17 +41,54 @@ const fetchHtmlSource = async (url: URL) => {
   }
 };
 
+const RAW_TEXT_ELEMENT = /^<(script|style|title|textarea|noscript)[\s/>]/i;
+const HEAD_BOUNDARY = /^(<\/head\s*>|<body[\s/>])/i;
+
 /**
- * Drops what follows the last `</head>` so the body is not parsed on the JS
- * thread. The last match is used because the same text can appear inside a
- * script or comment in `<head>`, before the real closing tag.
+ * Finds where `<head>` really ends, skipping comments and raw-text elements
+ * (such as scripts) whose content can contain `</head>` as plain text
+ * @param htmlSource - the HTML source
+ * @returns - the boundary index, or -1 when it cannot be identified safely
+ */
+const findHeadEnd = (htmlSource: string) => {
+  const lowerSource = htmlSource.toLowerCase();
+  let index = htmlSource.indexOf('<');
+  while (index !== -1) {
+    const rest = htmlSource.slice(index, index + 32);
+    if (rest.startsWith('<!--')) {
+      const commentEnd = htmlSource.indexOf('-->', index + 4);
+      if (commentEnd === -1) return -1;
+      index = commentEnd + 3;
+    } else if (HEAD_BOUNDARY.test(rest)) {
+      return index;
+    } else {
+      const rawText = RAW_TEXT_ELEMENT.exec(rest);
+      if (rawText) {
+        const closeIndex = lowerSource.indexOf(
+          `</${rawText[1].toLowerCase()}`,
+          index + rawText[0].length,
+        );
+        if (closeIndex === -1) return -1;
+        index = closeIndex + 2;
+      } else {
+        index += 1;
+      }
+    }
+    index = htmlSource.indexOf('<', index);
+  }
+  return -1;
+};
+
+/**
+ * Keeps only the document up to the end of `<head>`, where icon links live,
+ * so the body is not parsed on the JS thread. The whole document is kept when
+ * the end of `<head>` cannot be identified safely.
  * @param htmlSource - the HTML source
  */
 const truncateAfterHead = (htmlSource: string) => {
-  const closingTags = [...htmlSource.matchAll(/<\/head\s*>/gi)];
-  const lastClosingTag = closingTags[closingTags.length - 1];
-  if (lastClosingTag?.index === undefined) return htmlSource;
-  return `${htmlSource.slice(0, lastClosingTag.index)}</head></html>`;
+  const headEnd = findHeadEnd(htmlSource);
+  if (headEnd === -1) return htmlSource;
+  return `${htmlSource.slice(0, headEnd)}</head></html>`;
 };
 
 /**

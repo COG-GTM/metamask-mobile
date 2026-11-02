@@ -370,9 +370,9 @@ describe('resolveFavicon function', () => {
   });
 
   it('scopes a miss to the fetched page so other pages of the host are still looked up', async () => {
-    global.fetch = jest.fn((url: URL) =>
+    global.fetch = jest.fn((input: RequestInfo | URL) =>
       htmlResponse(
-        url.pathname === '/app'
+        new URL(String(input)).pathname === '/app'
           ? '<html><head><link rel="icon" href="app.png"></head></html>'
           : '<html><head></head></html>',
       ),
@@ -435,6 +435,39 @@ describe('resolveFavicon function', () => {
     );
   });
 
+  it('finds an icon link placed after a </head> string inside a head comment', async () => {
+    global.fetch = jest.fn(() =>
+      htmlResponse(
+        '<html><head><!-- </head> --><link rel="icon" href="/icon.png"></head><body></body></html>',
+      ),
+    );
+
+    expect(await resolveFavicon('dapp.test')).toBe(
+      'https://dapp.test/icon.png',
+    );
+  });
+
+  it('ignores body icon links even when a body script contains </head>', async () => {
+    global.fetch = jest.fn(() =>
+      htmlResponse(
+        '<html><head></head><body><script>const x = \'</head>\';</script><link rel="icon" href="/body.ico"></body></html>',
+      ),
+    );
+
+    expect(await resolveFavicon('dapp.test')).toBeUndefined();
+  });
+
+  it('stops at <body> when the closing head tag is omitted', async () => {
+    global.fetch = jest.fn(() =>
+      htmlResponse(
+        '<html><head><link rel="icon" href="/head.ico"><body><link rel="icon" href="/body.ico"></body></html>',
+      ),
+    );
+
+    expect(await resolveFavicon('dapp.test')).toBe(
+      'https://dapp.test/head.ico',
+    );
+  });
   it('only parses the document up to the end of <head>', async () => {
     const parseSpy = jest.spyOn(DOMParser.prototype, 'parseFromString');
     global.fetch = jest.fn(() =>
