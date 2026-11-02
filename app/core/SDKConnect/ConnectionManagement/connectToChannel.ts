@@ -82,6 +82,7 @@ async function connectToChannel({
 
   instance.state.connecting[id] = true;
 
+  let established = false;
   try {
     instance.state.connections[id] = {
       id,
@@ -210,6 +211,7 @@ async function connectToChannel({
       withKeyExchange: true,
       authorized,
     });
+    established = true;
     DevLogger.log(
       `SDKConnect::connectToChannel - connected - state after connect`,
       instance.state,
@@ -273,22 +275,21 @@ async function connectToChannel({
     }
   } catch (error) {
     Logger.error(error as Error, 'Failed to connect to channel');
-    // Drop the half-initialised connection created by this call so no phantom
-    // session is left behind. Permissions are intentionally left untouched.
-    const failedConnection = instance.state.connected[id];
-    if (failedConnection) {
+    // If the channel never connected, drop the half-initialised connection so
+    // no phantom session is left behind. Permissions are intentionally left untouched.
+    if (!established) {
       try {
-        failedConnection.remote?.disconnect();
+        instance.state.connected[id]?.remote?.disconnect();
       } catch (disconnectError) {
         DevLogger.log(
           `SDKConnect::connectToChannel - failed to disconnect ${id}`,
           disconnectError,
         );
       }
+      delete instance.state.connected[id];
+      delete instance.state.connections[id];
+      store.dispatch(resetConnections(instance.state.connections));
     }
-    delete instance.state.connected[id];
-    delete instance.state.connections[id];
-    store.dispatch(resetConnections(instance.state.connections));
   } finally {
     DevLogger.log(
       `SDKConnect::connectToChannel - finally - state.connecting[${id}]=${instance.state.connecting[id]}`,

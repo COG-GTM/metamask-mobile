@@ -330,6 +330,13 @@ export default class AndroidService extends EventEmitter2 {
           message = parsedMsg.message;
           data = JSON.parse(message);
 
+          if (!isValidSDKChannelId(sessionId)) {
+            Logger.error(
+              new Error('AndroidService::onMessageReceived invalid sessionId'),
+            );
+            return;
+          }
+
           // Update connected state
           this.connections[sessionId] = {
             ...this.connections[sessionId],

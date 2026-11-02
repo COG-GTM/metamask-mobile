@@ -3,6 +3,7 @@ import {
   disconnectAll,
   resetApprovedHosts,
   resetConnections,
+  resetDappConnections,
 } from '../../../../app/actions/sdk';
 import { RootState } from '../../../../app/reducers';
 import { store } from '../../../store';
@@ -80,14 +81,16 @@ const asyncInit = async ({
     );
     instance.state.connections = validConnections;
     instance.state.approvedHosts = validHosts;
-    instance.state.dappConnections = Object.fromEntries(
+    const validDappConnections = Object.fromEntries(
       Object.entries(sdk.dappConnections ?? {}).filter(([id]) =>
         isValidSDKChannelId(id),
       ),
     );
+    instance.state.dappConnections = validDappConnections;
 
     // Update store with valid connection
     store.dispatch(resetConnections(validConnections));
+    store.dispatch(resetDappConnections(validDappConnections));
     store.dispatch(resetApprovedHosts(validHosts));
     // All connectectiions are disconnected on start
     store.dispatch(disconnectAll());

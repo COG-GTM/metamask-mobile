@@ -266,4 +266,42 @@ describe('connectToChannel', () => {
       expect(mockRemoveChannel).not.toHaveBeenCalled();
     });
   });
+
+  describe('Post-connect failure', () => {
+    it('keeps an established session when a later step fails', async () => {
+      const newId = '1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d';
+      const mockDisconnect = jest.fn();
+      mockWatchConnection.mockImplementationOnce(() => {
+        throw new Error('post-connect failure');
+      });
+      MockedConnection.mockImplementation(
+        () =>
+          ({
+            remote: {
+              getKeyInfo: jest.fn().mockReturnValue({
+                ecies: { private: 'k', otherPubKey: 'p' },
+              }),
+              disconnect: mockDisconnect,
+              state: {},
+            },
+            connect: jest.fn().mockResolvedValue(undefined),
+            isReady: false,
+          } as unknown as Connection),
+      );
+
+      await connectToChannel({
+        instance: mockInstance,
+        id: newId,
+        trigger,
+        otherPublicKey,
+        origin,
+        validUntil,
+        initialConnection: true,
+      });
+
+      expect(mockDisconnect).not.toHaveBeenCalled();
+      expect(mockInstance.state.connected[newId]).toBeDefined();
+      expect(mockInstance.state.connections[newId]).toBeDefined();
+    });
+  });
 });

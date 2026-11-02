@@ -3,6 +3,7 @@ import SDKConnect from '../SDKConnect';
 import { wait } from '../utils/wait.util';
 import asyncInit from './asyncInit';
 import { store } from '../../../store';
+import { resetDappConnections } from '../../../actions/sdk';
 
 jest.mock('@react-navigation/native');
 jest.mock('../../../store/storage-wrapper', () => ({
@@ -138,5 +139,8 @@ describe('asyncInit', () => {
     expect(Object.keys(mockInstance.state.dappConnections)).toEqual([
       '5b3c1a2e-8f4d-4c6b-9a7e-1d2f3a4b5c6d',
     ]);
+    expect(store.dispatch).toHaveBeenCalledWith(
+      resetDappConnections(mockInstance.state.dappConnections),
+    );
   });
 });

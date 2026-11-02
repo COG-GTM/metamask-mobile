@@ -691,6 +691,13 @@ export default class DeeplinkProtocolService {
 
       const sessionId: string = params.channelId;
 
+      if (!isValidSDKChannelId(sessionId)) {
+        Logger.error(
+          new Error('DeeplinkProtocolService::handleMessage invalid channelId'),
+        );
+        return;
+      }
+
       try {
         await wait(200); // Extra wait to make sure ui is ready
 

@@ -526,12 +526,28 @@ describe('DeeplinkProtocolService', () => {
         message: Buffer.from(
           JSON.stringify({ id: '1', method: 'test', params: [] }),
         ).toString('base64'),
-        channelId: 'channel1',
+        channelId: MOCK_CHANNEL_ID,
         scheme: 'scheme',
         account: `${toChecksumHexAddress(MOCK_ADDRESS)}@1`,
       };
       service.handleMessage(params);
       expect(DevLogger.log).toHaveBeenCalled();
+    });
+
+    it('ignores a message whose channelId is not a UUID', async () => {
+      const checkPermissionSpy = jest.spyOn(service, 'checkPermission');
+      await service.handleMessage({
+        dappPublicKey: 'key',
+        url: 'url',
+        message: Buffer.from(
+          JSON.stringify({ id: '1', method: 'eth_accounts', params: [] }),
+        ).toString('base64'),
+        channelId: 'swap.example.org',
+        scheme: 'scheme',
+        account: `${toChecksumHexAddress(MOCK_ADDRESS)}@1`,
+      });
+      expect(checkPermissionSpy).not.toHaveBeenCalled();
+      expect(service.connections['swap.example.org']).toBeUndefined();
     });
   });
 
