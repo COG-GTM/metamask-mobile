@@ -1,3 +1,4 @@
+import { ed25519 } from '@metamask/key-tree';
 import { ethers } from 'ethers';
 import { Encryptor, LEGACY_DERIVATION_OPTIONS } from '../../core/Encryptor';
 import { regex } from '../regex';
@@ -56,12 +57,12 @@ const SOLANA_KEYPAIR_LENGTH = 64;
 const MNEMONIC_LENGTHS = [12, 15, 18, 21, 24];
 
 /**
- * Number of bytes a base58 string decodes to.
+ * Decodes base58 text to bytes.
  *
  * @param text - Base58 text (alphabet already validated).
- * @returns Decoded byte length.
+ * @returns Decoded bytes.
  */
-const base58ByteLength = (text: string): number => {
+const decodeBase58 = (text: string): Uint8Array => {
   const bytes: number[] = [];
   for (const char of text) {
     let carry = BASE58_ALPHABET.indexOf(char);
@@ -75,27 +76,46 @@ const base58ByteLength = (text: string): number => {
       carry >>= 8;
     }
   }
-  let leadingZeros = 0;
-  while (text[leadingZeros] === '1') leadingZeros++;
-  return bytes.length + leadingZeros;
+  for (let i = 0; text[i] === '1'; i++) bytes.push(0);
+  return Uint8Array.from(bytes.reverse());
 };
 
 /**
- * Whether the text contains a 64-byte Solana keypair secret, either base58
- * encoded (wallet export format) or as a JSON byte array (solana-keygen file).
+ * Whether bytes form a 64-byte ed25519 keypair (32-byte seed followed by its
+ * public key), as exported by Solana wallets. Signatures share the length but
+ * not this structure.
+ *
+ * @param bytes - Candidate keypair bytes.
+ * @returns True if the second half is the public key of the first half.
+ */
+const isSolanaKeypair = (bytes: Uint8Array): boolean => {
+  if (bytes.length !== SOLANA_KEYPAIR_LENGTH) {
+    return false;
+  }
+  const publicKey = ed25519
+    .getPublicKey(bytes.slice(0, SOLANA_KEYPAIR_LENGTH / 2))
+    .slice(-SOLANA_KEYPAIR_LENGTH / 2);
+  return publicKey.every(
+    (byte, i) => byte === bytes[SOLANA_KEYPAIR_LENGTH / 2 + i],
+  );
+};
+
+/**
+ * Whether the text contains a Solana keypair secret, either base58 encoded
+ * (wallet export format) or as a JSON byte array (solana-keygen file).
  *
  * @param text - Text to inspect.
- * @returns True if a 64-byte keypair is present.
+ * @returns True if a keypair is present.
  */
 const containsSolanaKeypair = (text: string): boolean =>
-  Array.from(text.matchAll(BASE58_TOKEN_REGEX)).some(
-    ([token]) => base58ByteLength(token) === SOLANA_KEYPAIR_LENGTH,
+  Array.from(text.matchAll(BASE58_TOKEN_REGEX)).some(([token]) =>
+    isSolanaKeypair(decodeBase58(token)),
   ) ||
   Array.from(text.matchAll(BYTE_ARRAY_REGEX)).some(([array]) => {
-    const values = array.match(/\d+/gu) ?? [];
+    const values = (array.match(/\d+/gu) ?? []).map(Number);
     return (
-      values.length === SOLANA_KEYPAIR_LENGTH &&
-      values.every((value) => Number(value) <= 255)
+      values.every((value) => value <= 255) &&
+      isSolanaKeypair(Uint8Array.from(values))
     );
   });
 
