@@ -103,7 +103,7 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import { buildHomepageScripts, getMaskedUrl, isENSUrl } from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -564,33 +564,26 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   }, [goBack, isTabActive, navigation]);
 
   /**
-   * Inject home page scripts to get the favourites and set analytics key
+   * Inject home page scripts to get the favourites and set analytics key.
+   * Only runs once the homepage document has committed; the script also
+   * re-checks the origin of the document it executes in.
    */
   const injectHomePageScripts = useCallback(
     async (injectedBookmarks?: string[]) => {
-      const { current } = webviewRef;
       const analyticsEnabled = isEnabled();
-      const disctinctId = await getMetaMetricsId();
-      const homepageScripts = `
-              window.__mmFavorites = ${JSON.stringify(
-                injectedBookmarks || bookmarks,
-              )};
-              window.__mmSearchEngine = "${searchEngine}";
-              window.__mmMetametrics = ${analyticsEnabled};
-              window.__mmDistinctId = "${disctinctId}";
-              window.__mmMixpanelToken = "${MM_MIXPANEL_TOKEN}";
-              (function () {
-                  try {
-                      window.dispatchEvent(new Event('metamask_onHomepageScriptsInjected'));
-                  } catch (e) {
-                      //Nothing to do
-                  }
-              })()
-          `;
+      const distinctId = await getMetaMetricsId();
+      if (!isHomepage(resolvedUrlRef.current)) return;
+      const homepageScripts = buildHomepageScripts({
+        bookmarks: injectedBookmarks || bookmarks,
+        searchEngine,
+        analyticsEnabled,
+        distinctId,
+        mixpanelToken: MM_MIXPANEL_TOKEN,
+      });
 
-      current?.injectJavaScript(homepageScripts);
+      webviewRef.current?.injectJavaScript(homepageScripts);
     },
-    [isEnabled, getMetaMetricsId, bookmarks, searchEngine],
+    [isEnabled, getMetaMetricsId, isHomepage, bookmarks, searchEngine],
   );
 
   /**
@@ -852,9 +845,18 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
           canGoBack,
           canGoForward,
         });
+        if (isHomepage(url)) {
+          injectHomePageScripts();
+        }
       }
     },
-    [handleError, handleSuccessfulPageResolution, favicon],
+    [
+      handleError,
+      handleSuccessfulPageResolution,
+      favicon,
+      isHomepage,
+      injectHomePageScripts,
+    ],
   );
 
   /**
@@ -972,9 +974,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       sendActiveAccount();
 
       iconRef.current = undefined;
-      if (isHomepage(nativeEvent.url)) {
-        injectHomePageScripts();
-      }
 
       initializeBackgroundBridge(urlOrigin, true);
     },
@@ -982,8 +981,6 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       isAllowedOrigin,
       handleNotAllowedUrl,
       sendActiveAccount,
-      isHomepage,
-      injectHomePageScripts,
       initializeBackgroundBridge,
     ],
   );
