@@ -1,4 +1,5 @@
 import { JsonRpcEngine, JsonRpcMiddleware } from '@metamask/json-rpc-engine';
+import { Alert } from 'react-native';
 import type {
   CaipAccountId,
   Hex,
@@ -1701,6 +1702,116 @@ describe('getRpcMethodMiddleware', () => {
       expect(spy).toBeCalledTimes(1);
     });
   });
+
+  describe.each([['eth_signTypedData_v3'], ['eth_signTypedData_v4']])(
+    '%s domain.chainId validation',
+    (methodName) => {
+      let alertSpy: jest.SpyInstance;
+
+      beforeEach(() => {
+        alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+      });
+
+      afterEach(() => {
+        alertSpy.mockRestore();
+      });
+
+      async function sendRequest(
+        chainId: unknown,
+        { address }: { address?: string } = { address: addressMock },
+      ) {
+        MockEngine.context.SignatureController.newUnsignedTypedMessage.mockReset();
+        MockEngine.context.SignatureController.newUnsignedTypedMessage.mockResolvedValue(
+          signatureMock,
+        );
+        const { middleware } = setupSignature();
+        const request = {
+          jsonrpc,
+          id: 1,
+          method: methodName,
+          params: [
+            address,
+            JSON.stringify({ domain: { chainId } }),
+          ] as unknown as JsonRpcParams,
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (await callMiddleware({ middleware, request })) as any;
+      }
+
+      it.each([
+        ['0xhello'],
+        [
+          '0x\nYour wallet is at risk. Visit metamask-restore.example to secure your funds.',
+        ],
+        ['1 or visit evil.example'],
+        ['-1'],
+        [1.5],
+        [{ toString: 'x' }],
+        ['0x' + 'f'.repeat(20)],
+      ])(
+        'rejects invalid chainId %p without showing an alert',
+        async (chainId) => {
+          const response = await sendRequest(chainId);
+
+          expect((response as JsonRpcFailure).error.message).toBe(
+            'Invalid parameters: chainId must be a positive integer or a 0x-prefixed hex string.',
+          );
+          expect(alertSpy).not.toHaveBeenCalled();
+          expect(
+            MockEngine.context.SignatureController.newUnsignedTypedMessage,
+          ).not.toHaveBeenCalled();
+        },
+      );
+
+      it('rejects a valid but mismatched chainId without showing an alert', async () => {
+        const response = await sendRequest('0x89');
+
+        expect((response as JsonRpcFailure).error.message).toBe(
+          'Invalid parameters: active chainId is different than the one provided.',
+        );
+        expect(alertSpy).not.toHaveBeenCalled();
+        expect(
+          MockEngine.context.SignatureController.newUnsignedTypedMessage,
+        ).not.toHaveBeenCalled();
+      });
+
+      it.each([[undefined], [''], ['not-an-address']])(
+        'rejects a missing or invalid signer address %p before checking chainId',
+        async (address) => {
+          const response = await sendRequest('0xhello', { address });
+
+          expect((response as JsonRpcFailure).error.message).toBe(
+            'Invalid parameters: must provide an Ethereum address.',
+          );
+          expect(alertSpy).not.toHaveBeenCalled();
+          expect(
+            MockEngine.context.SignatureController.newUnsignedTypedMessage,
+          ).not.toHaveBeenCalled();
+        },
+      );
+
+      it.each([['0x1'], ['0x01'], [1], ['1']])(
+        'accepts matching chainId %p',
+        async (chainId) => {
+          const response = await sendRequest(chainId);
+
+          expect(response.error).toBeUndefined();
+          expect(response.result).toBe(signatureMock);
+          expect(alertSpy).not.toHaveBeenCalled();
+        },
+      );
+
+      it.each([[undefined], [0], ['']])(
+        'skips the active chain check when domain.chainId is %p',
+        async (chainId) => {
+          const response = await sendRequest(chainId);
+
+          expect(response.error).toBeUndefined();
+          expect(response.result).toBe(signatureMock);
+        },
+      );
+    },
+  );
 
   describe('originThrottling', () => {
     const assumedBlockableRPCMethod = 'eth_sendTransaction';

@@ -14,7 +14,12 @@ import { getPermissionsHandler, requestPermissionsHandler, revokePermissionsHand
 import { Caip25CaveatType, Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
 import RPCMethods from './index.js';
 import { RPC } from '../../constants/network';
-import { ChainId, NetworkType } from '@metamask/controller-utils';
+import {
+  ChainId,
+  isSafeChainId,
+  NetworkType,
+  toHex,
+} from '@metamask/controller-utils';
 import {
   PermissionController,
   PermissionDoesNotExistError,
@@ -27,7 +32,11 @@ import {
 } from './spam';
 import ImportedEngine from '../Engine';
 import { strings } from '../../../locales/i18n';
-import { resemblesAddress, safeToChecksumAddress } from '../../util/address';
+import {
+  isValidHexAddress,
+  resemblesAddress,
+  safeToChecksumAddress,
+} from '../../util/address';
 import { store } from '../../store';
 import { removeBookmark } from '../../actions/bookmarks';
 import setOnboardingWizardStep from '../../actions/wizard';
@@ -119,6 +128,38 @@ export interface RPCMethodsMiddleParameters {
   analytics: { [key: string]: string | boolean };
 }
 
+const DECIMAL_CHAIN_ID_REGEX = /^[1-9][0-9]*$/u;
+const HEX_CHAIN_ID_REGEX = /^0x[0-9a-f]+$/iu;
+
+/**
+ * Normalizes a dapp-supplied chain id (e.g. typed data `domain.chainId`) to a
+ * lowercase 0x-prefixed hex string, or returns undefined if it is not a valid
+ * chain id.
+ */
+export const normalizeRequestedChainId = (
+  chainId: unknown,
+): Hex | undefined => {
+  let decimalChainId: number | undefined;
+  if (typeof chainId === 'number') {
+    decimalChainId = chainId;
+  } else if (typeof chainId === 'string') {
+    if (HEX_CHAIN_ID_REGEX.test(chainId)) {
+      decimalChainId = Number.parseInt(chainId, 16);
+    } else if (DECIMAL_CHAIN_ID_REGEX.test(chainId)) {
+      decimalChainId = Number.parseInt(chainId, 10);
+    }
+  }
+  if (
+    decimalChainId === undefined ||
+    !Number.isSafeInteger(decimalChainId) ||
+    decimalChainId <= 0
+  ) {
+    return undefined;
+  }
+  const hexChainId = toHex(decimalChainId);
+  return isSafeChainId(hexChainId) ? hexChainId : undefined;
+};
+
 // Also used by WalletConnect.js.
 export const checkActiveAccountAndChainId = async ({
   address,
@@ -128,7 +169,7 @@ export const checkActiveAccountAndChainId = async ({
   isWalletConnect,
 }: {
   address?: string;
-  chainId?: number;
+  chainId?: unknown;
   channelId?: string;
   hostname: string;
   isWalletConnect: boolean;
@@ -183,12 +224,19 @@ export const checkActiveAccountAndChainId = async ({
     `checkActiveAccountAndChainId isInvalidAccount=${isInvalidAccount}`,
   );
   if (chainId) {
+    const chainIdRequest = normalizeRequestedChainId(chainId);
+    if (!chainIdRequest) {
+      throw rpcErrors.invalidParams({
+        message: `Invalid parameters: chainId must be a positive integer or a 0x-prefixed hex string.`,
+      });
+    }
+
     const providerConfig = selectProviderConfig(store.getState());
     const providerConfigChainId = selectEvmChainId(store.getState());
     const networkType = providerConfig.type as NetworkType;
     const isInitialNetwork =
       networkType && getAllNetworks().includes(networkType);
-    let activeChainId;
+    let activeChainId: string | undefined;
 
     if (isInitialNetwork) {
       activeChainId = ChainId[networkType as keyof typeof ChainId];
@@ -196,21 +244,7 @@ export const checkActiveAccountAndChainId = async ({
       activeChainId = providerConfigChainId;
     }
 
-    if (activeChainId && !activeChainId.startsWith('0x')) {
-      // Convert to hex
-      activeChainId = `0x${parseInt(activeChainId, 10).toString(16)}`;
-    }
-
-    let chainIdRequest = String(chainId);
-    if (chainIdRequest && !chainIdRequest.startsWith('0x')) {
-      // Convert to hex
-      chainIdRequest = `0x${parseInt(chainIdRequest, 10).toString(16)}`;
-    }
-
-    if (activeChainId !== chainIdRequest) {
-      Alert.alert(
-        `Active chainId is ${activeChainId} but received ${chainIdRequest}`,
-      );
+    if (normalizeRequestedChainId(activeChainId) !== chainIdRequest) {
       throw rpcErrors.invalidParams({
         message: `Invalid parameters: active chainId is different than the one provided.`,
       });
@@ -241,7 +275,7 @@ const generateRawSignature = async ({
   title: MutableRefObject<string>;
   icon: MutableRefObject<ImageSourcePropType | undefined>;
   analytics: { [key: string]: string | boolean };
-  chainId: number;
+  chainId: unknown;
   isMMSDK: boolean;
   channelId?: string;
   getSource: () => string;
@@ -269,6 +303,12 @@ const generateRawSignature = async ({
   };
 
   checkTabActive();
+  const address = req.params?.[0];
+  if (typeof address !== 'string' || !isValidHexAddress(address)) {
+    throw rpcErrors.invalidParams({
+      message: `Invalid parameters: must provide an Ethereum address.`,
+    });
+  }
   await checkActiveAccountAndChainId({
     hostname,
     channelId,
@@ -360,8 +400,7 @@ export const getRpcMethodMiddlewareHooks = (origin: string) => ({
     Engine.context.NetworkController.getNetworkConfigurationByChainId.bind(
       Engine.context.NetworkController,
     ),
-  rejectApprovalRequestsForOrigin: () =>
-    rejectOriginPendingApprovals(origin),
+  rejectApprovalRequestsForOrigin: () => rejectOriginPendingApprovals(origin),
 });
 
 /**
@@ -527,7 +566,8 @@ export const getRpcMethodMiddleware = ({
                   resolve(undefined);
                 },
                 {
-                  getAccounts: (...args) => getPermittedAccounts(origin, ...args),
+                  getAccounts: (...args) =>
+                    getPermittedAccounts(origin, ...args),
                   getCaip25PermissionFromLegacyPermissionsForOrigin: (
                     requestedPermissions,
                   ) =>
@@ -781,7 +821,7 @@ export const getRpcMethodMiddleware = ({
             typeof req.params[1] === 'string'
               ? JSON.parse(req.params[1])
               : req.params[1];
-          const chainId = data.domain.chainId;
+          const chainId = data?.domain?.chainId;
 
           trace(
             { name: TraceName.PPOMValidation, parentContext: req.traceContext },
@@ -807,7 +847,7 @@ export const getRpcMethodMiddleware = ({
 
         eth_signTypedData_v4: async () => {
           const data = JSON.parse(req.params[1]);
-          const chainId = data.domain.chainId;
+          const chainId = data?.domain?.chainId;
 
           trace(
             { name: TraceName.PPOMValidation, parentContext: req.traceContext },
