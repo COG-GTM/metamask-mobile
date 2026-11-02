@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 import Fuse from 'fuse.js';
@@ -44,6 +44,8 @@ const AddressList = ({
   const { colors } = useTheme();
   const styles = styleSheet(colors);
   const [smartContractStatus, setSmartContractStatus] = useState({});
+  const inFlightLookups = useRef(new Set());
+  const isMounted = useRef(true);
   const internalAccounts = useSelector(selectInternalAccounts);
   const addressBook = useSelector(selectAddressBook);
   const ambiguousAddressEntries = useSelector(
@@ -82,39 +84,42 @@ const AddressList = ({
     [networkAddressBookList],
   );
 
+  useEffect(
+    () => () => {
+      isMounted.current = false;
+    },
+    [],
+  );
+
   // Contract status per (chainId, address) is resolved once for the whole
-  // network address book; searching only filters the cached results.
+  // network address book; searching only filters the cached results. Results
+  // are keyed by chain and address, so a lookup that finishes after the chain
+  // or list changed can still be stored without affecting the rendered list.
   useEffect(() => {
-    let cancelled = false;
-    const pendingContacts = networkAddressBookList.filter(
-      (contact) =>
-        smartContractStatus[getContractStatusKey(contact, chainId)] == null,
-    );
-    if (!pendingContacts.length) return;
-
-    Promise.all(
-      pendingContacts.map((contact) =>
-        isSmartContractAddress(contact.address, contact.chainId ?? chainId)
-          .then((isSmartContract) => [contact, Boolean(isSmartContract)])
-          .catch(() => [contact, LOOKUP_FAILED]),
-      ),
-    ).then((results) => {
-      if (cancelled) return;
-      setSmartContractStatus((prevStatus) => {
-        const nextStatus = { ...prevStatus };
-        results.forEach(([contact, isSmartContract]) => {
-          nextStatus[getContractStatusKey(contact, chainId)] = isSmartContract;
+    networkAddressBookList.forEach((contact) => {
+      const key = getContractStatusKey(contact, chainId);
+      if (
+        smartContractStatus[key] != null ||
+        inFlightLookups.current.has(key)
+      ) {
+        return;
+      }
+      inFlightLookups.current.add(key);
+      isSmartContractAddress(contact.address, contact.chainId ?? chainId)
+        .then((isSmartContract) => Boolean(isSmartContract))
+        .catch(() => LOOKUP_FAILED)
+        .then((status) => {
+          inFlightLookups.current.delete(key);
+          if (!isMounted.current) return;
+          setSmartContractStatus((prevStatus) => ({
+            ...prevStatus,
+            [key]: status,
+          }));
         });
-        return nextStatus;
-      });
     });
-
-    return () => {
-      cancelled = true;
-    };
     // smartContractStatus is intentionally omitted: storing results must not
     // re-trigger lookups, and pending addresses are recomputed when the
-    // address book or chain changes.
+    // address book, chain or reloadAddressList changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [networkAddressBookList, chainId]);
 

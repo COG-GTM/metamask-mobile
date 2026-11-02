@@ -196,7 +196,7 @@ describe('AddressList', () => {
     expect(await addressBook.findByText('Contract')).toBeTruthy();
   });
 
-  it('ignores lookups that resolve after the chain changed', async () => {
+  it('keeps the new chain list when old-chain lookups resolve late', async () => {
     const pending: ((isContract: boolean) => void)[] = [];
     mockIsSmartContractAddress.mockImplementation(
       (_address: string, chainId: string) =>
@@ -252,5 +252,36 @@ describe('AddressList', () => {
       CONTRACT_ADDRESS,
       '0x1',
     );
+  });
+
+  it('starts one retry per failed lookup when the reload flag toggles back', async () => {
+    mockIsSmartContractAddress.mockImplementation(async (address: string) => {
+      if (address.toLowerCase() === CONTRACT_ADDRESS.toLowerCase()) {
+        throw new Error('RPC unavailable');
+      }
+      return false;
+    });
+
+    const { findByText, queryByText, rerender } = renderWithProvider(
+      addressList(),
+      { state: stateWithContacts },
+    );
+    await findByText('Contract');
+    expect(mockIsSmartContractAddress).toHaveBeenCalledTimes(4);
+
+    let resolveRetry: (isContract: boolean) => void = () => undefined;
+    mockIsSmartContractAddress.mockImplementation(
+      () => new Promise((resolve) => (resolveRetry = resolve)),
+    );
+    rerender(addressList({ reloadAddressList: true }));
+    rerender(addressList({ reloadAddressList: false }));
+    expect(mockIsSmartContractAddress).toHaveBeenCalledTimes(5);
+
+    await act(async () => {
+      resolveRetry(true);
+    });
+
+    await waitFor(() => expect(queryByText('Contract')).toBeNull());
+    expect(mockIsSmartContractAddress).toHaveBeenCalledTimes(5);
   });
 });
