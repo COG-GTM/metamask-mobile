@@ -42,14 +42,16 @@ const fetchHtmlSource = async (url: URL) => {
 };
 
 /**
- * Keeps only the document up to the end of `<head>`, where icon links live,
- * so the body is not parsed on the JS thread
+ * Drops what follows the last `</head>` so the body is not parsed on the JS
+ * thread. The last match is used because the same text can appear inside a
+ * script or comment in `<head>`, before the real closing tag.
  * @param htmlSource - the HTML source
  */
 const truncateAfterHead = (htmlSource: string) => {
-  const headEnd = htmlSource.search(/<\/head\s*>/i);
-  if (headEnd === -1) return htmlSource;
-  return `${htmlSource.slice(0, headEnd)}</head></html>`;
+  const closingTags = [...htmlSource.matchAll(/<\/head\s*>/gi)];
+  const lastClosingTag = closingTags[closingTags.length - 1];
+  if (lastClosingTag?.index === undefined) return htmlSource;
+  return `${htmlSource.slice(0, lastClosingTag.index)}</head></html>`;
 };
 
 /**
@@ -148,31 +150,36 @@ export const cacheFavicon = (
 };
 
 /**
- * Remembers that the given origin has no usable favicon until the TTL expires,
+ * Cache key for misses: scoped to the fetched page (without query or hash),
+ * since one page lacking an icon link says nothing about other pages of the host
+ * @param url - the fetched page URL
+ */
+const missCacheKey = (url: URL) => `${url.origin}${url.pathname}`;
+
+/**
+ * Remembers that the given page has no usable favicon until the TTL expires,
  * so the fallback icon is used without fetching the page again
- * @param originUrl - the origin used as cache key
+ * @param originUrl - the fetched origin or page URL
  * @param ttlMs - how long the miss stays valid
  */
 export const cacheFaviconMiss = (
   originUrl: string,
   ttlMs: number = FAVICON_MISS_TTL_MS,
 ) => {
-  const cacheKey = originToHost(originUrl);
-  if (!cacheKey) return;
+  const url = originToUrl(originUrl);
+  if (!url) return;
   store?.dispatch(
-    storeFavicon({ origin: cacheKey, url: '', expiresAt: Date.now() + ttlMs }),
+    storeFavicon({
+      origin: missCacheKey(url),
+      url: '',
+      expiresAt: Date.now() + ttlMs,
+    }),
   );
 };
 
-/**
- * Reads the unexpired cache entry (hit or miss) for the given origin
- * @param originUrl - the origin used as cache key
- */
-const getFaviconCacheEntry = (
-  originUrl: string,
+const findUnexpiredCacheEntry = (
+  cacheKey: string,
 ): FaviconCacheEntry | undefined => {
-  const cacheKey = originToHost(originUrl);
-  if (!cacheKey) return;
   const { browser } = store.getState();
   const cachedFavicon: FaviconCacheEntry | undefined = browser.favicons.find(
     (favicon: FaviconCacheEntry) => favicon.origin === cacheKey,
@@ -189,10 +196,13 @@ const getFaviconCacheEntry = (
 /**
  * Reads the favicon URL for the given origin from the browser state
  * @param originUrl  -the origin used as cache key
- * @returns - the favicon url or undefined if none found or a miss is cached
+ * @returns - the favicon url or undefined if none found
  */
-export const getFaviconFromCache = (originUrl: string): string | undefined =>
-  getFaviconCacheEntry(originUrl)?.url || undefined;
+export const getFaviconFromCache = (originUrl: string): string | undefined => {
+  const cacheKey = originToHost(originUrl);
+  if (!cacheKey) return;
+  return findUnexpiredCacheEntry(cacheKey)?.url || undefined;
+};
 
 const lookupFaviconFromHtml = async (
   url: URL,
@@ -233,8 +243,8 @@ export const getFaviconURLFromHtml = async (origin: string) => {
 
 /**
  * Returns the favicon URL for the given origin, using the cache first.
- * Hits and misses are both cached, and concurrent calls for the same host
- * share a single fetch.
+ * Hits are cached per host and misses per page, and concurrent calls for the
+ * same page share a single fetch.
  *
  * @param origin - String corresponding to website url or domain
  * @returns - the favicon url or undefined to use the fallback icon
@@ -245,10 +255,12 @@ export const resolveFavicon = async (
   if (!origin || origin === 'null') return;
   const url = originToUrl(origin);
   if (!url) return;
-  const cacheKey = url.host;
 
-  const cached = getFaviconCacheEntry(origin);
-  if (cached) return cached.url || undefined;
+  const cachedFaviconUrl = getFaviconFromCache(origin);
+  if (cachedFaviconUrl) return cachedFaviconUrl;
+
+  const cacheKey = missCacheKey(url);
+  if (findUnexpiredCacheEntry(cacheKey)) return;
 
   const pending = inFlightFaviconRequests.get(cacheKey);
   if (pending) return pending;

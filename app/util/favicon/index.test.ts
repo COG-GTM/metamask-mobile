@@ -321,7 +321,11 @@ describe('resolveFavicon function', () => {
     expect(await resolveFavicon('dapp.test')).toBeUndefined();
     expect(global.fetch).toHaveBeenCalledTimes(1);
     expect(favicons).toEqual([
-      { origin: 'dapp.test', url: '', expiresAt: NOW + FAVICON_MISS_TTL_MS },
+      {
+        origin: 'https://dapp.test/',
+        url: '',
+        expiresAt: NOW + FAVICON_MISS_TTL_MS,
+      },
     ]);
     expect(getFaviconFromCache('dapp.test')).toBeUndefined();
   });
@@ -337,7 +341,7 @@ describe('resolveFavicon function', () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
     expect(favicons).toEqual([
       {
-        origin: 'dapp.test',
+        origin: 'https://dapp.test/',
         url: '',
         expiresAt: NOW + FAVICON_FETCH_ERROR_TTL_MS,
       },
@@ -345,7 +349,12 @@ describe('resolveFavicon function', () => {
   });
 
   it('refetches once a cached miss has expired and replaces it', async () => {
-    favicons = [{ origin: 'dapp.test', url: '', expiresAt: NOW - 1 }];
+    const expiredMiss = {
+      origin: 'https://dapp.test/',
+      url: '',
+      expiresAt: NOW - 1,
+    };
+    favicons = [expiredMiss];
     global.fetch = jest.fn(() =>
       htmlResponse(
         '<html><head><link rel="icon" href="/fox.png"></head></html>',
@@ -356,10 +365,31 @@ describe('resolveFavicon function', () => {
     expect(global.fetch).toHaveBeenCalledTimes(1);
     expect(favicons).toEqual([
       { origin: 'dapp.test', url: 'https://dapp.test/fox.png' },
+      expiredMiss,
     ]);
   });
 
-  it('shares one in-flight fetch between concurrent calls for the same host', async () => {
+  it('scopes a miss to the fetched page so other pages of the host are still looked up', async () => {
+    global.fetch = jest.fn((url: URL) =>
+      htmlResponse(
+        url.pathname === '/app'
+          ? '<html><head><link rel="icon" href="app.png"></head></html>'
+          : '<html><head></head></html>',
+      ),
+    );
+
+    expect(await resolveFavicon('https://dapp.test/login')).toBeUndefined();
+    expect(await resolveFavicon('https://dapp.test/login?x=1')).toBeUndefined();
+    expect(await resolveFavicon('https://dapp.test/app')).toBe(
+      'https://dapp.test/app.png',
+    );
+    expect(await resolveFavicon('https://dapp.test/login')).toBe(
+      'https://dapp.test/app.png',
+    );
+    expect(global.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('shares one in-flight fetch between concurrent calls for the same page', async () => {
     let resolveFetch: (value: Response) => void = () => undefined;
     global.fetch = jest.fn(
       () =>
@@ -370,8 +400,8 @@ describe('resolveFavicon function', () => {
 
     const calls = [
       resolveFavicon('https://dapp.test/a'),
-      resolveFavicon('dapp.test'),
-      resolveFavicon('https://dapp.test/b?x=1'),
+      resolveFavicon('dapp.test/a'),
+      resolveFavicon('https://dapp.test/a?x=1#top'),
     ];
     resolveFetch({
       ok: true,
@@ -391,6 +421,18 @@ describe('resolveFavicon function', () => {
     );
 
     expect(await resolveFavicon('dapp.test')).toBe('https://dapp.test/ok.ico');
+  });
+
+  it('finds an icon link placed after a </head> string inside a head script', async () => {
+    global.fetch = jest.fn(() =>
+      htmlResponse(
+        '<html><head><script>const t = \'</head>\';</script><link rel="icon" href="/icon.png"></head><body></body></html>',
+      ),
+    );
+
+    expect(await resolveFavicon('dapp.test')).toBe(
+      'https://dapp.test/icon.png',
+    );
   });
 
   it('only parses the document up to the end of <head>', async () => {
