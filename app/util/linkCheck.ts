@@ -3,7 +3,12 @@ import isUrl from 'is-url';
 import { getPhishingTestResult } from './phishingDetection';
 
 const ALLOWED_PROTOCOLS = ['http:', 'https:'];
-const DENYLISTED_DOMAINS = ['metamask.app.link'];
+const DENYLISTED_DOMAINS = [
+  'metamask.app.link',
+  'metamask-alternate.app.link',
+  'metamask.test-app.link',
+  'metamask-alternate.test-app.link',
+];
 
 const isAllowedProtocol = (protocol: string): boolean =>
   ALLOWED_PROTOCOLS.includes(protocol);

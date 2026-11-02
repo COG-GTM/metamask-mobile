@@ -25,10 +25,8 @@ import {
   processUrlForBrowser,
   prefixUrlWithProtocol,
   isTLD,
-  protocolAllowList,
-  trustedProtocolToDeeplink,
-  getAlertMessage,
-  allowLinkOpen,
+  handleProtocolNavigation,
+  browserWebViewOriginWhitelist,
   getUrlObj,
 } from '../../../util/browser';
 import {
@@ -42,6 +40,7 @@ import WebviewErrorComponent from '../../UI/WebviewError';
 import { addToHistory, addToWhitelist } from '../../../actions/browser';
 import Device from '../../../util/device';
 import AppConstants from '../../../core/AppConstants';
+import SharedDeeplinkManager from '../../../core/DeeplinkManager/SharedDeeplinkManager';
 import { MetaMetricsEvents } from '../../../core/Analytics';
 import OnboardingWizard from '../../UI/OnboardingWizard';
 import DrawerStatusTracker from '../../../core/DrawerStatusTracker';
@@ -738,13 +737,27 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   );
 
   /**
+   * Handles a MetaMask deeplink the user approved from a page in this tab.
+   * It is parsed in-app with its own origin instead of being bounced through
+   * the OS, which would tag it as an external `ORIGIN_DEEPLINK`.
+   */
+  const openDeeplinkFromBrowser = useCallback((deeplink: string) => {
+    SharedDeeplinkManager.parse(deeplink, {
+      origin: AppConstants.DEEPLINKS.ORIGIN_IN_APP_BROWSER,
+      browserCallBack: (url: string) => onSubmitEditingRef.current(url),
+    });
+  }, []);
+
+  /**
    * Function that allows custom handling of any web view requests.
    * Return `true` to continue loading the request and `false` to stop loading.
    */
   const onShouldStartLoadWithRequest = ({
     url: urlToLoad,
+    isTopFrame,
   }: {
     url: string;
+    isTopFrame?: boolean;
   }) => {
     webStates.current[urlToLoad] = {
       ...webStates.current[urlToLoad],
@@ -767,39 +780,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       }
     }
 
-    // Continue request loading it the protocol is whitelisted
-    const { protocol } = new URLParse(urlToLoad);
-    if (protocolAllowList.includes(protocol)) return true;
-    Logger.log(`Protocol not allowed ${protocol}`);
-
-    // If it is a trusted deeplink protocol, do not show the
-    // warning alert. Allow the OS to deeplink the URL
-    // and stop the webview from loading it.
-    if (trustedProtocolToDeeplink.includes(protocol)) {
-      allowLinkOpen(urlToLoad);
-      return false;
-    }
-
-    // TODO: add logging for untrusted protocol being used
-    // Sentry
-    const alertMsg = getAlertMessage(protocol, strings);
-
-    // Pop up an alert dialog box to prompt the user for permission
-    // to execute the request
-    Alert.alert(strings('onboarding.warning_title'), alertMsg, [
-      {
-        text: strings('browser.protocol_alert_options.ignore'),
-        onPress: () => null,
-        style: 'cancel',
-      },
-      {
-        text: strings('browser.protocol_alert_options.allow'),
-        onPress: () => allowLinkOpen(urlToLoad),
-        style: 'default',
-      },
-    ]);
-
-    return false;
+    return handleProtocolNavigation(urlToLoad, {
+      isTopFrame,
+      openInAppDeeplink: openDeeplinkFromBrowser,
+    });
   };
 
   /**
@@ -1379,17 +1363,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
               {!!entryScriptWeb3 && firstUrlLoaded && (
                 <>
                   <WebView
-                    originWhitelist={[
-                      'https://',
-                      'http://',
-                      'metamask://',
-                      'dapp://',
-                      'wc://',
-                      'ethereum://',
-                      'file://',
-                      // Needed for Recaptcha
-                      'about:srcdoc',
-                    ]}
+                    originWhitelist={browserWebViewOriginWhitelist}
                     decelerationRate={'normal'}
                     ref={webviewRef}
                     renderError={() => (

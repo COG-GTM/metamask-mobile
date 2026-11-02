@@ -31,6 +31,15 @@ describe('linkCheck', () => {
     jest.clearAllMocks();
   });
 
+  it.each([
+    'https://metamask.app.link/connect?channelId=abc',
+    'https://metamask-alternate.app.link/connect?channelId=abc',
+    'https://metamask.test-app.link/connect?channelId=abc',
+    'https://metamask-alternate.test-app.link/connect?channelId=abc',
+  ])('rejects MetaMask deeplink domain %s', (link) => {
+    expect(isLinkSafe(link)).toEqual(false);
+  });
+
   it('should correctly check links for safety', () => {
     expect(isLinkSafe('example.com')).toEqual(false);
     expect(isLinkSafe('htps://ww.example.com/')).toEqual(false);

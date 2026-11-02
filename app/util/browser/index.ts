@@ -1,7 +1,9 @@
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import isUrl from 'is-url';
 import Url from 'url-parse';
 import { regex, hasProtocol } from '../../util/regex';
+import Logger from '../Logger';
+import { strings } from '../../../locales/i18n';
 
 /**
  * Returns URL prefixed with protocol
@@ -98,15 +100,66 @@ export const protocolAllowList = ['about:', 'http:', 'https:'];
 
 /**
  *
- * List of all trusted protocols for OS Linker to handle
+ * MetaMask deeplink protocols. When a page in the in-app browser navigates to
+ * one of them, the link is handled by MetaMask itself (never handed to the OS)
+ * and only after the user confirms it.
  */
-export const trustedProtocolToDeeplink = [
+export const inAppDeeplinkProtocols = [
   'wc:',
   'metamask:',
   'ethereum:',
   'dapp:',
-  'market:',
 ];
+
+/**
+ * Protocols that are never loaded in the browser nor handed to the OS
+ */
+// eslint-disable-next-line no-script-url
+export const blockedProtocols = ['javascript:', 'vbscript:', 'data:', 'blob:'];
+
+/**
+ * Origin whitelist for the in-app browser WebView.
+ *
+ * `@metamask/react-native-webview` opens any URL that fails its origin
+ * whitelist with `Linking.openURL` without calling
+ * `onShouldStartLoadWithRequest`, so every URL has to pass it for
+ * `handleProtocolNavigation` to be the only decision point.
+ */
+export const browserWebViewOriginWhitelist = ['*'];
+
+export type ProtocolNavigationAction =
+  | 'load'
+  | 'block'
+  | 'prompt-deeplink'
+  | 'prompt-external';
+
+/**
+ * Decides how the in-app browser handles a navigation to the given protocol.
+ *
+ * @param protocol - URL protocol including the trailing colon, e.g. `sms:`
+ * @param isTopFrame - Whether the navigation happens in the top-level frame.
+ * Sub-frames (e.g. ad iframes) may only load web content.
+ * @returns - `load` in the WebView, `block` silently, or prompt the user
+ * before handling a MetaMask deeplink or opening an external app
+ */
+export const getProtocolNavigationAction = (
+  protocol: string,
+  isTopFrame = true,
+): ProtocolNavigationAction => {
+  const normalizedProtocol = protocol.toLowerCase();
+  if (protocolAllowList.includes(normalizedProtocol)) return 'load';
+  if (
+    !isTopFrame ||
+    !normalizedProtocol ||
+    blockedProtocols.includes(normalizedProtocol)
+  ) {
+    return 'block';
+  }
+  if (inAppDeeplinkProtocols.includes(normalizedProtocol)) {
+    return 'prompt-deeplink';
+  }
+  return 'prompt-external';
+};
 
 /**
  * Returns translated warning message for the
@@ -122,7 +175,12 @@ export const getAlertMessage = (
   protocol: string,
   i18nService: (id: string) => string,
 ) => {
-  switch (protocol) {
+  switch (protocol.toLowerCase()) {
+    case 'wc:':
+    case 'metamask:':
+    case 'ethereum:':
+    case 'dapp:':
+      return i18nService('browser.protocol_alerts.metamask');
     case 'tel:':
       return i18nService('browser.protocol_alerts.tel');
     case 'mailto:':
@@ -152,6 +210,72 @@ export const allowLinkOpen = (url: string) =>
     .catch((e) => {
       console.warn(`Error opening URL: ${e}`);
     });
+
+let isProtocolPromptVisible = false;
+
+/**
+ * Applies `getProtocolNavigationAction` to an in-app browser navigation
+ * request. Nothing outside the WebView is opened until the user taps Allow:
+ * external schemes are then handed to the OS, MetaMask deeplinks to
+ * `openInAppDeeplink`. Requests arriving while a prompt is already showing are
+ * dropped, so a page cannot queue up prompts.
+ *
+ * @param url - URL the WebView is about to navigate to
+ * @param options.isTopFrame - Whether the navigation happens in the top frame
+ * @param options.openInAppDeeplink - Handles an approved MetaMask deeplink
+ * @returns - `true` to let the WebView load the URL, `false` to stop it
+ */
+export const handleProtocolNavigation = (
+  url: string,
+  {
+    isTopFrame = true,
+    openInAppDeeplink,
+  }: {
+    isTopFrame?: boolean;
+    openInAppDeeplink: (url: string) => void;
+  },
+): boolean => {
+  const { protocol } = new Url(url);
+  const action = getProtocolNavigationAction(protocol, isTopFrame);
+  if (action === 'load') return true;
+  Logger.log(`Protocol not allowed ${protocol}`);
+  if (action === 'block' || isProtocolPromptVisible) return false;
+
+  isProtocolPromptVisible = true;
+  const onAllow = () => {
+    isProtocolPromptVisible = false;
+    if (action === 'prompt-deeplink') {
+      // Deeplink handlers match lowercase scheme prefixes
+      openInAppDeeplink(
+        `${protocol.toLowerCase()}${url.slice(protocol.length)}`,
+      );
+    } else {
+      allowLinkOpen(url);
+    }
+  };
+  const onIgnore = () => {
+    isProtocolPromptVisible = false;
+  };
+
+  Alert.alert(
+    strings('onboarding.warning_title'),
+    getAlertMessage(protocol, strings),
+    [
+      {
+        text: strings('browser.protocol_alert_options.ignore'),
+        onPress: onIgnore,
+        style: 'cancel',
+      },
+      {
+        text: strings('browser.protocol_alert_options.allow'),
+        onPress: onAllow,
+        style: 'default',
+      },
+    ],
+    { cancelable: true, onDismiss: onIgnore },
+  );
+  return false;
+};
 
 /**
  * Appends search parameters to a URL and returns the complete URL string
