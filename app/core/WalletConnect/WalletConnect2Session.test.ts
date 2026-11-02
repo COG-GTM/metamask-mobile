@@ -292,6 +292,7 @@ describe('WalletConnect2Session', () => {
         },
       });
       expect(checkWCPermissions).not.toHaveBeenCalled();
+      expect(session.isHandlingRequest()).toBe(false);
     });
 
     it('passes the permission subject to the background bridge', () => {

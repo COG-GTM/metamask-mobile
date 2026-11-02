@@ -503,7 +503,7 @@ export const getRpcMethodMiddleware = ({
                 getPermissionsForOrigin:
                   Engine.context.PermissionController.getPermissions.bind(
                     Engine.context.PermissionController,
-                    channelId ?? hostname,
+                    origin,
                   ),
               },
             );
@@ -538,7 +538,7 @@ export const getRpcMethodMiddleware = ({
                   requestPermissionsForOrigin:
                     Engine.context.PermissionController.requestPermissions.bind(
                       Engine.context.PermissionController,
-                      { origin: channelId ?? hostname },
+                      { origin },
                       req.params[0],
                     ),
                 },
