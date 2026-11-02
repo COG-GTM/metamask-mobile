@@ -52,4 +52,40 @@ describe('engineReducer', () => {
       AccountTrackerController: Engine.state[key],
     });
   });
+
+  it('updates every key of a batched UPDATE_BG_STATE action from one Engine.state read', () => {
+    const engineState = {
+      AccountTrackerController: { accounts: 'a' },
+      TokenRatesController: { marketData: 'b' },
+      NetworkController: { selectedNetworkClientId: 'c' },
+    };
+    const stateGetter = jest.fn(() => engineState);
+    Object.defineProperty(Engine, 'state', {
+      get: stateGetter,
+      configurable: true,
+    });
+    const reduxInitialState = {
+      backgroundState: {
+        AccountTrackerController: {},
+        TokenRatesController: {},
+        NetworkController: { selectedNetworkClientId: 'old' },
+        KeyringController: { vault: 'unchanged' },
+      },
+    };
+
+    const { backgroundState } = engineReducer(
+      reduxInitialState,
+      updateBgState({
+        keys: ['AccountTrackerController', 'TokenRatesController'],
+      }),
+    );
+
+    expect(stateGetter).toHaveBeenCalledTimes(1);
+    expect(backgroundState).toEqual({
+      AccountTrackerController: engineState.AccountTrackerController,
+      TokenRatesController: engineState.TokenRatesController,
+      NetworkController: { selectedNetworkClientId: 'old' },
+      KeyringController: { vault: 'unchanged' },
+    });
+  });
 });
