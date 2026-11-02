@@ -6,3 +6,6 @@ export const { HOMEPAGE_URL, NOTIFICATION_NAMES, OLD_HOMEPAGE_URL_HOST } =
   AppConstants;
 export const HOMEPAGE_HOST = new URL(HOMEPAGE_URL)?.hostname;
 export const MM_MIXPANEL_TOKEN = process.env.MM_MIXPANEL_TOKEN;
+// Bounds on provider messages held while a page's origin is phishing scanned
+export const MAX_PENDING_BRIDGE_MESSAGES = 100;
+export const MAX_PENDING_BRIDGE_MESSAGES_SIZE = 5_000_000;
