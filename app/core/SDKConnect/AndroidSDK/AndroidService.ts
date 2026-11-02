@@ -48,6 +48,7 @@ export default class AndroidService extends EventEmitter2 {
   public connections: DappConnections = {};
   public rpcQueueManager = new RPCQueueManager();
   public bridgeByClientId: { [clientId: string]: BackgroundBridge } = {};
+  private expiredOriginatorInfo: { [clientId: string]: OriginatorInfo } = {};
   public eventHandler: AndroidSDKEventHandler;
   public batchRPCManager: BatchRPCManager = new BatchRPCManager('android');
   // To keep track in order to get the associated bridge to handle batch rpc calls
@@ -326,19 +327,17 @@ export default class AndroidService extends EventEmitter2 {
             DevLogger.log(
               `AndroidService::onMessageReceived client ${sessionId} session expired, re-approval required`,
             );
+            this.expiredOriginatorInfo[sessionId] = known.originatorInfo;
             this.forgetConnection(sessionId);
-            this.connections[sessionId] = {
-              ...known,
-              connected: true,
-              validUntil: undefined,
-            };
           }
 
           // Update connected state
-          this.connections[sessionId] = {
-            ...this.connections[sessionId],
-            connected: true,
-          };
+          if (this.connections[sessionId]) {
+            this.connections[sessionId] = {
+              ...this.connections[sessionId],
+              connected: true,
+            };
+          }
         } catch (error) {
           Logger.log(
             error,
@@ -369,13 +368,16 @@ export default class AndroidService extends EventEmitter2 {
 
           try {
             const originatorInfo = (this.connections[sessionId]
-              ?.originatorInfo ?? {}) as OriginatorInfo;
+              ?.originatorInfo ??
+              this.expiredOriginatorInfo[sessionId] ??
+              {}) as OriginatorInfo;
             // Ask users permissions again - the channel was removed or expired
             await this.checkPermission({
               originatorInfo,
               channelId: sessionId,
             });
 
+            delete this.expiredOriginatorInfo[sessionId];
             await this.saveApprovedConnection(sessionId, originatorInfo);
             this.setupBridge(this.connections[sessionId]);
             bridge = this.bridgeByClientId[sessionId];

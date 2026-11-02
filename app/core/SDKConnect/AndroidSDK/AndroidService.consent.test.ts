@@ -353,6 +353,7 @@ describe('AndroidService connection consent and persistence', () => {
     expect(oldBridge.onDisconnect).toHaveBeenCalledTimes(1);
     expect(oldBridge.onMessage).not.toHaveBeenCalled();
     expect(service.bridgeByClientId[CLIENT_ID]).toBeUndefined();
+    expect(service.connections[CLIENT_ID]).toBeUndefined();
     expect(persisted()[CLIENT_ID]).toBeUndefined();
 
     permissionController.requestPermissions.mockResolvedValueOnce([{}]);
