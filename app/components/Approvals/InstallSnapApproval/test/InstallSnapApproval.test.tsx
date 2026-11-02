@@ -7,6 +7,7 @@ import InstallSnapApproval from '../InstallSnapApproval';
 import useApprovalRequest from '../../../Views/confirmations/hooks/useApprovalRequest';
 import {
   SNAP_INSTALL_CANCEL,
+  SNAP_INSTALL_CONNECT,
   SNAP_INSTALL_CONNECTION_REQUEST,
 } from '../components/InstallSnapConnectionRequest/InstallSnapConnectionRequest.constants';
 import {
@@ -155,6 +156,7 @@ describe('InstallSnapApprovalFlow', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    onConfirm.mockReset();
   });
 
   it('renders InstallSnapConnectionRequest component initially when approval type is wallet_requestPermissions', () => {
@@ -223,6 +225,49 @@ describe('InstallSnapApprovalFlow', () => {
     fireEvent.press(permissionsConfirmButton);
     await waitFor(() => {
       expect(findByTestId(SNAP_INSTALL_ERROR)).toBeDefined();
+    });
+  });
+
+  it('approves only the wallet_snap permission when Connect is pressed', () => {
+    const walletSnapPermission =
+      requestPermissionsData.requestData.permissions.wallet_snap;
+    mockApprovalRequest({
+      ...requestPermissionsData,
+      requestData: {
+        ...requestPermissionsData.requestData,
+        permissions: {
+          wallet_snap: walletSnapPermission,
+          'endowment:caip25': {
+            caveats: [
+              {
+                type: 'authorizedScopes',
+                value: {
+                  requiredScopes: {},
+                  optionalScopes: {
+                    'wallet:eip155': {
+                      accounts: [
+                        'wallet:eip155:0x0000000000000000000000000000000000000001',
+                      ],
+                    },
+                  },
+                  isMultichainOrigin: false,
+                  sessionProperties: {},
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+    const { getByTestId } = render(<InstallSnapApproval />, {
+      wrapper: Wrapper,
+    });
+
+    fireEvent.press(getByTestId(SNAP_INSTALL_CONNECT));
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onConfirm).toHaveBeenCalledWith(undefined, {
+      permissions: { wallet_snap: walletSnapPermission },
     });
   });
 
