@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from 'react';
 import PropTypes from 'prop-types';
 import {
   TouchableOpacity,
@@ -147,6 +153,19 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * Builds a stable identity key for an NFT.
+ *
+ * @param collectible - NFT with `address`, `tokenId` and an optional `chainId`.
+ * @returns `chainId:address:tokenId` with the address lowercased. NFTs without
+ * a `chainId` (older persisted entries) get an empty chain segment, so callers
+ * that compare keys across networks must scope them by the selected chain.
+ */
+const getCollectibleKey = (collectible) =>
+  `${collectible.chainId ?? ''}:${String(collectible.address).toLowerCase()}:${
+    collectible.tokenId
+  }`;
+
 const debouncedNavigation = debounce((navigation, collectible) => {
   navigation.navigate('NftDetails', { collectible });
 }, 200);
@@ -187,9 +206,20 @@ const CollectibleContracts = ({
     [allCollectibles, chainId, isAllNetworks],
   );
 
-  const collectibles = filteredCollectibles.filter(
-    (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+  const collectibles = useMemo(
+    () =>
+      filteredCollectibles.filter(
+        (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+      ),
+    [filteredCollectibles],
   );
+
+  const ownedCollectibleKeys = useMemo(
+    () => new Set(collectibles.map(getCollectibleKey)),
+    [collectibles],
+  );
+
+  const lastMetadataRefreshSignature = useRef(null);
 
   const { colors } = useTheme();
   const { trackEvent, createEventBuilder } = useMetrics();
@@ -222,16 +252,8 @@ const CollectibleContracts = ({
    *  @returns Boolean indicating if the collectible is ignored or not.
    */
   const isCollectibleIgnored = useCallback(
-    (collectible) => {
-      const found = collectibles.find(
-        (elm) =>
-          elm.address === collectible.address &&
-          elm.tokenId === collectible.tokenId,
-      );
-      if (found) return false;
-      return true;
-    },
-    [collectibles],
+    (collectible) => !ownedCollectibleKeys.has(getCollectibleKey(collectible)),
+    [ownedCollectibleKeys],
   );
 
   /**
@@ -281,22 +303,39 @@ const CollectibleContracts = ({
   );
 
   useEffect(() => {
-    if (!isIpfsGatewayEnabled && !displayNftMedia) {
+    if ((!isIpfsGatewayEnabled && !displayNftMedia) || useNftDetection) {
+      lastMetadataRefreshSignature.current = null;
       return;
     }
     // TO DO: Move this fix to the controllers layer
     const updatableCollectibles = collectibles.filter((single) =>
       shouldUpdateCollectibleMetadata(single),
     );
-    if (updatableCollectibles.length !== 0 && !useNftDetection) {
-      updateAllCollectibleMetadata(updatableCollectibles);
+    if (updatableCollectibles.length === 0) {
+      lastMetadataRefreshSignature.current = null;
+      return;
     }
+    // Only refresh when the set of owned NFTs changes, not on every re-render
+    // or on the state update produced by the refresh itself.
+    const signature = [
+      selectedAddress,
+      isAllNetworks ? 'all' : chainId,
+      ...updatableCollectibles.map(getCollectibleKey).sort(),
+    ].join('|');
+    if (signature === lastMetadataRefreshSignature.current) {
+      return;
+    }
+    lastMetadataRefreshSignature.current = signature;
+    updateAllCollectibleMetadata(updatableCollectibles);
   }, [
     collectibles,
     updateAllCollectibleMetadata,
     isIpfsGatewayEnabled,
     displayNftMedia,
     useNftDetection,
+    selectedAddress,
+    chainId,
+    isAllNetworks,
   ]);
 
   const goToAddCollectible = useCallback(() => {
