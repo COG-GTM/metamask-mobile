@@ -11,6 +11,7 @@ import connectWithWC from './connectWithWC';
 import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
+import { isRawPrivateKey } from '../../../util/validators';
 
 function parseDeeplink({
   deeplinkManager: instance,
@@ -93,12 +94,14 @@ function parseDeeplink({
 
     return true;
   } catch (error) {
-    const isPrivateKey = url.length === 64;
+    // The caught error embeds the raw url (e.g. "Invalid URL: <url>"), which may
+    // hold key material scanned from a QR code, so it must never reach Sentry.
+    const isPrivateKey = url.length === 64 || isRawPrivateKey(url);
     if (error && !isPrivateKey) {
-      Logger.error(
-        error as Error,
-        'DeepLinkManager:parse error parsing deeplink',
-      );
+      Logger.error(new Error('Error parsing deeplink'), {
+        message: 'DeepLinkManager:parse error parsing deeplink',
+        origin,
+      });
       if (origin === AppConstants.DEEPLINKS.ORIGIN_QR_CODE) {
         Alert.alert(
           strings('qr_scanner.unrecognized_address_qr_code_title'),

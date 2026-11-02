@@ -24,6 +24,7 @@ import { isValidAddressInputViaQRCode } from '../../../util/address';
 import { getURLProtocol } from '../../../util/general';
 import {
   failedSeedPhraseRequirements,
+  isRawPrivateKey,
   isValidMnemonic,
 } from '../../../util/validators';
 import createStyles from './styles';
@@ -194,6 +195,17 @@ const QRScanner = ({
           data = { ...data, action };
           end();
           onScanSuccess(data, handledContent);
+          return;
+        }
+
+        // Key material must never be passed to the deeplink parser (it logs failures)
+        if (isRawPrivateKey(content)) {
+          shouldReadBarCodeRef.current = false;
+          data = {
+            private_key: content.length === 64 ? content : content.substr(2),
+          };
+          onScanSuccess(data, content);
+          end();
           return;
         }
 
