@@ -1,4 +1,10 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
+import {
+  isValidUrl,
+  isENSUrl,
+  getMaskedUrl,
+  getUrlOrigin,
+  scopeRefToOrigin,
+} from './utils';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -89,6 +95,50 @@ describe('BrowserTab utils', () => {
       it(`should correctly mask ${input}`, () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
+    });
+  });
+
+  describe('getUrlOrigin', () => {
+    it('returns the origin of a url', () => {
+      expect(getUrlOrigin('https://app.example:8443/path?q=1')).toBe(
+        'https://app.example:8443',
+      );
+    });
+
+    it('returns undefined for a missing url', () => {
+      expect(getUrlOrigin(undefined)).toBeUndefined();
+      expect(getUrlOrigin('')).toBeUndefined();
+    });
+  });
+
+  describe('scopeRefToOrigin', () => {
+    it('exposes the ref value only while the page belongs to the origin', () => {
+      const pageUrlRef = { current: 'https://acme.example/swap' };
+      const titleRef = { current: 'Acme Swap' };
+      const scoped = scopeRefToOrigin(
+        titleRef,
+        pageUrlRef,
+        'https://acme.example',
+        'acme.example',
+      );
+
+      expect(scoped.current).toBe('Acme Swap');
+      pageUrlRef.current = 'https://mallory.example/';
+      expect(scoped.current).toBe('acme.example');
+    });
+
+    it('writes through to the underlying ref', () => {
+      const pageUrlRef = { current: 'https://acme.example/' };
+      const titleRef = { current: 'Old' };
+      const scoped = scopeRefToOrigin(
+        titleRef,
+        pageUrlRef,
+        'https://acme.example',
+        '',
+      );
+
+      scoped.current = 'New';
+      expect(titleRef.current).toBe('New');
     });
   });
 });
