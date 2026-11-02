@@ -3,8 +3,13 @@ import {
   getFaviconURLFromHtml,
   cacheFavicon,
   isFaviconSVG,
+  resolveFavicon,
+  FAVICON_MISS_TTL_MS,
+  FAVICON_FETCH_ERROR_TTL_MS,
 } from '.';
+import { DOMParser } from '@xmldom/xmldom';
 import { storeFavicon } from '../../actions/browser';
+import browserReducer from '../../reducers/browser';
 
 jest.mock('../../store', () => {
   const actual = jest.requireActual('../../store');
@@ -250,5 +255,160 @@ describe('isFaviconSVG function', () => {
     const faviconUri = { uri: expectedUrl };
 
     expect(isFaviconSVG(faviconUri)).toBeUndefined();
+  });
+});
+
+describe('resolveFavicon function', () => {
+  const NOW = 1_700_000_000_000;
+  let favicons: { origin: string; url: string; expiresAt?: number }[];
+  const getStateMock = store.getState as jest.Mock;
+  const dispatchMock = store.dispatch as jest.Mock;
+  const originalGetState = getStateMock.getMockImplementation();
+
+  const htmlResponse = (html: string) =>
+    Promise.resolve({
+      ok: true,
+      text: () => Promise.resolve(html),
+    } as Response);
+
+  beforeEach(() => {
+    favicons = [];
+    jest.spyOn(Date, 'now').mockReturnValue(NOW);
+    getStateMock.mockImplementation(() => ({ browser: { favicons } }));
+    dispatchMock.mockImplementation((action) => {
+      favicons = (
+        browserReducer as unknown as (
+          state: { favicons: typeof favicons },
+          action: unknown,
+        ) => { favicons: typeof favicons }
+      )({ favicons }, action).favicons;
+      return action;
+    });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    dispatchMock.mockReset();
+  });
+
+  afterAll(() => {
+    getStateMock.mockImplementation(originalGetState);
+  });
+
+  it('caches a found favicon and serves later calls from the cache', async () => {
+    global.fetch = jest.fn(() =>
+      htmlResponse(
+        '<html><head><link rel="icon" href="fox.svg"></head></html>',
+      ),
+    );
+
+    expect(await resolveFavicon('https://dapp.test/page')).toBe(
+      'https://dapp.test/fox.svg',
+    );
+    expect(await resolveFavicon('dapp.test')).toBe('https://dapp.test/fox.svg');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(favicons).toEqual([
+      { origin: 'dapp.test', url: 'https://dapp.test/fox.svg' },
+    ]);
+  });
+
+  it('caches a page without icon link as a miss for FAVICON_MISS_TTL_MS', async () => {
+    global.fetch = jest.fn(() =>
+      htmlResponse('<html><head><title>no icon</title></head></html>'),
+    );
+
+    expect(await resolveFavicon('dapp.test')).toBeUndefined();
+    expect(await resolveFavicon('dapp.test')).toBeUndefined();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(favicons).toEqual([
+      { origin: 'dapp.test', url: '', expiresAt: NOW + FAVICON_MISS_TTL_MS },
+    ]);
+    expect(getFaviconFromCache('dapp.test')).toBeUndefined();
+  });
+
+  it.each([
+    ['a non-OK response', () => Promise.resolve({ ok: false } as Response)],
+    ['a network error', () => Promise.reject(new Error('offline'))],
+  ])('caches %s as a miss for FAVICON_FETCH_ERROR_TTL_MS', async (_, impl) => {
+    global.fetch = jest.fn(impl);
+
+    expect(await resolveFavicon('dapp.test')).toBeUndefined();
+    expect(await resolveFavicon('dapp.test')).toBeUndefined();
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(favicons).toEqual([
+      {
+        origin: 'dapp.test',
+        url: '',
+        expiresAt: NOW + FAVICON_FETCH_ERROR_TTL_MS,
+      },
+    ]);
+  });
+
+  it('refetches once a cached miss has expired and replaces it', async () => {
+    favicons = [{ origin: 'dapp.test', url: '', expiresAt: NOW - 1 }];
+    global.fetch = jest.fn(() =>
+      htmlResponse(
+        '<html><head><link rel="icon" href="/fox.png"></head></html>',
+      ),
+    );
+
+    expect(await resolveFavicon('dapp.test')).toBe('https://dapp.test/fox.png');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(favicons).toEqual([
+      { origin: 'dapp.test', url: 'https://dapp.test/fox.png' },
+    ]);
+  });
+
+  it('shares one in-flight fetch between concurrent calls for the same host', async () => {
+    let resolveFetch: (value: Response) => void = () => undefined;
+    global.fetch = jest.fn(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveFetch = resolve;
+        }),
+    );
+
+    const calls = [
+      resolveFavicon('https://dapp.test/a'),
+      resolveFavicon('dapp.test'),
+      resolveFavicon('https://dapp.test/b?x=1'),
+    ];
+    resolveFetch({
+      ok: true,
+      text: () => Promise.resolve('<html><head></head></html>'),
+    } as Response);
+
+    expect(await Promise.all(calls)).toEqual([undefined, undefined, undefined]);
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(dispatchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips an invalid icon href and uses the next icon link', async () => {
+    global.fetch = jest.fn(() =>
+      htmlResponse(
+        '<html><head><link rel="icon" href="http://[bad"><link rel="icon" href="ok.ico"></head></html>',
+      ),
+    );
+
+    expect(await resolveFavicon('dapp.test')).toBe('https://dapp.test/ok.ico');
+  });
+
+  it('only parses the document up to the end of <head>', async () => {
+    const parseSpy = jest.spyOn(DOMParser.prototype, 'parseFromString');
+    global.fetch = jest.fn(() =>
+      htmlResponse(
+        '<html><HEAD><link rel="icon" href="fox.svg"></HEAD ><body><div>big body</div></body></html>',
+      ),
+    );
+
+    expect(await resolveFavicon('dapp.test')).toBe('https://dapp.test/fox.svg');
+    expect(parseSpy.mock.calls[0][0]).not.toContain('big body');
+  });
+
+  it('does not fetch for a null origin', async () => {
+    global.fetch = jest.fn();
+
+    expect(await resolveFavicon('null')).toBeUndefined();
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 });

@@ -93,8 +93,16 @@ const browserReducer = (state = initialState, action) => {
       return {
         ...state,
         favicons: [
-          { origin: action.origin, url: action.url },
-          ...state.favicons,
+          {
+            origin: action.origin,
+            url: action.url,
+            ...(action.expiresAt !== undefined && {
+              expiresAt: action.expiresAt,
+            }),
+          },
+          ...state.favicons.filter(
+            (favicon) => favicon.origin !== action.origin,
+          ),
         ].slice(0, AppConstants.FAVICON_CACHE_MAX_SIZE),
       };
     default:

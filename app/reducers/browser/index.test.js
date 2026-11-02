@@ -67,3 +67,38 @@ describe('browserReducer STORE_FAVICON_URL', () => {
     expect(newState).toEqual(expectedState);
   });
 });
+
+describe('browserReducer STORE_FAVICON_URL negative cache', () => {
+  it('stores expiresAt for a cached miss', () => {
+    const newState = browserReducer(
+      { favicons: [] },
+      {
+        type: 'STORE_FAVICON_URL',
+        origin: 'dapp.test',
+        url: '',
+        expiresAt: 123,
+      },
+    );
+
+    expect(newState.favicons).toEqual([
+      { origin: 'dapp.test', url: '', expiresAt: 123 },
+    ]);
+  });
+
+  it('replaces the existing entry for the same origin', () => {
+    const newState = browserReducer(
+      {
+        favicons: [
+          { origin: 'other.test', url: 'otherUrl' },
+          { origin: 'dapp.test', url: '', expiresAt: 123 },
+        ],
+      },
+      { type: 'STORE_FAVICON_URL', origin: 'dapp.test', url: 'newUrl' },
+    );
+
+    expect(newState.favicons).toEqual([
+      { origin: 'dapp.test', url: 'newUrl' },
+      { origin: 'other.test', url: 'otherUrl' },
+    ]);
+  });
+});
