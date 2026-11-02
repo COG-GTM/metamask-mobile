@@ -5,6 +5,9 @@ import handleMetaMaskDeeplink from './handleMetaMaskDeeplink';
 import handleUniversalLink from './handleUniversalLink';
 import connectWithWC from './connectWithWC';
 import parseDeeplink from './parseDeeplink';
+import Logger from '../../../util/Logger';
+import { Alert } from 'react-native';
+import AppConstants from '../../AppConstants';
 
 jest.mock('../../../constants/deeplinks');
 jest.mock('../../../util/Logger');
@@ -204,6 +207,50 @@ describe('parseDeeplink', () => {
       });
 
       expect(result).toBe(false);
+    });
+  });
+  describe('error logging never includes the scanned content', () => {
+    const KEY = 'c'.repeat(64);
+    const alertSpy = jest.spyOn(Alert, 'alert');
+
+    it.each([
+      ['0x-prefixed private key', `0x${KEY}`],
+      ['0X-prefixed private key', `0X${KEY}`],
+      ['unprefixed private key', KEY],
+    ])('does not log or alert for a %s', (_label, url) => {
+      const result = parseDeeplink({
+        deeplinkManager: instance,
+        url,
+        origin: AppConstants.DEEPLINKS.ORIGIN_QR_CODE,
+      });
+
+      expect(result).toBe(false);
+      expect(Logger.error).not.toHaveBeenCalled();
+      expect(alertSpy).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['secret-looking QR content', `0x${KEY}ff`],
+      [
+        'seed-like text',
+        'test test test test test test test test test test test junk',
+      ],
+      ['invalid url', 'not a url'],
+    ])('logs a fixed error without the content for %s', (_label, url) => {
+      parseDeeplink({
+        deeplinkManager: instance,
+        url,
+        origin: AppConstants.DEEPLINKS.ORIGIN_QR_CODE,
+      });
+
+      expect(Logger.error).toHaveBeenCalledTimes(1);
+      const [error, extra] = (Logger.error as jest.Mock).mock.calls[0];
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).toBe('Error parsing deeplink');
+      expect(JSON.stringify(extra)).not.toContain(url);
+      expect(
+        JSON.stringify([String(error), (error as Error).stack]),
+      ).not.toContain(url);
     });
   });
 });

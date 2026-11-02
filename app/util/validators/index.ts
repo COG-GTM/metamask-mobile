@@ -43,3 +43,11 @@ export const parseSeedPhrase = (seedPhrase: string): string =>
   '';
 
 export const { isValidMnemonic } = ethers.utils;
+
+const RAW_PRIVATE_KEY_REGEX = /^(0x)?[0-9a-f]{64}$/iu;
+
+/**
+ * Whether the content is a raw hex private key (64 hex chars, optionally 0x-prefixed).
+ */
+export const isRawPrivateKey = (content: string): boolean =>
+  RAW_PRIVATE_KEY_REGEX.test(content);
