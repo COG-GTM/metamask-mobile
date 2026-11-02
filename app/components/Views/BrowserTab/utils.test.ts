@@ -1,4 +1,12 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
+// eslint-disable-next-line import/no-nodejs-modules
+import vm from 'vm';
+import {
+  isValidUrl,
+  isENSUrl,
+  getMaskedUrl,
+  buildHomepageScripts,
+  getHomepageOrigins,
+} from './utils';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -89,6 +97,97 @@ describe('BrowserTab utils', () => {
       it(`should correctly mask ${input}`, () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
+    });
+  });
+
+  describe('buildHomepageScripts', () => {
+    const bookmarks = [{ name: 'Uniswap', url: 'https://app.uniswap.org' }];
+    const scriptParams = {
+      bookmarks,
+      searchEngine: 'Google',
+      analyticsEnabled: true,
+      distinctId: 'distinct-id',
+      mixpanelToken: 'token',
+    };
+
+    const runInDocument = (origin: string, script: string) => {
+      const leaked = jest.fn();
+      const dispatchEvent = jest.fn();
+      const fakeWindow: Record<string, unknown> = {
+        location: { origin },
+        dispatchEvent,
+      };
+      Object.defineProperty(fakeWindow, '__mmFavorites', {
+        set: leaked,
+        get: () => undefined,
+        configurable: true,
+      });
+      vm.runInNewContext(script, { window: fakeWindow, Event: class {} });
+      return { fakeWindow, leaked, dispatchEvent };
+    };
+
+    it('allows the current and legacy homepage origins', () => {
+      expect(getHomepageOrigins()).toEqual([
+        new URLParse(AppConstants.HOMEPAGE_URL).origin,
+        `https://${AppConstants.OLD_HOMEPAGE_URL_HOST}`,
+      ]);
+    });
+
+    it.each(getHomepageOrigins())(
+      'exposes favorites and analytics settings to %s',
+      (origin) => {
+        const { fakeWindow, leaked, dispatchEvent } = runInDocument(
+          origin,
+          buildHomepageScripts(scriptParams),
+        );
+        expect(leaked).toHaveBeenCalledWith(bookmarks);
+        expect(fakeWindow.__mmSearchEngine).toBe('Google');
+        expect(fakeWindow.__mmMetametrics).toBe(true);
+        expect(fakeWindow.__mmDistinctId).toBe('distinct-id');
+        expect(fakeWindow.__mmMixpanelToken).toBe('token');
+        expect(dispatchEvent).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it.each([
+      'https://deals.mallory.example',
+      'http://portfolio.metamask.io',
+      'https://portfolio.metamask.io.mallory.example',
+      'null',
+    ])('does nothing when the current document is %s', (origin) => {
+      const { fakeWindow, leaked, dispatchEvent } = runInDocument(
+        origin,
+        buildHomepageScripts(scriptParams),
+      );
+      expect(leaked).not.toHaveBeenCalled();
+      expect(fakeWindow.__mmDistinctId).toBeUndefined();
+      expect(fakeWindow.__mmMixpanelToken).toBeUndefined();
+      expect(dispatchEvent).not.toHaveBeenCalled();
+    });
+
+    it('is not affected by a page overriding Array.prototype methods', () => {
+      const script = buildHomepageScripts(scriptParams);
+      const { leaked } = runInDocument(
+        'https://deals.mallory.example',
+        `Array.prototype.indexOf = function () { return 0; };
+         String.prototype.indexOf = function () { return 0; };
+         ${script}`,
+      );
+      expect(leaked).not.toHaveBeenCalled();
+    });
+
+    it('serializes values so they cannot break out of the script', () => {
+      const [origin] = getHomepageOrigins();
+      const { fakeWindow } = runInDocument(
+        origin,
+        buildHomepageScripts({
+          ...scriptParams,
+          searchEngine: 'x"; window.pwned = true; "',
+          distinctId: '"; window.pwned = true; "',
+        }),
+      );
+      expect(fakeWindow.pwned).toBeUndefined();
+      expect(fakeWindow.__mmSearchEngine).toBe('x"; window.pwned = true; "');
     });
   });
 });

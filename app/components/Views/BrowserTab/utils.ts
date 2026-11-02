@@ -79,3 +79,58 @@ export const getMaskedUrl = (
   }
   return urlToMask;
 };
+
+/**
+ * Origins allowed to receive the homepage scripts (bookmarks, analytics ID)
+ */
+export const getHomepageOrigins = (): string[] => [
+  new URLParse(AppConstants.HOMEPAGE_URL).origin,
+  `https://${AppConstants.OLD_HOMEPAGE_URL_HOST}`,
+];
+
+/**
+ * Builds the script that exposes the user's favorites and analytics settings
+ * to the homepage. The script checks `window.location.origin` (unforgeable)
+ * of the document it runs in, so it is a no-op if `injectJavaScript` lands in
+ * any other page, e.g. the page that started navigating to the homepage.
+ * Only `===` comparisons are used before the check passes, so a hostile page
+ * cannot subvert it by patching prototypes.
+ */
+export const buildHomepageScripts = ({
+  bookmarks,
+  searchEngine,
+  analyticsEnabled,
+  distinctId,
+  mixpanelToken,
+  allowedOrigins = getHomepageOrigins(),
+}: {
+  bookmarks: unknown;
+  searchEngine?: string;
+  analyticsEnabled: boolean;
+  distinctId?: string;
+  mixpanelToken?: string;
+  allowedOrigins?: string[];
+}): string => {
+  const originCheck = allowedOrigins
+    .map((origin) => `__mmOrigin !== ${JSON.stringify(origin)}`)
+    .join(' && ');
+  return `
+(function () {
+  var __mmOrigin = window.location.origin;
+  if (${originCheck || 'true'}) {
+    return;
+  }
+  window.__mmFavorites = ${JSON.stringify(bookmarks ?? [])};
+  window.__mmSearchEngine = ${JSON.stringify(searchEngine ?? '')};
+  window.__mmMetametrics = ${JSON.stringify(Boolean(analyticsEnabled))};
+  window.__mmDistinctId = ${JSON.stringify(distinctId ?? '')};
+  window.__mmMixpanelToken = ${JSON.stringify(mixpanelToken ?? '')};
+  try {
+    window.dispatchEvent(new Event('metamask_onHomepageScriptsInjected'));
+  } catch (e) {
+    // Nothing to do
+  }
+})();
+true;
+`;
+};
