@@ -1041,5 +1041,41 @@ describe('CollectibleContracts', () => {
       );
       expect(spyOnUpdateNftMetadata.mock.calls[1][0].nfts).toHaveLength(2);
     });
+
+    it('refreshes metadata again after switching to a chain with the same NFT ids', async () => {
+      const { chainId: _chainId, ...nftWithoutChainId } = createNft('1');
+      let selectedChainId = '0x1';
+      jest
+        .spyOn(networkSelectors, 'selectChainId')
+        .mockImplementation(() => selectedChainId as `0x${string}`);
+      jest
+        .spyOn(allSelectors, 'multichainCollectiblesSelector')
+        .mockReturnValue({
+          '0x1': [nftWithoutChainId],
+          '0x89': [{ ...nftWithoutChainId }],
+        });
+      jest
+        .spyOn(allSelectors, 'multichainCollectibleContractsSelector')
+        .mockReturnValue({ '0x1': [contract], '0x89': [contract] });
+      const spyOnUpdateNftMetadata = jest
+        .spyOn(Engine.context.NftController, 'updateNftMetadata')
+        .mockImplementation(async () => undefined);
+
+      const { store: reduxStore } = renderWithProvider(
+        <CollectibleContracts />,
+        { state: metadataRefreshState },
+      );
+
+      await waitFor(() =>
+        expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(1),
+      );
+
+      selectedChainId = '0x89';
+      await toggleFetchingIndicator(reduxStore);
+
+      await waitFor(() =>
+        expect(spyOnUpdateNftMetadata).toHaveBeenCalledTimes(2),
+      );
+    });
   });
 });

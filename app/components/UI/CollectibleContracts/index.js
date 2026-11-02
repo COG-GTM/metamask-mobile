@@ -153,6 +153,14 @@ const createStyles = (colors) =>
     },
   });
 
+/**
+ * Builds a stable identity key for an NFT.
+ *
+ * @param collectible - NFT with `address`, `tokenId` and an optional `chainId`.
+ * @returns `chainId:address:tokenId` with the address lowercased. NFTs without
+ * a `chainId` (older persisted entries) get an empty chain segment, so callers
+ * that compare keys across networks must scope them by the selected chain.
+ */
 const getCollectibleKey = (collectible) =>
   `${collectible.chainId ?? ''}:${String(collectible.address).toLowerCase()}:${
     collectible.tokenId
@@ -311,6 +319,7 @@ const CollectibleContracts = ({
     // or on the state update produced by the refresh itself.
     const signature = [
       selectedAddress,
+      isAllNetworks ? 'all' : chainId,
       ...updatableCollectibles.map(getCollectibleKey).sort(),
     ].join('|');
     if (signature === lastMetadataRefreshSignature.current) {
@@ -325,6 +334,8 @@ const CollectibleContracts = ({
     displayNftMedia,
     useNftDetection,
     selectedAddress,
+    chainId,
+    isAllNetworks,
   ]);
 
   const goToAddCollectible = useCallback(() => {
