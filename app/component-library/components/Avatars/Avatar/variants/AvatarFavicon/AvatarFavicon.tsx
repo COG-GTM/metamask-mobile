@@ -21,6 +21,7 @@ import {
 } from './AvatarFavicon.constants';
 import stylesheet from './AvatarFavicon.styles';
 import { AvatarFaviconProps } from './AvatarFavicon.types';
+import { checkSvgContentType } from './AvatarFavicon.utils';
 
 const AvatarFavicon = ({
   imageSource,
@@ -57,33 +58,23 @@ const AvatarFavicon = ({
     />
   );
 
+  const svgUri = isRemoteSource ? isFaviconSVG(imageSource) : undefined;
+
   // Checks if image is SVG
   useEffect(() => {
-    if (!isRemoteSource) return;
+    if (!svgUri) return;
 
-    const checkSvgContentType = async (uri: string) => {
-      try {
-        // Skip header check for data URIs
-        if (uri.startsWith('data:image/svg+xml')) {
-          return true;
-        }
-        const response = await fetch(uri, { method: 'HEAD' });
-        const contentType = response.headers.get('Content-Type');
-        return contentType?.includes('image/svg+xml');
-      } catch (_) {
-        return false;
+    let isMounted = true;
+    checkSvgContentType(svgUri).then((isSvg) => {
+      if (isMounted && isSvg) {
+        setSvgSource(svgUri);
       }
-    };
+    });
 
-    const svg = isFaviconSVG(imageSource);
-    if (svg) {
-      checkSvgContentType(svg).then((isSvg) => {
-        if (isSvg) {
-          setSvgSource(svg);
-        }
-      });
-    }
-  }, [imageSource, isRemoteSource]);
+    return () => {
+      isMounted = false;
+    };
+  }, [svgUri]);
 
   const renderSvg = () => {
     if (!svgSource) {
