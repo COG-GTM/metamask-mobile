@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
-- perf(tokens): compute earn-eligible tokens once per TokenList and narrow `selectAccountTokensAcrossChains` selector inputs ([#2017](https://github.com/COG-GTM/metamask-mobile/pull/2017))
+- perf(tokens): compute earn-eligible tokens once per TokenList and narrow `selectAccountTokensAcrossChains` selector inputs ([#2139](https://github.com/COG-GTM/metamask-mobile/pull/2139))
 
 ### Added
 
