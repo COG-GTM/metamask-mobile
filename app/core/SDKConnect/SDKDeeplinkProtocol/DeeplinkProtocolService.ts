@@ -543,17 +543,18 @@ export default class DeeplinkProtocolService {
    * The deeplink protocol has no message authentication, so the best proof of
    * ownership available is that the link matches what the user approved: the
    * stored dapp public key (when one was bound) and the return scheme.
+   * With `requireBoundKey`, a session without a stored key never matches, so
+   * it has to be re-approved through a connect link first.
    */
   public isSessionBindingMatching(
     session: DappClient,
     params: { channelId: string; dappPublicKey?: string; scheme?: string },
-    { allowMissingPublicKey = false }: { allowMissingPublicKey?: boolean } = {},
+    { requireBoundKey = false }: { requireBoundKey?: boolean } = {},
   ) {
     const storedPublicKey = this.dappPublicKeyByClientId[params.channelId];
-    const isPublicKeyMatching =
-      !storedPublicKey ||
-      storedPublicKey === params.dappPublicKey ||
-      (allowMissingPublicKey && !params.dappPublicKey);
+    const isPublicKeyMatching = storedPublicKey
+      ? storedPublicKey === params.dappPublicKey
+      : !requireBoundKey;
 
     return session.scheme === params.scheme && isPublicKeyMatching;
   }
@@ -561,7 +562,7 @@ export default class DeeplinkProtocolService {
   public isSessionOwnedByCaller(
     session: DappClient,
     params: { channelId: string; dappPublicKey?: string; scheme?: string },
-    options: { allowMissingPublicKey?: boolean } = {},
+    options: { requireBoundKey?: boolean } = {},
   ) {
     return (
       !this.isSessionExpired(session) &&
@@ -1008,7 +1009,7 @@ export default class DeeplinkProtocolService {
 
       if (
         !this.isSessionOwnedByCaller(isSessionExists, params, {
-          allowMissingPublicKey: true,
+          requireBoundKey: true,
         })
       ) {
         Logger.log(
