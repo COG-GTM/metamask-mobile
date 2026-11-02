@@ -69,6 +69,14 @@ export function getCachedENSName(address, chainId) {
 
 const ensInstances = {};
 
+/**
+ * Get a legacy ENS client for a network, reusing the previous instance while
+ * the provider object is unchanged.
+ *
+ * @param {object} provider - The current network provider.
+ * @param {string} networkId - The legacy network ID (e.g. '1' for mainnet).
+ * @returns {ENS} The ENS client bound to `provider` and `networkId`.
+ */
 function getENSInstance(provider, networkId) {
   const cached = ensInstances[networkId];
   if (cached && cached.provider === provider) {
