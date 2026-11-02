@@ -21,18 +21,27 @@ export const useSafeChains = () => {
   }>({ safeChains: [] });
 
   useEffect(() => {
-    if (useSafeChainsListValidation) {
-      const fetchSafeChains = async () => {
-        try {
-          const safeChainsData =
-            (await getSafeChainsList()) as unknown as SafeChain[];
+    if (!useSafeChainsListValidation) {
+      return;
+    }
+    let isActive = true;
+    const fetchSafeChains = async () => {
+      try {
+        const safeChainsData =
+          (await getSafeChainsList()) as unknown as SafeChain[];
+        if (isActive) {
           setSafeChains({ safeChains: safeChainsData });
-        } catch (error) {
+        }
+      } catch (error) {
+        if (isActive) {
           setSafeChains({ error });
         }
-      };
-      fetchSafeChains();
-    }
+      }
+    };
+    fetchSafeChains();
+    return () => {
+      isActive = false;
+    };
   }, [useSafeChainsListValidation]);
 
   return safeChains;
