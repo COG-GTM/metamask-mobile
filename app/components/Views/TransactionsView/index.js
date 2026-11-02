@@ -13,10 +13,10 @@ import {
   TX_CONFIRMED,
 } from '../../../constants/transaction';
 import {
-  sortTransactions,
+  dedupeTransactionsById,
   filterByAddressAndNetwork,
+  getNoncesSentFromAddress,
 } from '../../../util/activity';
-import { safeToChecksumAddress } from '../../../util/address';
 import { addAccountTimeFlagFilter } from '../../../util/transactions';
 import { toLowerCaseEquals } from '../../../util/general';
 import {
@@ -73,14 +73,12 @@ const TransactionsView = ({
 
       const submittedTxs = [];
       const confirmedTxs = [];
-      const submittedNonces = [];
+      const submittedNonces = new Set();
 
-      const allTransactionsSorted = sortTransactions(transactions).filter(
-        (tx, index, self) =>
-          self.findIndex((_tx) => _tx.id === tx.id) === index,
-      );
+      // `transactions` is already sorted by time (desc) in selectSortedTransactions
+      const uniqueTransactions = dedupeTransactionsById(transactions);
 
-      const allTransactions = allTransactionsSorted.filter((tx) => {
+      const allTransactions = uniqueTransactions.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
           tokens,
@@ -123,23 +121,21 @@ const TransactionsView = ({
           )
         : allTransactions.filter((tx) => tx.chainId === chainId);
 
+      const confirmedNonces = getNoncesSentFromAddress(
+        confirmedTxs,
+        selectedAddress,
+      );
+
       const submittedTxsFiltered = submittedTxs.filter(({ txParams }) => {
         const { from, nonce } = txParams;
         if (!toLowerCaseEquals(from, selectedAddress)) {
           return false;
         }
-        const alreadySubmitted = submittedNonces.includes(nonce);
-        const alreadyConfirmed = confirmedTxs.find(
-          (tx) =>
-            toLowerCaseEquals(
-              safeToChecksumAddress(tx.txParams.from),
-              selectedAddress,
-            ) && tx.txParams.nonce === nonce,
-        );
-        if (alreadyConfirmed) {
+        if (confirmedNonces.has(nonce)) {
           return false;
         }
-        submittedNonces.push(nonce);
+        const alreadySubmitted = submittedNonces.has(nonce);
+        submittedNonces.add(nonce);
         return !alreadySubmitted;
       });
 

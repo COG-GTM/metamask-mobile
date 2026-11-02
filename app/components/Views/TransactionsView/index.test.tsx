@@ -10,7 +10,7 @@ import initialRootState from '../../../util/test/initial-root-state';
 import { Store } from 'redux';
 
 jest.mock('../../../util/activity', () => ({
-  sortTransactions: jest.fn((txs) => txs),
+  ...jest.requireActual('../../../util/activity'),
   filterByAddressAndNetwork: jest.fn(() => true),
 }));
 

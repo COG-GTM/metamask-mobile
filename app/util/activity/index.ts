@@ -48,6 +48,48 @@ export const sortTransactions = (transactions: any[]): any[] =>
   });
 
 /**
+ * Removes transactions with a repeated id, keeping the first occurrence so
+ * the input order is preserved. Runs in a single pass.
+ * @param transactions Array of transactions
+ * @returns Array without duplicate ids
+ */
+// TODO: Replace "any" with type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const dedupeTransactionsById = (transactions: any[]): any[] => {
+  const seenIds = new Set();
+  return transactions.filter((tx) => {
+    if (seenIds.has(tx.id)) return false;
+    seenIds.add(tx.id);
+    return true;
+  });
+};
+
+/**
+ * Collects the nonces of the transactions sent from the given address
+ * (case-insensitive), for constant-time "already confirmed" lookups.
+ * @param transactions Array of transactions
+ * @param address Sender address
+ * @returns Set of nonces
+ */
+export const getNoncesSentFromAddress = (
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  transactions: any[],
+  address: string,
+): Set<string> => {
+  const nonces = new Set<string>();
+  const normalizedAddress = address?.toLowerCase();
+  if (!normalizedAddress) return nonces;
+  for (const tx of transactions) {
+    const from = tx?.txParams?.from;
+    if (typeof from === 'string' && from.toLowerCase() === normalizedAddress) {
+      nonces.add(tx.txParams.nonce);
+    }
+  }
+  return nonces;
+};
+
+/**
  * Filter based on the following conditions:
  * 1. The transaction is from/to the current address
  * 2. The transaction was executed in the current chain
