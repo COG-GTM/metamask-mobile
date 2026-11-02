@@ -26,6 +26,7 @@ import Text, {
 } from '../../../../../component-library/components/Texts/Text';
 
 const MAX_TOKENS_RESULTS = 20;
+const NO_EXCLUDED_IDS: FiatCurrency['id'][] = [];
 
 const Separator = () => {
   const { colors } = useTheme();
@@ -51,7 +52,7 @@ function FiatSelectModal({
   description,
   currencies,
   onItemPress,
-  excludeIds = [],
+  excludeIds = NO_EXCLUDED_IDS,
 }: Props) {
   const { colors } = useTheme();
   const styles = createModalStyles(colors);
