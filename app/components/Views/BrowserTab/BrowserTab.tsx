@@ -545,10 +545,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     BackHandler.addEventListener('hardwareBackPress', handleAndroidBackPress);
 
     // Handle hardwareBackPress event only for browser, not components rendered on top
-    navigation.addListener('focus', () => {
+    const unsubscribeFocus = navigation.addListener('focus', () => {
       BackHandler.addEventListener('hardwareBackPress', handleAndroidBackPress);
     });
-    navigation.addListener('blur', () => {
+    const unsubscribeBlur = navigation.addListener('blur', () => {
       BackHandler.removeEventListener(
         'hardwareBackPress',
         handleAndroidBackPress,
@@ -556,6 +556,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     });
 
     return function cleanup() {
+      unsubscribeFocus();
+      unsubscribeBlur();
       BackHandler.removeEventListener(
         'hardwareBackPress',
         handleAndroidBackPress,
