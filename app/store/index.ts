@@ -16,6 +16,7 @@ import {
   createPersistFlushMiddleware,
   flushPersistedStateOnAppBackground,
 } from './persistFlush';
+import { registerPersistFlush } from './persistFlushRegistry';
 import getUIStartupSpan from '../core/Performance/UIStartup';
 import ReduxService, { ReduxStore } from '../core/redux';
 import { onPersistedDataLoaded } from '../actions/user';
@@ -31,6 +32,7 @@ const pReducer = persistReducer<RootState, AnyAction>(
 let store: ReduxStore, persistor: Persistor;
 
 const flushPersistedState = createFlushPersistedState(() => persistor);
+registerPersistFlush(flushPersistedState);
 const createStoreAndPersistor = async () => {
   trace({
     name: TraceName.StoreInit,

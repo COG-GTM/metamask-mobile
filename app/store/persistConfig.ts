@@ -130,6 +130,10 @@ export const getMemoizedPersistentState = (
   return persistentState;
 };
 
+/**
+ * Drops every memoized `getPersistentState` result so the next persist pass
+ * recomputes all controllers. Intended for tests and for resetting state.
+ */
 export const clearPersistentStateCache = () => persistentStateCache.clear();
 
 /**

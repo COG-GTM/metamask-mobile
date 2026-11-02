@@ -32,6 +32,12 @@ export const createFlushPersistedState =
     }
   };
 
+/**
+ * Creates a redux middleware that starts a persistence flush after any action in
+ * `FLUSH_PERSIST_ACTIONS` is reduced. The flush is fire-and-forget: the
+ * middleware returns the result of `next(action)` without waiting for it. Use
+ * `flushRegisteredPersistedState` where a caller must await the write.
+ */
 export const createPersistFlushMiddleware =
   (flush: () => Promise<void>): Middleware =>
   () =>
