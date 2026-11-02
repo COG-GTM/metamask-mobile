@@ -1,9 +1,10 @@
 import { CHAIN_IDS } from '@metamask/transaction-controller';
-import { ParseOutput, parse } from 'eth-url-parser';
+import { ParseOutput } from 'eth-url-parser';
 import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import { ETH_ACTIONS } from '../../../constants/deeplinks';
 import formattedDeeplinkParsedValue from '../../../util/formattedDeeplinkParsedValue';
+import parseEthereumUrl from '../../../util/parseEthereumUrl';
 import { NetworkSwitchErrorType } from '../../../constants/error';
 import { getDecimalChainId } from '../../../util/networks';
 import { MAINNET } from '../../../constants/network';
@@ -25,7 +26,7 @@ async function handleEthereumUrl({
 }) {
   let ethUrl: ParseOutput;
   try {
-    ethUrl = parse(url);
+    ethUrl = parseEthereumUrl(url);
   } catch (e) {
     if (e) Alert.alert(strings('deeplink.invalid'), e.toString());
     return;
