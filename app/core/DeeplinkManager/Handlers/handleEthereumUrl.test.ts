@@ -49,11 +49,18 @@ jest.mock('../../../store', () => ({
 jest.mock('../../../selectors/networkController', () => ({
   selectEvmNetworkConfigurationsByChainId: jest.fn(() => ({
     '0x1': { name: 'Ethereum Mainnet' },
+    '0xe708': { name: 'Linea' },
   })),
 }));
 
 jest.mock('../../../selectors/multichainNetworkController', () => ({
   selectSelectedNonEvmNetworkName: jest.fn(() => 'Solana'),
+}));
+
+const mockUtilHandleNetworkSwitch = jest.fn();
+jest.mock('../../../util/networks/handleNetworkSwitch', () => ({
+  handleNetworkSwitch: (...args: unknown[]) =>
+    mockUtilHandleNetworkSwitch(...args),
 }));
 
 const mockRequestApproval = jest.fn();
@@ -405,6 +412,63 @@ describe('handleEthereumUrl', () => {
       expect(mockNavigate).not.toHaveBeenCalled();
     },
   );
+  describe('from a non-EVM network', () => {
+    const url = 'ethereum:0x0000000000000000000000000000000000000001@59144';
+    const origin = 'test_origin';
+    let mockSetActiveNetwork: jest.Mock;
+
+    beforeEach(() => {
+      (
+        Engine.context.MultichainNetworkController.state as {
+          isEvmSelected: boolean;
+        }
+      ).isEvmSelected = false;
+      mockSetActiveNetwork = jest.fn();
+      Engine.context.MultichainNetworkController.setActiveNetwork =
+        mockSetActiveNetwork;
+      mockParse.mockReturnValue({
+        chain_id: '59144',
+        parameters: { value: '1' },
+      });
+    });
+
+    it('asks once for the requested network and switches straight to it', async () => {
+      await handleEthereumUrl({ deeplinkManager, url, origin });
+
+      expect(mockRequestApproval).toHaveBeenCalledTimes(1);
+      expect(mockRequestApproval).toHaveBeenCalledWith({
+        currentNetworkName: 'Solana',
+        networkName: 'Linea',
+      });
+      expect(mockUtilHandleNetworkSwitch).toHaveBeenCalledWith('0xe708');
+      expect(mockSetActiveNetwork).not.toHaveBeenCalled();
+      expect(mockHandleNetworkSwitch).not.toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith('SendView', expect.any(Object));
+    });
+
+    it('leaves the non-EVM network selected when the user declines', async () => {
+      mockRequestApproval.mockResolvedValue(false);
+
+      await handleEthereumUrl({ deeplinkManager, url, origin });
+
+      expect(mockUtilHandleNetworkSwitch).not.toHaveBeenCalled();
+      expect(mockSetActiveNetwork).not.toHaveBeenCalled();
+      expect(mockHandleNetworkSwitch).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('does not switch or prompt for an unconfigured network', async () => {
+      mockParse.mockReturnValue({ chain_id: '999', parameters: {} });
+
+      await handleEthereumUrl({ deeplinkManager, url, origin });
+
+      expect(mockRequestApproval).not.toHaveBeenCalled();
+      expect(mockUtilHandleNetworkSwitch).not.toHaveBeenCalled();
+      expect(mockSetActiveNetwork).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+  });
+
   describe('network switch consent', () => {
     const url = 'ethereum:0x0000000000000000000000000000000000000001@59144';
     const origin = 'test_origin';
