@@ -70,7 +70,14 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
-        if (!this.isStoredConnectionUsable(connection)) {
+        const isExpired =
+          typeof connection.validUntil !== 'number' ||
+          connection.validUntil <= Date.now();
+        const permitted = isExpired
+          ? false
+          : this.hasGrantedPermissions(connection.id);
+
+        if (permitted === false) {
           DevLogger.log(
             `DeeplinkProtocolService::init dropping stale connection ${connection.id}`,
           );
@@ -95,19 +102,19 @@ export default class DeeplinkProtocolService {
 
         this.connections[connection.id] = clientInfo;
 
-        this.setupBridge(clientInfo);
+        // Without confirmed permissions, leave the bridge unset so handleMessage re-prompts.
+        if (permitted) {
+          this.setupBridge(clientInfo);
+        }
       });
     }
   }
 
-  private isStoredConnectionUsable(connection: ConnectionProps): boolean {
-    if (
-      typeof connection.validUntil !== 'number' ||
-      connection.validUntil <= Date.now()
-    ) {
-      return false;
-    }
-
+  /**
+   * Whether the PermissionController holds permissions for a deeplink channel.
+   * Returns undefined when the controller cannot be read (e.g. Engine not ready).
+   */
+  private hasGrantedPermissions(channelId: string): boolean | undefined {
     try {
       const permissionsController = (
         Engine.context as {
@@ -116,14 +123,13 @@ export default class DeeplinkProtocolService {
         }
       ).PermissionController;
 
-      return Boolean(permissionsController.getPermissions(connection.id));
+      return Boolean(permissionsController.getPermissions(channelId));
     } catch (err) {
-      // Engine not ready yet: keep the entry, handleMessage re-prompts if the bridge is missing.
       Logger.log(
         err,
-        `DeeplinkProtocolService::init unable to read permissions for ${connection.id}`,
+        `DeeplinkProtocolService unable to read permissions for ${channelId}`,
       );
-      return true;
+      return undefined;
     }
   }
 
@@ -864,7 +870,14 @@ export default class DeeplinkProtocolService {
         connected: true,
       };
 
-      let bridge = this.bridgeByClientId[sessionId];
+      let bridge: BackgroundBridge | undefined =
+        this.bridgeByClientId[sessionId];
+
+      if (bridge && this.hasGrantedPermissions(sessionId) !== true) {
+        // Permissions were revoked (or can't be confirmed) - drop the bridge and re-prompt
+        delete this.bridgeByClientId[sessionId];
+        bridge = undefined;
+      }
 
       if (!bridge) {
         try {
@@ -882,6 +895,7 @@ export default class DeeplinkProtocolService {
             err,
             `DeeplinkProtocolService::onMessageReceived error checking permissions`,
           );
+          this.removeConnection(sessionId);
           return;
         }
       }

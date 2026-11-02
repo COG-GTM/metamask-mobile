@@ -13,6 +13,8 @@ import { DappClient } from '../AndroidSDK/dapp-sdk-types';
 import { createMockInternalAccount } from '../../../util/test/accountsControllerTestUtils';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 
+import * as waitUtil from '../utils/wait.util';
+
 jest.mock('../SDKConnect');
 jest.mock('react-native');
 jest.mock('../../BackgroundBridge/BackgroundBridge');
@@ -142,6 +144,26 @@ describe('DeeplinkProtocolService', () => {
       expect(
         SDKConnect.getInstance().removeDappConnection,
       ).toHaveBeenCalledWith('connection1');
+    });
+
+    it('keeps stored connections without a bridge when permissions cannot be read', async () => {
+      service = Object.create(DeeplinkProtocolService.prototype);
+      service.connections = {};
+      service.bridgeByClientId = {};
+      service.isInitialized = false;
+      (
+        Engine.context.PermissionController.getPermissions as jest.Mock
+      ).mockImplementation(() => {
+        throw new Error('Engine not ready');
+      });
+
+      await service.init();
+
+      expect(service.connections.connection1).toBeDefined();
+      expect(service.bridgeByClientId.connection1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -606,6 +628,82 @@ describe('DeeplinkProtocolService', () => {
       };
       service.handleMessage(params);
       expect(DevLogger.log).toHaveBeenCalled();
+    });
+  });
+
+  describe('handleMessage permission re-check', () => {
+    const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+    const messageParams = {
+      dappPublicKey: 'key',
+      url: 'url',
+      message: Buffer.from(
+        JSON.stringify({ id: '1', method: 'eth_chainId', params: [] }),
+      ).toString('base64'),
+      channelId: 'channel1',
+      scheme: 'scheme',
+      account: `${toChecksumHexAddress(MOCK_ADDRESS)}@1`,
+    };
+    let onMessage: jest.Mock;
+
+    beforeEach(() => {
+      onMessage = jest.fn();
+      jest.spyOn(waitUtil, 'wait').mockResolvedValue(undefined as never);
+      jest
+        .spyOn(waitUtil, 'waitForKeychainUnlocked')
+        .mockResolvedValue(true as never);
+      service.getSelectedAddress = jest
+        .fn()
+        .mockReturnValue(toChecksumHexAddress(MOCK_ADDRESS));
+      service.getChainId = jest.fn().mockReturnValue('1');
+      service.connections.channel1 = {
+        clientId: 'channel1',
+        originatorInfo: {
+          url: 'test.com',
+          title: 'Test',
+          platform: 'test',
+          dappId: 'dappId',
+        },
+        connected: false,
+        validUntil: Date.now() + 60_000,
+        scheme: 'scheme',
+      };
+      service.bridgeByClientId.channel1 = {
+        onMessage,
+      } as unknown as BackgroundBridge;
+      service.openDeeplink = jest.fn().mockResolvedValue(null);
+      (handleCustomRpcCalls as jest.Mock).mockResolvedValue({
+        id: '1',
+        method: 'eth_chainId',
+        params: [],
+      });
+    });
+
+    it('forwards requests while permissions are granted', async () => {
+      service.checkPermission = jest.fn();
+      service.handleMessage(messageParams);
+      await flush();
+      expect(service.checkPermission).not.toHaveBeenCalled();
+      expect(onMessage).toHaveBeenCalled();
+    });
+
+    it('drops the bridge and removes the session when permissions were revoked and the user rejects', async () => {
+      (
+        Engine.context.PermissionController.getPermissions as jest.Mock
+      ).mockReturnValue(undefined);
+      service.checkPermission = jest
+        .fn()
+        .mockRejectedValue(new Error('User rejected the request.'));
+
+      service.handleMessage(messageParams);
+      await flush();
+
+      expect(service.checkPermission).toHaveBeenCalled();
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.connections.channel1).toBeUndefined();
+      expect(service.bridgeByClientId.channel1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith('channel1');
     });
   });
 
