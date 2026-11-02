@@ -41,11 +41,12 @@ describe('DeeplinkProtocolService', () => {
         connection1: {
           id: 'connection1',
           originatorInfo: { url: 'test.com', title: 'Test' },
-          validUntil: Date.now(),
+          validUntil: Date.now() + 60_000,
           scheme: 'scheme1',
         },
       }),
       addDappConnection: jest.fn().mockResolvedValue(null),
+      removeDappConnection: jest.fn(),
     });
 
     // TODO: Replace "any" with type
@@ -98,6 +99,28 @@ describe('DeeplinkProtocolService', () => {
     it('should initialize with raw connections', async () => {
       await service.init();
       expect(service.connections.connection1).toBeDefined();
+    });
+
+    it('should drop expired connections without setting up a bridge', async () => {
+      (
+        SDKConnect.getInstance().loadDappConnections as jest.Mock
+      ).mockResolvedValue({
+        connection1: {
+          id: 'connection1',
+          originatorInfo: { url: 'test.com', title: 'Test' },
+          validUntil: Date.now() - 1,
+          scheme: 'scheme1',
+        },
+      });
+      service.isInitialized = false;
+      service.connections = {};
+      service.bridgeByClientId = {};
+      await service.init();
+      expect(service.connections.connection1).toBeUndefined();
+      expect(service.bridgeByClientId.connection1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith('connection1');
     });
   });
 

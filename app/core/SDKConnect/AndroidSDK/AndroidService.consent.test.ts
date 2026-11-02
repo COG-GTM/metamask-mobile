@@ -10,6 +10,7 @@ import removeDappConnection from './removeDappConnection';
 import sendMessage from './AndroidService/sendMessage';
 
 let mockOnClientsConnected: ((clientInfo: string) => void) | undefined;
+let mockOnMessageReceived: ((message: string) => void) | undefined;
 
 jest.mock('../../../store', () => {
   const { createStore, combineReducers } = jest.requireActual('redux');
@@ -19,6 +20,17 @@ jest.mock('../../../store', () => {
 jest.mock('../../Engine', () => ({
   context: {
     KeyringController: { isUnlocked: jest.fn(() => true) },
+    AccountsController: {
+      getSelectedAccount: jest.fn(() => ({
+        address: '0x0000000000000000000000000000000000000001',
+      })),
+    },
+    NetworkController: {
+      state: { selectedNetworkClientId: 'mainnet' },
+      getNetworkClientById: jest.fn(() => ({
+        configuration: { chainId: '0x1' },
+      })),
+    },
     PermissionController: {
       requestPermissions: jest.fn(),
       getPermissions: jest.fn(),
@@ -36,7 +48,9 @@ jest.mock('../utils/wait.util', () => ({
 }));
 jest.mock('./AndroidNativeSDKEventHandler', () =>
   jest.fn().mockImplementation(() => ({
-    onMessageReceived: jest.fn(),
+    onMessageReceived: jest.fn((cb: (message: string) => void) => {
+      mockOnMessageReceived = cb;
+    }),
     onClientsConnected: jest.fn((cb: (clientInfo: string) => void) => {
       mockOnClientsConnected = cb;
     }),
@@ -50,6 +64,9 @@ jest.mock('../../BackgroundBridge/BackgroundBridge');
 jest.mock('../../Permissions', () => ({
   getDefaultCaip25CaveatValue: jest.fn(() => ({})),
 }));
+jest.mock('../handlers/handleCustomRpcCalls', () =>
+  jest.fn(async ({ rpc }: { rpc: unknown }) => rpc),
+);
 jest.mock('../../../util/Logger');
 jest.mock('../utils/DevLogger');
 
@@ -117,6 +134,7 @@ describe('AndroidService connection consent and persistence', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockOnClientsConnected = undefined;
+    mockOnMessageReceived = undefined;
     store.dispatch({ type: 'RESET_DAPP_CONNECTIONS', connections: {} });
     permissionController.getPermissions.mockReturnValue(undefined);
 
@@ -275,5 +293,80 @@ describe('AndroidService connection consent and persistence', () => {
     expect(permissionController.requestPermissions).not.toHaveBeenCalled();
     expect(service.bridgeByClientId[CLIENT_ID]).toBeDefined();
     expect(persisted()[CLIENT_ID]).toBeDefined();
+  });
+  it('disconnects the old bridge when an expired session is dropped', async () => {
+    store.dispatch(
+      updateDappConnection(
+        CLIENT_ID,
+        storedConnection(CLIENT_ID, NOW + DEFAULT_SESSION_TIMEOUT_MS),
+      ),
+    );
+    permissionController.requestPermissions.mockRejectedValue(
+      new Error('User rejected the request.'),
+    );
+    const service = await startService();
+    const oldBridge = service.bridgeByClientId[CLIENT_ID] as unknown as {
+      onDisconnect: jest.Mock;
+    };
+    oldBridge.onDisconnect = jest.fn();
+
+    service.connections[CLIENT_ID].validUntil = NOW - 1;
+    await connectClient();
+
+    expect(oldBridge.onDisconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it('requires re-approval for messages on a session that expired while connected', async () => {
+    store.dispatch(
+      updateDappConnection(
+        CLIENT_ID,
+        storedConnection(CLIENT_ID, NOW + DEFAULT_SESSION_TIMEOUT_MS),
+      ),
+    );
+    const service = await startService();
+    const oldBridge = service.bridgeByClientId[CLIENT_ID] as unknown as {
+      onDisconnect: jest.Mock;
+      onMessage: jest.Mock;
+    };
+    oldBridge.onDisconnect = jest.fn();
+    oldBridge.onMessage = jest.fn();
+    service.connections[CLIENT_ID].validUntil = NOW - 1;
+
+    const message = JSON.stringify({
+      id: CLIENT_ID,
+      message: JSON.stringify({
+        id: 1,
+        jsonrpc: '2.0',
+        method: 'eth_requestAccounts',
+        params: [],
+      }),
+    });
+
+    permissionController.requestPermissions.mockRejectedValueOnce(
+      new Error('User rejected the request.'),
+    );
+    mockOnMessageReceived?.(message);
+    await flushPromises();
+    await flushPromises();
+
+    expect(permissionController.requestPermissions).toHaveBeenCalledTimes(1);
+    expect(oldBridge.onDisconnect).toHaveBeenCalledTimes(1);
+    expect(oldBridge.onMessage).not.toHaveBeenCalled();
+    expect(service.bridgeByClientId[CLIENT_ID]).toBeUndefined();
+    expect(persisted()[CLIENT_ID]).toBeUndefined();
+
+    permissionController.requestPermissions.mockResolvedValueOnce([{}]);
+    mockOnMessageReceived?.(message);
+    await flushPromises();
+    await flushPromises();
+
+    expect(service.bridgeByClientId[CLIENT_ID]).toBeDefined();
+    expect(service.connections[CLIENT_ID]).toMatchObject({
+      clientId: CLIENT_ID,
+      validUntil: NOW + DEFAULT_SESSION_TIMEOUT_MS,
+    });
+    expect(persisted()[CLIENT_ID]).toMatchObject({
+      validUntil: NOW + DEFAULT_SESSION_TIMEOUT_MS,
+    });
   });
 });

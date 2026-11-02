@@ -10,6 +10,7 @@ import Logger from '../../../util/Logger';
 import BackgroundBridge from '../../BackgroundBridge/BackgroundBridge';
 import { DappClient, DappConnections } from '../AndroidSDK/dapp-sdk-types';
 import getDefaultBridgeParams from '../AndroidSDK/getDefaultBridgeParams';
+import isDappConnectionExpired from '../AndroidSDK/isDappConnectionExpired';
 import BatchRPCManager from '../BatchRPCManager';
 import RPCQueueManager from '../RPCQueueManager';
 import SDKConnect from '../SDKConnect';
@@ -69,6 +70,14 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        if (isDappConnectionExpired(connection.validUntil)) {
+          DevLogger.log(
+            `DeeplinkProtocolService::init dropping expired client: ${connection.id}`,
+          );
+          SDKConnect.getInstance().removeDappConnection(connection.id);
+          return;
+        }
+
         const clientInfo = {
           connected: false,
           clientId: connection.id,

@@ -196,23 +196,10 @@ export default class AndroidService extends EventEmitter2 {
             });
 
             this.setupBridge(clientInfo);
-            // Persist only after the user approved the connection
-            const lastAuthorized = Date.now();
-            const validUntil = lastAuthorized + DEFAULT_SESSION_TIMEOUT_MS;
-            this.connections[clientInfo.clientId] = {
-              connected: true,
-              clientId: clientInfo.clientId,
-              originatorInfo: clientInfo.originatorInfo,
-              validUntil,
-            };
-            await SDKConnect.getInstance().addDappConnection({
-              id: clientInfo.clientId,
-              lastAuthorized,
-              origin: AppConstants.MM_SDK.ANDROID_SDK,
-              originatorInfo: clientInfo.originatorInfo,
-              otherPublicKey: '',
-              validUntil,
-            });
+            await this.saveApprovedConnection(
+              clientInfo.clientId,
+              clientInfo.originatorInfo,
+            );
           }
 
           this.sendMessage(
@@ -334,6 +321,19 @@ export default class AndroidService extends EventEmitter2 {
           message = parsedMsg.message;
           data = JSON.parse(message);
 
+          const known = this.connections[sessionId];
+          if (known?.clientId && isDappConnectionExpired(known.validUntil)) {
+            DevLogger.log(
+              `AndroidService::onMessageReceived client ${sessionId} session expired, re-approval required`,
+            );
+            this.forgetConnection(sessionId);
+            this.connections[sessionId] = {
+              ...known,
+              connected: true,
+              validUntil: undefined,
+            };
+          }
+
           // Update connected state
           this.connections[sessionId] = {
             ...this.connections[sessionId],
@@ -368,13 +368,15 @@ export default class AndroidService extends EventEmitter2 {
           );
 
           try {
-            // Ask users permissions again - it probably means the channel was removed
+            const originatorInfo = (this.connections[sessionId]
+              ?.originatorInfo ?? {}) as OriginatorInfo;
+            // Ask users permissions again - the channel was removed or expired
             await this.checkPermission({
-              originatorInfo: this.connections[sessionId]?.originatorInfo ?? {},
+              originatorInfo,
               channelId: sessionId,
             });
 
-            // Create new bridge
+            await this.saveApprovedConnection(sessionId, originatorInfo);
             this.setupBridge(this.connections[sessionId]);
             bridge = this.bridgeByClientId[sessionId];
           } catch (err) {
@@ -495,7 +497,39 @@ export default class AndroidService extends EventEmitter2 {
     this.bridgeByClientId[clientInfo.clientId] = bridge;
   }
 
+  /** Persists a connection; call only after the user approved it. */
+  private async saveApprovedConnection(
+    clientId: string,
+    originatorInfo: OriginatorInfo,
+  ) {
+    const lastAuthorized = Date.now();
+    const validUntil = lastAuthorized + DEFAULT_SESSION_TIMEOUT_MS;
+    this.connections[clientId] = {
+      connected: true,
+      clientId,
+      originatorInfo,
+      validUntil,
+    };
+    await SDKConnect.getInstance().addDappConnection({
+      id: clientId,
+      lastAuthorized,
+      origin: AppConstants.MM_SDK.ANDROID_SDK,
+      originatorInfo,
+      otherPublicKey: '',
+      validUntil,
+    });
+  }
+
+  /**
+   * Drops a connection everywhere: disconnects its bridge, removes the
+   * in-memory and persisted entries and revokes its permissions.
+   */
   private forgetConnection(channelId: string) {
+    try {
+      this.bridgeByClientId[channelId]?.onDisconnect?.();
+    } catch (err) {
+      Logger.log(err, `AndroidService::forgetConnection bridge ${channelId}`);
+    }
     delete this.bridgeByClientId[channelId];
     delete this.connections[channelId];
     try {
