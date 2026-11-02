@@ -3,6 +3,7 @@ import { AppState, AppStateStatus } from 'react-native';
 import { interruptBiometrics, lockApp } from '../../actions/user';
 import Logger from '../../util/Logger';
 import ReduxService, { type ReduxStore } from '../redux';
+import { suppressAutoLock } from './autoLockSuppression';
 
 jest.mock('../Engine', () => ({
   context: {
@@ -153,6 +154,38 @@ describe('LockManagerService', () => {
       lockManagerService.startListening();
       mockAppStateListener('background');
       expect(mockSetTimeout).toHaveBeenCalled();
+    });
+
+    it('should not lock or start a timer while auto-lock is suppressed in memory', async () => {
+      const mockDispatch = jest.fn();
+      jest.spyOn(ReduxService, 'store', 'get').mockReturnValue({
+        getState: () => ({ settings: { lockTime: 0 } }),
+        dispatch: mockDispatch,
+      } as unknown as ReduxStore);
+      const release = suppressAutoLock();
+      try {
+        lockManagerService.startListening();
+        mockAppStateListener('background');
+        expect(mockDispatch).not.toHaveBeenCalled();
+        expect(mockSetTimeout).not.toHaveBeenCalled();
+      } finally {
+        release();
+      }
+    });
+
+    it('should resume auto-lock with the persisted lockTime once suppression is released', async () => {
+      const mockDispatch = jest.fn();
+      jest.spyOn(ReduxService, 'store', 'get').mockReturnValue({
+        getState: () => ({ settings: { lockTime: 0 } }),
+        dispatch: mockDispatch,
+      } as unknown as ReduxStore);
+      const release = suppressAutoLock();
+      lockManagerService.startListening();
+      mockAppStateListener('background');
+      mockAppStateListener('active');
+      release();
+      mockAppStateListener('background');
+      expect(await mockDispatch).toHaveBeenCalledWith(lockApp());
     });
   });
 });
