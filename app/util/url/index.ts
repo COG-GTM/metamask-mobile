@@ -75,3 +75,18 @@ export const toPunycodeURL = (urlString: string) => {
     return urlString;
   }
 };
+
+/**
+ * Returns `protocol//host[:port]` for a parseable URL with a host, otherwise
+ * `undefined`. Use for dapp-declared URLs, which are untrusted and may not be
+ * valid URLs at all.
+ */
+export const getUrlOrigin = (urlString?: string): string | undefined => {
+  if (!urlString) return undefined;
+  try {
+    const { protocol, host } = new URL(urlString);
+    return host ? `${protocol}//${host}` : undefined;
+  } catch {
+    return undefined;
+  }
+};

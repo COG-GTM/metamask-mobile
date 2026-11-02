@@ -11,6 +11,8 @@ import Routes from '../../../app/constants/navigation/Routes';
 import Device from '../../util/device';
 import { Minimizer } from '../NativeModules';
 import DevLogger from '../SDKConnect/utils/DevLogger';
+import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
+import getRpcMethodMiddleware from '../RPCMethods/RPCMethodMiddleware';
 
 jest.mock('../AppConstants', () => ({
   WALLET_CONNECT: {
@@ -77,7 +79,7 @@ jest.mock('../../store', () => ({
 }));
 jest.mock('../RPCMethods/RPCMethodMiddleware', () => ({
   __esModule: true,
-  default: () => () => ({ acknowledged: () => Promise.resolve() }),
+  default: jest.fn(() => () => ({ acknowledged: () => Promise.resolve() })),
 }));
 jest.mock('./wc-utils', () => ({
   hideWCLoadingState: jest.fn(),
@@ -276,22 +278,28 @@ describe('WalletConnect2Session', () => {
     // Directly spy on session.updateSession and replace it with our own implementation
     // This avoids issues with mocking imported utilities
     const originalUpdateSession = session.updateSession;
-    session.updateSession = jest.fn().mockImplementation(async (_: { chainId: number, accounts: string[] }) => {
-      // Directly call updateSession on the web3Wallet with mock data
-      await mockClient.updateSession({
-        topic: mockSession.topic,
-        namespaces: {
-          eip155: {
-            chains: ['eip155:1'],
-            methods: ['eth_sendTransaction'],
-            events: ['chainChanged', 'accountsChanged'],
-            accounts: ['eip155:1:0x1234567890abcdef1234567890abcdef12345678'],
-          },
+    session.updateSession = jest
+      .fn()
+      .mockImplementation(
+        async (_: { chainId: number; accounts: string[] }) => {
+          // Directly call updateSession on the web3Wallet with mock data
+          await mockClient.updateSession({
+            topic: mockSession.topic,
+            namespaces: {
+              eip155: {
+                chains: ['eip155:1'],
+                methods: ['eth_sendTransaction'],
+                events: ['chainChanged', 'accountsChanged'],
+                accounts: [
+                  'eip155:1:0x1234567890abcdef1234567890abcdef12345678',
+                ],
+              },
+            },
+          });
+          // Mock emitting the event
+          return Promise.resolve();
         },
-      });
-      // Mock emitting the event
-      return Promise.resolve();
-    });
+      );
 
     // Mock updateSession on the client
     const mockUpdateSession = jest
@@ -709,5 +717,43 @@ describe('WalletConnect2Session', () => {
       id: switchChainRequest.id + '',
       result: true,
     });
+  });
+
+  describe('page url passed to the RPC middleware', () => {
+    const getMiddlewarePageUrl = (peerUrl: string) => {
+      (BackgroundBridge as unknown as jest.Mock).mockClear();
+      (getRpcMethodMiddleware as jest.Mock).mockClear();
+
+      new WalletConnect2Session({
+        web3Wallet: mockClient,
+        session: {
+          ...mockSession,
+          peer: {
+            metadata: { ...mockSession.peer.metadata, url: peerUrl },
+          },
+        } as unknown as SessionTypes.Struct,
+        channelId: 'test-channel',
+        deeplink: false,
+        navigation: mockNavigation,
+      });
+
+      const bridgeOptions = (BackgroundBridge as unknown as jest.Mock).mock
+        .calls[0][0];
+      bridgeOptions.getRpcMethodMiddleware({ getProviderState: jest.fn() });
+      return (getRpcMethodMiddleware as jest.Mock).mock.calls[0][0].url.current;
+    };
+
+    it('uses the origin of a valid peer url', () => {
+      expect(getMiddlewarePageUrl('https://dapp.example.com/app?x=1')).toBe(
+        'https://dapp.example.com',
+      );
+    });
+
+    it.each(['my-dapp', 'not a url'])(
+      'uses an empty page url for a malformed peer url (%p)',
+      (peerUrl) => {
+        expect(getMiddlewarePageUrl(peerUrl)).toBe('');
+      },
+    );
   });
 });

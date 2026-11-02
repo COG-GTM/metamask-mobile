@@ -3,6 +3,7 @@ import {
   isBridgeUrl,
   isValidASCIIURL,
   toPunycodeURL,
+  getUrlOrigin,
 } from './index';
 import AppConstants from '../../core/AppConstants';
 
@@ -122,5 +123,23 @@ describe('URL Check Functions', () => {
         toPunycodeURL('https://opensea.io/language=français'),
       ).toStrictEqual('https://opensea.io/language=fran%C3%A7ais');
     });
+  });
+
+  describe('getUrlOrigin', () => {
+    it('returns protocol, host and port of a valid URL', () => {
+      expect(getUrlOrigin('https://app.example.com/path?q=1#x')).toBe(
+        'https://app.example.com',
+      );
+      expect(getUrlOrigin('http://localhost:3000/dapp')).toBe(
+        'http://localhost:3000',
+      );
+    });
+
+    it.each([undefined, '', 'my-dapp', 'not a url', 'https://', 'wc:abc'])(
+      'returns undefined for %p',
+      (input) => {
+        expect(getUrlOrigin(input)).toBeUndefined();
+      },
+    );
   });
 });

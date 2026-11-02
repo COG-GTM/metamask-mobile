@@ -11,6 +11,7 @@ import { selectEvmChainId } from '../../selectors/networkController';
 import { store } from '../../store';
 import Device from '../../util/device';
 import Logger from '../../util/Logger';
+import { getUrlOrigin } from '../../util/url';
 import { getGlobalNetworkClientId } from '../../util/networks/global-network';
 import { addTransaction } from '../../util/transaction-controller';
 import BackgroundBridge from '../BackgroundBridge/BackgroundBridge';
@@ -123,7 +124,7 @@ class WalletConnect2Session {
           fromHomepage: { current: false },
           injectHomePageScripts: () => false,
           navigation: this.navigation,
-          url: { current: url },
+          url: { current: getUrlOrigin(url) ?? '' },
           title: { current: name },
           icon: { current: icons?.[0] as ImageSourcePropType },
           toggleUrlModal: () => null,
@@ -191,7 +192,8 @@ class WalletConnect2Session {
 
   redirect = (context?: string) => {
     DevLogger.log(
-      `WC2::redirect context=${context} isDeeplink=${this.deeplink
+      `WC2::redirect context=${context} isDeeplink=${
+        this.deeplink
       } navigation=${this.navigation !== undefined}`,
     );
     if (!this.deeplink) return;
@@ -254,10 +256,19 @@ class WalletConnect2Session {
         ...new Set([...(currentNamespaces?.eip155?.chains || []), newChainId]),
       ];
 
-      const accounts = [...new Set((currentNamespaces?.eip155?.accounts || []).map((acc) => acc.split(':')[2]))].map((account) => `${newChainId}:${account}`);
+      const accounts = [
+        ...new Set(
+          (currentNamespaces?.eip155?.accounts || []).map(
+            (acc) => acc.split(':')[2],
+          ),
+        ),
+      ].map((account) => `${newChainId}:${account}`);
 
       const updatedAccounts = [
-        ...new Set([...(currentNamespaces?.eip155?.accounts || []), ...accounts]),
+        ...new Set([
+          ...(currentNamespaces?.eip155?.accounts || []),
+          ...accounts,
+        ]),
       ];
 
       const updatedNamespaces = {
@@ -466,7 +477,14 @@ class WalletConnect2Session {
     const origin = verified?.origin ?? this.session.peer.metadata.url;
     const method = requestEvent.params.request.method;
     const isSwitchingChain = method === 'wallet_switchEthereumChain';
-    const caip2ChainId = (isSwitchingChain ? `eip155:${parseInt(requestEvent.params.request.params[0].chainId, 16)}` : requestEvent.params.chainId) as CaipChainId;
+    const caip2ChainId = (
+      isSwitchingChain
+        ? `eip155:${parseInt(
+            requestEvent.params.request.params[0].chainId,
+            16,
+          )}`
+        : requestEvent.params.chainId
+    ) as CaipChainId;
     const methodParams = requestEvent.params.request.params;
 
     DevLogger.log(
@@ -474,7 +492,11 @@ class WalletConnect2Session {
     );
 
     try {
-      const allowed = await checkWCPermissions({ origin, caip2ChainId, allowSwitchingToNewChain: isSwitchingChain });
+      const allowed = await checkWCPermissions({
+        origin,
+        caip2ChainId,
+        allowSwitchingToNewChain: isSwitchingChain,
+      });
       DevLogger.log(
         `WC2::handleRequest caip2ChainId=${caip2ChainId} is allowed=${allowed}`,
       );

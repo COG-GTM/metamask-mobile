@@ -5,6 +5,7 @@ import { BannerAlertSeverity } from '../../../component-library/components/Banne
 import { strings } from '../../../../locales/i18n';
 import { useSelector } from 'react-redux';
 import { PopularList } from '../../../util/networks/customNetworks';
+import { MISSMATCH_RPC_URL_TEST_ID } from './NetworkVerificationInfo.constants';
 
 const mockNetworkInfo = {
   chainName: 'Test Chain',
@@ -183,6 +184,66 @@ describe('NetworkVerificationInfo', () => {
           "Attackers sometimes mimic sites by making small changes to the site address. Make sure you're interacting with the intended Network URL before you continue. Punycode version: https://xn--ifura-dig.io/gnosis",
         ),
       ).toBeTruthy();
+    });
+  });
+
+  describe('when the dapp-declared page url is malformed', () => {
+    it.each(['not a url', 'my-dapp'])(
+      'renders without a dapp origin for %p',
+      (pageUrl) => {
+        (useSelector as jest.Mock).mockReturnValue(true);
+        const consoleErrorSpy = jest
+          .spyOn(console, 'error')
+          .mockImplementation(() => undefined);
+
+        const networkWithMalformedPageUrl = {
+          ...mockNetworkInfo,
+          pageMeta: { url: pageUrl },
+        };
+
+        const { getAllByText, getByText, queryByText } = render(
+          <NetworkVerificationInfo
+            customNetworkInformation={networkWithMalformedPageUrl}
+            onReject={() => undefined}
+            onConfirm={() => undefined}
+          />,
+        );
+
+        expect(
+          getAllByText(mockNetworkInfo.chainName, { exact: false }).length,
+        ).toBeGreaterThan(0);
+        expect(queryByText(/giving .* permission to use it/)).toBeNull();
+        expect(
+          getByText(strings('add_custom_network.warning_subtext_new.1'), {
+            exact: false,
+          }),
+        ).toBeTruthy();
+        consoleErrorSpy.mockRestore();
+      },
+    );
+
+    it('still flags an RPC mismatch against the popular network', () => {
+      (useSelector as jest.Mock).mockReturnValue(true);
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      const popularNetworkWithMalformedPageUrl = {
+        ...PopularList[0],
+        rpcUrl: 'https://attacker-rpc.example',
+        pageMeta: { url: 'my-dapp' },
+        alerts: [],
+      };
+
+      const { getByTestId } = render(
+        <NetworkVerificationInfo
+          // @ts-expect-error - The CustomNetworkInformation type is missing the pageMeta property
+          customNetworkInformation={popularNetworkWithMalformedPageUrl}
+          onReject={() => undefined}
+          onConfirm={() => undefined}
+        />,
+      );
+
+      expect(getByTestId(MISSMATCH_RPC_URL_TEST_ID)).toBeTruthy();
+      (console.error as jest.Mock).mockRestore();
     });
   });
 });

@@ -87,7 +87,7 @@ const NetworkVerificationInfo = ({
 
   const isDappRequest = useMemo(
     // @ts-expect-error - The CustomNetworkInformation type is missing the pageMeta property
-    () => Boolean(customNetworkInformation.pageMeta?.url),
+    () => Boolean(customNetworkInformation.pageMeta),
     [customNetworkInformation],
   );
 
@@ -122,15 +122,13 @@ const NetworkVerificationInfo = ({
   const dappOrigin = useMemo(() => {
     // @ts-expect-error - The CustomNetworkInformation type is missing the pageMeta property
     const customNetworkUrl = customNetworkInformation.pageMeta?.url;
-    const url = customNetworkUrl ? new URL(customNetworkUrl) : null;
-    if (url) {
-      try {
-        return url.hostname;
-      } catch (error) {
-        console.error('Invalid URL:', error);
-      }
+    if (!customNetworkUrl) return undefined;
+    try {
+      return new URL(customNetworkUrl).hostname || undefined;
+    } catch (error) {
+      console.error('Invalid URL:', error);
+      return undefined;
     }
-    return undefined;
   }, [customNetworkInformation]);
 
   const renderCurrencySymbol = () => (
