@@ -5,6 +5,7 @@ import { showAlert } from '../../../actions/alert';
 import { strings } from '../../../../locales/i18n';
 import { handleNetworkSwitch } from '../../../util/networks/handleNetworkSwitch';
 import { store } from '../../../store';
+import { RootState } from '../../../reducers';
 
 jest.mock('../../../util/networks/handleNetworkSwitch', () => ({
   handleNetworkSwitch: jest.fn(),
@@ -18,30 +19,31 @@ jest.mock('../../../store', () => ({
   store: { getState: jest.fn() },
 }));
 
-const buildState = (selectedChainId: string) => ({
-  engine: {
-    backgroundState: {
-      NetworkController: {
-        selectedNetworkClientId:
-          selectedChainId === '0x1' ? 'mainnet' : 'linea',
-        networkConfigurationsByChainId: {
-          '0x1': {
-            chainId: '0x1',
-            name: 'Ethereum Mainnet',
-            defaultRpcEndpointIndex: 0,
-            rpcEndpoints: [{ networkClientId: 'mainnet' }],
-          },
-          '0xe708': {
-            chainId: '0xe708',
-            name: 'Linea',
-            defaultRpcEndpointIndex: 0,
-            rpcEndpoints: [{ networkClientId: 'linea' }],
+const buildState = (selectedChainId: string) =>
+  ({
+    engine: {
+      backgroundState: {
+        NetworkController: {
+          selectedNetworkClientId:
+            selectedChainId === '0x1' ? 'mainnet' : 'linea',
+          networkConfigurationsByChainId: {
+            '0x1': {
+              chainId: '0x1',
+              name: 'Ethereum Mainnet',
+              defaultRpcEndpointIndex: 0,
+              rpcEndpoints: [{ networkClientId: 'mainnet' }],
+            },
+            '0xe708': {
+              chainId: '0xe708',
+              name: 'Linea',
+              defaultRpcEndpointIndex: 0,
+              rpcEndpoints: [{ networkClientId: 'linea' }],
+            },
           },
         },
       },
     },
-  },
-});
+  } as unknown as RootState);
 
 type AlertCall = [string, string, AlertButton[], { onDismiss?: () => void }];
 
