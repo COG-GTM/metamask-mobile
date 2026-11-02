@@ -35,7 +35,7 @@ const pump = require('pump');
 const EventEmitter = require('events').EventEmitter;
 const { NOTIFICATION_NAMES } = AppConstants;
 import DevLogger from '../SDKConnect/utils/DevLogger';
-import { getPermittedAccounts } from '../Permissions';
+import { getPermittedAccounts, isInternalOrigin } from '../Permissions';
 import { NetworkStatus } from '@metamask/network-controller';
 import { NETWORK_ID_LOADING } from '../redux/slices/inpageProvider';
 import createUnsupportedMethodMiddleware from '../RPCMethods/createUnsupportedMethodMiddleware';
@@ -72,6 +72,11 @@ export class BackgroundBridge extends EventEmitter {
     channelId,
   }) {
     super();
+    if (isMMSDK && isInternalOrigin(channelId)) {
+      // SDK channel ids are used as permission subjects; an internal origin
+      // would bypass the PermissionController in getPermittedAccounts.
+      throw new Error('BackgroundBridge: invalid SDK channel id');
+    }
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
     this.hostname = new URL(url).hostname;

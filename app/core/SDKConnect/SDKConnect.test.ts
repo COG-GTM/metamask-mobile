@@ -33,7 +33,12 @@ import {
   updateSDKLoadingState,
 } from './StateManagement';
 import Engine from '../../core/Engine';
+import { store } from '../../store';
+import { removeDappConnection } from '../../actions/sdk';
 
+jest.mock('../../store', () => ({
+  store: { dispatch: jest.fn(), getState: jest.fn(() => ({})) },
+}));
 jest.mock('./Connection');
 jest.mock('@react-navigation/native');
 jest.mock('@metamask/sdk-communication-layer');
@@ -444,6 +449,46 @@ describe('SDKConnect', () => {
         sdkConnect.state.connections = testSDKSessions;
 
         expect(sdkConnect.getConnections()).toEqual(testSDKSessions);
+      });
+    });
+
+    describe('pending Android SDK connections', () => {
+      const channelId = '3f1c2a9e-8b7d-4c6e-9a5f-1b2c3d4e5f60';
+      const pending = { id: channelId } as ConnectionProps;
+
+      beforeEach(() => {
+        sdkConnect.state.connections = {};
+        sdkConnect.state.dappConnections = {};
+        sdkConnect.state.pendingDappConnections = {};
+      });
+
+      it('exposes a pending connection via getConnection without persisting it', () => {
+        sdkConnect.setPendingDappConnection(pending);
+
+        expect(sdkConnect.getConnection({ channelId })).toBe(pending);
+        expect(sdkConnect.state.dappConnections[channelId]).toBeUndefined();
+        expect(store.dispatch).not.toHaveBeenCalled();
+      });
+
+      it('removeDappConnection clears pending, in-memory and persisted state', () => {
+        sdkConnect.setPendingDappConnection(pending);
+        sdkConnect.state.dappConnections[channelId] = pending;
+
+        sdkConnect.removeDappConnection(channelId);
+
+        expect(sdkConnect.getConnection({ channelId })).toBeUndefined();
+        expect(store.dispatch).toHaveBeenCalledWith(
+          removeDappConnection(channelId),
+        );
+      });
+
+      it('addDappConnection promotes a pending connection', async () => {
+        sdkConnect.setPendingDappConnection(pending);
+
+        await sdkConnect.addDappConnection(pending);
+
+        expect(sdkConnect.state.pendingDappConnections[channelId]).toBeUndefined();
+        expect(mockAddDappConnection).toHaveBeenCalledWith(pending, sdkConnect);
       });
     });
 

@@ -54,7 +54,7 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   },
 }));
 
-function setupBackgroundBridge(url) {
+function setupBackgroundBridge(url, overrides = {}) {
   // Arrange
   const {
     AccountsController,
@@ -104,6 +104,7 @@ function setupBackgroundBridge(url) {
     url,
     isRemoteConn: true,
     ...defaultBridgeParams,
+    ...overrides,
   });
 }
 
@@ -189,6 +190,27 @@ describe('BackgroundBridge', () => {
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+    });
+
+    it.each(['MetaMask Mobile', process.env.MM_FOX_CODE].filter(Boolean))(
+      'rejects an SDK channel id equal to internal origin %p',
+      (channelId) => {
+        expect(() =>
+          setupBackgroundBridge('https://www.mock.io', {
+            isMMSDK: true,
+            channelId,
+          }),
+        ).toThrow('BackgroundBridge: invalid SDK channel id');
+      },
+    );
+
+    it('accepts a UUID SDK channel id', () => {
+      const channelId = '3f1c2a9e-8b7d-4c6e-9a5f-1b2c3d4e5f60';
+      const bridge = setupBackgroundBridge('https://www.mock.io', {
+        isMMSDK: true,
+        channelId,
+      });
+      expect(bridge.channelId).toBe(channelId);
     });
   });
 });
