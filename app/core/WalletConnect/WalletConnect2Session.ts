@@ -470,17 +470,21 @@ class WalletConnect2Session {
       DevLogger.log(
         `WC2::handleRequest rejected request ${requestEvent.id}: flagged as scam`,
       );
-      await this.web3Wallet.respondSessionRequest({
-        topic: this.session.topic,
-        response: {
-          id: requestEvent.id,
-          jsonrpc: '2.0',
-          error: {
-            code: ERROR_CODES.USER_REJECT_CODE,
-            message: ERROR_MESSAGES.USER_REJECT,
+      try {
+        await this.web3Wallet.respondSessionRequest({
+          topic: this.session.topic,
+          response: {
+            id: requestEvent.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.USER_REJECT_CODE,
+              message: ERROR_MESSAGES.USER_REJECT,
+            },
           },
-        },
-      });
+        });
+      } finally {
+        this._isHandlingRequest = false;
+      }
       return;
     }
 

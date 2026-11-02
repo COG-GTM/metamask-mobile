@@ -27,6 +27,19 @@ describe('getWalletConnectVerification', () => {
     });
   });
 
+  it.each([
+    ['http://app.uniswap.org', 'https://app.uniswap.org'],
+    ['https://app.uniswap.org:8443', 'https://app.uniswap.org'],
+  ])(
+    'does not verify a VALID attestation for a different origin (%s vs %s)',
+    (attested, claimed) => {
+      expect(
+        getWalletConnectVerification(verifyContext('VALID', attested), claimed)
+          .isVerified,
+      ).toBe(false);
+    },
+  );
+
   it('treats UNKNOWN as unverified even though origin equals metadata.url', () => {
     expect(
       getWalletConnectVerification(
