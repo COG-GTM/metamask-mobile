@@ -19,6 +19,11 @@ import { mockNetworkState } from '../../../util/test/network';
 import * as selectedNetworkControllerFcts from '../../../selectors/selectedNetworkController';
 // eslint-disable-next-line import/no-namespace
 import * as networks from '../../../util/networks';
+// eslint-disable-next-line import/no-namespace
+import * as traceUtils from '../../../util/trace';
+import { TraceName } from '../../../util/trace';
+// eslint-disable-next-line import/no-namespace
+import * as switchNetworksHook from './useSwitchNetworks';
 
 const mockEngine = Engine;
 
@@ -560,6 +565,50 @@ describe('Network Selector', () => {
     fireEvent.changeText(searchInput, '');
     expect(queryByText('Polygon Mainnet')).toBeTruthy();
     expect(queryByText('Avalanche Mainnet C-Chain')).toBeTruthy();
+  });
+
+  it('starts the NetworkSwitch trace once per sheet open, not on every render', () => {
+    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
+    const traceSpy = jest.spyOn(traceUtils, 'trace');
+    const countNetworkSwitchTraces = () =>
+      traceSpy.mock.calls.filter(
+        ([request]) => request.name === TraceName.NetworkSwitch,
+      ).length;
+
+    const { getByPlaceholderText, unmount } = renderComponent(initialState);
+    expect(countNetworkSwitchTraces()).toBe(1);
+
+    const searchInput = getByPlaceholderText('Search');
+    ['P', 'Po', 'Pol', 'Poly', ''].forEach((text) =>
+      fireEvent.changeText(searchInput, text),
+    );
+    expect(countNetworkSwitchTraces()).toBe(1);
+
+    unmount();
+    renderComponent(initialState);
+    expect(countNetworkSwitchTraces()).toBe(2);
+
+    traceSpy.mockRestore();
+  });
+
+  it('passes stable parentSpan and dismissModal to useSwitchNetworks across renders', () => {
+    (isNetworkUiRedesignEnabled as jest.Mock).mockImplementation(() => true);
+    const hookSpy = jest.spyOn(switchNetworksHook, 'useSwitchNetworks');
+
+    const { getByPlaceholderText } = renderComponent(initialState);
+    const searchInput = getByPlaceholderText('Search');
+    fireEvent.changeText(searchInput, 'Pol');
+    fireEvent.changeText(searchInput, 'Polygon');
+
+    const props = hookSpy.mock.calls.map(([hookProps]) => hookProps);
+    expect(props.length).toBeGreaterThan(1);
+    props.forEach(({ parentSpan, dismissModal, closeRpcModal }) => {
+      expect(parentSpan).toBe(props[0].parentSpan);
+      expect(dismissModal).toBe(props[0].dismissModal);
+      expect(closeRpcModal).toBe(props[0].closeRpcModal);
+    });
+
+    hookSpy.mockRestore();
   });
 
   it('shows popular networks when network UI redesign is enabled', () => {
