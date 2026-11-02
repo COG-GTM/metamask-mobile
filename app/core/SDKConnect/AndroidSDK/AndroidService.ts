@@ -29,6 +29,7 @@ import BatchRPCManager from '../BatchRPCManager';
 import { DEFAULT_SESSION_TIMEOUT_MS } from '../SDKConnectConstants';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import isValidOriginatorInfo from '../utils/isValidOriginatorInfo';
 import AndroidSDKEventHandler from './AndroidNativeSDKEventHandler';
 import sendMessage from './AndroidService/sendMessage';
 import { DappClient, DappConnections } from './dapp-sdk-types';
@@ -88,6 +89,12 @@ export default class AndroidService extends EventEmitter2 {
           DevLogger.log(
             `AndroidService::setupEventListeners recover client: ${connection.id}`,
           );
+          if (!isValidOriginatorInfo(connection.originatorInfo)) {
+            DevLogger.log(
+              `AndroidService::setupEventListeners skipping client ${connection.id} with invalid originatorInfo`,
+            );
+            return;
+          }
           this.connections[connection.id] = {
             connected: false,
             clientId: connection.id,

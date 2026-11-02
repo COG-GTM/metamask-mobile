@@ -21,6 +21,7 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import isValidOriginatorInfo from '../utils/isValidOriginatorInfo';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -69,17 +70,42 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
-        const clientInfo = {
-          connected: false,
-          clientId: connection.id,
-          originatorInfo: connection.originatorInfo as OriginatorInfo,
-          validUntil: connection.validUntil,
-          scheme: connection.scheme,
-        };
+        try {
+          if (!isValidOriginatorInfo(connection?.originatorInfo)) {
+            Logger.log(
+              `DeeplinkProtocolService::init dropping stored connection id=${connection?.id} with invalid originatorInfo`,
+            );
+            if (connection?.id) {
+              SDKConnect.getInstance()
+                .removeDappConnection(connection.id)
+                .catch((err) => {
+                  Logger.log(
+                    err,
+                    `DeeplinkProtocolService::init error removing invalid connection`,
+                  );
+                });
+            }
+            return;
+          }
 
-        this.connections[connection.id] = clientInfo;
+          const clientInfo = {
+            connected: false,
+            clientId: connection.id,
+            originatorInfo: connection.originatorInfo,
+            validUntil: connection.validUntil,
+            scheme: connection.scheme,
+          };
 
-        this.setupBridge(clientInfo);
+          this.connections[connection.id] = clientInfo;
+
+          this.setupBridge(clientInfo);
+        } catch (err) {
+          delete this.connections[connection?.id];
+          Logger.log(
+            err,
+            `DeeplinkProtocolService::init error restoring connection id=${connection?.id}`,
+          );
+        }
       });
     }
   }
@@ -90,8 +116,8 @@ export default class DeeplinkProtocolService {
         clientInfo.clientId
       } exists=${!!this.bridgeByClientId[
         clientInfo.clientId
-      ]}} originatorInfo=${clientInfo.originatorInfo.url}\n${
-        clientInfo.originatorInfo.title
+      ]}} originatorInfo=${clientInfo.originatorInfo?.url}\n${
+        clientInfo.originatorInfo?.title
       }`,
     );
 
@@ -332,10 +358,15 @@ export default class DeeplinkProtocolService {
           this.connections,
         );
 
-        await this.checkPermission({
-          channelId: clientInfo.clientId,
-          originatorInfo: clientInfo.originatorInfo,
-        });
+        try {
+          await this.checkPermission({
+            channelId: clientInfo.clientId,
+            originatorInfo: clientInfo.originatorInfo,
+          });
+        } catch (permissionError) {
+          this.discardUnapprovedConnection(clientInfo.clientId);
+          throw permissionError;
+        }
 
         this.setupBridge(clientInfo);
 
@@ -412,6 +443,36 @@ export default class DeeplinkProtocolService {
     }
   }
 
+  /**
+   * Drops the in-memory state handleConnection created for a connect request
+   * the user rejected. Persisted sessions and permissions are left untouched:
+   * nothing is persisted before approval, and the channel id is caller-chosen,
+   * so it may belong to another dapp's stored session.
+   */
+  private discardUnapprovedConnection(clientId: string) {
+    this.removeConnection(clientId);
+    delete this.dappPublicKeyByClientId[clientId];
+  }
+
+  private parseOriginatorInfo(
+    encodedOriginatorInfo: string,
+  ): OriginatorInfo | undefined {
+    try {
+      const decodedOriginatorInfo = Buffer.from(
+        encodedOriginatorInfo,
+        'base64',
+      ).toString('utf-8');
+
+      const originatorInfoJson = JSON.parse(decodedOriginatorInfo);
+
+      const originatorInfo = originatorInfoJson?.originatorInfo;
+
+      return isValidOriginatorInfo(originatorInfo) ? originatorInfo : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
   public async handleConnection(params: {
     dappPublicKey: string;
     url: string;
@@ -429,16 +490,20 @@ export default class DeeplinkProtocolService {
       return;
     }
 
+    const originatorInfo = this.parseOriginatorInfo(params.originatorInfo);
+
+    if (!originatorInfo) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection invalid originatorInfo',
+        ),
+        { channelId: params.channelId },
+      );
+
+      return;
+    }
+
     this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
-
-    const decodedOriginatorInfo = Buffer.from(
-      params.originatorInfo,
-      'base64',
-    ).toString('utf-8');
-
-    const originatorInfoJson = JSON.parse(decodedOriginatorInfo);
-
-    const originatorInfo = originatorInfoJson.originatorInfo;
 
     const clientInfo: DappClient = {
       clientId: params.channelId,
@@ -479,16 +544,6 @@ export default class DeeplinkProtocolService {
 
       return;
     }
-
-    await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
-      lastAuthorized: Date.now(),
-      origin: AppConstants.MM_SDK.IOS_SDK,
-      originatorInfo: clientInfo.originatorInfo,
-      otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
-      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      scheme: clientInfo.scheme,
-    });
 
     this.handleConnectionEventAsync({
       clientInfo,

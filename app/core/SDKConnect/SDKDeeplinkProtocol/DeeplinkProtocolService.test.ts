@@ -46,6 +46,7 @@ describe('DeeplinkProtocolService', () => {
         },
       }),
       addDappConnection: jest.fn().mockResolvedValue(null),
+      removeDappConnection: jest.fn().mockResolvedValue(null),
     });
 
     // TODO: Replace "any" with type
@@ -98,6 +99,69 @@ describe('DeeplinkProtocolService', () => {
     it('should initialize with raw connections', async () => {
       await service.init();
       expect(service.connections.connection1).toBeDefined();
+    });
+
+    it('should skip and remove stored connections with invalid originatorInfo', async () => {
+      const sdkConnect = SDKConnect.getInstance();
+      (sdkConnect.loadDappConnections as jest.Mock).mockResolvedValue({
+        bogus: {
+          id: 'bogus',
+          originatorInfo: undefined,
+          validUntil: Date.now(),
+          scheme: 'evil',
+        },
+        connection1: {
+          id: 'connection1',
+          originatorInfo: { url: 'test.com', title: 'Test' },
+          validUntil: Date.now(),
+          scheme: 'scheme1',
+        },
+      });
+      const freshService = new DeeplinkProtocolService();
+      await new Promise(setImmediate);
+      freshService.isInitialized = false;
+      freshService.connections = {};
+      freshService.bridgeByClientId = {};
+
+      await expect(freshService.init()).resolves.toBeUndefined();
+
+      expect(freshService.connections.bogus).toBeUndefined();
+      expect(freshService.bridgeByClientId.bogus).toBeUndefined();
+      expect(freshService.connections.connection1).toBeDefined();
+      expect(freshService.bridgeByClientId.connection1).toBeDefined();
+      expect(sdkConnect.removeDappConnection).toHaveBeenCalledWith('bogus');
+    });
+
+    it('should keep restoring other connections when one bridge setup throws', async () => {
+      (
+        SDKConnect.getInstance().loadDappConnections as jest.Mock
+      ).mockResolvedValue({
+        broken: {
+          id: 'broken',
+          originatorInfo: { url: 'broken.com', title: 'Broken' },
+          scheme: 'broken',
+        },
+        connection1: {
+          id: 'connection1',
+          originatorInfo: { url: 'test.com', title: 'Test' },
+          scheme: 'scheme1',
+        },
+      });
+      const freshService = new DeeplinkProtocolService();
+      await new Promise(setImmediate);
+      freshService.isInitialized = false;
+      freshService.connections = {};
+      freshService.setupBridge = jest.fn((clientInfo: DappClient) => {
+        if (clientInfo.clientId === 'broken') {
+          throw new Error('bridge failure');
+        }
+      });
+
+      await expect(freshService.init()).resolves.toBeUndefined();
+
+      expect(freshService.setupBridge).toHaveBeenCalledTimes(2);
+      expect(freshService.connections.broken).toBeUndefined();
+      expect(freshService.connections.connection1).toBeDefined();
     });
   });
 
@@ -357,6 +421,77 @@ describe('DeeplinkProtocolService', () => {
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
     });
+
+    it('should not persist a new connection before the user approves it', async () => {
+      const handleEventSpy = jest
+        .spyOn(service, 'handleConnectionEventAsync')
+        .mockReturnValue(new Promise(() => undefined));
+      const connectionParams = {
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'scheme',
+        channelId: 'channel1',
+        originatorInfo: Buffer.from(
+          JSON.stringify({
+            originatorInfo: { url: 'test.com', title: 'Test' },
+          }),
+        ).toString('base64'),
+      };
+
+      await service.handleConnection(connectionParams);
+
+      expect(handleEventSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          clientInfo: expect.objectContaining({ clientId: 'channel1' }),
+        }),
+      );
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(service.connections.channel1).toBeUndefined();
+    });
+
+    it.each([
+      ['an empty object', Buffer.from('{}').toString('base64')],
+      [
+        'originatorInfo without url/title',
+        Buffer.from(JSON.stringify({ originatorInfo: {} })).toString('base64'),
+      ],
+      [
+        'a non-object originatorInfo',
+        Buffer.from(JSON.stringify({ originatorInfo: 'x' })).toString('base64'),
+      ],
+      ['non-JSON data', Buffer.from('not json').toString('base64')],
+      ['JSON null', Buffer.from('null').toString('base64')],
+    ])(
+      'should reject a connect deeplink whose originatorInfo is %s',
+      async (_label, originatorInfo) => {
+        const handleEventSpy = jest.spyOn(
+          service,
+          'handleConnectionEventAsync',
+        );
+
+        await expect(
+          service.handleConnection({
+            dappPublicKey: 'key',
+            url: 'url',
+            scheme: 'y',
+            channelId: 'x',
+            originatorInfo,
+          }),
+        ).resolves.toBeUndefined();
+
+        expect(Logger.error).toHaveBeenCalledWith(
+          expect.any(Error),
+          expect.objectContaining({ channelId: 'x' }),
+        );
+        expect(handleEventSpy).not.toHaveBeenCalled();
+        expect(
+          SDKConnect.getInstance().addDappConnection,
+        ).not.toHaveBeenCalled();
+        expect(service.connections.x).toBeUndefined();
+        expect(service.dappPublicKeyByClientId.x).toBeUndefined();
+        expect(service.bridgeByClientId.x).toBeUndefined();
+      },
+    );
   });
 
   describe('handleConnectionEventAsync', () => {
@@ -447,6 +582,37 @@ describe('DeeplinkProtocolService', () => {
       service.connections[clientInfo.clientId] = clientInfo;
       await service.handleConnectionEventAsync({ clientInfo, params });
       expect(service.processDappRpcRequest).toHaveBeenCalledWith(params);
+    });
+
+    it('should not keep any connection state when the user rejects', async () => {
+      const revokeAllPermissions = jest.fn();
+      (
+        Engine.context as unknown as Record<string, unknown>
+      ).PermissionController = {
+        requestPermissions: jest.fn(),
+        getPermissions: jest.fn().mockReturnValue({ some: 'permission' }),
+        revokeAllPermissions,
+      };
+      service.dappPublicKeyByClientId[clientInfo.clientId] = 'key';
+      (service.checkPermission as jest.Mock).mockRejectedValue(
+        new Error('User rejected the request.'),
+      );
+
+      await service.handleConnectionEventAsync({ clientInfo, params });
+
+      expect(service.setupBridge).not.toHaveBeenCalled();
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(service.connections[clientInfo.clientId]).toBeUndefined();
+      expect(
+        service.dappPublicKeyByClientId[clientInfo.clientId],
+      ).toBeUndefined();
+      expect(service.processDappRpcRequest).not.toHaveBeenCalled();
+      // The channel id comes from the caller, so a rejection must not touch
+      // another dapp's stored session or permissions.
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).not.toHaveBeenCalled();
+      expect(revokeAllPermissions).not.toHaveBeenCalled();
     });
 
     it('should send error message if connection event fails', async () => {
