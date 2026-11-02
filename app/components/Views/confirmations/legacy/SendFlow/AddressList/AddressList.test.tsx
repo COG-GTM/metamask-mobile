@@ -1,4 +1,5 @@
 import React from 'react';
+import { Hex } from '@metamask/utils';
 import { act, waitFor } from '@testing-library/react-native';
 import renderWithProvider from '../../../../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
@@ -81,7 +82,7 @@ const ALICE_ADDRESS = '0x1111111111111111111111111111111111111111';
 const ALBERT_ADDRESS = '0x2222222222222222222222222222222222222222';
 const BOB_ADDRESS = '0x3333333333333333333333333333333333333333';
 
-const contact = (address: string, name: string, chainId = '0x1') => ({
+const contact = (address: string, name: string, chainId: Hex = '0x1') => ({
   address,
   chainId,
   isEns: false,
