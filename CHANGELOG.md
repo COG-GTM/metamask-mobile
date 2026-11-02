@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- fix: start the NetworkSelector `NetworkSwitch` Sentry trace once per sheet open instead of on every render (search keystrokes no longer create orphaned spans/timers, and `useSwitchNetworks` callbacks stay stable) ([#2146](https://github.com/COG-GTM/metamask-mobile/pull/2146))
 - fix(multi-srp): display multichain accounts in SRP list ([#14724](https://github.com/MetaMask/metamask-mobile/pull/14724))
 - fix(confirmations): remove transaction simulations from wallet initiated send flow ([#14994](https://github.com/MetaMask/metamask-mobile/pull/14994))
 - fix(bridge): add auto slippage option and improve slippage selection UI ([#15159](https://github.com/MetaMask/metamask-mobile/pull/15159))

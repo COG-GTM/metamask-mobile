@@ -48,6 +48,11 @@ interface UseSwitchNetworksProps {
   dismissModal?: () => void;
   closeRpcModal?: () => void;
   parentSpan?: unknown;
+  /**
+   * Called after a switch ends the NetworkSwitch trace while the selector stays open,
+   * so the owner can start a fresh parent trace for the next switch.
+   */
+  restartNetworkSwitchTrace?: () => void;
 }
 
 interface UseSwitchNetworksReturn {
@@ -73,6 +78,7 @@ export function useSwitchNetworks({
   dismissModal,
   closeRpcModal,
   parentSpan,
+  restartNetworkSwitchTrace,
 }: UseSwitchNetworksProps): UseSwitchNetworksReturn {
   const isAllNetwork = useSelector(selectIsAllNetworks);
   const networkConfigurations = useSelector(
@@ -125,7 +131,10 @@ export function useSwitchNetworks({
       const networkConfigurationId =
         rpcEndpoints[defaultRpcEndpointIndex].networkClientId;
 
-      if (domainIsConnectedDapp && isMultichainV1Enabled()) {
+      const keepsSelectorOpen =
+        domainIsConnectedDapp && isMultichainV1Enabled();
+
+      if (keepsSelectorOpen) {
         SelectedNetworkController.setNetworkClientIdForDomain(
           origin,
           networkConfigurationId,
@@ -145,9 +154,10 @@ export function useSwitchNetworks({
       }
 
       setTokenNetworkFilter(chainId);
-      if (!(domainIsConnectedDapp && isMultichainV1Enabled())) dismissModal?.();
+      if (!keepsSelectorOpen) dismissModal?.();
       endTrace({ name: TraceName.SwitchCustomNetwork });
       endTrace({ name: TraceName.NetworkSwitch });
+      if (keepsSelectorOpen) restartNetworkSwitchTrace?.();
       trackEvent(
         createEventBuilder(MetaMetricsEvents.NETWORK_SWITCHED)
           .addProperties({
@@ -167,6 +177,7 @@ export function useSwitchNetworks({
       createEventBuilder,
       parentSpan,
       dismissModal,
+      restartNetworkSwitchTrace,
     ],
   );
 

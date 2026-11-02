@@ -120,6 +120,18 @@ interface NetworkSelectorRouteParams {
   };
 }
 
+/**
+ * Starts the parent NetworkSwitch trace, capturing wallet tags at call time.
+ *
+ * @returns The trace context passed to useSwitchNetworks as `parentSpan`.
+ */
+const startNetworkSwitchTrace = () =>
+  trace({
+    name: TraceName.NetworkSwitch,
+    tags: getTraceTags(store.getState()),
+    op: TraceOperation.NetworkSwitch,
+  });
+
 const NetworkSelector = () => {
   const [showPopularNetworkModal, setShowPopularNetworkModal] = useState(false);
   const [popularNetwork, setPopularNetwork] = useState<ExtendedNetwork>();
@@ -154,11 +166,12 @@ const NetworkSelector = () => {
   // origin is defined if network selector is opened from a dapp
   const origin = route.params?.hostInfo?.metadata?.origin || '';
   const browserEvmChainId = route.params?.evmChainId || null;
-  const parentSpan = trace({
-    name: TraceName.NetworkSwitch,
-    tags: getTraceTags(store.getState()),
-    op: TraceOperation.NetworkSwitch,
-  });
+  // Started once per sheet open (and again after an in-place switch); ended by useSwitchNetworks.
+  const [parentSpan, setParentSpan] = useState(startNetworkSwitchTrace);
+  const restartNetworkSwitchTrace = useCallback(() => {
+    const span = startNetworkSwitchTrace();
+    setParentSpan(() => span);
+  }, []);
   const {
     chainId: selectedChainId,
     rpcUrl: selectedRpcUrl,
@@ -238,6 +251,8 @@ const NetworkSelector = () => {
     },
     [],
   );
+
+  const dismissSheet = useCallback(() => sheetRef.current?.dismissModal(), []);
 
   const closeRpcModal = useCallback(() => {
     setShowMultiRpcSelectModal({
@@ -357,9 +372,10 @@ const NetworkSelector = () => {
     origin,
     selectedChainId,
     selectedNetworkName,
-    dismissModal: () => sheetRef.current?.dismissModal(),
+    dismissModal: dismissSheet,
     closeRpcModal,
     parentSpan,
+    restartNetworkSwitchTrace,
   });
 
   const renderMainnet = () => {
