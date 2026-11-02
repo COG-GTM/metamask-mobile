@@ -1,4 +1,3 @@
-import { getNetworkTypeById } from '../../../util/networks';
 import { generateApprovalData } from '../../../util/transactions';
 import { ParseOutput } from 'eth-url-parser';
 import { strings } from '../../../../locales/i18n';
@@ -8,8 +7,8 @@ import DeeplinkManager from '../DeeplinkManager';
 import Engine from '../../Engine';
 import NotificationManager from '../../NotificationManager';
 import { WalletDevice } from '@metamask/transaction-controller';
-import { toChecksumHexAddress } from '@metamask/controller-utils';
-import { Hex } from '@metamask/utils';
+import { toChecksumHexAddress, toHex } from '@metamask/controller-utils';
+import { getGlobalNetworkClientId } from '../../../util/networks/global-network';
 
 async function approveTransaction({
   deeplinkManager,
@@ -22,12 +21,6 @@ async function approveTransaction({
 }) {
   const { parameters, target_address, chain_id } = ethUrl;
   const { AccountsController, NetworkController } = Engine.context;
-
-  if (chain_id) {
-    const newNetworkType = getNetworkTypeById(chain_id);
-    // @ts-expect-error TODO: Consolidate the network types used here with the controller-utils types
-    NetworkController.setProviderType(newNetworkType);
-  }
 
   const uint256Number = Number(parameters?.uint256);
 
@@ -62,9 +55,9 @@ async function approveTransaction({
     data: generateApprovalData({ spender: spenderAddress, value }),
   };
 
-  const networkClientId = NetworkController.findNetworkClientIdByChainId(
-    chain_id as Hex,
-  );
+  const networkClientId = chain_id
+    ? NetworkController.findNetworkClientIdByChainId(toHex(chain_id))
+    : getGlobalNetworkClientId();
 
   addTransaction(txParams, {
     deviceConfirmedOn: WalletDevice.MM_MOBILE,

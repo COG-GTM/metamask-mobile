@@ -54,9 +54,15 @@ async function handleEthereumUrl({
     }
 
     /**
-     * Validate and switch network before performing any other action
+     * The legacy send/approve flows act on the globally selected network, so
+     * the requested network is only activated after the user approves it.
      */
-    deeplinkManager._handleNetworkSwitch(ethUrl.chain_id);
+    const isOnRequestedNetwork = await deeplinkManager._handleNetworkSwitch(
+      ethUrl.chain_id,
+    );
+    if (!isOnRequestedNetwork) {
+      return;
+    }
 
     switch (ethUrl.function_name) {
       case ETH_ACTIONS.TRANSFER: {

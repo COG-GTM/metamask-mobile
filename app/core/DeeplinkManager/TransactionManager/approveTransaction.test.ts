@@ -17,13 +17,16 @@ const MOCK_INTERNAL_ACCOUNT = createMockInternalAccount(
 );
 
 jest.mock('../../../util/networks');
+jest.mock('../../../util/networks/global-network', () => ({
+  getGlobalNetworkClientId: jest.fn(() => 'selectedNetworkClientId'),
+}));
 jest.mock('../../../util/transactions');
 jest.mock('../../../util/address');
 jest.mock('../../Engine', () => ({
   context: {
     NetworkController: {
       setProviderType: jest.fn(),
-      findNetworkClientIdByChainId: jest.fn(),
+      findNetworkClientIdByChainId: jest.fn(() => 'mainnetClientId'),
     },
     PreferencesController: {
       state: { selectedAddress: MOCK_SENDER_ADDRESS },
@@ -91,11 +94,22 @@ describe('approveTransaction', () => {
     spyGenerateApproveData.mockReturnValue('fakeApproveData');
   });
 
-  it('should call setProviderType with the correct network type', async () => {
-    const fakeNetworkType = 'fakeNetworkType';
+  it('does not switch the global network', async () => {
+    await approveTransaction({
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      deeplinkManager: mockDeeplinkManager as any,
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ethUrl: mockEthUrl as any,
+      origin: mockOrigin,
+    });
 
-    spyGetNetworkTypeById.mockReturnValue(fakeNetworkType);
+    expect(spySetProviderType).not.toHaveBeenCalled();
+    expect(spyGetNetworkTypeById).not.toHaveBeenCalled();
+  });
 
+  it('creates the approval on the network client of the requested chain', async () => {
     await approveTransaction({
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -107,8 +121,32 @@ describe('approveTransaction', () => {
     });
 
     expect(
-      Engine.context.NetworkController.setProviderType,
-    ).toHaveBeenCalledWith(fakeNetworkType);
+      Engine.context.NetworkController.findNetworkClientIdByChainId,
+    ).toHaveBeenCalledWith('0x1');
+    expect(spyAddTransaction).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ networkClientId: 'mainnetClientId' }),
+    );
+  });
+
+  it('uses the selected network client when no chain id is given', async () => {
+    await approveTransaction({
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      deeplinkManager: mockDeeplinkManager as any,
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ethUrl: { ...mockEthUrl, chain_id: undefined } as any,
+      origin: mockOrigin,
+    });
+
+    expect(
+      Engine.context.NetworkController.findNetworkClientIdByChainId,
+    ).not.toHaveBeenCalled();
+    expect(spyAddTransaction).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ networkClientId: 'selectedNetworkClientId' }),
+    );
   });
 
   it('calls generateApprovalData with the correct parameters', async () => {
@@ -150,6 +188,7 @@ describe('approveTransaction', () => {
       },
       {
         deviceConfirmedOn: 'metamask_mobile',
+        networkClientId: 'mainnetClientId',
         origin: mockOrigin,
       },
     );
@@ -279,28 +318,5 @@ describe('approveTransaction', () => {
         origin: mockOrigin,
       }),
     ).rejects.toThrow('The parameter uint256 should be an integer');
-  });
-
-  it('should spySetProviderType with the correct network type', async () => {
-    const mockEthUrlWithInvalidChainId = {
-      ...mockEthUrl,
-      chain_id: 'invalidChainId',
-    };
-
-    const fakeNetworkType = 'fakeNetworkType';
-
-    spyGetNetworkTypeById.mockReturnValue(fakeNetworkType);
-
-    await approveTransaction({
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      deeplinkManager: mockDeeplinkManager as any,
-      // TODO: Replace "any" with type
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ethUrl: mockEthUrlWithInvalidChainId as any,
-      origin: mockOrigin,
-    });
-
-    expect(spySetProviderType).toHaveBeenCalledWith(fakeNetworkType);
   });
 });

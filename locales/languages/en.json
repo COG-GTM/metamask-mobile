@@ -3069,7 +3069,11 @@
   },
   "deeplink": {
     "invalid": "Invalid deeplink",
-    "not_supported": "Deeplink not supported"
+    "not_supported": "Deeplink not supported",
+    "network_switch_title": "Switch network?",
+    "network_switch_message": "This link is asking to switch your wallet from {{currentNetworkName}} to {{networkName}}. Only continue if you trust where the link came from.",
+    "network_switch_cancel": "Cancel",
+    "network_switch_confirm": "Switch network"
   },
   "error_screen": {
     "title": "An error occurred",
