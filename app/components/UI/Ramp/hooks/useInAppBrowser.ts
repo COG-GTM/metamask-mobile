@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Linking } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import InAppBrowser from 'react-native-inappbrowser-reborn';
 import { OrderStatusEnum, Provider } from '@consensys/on-ramp-sdk';
 import { OrderOrderTypeEnum } from '@consensys/on-ramp-sdk/dist/API';
@@ -14,7 +14,7 @@ import {
   FiatOrder,
   removeFiatCustomIdData,
 } from '../../../../reducers/fiatOrders';
-import { setLockTime } from '../../../../actions/settings';
+import { suppressAutoLock } from '../../../../core/LockManagerService/autoLockSuppression';
 import Logger from '../../../../util/Logger';
 import useHandleSuccessfulOrder from './useHandleSuccessfulOrder';
 import Device from '../../../../util/device';
@@ -30,9 +30,6 @@ export default function useInAppBrowser() {
 
   const dispatch = useDispatch();
   const trackEvent = useAnalytics();
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lockTime = useSelector((state: any) => state.settings.lockTime);
   const handleSuccessfulOrder = useHandleSuccessfulOrder();
 
   const renderInAppBrowser = useCallback(
@@ -62,9 +59,8 @@ export default function useInAppBrowser() {
       if (Device.isAndroid() || !(await InAppBrowser.isAvailable())) {
         Linking.openURL(url);
       } else {
-        const prevLockTime = lockTime;
+        const releaseAutoLock = suppressAutoLock();
         try {
-          dispatch(setLockTime(-1));
           const result = await InAppBrowser.openAuth(url, deeplinkRedirectUrl);
 
           if (result.type !== 'success' || !result.url) {
@@ -130,7 +126,7 @@ export default function useInAppBrowser() {
           });
         } finally {
           InAppBrowser.closeAuth();
-          dispatch(setLockTime(prevLockTime));
+          releaseAutoLock();
         }
       }
     },
@@ -138,7 +134,6 @@ export default function useInAppBrowser() {
       dispatch,
       handleSuccessfulOrder,
       isBuy,
-      lockTime,
       selectedAddress,
       selectedAsset?.symbol,
       selectedChainId,

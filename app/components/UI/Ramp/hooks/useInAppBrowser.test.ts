@@ -11,7 +11,7 @@ import {
   removeFiatCustomIdData,
 } from '../../../../reducers/fiatOrders';
 import { createCustomOrderIdData } from '../orderProcessor/customOrderId';
-import { setLockTime } from '../../../../actions/settings';
+import { isAutoLockSuppressed } from '../../../../core/LockManagerService/autoLockSuppression';
 import { renderHookWithProvider } from '../../../../util/test/renderWithProvider';
 import Logger from '../../../../util/Logger';
 import initialRootState from '../../../../util/test/initial-root-state';
@@ -26,6 +26,8 @@ jest.mocked(InAppBrowser.isAvailable).mockResolvedValue(true);
 jest.mock('react-native/Libraries/Linking/Linking', () => ({
   openURL: jest.fn(),
 }));
+
+const SET_LOCK_TIME = 'SET_LOCK_TIME';
 
 const mockDispatch = jest.fn();
 jest.mock('react-redux', () => ({
@@ -227,7 +229,12 @@ describe('useInAppBrowser', () => {
       expect(Linking.openURL).toHaveBeenCalledWith('test-url');
     });
 
-    it('sets lockTime to -1 and restores it', async () => {
+    it('suppresses auto-lock in memory without writing the persisted lockTime', async () => {
+      let suppressedDuringBrowser = false;
+      jest.mocked(InAppBrowser.openAuth).mockImplementationOnce(async () => {
+        suppressedDuringBrowser = isAutoLockSuppressed();
+        return { type: 'success', url: mockedResultUrl };
+      });
       const { result } = renderHookWithProvider(() => useInAppBrowser(), {
         state: defaultState,
       });
@@ -235,9 +242,26 @@ describe('useInAppBrowser', () => {
       await result.current(buyAction, testProvider);
       expect(Linking.openURL).not.toHaveBeenCalled();
 
-      expect(mockDispatch).toHaveBeenCalledWith(setLockTime(-1));
-      expect(mockDispatch).toHaveBeenCalledWith(
-        setLockTime(defaultState.settings.lockTime),
+      expect(suppressedDuringBrowser).toBe(true);
+      expect(isAutoLockSuppressed()).toBe(false);
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: SET_LOCK_TIME }),
+      );
+    });
+
+    it('releases auto-lock suppression when the browser session throws', async () => {
+      jest
+        .mocked(InAppBrowser.openAuth)
+        .mockRejectedValueOnce(new Error('browser error'));
+      const { result } = renderHookWithProvider(() => useInAppBrowser(), {
+        state: defaultState,
+      });
+
+      await result.current(buyAction, testProvider);
+
+      expect(isAutoLockSuppressed()).toBe(false);
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: SET_LOCK_TIME }),
       );
     });
 

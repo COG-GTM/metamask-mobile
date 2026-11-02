@@ -9,6 +9,7 @@ import Engine from '../Engine';
 import Logger from '../../util/Logger';
 import { lockApp, interruptBiometrics } from '../../actions/user';
 import ReduxService from '../redux';
+import { isAutoLockSuppressed } from './autoLockSuppression';
 
 export class LockManagerService {
   #appState?: AppStateStatus;
@@ -44,6 +45,7 @@ export class LockManagerService {
       const lockTime = ReduxService.store.getState().settings.lockTime;
       if (
         lockTime === -1 || // Lock timer isn't set.
+        isAutoLockSuppressed() || // A flow that temporarily leaves the app is in progress.
         nextAppState === 'inactive' || // Ignore inactive state.
         (this.#appState === 'inactive' && nextAppState === 'active') // Ignore going from inactive -> active state.
       ) {

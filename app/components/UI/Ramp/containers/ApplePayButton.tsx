@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { QuoteResponse } from '@consensys/on-ramp-sdk';
 import {
   addAuthenticationUrl,
@@ -9,7 +9,7 @@ import ApplePayButtonComponent from '../components/ApplePayButton';
 import useApplePay, { ABORTED } from '../hooks/useApplePay';
 import Logger from '../../../../util/Logger';
 import { strings } from '../../../../../locales/i18n';
-import { setLockTime } from '../../../../actions/settings';
+import { suppressAutoLock } from '../../../../core/LockManagerService/autoLockSuppression';
 import { aggregatorOrderToFiatOrder } from '../orderProcessor/aggregator';
 import NotificationManager from '../../../../core/NotificationManager';
 import { useRampSDK } from '../sdk';
@@ -35,13 +35,9 @@ const ApplePayButton = ({
   const dispatch = useDispatch();
   const [pay] = useApplePay(quote);
   const handleSuccessfulOrder = useHandleSuccessfulOrder();
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lockTime = useSelector((state: any) => state.settings.lockTime);
 
   const handlePress = useCallback(async () => {
-    const prevLockTime = lockTime;
-    dispatch(setLockTime(-1));
+    const releaseAutoLock = suppressAutoLock();
     try {
       const paymentResult = await pay();
       if (paymentResult !== ABORTED) {
@@ -77,10 +73,9 @@ const ApplePayButton = ({
       });
       Logger.error(error, 'FiatOrders::WyreApplePayProcessor Error');
     } finally {
-      dispatch(setLockTime(prevLockTime));
+      releaseAutoLock();
     }
   }, [
-    lockTime,
     dispatch,
     pay,
     callbackBaseUrl,
