@@ -11,6 +11,10 @@ import { buildControllerInitRequestMock } from '../../utils/test-utils';
 import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenger';
 import { KeyringControllerGetKeyringsByTypeAction } from '@metamask/keyring-controller';
 import { store } from '../../../../store';
+import {
+  DEFAULT_DERIVATION_OPTIONS,
+  LEGACY_DERIVATION_OPTIONS,
+} from '../../../Encryptor';
 
 jest.mock('@metamask/snaps-controllers');
 
@@ -69,6 +73,21 @@ describe('SnapControllerInit', () => {
       maxIdleTime: expect.any(Number),
       preinstalledSnaps: expect.any(Array),
     });
+  });
+
+  it('passes an encryptor that uses the default key derivation options', () => {
+    snapControllerInit(getInitRequestMock());
+
+    const { encryptor } = jest.mocked(SnapController).mock.calls[0][0];
+    const stateWith = (keyMetadata: unknown) =>
+      JSON.stringify({ cipher: 'c', iv: 'i', salt: 's', keyMetadata });
+
+    expect(
+      encryptor.isVaultUpdated(stateWith(DEFAULT_DERIVATION_OPTIONS)),
+    ).toBe(true);
+    expect(encryptor.isVaultUpdated(stateWith(LEGACY_DERIVATION_OPTIONS))).toBe(
+      false,
+    );
   });
 
   describe('getMnemonicSeed', () => {
