@@ -14,6 +14,7 @@ import {
   resemblesAddress,
   getKeyringByAddress,
   getLabelTextByAddress,
+  getLabelTextByAddresses,
   isSnapAccount,
   toFormattedAddress,
   isHDOrFirstPartySnapAccount,
@@ -491,6 +492,42 @@ describe('getLabelTextByAddress,', () => {
 
   it('returns srp label for snap accounts that uses hd keyring for its entropy source', () => {
     expect(getLabelTextByAddress(mockSolanaAddress)).toBe('SRP #1');
+  });
+});
+describe('getLabelTextByAddresses', () => {
+  const unknownAddress = '0xD5955C0d639D99699Bfd7Ec54d9FaFEe40e4D278';
+  const addresses = [
+    mockQrKeyringAddress,
+    mockSimpleKeyringAddress,
+    mockSnapAddress1,
+    mockHDKeyringAddress,
+    mockSecondHDKeyringAddress,
+    mockSolanaAddress,
+    unknownAddress,
+  ];
+
+  it('returns the same labels as getLabelTextByAddress, keyed by lowercased address', () => {
+    const labels = getLabelTextByAddresses(addresses);
+    addresses.forEach((address) => {
+      expect(labels.get(address.toLowerCase())).toBe(
+        getLabelTextByAddress(address),
+      );
+    });
+    expect(labels.get(mockSecondHDKeyringAddress.toLowerCase())).toBe('SRP #2');
+    expect(labels.get(mockSolanaAddress.toLowerCase())).toBe('SRP #1');
+    expect(labels.get(unknownAddress.toLowerCase())).toBe(null);
+  });
+
+  it('matches addresses case-insensitively', () => {
+    const labels = getLabelTextByAddresses([
+      mockSecondHDKeyringAddress.toUpperCase().replace('0X', '0x'),
+    ]);
+    expect(labels.get(mockSecondHDKeyringAddress.toLowerCase())).toBe('SRP #2');
+  });
+
+  it('returns an empty map for no addresses and skips empty entries', () => {
+    expect(getLabelTextByAddresses([]).size).toBe(0);
+    expect(getLabelTextByAddresses(['']).size).toBe(0);
   });
 });
 describe('getAddressAccountType', () => {

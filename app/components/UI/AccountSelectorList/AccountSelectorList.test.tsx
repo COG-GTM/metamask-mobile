@@ -21,6 +21,7 @@ import Engine from '../../../core/Engine';
 import { CellComponentSelectorsIDs } from '../../../../e2e/selectors/wallet/CellComponent.selectors';
 import { KeyringTypes } from '@metamask/keyring-controller';
 import { ACCOUNT_SELECTOR_LIST_TESTID } from './AccountSelectorList.constants';
+import { getLabelTextByAddresses } from '../../../util/address';
 
 const BUSINESS_ACCOUNT = '0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272';
 const PERSONAL_ACCOUNT = '0xd018538C87232FF95acbCe4870629b75640a78E7';
@@ -42,6 +43,7 @@ jest.mock('../../../util/address', () => {
   return {
     ...actual,
     getLabelTextByAddress: jest.fn(),
+    getLabelTextByAddresses: jest.fn(() => new Map()),
   };
 });
 
@@ -373,6 +375,34 @@ describe('AccountSelectorList', () => {
       expect(snapTag).toBeDefined();
     });
   });
+  it('resolves all account labels in one batched lookup', async () => {
+    const mockGetLabelTextByAddresses = getLabelTextByAddresses as jest.Mock;
+    mockGetLabelTextByAddresses.mockImplementation(
+      () =>
+        new Map([
+          [BUSINESS_ACCOUNT.toLowerCase(), 'SRP #2'],
+          [PERSONAL_ACCOUNT.toLowerCase(), 'Imported'],
+        ]),
+    );
+
+    const { getByText } = renderComponent(initialState);
+
+    await waitFor(() => {
+      expect(getByText('SRP #2')).toBeDefined();
+      expect(getByText('Imported')).toBeDefined();
+    });
+    expect(mockGetLabelTextByAddresses).toHaveBeenCalledWith([
+      BUSINESS_ACCOUNT,
+      PERSONAL_ACCOUNT,
+    ]);
+    mockGetLabelTextByAddresses.mock.calls.forEach(([addresses]) =>
+      expect(addresses).toHaveLength(defaultAccountsMock.length),
+    );
+    expect(mockGetLabelTextByAddresses.mock.calls.length).toBeLessThan(
+      defaultAccountsMock.length,
+    );
+  });
+
   it('Text is not hidden when privacy mode is off', async () => {
     const state = {
       ...initialState,
