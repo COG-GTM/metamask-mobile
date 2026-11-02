@@ -20,7 +20,8 @@ import {
 import { PaymentCustomAction, Provider } from '@consensys/on-ramp-sdk/dist/API';
 import styleSheet from './Quotes.styles';
 import LoadingQuotes from './LoadingQuotes';
-import Timer from './Timer';
+import { LiveTimer } from './Timer';
+import { createRemainingTimeStore } from './remainingTimeStore';
 import TextLegacy from '../../../../Base/Text';
 import ScreenLayout from '../../components/ScreenLayout';
 import ErrorViewWithReporting from '../../components/ErrorViewWithReporting';
@@ -115,9 +116,10 @@ function Quotes() {
   const [pollingCyclesLeft, setPollingCyclesLeft] = useState(
     appConfig.POLLING_CYCLES - 1,
   );
-  const [remainingTime, setRemainingTime] = useState(
-    appConfig.POLLING_INTERVAL,
+  const remainingTimeStoreRef = useRef(
+    createRemainingTimeStore(appConfig.POLLING_INTERVAL),
   );
+  const remainingTimeStore = remainingTimeStoreRef.current;
   const { styles, theme } = useStyles(styleSheet, {});
 
   const scrollOffsetY = useSharedValue(0);
@@ -178,7 +180,7 @@ function Quotes() {
     setIsLoading(true);
     setIsInPolling(true);
     setPollingCyclesLeft(appConfig.POLLING_CYCLES - 1);
-    setRemainingTime(appConfig.POLLING_INTERVAL);
+    remainingTimeStore.set(appConfig.POLLING_INTERVAL);
     fetchQuotes();
 
     const payload = {
@@ -208,6 +210,7 @@ function Quotes() {
     fetchQuotes,
     isBuy,
     params,
+    remainingTimeStore,
     selectedChainId,
     selectedPaymentMethodId,
     trackEvent,
@@ -494,23 +497,23 @@ function Quotes() {
     ],
   );
 
+  // The per-second countdown lives in remainingTimeStore so that only the
+  // Timer re-renders on each tick; Quotes re-renders when a cycle ends.
   useInterval(
     () => {
-      setRemainingTime((prevRemainingTime) => {
-        const newRemainingTime = Number(prevRemainingTime - 1000);
+      const newRemainingTime = remainingTimeStore.get() - 1000;
 
-        if (newRemainingTime <= 0) {
-          setPollingCyclesLeft((cycles) => cycles - 1);
-          if (pollingCyclesLeft > 0) {
-            setProviderId(null);
-            fetchQuotes();
-          }
-        }
+      if (newRemainingTime > 0) {
+        remainingTimeStore.set(newRemainingTime);
+        return;
+      }
 
-        return newRemainingTime > 0
-          ? newRemainingTime
-          : appConfig.POLLING_INTERVAL;
-      });
+      remainingTimeStore.set(appConfig.POLLING_INTERVAL);
+      setPollingCyclesLeft((cycles) => cycles - 1);
+      if (pollingCyclesLeft > 0) {
+        setProviderId(null);
+        fetchQuotes();
+      }
     },
     { delay: isInPolling && !isFetchingQuotes ? 1000 : null },
   );
@@ -916,10 +919,10 @@ function Quotes() {
         </BottomSheetHeader>
 
         {isInPolling && (
-          <Timer
+          <LiveTimer
             pollingCyclesLeft={pollingCyclesLeft}
             isFetchingQuotes={isFetchingQuotes}
-            remainingTime={remainingTime}
+            remainingTimeStore={remainingTimeStore}
           />
         )}
         <ScreenLayout.Content style={styles.withoutTopPadding}>
@@ -1026,10 +1029,10 @@ function Quotes() {
       <ScreenLayout>
         <ScreenLayout.Header>
           {isInPolling && (
-            <Timer
+            <LiveTimer
               pollingCyclesLeft={pollingCyclesLeft}
               isFetchingQuotes={isFetchingQuotes}
-              remainingTime={remainingTime}
+              remainingTimeStore={remainingTimeStore}
             />
           )}
 

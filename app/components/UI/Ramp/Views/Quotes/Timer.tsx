@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useSyncExternalStore } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { useStyles } from '../../../../hooks/useStyles';
 import { useRampSDK } from '../../sdk';
 
 import Text from '../../../../Base/Text';
 import styleSheet from './Quotes.styles';
+import { RemainingTimeStore } from './remainingTimeStore';
 
 import { strings } from '../../../../../../locales/i18n';
 
@@ -46,6 +47,29 @@ const Timer = ({
         </Text>
       )}
     </View>
+  );
+};
+
+export const LiveTimer = ({
+  isFetchingQuotes,
+  pollingCyclesLeft,
+  remainingTimeStore,
+}: {
+  isFetchingQuotes: boolean;
+  pollingCyclesLeft: number;
+  remainingTimeStore: RemainingTimeStore;
+}) => {
+  const remainingTime = useSyncExternalStore(
+    remainingTimeStore.subscribe,
+    remainingTimeStore.get,
+  );
+
+  return (
+    <Timer
+      isFetchingQuotes={isFetchingQuotes}
+      pollingCyclesLeft={pollingCyclesLeft}
+      remainingTime={remainingTime}
+    />
   );
 };
 
