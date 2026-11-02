@@ -86,17 +86,40 @@ export const getShouldUpdateApprovalRequest = (
 ): boolean =>
   !mobileReturnTxHashAsap && (isDapp || isSend || isSwapTransaction);
 
+const SMART_TRANSACTION_CONFIRMATION_DONE_EVENT =
+  'SmartTransactionsController:smartTransactionConfirmationDone';
+
 const waitForSmartTransactionConfirmationDone = (
   controllerMessenger: BaseControllerMessenger,
 ): Promise<SmartTransaction | undefined> =>
   new Promise((resolve) => {
+    const pending: { timeoutId?: ReturnType<typeof setTimeout> } = {};
+    // Callers may pass a RestrictedMessenger (e.g. the TransactionController
+    // init messenger), so only the base `unsubscribe` is available here.
+    const stopWaiting = (
+      handler: (smartTransaction: SmartTransaction) => void,
+    ) => {
+      clearTimeout(pending.timeoutId);
+      try {
+        controllerMessenger.unsubscribe(
+          SMART_TRANSACTION_CONFIRMATION_DONE_EVENT,
+          handler,
+        );
+      } catch {
+        // Subscription already removed, e.g. after Engine teardown.
+      }
+    };
+    const onConfirmationDone = (smartTransaction: SmartTransaction) => {
+      stopWaiting(onConfirmationDone);
+      resolve(smartTransaction);
+    };
+
     controllerMessenger.subscribe(
-      'SmartTransactionsController:smartTransactionConfirmationDone',
-      async (smartTransaction: SmartTransaction) => {
-        resolve(smartTransaction);
-      },
+      SMART_TRANSACTION_CONFIRMATION_DONE_EVENT,
+      onConfirmationDone,
     );
-    setTimeout(() => {
+    pending.timeoutId = setTimeout(() => {
+      stopWaiting(onConfirmationDone);
       resolve(undefined); // In a rare case we don't get the "smartTransactionConfirmationDone" event within 10 seconds, we resolve with undefined to continue.
     }, TIMEOUT_FOR_SMART_TRANSACTION_CONFIRMATION_DONE_EVENT);
   });
