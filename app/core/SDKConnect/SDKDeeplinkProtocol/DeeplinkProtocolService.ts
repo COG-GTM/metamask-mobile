@@ -69,6 +69,13 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        if (!this.hasCaip25Permission(connection.id)) {
+          DevLogger.log(
+            `DeeplinkProtocolService::init skip unauthorized connection ${connection.id}`,
+          );
+          return;
+        }
+
         const clientInfo = {
           connected: false,
           clientId: connection.id,
@@ -273,6 +280,52 @@ export default class DeeplinkProtocolService {
     }
   }
 
+  public hasCaip25Permission(channelId: string): boolean {
+    try {
+      const permissionsController = (
+        Engine.context as {
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          PermissionController: PermissionController<any, any>;
+        }
+      ).PermissionController;
+
+      return Boolean(
+        permissionsController.getPermissions(channelId)?.[
+          Caip25EndowmentPermissionName
+        ],
+      );
+    } catch (error) {
+      Logger.log(
+        error,
+        `DeeplinkProtocolService::hasCaip25Permission error reading permissions`,
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Discards every trace of a connection that was never approved (or failed
+   * to be established) so it cannot be restored as an existing session.
+   */
+  public async discardUnapprovedConnection(channelId: string) {
+    this.removeConnection(channelId);
+    delete this.bridgeByClientId[channelId];
+    delete this.dappPublicKeyByClientId[channelId];
+
+    try {
+      await SDKConnect.getInstance().removeChannel({
+        channelId,
+        sendTerminate: false,
+      });
+    } catch (error) {
+      Logger.log(
+        error,
+        `DeeplinkProtocolService::discardUnapprovedConnection error removing channel ${channelId}`,
+      );
+    }
+  }
+
   public async checkPermission({
     channelId,
   }: {
@@ -325,8 +378,11 @@ export default class DeeplinkProtocolService {
       context: 'DeeplinkProtocolService::setupOnClientsConnectedListener',
     });
 
+    const isNewConnection = !this.connections?.[clientInfo.clientId];
+    let isConnectionEstablished = !isNewConnection;
+
     try {
-      if (!this.connections?.[clientInfo.clientId]) {
+      if (isNewConnection) {
         DevLogger.log(
           `DeeplinkProtocolService::clients_connected - new client ${clientInfo.clientId}}`,
           this.connections,
@@ -356,6 +412,8 @@ export default class DeeplinkProtocolService {
           scheme: clientInfo.scheme,
           validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
         });
+
+        isConnectionEstablished = true;
       }
 
       if (params.request) {
@@ -380,6 +438,10 @@ export default class DeeplinkProtocolService {
         error,
         `DeeplinkProtocolService::clients_connected sending jsonrpc error to client - connection rejected`,
       );
+
+      if (!isConnectionEstablished) {
+        await this.discardUnapprovedConnection(clientInfo.clientId);
+      }
 
       this.sendMessage({
         data: {
@@ -480,16 +542,8 @@ export default class DeeplinkProtocolService {
       return;
     }
 
-    await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
-      lastAuthorized: Date.now(),
-      origin: AppConstants.MM_SDK.IOS_SDK,
-      originatorInfo: clientInfo.originatorInfo,
-      otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
-      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      scheme: clientInfo.scheme,
-    });
-
+    // The connection is only persisted by handleConnectionEventAsync once the
+    // user has approved the permission request.
     this.handleConnectionEventAsync({
       clientInfo,
       params,
