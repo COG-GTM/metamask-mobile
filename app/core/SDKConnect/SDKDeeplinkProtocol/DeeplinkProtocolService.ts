@@ -69,6 +69,24 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        const permissionState = this.getCaip25PermissionState(connection.id);
+        if (permissionState !== 'granted') {
+          DevLogger.log(
+            `DeeplinkProtocolService::init skip unauthorized connection ${connection.id} (${permissionState})`,
+          );
+          if (permissionState === 'missing') {
+            SDKConnect.getInstance()
+              .removeDappConnection(connection.id)
+              .catch((err) => {
+                Logger.log(
+                  err,
+                  `DeeplinkProtocolService::init error removing unauthorized connection`,
+                );
+              });
+          }
+          return;
+        }
+
         const clientInfo = {
           connected: false,
           clientId: connection.id,
@@ -273,6 +291,62 @@ export default class DeeplinkProtocolService {
     }
   }
 
+  /**
+   * Reads whether the given channel currently holds a CAIP-25 permission.
+   *
+   * @param channelId - The SDK channel id (used as the permission subject).
+   * @returns 'granted' when a CAIP-25 permission exists, 'missing' when it
+   * does not, and 'unknown' when the permissions could not be read.
+   */
+  public getCaip25PermissionState(
+    channelId: string,
+  ): 'granted' | 'missing' | 'unknown' {
+    try {
+      const permissionsController = (
+        Engine.context as {
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          PermissionController: PermissionController<any, any>;
+        }
+      ).PermissionController;
+
+      return permissionsController.getPermissions(channelId)?.[
+        Caip25EndowmentPermissionName
+      ]
+        ? 'granted'
+        : 'missing';
+    } catch (error) {
+      Logger.log(
+        error,
+        `DeeplinkProtocolService::getCaip25PermissionState error reading permissions`,
+      );
+      return 'unknown';
+    }
+  }
+
+  /**
+   * Discards every trace of a connection that was never approved (or failed
+   * to be established) so it cannot be restored as an existing session.
+   */
+  public async discardUnapprovedConnection(channelId: string) {
+    this.removeConnection(channelId);
+    delete this.bridgeByClientId[channelId];
+    delete this.dappPublicKeyByClientId[channelId];
+
+    try {
+      await SDKConnect.getInstance().removeDappConnection(channelId);
+      await SDKConnect.getInstance().removeChannel({
+        channelId,
+        sendTerminate: false,
+      });
+    } catch (error) {
+      Logger.log(
+        error,
+        `DeeplinkProtocolService::discardUnapprovedConnection error removing channel ${channelId}`,
+      );
+    }
+  }
+
   public async checkPermission({
     channelId,
   }: {
@@ -325,8 +399,11 @@ export default class DeeplinkProtocolService {
       context: 'DeeplinkProtocolService::setupOnClientsConnectedListener',
     });
 
+    const isNewConnection = !this.connections?.[clientInfo.clientId];
+    let isConnectionEstablished = !isNewConnection;
+
     try {
-      if (!this.connections?.[clientInfo.clientId]) {
+      if (isNewConnection) {
         DevLogger.log(
           `DeeplinkProtocolService::clients_connected - new client ${clientInfo.clientId}}`,
           this.connections,
@@ -356,6 +433,8 @@ export default class DeeplinkProtocolService {
           scheme: clientInfo.scheme,
           validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
         });
+
+        isConnectionEstablished = true;
       }
 
       if (params.request) {
@@ -380,6 +459,10 @@ export default class DeeplinkProtocolService {
         error,
         `DeeplinkProtocolService::clients_connected sending jsonrpc error to client - connection rejected`,
       );
+
+      if (!isConnectionEstablished) {
+        await this.discardUnapprovedConnection(clientInfo.clientId);
+      }
 
       this.sendMessage({
         data: {
@@ -480,16 +563,8 @@ export default class DeeplinkProtocolService {
       return;
     }
 
-    await SDKConnect.getInstance().addDappConnection({
-      id: clientInfo.clientId,
-      lastAuthorized: Date.now(),
-      origin: AppConstants.MM_SDK.IOS_SDK,
-      originatorInfo: clientInfo.originatorInfo,
-      otherPublicKey: this.dappPublicKeyByClientId[clientInfo.clientId],
-      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      scheme: clientInfo.scheme,
-    });
-
+    // The connection is only persisted by handleConnectionEventAsync once the
+    // user has approved the permission request.
     this.handleConnectionEventAsync({
       clientInfo,
       params,

@@ -12,6 +12,7 @@ import AppConstants from '../../AppConstants';
 import { DappClient } from '../AndroidSDK/dapp-sdk-types';
 import { createMockInternalAccount } from '../../../util/test/accountsControllerTestUtils';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
+import { Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
 
 jest.mock('../SDKConnect');
 jest.mock('react-native');
@@ -31,6 +32,21 @@ const mockInternalAccount = createMockInternalAccount(
   'Account 1',
 );
 
+const waitForAssertion = async (assertion: () => void, timeoutMs = 2000) => {
+  const startedAt = Date.now();
+  for (;;) {
+    try {
+      assertion();
+      return;
+    } catch (error) {
+      if (Date.now() - startedAt > timeoutMs) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+  }
+};
+
 describe('DeeplinkProtocolService', () => {
   let service: DeeplinkProtocolService;
 
@@ -46,6 +62,8 @@ describe('DeeplinkProtocolService', () => {
         },
       }),
       addDappConnection: jest.fn().mockResolvedValue(null),
+      removeDappConnection: jest.fn().mockResolvedValue(undefined),
+      removeChannel: jest.fn().mockResolvedValue(true),
     });
 
     // TODO: Replace "any" with type
@@ -53,9 +71,9 @@ describe('DeeplinkProtocolService', () => {
     (Engine.context as any) = {
       PermissionController: {
         requestPermissions: jest.fn().mockResolvedValue(null),
-        getPermissions: jest
-          .fn()
-          .mockReturnValue({ eth_accounts: { caveats: [{ value: [] }] } }),
+        getPermissions: jest.fn().mockReturnValue({
+          [Caip25EndowmentPermissionName]: { caveats: [{ value: {} }] },
+        }),
       },
       KeyringController: { unlock: jest.fn() },
       NetworkController: {
@@ -98,6 +116,42 @@ describe('DeeplinkProtocolService', () => {
     it('should initialize with raw connections', async () => {
       await service.init();
       expect(service.connections.connection1).toBeDefined();
+    });
+
+    it('does not restore persisted connections without a CAIP-25 permission', async () => {
+      (
+        Engine.context as unknown as {
+          PermissionController: { getPermissions: jest.Mock };
+        }
+      ).PermissionController.getPermissions.mockReturnValue(undefined);
+
+      const freshService = new DeeplinkProtocolService();
+      await freshService.init();
+
+      expect(freshService.connections.connection1).toBeUndefined();
+      expect(freshService.bridgeByClientId.connection1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith('connection1');
+    });
+
+    it('does not restore persisted connections when permissions cannot be read', async () => {
+      (
+        Engine.context as unknown as {
+          PermissionController: { getPermissions: jest.Mock };
+        }
+      ).PermissionController.getPermissions.mockImplementation(() => {
+        throw new Error('not ready');
+      });
+
+      const freshService = new DeeplinkProtocolService();
+      await freshService.init();
+
+      expect(freshService.connections.connection1).toBeUndefined();
+      expect(freshService.bridgeByClientId.connection1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -357,6 +411,151 @@ describe('DeeplinkProtocolService', () => {
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
     });
+
+    it('does not persist a new connection before the user approves it', async () => {
+      let resolvePermission: (value: unknown) => void = () => undefined;
+      service.checkPermission = jest.fn().mockReturnValue(
+        new Promise((resolve) => {
+          resolvePermission = resolve;
+        }),
+      );
+      service.sendMessage = jest.fn().mockResolvedValue(null);
+      (Engine.context as unknown as Record<string, unknown>).KeyringController =
+        { isUnlocked: jest.fn().mockReturnValue(true) };
+
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'scheme',
+        channelId: 'pending-channel',
+        originatorInfo: Buffer.from(
+          JSON.stringify({
+            originatorInfo: { url: 'test.com', title: 'Test' },
+          }),
+        ).toString('base64'),
+      });
+
+      await waitForAssertion(() =>
+        expect(service.checkPermission).toHaveBeenCalled(),
+      );
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+
+      resolvePermission(null);
+
+      await waitForAssertion(() =>
+        expect(SDKConnect.getInstance().addDappConnection).toHaveBeenCalledWith(
+          expect.objectContaining({ id: 'pending-channel' }),
+        ),
+      );
+    });
+  });
+
+  describe('rejected deeplink connection (persisted store round trip)', () => {
+    const CHANNEL_ID = 'rejected-channel';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let persisted: Record<string, any>;
+    let requestPermissions: jest.Mock;
+
+    beforeEach(() => {
+      persisted = {};
+      requestPermissions = jest
+        .fn()
+        .mockRejectedValue(new Error('User rejected the request.'));
+
+      (SDKConnect.getInstance as jest.Mock).mockReturnValue({
+        loadDappConnections: jest.fn(async () => ({ ...persisted })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        addDappConnection: jest.fn(async (connection: any) => {
+          persisted[connection.id] = connection;
+        }),
+        removeDappConnection: jest.fn(async (channelId: string) => {
+          delete persisted[channelId];
+        }),
+        removeChannel: jest.fn().mockResolvedValue(true),
+      });
+
+      (Engine.context as unknown) = {
+        PermissionController: {
+          requestPermissions,
+          getPermissions: jest.fn().mockReturnValue(undefined),
+        },
+        KeyringController: { isUnlocked: jest.fn().mockReturnValue(true) },
+        NetworkController: {
+          state: { selectedNetworkClientId: 'mainnet' },
+          getNetworkClientById: () => ({ configuration: { chainId: '0x1' } }),
+        },
+        AccountsController: {
+          getSelectedAccount: jest.fn().mockReturnValue(mockInternalAccount),
+        },
+      };
+    });
+
+    it('is not restored as an existing session after an app restart', async () => {
+      const firstRun = new DeeplinkProtocolService();
+      await firstRun.init();
+
+      await firstRun.handleConnection({
+        dappPublicKey: 'attacker-key',
+        url: 'https://attacker.example',
+        scheme: 'attackerapp',
+        channelId: CHANNEL_ID,
+        originatorInfo: Buffer.from(
+          JSON.stringify({
+            originatorInfo: {
+              url: 'https://uniswap.org',
+              title: 'Uniswap',
+              platform: 'ios',
+              dappId: 'uniswap',
+            },
+          }),
+        ).toString('base64'),
+      });
+
+      await waitForAssertion(() =>
+        expect(Linking.openURL).toHaveBeenCalledWith(
+          expect.stringMatching(/^attackerapp:\/\/mmsdk\?message=/),
+        ),
+      );
+      expect(requestPermissions).toHaveBeenCalledTimes(1);
+      expect(persisted[CHANNEL_ID]).toBeUndefined();
+      expect(firstRun.connections[CHANNEL_ID]).toBeUndefined();
+      expect(firstRun.dappPublicKeyByClientId[CHANNEL_ID]).toBeUndefined();
+
+      // App restart
+      (Linking.openURL as jest.Mock).mockClear();
+      const secondRun = new DeeplinkProtocolService();
+      await secondRun.init();
+
+      expect(secondRun.connections[CHANNEL_ID]).toBeUndefined();
+      expect(secondRun.bridgeByClientId[CHANNEL_ID]).toBeUndefined();
+
+      secondRun.handleMessage({
+        dappPublicKey: 'attacker-key',
+        url: 'https://attacker.example',
+        channelId: CHANNEL_ID,
+        scheme: 'attackerapp',
+        account: `${toChecksumHexAddress(MOCK_ADDRESS)}@0x1`,
+        message: Buffer.from(
+          JSON.stringify({ id: '42', method: 'eth_requestAccounts' }),
+        ).toString('base64'),
+      });
+
+      await waitForAssertion(() =>
+        expect(Linking.openURL).toHaveBeenCalledTimes(1),
+      );
+      const [deeplink] = (Linking.openURL as jest.Mock).mock.calls[0];
+      const reply = JSON.parse(
+        Buffer.from(
+          new URL(deeplink).searchParams.get('message') as string,
+          'base64',
+        ).toString('utf-8'),
+      );
+      expect(reply.data.error).toEqual({
+        code: 4100,
+        message: 'Unauthorized request',
+      });
+      expect(handleCustomRpcCalls).not.toHaveBeenCalled();
+    });
   });
 
   describe('handleConnectionEventAsync', () => {
@@ -472,6 +671,65 @@ describe('DeeplinkProtocolService', () => {
         clientId: '',
         scheme: clientInfo.scheme,
       });
+    });
+
+    it('discards a new connection that the user rejected', async () => {
+      service.dappPublicKeyByClientId[clientInfo.clientId] = 'key';
+      (service.checkPermission as jest.Mock).mockRejectedValue(
+        new Error('User rejected the request.'),
+      );
+
+      await service.handleConnectionEventAsync({ clientInfo, params });
+
+      expect(service.setupBridge).not.toHaveBeenCalled();
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(service.connections[clientInfo.clientId]).toBeUndefined();
+      expect(
+        service.dappPublicKeyByClientId[clientInfo.clientId],
+      ).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith(clientInfo.clientId);
+      expect(SDKConnect.getInstance().removeChannel).toHaveBeenCalledWith({
+        channelId: clientInfo.clientId,
+        sendTerminate: false,
+      });
+    });
+
+    it('discards a new connection whose bridge could not be created after approval', async () => {
+      (service.setupBridge as jest.Mock).mockImplementation(() => {
+        service.bridgeByClientId[clientInfo.clientId] =
+          {} as unknown as BackgroundBridge;
+        throw new Error('Connections from metamask origin are not allowed');
+      });
+
+      await service.handleConnectionEventAsync({ clientInfo, params });
+
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(service.connections[clientInfo.clientId]).toBeUndefined();
+      expect(service.bridgeByClientId[clientInfo.clientId]).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith(clientInfo.clientId);
+      expect(SDKConnect.getInstance().removeChannel).toHaveBeenCalledWith({
+        channelId: clientInfo.clientId,
+        sendTerminate: false,
+      });
+    });
+
+    it('keeps an established connection when a later request fails', async () => {
+      service.connections[clientInfo.clientId] = clientInfo;
+      (service.processDappRpcRequest as jest.Mock).mockRejectedValue(
+        new Error('Invalid origin'),
+      );
+
+      await service.handleConnectionEventAsync({ clientInfo, params });
+
+      expect(service.connections[clientInfo.clientId]).toBeDefined();
+      expect(SDKConnect.getInstance().removeChannel).not.toHaveBeenCalled();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).not.toHaveBeenCalled();
     });
   });
 
