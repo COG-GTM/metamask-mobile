@@ -7,6 +7,7 @@ import { NavigationContainerRef } from '@react-navigation/native';
 import Engine from '../../core/Engine';
 import AndroidService from './AndroidSDK/AndroidService';
 import addDappConnection from './AndroidSDK/addDappConnection';
+import removeDappConnection from './AndroidSDK/removeDappConnection';
 import bindAndroidSDK from './AndroidSDK/bindAndroidSDK';
 import loadDappConnections from './AndroidSDK/loadDappConnections';
 import { Connection, ConnectionProps } from './Connection';
@@ -238,6 +239,10 @@ export class SDKConnect {
 
   async addDappConnection(connection: ConnectionProps) {
     return addDappConnection(connection, this);
+  }
+
+  async removeDappConnection(channelId: string) {
+    return removeDappConnection(channelId, this);
   }
 
   public async refreshChannel({ channelId }: { channelId: string }) {
