@@ -62,6 +62,7 @@ describe('DeeplinkProtocolService', () => {
         },
       }),
       addDappConnection: jest.fn().mockResolvedValue(null),
+      removeDappConnection: jest.fn().mockResolvedValue(undefined),
       removeChannel: jest.fn().mockResolvedValue(true),
     });
 
@@ -129,6 +130,9 @@ describe('DeeplinkProtocolService', () => {
 
       expect(freshService.connections.connection1).toBeUndefined();
       expect(freshService.bridgeByClientId.connection1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith('connection1');
     });
 
     it('does not restore persisted connections when permissions cannot be read', async () => {
@@ -145,6 +149,9 @@ describe('DeeplinkProtocolService', () => {
 
       expect(freshService.connections.connection1).toBeUndefined();
       expect(freshService.bridgeByClientId.connection1).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).not.toHaveBeenCalled();
     });
   });
 
@@ -461,10 +468,10 @@ describe('DeeplinkProtocolService', () => {
         addDappConnection: jest.fn(async (connection: any) => {
           persisted[connection.id] = connection;
         }),
-        removeChannel: jest.fn(async ({ channelId }: { channelId: string }) => {
+        removeDappConnection: jest.fn(async (channelId: string) => {
           delete persisted[channelId];
-          return true;
         }),
+        removeChannel: jest.fn().mockResolvedValue(true),
       });
 
       (Engine.context as unknown) = {
@@ -680,6 +687,9 @@ describe('DeeplinkProtocolService', () => {
       expect(
         service.dappPublicKeyByClientId[clientInfo.clientId],
       ).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith(clientInfo.clientId);
       expect(SDKConnect.getInstance().removeChannel).toHaveBeenCalledWith({
         channelId: clientInfo.clientId,
         sendTerminate: false,
@@ -698,6 +708,9 @@ describe('DeeplinkProtocolService', () => {
       expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
       expect(service.connections[clientInfo.clientId]).toBeUndefined();
       expect(service.bridgeByClientId[clientInfo.clientId]).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith(clientInfo.clientId);
       expect(SDKConnect.getInstance().removeChannel).toHaveBeenCalledWith({
         channelId: clientInfo.clientId,
         sendTerminate: false,
@@ -714,6 +727,9 @@ describe('DeeplinkProtocolService', () => {
 
       expect(service.connections[clientInfo.clientId]).toBeDefined();
       expect(SDKConnect.getInstance().removeChannel).not.toHaveBeenCalled();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).not.toHaveBeenCalled();
     });
   });
 

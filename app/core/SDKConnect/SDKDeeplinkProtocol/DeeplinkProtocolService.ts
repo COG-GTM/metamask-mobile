@@ -69,10 +69,21 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
-        if (!this.hasCaip25Permission(connection.id)) {
+        const permissionState = this.getCaip25PermissionState(connection.id);
+        if (permissionState !== 'granted') {
           DevLogger.log(
-            `DeeplinkProtocolService::init skip unauthorized connection ${connection.id}`,
+            `DeeplinkProtocolService::init skip unauthorized connection ${connection.id} (${permissionState})`,
           );
+          if (permissionState === 'missing') {
+            SDKConnect.getInstance()
+              .removeDappConnection(connection.id)
+              .catch((err) => {
+                Logger.log(
+                  err,
+                  `DeeplinkProtocolService::init error removing unauthorized connection`,
+                );
+              });
+          }
           return;
         }
 
@@ -280,7 +291,16 @@ export default class DeeplinkProtocolService {
     }
   }
 
-  public hasCaip25Permission(channelId: string): boolean {
+  /**
+   * Reads whether the given channel currently holds a CAIP-25 permission.
+   *
+   * @param channelId - The SDK channel id (used as the permission subject).
+   * @returns 'granted' when a CAIP-25 permission exists, 'missing' when it
+   * does not, and 'unknown' when the permissions could not be read.
+   */
+  public getCaip25PermissionState(
+    channelId: string,
+  ): 'granted' | 'missing' | 'unknown' {
     try {
       const permissionsController = (
         Engine.context as {
@@ -290,17 +310,17 @@ export default class DeeplinkProtocolService {
         }
       ).PermissionController;
 
-      return Boolean(
-        permissionsController.getPermissions(channelId)?.[
-          Caip25EndowmentPermissionName
-        ],
-      );
+      return permissionsController.getPermissions(channelId)?.[
+        Caip25EndowmentPermissionName
+      ]
+        ? 'granted'
+        : 'missing';
     } catch (error) {
       Logger.log(
         error,
-        `DeeplinkProtocolService::hasCaip25Permission error reading permissions`,
+        `DeeplinkProtocolService::getCaip25PermissionState error reading permissions`,
       );
-      return false;
+      return 'unknown';
     }
   }
 
@@ -314,6 +334,7 @@ export default class DeeplinkProtocolService {
     delete this.dappPublicKeyByClientId[channelId];
 
     try {
+      await SDKConnect.getInstance().removeDappConnection(channelId);
       await SDKConnect.getInstance().removeChannel({
         channelId,
         sendTerminate: false,
