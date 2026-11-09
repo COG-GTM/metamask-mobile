@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- fix(walletconnect): reject wc_sessionUpdate/wc_sessionExtend from non-controller peers by patching @walletconnect/sign-client 2.19.2 ([#2186](https://github.com/COG-GTM/metamask-mobile/pull/2186))
 
 ### Added
 
