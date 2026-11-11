@@ -176,18 +176,22 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const isOriginMMSDKRemoteConn = sdkConnection !== undefined;
 
-  const isOriginWalletConnect =
-    !isOriginMMSDKRemoteConn && wc2Metadata?.id && wc2Metadata?.id.length > 0;
-
   // WalletConnect requests use a dedicated permission subject that records
   // whether the dapp's origin was attested by the WalletConnect Verify API.
+  // It is recognised from the origin itself, because wc2Metadata is cleared
+  // once the session proposal is handled (e.g. later wallet_requestPermissions).
   const wcPermissionSubject = useMemo(
     () =>
-      isOriginWalletConnect
-        ? parseWalletConnectPermissionSubject(channelIdOrHostname)
-        : undefined,
-    [isOriginWalletConnect, channelIdOrHostname],
+      isOriginMMSDKRemoteConn
+        ? undefined
+        : parseWalletConnectPermissionSubject(channelIdOrHostname),
+    [isOriginMMSDKRemoteConn, channelIdOrHostname],
   );
+
+  const isOriginWalletConnect =
+    !isOriginMMSDKRemoteConn &&
+    (wcPermissionSubject !== undefined ||
+      (wc2Metadata?.id !== undefined && wc2Metadata.id.length > 0));
 
   const dappIconUrl = sdkConnection?.originatorInfo?.icon;
   const dappUrl = sdkConnection?.originatorInfo?.url ?? '';

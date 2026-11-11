@@ -292,6 +292,38 @@ describe('AccountConnect', () => {
       expect(getByText('example.com wants to:')).toBeDefined();
     });
 
+    it('warns for an unverified WalletConnect origin after the proposal metadata is cleared', () => {
+      const { getByTestId, getByText } = renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: {
+                  id: 'mockId',
+                  origin: 'example.com#wc-unverified-pairing-1',
+                },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        {
+          state: {
+            ...mockInitialState,
+            sdk: {
+              wc2Metadata: { id: '', url: '', name: '', icon: '' },
+            },
+          } as DeepPartial<RootState>,
+        },
+      );
+
+      expect(getByTestId('permission-summary-origin-warning')).toBeDefined();
+      expect(getByText('example.com wants to:')).toBeDefined();
+    });
+
     it('does not warn for a verified WalletConnect origin', () => {
       const { queryByTestId, getByText } = renderWalletConnectRequest(
         'example.com#wc-verified-pairing-1',
