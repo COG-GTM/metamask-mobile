@@ -31,7 +31,7 @@ import { resemblesAddress, safeToChecksumAddress } from '../../util/address';
 import { store } from '../../store';
 import { removeBookmark } from '../../actions/bookmarks';
 import setOnboardingWizardStep from '../../actions/wizard';
-import { v1 as random } from 'uuid';
+import { v1 as random, v4 as uuidv4 } from 'uuid';
 import { getDefaultCaip25CaveatValue, getPermittedAccounts } from '../Permissions';
 import AppConstants from '../AppConstants';
 import PPOMUtil from '../../lib/ppom/ppom-util';
@@ -218,6 +218,36 @@ export const checkActiveAccountAndChainId = async ({
   }
 };
 
+/**
+ * Starts the security validation of a signature request.
+ * Must only be called once the origin is allowed to make the request, so that
+ * rejected requests never produce a result. The result is stored under a new
+ * `securityAlertId` that is attached to the request, so the confirmation of
+ * this request only reads its own result.
+ *
+ * @param req - The JSON-RPC request.
+ * @returns Callback that removes the stored result once the request is settled.
+ */
+const validateSignatureRequest = (
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  req: any,
+) => {
+  const securityAlertId = uuidv4();
+  req.securityAlertResponse = { securityAlertId };
+
+  const validation = trace(
+    { name: TraceName.PPOMValidation, parentContext: req.traceContext },
+    () => PPOMUtil.validateRequest(req, undefined, securityAlertId),
+  );
+
+  return () => {
+    Promise.resolve(validation).finally(() =>
+      PPOMUtil.clearSignatureSecurityAlertResponse(securityAlertId),
+    );
+  };
+};
+
 const generateRawSignature = async ({
   version,
   req,
@@ -277,23 +307,30 @@ const generateRawSignature = async ({
     isWalletConnect,
   });
 
-  const rawSig = await signatureController.newUnsignedTypedMessage(
-    {
-      data: req.params[1],
-      from: req.params[0],
-      requestId: req.id,
-      ...pageMeta,
-      channelId,
-      origin: hostname,
-      securityAlertResponse: req.securityAlertResponse,
-    } as MessageParamsTyped,
-    req,
-    version,
-    {
-      parseJsonData: false,
-    },
-    { traceContext: req.traceContext },
-  );
+  const clearSecurityAlertResponse = validateSignatureRequest(req);
+
+  let rawSig;
+  try {
+    rawSig = await signatureController.newUnsignedTypedMessage(
+      {
+        data: req.params[1],
+        from: req.params[0],
+        requestId: req.id,
+        ...pageMeta,
+        channelId,
+        origin: hostname,
+        securityAlertResponse: req.securityAlertResponse,
+      } as MessageParamsTyped,
+      req,
+      version,
+      {
+        parseJsonData: false,
+      },
+      { traceContext: req.traceContext },
+    );
+  } finally {
+    clearSecurityAlertResponse();
+  }
 
   endTrace({ name: TraceName.Signature, id: req.id });
 
@@ -690,20 +727,22 @@ export const getRpcMethodMiddleware = ({
 
           DevLogger.log(`personal_sign`, params, pageMeta, hostname);
 
-          trace(
-            { name: TraceName.PPOMValidation, parentContext: req.traceContext },
-            () => PPOMUtil.validateRequest(req),
-          );
+          const clearSecurityAlertResponse = validateSignatureRequest(req);
 
-          const rawSig = await signatureController.newUnsignedPersonalMessage(
-            {
-              ...params,
-              ...pageMeta,
-              origin: hostname,
-            },
-            req,
-            { traceContext: req.traceContext },
-          );
+          let rawSig;
+          try {
+            rawSig = await signatureController.newUnsignedPersonalMessage(
+              {
+                ...params,
+                ...pageMeta,
+                origin: hostname,
+              },
+              req,
+              { traceContext: req.traceContext },
+            );
+          } finally {
+            clearSecurityAlertResponse();
+          }
 
           endTrace({ name: TraceName.Signature, id: req.id });
 
@@ -752,24 +791,26 @@ export const getRpcMethodMiddleware = ({
             isWalletConnect,
           });
 
-          trace(
-            { name: TraceName.PPOMValidation, parentContext: req.traceContext },
-            () => PPOMUtil.validateRequest(req),
-          );
+          const clearSecurityAlertResponse = validateSignatureRequest(req);
 
-          const rawSig = await signatureController.newUnsignedTypedMessage(
-            {
-              data: req.params[0],
-              from: req.params[1],
-              requestId: req.id,
-              ...pageMeta,
-              origin: hostname,
-            },
-            req,
-            'V1',
-            { parseJsonData: false },
-            { traceContext: req.traceContext },
-          );
+          let rawSig;
+          try {
+            rawSig = await signatureController.newUnsignedTypedMessage(
+              {
+                data: req.params[0],
+                from: req.params[1],
+                requestId: req.id,
+                ...pageMeta,
+                origin: hostname,
+              },
+              req,
+              'V1',
+              { parseJsonData: false },
+              { traceContext: req.traceContext },
+            );
+          } finally {
+            clearSecurityAlertResponse();
+          }
 
           endTrace({ name: TraceName.Signature, id: req.id });
 
@@ -782,11 +823,6 @@ export const getRpcMethodMiddleware = ({
               ? JSON.parse(req.params[1])
               : req.params[1];
           const chainId = data.domain.chainId;
-
-          trace(
-            { name: TraceName.PPOMValidation, parentContext: req.traceContext },
-            () => PPOMUtil.validateRequest(req),
-          );
 
           res.result = await generateRawSignature({
             version: 'V3',
@@ -808,11 +844,6 @@ export const getRpcMethodMiddleware = ({
         eth_signTypedData_v4: async () => {
           const data = JSON.parse(req.params[1]);
           const chainId = data.domain.chainId;
-
-          trace(
-            { name: TraceName.PPOMValidation, parentContext: req.traceContext },
-            () => PPOMUtil.validateRequest(req),
-          );
 
           res.result = await generateRawSignature({
             version: 'V4',

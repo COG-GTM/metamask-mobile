@@ -3,6 +3,7 @@ import {
   securityAlertResponse,
   typedSignV4ConfirmationState,
   typedSignV4SignatureRequest,
+  withSignatureSecurityAlertResponse,
 } from '../../../../../util/test/confirm-data-helpers';
 import { renderHookWithProvider } from '../../../../../util/test/renderWithProvider';
 import { useSignatureMetrics } from './useSignatureMetrics';
@@ -96,10 +97,10 @@ describe('useSignatureMetrics', () => {
 
   it('should capture metrics events correctly', async () => {
     const { result } = renderHookWithProvider(() => useSignatureMetrics(), {
-      state: {
-        ...typedSignV4ConfirmationState,
-        signatureRequest: { securityAlertResponse },
-      },
+      state: withSignatureSecurityAlertResponse(
+        typedSignV4ConfirmationState,
+        securityAlertResponse,
+      ),
     });
     // first call for 'SIGNATURE_REQUESTED' event
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
@@ -118,10 +119,10 @@ describe('useSignatureMetrics', () => {
 
   it('captures metrics events correctly with loading security alert response', async () => {
     const { result } = renderHookWithProvider(() => useSignatureMetrics(), {
-      state: {
-        ...typedSignV4ConfirmationState,
-        signatureRequest: { securityAlertResponse: securityAlertResponseLoading },
-      },
+      state: withSignatureSecurityAlertResponse(
+        typedSignV4ConfirmationState,
+        securityAlertResponseLoading,
+      ),
     });
 
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);
@@ -140,10 +141,10 @@ describe('useSignatureMetrics', () => {
 
   it('captures metrics events correctly with undefined security alert response', async () => {
     const { result } = renderHookWithProvider(() => useSignatureMetrics(), {
-      state: {
-        ...typedSignV4ConfirmationState,
-        signatureRequest: { securityAlertResponse: securityAlertResponseUndefined },
-      },
+      state: withSignatureSecurityAlertResponse(
+        typedSignV4ConfirmationState,
+        securityAlertResponseUndefined,
+      ),
     });
 
     expect(mockTrackEvent).toHaveBeenCalledTimes(1);

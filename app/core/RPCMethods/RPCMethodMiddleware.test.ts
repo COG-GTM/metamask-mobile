@@ -1673,6 +1673,9 @@ describe('getRpcMethodMiddleware', () => {
           meta: expect.any(Object),
           origin: hostMock,
           requestId: 1,
+          ...(addressFirst && {
+            securityAlertResponse: { securityAlertId: expect.any(String) },
+          }),
         },
         expect.any(Object),
         version,
@@ -1699,6 +1702,74 @@ describe('getRpcMethodMiddleware', () => {
       const spy = jest.spyOn(PPOMUtil, 'validateRequest');
       await sendRequest();
       expect(spy).toBeCalledTimes(1);
+    });
+
+    it('validates with a security alert ID that is stored on the signature request', async () => {
+      const spy = jest.spyOn(PPOMUtil, 'validateRequest');
+      await sendRequest();
+
+      const [validatedRequest, transactionId, securityAlertId] =
+        spy.mock.calls[0];
+      expect(transactionId).toBeUndefined();
+      expect(securityAlertId).toStrictEqual(expect.any(String));
+
+      const controllerRequest = jest.mocked(
+        Engine.context.SignatureController.newUnsignedTypedMessage,
+      ).mock.calls[0][1];
+      expect(controllerRequest).toBe(validatedRequest);
+      expect(controllerRequest?.securityAlertResponse).toStrictEqual({
+        securityAlertId,
+      });
+    });
+
+    it('uses a new security alert ID for every request', async () => {
+      const spy = jest.spyOn(PPOMUtil, 'validateRequest');
+      await sendRequest();
+      await sendRequest();
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy.mock.calls[0][2]).not.toBe(spy.mock.calls[1][2]);
+    });
+
+    it('does not validate if the account is not permitted for the origin', async () => {
+      const spy = jest.spyOn(PPOMUtil, 'validateRequest');
+      const { middleware } = setupSignature();
+      const unpermittedAddress = '0x000000000000000000000000000000000000dEaD';
+
+      const response = (await callMiddleware({
+        middleware,
+        request: {
+          jsonrpc,
+          id: 2,
+          method: methodName,
+          params: [
+            addressFirst ? unpermittedAddress : dataJsonMock,
+            addressFirst ? dataJsonMock : unpermittedAddress,
+          ],
+        },
+      })) as JsonRpcFailure;
+
+      expect(response.error).toBeDefined();
+      expect(spy).not.toHaveBeenCalled();
+      expect(
+        Engine.context.SignatureController.newUnsignedTypedMessage,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('removes the stored security alert response once the request is settled', async () => {
+      const validateSpy = jest
+        .spyOn(PPOMUtil, 'validateRequest')
+        .mockResolvedValue(undefined);
+      const clearSpy = jest.spyOn(
+        PPOMUtil,
+        'clearSignatureSecurityAlertResponse',
+      );
+
+      await sendRequest();
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect(clearSpy).toHaveBeenCalledTimes(1);
+      expect(clearSpy).toHaveBeenCalledWith(validateSpy.mock.calls[0][2]);
+      validateSpy.mockRestore();
     });
   });
 

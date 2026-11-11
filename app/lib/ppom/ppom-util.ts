@@ -97,6 +97,12 @@ async function validateRequest(
   const isTransaction = isTransactionRequest(req);
   let securityAlertResponse: SecurityAlertResponse | undefined;
 
+  if (!isTransaction && !securityAlertId) {
+    // Signature results are keyed by request, so an unkeyed result could be
+    // shown on a different signature request.
+    return;
+  }
+
   try {
     if (isTransaction && !transactionId) {
       securityAlertResponse = SECURITY_ALERT_RESPONSE_FAILED;
@@ -196,8 +202,10 @@ function setSecurityAlertResponse(
         { ...response, securityAlertId } as any,
       );
     }
-  } else {
-    store.dispatch(setSignatureRequestSecurityAlertResponse(response));
+  } else if (securityAlertId) {
+    store.dispatch(
+      setSignatureRequestSecurityAlertResponse(securityAlertId, response),
+    );
   }
 }
 
@@ -239,8 +247,8 @@ function normalizeRequest(request: PPOMRequest): PPOMRequest {
   };
 }
 
-function clearSignatureSecurityAlertResponse() {
-  store.dispatch(setSignatureRequestSecurityAlertResponse());
+function clearSignatureSecurityAlertResponse(securityAlertId: string) {
+  store.dispatch(setSignatureRequestSecurityAlertResponse(securityAlertId));
 }
 
 function createValidatorForSecurityAlertId(securityAlertId: string) {

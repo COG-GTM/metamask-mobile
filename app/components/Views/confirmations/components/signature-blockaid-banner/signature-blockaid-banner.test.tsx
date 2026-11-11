@@ -5,6 +5,7 @@ import renderWithProvider from '../../../../../util/test/renderWithProvider';
 import {
   securityAlertResponse,
   typedSignV1ConfirmationState,
+  withSignatureSecurityAlertResponse,
 } from '../../../../../util/test/confirm-data-helpers';
 import SignatureBlockaidBanner from './signature-blockaid-banner';
 
@@ -30,10 +31,11 @@ jest.mock('../../../../../util/confirmation/signatureUtils', () => ({
   getAnalyticsParams: () => ({}),
 }));
 
-const typedSignV1ConfirmationStateWithBlockaidResponse = {
-  ...typedSignV1ConfirmationState,
-  signatureRequest: { securityAlertResponse },
-};
+const typedSignV1ConfirmationStateWithBlockaidResponse =
+  withSignatureSecurityAlertResponse(
+    typedSignV1ConfirmationState,
+    securityAlertResponse,
+  );
 
 describe('Confirm', () => {
   it('should return null if request does not have securityAlertResponse', async () => {
