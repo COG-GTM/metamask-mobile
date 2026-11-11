@@ -31,6 +31,9 @@ const shareFile = async (filePath: string) => {
 const APPLE_WALLET_PASS_MIME_TYPE = 'application/vnd.apple.pkpass';
 const EXTERNAL_OPEN_PROTOCOLS = ['https:', 'http:'];
 
+/**
+ * Shows a two-button alert and resolves true only if the user picks the allow option.
+ */
 const askUser = (title: string, message: string, allowText: string) =>
   new Promise<boolean>((resolve) => {
     Alert.alert(
@@ -78,6 +81,9 @@ const confirmDownload = (host: string): Promise<boolean> =>
     strings('download_files.confirm_download'),
   );
 
+/**
+ * Deletes a cached download, ignoring errors such as the file not existing.
+ */
 const removeFile = async (path: string) => {
   try {
     await ReactNativeBlobUtil.fs.unlink(path);
@@ -133,11 +139,17 @@ const checkAppleWalletPass = async (
   }
 };
 
+/**
+ * Result returned when a download is stopped for exceeding {@link MAX_DOWNLOAD_BYTES}.
+ */
 const tooLarge = (): DownloadResult => ({
   success: false,
   message: strings('download_files.too_large', { maxSize: MAX_DOWNLOAD_MB }),
 });
 
+/**
+ * Streams the URL to `path`, cancelling the request once received or declared bytes exceed {@link MAX_DOWNLOAD_BYTES}.
+ */
 const fetchToCache = async (
   downloadUrl: string,
   path: string,
