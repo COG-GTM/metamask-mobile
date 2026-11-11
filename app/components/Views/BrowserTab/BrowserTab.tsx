@@ -180,6 +180,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const titleRef = useRef<string>('');
   const iconRef = useRef<ImageSourcePropType | undefined>();
   const sessionENSNamesRef = useRef<SessionENSNames>({});
+  const isDownloadingRef = useRef(false);
   const ensIgnoreListRef = useRef<string[]>([]);
   const backgroundBridgeRef = useRef<{
     url: string;
@@ -1168,15 +1169,23 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     }: {
       nativeEvent: { downloadUrl: string };
     }) => {
-      const downloadResponse = await downloadFile(downloadUrl);
-      if (downloadResponse) {
-        reload();
-      } else {
-        Alert.alert(strings('download_files.error'));
-        reload();
+      if (isDownloadingRef.current) {
+        return;
+      }
+      isDownloadingRef.current = true;
+      try {
+        const downloadResponse = await downloadFile(downloadUrl);
+        if (!downloadResponse.success && !downloadResponse.cancelled) {
+          Alert.alert(
+            strings('download_files.error'),
+            downloadResponse.message,
+          );
+        }
+      } finally {
+        isDownloadingRef.current = false;
       }
     },
-    [reload],
+    [],
   );
 
   /**
