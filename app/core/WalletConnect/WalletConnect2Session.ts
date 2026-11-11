@@ -555,12 +555,20 @@ class WalletConnect2Session {
     if (typeof address !== 'string' || address.length === 0) {
       return false;
     }
-    const permittedAccounts =
-      getPermittedAccounts(getHostname(origin), { ignoreLock: true }) ?? [];
-    const normalizedAddress = address.toLowerCase();
-    return permittedAccounts.some(
-      (account) => account.toLowerCase() === normalizedAddress,
-    );
+    try {
+      const permittedAccounts =
+        getPermittedAccounts(getHostname(origin), { ignoreLock: true }) ?? [];
+      const normalizedAddress = address.toLowerCase();
+      return permittedAccounts.some(
+        (account) => account.toLowerCase() === normalizedAddress,
+      );
+    } catch (error) {
+      DevLogger.log(
+        `WC2::isPermittedAccount failed to read permitted accounts origin=${origin}`,
+        error,
+      );
+      return false;
+    }
   }
 
   private async respondWithError(

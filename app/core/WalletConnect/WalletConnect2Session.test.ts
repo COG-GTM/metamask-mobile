@@ -822,6 +822,28 @@ describe('WalletConnect2Session', () => {
       expect(addTransaction).not.toHaveBeenCalled();
     });
 
+    it('responds with an error when permitted accounts cannot be read', async () => {
+      getPermittedAccounts.mockImplementation(() => {
+        throw new Error('Missing identity for address');
+      });
+      const request = buildRequest({
+        from: PERMITTED_ACCOUNT,
+        to: PERMITTED_ACCOUNT,
+      });
+
+      await session.handleRequest(request as any);
+
+      expect(addTransaction).not.toHaveBeenCalled();
+      expect(mockClient.respondSessionRequest).toHaveBeenCalledWith({
+        topic: mockSession.topic,
+        response: {
+          id: request.id,
+          jsonrpc: '2.0',
+          error: expect.objectContaining({ code: 4100 }),
+        },
+      });
+    });
+
     it('creates the transaction when from is a permitted account (case-insensitive)', async () => {
       const txParams = {
         from: PERMITTED_ACCOUNT.toUpperCase().replace('0X', '0x'),
