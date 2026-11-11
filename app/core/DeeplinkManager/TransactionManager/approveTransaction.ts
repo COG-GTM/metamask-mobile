@@ -1,15 +1,42 @@
-import { getNetworkTypeById } from '../../../util/networks';
 import { generateApprovalData } from '../../../util/transactions';
 import { ParseOutput } from 'eth-url-parser';
 import { strings } from '../../../../locales/i18n';
 import { getAddress } from '../../../util/address';
 import { addTransaction } from '../../../util/transaction-controller';
+import { getGlobalNetworkClientId } from '../../../util/networks/global-network';
+import { NetworkSwitchErrorType } from '../../../constants/error';
 import DeeplinkManager from '../DeeplinkManager';
 import Engine from '../../Engine';
 import NotificationManager from '../../NotificationManager';
 import { WalletDevice } from '@metamask/transaction-controller';
-import { toChecksumHexAddress } from '@metamask/controller-utils';
-import { Hex } from '@metamask/utils';
+import { toChecksumHexAddress, toHex } from '@metamask/controller-utils';
+import { NetworkClientId } from '@metamask/network-controller';
+
+/**
+ * Resolves the network client for the deeplink's chain without changing the
+ * wallet's globally selected network.
+ */
+function getNetworkClientIdForDeeplink(chainId?: string): NetworkClientId {
+  if (!chainId) {
+    return getGlobalNetworkClientId();
+  }
+
+  let networkClientId: NetworkClientId | undefined;
+  try {
+    networkClientId =
+      Engine.context.NetworkController.findNetworkClientIdByChainId(
+        toHex(chainId),
+      );
+  } catch {
+    networkClientId = undefined;
+  }
+
+  if (!networkClientId) {
+    throw new Error(`${NetworkSwitchErrorType.unknownNetworkId} ${chainId}`);
+  }
+
+  return networkClientId;
+}
 
 async function approveTransaction({
   deeplinkManager,
@@ -21,13 +48,9 @@ async function approveTransaction({
   origin: string;
 }) {
   const { parameters, target_address, chain_id } = ethUrl;
-  const { AccountsController, NetworkController } = Engine.context;
+  const { AccountsController } = Engine.context;
 
-  if (chain_id) {
-    const newNetworkType = getNetworkTypeById(chain_id);
-    // @ts-expect-error TODO: Consolidate the network types used here with the controller-utils types
-    NetworkController.setProviderType(newNetworkType);
-  }
+  const networkClientId = getNetworkClientIdForDeeplink(chain_id);
 
   const uint256Number = Number(parameters?.uint256);
 
@@ -51,6 +74,7 @@ async function approveTransaction({
       description: strings('transaction.invalid_recipient_description'),
     });
     deeplinkManager.navigation.navigate('WalletView');
+    return;
   }
 
   const selectedAccount = AccountsController.getSelectedAccount();
@@ -61,10 +85,6 @@ async function approveTransaction({
     value: '0x0',
     data: generateApprovalData({ spender: spenderAddress, value }),
   };
-
-  const networkClientId = NetworkController.findNetworkClientIdByChainId(
-    chain_id as Hex,
-  );
 
   addTransaction(txParams, {
     deviceConfirmedOn: WalletDevice.MM_MOBILE,

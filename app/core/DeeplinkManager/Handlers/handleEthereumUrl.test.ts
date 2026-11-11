@@ -175,6 +175,38 @@ describe('handleEthereumUrl', () => {
     );
   });
 
+  it('does not switch the selected network for APPROVE action', async () => {
+    mockParse.mockReturnValue({
+      function_name: ETH_ACTIONS.APPROVE,
+      chain_id: '137',
+      parameters: {},
+    });
+
+    await handleEthereumUrl({
+      deeplinkManager,
+      url: 'ethereum:approve',
+      origin: 'test_origin',
+    });
+
+    expect(deeplinkManager._handleNetworkSwitch).not.toHaveBeenCalled();
+    expect(deeplinkManager._approveTransaction).toHaveBeenCalled();
+  });
+
+  it('switches the network before navigating for TRANSFER action', async () => {
+    mockParse.mockReturnValue({
+      function_name: ETH_ACTIONS.TRANSFER,
+      chain_id: '137',
+    });
+
+    await handleEthereumUrl({
+      deeplinkManager,
+      url: 'ethereum:transfer',
+      origin: 'test_origin',
+    });
+
+    expect(deeplinkManager._handleNetworkSwitch).toHaveBeenCalledWith('137');
+  });
+
   it('navigates to SendFlowView for default action', () => {
     const url = 'ethereum:unknownAction';
     const origin = 'test_origin';
