@@ -20,6 +20,58 @@ function isINotification(n: unknown): n is INotification {
 }
 
 /**
+ * Notification click payloads are not trusted: on Android any app can deliver one via Notifee's receiver activity.
+ * Only the id is read from the payload; the notification itself is loaded from controller state.
+ * @param clickedNotification - parsed notification payload from the click event
+ * @returns the matching notification from controller state, or undefined when there is no match
+ */
+async function getTrustedNotification(
+  clickedNotification: unknown,
+): Promise<INotification | undefined> {
+  const id = (clickedNotification as { id?: unknown } | null)?.id;
+  if (typeof id !== 'string' || !id) {
+    return undefined;
+  }
+
+  const controller = Engine.context.NotificationServicesController;
+  const findById = () =>
+    controller.state.metamaskNotificationsList.find((n) => n.id === id);
+
+  let notification = findById();
+  if (!notification) {
+    await controller.fetchAndUpdateMetamaskNotifications().catch(() => null);
+    notification = findById();
+  }
+
+  return notification && isINotification(notification)
+    ? notification
+    : undefined;
+}
+
+/**
+ * Handles a notification press: resolves the clicked notification from controller state and navigates to its details.
+ * @param pressActionId - Notifee press action id of the click
+ * @param notificationDataStr - serialized notification payload from the click
+ * @param navigation - navigation prop for page navigations
+ */
+async function handleNotificationClick(
+  pressActionId: string | undefined,
+  notificationDataStr: unknown,
+  navigation: NavigationProp<NavigationParams>,
+) {
+  if (pressActionId !== PressActionId.OPEN_NOTIFICATIONS_VIEW) {
+    return;
+  }
+
+  // Notify can only store strings
+  const clickedNotification = JSON.parse(notificationDataStr as string);
+  const notification = await getTrustedNotification(clickedNotification);
+  if (notification) {
+    clickPushNotification(notification, navigation);
+  }
+}
+
+/**
  * Logic for handling a push notification click.
  * It will publish an event, and attempt navigation to notifications view
  * @param notification - notification click received from App Start or Background
@@ -64,14 +116,11 @@ async function onAppOpenNotification(
   }
 
   try {
-    // Notify can only store strings
-    const notificationData = JSON.parse(notificationDataStr as string);
-    if (
-      pressAction?.id === PressActionId.OPEN_NOTIFICATIONS_VIEW &&
-      isINotification(notificationData)
-    ) {
-      clickPushNotification(notificationData, navigation);
-    }
+    await handleNotificationClick(
+      pressAction?.id,
+      notificationDataStr,
+      navigation,
+    );
   } catch {
     // Do Nothing
   }
@@ -86,7 +135,7 @@ async function onBackgroundEvent(navigation: NavigationProp<NavigationParams>) {
   NotificationsService.onBackgroundEvent((event) =>
     NotificationsService.handleNotificationEvent({
       ...event,
-      callback: (notification) => {
+      callback: async (notification) => {
         const pressAction = event?.detail?.pressAction;
         const notificationDataStr = notification?.data?.dataStr;
 
@@ -95,14 +144,11 @@ async function onBackgroundEvent(navigation: NavigationProp<NavigationParams>) {
         }
 
         try {
-          // Notify can only store strings
-          const notificationData = JSON.parse(notificationDataStr as string);
-          if (
-            pressAction?.id === PressActionId.OPEN_NOTIFICATIONS_VIEW &&
-            isINotification(notificationData)
-          ) {
-            clickPushNotification(notificationData, navigation);
-          }
+          await handleNotificationClick(
+            pressAction?.id,
+            notificationDataStr,
+            navigation,
+          );
         } catch {
           // Do Nothing
         }
