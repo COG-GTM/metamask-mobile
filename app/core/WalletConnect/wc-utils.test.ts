@@ -22,6 +22,7 @@ import {
 } from '../RPCMethods/lib/ethereum-chain-utils';
 
 import Engine from '../Engine';
+import { rejectOriginPendingApprovals } from '../../util/permissions';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 
 // Mock dependencies
@@ -32,6 +33,10 @@ jest.mock('../Engine', () => ({
       add: jest.fn().mockResolvedValue({}),
     },
   },
+}));
+
+jest.mock('../../util/permissions', () => ({
+  rejectOriginPendingApprovals: jest.fn(),
 }));
 
 jest.mock('../RPCMethods/RPCMethodMiddleware', () => ({
@@ -316,7 +321,7 @@ describe('WalletConnect Utils', () => {
       jest.clearAllMocks();
     });
 
-    it('clears previous approval and adds new approval request', async () => {
+    it('rejects only the requesting origin pending approvals and adds new approval request', async () => {
       const origin = 'test-origin';
       const args = {
         type: 'test-type',
@@ -335,13 +340,8 @@ describe('WalletConnect Utils', () => {
       // Call the handler
       const result = await approvalHandler(args);
 
-      // Verify clear was called with correct error
-      expect(Engine.context.ApprovalController.clear).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code: 4001, // userRejectedRequest error code
-          message: expect.any(String),
-        }),
-      );
+      expect(rejectOriginPendingApprovals).toHaveBeenCalledWith('test-origin');
+      expect(Engine.context.ApprovalController.clear).not.toHaveBeenCalled();
 
       // Verify add was called with correct parameters
       expect(Engine.context.ApprovalController.add).toHaveBeenCalledWith({

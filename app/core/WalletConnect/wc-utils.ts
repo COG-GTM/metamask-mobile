@@ -1,5 +1,5 @@
 import { toHex } from '@metamask/controller-utils';
-import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
+import { rpcErrors } from '@metamask/rpc-errors';
 import { CaipChainId, KnownCaipNamespace } from '@metamask/utils';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { RelayerTypes } from '@walletconnect/types';
@@ -19,6 +19,7 @@ import {
 } from '../RPCMethods/lib/ethereum-chain-utils';
 import { getRpcMethodMiddlewareHooks } from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
+import { rejectOriginPendingApprovals } from '../../util/permissions';
 import { wait } from '../SDKConnect/utils/wait.util';
 
 export interface WCMultiVersionParams {
@@ -239,9 +240,7 @@ export const getScopedPermissions = async ({ origin }: { origin: string }) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const onRequestUserApproval = (origin: string) => async (args: any) => {
-  Engine.context.ApprovalController.clear(
-    providerErrors.userRejectedRequest(),
-  );
+  rejectOriginPendingApprovals(origin);
   const responseData = await Engine.context.ApprovalController.add({
     origin,
     type: args.type,
