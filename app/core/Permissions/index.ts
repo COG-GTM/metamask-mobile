@@ -10,6 +10,18 @@ import { toHex } from '@metamask/controller-utils';
 
 const INTERNAL_ORIGINS = [process.env.MM_FOX_CODE, TransactionTypes.MMM];
 
+/**
+ * Whether the origin is one the wallet uses for its own requests. External
+ * requesters (dapps, SDK clients, WalletConnect peers) must never be treated as
+ * one of these, since internal origins are granted the selected account
+ * without a permission record.
+ *
+ * @param origin - The origin to check.
+ * @returns True if the origin is reserved for the wallet itself.
+ */
+export const isInternalOrigin = (origin?: string | null): boolean =>
+  Boolean(origin) && INTERNAL_ORIGINS.includes(origin as string);
+
 // TODO: Replace "any" with type
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Engine = ImportedEngine as any;
@@ -395,7 +407,7 @@ export const getPermittedAccounts = (
 
   let caveat;
   try {
-    if (INTERNAL_ORIGINS.includes(origin)) {
+    if (isInternalOrigin(origin)) {
       const selectedAccountAddress =
         AccountsController.getSelectedAccount().address;
 

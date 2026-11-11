@@ -191,4 +191,26 @@ describe('BackgroundBridge', () => {
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
     });
   });
+
+  describe('getExternalPermittedAccounts', () => {
+    it.each(['MetaMask Mobile', 'EXAMPLE_FOX_CODE'])(
+      'returns no accounts for the internal origin %s',
+      (origin) => {
+        const bridge = setupBackgroundBridge('https:www.mock.io');
+        getPermittedAccounts.mockClear();
+        getPermittedAccounts.mockReturnValue(['0x1']);
+
+        expect(bridge.getExternalPermittedAccounts(origin)).toEqual([]);
+        expect(getPermittedAccounts).not.toHaveBeenCalled();
+      },
+    );
+
+    it('returns the permitted accounts for an external origin', () => {
+      const bridge = setupBackgroundBridge('https:www.mock.io');
+      getPermittedAccounts.mockReturnValue(['0x1']);
+
+      expect(bridge.getExternalPermittedAccounts('clientId')).toEqual(['0x1']);
+      expect(getPermittedAccounts).toHaveBeenCalledWith('clientId');
+    });
+  });
 });

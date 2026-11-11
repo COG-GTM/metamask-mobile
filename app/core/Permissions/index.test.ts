@@ -865,6 +865,24 @@ describe('Permission Utility Functions', () => {
     });
   });
 
+  describe('isInternalOrigin', () => {
+    it.each([TransactionTypes.MMM, process.env.MM_FOX_CODE])(
+      'returns true for the internal origin %s',
+      (origin) => {
+        expect(permissions.isInternalOrigin(origin)).toBe(true);
+      },
+    );
+
+    it.each([
+      undefined,
+      '',
+      'app.uniswap.org',
+      '70a863a4-a756-4660-8c72-dc367d02f625',
+    ])('returns false for the external origin %s', (origin) => {
+      expect(permissions.isInternalOrigin(origin)).toBe(false);
+    });
+  });
+
   describe('getPermittedAccounts', () => {
     it('should return selected account for internal origins', () => {
       const selectedAccount = {

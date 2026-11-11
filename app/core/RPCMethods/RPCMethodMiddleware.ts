@@ -32,7 +32,11 @@ import { store } from '../../store';
 import { removeBookmark } from '../../actions/bookmarks';
 import setOnboardingWizardStep from '../../actions/wizard';
 import { v1 as random } from 'uuid';
-import { getDefaultCaip25CaveatValue, getPermittedAccounts } from '../Permissions';
+import {
+  getDefaultCaip25CaveatValue,
+  getPermittedAccounts,
+  isInternalOrigin,
+} from '../Permissions';
 import AppConstants from '../AppConstants';
 import PPOMUtil from '../../lib/ppom/ppom-util';
 import {
@@ -157,7 +161,10 @@ export const checkActiveAccountAndChainId = async ({
     );
 
     const origin = isWalletConnect ? hostname : channelId ?? hostname;
-    const accounts = getPermittedAccounts(origin);
+    // External requesters must never inherit the wallet's own origin access.
+    const accounts = isInternalOrigin(origin)
+      ? []
+      : getPermittedAccounts(origin);
 
     const normalizedAccounts = accounts.map(safeToChecksumAddress);
 
@@ -406,6 +413,11 @@ export const getRpcMethodMiddleware = ({
   return mergeMiddleware([
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     createAsyncMiddleware(async (req: any, res: any, next: any) => {
+      if (isInternalOrigin(origin)) {
+        // A dapp, SDK client or WalletConnect peer is using a wallet origin.
+        throw providerErrors.unauthorized();
+      }
+
       // Used by eth_accounts and eth_coinbase RPCs.
       const getEthAccounts = async () => {
         const accounts = getPermittedAccounts(origin);
