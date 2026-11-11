@@ -37,6 +37,10 @@ import {
   ValidPermission,
 } from '@metamask/permission-controller';
 import PPOMUtil from '../../lib/ppom/ppom-util';
+import getDefaultBridgeParams from '../SDKConnect/AndroidSDK/getDefaultBridgeParams';
+import { DappClient } from '../SDKConnect/AndroidSDK/dapp-sdk-types';
+import { INTERNAL_ORIGINS } from '../../constants/transaction';
+import AppConstants from '../AppConstants';
 import { backgroundState } from '../../util/test/initial-root-state';
 import { Store } from 'redux';
 import { RootState } from 'app/reducers';
@@ -1337,6 +1341,101 @@ describe('getRpcMethodMiddleware', () => {
           expectedError.message,
         );
       });
+    });
+
+    describe('SDK internal origin spoofing', () => {
+      const mockAddress = '0x0000000000000000000000000000000000000001';
+      const channelId = '70a863a4-a756-4660-8c72-dc367d02f625';
+      const sendTransactionRequest = {
+        jsonrpc,
+        id: 1,
+        method: 'eth_sendTransaction',
+        params: [{ from: mockAddress, chainId: '0x1' }],
+      };
+
+      beforeEach(() => {
+        setupGlobalState({
+          addTransactionResult: Promise.resolve('fake-hash'),
+          permittedAccounts: { [channelId]: [mockAddress] },
+          selectedNetworkClientId: 'mainnet',
+          networksMetadata: {},
+          networkConfigurationsByChainId: {
+            '0x1': {
+              blockExplorerUrls: ['https://etherscan.com'],
+              chainId: '0x1',
+              defaultRpcEndpointIndex: 0,
+              name: 'Ethereum Mainnet',
+              nativeCurrency: 'ETH',
+              rpcEndpoints: [
+                {
+                  networkClientId: 'mainnet',
+                  type: 'Custom',
+                  url: 'https://mainnet.infura.io/v3',
+                },
+              ],
+            },
+          },
+          selectedAddress: mockAddress,
+        });
+      });
+
+      it.each(['metamask', '', 'MetaMask Mobile'])(
+        'records a deeplink/Android SDK transaction with originatorInfo url %p under the external channel origin',
+        async (spoofedUrl) => {
+          const {
+            remoteConnHost,
+            getRpcMethodMiddleware: getBridgeMiddleware,
+          } = getDefaultBridgeParams({
+            clientId: channelId,
+            connected: true,
+            originatorInfo: {
+              url: spoofedUrl,
+              title: spoofedUrl,
+              platform: 'ios',
+              dappId: 'attacker',
+            },
+          } as DappClient);
+          const middleware = getBridgeMiddleware({
+            hostname: remoteConnHost,
+            getProviderState: jest.fn(),
+          }) as unknown as JsonRpcMiddleware<JsonRpcParams, Json>;
+
+          const response = await callMiddleware({
+            middleware,
+            request: sendTransactionRequest,
+          });
+
+          expect((response as JsonRpcFailure).error).toBeUndefined();
+          const { origin } = mockAddTransaction.mock.calls[0][1];
+          expect(origin).toBe(channelId);
+          expect(INTERNAL_ORIGINS).not.toContain(origin);
+        },
+      );
+
+      it.each([
+        ['metamask', 'metamask'],
+        [`${AppConstants.MM_SDK.SDK_REMOTE_ORIGIN}metamask`, 'metamask'],
+        [AppConstants.MM_SDK.SDK_REMOTE_ORIGIN, ''],
+      ])(
+        'rejects SDK requests whose hostname %p / channelId %p resolve to an internal origin',
+        async (hostname, internalChannelId) => {
+          const middleware = getRpcMethodMiddleware({
+            ...getMinimalSDKOptions(),
+            hostname,
+            channelId: internalChannelId,
+          });
+
+          const response = await callMiddleware({
+            middleware,
+            request: sendTransactionRequest,
+          });
+
+          expect((response as JsonRpcFailure).error.code).toBe(
+            providerErrors.unauthorized().code,
+          );
+          expect(mockAddTransaction).not.toHaveBeenCalled();
+        },
+      );
     });
 
     it('skips account validation if the account is missing from the transaction parameters', async () => {

@@ -3,12 +3,15 @@ import AppConstants from '../../AppConstants';
 import getRpcMethodMiddleware from '../../RPCMethods/RPCMethodMiddleware';
 import { DappClient } from './dapp-sdk-types';
 
+// The request origin must never come from dapp-reported originatorInfo.
+export const getSDKRemoteOrigin = (clientInfo: DappClient) =>
+  `${AppConstants.MM_SDK.SDK_REMOTE_ORIGIN}${clientInfo.clientId}`;
+
 const getDefaultBridgeParams = (clientInfo: DappClient) => ({
   getApprovedHosts: (host: string) => ({
     [host]: true,
   }),
-  remoteConnHost:
-    clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title,
+  remoteConnHost: getSDKRemoteOrigin(clientInfo),
   getRpcMethodMiddleware: ({
     getProviderState,
   }: {
@@ -18,8 +21,7 @@ const getDefaultBridgeParams = (clientInfo: DappClient) => ({
     getProviderState: any;
   }) =>
     getRpcMethodMiddleware({
-      hostname:
-        clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title,
+      hostname: getSDKRemoteOrigin(clientInfo),
       channelId: clientInfo.clientId,
       getProviderState,
       isMMSDK: true,

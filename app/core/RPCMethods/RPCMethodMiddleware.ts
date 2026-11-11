@@ -34,6 +34,7 @@ import setOnboardingWizardStep from '../../actions/wizard';
 import { v1 as random } from 'uuid';
 import { getDefaultCaip25CaveatValue, getPermittedAccounts } from '../Permissions';
 import AppConstants from '../AppConstants';
+import { INTERNAL_ORIGINS } from '../../constants/transaction';
 import PPOMUtil from '../../lib/ppom/ppom-util';
 import {
   selectEvmChainId,
@@ -397,6 +398,11 @@ export const getRpcMethodMiddleware = ({
   hostname = hostname.replace(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN, '');
   const origin = isWalletConnect ? hostname : channelId ?? hostname;
   const hooks = getRpcMethodMiddlewareHooks(origin);
+  const isInternalSDKOrigin =
+    isMMSDK &&
+    [hostname, origin].some(
+      (value) => !value || INTERNAL_ORIGINS.includes(value),
+    );
 
   DevLogger.log(
     `getRpcMethodMiddleware hostname=${hostname} channelId=${channelId}`,
@@ -406,6 +412,12 @@ export const getRpcMethodMiddleware = ({
   return mergeMiddleware([
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     createAsyncMiddleware(async (req: any, res: any, next: any) => {
+      if (isInternalSDKOrigin) {
+        throw providerErrors.unauthorized({
+          message: 'SDK connections cannot use an internal origin',
+        });
+      }
+
       // Used by eth_accounts and eth_coinbase RPCs.
       const getEthAccounts = async () => {
         const accounts = getPermittedAccounts(origin);

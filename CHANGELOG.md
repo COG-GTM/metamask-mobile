@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- fix(sdk): deeplink and Android SDK sessions no longer use dapp-reported `originatorInfo` as the request origin; reserved/invalid originatorInfo is rejected
 
 ### Added
 

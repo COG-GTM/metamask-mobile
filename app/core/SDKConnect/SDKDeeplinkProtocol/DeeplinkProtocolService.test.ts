@@ -350,12 +350,68 @@ describe('DeeplinkProtocolService', () => {
         channelId: 'channel1',
         originatorInfo: Buffer.from(
           JSON.stringify({
-            originatorInfo: { url: 'test.com', title: 'Test' },
+            originatorInfo: {
+              url: 'test.com',
+              title: 'Test',
+              platform: 'test',
+              dappId: 'dappId',
+            },
           }),
         ).toString('base64'),
       };
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
+      expect(SDKConnect.getInstance().addDappConnection).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'channel1',
+          originatorInfo: expect.objectContaining({ url: 'test.com' }),
+        }),
+      );
+    });
+
+    const encode = (value: string) => Buffer.from(value).toString('base64');
+    const encodeOriginatorInfo = (originatorInfo: Record<string, unknown>) =>
+      encode(JSON.stringify({ originatorInfo }));
+    const validInfo = {
+      url: 'https://example.com',
+      title: 'Example',
+      platform: 'ios',
+      dappId: 'example',
+    };
+
+    it.each([
+      [
+        'url "metamask"',
+        encodeOriginatorInfo({ ...validInfo, url: 'metamask' }),
+      ],
+      ['empty url', encodeOriginatorInfo({ ...validInfo, url: '' })],
+      [
+        'title "MetaMask Mobile"',
+        encodeOriginatorInfo({ ...validInfo, title: 'MetaMask Mobile' }),
+      ],
+      ['missing fields', encodeOriginatorInfo({ url: 'https://example.com' })],
+      ['non-string url', encodeOriginatorInfo({ ...validInfo, url: 1 })],
+      ['missing originatorInfo key', encode(JSON.stringify(validInfo))],
+      ['invalid JSON', encode('{not json')],
+    ])('rejects a connection with %s', async (_label, originatorInfo) => {
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'scheme',
+        channelId: 'channel-rejected',
+        originatorInfo,
+      });
+
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(service.connections['channel-rejected']).toBeUndefined();
+      expect(service.currentClientId).not.toBe('channel-rejected');
+      expect(Logger.error).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message:
+            'DeeplinkProtocolService::handleConnection invalid originatorInfo',
+        }),
+        { channelId: 'channel-rejected' },
+      );
     });
   });
 
