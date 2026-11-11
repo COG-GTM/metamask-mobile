@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-script-url */
 import WalletConnect2Session from './WalletConnect2Session';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { IWalletKit } from '@reown/walletkit';
@@ -571,6 +572,83 @@ describe('WalletConnect2Session', () => {
         expect(DevLogger.log).toHaveBeenLastCalledWith(
           `WC2::redirect error while opening ${mockPeerLink} with error Error: Failed to open URL`,
         );
+      });
+
+      it.each([
+        ['wallet scheme', 'metamask://'],
+        ['javascript scheme', 'javascript:alert(1)'],
+        ['foreign https host', 'https://phishing.example.org'],
+      ])(
+        'does not open an unsafe redirect (%s) and shows the "return to dapp" modal',
+        (_, unsafeLink) => {
+          session.session = {
+            ...mockSession,
+            peer: {
+              metadata: {
+                ...mockSession.peer.metadata,
+                redirect: { native: unsafeLink, universal: unsafeLink },
+              },
+            },
+          } as any;
+
+          session.redirect('test');
+          jest.runAllTimers();
+
+          expect(Linking.openURL).not.toHaveBeenCalled();
+          expect(mockNavigation.navigate).toHaveBeenCalledWith(
+            Routes.MODAL.ROOT_MODAL_FLOW,
+            {
+              screen: Routes.SHEET.RETURN_TO_DAPP_MODAL,
+            },
+          );
+        },
+      );
+
+      it('does not open a native https redirect to a host other than the dapp url', () => {
+        session.session = {
+          ...mockSession,
+          peer: {
+            metadata: {
+              ...mockSession.peer.metadata,
+              url: 'https://example.com',
+              redirect: { native: 'https://attacker.example/' },
+            },
+          },
+        } as any;
+
+        session.redirect('test');
+        jest.runAllTimers();
+
+        expect(Linking.openURL).not.toHaveBeenCalled();
+        expect(mockNavigation.navigate).toHaveBeenCalledWith(
+          Routes.MODAL.ROOT_MODAL_FLOW,
+          {
+            screen: Routes.SHEET.RETURN_TO_DAPP_MODAL,
+          },
+        );
+      });
+
+      it('falls back to a safe universal link when the native link is unsafe', () => {
+        session.session = {
+          ...mockSession,
+          peer: {
+            metadata: {
+              ...mockSession.peer.metadata,
+              redirect: {
+                native: 'metamask://',
+                universal: 'https://example.com/return',
+              },
+            },
+          },
+        } as any;
+
+        session.redirect('test');
+        jest.runAllTimers();
+
+        expect(Linking.openURL).toHaveBeenCalledWith(
+          'https://example.com/return',
+        );
+        expect(mockNavigation.navigate).not.toHaveBeenCalled();
       });
 
       it('skips iOS specific logic for iOS versions below 17', () => {
