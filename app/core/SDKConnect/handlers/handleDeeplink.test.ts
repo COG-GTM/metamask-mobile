@@ -304,4 +304,63 @@ describe('handleDeeplink', () => {
     expect(mockDecrypt).not.toHaveBeenCalled();
     expect(handleConnectionMessage).not.toHaveBeenCalled();
   });
+  it('rejects a link whose public key differs from the approved session', async () => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({
+      [channelId]: { otherPublicKey: 'approvedPublicKey' },
+    });
+    mockGetConnected.mockReturnValue({
+      [channelId]: {
+        remote: {
+          isConnected: jest.fn().mockReturnValue(true),
+          decrypt: mockDecrypt,
+          getRPCMethodTracker: jest.fn().mockReturnValue({}),
+        },
+      },
+    });
+    sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId,
+      origin,
+      url,
+      otherPublicKey: 'attackerPublicKey',
+      protocolVersion,
+      context,
+      rpc,
+    });
+
+    expect(sdkConnect.reconnect).not.toHaveBeenCalled();
+    expect(sdkConnect.connectToChannel).not.toHaveBeenCalled();
+    expect(mockDecrypt).not.toHaveBeenCalled();
+    expect(handleConnectionMessage).not.toHaveBeenCalled();
+  });
+
+  it('reconnects without replacing the key when it matches the approved session', async () => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({ [channelId]: { otherPublicKey } });
+    mockGetConnected.mockReturnValue({
+      [channelId]: {
+        remote: {
+          isConnected: jest.fn().mockReturnValue(false),
+        },
+      },
+    });
+    sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId,
+      origin,
+      url,
+      otherPublicKey,
+      protocolVersion,
+      context,
+    });
+
+    expect(sdkConnect.reconnect).toHaveBeenCalledWith(
+      expect.objectContaining({ otherPublicKey, updateKey: false }),
+    );
+  });
 });
