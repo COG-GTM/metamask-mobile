@@ -38,6 +38,10 @@ describe('parseEthereumUrl', () => {
   it.each([
     ['regex-injection prefix', `ethereum:(.+)+!-0x${'~'.repeat(40)}`],
     [
+      'regex-injection prefix anchored with $',
+      `ethereum:(.+)+$-${'a'.repeat(40)}`,
+    ],
+    [
       'regex-injection prefix (ENS branch)',
       `ethereum:(a|a)+$-${'a'.repeat(40)}`,
     ],

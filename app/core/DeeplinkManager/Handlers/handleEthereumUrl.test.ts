@@ -118,9 +118,11 @@ describe('handleEthereumUrl', () => {
     );
   });
 
-  it('rejects a regex-injection prefix without calling eth-url-parser', () => {
+  it.each([
+    `ethereum:(.+)+!-0x${'~'.repeat(40)}`,
+    `ethereum:(.+)+$-${'a'.repeat(40)}`,
+  ])('rejects regex-injection URL %s without calling eth-url-parser', (url) => {
     const spyAlert = jest.spyOn(Alert, 'alert');
-    const url = `ethereum:(.+)+!-0x${'~'.repeat(40)}`;
 
     const start = Date.now();
     handleEthereumUrl({ deeplinkManager, url, origin: 'test_origin' });
