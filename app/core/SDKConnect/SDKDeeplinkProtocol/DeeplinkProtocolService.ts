@@ -74,6 +74,14 @@ export default class DeeplinkProtocolService {
           DevLogger.log(
             `DeeplinkProtocolService::init skip connection with invalid channelId ${connection.id}`,
           );
+          SDKConnect.getInstance()
+            .removeDappConnection(connection.id)
+            .catch((err) => {
+              Logger.log(
+                err,
+                `DeeplinkProtocolService::init error removing invalid connection`,
+              );
+            });
           return;
         }
 

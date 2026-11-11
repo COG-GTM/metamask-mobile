@@ -761,6 +761,9 @@ describe('DeeplinkProtocolService', () => {
 
       expect(freshService.connections[INTERNAL_ORIGIN]).toBeUndefined();
       expect(freshService.bridgeByClientId[INTERNAL_ORIGIN]).toBeUndefined();
+      expect(
+        SDKConnect.getInstance().removeDappConnection,
+      ).toHaveBeenCalledWith(INTERNAL_ORIGIN);
     });
   });
 
