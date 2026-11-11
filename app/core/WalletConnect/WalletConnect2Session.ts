@@ -466,9 +466,13 @@ class WalletConnect2Session {
 
     hideWCLoadingState({ navigation: this.navigation });
 
-    if (requestEvent.verifyContext?.verified?.isScam) {
+    const requestVerification = requestEvent.verifyContext?.verified;
+    if (
+      requestVerification?.isScam ||
+      requestVerification?.validation === 'INVALID'
+    ) {
       DevLogger.log(
-        `WC2::handleRequest rejected request ${requestEvent.id}: flagged as scam`,
+        `WC2::handleRequest rejected request ${requestEvent.id}: validation=${requestVerification.validation} isScam=${requestVerification.isScam}`,
       );
       try {
         await this.web3Wallet.respondSessionRequest({

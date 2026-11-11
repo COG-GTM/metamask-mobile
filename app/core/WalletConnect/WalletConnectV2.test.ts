@@ -1140,7 +1140,14 @@ describe('WC2Manager', () => {
       );
     });
 
-    it('uses the attested origin, not metadata.url, for an INVALID proposal', async () => {
+    it('rejects an INVALID proposal (attested origin differs from metadata.url) without requesting permissions', async () => {
+      const web3Wallet = (manager as unknown as { web3Wallet: IWalletKit })
+        .web3Wallet;
+      const rejectSpy = jest
+        .spyOn(web3Wallet, 'rejectSession')
+        .mockResolvedValue(undefined);
+      rejectSpy.mockClear();
+
       await manager.onSessionProposal(
         buildProposal('invalid-pairing', {
           validation: 'INVALID',
@@ -1148,12 +1155,13 @@ describe('WC2Manager', () => {
         }) as unknown as Parameters<WC2Manager['onSessionProposal']>[0],
       );
 
+      expect(rejectSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 42 }),
+      );
       expect(
         Engine.context.PermissionController.requestPermissions,
-      ).toHaveBeenCalledWith(
-        { origin: 'phisher.example#wc-unverified-invalid-pairing' },
-        expect.any(Object),
-      );
+      ).not.toHaveBeenCalled();
+      expect(mockApproveSession).not.toHaveBeenCalled();
     });
 
     it('rejects proposals flagged as scam without requesting permissions', async () => {
