@@ -10,6 +10,12 @@ import {
 import { SmartTransactionStatuses } from '@metamask/smart-transactions-controller/dist/types';
 import { hasProperty, Hex } from '@metamask/utils';
 import { ApprovalController } from '@metamask/approval-controller';
+import {
+  Caip25CaveatType,
+  Caip25CaveatValue,
+  Caip25EndowmentPermissionName,
+  getEthAccounts,
+} from '@metamask/chain-agnostic-permission';
 import { NetworkController } from '@metamask/network-controller';
 import { PreferencesController } from '@metamask/preferences-controller';
 import SmartTransactionsController from '@metamask/smart-transactions-controller';
@@ -85,6 +91,11 @@ export const TransactionControllerInit: ControllerInitFunction<
         getNetworkClientRegistry: (...args) =>
           networkController.getNetworkClientRegistry(...args),
         getNetworkState: () => networkController.state,
+        getPermittedAccounts: ((origin?: string) =>
+          getPermittedAccountsForTransactionOrigin(
+            initMessenger,
+            origin,
+          )) as (origin?: string) => Promise<string[]>,
         hooks: {
           // @ts-expect-error - TransactionController actually sends a signedTx as a second argument, but its type doesn't reflect that.
           publish: (transactionMeta: TransactionMeta, signedTransactionInHex: Hex) =>
@@ -252,6 +263,41 @@ function isIncomingTransactionsEnabled(
       showIncomingTransactions?.[
         currentHexChainId as unknown as keyof typeof showIncomingTransactions
       ],
+  );
+}
+
+/**
+ * Returns the accounts a dapp origin may send transactions from, or
+ * `undefined` for origins that are not permission subjects (internal flows such
+ * as swaps, ramps or deeplinks), which skips the controller's origin check.
+ *
+ * @param initMessenger - Messenger with access to the PermissionController.
+ * @param origin - The transaction origin.
+ * @returns Lowercase permitted addresses, or `undefined`.
+ */
+export async function getPermittedAccountsForTransactionOrigin(
+  initMessenger: TransactionControllerInitMessenger,
+  origin?: string,
+): Promise<string[] | undefined> {
+  if (!origin) {
+    return undefined;
+  }
+
+  const permissions = initMessenger.call(
+    'PermissionController:getPermissions',
+    origin,
+  );
+
+  const caveat = permissions?.[Caip25EndowmentPermissionName]?.caveats?.find(
+    ({ type }) => type === Caip25CaveatType,
+  );
+
+  if (!caveat) {
+    return undefined;
+  }
+
+  return getEthAccounts(caveat.value as Caip25CaveatValue).map((address) =>
+    address.toLowerCase(),
   );
 }
 

@@ -21,6 +21,7 @@ export const RPC_METHODS = {
   WALLET_WATCHASSET: 'wallet_watchAsset',
   WALLET_ADDETHEREUMCHAIN: 'wallet_addEthereumChain',
   WALLET_SWITCHETHEREUMCHAIN: 'wallet_switchEthereumChain',
+  WALLET_SENDCALLS: 'wallet_sendCalls',
   WALLET_REQUESTPERMISSIONS: 'wallet_requestPermissions',
   WALLET_GETPERMISSIONS: 'wallet_getPermissions',
   WALLET_REVOKEPERMISSIONS: 'wallet_revokePermissions',

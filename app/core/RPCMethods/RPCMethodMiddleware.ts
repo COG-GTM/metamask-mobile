@@ -992,6 +992,15 @@ export const getRpcMethodMiddleware = ({
           });
         },
 
+        wallet_sendCalls: async () => {
+          checkTabActive();
+          await next();
+
+          if (res.error) {
+            throw res.error;
+          }
+        },
+
         wallet_switchEthereumChain: () => {
           checkTabActive();
           return RPCMethods.wallet_switchEthereumChain({

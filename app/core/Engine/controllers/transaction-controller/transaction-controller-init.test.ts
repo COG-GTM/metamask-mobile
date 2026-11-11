@@ -17,7 +17,14 @@ import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenge
 import { buildControllerInitRequestMock } from '../../utils/test-utils';
 import { TransactionControllerInitMessenger } from '../../messengers/transaction-controller-messenger';
 import { ControllerInitRequest } from '../../types';
-import { TransactionControllerInit } from './transaction-controller-init';
+import {
+  getPermittedAccountsForTransactionOrigin,
+  TransactionControllerInit,
+} from './transaction-controller-init';
+import {
+  Caip25CaveatType,
+  Caip25EndowmentPermissionName,
+} from '@metamask/chain-agnostic-permission';
 import {
   handleTransactionAddedEventForMetrics,
   handleTransactionApprovedEventForMetrics,
@@ -383,6 +390,98 @@ describe('Transaction Controller Init', () => {
     });
 
     expect(option?.()).toStrictEqual(MOCK_NETWORK_STATE);
+  });
+
+  describe('getPermittedAccounts', () => {
+    const MOCK_ORIGIN = 'https://example.com';
+    const MOCK_ACCOUNT = '0xAbC0000000000000000000000000000000000001';
+
+    function buildInitMessengerMock(permissions: unknown) {
+      return {
+        call: jest.fn().mockReturnValue(permissions),
+        subscribe: jest.fn(),
+      } as unknown as TransactionControllerInitMessenger;
+    }
+
+    const MOCK_PERMISSIONS = {
+      [Caip25EndowmentPermissionName]: {
+        caveats: [
+          {
+            type: Caip25CaveatType,
+            value: {
+              requiredScopes: {},
+              optionalScopes: {
+                'eip155:1': { accounts: [`eip155:1:${MOCK_ACCOUNT}`] },
+              },
+              sessionProperties: {},
+              isMultichainOrigin: false,
+            },
+          },
+        ],
+      },
+    };
+
+    it('is passed to the controller and returns accounts permitted for the origin', async () => {
+      const initMessenger = buildInitMessengerMock(MOCK_PERMISSIONS);
+      const option = testConstructorOption(
+        'getPermittedAccounts',
+        {},
+        { initMessenger },
+      );
+
+      expect(await option?.(MOCK_ORIGIN)).toStrictEqual([
+        MOCK_ACCOUNT.toLowerCase(),
+      ]);
+      expect(initMessenger.call).toHaveBeenCalledWith(
+        'PermissionController:getPermissions',
+        MOCK_ORIGIN,
+      );
+    });
+
+    it('returns no accounts if the origin has a CAIP-25 permission without accounts', async () => {
+      const initMessenger = buildInitMessengerMock({
+        [Caip25EndowmentPermissionName]: {
+          caveats: [
+            {
+              type: Caip25CaveatType,
+              value: {
+                requiredScopes: {},
+                optionalScopes: { 'eip155:1': { accounts: [] } },
+                sessionProperties: {},
+                isMultichainOrigin: false,
+              },
+            },
+          ],
+        },
+      });
+
+      expect(
+        await getPermittedAccountsForTransactionOrigin(
+          initMessenger,
+          MOCK_ORIGIN,
+        ),
+      ).toStrictEqual([]);
+    });
+
+    it('returns undefined for origins that are not permission subjects', async () => {
+      const initMessenger = buildInitMessengerMock(undefined);
+
+      expect(
+        await getPermittedAccountsForTransactionOrigin(
+          initMessenger,
+          'metamask',
+        ),
+      ).toBeUndefined();
+    });
+
+    it('returns undefined if no origin is provided', async () => {
+      const initMessenger = buildInitMessengerMock(MOCK_PERMISSIONS);
+
+      expect(
+        await getPermittedAccountsForTransactionOrigin(initMessenger),
+      ).toBeUndefined();
+      expect(initMessenger.call).not.toHaveBeenCalled();
+    });
   });
 
   it('calls appropriate handlers when transaction events are triggered', () => {
