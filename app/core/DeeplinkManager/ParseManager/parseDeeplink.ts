@@ -12,9 +12,13 @@ import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
-const isPrivateKeyCandidate = (value: string) =>
-  value.length === 64 ||
-  (value.length === 66 && value.substring(0, 2).toLowerCase() === '0x');
+const isPrivateKeyCandidate = (value: string) => {
+  const trimmed = value.trim();
+  return (
+    trimmed.length === 64 ||
+    (trimmed.length === 66 && trimmed.substring(0, 2).toLowerCase() === '0x')
+  );
+};
 
 function parseDeeplink({
   deeplinkManager: instance,

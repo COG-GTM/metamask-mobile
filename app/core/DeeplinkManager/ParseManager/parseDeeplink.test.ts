@@ -217,7 +217,10 @@ describe('parseDeeplink', () => {
   ];
 
   privateKeys.forEach((url) => {
-    it(`should not log private key content to Logger.error => url=${url.slice(0, 4)}...`, () => {
+    it(`should not log private key content to Logger.error => url=${url.slice(
+      0,
+      4,
+    )}...`, () => {
       const result = parseDeeplink({
         deeplinkManager: instance,
         url,
@@ -245,5 +248,53 @@ describe('parseDeeplink', () => {
     expect(Logger.error).toHaveBeenCalledTimes(1);
     const [loggedError] = (Logger.error as jest.Mock).mock.calls[0];
     expect(loggedError.message).not.toContain('secret-content');
+  });
+
+  describe('scanned secrets', () => {
+    const hexKey = '0123456789abcdef'.repeat(4);
+    const secrets = [
+      `0x${hexKey}`,
+      `${hexKey}\n`,
+      `0x${hexKey}\r\n`,
+      ` ${hexKey} `,
+      'test test test test test test test test test test test tset',
+    ];
+
+    it.each(secrets)(
+      'never reports any part of the scanned text => %j',
+      (url) => {
+        parseDeeplink({
+          deeplinkManager: instance,
+          url,
+          origin: 'qr-code',
+          browserCallBack: mockBrowserCallBack,
+          onHandled: mockOnHandled,
+        });
+
+        const reported = JSON.stringify(
+          (Logger.error as jest.Mock).mock.calls.map(([error, extra]) => [
+            error instanceof Error ? error.message : error,
+            extra,
+          ]),
+        );
+        expect(reported).not.toContain(hexKey.slice(-24));
+        expect(reported).not.toContain('tset');
+      },
+    );
+
+    it.each([`${hexKey}\n`, ` 0x${hexKey} `])(
+      'does not log or alert for a private key with surrounding whitespace => %j',
+      (url) => {
+        parseDeeplink({
+          deeplinkManager: instance,
+          url,
+          origin: 'qr-code',
+          browserCallBack: mockBrowserCallBack,
+          onHandled: mockOnHandled,
+        });
+
+        expect(Logger.error).not.toHaveBeenCalled();
+      },
+    );
   });
 });
