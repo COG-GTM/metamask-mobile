@@ -145,7 +145,10 @@ export class NpmLocation extends BaseNpmLocation {
             value: contents,
             path: normalizedPath,
             data: {
-              canonicalPath: new URL(normalizedPath, canonicalBase).toString(),
+              canonicalPath: new URL(
+                `./${normalizedPath}`,
+                canonicalBase,
+              ).toString(),
             },
           }),
         );

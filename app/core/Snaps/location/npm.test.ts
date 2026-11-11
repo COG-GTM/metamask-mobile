@@ -100,6 +100,23 @@ describe('NpmLocation', () => {
     );
   });
 
+  it('keeps the npm canonical path for file names that contain a colon', async () => {
+    (ReactNativeBlobUtil.fs.ls as jest.Mock).mockImplementationOnce(() => [
+      'foo:bar.js',
+    ]);
+    (ReactNativeBlobUtil.fs.readFile as jest.Mock).mockImplementationOnce(
+      () => 'colon',
+    );
+    const files = await createLocation().fetchNpmTarball(
+      new URL(
+        'https://registry.npmjs.org/@metamask/example-snap/-/example-snap-1.0.0.tgz',
+      ),
+    );
+    expect(files.get('foo:bar.js')?.data.canonicalPath).toStrictEqual(
+      'npm://registry.npmjs.org/@metamask/example-snap/foo:bar.js',
+    );
+  });
+
   it('extracts into a fresh directory outside the documents directory', async () => {
     const location = createLocation();
     await location.fetch('snap.manifest.json');
