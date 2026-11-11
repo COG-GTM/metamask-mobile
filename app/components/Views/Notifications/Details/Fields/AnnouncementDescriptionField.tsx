@@ -1,8 +1,29 @@
 import React, { useState } from 'react';
-import { View } from 'react-native';
-import Html, { MixedStyleDeclaration } from 'react-native-render-html';
+import { Linking, View } from 'react-native';
+import Html, {
+  MixedStyleDeclaration,
+  RenderersProps,
+} from 'react-native-render-html';
 import { ModalFieldAnnouncementDescription } from '../../../../../util/notifications/notification-states/types/NotificationModalDetails';
 import useStyles from '../useStyles';
+
+const isHttpsUrl = (href: string) => {
+  try {
+    return new URL(href).protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
+const renderersProps: Partial<RenderersProps> = {
+  a: {
+    onPress: (_event, href) => {
+      if (isHttpsUrl(href)) {
+        Linking.openURL(href);
+      }
+    },
+  },
+};
 
 type AnnouncementDescriptionFieldProps = ModalFieldAnnouncementDescription;
 
@@ -22,6 +43,7 @@ function AnnouncementDescriptionField(
         source={{ html: props.description }}
         contentWidth={width}
         baseStyle={styles.announcementDescriptionText as MixedStyleDeclaration}
+        renderersProps={renderersProps}
       />
     </View>
   );

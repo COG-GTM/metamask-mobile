@@ -157,6 +157,12 @@
 		<meta-data  android:name="com.google.firebase.messaging.default_notification_icon"
 		android:resource="@mipmap/ic_notification_small"/>
 
+		<!-- Notifee exports this activity; only the app's own notification PendingIntents need to start it -->
+		<activity
+			android:name="app.notifee.core.NotificationReceiverActivity"
+			android:exported="false"
+			tools:replace="android:exported" />
+
 		<provider
 			android:name="androidx.core.content.FileProvider"
 			android:authorities="${applicationId}.provider"

@@ -27,16 +27,34 @@ jest.mock('../../../core/Engine', () => ({
     controllerMessenger: {
       publish: jest.fn(),
     },
+    context: {
+      NotificationServicesController: {
+        state: { metamaskNotificationsList: [] },
+        fetchAndUpdateMetamaskNotifications: jest.fn(),
+      },
+    },
   },
 }));
+
+const mockStoredNotification = createMockNotificationEthSent();
 
 jest.mock('../constants', () => ({
   isNotificationsFeatureEnabled: jest.fn(),
 }));
 
-const arrangeEngineMocks = () => ({
-  mockPublish: jest.mocked(Engine.controllerMessenger.publish),
-});
+const arrangeEngineMocks = () => {
+  const controller = Engine.context
+    .NotificationServicesController as unknown as {
+    state: { metamaskNotificationsList: unknown[] };
+    fetchAndUpdateMetamaskNotifications: jest.Mock;
+  };
+  controller.state.metamaskNotificationsList = [mockStoredNotification];
+  controller.fetchAndUpdateMetamaskNotifications.mockResolvedValue([]);
+  return {
+    mockPublish: jest.mocked(Engine.controllerMessenger.publish),
+    controller,
+  };
+};
 
 const arrangeNavigationMocks = () => ({
   mockedNavigate,
@@ -128,6 +146,74 @@ describe('useRegisterPushNotificationsEffect - onAppOpenNotification', () => {
     ).toHaveBeenCalled();
     expect(selectors.mockSelectIsPushEnabled).toHaveBeenCalled();
     expect(notifService.mockGetInitialNotification).not.toHaveBeenCalled();
+  });
+
+  it('navigates with the stored notification, not the clicked payload', async () => {
+    const { notifService, navigation } = arrangeMocks();
+    notifService.mockGetInitialNotification.mockResolvedValue({
+      notification: {
+        data: {
+          dataStr: JSON.stringify({
+            ...mockStoredNotification,
+            data: { longDescription: '<a href="https://evil.test">x</a>' },
+          }),
+        },
+      },
+      pressAction: { id: PressActionId.OPEN_NOTIFICATIONS_VIEW },
+    });
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    await waitFor(() =>
+      expect(navigation.mockedNavigate).toHaveBeenCalledWith(
+        expect.anything(),
+        { notification: mockStoredNotification },
+      ),
+    );
+  });
+
+  it('does not navigate when the clicked notification id is not in controller state', async () => {
+    const { notifService, engine, navigation } = arrangeMocks();
+    const forged = {
+      ...createMockNotificationEthSent(),
+      id: 'forged-notification-id',
+    };
+    notifService.mockGetInitialNotification.mockResolvedValue({
+      notification: { data: { dataStr: JSON.stringify(forged) } },
+      pressAction: { id: PressActionId.OPEN_NOTIFICATIONS_VIEW },
+    });
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    await waitFor(() =>
+      expect(
+        engine.controller.fetchAndUpdateMetamaskNotifications,
+      ).toHaveBeenCalled(),
+    );
+    expect(engine.mockPublish).not.toHaveBeenCalled();
+    expect(navigation.mockedNavigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates when the clicked notification is found after refreshing notifications', async () => {
+    const { engine, navigation } = arrangeMocks();
+    engine.controller.state.metamaskNotificationsList = [];
+    engine.controller.fetchAndUpdateMetamaskNotifications.mockImplementation(
+      async () => {
+        engine.controller.state.metamaskNotificationsList = [
+          mockStoredNotification,
+        ];
+        return [];
+      },
+    );
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    await waitFor(() =>
+      expect(navigation.mockedNavigate).toHaveBeenCalledWith(
+        expect.anything(),
+        { notification: mockStoredNotification },
+      ),
+    );
   });
 
   it('bails early if unable to get initial notification', async () => {
@@ -254,5 +340,29 @@ describe('useRegisterPushNotificationsEffect - onBackgroundEvent', () => {
     await waitFor(() =>
       expect(mocks.navigation.mockedNavigate).not.toHaveBeenCalled(),
     );
+  });
+
+  it('does not navigate when the background click id is not in controller state', async () => {
+    const mocks = arrangeMocks();
+
+    renderHookWithProvider(() => useRegisterPushNotificationsEffect());
+
+    await act(mocks, (e) => {
+      if (e.detail.notification?.data) {
+        e.detail.notification.data.dataStr = JSON.stringify({
+          ...createMockNotificationEthSent(),
+          id: 'forged-notification-id',
+        });
+      }
+      return e;
+    });
+
+    await waitFor(() =>
+      expect(
+        mocks.engine.controller.fetchAndUpdateMetamaskNotifications,
+      ).toHaveBeenCalled(),
+    );
+    expect(mocks.engine.mockPublish).not.toHaveBeenCalled();
+    expect(mocks.navigation.mockedNavigate).not.toHaveBeenCalled();
   });
 });
