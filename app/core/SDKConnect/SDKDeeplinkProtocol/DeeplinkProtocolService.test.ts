@@ -508,6 +508,94 @@ describe('DeeplinkProtocolService', () => {
       service.handleMessage(params);
       expect(DevLogger.log).toHaveBeenCalled();
     });
+
+    describe('selected account and chain guard', () => {
+      const rpcMessage = Buffer.from(
+        JSON.stringify({
+          id: '1',
+          method: 'eth_sendTransaction',
+          params: [],
+        }),
+      ).toString('base64');
+
+      let bridgeOnMessage: jest.Mock;
+      let sendMessageSpy: jest.SpyInstance;
+
+      const handleMessageWithAccount = async (account: string) => {
+        service.handleMessage({
+          dappPublicKey: 'key',
+          url: 'url',
+          message: rpcMessage,
+          channelId: 'channel1',
+          scheme: 'scheme',
+          account,
+        });
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      };
+
+      const expectRejected = () => {
+        expect(sendMessageSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              id: '1',
+              error: expect.objectContaining({ code: -32602 }),
+            }),
+          }),
+          true,
+        );
+        expect(handleCustomRpcCalls).not.toHaveBeenCalled();
+        expect(bridgeOnMessage).not.toHaveBeenCalled();
+      };
+
+      beforeEach(() => {
+        bridgeOnMessage = jest.fn();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        service.connections.channel1 = { clientId: 'channel1' } as any;
+        service.bridgeByClientId.channel1 = {
+          onMessage: bridgeOnMessage,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any;
+        sendMessageSpy = jest
+          .spyOn(service, 'sendMessage')
+          .mockResolvedValue(undefined);
+        (handleCustomRpcCalls as jest.Mock).mockResolvedValue({
+          id: '1',
+          method: 'eth_sendTransaction',
+          params: [],
+        });
+      });
+
+      it.each([
+        ['without an @ separator', 'x'],
+        ['as only an @ separator', '@'],
+        ['with an empty address', '@0x1'],
+        ['with an empty chain id', `${MOCK_ADDRESS}@`],
+        ['with extra @ separators', `${MOCK_ADDRESS}@0x1@0x1`],
+        ['as an empty string', ''],
+      ])('rejects the request when account is %s', async (_, account) => {
+        await handleMessageWithAccount(account);
+        expectRejected();
+      });
+
+      it('rejects the request when the account does not match the selected account', async () => {
+        await handleMessageWithAccount(
+          '0x0000000000000000000000000000000000000001@0x1',
+        );
+        expectRejected();
+      });
+
+      it('rejects the request when the chain does not match the selected chain', async () => {
+        await handleMessageWithAccount(`${MOCK_ADDRESS}@0x89`);
+        expectRejected();
+      });
+
+      it('processes the request when account and chain match the wallet selection', async () => {
+        await handleMessageWithAccount(`${MOCK_ADDRESS}@0x1`);
+        expect(sendMessageSpy).not.toHaveBeenCalled();
+        expect(handleCustomRpcCalls).toHaveBeenCalled();
+        expect(bridgeOnMessage).toHaveBeenCalled();
+      });
+    });
   });
 
   describe('removeConnection', () => {

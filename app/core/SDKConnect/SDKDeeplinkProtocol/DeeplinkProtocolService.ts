@@ -639,21 +639,18 @@ export default class DeeplinkProtocolService {
     scheme: string;
     account: string; // account@chainid
   }) {
-    let walletSelectedAddress = '';
-    let walletSelectedChainId = '';
-    let dappAccountChainId = '';
-    let dappAccountAddress = '';
+    const [dappAccountAddress = '', dappAccountChainId = '', ...extraParts] =
+      typeof params.account === 'string' ? params.account.split('@') : [];
 
-    if (!params.account?.includes('@')) {
+    const isValidAccountFormat =
+      dappAccountAddress.length > 0 &&
+      dappAccountChainId.length > 0 &&
+      extraParts.length === 0;
+
+    if (!isValidAccountFormat) {
       DevLogger.log(
         `DeeplinkProtocolService:: handleMessage invalid params.account format ${params.account}`,
       );
-    } else {
-      const account = params.account.split('@');
-      walletSelectedAddress = this.getSelectedAddress();
-      walletSelectedChainId = this.getChainId();
-      dappAccountChainId = account[1];
-      dappAccountAddress = account[0];
     }
 
     DevLogger.log(
@@ -700,8 +697,19 @@ export default class DeeplinkProtocolService {
         DevLogger.log('DeeplinkProtocolService:: parsed message:-', message);
         data = message;
 
-        const isAccountChanged = dappAccountAddress !== walletSelectedAddress;
-        const isChainChanged = dappAccountChainId !== walletSelectedChainId;
+        const walletSelectedAddress = this.getSelectedAddress();
+        const walletSelectedChainId = this.getChainId();
+
+        const isAccountChanged =
+          !isValidAccountFormat ||
+          !walletSelectedAddress ||
+          dappAccountAddress.toLowerCase() !==
+            walletSelectedAddress.toLowerCase();
+        const isChainChanged =
+          !isValidAccountFormat ||
+          !walletSelectedChainId ||
+          dappAccountChainId.toLowerCase() !==
+            walletSelectedChainId.toLowerCase();
 
         const rpcMethod = data.method;
 
