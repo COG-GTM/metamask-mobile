@@ -8,6 +8,7 @@ import { strings } from '../../../../../../../locales/i18n';
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
 import ExtendedKeyringTypes from '../../../../../../constants/keyringTypes';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
+import { isSDKChannel } from '../../../../../../core/SDKConnect/utils/isSDKChannel';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../../../../selectors/accountsController';
 import { fontStyles } from '../../../../../../styles/common';
 import { isHardwareAccount } from '../../../../../../util/address';
@@ -21,6 +22,9 @@ import withQRHardwareAwareness from '../../../../../UI/QRHardware/withQRHardware
 import WebsiteIcon from '../../../../../UI/WebsiteIcon';
 import BlockaidBanner from '../BlockaidBanner/BlockaidBanner';
 import { ResultType } from '../BlockaidBanner/BlockaidBanner.types';
+
+export const SIGNATURE_REQUEST_UNVERIFIED_ORIGIN_LABEL =
+  'signature-request-unverified-origin-label';
 
 const getCleanUrl = (url) => {
   try {
@@ -61,6 +65,13 @@ const createStyles = (colors) =>
     messageColumn: {
       width: '75%',
       justifyContent: 'space-between',
+    },
+    unverifiedOriginText: {
+      ...fontStyles.normal,
+      color: colors.warning.default,
+      fontSize: 12,
+      textAlign: 'center',
+      marginTop: 8,
     },
     warningLink: {
       ...fontStyles.normal,
@@ -246,7 +257,8 @@ class SignatureRequest extends PureComponent {
     } = this.props;
     const styles = this.getStyles();
     const url = currentPageInformation.url;
-    const icon = currentPageInformation.icon;
+    const isOriginUnverified = isSDKChannel(currentPageInformation.channelId);
+    const icon = isOriginUnverified ? undefined : currentPageInformation.icon;
 
     const title = getCleanUrl(url);
     const arrowIcon = truncateMessage ? this.renderArrowIcon() : null;
@@ -259,6 +271,14 @@ class SignatureRequest extends PureComponent {
             fromAddress={fromAddress}
             origin={title}
           />
+          {isOriginUnverified && (
+            <Text
+              style={styles.unverifiedOriginText}
+              testID={SIGNATURE_REQUEST_UNVERIFIED_ORIGIN_LABEL}
+            >
+              {strings('sdk.unverified_origin')}
+            </Text>
+          )}
         </View>
         <TouchableOpacity
           style={styles.children}
@@ -267,7 +287,7 @@ class SignatureRequest extends PureComponent {
           <WebsiteIcon
             style={styles.domainLogo}
             title={title}
-            url={url}
+            url={isOriginUnverified ? undefined : url}
             icon={icon}
           />
           <View style={styles.messageColumn}>
@@ -292,11 +312,7 @@ class SignatureRequest extends PureComponent {
 
     return (
       <View style={styles.arrowIconWrapper}>
-        <Ionicons
-          name={'arrow-forward'}
-          size={20}
-          style={styles.arrowIcon}
-        />
+        <Ionicons name={'arrow-forward'} size={20} style={styles.arrowIcon} />
       </View>
     );
   };

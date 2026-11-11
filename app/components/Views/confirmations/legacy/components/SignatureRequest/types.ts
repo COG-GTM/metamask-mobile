@@ -10,6 +10,7 @@ export interface PageMeta {
     request_platform: string;
     request_source: string;
   };
+  channelId?: string;
   icon?: string;
   title: string;
   url: string;

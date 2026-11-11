@@ -595,6 +595,7 @@ class TransactionReview extends PureComponent {
                       origin={origin}
                       sdkDappMetadata={sdkDappMetadata}
                       url={url}
+                      isOriginUnverified={Boolean(currentConnection)}
                     />
                     <View style={styles.blockaidBannerContainer}>
                       <TransactionBlockaidBanner

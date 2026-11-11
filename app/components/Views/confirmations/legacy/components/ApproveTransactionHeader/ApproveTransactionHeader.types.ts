@@ -20,4 +20,5 @@ export interface ApproveTransactionHeaderI {
     url: string;
     icon: string;
   };
+  isOriginUnverified?: boolean;
 }

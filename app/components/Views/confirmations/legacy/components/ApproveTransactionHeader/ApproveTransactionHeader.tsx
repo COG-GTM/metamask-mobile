@@ -36,6 +36,7 @@ const ApproveTransactionHeader = ({
   currentEnsName,
   asset,
   dontWatchAsset,
+  isOriginUnverified,
 }: ApproveTransactionHeaderI) => {
   const [accountName, setAccountName] = useState('');
 
@@ -82,6 +83,7 @@ const ApproveTransactionHeader = ({
           url={url}
           sdkDappMetadata={sdkDappMetadata}
           currentEnsName={currentEnsName}
+          isOriginUnverified={isOriginUnverified}
         />
       ) : null}
       <AccountBalance

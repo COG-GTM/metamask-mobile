@@ -7,6 +7,11 @@ import { backgroundState } from '../../../util/test/initial-root-state';
 import { RootState } from '../../../reducers';
 import { fireEvent } from '@testing-library/react-native';
 import AccountConnectMultiSelector from './AccountConnectMultiSelector/AccountConnectMultiSelector';
+import AccountConnectSingle from './AccountConnectSingle/AccountConnectSingle';
+import PermissionsSummary from '../../UI/PermissionsSummary';
+import WebsiteIcon from '../../UI/WebsiteIcon';
+import { IconName } from '../../../component-library/components/Icons/Icon';
+import { ConnectAccountBottomSheetSelectorsIDs } from '../../../../e2e/selectors/Browser/ConnectAccountBottomSheet.selectors';
 import Engine from '../../../core/Engine';
 import {
   createMockAccountsControllerState as createMockAccountsControllerStateUtil,
@@ -77,7 +82,7 @@ jest.mock('../../../core/Engine', () => {
         }),
         scanUrl: jest.fn((domainName: string) => ({
           domainName,
-          recommendedAction: 'NONE'
+          recommendedAction: 'NONE',
         })),
       },
       PermissionController: {
@@ -107,18 +112,20 @@ jest.mock('../../../core/Engine', () => {
 });
 
 const mockRemoveChannel = jest.fn();
+const mockGetConnection = jest.fn();
+const mockIsUUID = jest.fn();
 
 // Mock SDKConnect
 jest.mock('../../../core/SDKConnect/SDKConnect', () => ({
   getInstance: () => ({
-    getConnection: () => undefined,
+    getConnection: (...args: unknown[]) => mockGetConnection(...args),
     removeChannel: mockRemoveChannel,
   }),
 }));
 
 // Mock the isUUID function
 jest.mock('../../../core/SDKConnect/utils/isUUID', () => ({
-  isUUID: () => false,
+  isUUID: (...args: unknown[]) => mockIsUUID(...args),
 }));
 
 // Mock useAccounts to return test accounts
@@ -165,6 +172,142 @@ const mockInitialState: DeepPartial<RootState> = {
 };
 
 describe('AccountConnect', () => {
+  beforeEach(() => {
+    mockGetConnection.mockReturnValue(undefined);
+    mockIsUUID.mockReturnValue(false);
+  });
+
+  describe('SDK connection with link-supplied originatorInfo', () => {
+    const channelId = '5d2a4ab4-6b4f-4c5c-9f53-7e8b1a2c3d4e';
+    const renderSdkConnect = () =>
+      renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: { id: 'mockId', origin: channelId },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        { state: mockInitialState },
+      );
+
+    beforeEach(() => {
+      mockIsUUID.mockImplementation((value: string) => value === channelId);
+      mockGetConnection.mockReturnValue({
+        id: channelId,
+        origin: 'deeplink',
+        originatorInfo: {
+          url: 'https://app.acmeswap.com',
+          title: 'Acme Swap',
+          icon: 'https://attacker.example/acme-logo.png',
+          platform: 'web',
+          dappId: 'app.acmeswap.com',
+        },
+      });
+    });
+
+    it('marks the request as unverified and shows the raw host', () => {
+      const { getByTestId, getByText } = renderSdkConnect();
+
+      expect(
+        getByTestId(
+          ConnectAccountBottomSheetSelectorsIDs.UNVERIFIED_ORIGIN_BANNER,
+        ),
+      ).toBeOnTheScreen();
+      expect(getByText('Unverified connection request')).toBeOnTheScreen();
+      expect(getByText('https://app.acmeswap.com')).toBeOnTheScreen();
+    });
+
+    it('does not render the link-supplied icon or a secure lock', () => {
+      const { UNSAFE_getByType } = renderSdkConnect();
+      const single = UNSAFE_getByType(AccountConnectSingle);
+
+      expect(single.props.favicon).toEqual({ uri: '' });
+      expect(single.props.secureIcon).toBe(IconName.LockSlash);
+      expect(single.props.isOriginUnverified).toBe(true);
+    });
+
+    it('shows the unverified banner on the permissions summary for non-UUID channel ids', () => {
+      const forgedChannelId = 'not-a-uuid-channel';
+      mockIsUUID.mockReturnValue(false);
+      mockGetConnection.mockReturnValue({
+        id: forgedChannelId,
+        origin: 'deeplink',
+        originatorInfo: {
+          url: 'https://app.acmeswap.com',
+          title: 'Acme Swap',
+          icon: 'https://attacker.example/acme-logo.png',
+          platform: 'web',
+          dappId: 'app.acmeswap.com',
+        },
+      });
+
+      const { getByTestId, UNSAFE_getByType } = renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: { id: 'mockId', origin: forgedChannelId },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        { state: mockInitialState },
+      );
+
+      expect(getByTestId('permission-summary-container')).toBeDefined();
+      expect(
+        getByTestId(
+          ConnectAccountBottomSheetSelectorsIDs.UNVERIFIED_ORIGIN_BANNER,
+        ),
+      ).toBeOnTheScreen();
+      const summary = UNSAFE_getByType(PermissionsSummary);
+      expect(summary.props.isOriginUnverified).toBe(true);
+      expect(summary.props.currentPageInformation.icon).toBe('');
+      expect(summary.props.currentPageInformation.url).toBe(
+        'https://app.acmeswap.com',
+      );
+      expect(UNSAFE_getByType(WebsiteIcon).props.url).toBe('');
+    });
+
+    it('does not show the unverified banner for in-app browser requests', () => {
+      mockGetConnection.mockReturnValue(undefined);
+      mockIsUUID.mockReturnValue(false);
+      const { queryByTestId } = renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: { id: 'mockId', origin: 'https://example.com' },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        { state: mockInitialState },
+      );
+
+      expect(
+        queryByTestId(
+          ConnectAccountBottomSheetSelectorsIDs.UNVERIFIED_ORIGIN_BANNER,
+        ),
+      ).toBeNull();
+    });
+  });
+
   it('renders correctly', () => {
     const { toJSON } = renderWithProvider(
       <AccountConnect

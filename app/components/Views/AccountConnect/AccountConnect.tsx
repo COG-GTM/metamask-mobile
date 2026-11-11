@@ -178,7 +178,9 @@ const AccountConnect = (props: AccountConnectProps) => {
   const isOriginWalletConnect =
     !isOriginMMSDKRemoteConn && wc2Metadata?.id && wc2Metadata?.id.length > 0;
 
-  const dappIconUrl = sdkConnection?.originatorInfo?.icon;
+  // SDK originatorInfo (url/title/icon) is self-reported by whoever opened the
+  // link or holds the channel key, so it is shown as unverified.
+  const isSdkOriginUnverified = isOriginMMSDKRemoteConn;
   const dappUrl = sdkConnection?.originatorInfo?.url ?? '';
 
   const [isSdkUrlUnknown, setIsSdkUrlUnknown] = useState(false);
@@ -269,9 +271,8 @@ const AccountConnect = (props: AccountConnectProps) => {
   );
 
   const actualIcon = useMemo(() => {
-    // Priority to dappIconUrl
-    if (dappIconUrl) {
-      return { uri: dappIconUrl };
+    if (isSdkOriginUnverified) {
+      return { uri: '' };
     }
 
     if (isOriginWalletConnect) {
@@ -285,14 +286,20 @@ const AccountConnect = (props: AccountConnectProps) => {
     }
 
     return { uri: '' };
-  }, [dappIconUrl, wc2Metadata, faviconSource, isOriginWalletConnect]);
+  }, [
+    isSdkOriginUnverified,
+    wc2Metadata,
+    faviconSource,
+    isOriginWalletConnect,
+  ]);
 
   const secureIcon = useMemo(
     () =>
+      !isSdkOriginUnverified &&
       (getUrlObj(hostname) as URLParse<string>).protocol === 'https:'
         ? IconName.Lock
         : IconName.LockSlash,
-    [hostname],
+    [hostname, isSdkOriginUnverified],
   );
 
   const eventSource = useOriginSource({ origin: channelIdOrHostname });
@@ -647,9 +654,11 @@ const AccountConnect = (props: AccountConnectProps) => {
         favicon={actualIcon}
         secureIcon={secureIcon}
         urlWithProtocol={urlWithProtocol}
+        isOriginUnverified={isSdkOriginUnverified}
       />
     );
   }, [
+    isSdkOriginUnverified,
     accounts,
     ensByAccountAddress,
     selectedAddresses,
@@ -667,9 +676,10 @@ const AccountConnect = (props: AccountConnectProps) => {
     const permissionsSummaryProps: PermissionsSummaryProps = {
       currentPageInformation: {
         currentEnsName: '',
-        icon: faviconSource as string,
+        icon: isSdkOriginUnverified ? '' : (faviconSource as string),
         url: urlWithProtocol,
       },
+      isOriginUnverified: isSdkOriginUnverified,
       onEdit: () => {
         setScreen(AccountConnectScreens.MultiConnectSelector);
       },
@@ -684,6 +694,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     };
     return <PermissionsSummary {...permissionsSummaryProps} />;
   }, [
+    isSdkOriginUnverified,
     faviconSource,
     urlWithProtocol,
     selectedAddresses,

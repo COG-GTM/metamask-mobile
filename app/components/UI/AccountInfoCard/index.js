@@ -188,6 +188,7 @@ class AccountInfoCard extends PureComponent {
         url={actualOriginUrl}
         from={rawFromAddress}
         sdkDappMetadata={sdkDappMetadata}
+        isOriginUnverified={Boolean(currentConnection) && !isOriginUrl}
       />
     ) : (
       <View style={styles.accountInformation}>
