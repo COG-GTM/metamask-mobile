@@ -24,7 +24,7 @@ describe('handleDeeplink', () => {
     typeof waitForCondition
   >;
 
-  const channelId = 'channel1';
+  const channelId = '5d7c6f0e-3b8a-4f3e-9c1d-2a6b8e4f1c7a';
   const origin = 'testOrigin';
   const url = 'https://example.com';
   const otherPublicKey = 'publicKey';
@@ -101,6 +101,42 @@ describe('handleDeeplink', () => {
     });
     expect(waitForCondition).toHaveBeenCalledWith(expect.any(Object));
     expect(sdkConnect.hasInitialized).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['a non-UUID string', 'channel1'],
+    ['an empty string', ''],
+    ['a UUID with extra characters', `${channelId}/../x`],
+  ])('ignores links whose channelId is %s', async (_label, badChannelId) => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({ [badChannelId]: { otherPublicKey } });
+    mockGetConnected.mockReturnValue({
+      [badChannelId]: {
+        remote: { isConnected: jest.fn().mockReturnValue(false) },
+      },
+    });
+    (sdkConnect as unknown as { state: SDKConnectState }).state = {
+      connecting: {},
+    } as unknown as SDKConnectState;
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId: badChannelId,
+      origin,
+      url,
+      rpc,
+      otherPublicKey,
+      protocolVersion,
+      context,
+    });
+
+    expect(mockReconnect).not.toHaveBeenCalled();
+    expect(mockConnectToChannel).not.toHaveBeenCalled();
+    expect(mockHandleConnectionMessage).not.toHaveBeenCalled();
+    expect(Logger.log).toHaveBeenCalledWith(
+      expect.stringContaining('channelId is not a UUID'),
+    );
+    expect(Logger.error).not.toHaveBeenCalled();
   });
 
   it('should handles deeplink origin and modifies origin if url contains QR code parameter', async () => {

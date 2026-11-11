@@ -9,7 +9,7 @@ import handleSendMessage from './handleSendMessage';
 
 import { providerErrors } from '@metamask/rpc-errors';
 import Engine from '../../Engine';
-import { approveHostProps } from '../SDKConnect';
+import SDKConnect, { approveHostProps } from '../SDKConnect';
 import generateOTP from '../utils/generateOTP.util';
 import { setupBridge } from './setupBridge';
 import { HOUR_IN_MS } from '../SDKConnectConstants';
@@ -60,6 +60,35 @@ export const handleConnectionReady = async ({
   );
   if (!originatorInfo) {
     return;
+  }
+
+  const isDeeplinkReconnection =
+    !connection.initialConnection &&
+    connection.origin !== AppConstants.DEEPLINKS.ORIGIN_QR_CODE &&
+    (connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK ||
+      connection.trigger === 'deeplink');
+
+  // Deeplink re-connections skip the prompt only while the dapp still holds the
+  // key the session was approved with. Checked before any session metadata is
+  // updated so a rejected client cannot overwrite the stored dapp details.
+  let requireFreshApproval = false;
+  if (!connection.isReady && isDeeplinkReconnection) {
+    const storedOtherPublicKey =
+      SDKConnect.getInstance().getConnections()[connection.channelId]
+        ?.otherPublicKey;
+    const currentOtherPublicKey =
+      connection.remote.getKeyInfo()?.ecies.otherPubKey;
+    if (!storedOtherPublicKey) {
+      requireFreshApproval = true;
+    } else if (currentOtherPublicKey !== storedOtherPublicKey) {
+      disapprove(connection.channelId);
+      onError?.(
+        new Error(
+          `SDKConnect::CLIENTS_READY channel=${connection.channelId} dapp key does not match the approved session key`,
+        ),
+      );
+      return;
+    }
   }
 
   let dappUrl = '';
@@ -173,7 +202,22 @@ export const handleConnectionReady = async ({
       (connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK ||
         connection.trigger === 'deeplink')
     ) {
-      // Deeplink channels are automatically approved on re-connection.
+      if (requireFreshApproval) {
+        // No approved key to compare against: the user has to approve again.
+        connection.approvalPromise = undefined;
+        disapprove(connection.channelId);
+        const allowed = await checkPermissions({
+          connection,
+          engine,
+          requireFreshApproval: true,
+        });
+        if (!allowed) {
+          throw new Error(
+            `SDKConnect::CLIENTS_READY channel=${connection.channelId} re-approval was not granted`,
+          );
+        }
+      }
+      // Deeplink channels bound to their approved key are approved on re-connection.
       const hostname =
         AppConstants.MM_SDK.SDK_REMOTE_ORIGIN + connection.channelId;
       approveHost({

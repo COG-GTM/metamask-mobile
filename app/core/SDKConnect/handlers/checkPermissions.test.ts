@@ -186,6 +186,38 @@ describe('checkPermissions', () => {
     expect(result).toBe(true);
   });
 
+  it('requests permissions again when a fresh approval is required even if accounts are permitted', async () => {
+    permissionController.getPermission = jest.fn().mockReturnValue({});
+    requestPermissions.mockResolvedValue({});
+    connection.approvalPromise = Promise.resolve(true) as never;
+    mockGetPermittedAccounts
+      .mockReturnValueOnce(['0x123'])
+      .mockReturnValueOnce(['0x123']);
+
+    const result = await checkPermissions({
+      connection,
+      engine,
+      requireFreshApproval: true,
+    });
+
+    expect(requestPermissions).toHaveBeenCalledWith(
+      { origin: connection.channelId },
+      expect.any(Object),
+      { preserveExistingPermissions: false },
+    );
+    expect(result).toBe(true);
+  });
+
+  it('propagates a rejected fresh approval', async () => {
+    permissionController.getPermission = jest.fn().mockReturnValue({});
+    requestPermissions.mockRejectedValue(new Error('User rejected'));
+    mockGetPermittedAccounts.mockReturnValue(['0x123']);
+
+    await expect(
+      checkPermissions({ connection, engine, requireFreshApproval: true }),
+    ).rejects.toThrow('User rejected');
+  });
+
   describe('platform specific behavior', () => {
     it('should add delay on iOS after permission approval', async () => {
       Platform.OS = 'ios';

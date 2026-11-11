@@ -9,6 +9,7 @@ import AppConstants from '../../AppConstants';
 import Engine from '../../Engine';
 import SDKConnect from '../SDKConnect';
 import DevLogger from '../utils/DevLogger';
+import { isUUID } from '../utils/isUUID';
 import { waitForCondition, waitForKeychainUnlocked } from '../utils/wait.util';
 import handleConnectionMessage from './handleConnectionMessage';
 
@@ -47,6 +48,11 @@ const handleDeeplink = async ({
     DevLogger.log(
       `handleDeeplink:: sdkConnect initialized --- continue with deeplink`,
     );
+  }
+
+  if (typeof channelId !== 'string' || !isUUID(channelId)) {
+    Logger.log(`handleDeeplink:: rejected link: channelId is not a UUID`);
+    return;
   }
 
   DevLogger.log(`handleDeeplink:: origin=${origin} url=${url}`);

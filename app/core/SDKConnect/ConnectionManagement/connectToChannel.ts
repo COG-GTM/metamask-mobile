@@ -72,6 +72,7 @@ async function connectToChannel({
   }
 
   instance.state.connecting[id] = true;
+  const hadStoredSession = instance.state.connections[id] !== undefined;
 
   try {
     instance.state.connections[id] = {
@@ -158,6 +159,9 @@ async function connectToChannel({
         const res = await checkPermissions({
           connection: connected,
           engine: Engine,
+          // A permission left behind for an unknown channel id must not
+          // authorize a new connection without a prompt.
+          requireFreshApproval: !hadStoredSession,
         });
         DevLogger.log(
           `SDKConnect::connectToChannel - checkPermissions - authorized`,
