@@ -22,6 +22,7 @@ import {
   SecurityAlertSource,
 } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 import Logger from '../../util/Logger';
+import { store } from '../../store';
 
 const CHAIN_ID_MOCK = '0x1';
 
@@ -128,7 +129,13 @@ describe('PPOM Utils', () => {
     normalizeTransactionParams,
   );
 
+  const mockBasicFunctionalityEnabled = (basicFunctionalityEnabled: boolean) =>
+    jest.spyOn(store, 'getState').mockReturnValue({
+      settings: { basicFunctionalityEnabled },
+    } as unknown as ReturnType<typeof store.getState>);
+
   beforeEach(() => {
+    mockBasicFunctionalityEnabled(true);
     MockEngine.context.PreferencesController.state.securityAlertsEnabled = true;
 
     MockEngine.context.NetworkController = {
@@ -190,6 +197,20 @@ describe('PPOM Utils', () => {
         0,
       );
       expect(spyTransactionAction).toHaveBeenCalledTimes(0);
+    });
+
+    it('does not validate or call the security alerts API if basic functionality is disabled', async () => {
+      isSecurityAlertsEnabledMock.mockReturnValue(true);
+      mockBasicFunctionalityEnabled(false);
+      const spyTransactionAction = jest.spyOn(
+        TransactionActions,
+        'setTransactionSecurityAlertResponse',
+      );
+      await PPOMUtil.validateRequest(mockRequest, CHAIN_ID_MOCK);
+      expect(validateWithSecurityAlertsAPIMock).not.toHaveBeenCalled();
+      expect(MockEngine.context.PPOMController?.usePPOM).not.toHaveBeenCalled();
+      expect(spyTransactionAction).not.toHaveBeenCalled();
+      isSecurityAlertsEnabledMock.mockReset();
     });
 
     it('should not validate if request is send to users own account ', async () => {
