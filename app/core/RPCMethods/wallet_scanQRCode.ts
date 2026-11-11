@@ -29,11 +29,13 @@ interface PatternGroup {
 /**
  * Rejects dapp patterns that could backtrack catastrophically on the JS thread.
  * Backreferences, lookarounds and quantified groups that themselves contain a
- * quantifier or alternation are refused outright; for the rest, the product of
- * every quantifier's range (except a quantifier that ends the pattern, which
- * cannot backtrack) and alternation's branches, times the number of start
- * positions (one for patterns anchored with a leading ^), must stay within MAX_SCAN_QR_CODE_MATCH_COST for inputs of up to
- * MAX_SCAN_QR_CODE_MATCH_LENGTH characters.
+ * quantifier or alternation are refused outright. For the rest, each
+ * quantifier contributes its range times its minimum repetitions (only the
+ * minimum for a quantifier that ends the pattern: it can fail, forcing earlier
+ * atoms to backtrack, only after fewer than its minimum repetitions), each
+ * alternation its branches, and unanchored patterns one factor per start
+ * position. The product must stay within MAX_SCAN_QR_CODE_MATCH_COST for
+ * inputs of up to MAX_SCAN_QR_CODE_MATCH_LENGTH characters.
  *
  * @param pattern - Dapp-supplied regular expression source.
  */
@@ -113,16 +115,18 @@ export function assertSafeScanPattern(pattern: string): void {
       continue;
     }
     let width: number | undefined;
+    let min = 0;
     let length = 1;
     if (char === '*' || char === '+') {
       width = n;
+      min = char === '+' ? 1 : 0;
     } else if (char === '?') {
       width = 2;
     } else if (char === '{') {
       const bounds = /^\{(\d+)(,(\d*))?\}/u.exec(pattern.slice(i));
       if (bounds) {
         length = bounds[0].length;
-        const min = Number(bounds[1]);
+        min = Number(bounds[1]);
         if (bounds[2] === undefined) {
           width = 1;
         } else if (bounds[3] === '') {
@@ -147,14 +151,10 @@ export function assertSafeScanPattern(pattern: string): void {
     stack[stack.length - 1].quantified = true;
     i += length;
     if (pattern[i] === '?') i++;
-    // A quantifier that ends the whole pattern never backtracks: once it stops
-    // consuming, the match has succeeded.
     const endsPattern = stack.length === 1 && i === pattern.length;
-    if (!endsPattern) {
-      cost *= width;
-      if (cost > MAX_SCAN_QR_CODE_MATCH_COST) {
-        throw invalidPatternError('pattern is too complex');
-      }
+    cost *= (endsPattern ? 1 : width) * Math.max(1, min);
+    if (cost > MAX_SCAN_QR_CODE_MATCH_COST) {
+      throw invalidPatternError('pattern is too complex');
     }
     canQuantify = false;
   }

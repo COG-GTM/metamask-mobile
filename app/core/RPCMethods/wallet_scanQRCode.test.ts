@@ -65,6 +65,8 @@ describe('buildScanQRCodeMatcher', () => {
     ['stacked bounded ranges', '\\d{0,30}\\d{0,30}\\d{0,30}X'],
     ['unanchored unbounded quantifier', '0x.*y'],
     ['trailing quantifier after an unbounded one', 'a.*b+'],
+    ['trailing quantifier with a large minimum', '1{0,1400}1{3700,}'],
+    ['trailing exact count after a range', '1{0,1400}1{3700}'],
     ['trailing quantifier inside a group', '(0x.*)'],
     ['anchor on one alternative only', '^0x|.*x'],
   ])('rejects a %s pattern with invalid params', (_, pattern) => {
