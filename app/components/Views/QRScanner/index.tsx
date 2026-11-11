@@ -34,6 +34,10 @@ const frameImage = require('../../../images/frame.png'); // eslint-disable-line 
 
 const HEX_PRIVATE_KEY_REGEX = /^(0x)?[0-9a-f]{64}$/iu;
 
+const toPrivateKeyScanData = (content: string) => ({
+  private_key: content.length === 64 ? content : content.substr(2),
+});
+
 /**
  * View that wraps the QR code scanner screen
  */
@@ -203,9 +207,7 @@ const QRScanner = ({
         // parser so they cannot end up in its error reporting.
         if (HEX_PRIVATE_KEY_REGEX.test(content)) {
           shouldReadBarCodeRef.current = false;
-          data = {
-            private_key: content.length === 64 ? content : content.substr(2),
-          };
+          data = toPrivateKeyScanData(content);
           onScanSuccess(data, content);
           end();
           return;
@@ -232,9 +234,7 @@ const QRScanner = ({
             content.length === 66)
         ) {
           shouldReadBarCodeRef.current = false;
-          data = {
-            private_key: content.length === 64 ? content : content.substr(2),
-          };
+          data = toPrivateKeyScanData(content);
         } else if (content.substring(0, 2).toLowerCase() === '0x') {
           shouldReadBarCodeRef.current = false;
           data = { target_address: content, action: 'send-eth' };
