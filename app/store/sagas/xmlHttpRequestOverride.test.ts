@@ -131,9 +131,13 @@ describe('overrideXMLHttpRequest', () => {
     const originalFetch = global.fetch;
     const originalSetRequestHeader =
       global.XMLHttpRequest.prototype.setRequestHeader;
-    // React Native `fetch` is the whatwg-fetch polyfill (a react-native dependency) over XMLHttpRequest
-    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires, import/no-extraneous-dependencies
-    global.fetch = require('whatwg-fetch').fetch;
+    // Load React Native's XMLHttpRequest-based `fetch` polyfill instead of the Node one
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (global as any).fetch;
+    jest.isolateModules(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+      global.fetch = require('react-native/Libraries/Network/fetch').fetch;
+    });
     global.XMLHttpRequest.prototype.setRequestHeader = jest.fn();
     overrideXMLHttpRequest();
     try {
