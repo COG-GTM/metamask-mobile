@@ -137,6 +137,20 @@ describe('getHostnameLeftByNavigation', () => {
     ).toBeUndefined();
   });
 
+  it('returns undefined when leaving a shared decentralized web gateway', () => {
+    expect(
+      getHostnameLeftByNavigation({
+        previousUrl: `${AppConstants.IPFS_DEFAULT_GATEWAY_URL}QmHash/`,
+        nextUrl: 'https://trusted-exchange.example',
+        tabId: 1,
+        tabs: [
+          { id: 1, url: `${AppConstants.IPFS_DEFAULT_GATEWAY_URL}QmHash/` },
+          { id: 2, url: 'https://vitalik.eth/' },
+        ],
+      }),
+    ).toBeUndefined();
+  });
+
   it('returns undefined when there was no previous page', () => {
     expect(
       getHostnameLeftByNavigation({

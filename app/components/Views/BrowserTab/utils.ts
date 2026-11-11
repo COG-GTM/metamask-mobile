@@ -82,8 +82,8 @@ export const getMaskedUrl = (
 
 /**
  * Returns the hostname a tab is leaving when it navigates from `previousUrl`
- * to `nextUrl`, or `undefined` if the host does not change or another tab is
- * still on that host. Pending approvals of that hostname should be rejected.
+ * to `nextUrl`, or `undefined` if the host does not change, another tab is
+ * still on that host, or the host is a decentralized web gateway. Pending approvals of that hostname should be rejected.
  *
  * @param params.previousUrl - URL the tab was on
  * @param params.nextUrl - URL the tab is moving to
@@ -105,6 +105,17 @@ export const getHostnameLeftByNavigation = ({
   const previousHostname = new URLParse(previousUrl).hostname;
   if (!previousHostname || previousHostname === new URLParse(nextUrl).hostname)
     return undefined;
+
+  // Decentralized web gateways are shared by every ENS site, and other tabs
+  // store their masked ENS URL, so it cannot be known whether one is still open.
+  const isGatewayHostname = [
+    AppConstants.IPFS_DEFAULT_GATEWAY_URL,
+    AppConstants.IPNS_DEFAULT_GATEWAY_URL,
+    AppConstants.SWARM_DEFAULT_GATEWAY_URL,
+  ].some(
+    (gatewayUrl) => new URLParse(gatewayUrl).hostname === previousHostname,
+  );
+  if (isGatewayHostname) return undefined;
 
   const isOpenInOtherTab = tabs.some(
     (tab) =>
