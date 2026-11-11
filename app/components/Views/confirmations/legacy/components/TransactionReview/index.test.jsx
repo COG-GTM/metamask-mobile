@@ -321,6 +321,37 @@ describe('TransactionReview', () => {
     expect(queryByText(channelId, { exact: false })).toBeNull();
   });
 
+  it('does not show deeplink or Android SDK dapp metadata for a non channel id origin', async () => {
+    const getConnection = jest.fn(() => ({
+      originatorInfo: { url: 'https://forged.example' },
+    }));
+    jest
+      .spyOn(SDKConnect, 'getInstance')
+      .mockReturnValue({ getConnection, getConnections: () => ({}) });
+
+    const { queryByText } = renderWithProvider(
+      <TransactionReview
+        EIP1559GasData={{}}
+        generateTransform={generateTransform}
+      />,
+      {
+        state: {
+          ...mockState,
+          transaction: {
+            ...mockState.transaction,
+            transaction: {
+              ...mockState.transaction.transaction,
+              origin: 'site.example',
+            },
+          },
+        },
+      },
+    );
+
+    expect(getConnection).not.toHaveBeenCalled();
+    expect(queryByText('https://forged.example')).toBeNull();
+  });
+
   it('should have enabled confirm button if from account has balance', async () => {
     jest
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
