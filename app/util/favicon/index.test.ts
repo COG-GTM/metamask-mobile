@@ -170,6 +170,59 @@ describe('favicon utility getFaviconURLFromHtml() function', () => {
     );
   });
 
+  it.each([
+    // eslint-disable-next-line no-script-url
+    ['javascript:alert(1)'],
+    ['file:///etc/hosts'],
+    ['data:text/html,<script>alert(1)</script>'],
+  ])('ignores favicon with disallowed scheme %s', async (href) => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        text: () =>
+          Promise.resolve(
+            `<html><head><link rel="icon" href="${href}"></head></html>`,
+          ),
+        ok: true,
+      } as Response),
+    );
+
+    const faviconUrl = await getFaviconURLFromHtml('metamask.github.io');
+    expect(faviconUrl).toBeUndefined();
+  });
+
+  it('skips a disallowed favicon and returns the next allowed one', async () => {
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        text: () =>
+          Promise.resolve(
+            '<html><head><link rel="icon" href="javascript:alert(1)"><link rel="icon" href="metamask-fox.svg"></head></html>',
+          ),
+        ok: true,
+      } as Response),
+    );
+
+    const faviconUrl = await getFaviconURLFromHtml('metamask.github.io');
+    expect(faviconUrl).toEqual(
+      new URL('https://metamask.github.io/metamask-fox.svg'),
+    );
+  });
+
+  it('keeps inline image data URI favicons', async () => {
+    const dataUri = 'data:image/svg+xml;utf8,%3Csvg%3E%3C/svg%3E';
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        text: () =>
+          Promise.resolve(
+            `<html><head><link rel="icon" href="${dataUri}"></head></html>`,
+          ),
+        ok: true,
+      } as Response),
+    );
+
+    const faviconUrl = await getFaviconURLFromHtml('metamask.github.io');
+    expect(faviconUrl?.toString()).toEqual(dataUri);
+  });
+
   /**
    * return empty string if no favicon found and this will trigger fallback icon
    */

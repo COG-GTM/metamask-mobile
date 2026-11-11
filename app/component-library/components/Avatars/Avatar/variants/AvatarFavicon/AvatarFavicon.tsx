@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 
 // Third party dependencies.
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, ImageErrorEventData, NativeSyntheticEvent } from 'react-native';
 import { SvgUri, SvgXml } from 'react-native-svg';
 
@@ -21,6 +21,16 @@ import {
 } from './AvatarFavicon.constants';
 import stylesheet from './AvatarFavicon.styles';
 import { AvatarFaviconProps } from './AvatarFavicon.types';
+
+const SVG_UTF8_DATA_URI_PREFIX = 'data:image/svg+xml;utf8,';
+
+const decodeSvgDataUri = (uri: string): string | undefined => {
+  try {
+    return decodeURIComponent(uri.slice(SVG_UTF8_DATA_URI_PREFIX.length));
+  } catch (_) {
+    return undefined;
+  }
+};
 
 const AvatarFavicon = ({
   imageSource,
@@ -85,20 +95,35 @@ const AvatarFavicon = ({
     }
   }, [imageSource, isRemoteSource]);
 
+  const isSvgDataUri = svgSource.startsWith(SVG_UTF8_DATA_URI_PREFIX);
+  const svgDataUriXml = useMemo(
+    () => (isSvgDataUri ? decodeSvgDataUri(svgSource) : undefined),
+    [isSvgDataUri, svgSource],
+  );
+  const svgDataUriError = useMemo(
+    () =>
+      isSvgDataUri && svgDataUriXml === undefined
+        ? new Error('Malformed SVG data URI')
+        : undefined,
+    [isSvgDataUri, svgDataUriXml],
+  );
+
   const renderSvg = () => {
     if (!svgSource) {
       return null;
     }
 
     // SvgUri does not work on Android with data URIs, so instead we use SvgXml
-    if (svgSource.startsWith('data:image/svg+xml;utf8,')) {
-      const xml = decodeURIComponent(svgSource.slice(24));
+    if (isSvgDataUri) {
+      if (svgDataUriXml === undefined) {
+        return renderFallbackFavicon();
+      }
       return (
         <SvgXml
           testID={AVATARFAVICON_IMAGE_SVG_TESTID}
           width="100%"
           height="100%"
-          xml={xml}
+          xml={svgDataUriXml}
           style={styles.image}
           onError={(e: unknown) => onSvgError(e as Error)}
         />
@@ -129,7 +154,7 @@ const AvatarFavicon = ({
 
   const renderFavicon = () => (svgSource ? renderSvg() : renderImage());
 
-  const error = svgSource ? svgError : imageError;
+  const error = svgSource ? svgDataUriError || svgError : imageError;
 
   return (
     <AvatarBase size={size} style={styles.base} {...props}>

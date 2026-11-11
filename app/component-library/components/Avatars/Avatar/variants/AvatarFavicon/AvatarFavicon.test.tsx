@@ -11,6 +11,7 @@ import {
   SAMPLE_AVATARFAVICON_PROPS,
   SAMPLE_AVATARFAVICON_IMAGESOURCE_LOCAL,
   SAMPLE_AVATARFAVICON_SVGIMAGESOURCE_REMOTE,
+  DEFAULT_AVATARFAVICON_ERROR_ICON,
 } from './AvatarFavicon.constants';
 
 describe('AvatarFavicon', () => {
@@ -90,4 +91,42 @@ describe('AvatarFavicon', () => {
     expect(currentImageComponent.exists()).toBe(true);
     expect(wrapper).toMatchSnapshot();
   });
+
+  it('renders SvgXml for a valid utf8 SVG data URI', async () => {
+    const xml = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+    const { getByTestId } = render(
+      <AvatarFavicon
+        {...SAMPLE_AVATARFAVICON_PROPS}
+        imageSource={{
+          uri: `data:image/svg+xml;utf8,${encodeURIComponent(xml)}`,
+        }}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(getByTestId(AVATARFAVICON_IMAGE_SVG_TESTID).props.xml).toBe(xml),
+    );
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    'data:image/svg+xml;utf8,%',
+    'data:image/svg+xml;utf8,<svg>%zz</svg>',
+    'data:image/svg+xml;utf8,%E0%A4%A',
+  ])(
+    'renders the fallback icon instead of throwing for malformed data URI %s',
+    async (uri) => {
+      const { UNSAFE_getByProps, queryByTestId } = render(
+        <AvatarFavicon {...SAMPLE_AVATARFAVICON_PROPS} imageSource={{ uri }} />,
+      );
+
+      await waitFor(() =>
+        expect(queryByTestId(AVATARFAVICON_IMAGE_TESTID)).toBeNull(),
+      );
+      expect(queryByTestId(AVATARFAVICON_IMAGE_SVG_TESTID)).toBeNull();
+      expect(
+        UNSAFE_getByProps({ name: DEFAULT_AVATARFAVICON_ERROR_ICON }),
+      ).toBeDefined();
+    },
+  );
 });

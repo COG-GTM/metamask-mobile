@@ -40,6 +40,11 @@ const parseHtmlSource = async (htmlSource: string | undefined) => {
   }
 };
 
+const isAllowedFaviconUrl = (url: URL) =>
+  url.protocol === 'https:' ||
+  url.protocol === 'http:' ||
+  (url.protocol === 'data:' && url.pathname.startsWith('image/'));
+
 /**
  * Returns the favicon URL from the HTML links collection
  * @param links - the HTML links collection
@@ -58,8 +63,16 @@ const getFaviconUrlFromLinks = (
       if (rel?.split(' ').includes('icon')) {
         const href = link.getAttribute('href');
         if (href) {
-          faviconURL = new URL(href, origin);
-          return false; //stop loop at first favicon found, same behaviour as browser extension
+          let candidate: URL | undefined;
+          try {
+            candidate = new URL(href, origin);
+          } catch (_) {
+            candidate = undefined;
+          }
+          if (candidate && isAllowedFaviconUrl(candidate)) {
+            faviconURL = candidate;
+            return false; //stop loop at first favicon found, same behaviour as browser extension
+          }
         }
       }
       return true;
