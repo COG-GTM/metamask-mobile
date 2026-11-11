@@ -60,6 +60,27 @@ describe('isSafeWCRedirectLink', () => {
     );
   });
 
+  it('allows https redirects back to a metamask.io subdomain dApp', () => {
+    expect(
+      isSafeWCRedirectLink(
+        'https://portfolio.metamask.io/',
+        'https://portfolio.metamask.io',
+      ),
+    ).toBe(true);
+  });
+
+  it('rejects wallet app-link hosts even when the dApp claims them', () => {
+    expect(
+      isSafeWCRedirectLink('https://metamask.io/', 'https://metamask.io'),
+    ).toBe(false);
+    expect(
+      isSafeWCRedirectLink(
+        'https://metamask.app.link/x',
+        'https://metamask.app.link',
+      ),
+    ).toBe(false);
+  });
+
   it('rejects undefined links', () => {
     expect(isSafeWCRedirectLink(undefined, PEER_URL)).toBe(false);
   });

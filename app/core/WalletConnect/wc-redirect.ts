@@ -15,6 +15,7 @@ const WALLET_UNIVERSAL_LINK_HOSTS = [
   'metamask-alternate.app.link',
   'metamask-alternate.test-app.link',
   'metamask.io',
+  'link.metamask.io',
 ];
 
 const BLOCKED_SCHEMES = [
@@ -80,9 +81,7 @@ export const isSafeWCRedirectLink = (
 
   const host = url.hostname.toLowerCase();
   if (!host || url.username || url.password) return false;
-  if (WALLET_UNIVERSAL_LINK_HOSTS.some((h) => isSameOrSubdomain(host, h))) {
-    return false;
-  }
+  if (WALLET_UNIVERSAL_LINK_HOSTS.includes(host)) return false;
 
   const peer = peerUrl ? parseUrl(peerUrl) : undefined;
   const peerHost = peer?.hostname.toLowerCase();
