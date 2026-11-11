@@ -585,8 +585,6 @@ export class WC2Manager {
         namespaces,
       });
 
-      await WC2Manager.setStoredPermissionOrigin(activeSession.topic, hostname);
-
       const deeplink = !!this.deeplinkSessions[activeSession.pairingTopic];
       const session = new WalletConnect2Session({
         session: activeSession,
@@ -598,6 +596,18 @@ export class WC2Manager {
       });
 
       this.sessions[activeSession.topic] = session;
+
+      try {
+        await WC2Manager.setStoredPermissionOrigin(
+          activeSession.topic,
+          hostname,
+        );
+      } catch (err) {
+        DevLogger.log(
+          `WC2::session_proposal failed to store permission origin`,
+          err,
+        );
+      }
 
       DevLogger.log(`WC2::session_proposal updateSession`, {
         chainId: walletChainIdDecimal,
