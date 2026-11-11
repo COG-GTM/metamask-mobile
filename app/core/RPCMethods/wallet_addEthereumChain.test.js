@@ -247,9 +247,86 @@ describe('RPC Method - wallet_addEthereumChain', () => {
         ...otherOptions,
       });
     } catch (error) {
-      expect(error.message).toContain('does not match');
+      expect(error.message).toContain('Could not verify');
     }
   });
+
+  it('does not return the RPC response to the caller when the chain ID does not match', async () => {
+    mockFetch.mockImplementation(async () => ({
+      json: () => Promise.resolve({ result: 'secret-value' }),
+    }));
+
+    const error = await wallet_addEthereumChain({
+      req: {
+        params: [
+          { ...correctParams, rpcUrls: ['https://intranet.example.com'] },
+        ],
+      },
+      ...otherOptions,
+    }).catch((e) => e);
+
+    expect(error.message).toContain('Could not verify');
+    expect(error.data).toBeUndefined();
+    expect(JSON.stringify(error.serialize())).not.toContain('secret-value');
+    expect(otherOptions.requestUserApproval).not.toHaveBeenCalled();
+  });
+
+  it('returns the same error when the RPC request fails', async () => {
+    mockFetch.mockImplementation(async () => {
+      throw new Error('Network request failed: ECONNREFUSED');
+    });
+
+    const error = await wallet_addEthereumChain({
+      req: {
+        params: [{ ...correctParams, rpcUrls: ['https://down.example.com'] }],
+      },
+      ...otherOptions,
+    }).catch((e) => e);
+
+    expect(error.code).toBe(-32602);
+    expect(error.message).toBe(
+      'Could not verify that RPC URL https://down.example.com serves chain ID 0x64',
+    );
+    expect(error.data).toBeUndefined();
+    expect(JSON.stringify(error.serialize())).not.toContain('ECONNREFUSED');
+  });
+
+  it('sends the chain ID probe without cookies', async () => {
+    jest
+      .spyOn(Engine.context.NetworkController, 'addNetwork')
+      .mockReturnValue(networkConfigurationResult);
+
+    await wallet_addEthereumChain({
+      req: { params: [correctParams] },
+      ...otherOptions,
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://rpc.gnosischain.com',
+      expect.objectContaining({ credentials: 'omit' }),
+    );
+    await flushPromises();
+  });
+
+  it.each([
+    'https://192.168.1.1',
+    'https://localhost',
+    'https://127.0.0.1:8545',
+    'https://169.254.169.254',
+    'https://[::1]',
+  ])(
+    'rejects private rpc url %s before sending any request',
+    async (rpcUrl) => {
+      await expect(
+        wallet_addEthereumChain({
+          req: { params: [{ ...correctParams, rpcUrls: [rpcUrl] }] },
+          ...otherOptions,
+        }),
+      ).rejects.toThrow('Local, private and link-local hosts are not allowed');
+      expect(mockFetch).not.toHaveBeenCalled();
+      expect(otherOptions.requestUserApproval).not.toHaveBeenCalled();
+    },
+  );
 
   it('should report invalid chain name', async () => {
     try {
