@@ -22,11 +22,14 @@ import {
   validateWithSecurityAlertsAPI,
 } from './security-alerts-api';
 import { PPOMController } from '@metamask/ppom-validator';
+import { Hex } from '@metamask/utils';
+import { getGlobalChainId } from '../../util/networks/global-network';
 
 export interface PPOMRequest {
   method: string;
   params: unknown[];
   origin?: string;
+  networkClientId?: string;
 }
 
 const TRANSACTION_METHOD = 'eth_sendTransaction';
@@ -56,22 +59,48 @@ const SECURITY_ALERT_RESPONSE_IN_PROGRESS = {
   description: 'Validating the confirmation in progress.',
 };
 
+/**
+ * Resolves the chain the confirmation will actually execute on, rather than
+ * the wallet-wide selected network at validation time, which may have changed
+ * since the request was received.
+ */
+function getRequestChainId(
+  req: PPOMRequest,
+  transactionId?: string,
+  chainIdOverride?: Hex,
+): Hex {
+  if (chainIdOverride) {
+    return chainIdOverride;
+  }
+
+  const { NetworkController, TransactionController } = Engine.context;
+
+  if (transactionId) {
+    const transactionMeta = TransactionController?.state?.transactions?.find(
+      ({ id }) => id === transactionId,
+    );
+
+    if (transactionMeta?.chainId) {
+      return transactionMeta.chainId;
+    }
+  }
+
+  if (req.networkClientId) {
+    return NetworkController.getNetworkClientById(req.networkClientId)
+      .configuration.chainId;
+  }
+
+  return getGlobalChainId(NetworkController);
+}
+
 async function validateRequest(
   req: PPOMRequest,
   transactionId?: string,
   securityAlertId?: string,
+  chainIdOverride?: Hex,
 ) {
-  const {
-    AccountsController,
-    NetworkController,
-    PPOMController: ppomController,
-  } = Engine.context;
+  const { AccountsController, PPOMController: ppomController } = Engine.context;
 
-  const {
-    configuration: { chainId },
-  } = NetworkController.getNetworkClientById(
-    NetworkController.state?.selectedNetworkClientId,
-  );
   const isConfirmationMethod = CONFIRMATION_METHODS.includes(req.method);
   const isBlockaidFeatEnabled = await isBlockaidFeatureEnabled();
   if (!ppomController || !isBlockaidFeatEnabled || !isConfirmationMethod) {
@@ -110,11 +139,16 @@ async function validateRequest(
       { securityAlertId },
     );
 
+    const chainId = getRequestChainId(req, transactionId, chainIdOverride);
     const normalizedRequest = normalizeRequest(req);
 
     securityAlertResponse = isSecurityAlertsAPIEnabled()
       ? await validateWithAPI(ppomController, chainId, normalizedRequest)
-      : await validateWithController(ppomController, normalizedRequest);
+      : await validateWithController(
+          ppomController,
+          chainId,
+          normalizedRequest,
+        );
 
     securityAlertResponse = {
       ...securityAlertResponse,
@@ -137,11 +171,22 @@ async function validateRequest(
 
 async function validateWithController(
   ppomController: PPOMController,
+  chainId: Hex,
   request: PPOMRequest,
 ): Promise<SecurityAlertResponse> {
   try {
-    const response = (await ppomController.usePPOM((ppom) =>
-      ppom.validateJsonRpc(request as unknown as Record<string, unknown>),
+    // The local validator simulates using the globally selected network's
+    // provider, so it cannot produce a trustworthy result for another chain.
+    if (chainId !== getGlobalChainId()) {
+      throw new Error(
+        `Local validation unavailable for non-selected chain ${chainId}`,
+      );
+    }
+
+    const response = (await ppomController.usePPOM(
+      (ppom) =>
+        ppom.validateJsonRpc(request as unknown as Record<string, unknown>),
+      chainId,
     )) as SecurityAlertResponse;
 
     return {
@@ -159,7 +204,7 @@ async function validateWithController(
 
 async function validateWithAPI(
   ppomController: PPOMController,
-  chainId: string,
+  chainId: Hex,
   request: PPOMRequest,
 ): Promise<SecurityAlertResponse> {
   try {
@@ -171,7 +216,7 @@ async function validateWithAPI(
     };
   } catch (e) {
     Logger.log(`Error validating request with security alerts API: ${e}`);
-    return await validateWithController(ppomController, request);
+    return await validateWithController(ppomController, chainId, request);
   }
 }
 
@@ -244,8 +289,8 @@ function clearSignatureSecurityAlertResponse() {
 }
 
 function createValidatorForSecurityAlertId(securityAlertId: string) {
-  return (req: PPOMRequest, transactionId?: string) =>
-    validateRequest(req, transactionId, securityAlertId);
+  return (req: PPOMRequest, chainId: Hex) =>
+    validateRequest(req, chainId, securityAlertId, chainId);
 }
 
 export default {

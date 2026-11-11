@@ -471,6 +471,156 @@ describe('PPOM Utils', () => {
     );
   });
 
+  describe('validateRequest chain resolution', () => {
+    const BASE_CHAIN_ID = '0x2105' as Hex;
+    const TRANSACTION_ID = 'tx-1';
+    const chainIdsByNetworkClientId: Record<string, Hex> = {
+      mainnet: CHAIN_ID_MOCK as Hex,
+      base: BASE_CHAIN_ID,
+    };
+
+    const selectNetwork = (networkClientId: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const networkController = MockEngine.context.NetworkController as any;
+      networkController.state.selectedNetworkClientId = networkClientId;
+      networkController.getNetworkClientById = (id: string) => ({
+        configuration: { chainId: chainIdsByNetworkClientId[id] },
+      });
+    };
+
+    beforeEach(() => {
+      isSecurityAlertsEnabledMock.mockReturnValue(true);
+      validateWithSecurityAlertsAPIMock.mockResolvedValue({
+        result_type: ResultType.Benign,
+        reason: '',
+      } as never);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (MockEngine.context as any).TransactionController = {
+        state: {
+          transactions: [{ id: TRANSACTION_ID, chainId: CHAIN_ID_MOCK }],
+        },
+      };
+      selectNetwork('mainnet');
+    });
+
+    afterEach(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      delete (MockEngine.context as any).TransactionController;
+    });
+
+    it('validates a transaction on its own chain when the selected network changed after it was added', async () => {
+      selectNetwork('base');
+
+      await PPOMUtil.validateRequest(mockRequest, TRANSACTION_ID);
+
+      expect(validateWithSecurityAlertsAPIMock).toHaveBeenCalledTimes(1);
+      expect(validateWithSecurityAlertsAPIMock).toHaveBeenCalledWith(
+        CHAIN_ID_MOCK,
+        expect.anything(),
+      );
+    });
+
+    it('records the transaction chain on the security alert response', async () => {
+      const spy = jest.spyOn(
+        TransactionActions,
+        'setTransactionSecurityAlertResponse',
+      );
+      selectNetwork('base');
+
+      await PPOMUtil.validateRequest(mockRequest, TRANSACTION_ID);
+
+      expect(spy).toHaveBeenLastCalledWith(
+        TRANSACTION_ID,
+        expect.objectContaining({ chainId: CHAIN_ID_MOCK }),
+      );
+    });
+
+    it('validates a signature on the chain of the request network client', async () => {
+      selectNetwork('base');
+
+      await PPOMUtil.validateRequest({
+        ...mockSignatureRequest,
+        networkClientId: 'mainnet',
+      });
+
+      expect(validateWithSecurityAlertsAPIMock).toHaveBeenCalledWith(
+        CHAIN_ID_MOCK,
+        expect.anything(),
+      );
+    });
+
+    it('falls back to the selected network when the request has no chain context', async () => {
+      selectNetwork('base');
+
+      await PPOMUtil.validateRequest(mockSignatureRequest);
+
+      expect(validateWithSecurityAlertsAPIMock).toHaveBeenCalledWith(
+        BASE_CHAIN_ID,
+        expect.anything(),
+      );
+    });
+
+    it('uses the chain provided by the transaction controller for batch validation', async () => {
+      const validate = PPOMUtil.createValidatorForSecurityAlertId('alert-1');
+
+      await validate(mockRequest, BASE_CHAIN_ID);
+
+      expect(validateWithSecurityAlertsAPIMock).toHaveBeenCalledWith(
+        BASE_CHAIN_ID,
+        expect.anything(),
+      );
+    });
+
+    it('passes the transaction chain to the local validator when it is selected', async () => {
+      isSecurityAlertsEnabledMock.mockReturnValue(false);
+
+      await PPOMUtil.validateRequest(mockRequest, TRANSACTION_ID);
+
+      expect(MockEngine.context.PPOMController?.usePPOM).toHaveBeenCalledWith(
+        expect.any(Function),
+        CHAIN_ID_MOCK,
+      );
+    });
+
+    it('marks validation as failed instead of using the local validator on a different selected network', async () => {
+      const spy = jest.spyOn(
+        TransactionActions,
+        'setTransactionSecurityAlertResponse',
+      );
+      isSecurityAlertsEnabledMock.mockReturnValue(false);
+      selectNetwork('base');
+
+      await PPOMUtil.validateRequest(mockRequest, TRANSACTION_ID);
+
+      expect(MockEngine.context.PPOMController?.usePPOM).not.toHaveBeenCalled();
+      expect(spy).toHaveBeenLastCalledWith(
+        TRANSACTION_ID,
+        expect.objectContaining({
+          chainId: CHAIN_ID_MOCK,
+          result_type: ResultType.Failed,
+          source: SecurityAlertSource.Local,
+        }),
+      );
+    });
+
+    it('marks validation as failed when the API fails and the transaction chain is not selected', async () => {
+      const spy = jest.spyOn(
+        TransactionActions,
+        'setTransactionSecurityAlertResponse',
+      );
+      validateWithSecurityAlertsAPIMock.mockRejectedValue(new Error('down'));
+      selectNetwork('base');
+
+      await PPOMUtil.validateRequest(mockRequest, TRANSACTION_ID);
+
+      expect(MockEngine.context.PPOMController?.usePPOM).not.toHaveBeenCalled();
+      expect(spy).toHaveBeenLastCalledWith(
+        TRANSACTION_ID,
+        expect.objectContaining({ result_type: ResultType.Failed }),
+      );
+    });
+  });
+
   describe('clearSignatureSecurityAlertResponse', () => {
     it('set call action to set securityAlertResponse for signature in redux state to undefined', async () => {
       const spy = jest.spyOn(SignatureRequestActions, 'default');
