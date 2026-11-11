@@ -10,6 +10,7 @@ import { MAINNET } from '../../../constants/network';
 import Engine from '../../Engine';
 import DeeplinkManager from '../DeeplinkManager';
 import {
+  INVALID_DEEPLINK_TRANSACTION_ERROR,
   addTransactionForDeeplink,
   isDeeplinkRedesignedConfirmationCompatible,
 } from '../../../components/Views/confirmations/utils/deeplink';
@@ -90,6 +91,10 @@ async function handleEthereumUrl({
     // TODO: Replace "any" with type
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (e: any) {
+    if (e?.name === INVALID_DEEPLINK_TRANSACTION_ERROR) {
+      Alert.alert(strings('deeplink.invalid'), e.message);
+      return;
+    }
     let alertMessage;
     switch (e.message) {
       case NetworkSwitchErrorType.missingNetworkId:

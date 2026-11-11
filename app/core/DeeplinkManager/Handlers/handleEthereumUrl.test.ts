@@ -8,6 +8,7 @@ import { getDecimalChainId } from '../../../util/networks';
 import Engine from '../../Engine';
 import { MAINNET } from '../../../constants/network';
 import {
+  INVALID_DEEPLINK_TRANSACTION_ERROR,
   addTransactionForDeeplink,
   isDeeplinkRedesignedConfirmationCompatible,
 } from '../../../components/Views/confirmations/utils/deeplink';
@@ -216,6 +217,23 @@ describe('handleEthereumUrl', () => {
       chain_id: 1,
       source: url,
     });
+  });
+
+  it('shows invalid deeplink alert when redesigned confirmation rejects the deeplink', async () => {
+    const spyAlert = jest.spyOn(Alert, 'alert');
+    mockIsDeeplinkRedesignedConfirmationCompatible.mockReturnValue(true);
+    mockParse.mockReturnValue({ chain_id: 1 });
+    const error = new Error('Invalid amount');
+    error.name = INVALID_DEEPLINK_TRANSACTION_ERROR;
+    mockAddTransactionForDeeplink.mockRejectedValue(error);
+
+    await handleEthereumUrl({
+      deeplinkManager,
+      url: 'ethereum:0x0',
+      origin: 'test_origin',
+    });
+
+    expect(spyAlert).toHaveBeenCalledWith('deeplink.invalid', 'Invalid amount');
   });
 
   it('shows alert when there is an unknown error during Ethereum URL handling', () => {
