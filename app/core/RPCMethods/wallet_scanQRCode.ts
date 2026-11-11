@@ -29,13 +29,13 @@ interface PatternGroup {
 /**
  * Rejects dapp patterns that could backtrack catastrophically on the JS thread.
  * Backreferences, lookarounds and quantified groups that themselves contain a
- * quantifier or alternation are refused outright. For the rest, each
- * quantifier contributes its range times its minimum repetitions (only the
- * minimum for a quantifier that ends the pattern: it can fail, forcing earlier
- * atoms to backtrack, only after fewer than its minimum repetitions), each
- * alternation its branches, and unanchored patterns one factor per start
- * position. The product must stay within MAX_SCAN_QR_CODE_MATCH_COST for
- * inputs of up to MAX_SCAN_QR_CODE_MATCH_LENGTH characters.
+ * quantifier or alternation are refused outright. For the rest, the cost is
+ * the number of backtracking paths (the product of every quantifier's range,
+ * except a quantifier that ends the pattern, and of alternation's branches),
+ * times the work per path (the sum of quantifier minimums, capped at the input
+ * length), times the number of start positions (one for patterns anchored with
+ * a leading ^). It must stay within MAX_SCAN_QR_CODE_MATCH_COST for inputs of
+ * up to MAX_SCAN_QR_CODE_MATCH_LENGTH characters.
  *
  * @param pattern - Dapp-supplied regular expression source.
  */
@@ -43,6 +43,7 @@ export function assertSafeScanPattern(pattern: string): void {
   const n = MAX_SCAN_QR_CODE_MATCH_LENGTH;
   const stack: PatternGroup[] = [{ quantified: false, branches: 1 }];
   let cost = 1;
+  let minLength = 0;
   let lastAtomWasComplexGroup = false;
   let canQuantify = false;
   let i = 0;
@@ -152,7 +153,10 @@ export function assertSafeScanPattern(pattern: string): void {
     i += length;
     if (pattern[i] === '?') i++;
     const endsPattern = stack.length === 1 && i === pattern.length;
-    cost *= (endsPattern ? 1 : width) * Math.max(1, min);
+    minLength += min;
+    if (!endsPattern) {
+      cost *= width;
+    }
     if (cost > MAX_SCAN_QR_CODE_MATCH_COST) {
       throw invalidPatternError('pattern is too complex');
     }
@@ -161,7 +165,7 @@ export function assertSafeScanPattern(pattern: string): void {
   if (stack.length !== 1) {
     throw invalidPatternError('unbalanced parentheses');
   }
-  cost *= stack[0].branches;
+  cost *= stack[0].branches * Math.max(1, Math.min(n, minLength));
   if (!pattern.startsWith('^') || stack[0].branches > 1) {
     cost *= n;
   }

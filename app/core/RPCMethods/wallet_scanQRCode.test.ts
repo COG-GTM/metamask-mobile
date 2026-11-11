@@ -36,6 +36,7 @@ describe('buildScanQRCodeMatcher', () => {
     '\\d+',
     '0x.*',
     'ethereum:.+?',
+    '^.{900}:.{900}:.{900}$',
   ])('compiles the simple pattern %s', (pattern) => {
     expect(buildScanQRCodeMatcher([pattern])).toBeInstanceOf(RegExp);
   });
