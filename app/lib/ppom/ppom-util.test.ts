@@ -24,6 +24,7 @@ import {
 import Logger from '../../util/Logger';
 
 const CHAIN_ID_MOCK = '0x1';
+const SECURITY_ALERT_ID_MOCK = 'security-alert-id-mock';
 
 const SIGN_TYPED_DATA_PARAMS_MOCK_1 = '0x123';
 const SIGN_TYPED_DATA_PARAMS_MOCK_2 =
@@ -278,10 +279,31 @@ describe('PPOM Utils', () => {
       expect(spy).toHaveBeenCalledTimes(2);
     });
 
-    it('should update signature requests with validation result', async () => {
+    it('should update signature requests with validation result keyed by security alert ID', async () => {
+      const spy = jest.spyOn(SignatureRequestActions, 'default');
+      await PPOMUtil.validateRequest(
+        mockSignatureRequest,
+        undefined,
+        SECURITY_ALERT_ID_MOCK,
+      );
+      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenNthCalledWith(
+        1,
+        SECURITY_ALERT_ID_MOCK,
+        expect.objectContaining({ result_type: ResultType.RequestInProgress }),
+      );
+      expect(spy).toHaveBeenNthCalledWith(
+        2,
+        SECURITY_ALERT_ID_MOCK,
+        expect.objectContaining({ req: mockSignatureRequest }),
+      );
+    });
+
+    it('does not validate or store a signature result without security alert ID', async () => {
       const spy = jest.spyOn(SignatureRequestActions, 'default');
       await PPOMUtil.validateRequest(mockSignatureRequest);
-      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).not.toHaveBeenCalled();
+      expect(MockEngine.context.PPOMController?.usePPOM).not.toHaveBeenCalled();
     });
 
     it('normalizes transaction requests before validation', async () => {
@@ -457,7 +479,11 @@ describe('PPOM Utils', () => {
           method,
           params,
         };
-        await PPOMUtil.validateRequest(request, CHAIN_ID_MOCK);
+        await PPOMUtil.validateRequest(
+          request,
+          CHAIN_ID_MOCK,
+          SECURITY_ALERT_ID_MOCK,
+        );
 
         expect(validateWithSecurityAlertsAPIMock).toHaveBeenCalledTimes(1);
         expect(validateWithSecurityAlertsAPIMock).toHaveBeenCalledWith(
@@ -472,12 +498,11 @@ describe('PPOM Utils', () => {
   });
 
   describe('clearSignatureSecurityAlertResponse', () => {
-    it('set call action to set securityAlertResponse for signature in redux state to undefined', async () => {
+    it('removes the security alert response of the given signature request', async () => {
       const spy = jest.spyOn(SignatureRequestActions, 'default');
-      PPOMUtil.clearSignatureSecurityAlertResponse();
+      PPOMUtil.clearSignatureSecurityAlertResponse(SECURITY_ALERT_ID_MOCK);
       expect(spy).toHaveBeenCalledTimes(1);
-      // function call with no arguments
-      expect(spy).toHaveBeenCalledWith();
+      expect(spy).toHaveBeenCalledWith(SECURITY_ALERT_ID_MOCK);
     });
   });
 });

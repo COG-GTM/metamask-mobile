@@ -117,6 +117,7 @@ describe('persistConfig', () => {
         'rpcEvents',
         'accounts',
         'confirmationMetrics',
+        'signatureRequest',
       ]);
     });
 

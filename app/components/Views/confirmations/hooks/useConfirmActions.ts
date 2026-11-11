@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 
 import { selectShouldUseSmartTransaction } from '../../../../selectors/smartTransactionsController';
 import Routes from '../../../../constants/navigation/Routes';
-import PPOMUtil from '../../../../lib/ppom/ppom-util';
 import { RootState } from '../../../../reducers';
 import { MetaMetricsEvents } from '../../../hooks/useMetrics';
 import { isSignatureRequest } from '../utils/confirm';
@@ -44,7 +43,6 @@ export const useConfirmActions = () => {
     navigation.goBack();
     if (isSignatureReq) {
       captureSignatureMetrics(MetaMetricsEvents.SIGNATURE_REJECTED);
-      PPOMUtil.clearSignatureSecurityAlertResponse();
     }
   }, [
     cancelQRScanRequestIfPresent,
@@ -77,7 +75,6 @@ export const useConfirmActions = () => {
 
     if (isSignatureReq) {
       captureSignatureMetrics(MetaMetricsEvents.SIGNATURE_APPROVED);
-      PPOMUtil.clearSignatureSecurityAlertResponse();
     }
   }, [
     isQRSigningInProgress,

@@ -28,6 +28,7 @@ import { getBlockaidMetricsParams } from '../../../../../../util/blockaid';
 import createExternalSignModelNav from '../../../../../../util/hardwareWallet/signatureUtils';
 import { getDecimalChainId } from '../../../../../../util/networks';
 import { selectSignatureRequestById } from '../../../../../../selectors/signatureController';
+import { selectSignatureSecurityAlertResponse } from '../../../selectors/security-alerts';
 import { selectProviderTypeByChainId } from '../../../../../../selectors/networkController';
 import { RootState } from '../../../../../../reducers';
 import { Hex } from '@metamask/utils';
@@ -65,10 +66,8 @@ const PersonalSign = ({
   const { trackEvent, createEventBuilder } = useMetrics();
   const [truncateMessage, setTruncateMessage] = useState<boolean>(false);
 
-  const { securityAlertResponse } = useSelector(
-    // TODO: Replace "any" with type
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (reduxState: any) => reduxState.signatureRequest,
+  const securityAlertResponse = useSelector((state: RootState) =>
+    selectSignatureSecurityAlertResponse(state, messageParams.metamaskId),
   );
 
   const signatureRequest = useSelector((state: RootState) =>
@@ -266,6 +265,7 @@ const PersonalSign = ({
       type="personal_sign"
       fromAddress={messageParams.from}
       origin={messageParams.origin}
+      securityAlertResponse={securityAlertResponse}
       testID={SigningBottomSheetSelectorsIDs.PERSONAL_REQUEST}
       networkType={networkType}
     >
