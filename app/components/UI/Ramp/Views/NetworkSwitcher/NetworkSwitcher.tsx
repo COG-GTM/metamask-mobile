@@ -307,10 +307,31 @@ function NetworkSwitcher() {
     }
   }, [networkToBeAdded]);
 
+  const intentNetworkPrompt =
+    !isLoading && intentNetworkName ? (
+      <Row>
+        <Text centered>
+          {strings(
+            'fiat_on_ramp_aggregator.network_switcher.intent_description',
+            { networkName: intentNetworkName },
+          )}
+        </Text>
+        <Row last>
+          <StyledButton type={'confirm'} onPress={handleIntentNetworkPress}>
+            {strings(
+              'fiat_on_ramp_aggregator.network_switcher.switch_to_network',
+              { networkName: intentNetworkName },
+            )}
+          </StyledButton>
+        </Row>
+      </Row>
+    ) : null;
+
   if (!isLoading && (error || rampNetworksDetails.length === 0)) {
     return (
       <ScreenLayout>
         <ScreenLayout.Body>
+          {intentNetworkPrompt}
           <ErrorView
             description={
               error?.message ??
@@ -356,29 +377,7 @@ function NetworkSwitcher() {
               })}
             </Text>
 
-            {!isLoading && intentNetworkName ? (
-              <Row>
-                <Text centered>
-                  {strings(
-                    'fiat_on_ramp_aggregator.network_switcher.intent_description',
-                    { networkName: intentNetworkName },
-                  )}
-                </Text>
-                <Row last>
-                  <StyledButton
-                    type={'confirm'}
-                    onPress={handleIntentNetworkPress}
-                  >
-                    {strings(
-                      'fiat_on_ramp_aggregator.network_switcher.switch_to_network',
-                      { networkName: intentNetworkName },
-                    )}
-                  </StyledButton>
-                </Row>
-              </Row>
-            ) : (
-              <Row />
-            )}
+            {intentNetworkPrompt ?? <Row />}
 
             {isLoading ? (
               <LoadingNetworksSkeleton />

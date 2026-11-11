@@ -417,6 +417,22 @@ describe('NetworkSwitcher View', () => {
       expect(mockSetActiveNetwork).toHaveBeenCalledTimes(1);
     });
 
+    it('offers the mainnet confirmation when no other ramp networks are available', async () => {
+      mockedRampNetworks = mockedRampNetworksValues.filter(({ chainId }) =>
+        ['1', '59144'].includes(chainId),
+      );
+      mockUseRampNetworksDetailValues.networksDetails = [];
+      mockUseRampSDKValues.intent = { chainId: '1' };
+      render(NetworkSwitcher);
+
+      expect(screen.getByText('No supported networks found')).toBeTruthy();
+      expect(mockSetActiveNetwork).not.toHaveBeenCalled();
+
+      fireEvent.press(screen.getByText('Switch to Ethereum Main Network'));
+
+      expect(mockSetActiveNetwork).toHaveBeenCalledWith('mainnet');
+    });
+
     it('does not offer a switch to a network the ramp does not support', async () => {
       mockUseRampSDKValues.selectedChainId = '1';
       mockUseRampSDKValues.intent = { chainId: '56' };
