@@ -9,7 +9,7 @@ export const SHA256_DIGEST_LENGTH = 256;
  * Source: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html#pbkdf2
  */
 export enum KeyDerivationIteration {
-  // Legacy, kept for backward compatibility
+  // Legacy, only used to decrypt payloads written before key metadata was stored
   Legacy5000 = 5_000,
   // OWASP's 2023 recommendation for minimum iterations
   OWASP2023Minimum = 600_000,
@@ -34,7 +34,18 @@ export const ENCRYPTION_LIBRARY = {
 export const KDF_ALGORITHM = 'PBKDF2';
 
 /**
- * Default key derivation options.
+ * Bounds accepted for the iteration count stored in a payload's `keyMetadata`.
+ * Nothing this app writes uses fewer than the legacy 5,000 rounds, and the upper
+ * bound keeps a tampered payload from stalling the unlock flow.
+ */
+export const MIN_KEY_DERIVATION_ITERATIONS = KeyDerivationIteration.Legacy5000;
+export const MAX_KEY_DERIVATION_ITERATIONS = 10_000_000;
+
+/**
+ * Legacy key derivation options.
+ *
+ * Only used as the fallback when decrypting payloads that carry no `keyMetadata`.
+ * Never use these to encrypt new data.
  */
 export const LEGACY_DERIVATION_OPTIONS: KeyDerivationOptions = {
   algorithm: KDF_ALGORITHM,
@@ -56,3 +67,13 @@ export const DERIVATION_OPTIONS_DEFAULT_OWASP2023: KeyDerivationOptions = {
     iterations: KeyDerivationIteration.OWASP2023Default,
   },
 };
+
+/**
+ * Key derivation options used to encrypt new vaults, keychain entries and Snap state.
+ *
+ * Existing payloads keep decrypting with the `keyMetadata` they were written with;
+ * `Encryptor.isVaultUpdated` reports them as outdated so the KeyringController and
+ * SnapController re-encrypt them with these options.
+ */
+export const DEFAULT_DERIVATION_OPTIONS: KeyDerivationOptions =
+  DERIVATION_OPTIONS_MINIMUM_OWASP2023;

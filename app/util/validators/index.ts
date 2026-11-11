@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { Encryptor, LEGACY_DERIVATION_OPTIONS } from '../../core/Encryptor';
+import { Encryptor, DEFAULT_DERIVATION_OPTIONS } from '../../core/Encryptor';
 import { regex } from '../regex';
 
 export const failedSeedPhraseRequirements = (seed: string): boolean => {
@@ -27,7 +27,7 @@ export const parseVaultValue = async (password: string, vault: string): Promise<
         seedObject?.lib
       ) {
         const encryptor = new Encryptor({
-          keyDerivationOptions: LEGACY_DERIVATION_OPTIONS,
+          keyDerivationOptions: DEFAULT_DERIVATION_OPTIONS,
         });
         const result = await encryptor.decrypt(password, vault) as { data?: { mnemonic?: string } }[];
         vaultSeed = result[0]?.data?.mnemonic;
