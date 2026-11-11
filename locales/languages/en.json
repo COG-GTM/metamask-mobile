@@ -3307,7 +3307,12 @@
     "error": "Failed to download attachment.",
     "unknownError": "Unknown error occurred",
     "wallet_pass_alert": "This website ({{host}}) wants to open an Apple Wallet pass outside MetaMask. Only allow this if you trust the site.",
-    "wallet_pass_declined": "Opening the Apple Wallet pass was cancelled."
+    "wallet_pass_declined": "Opening the Apple Wallet pass was cancelled.",
+    "confirm_title": "Download file?",
+    "confirm_message": "This website ({{host}}) wants to download a file to your device. Files larger than {{maxSize}} MB will be stopped. Only download files from sites you trust.",
+    "confirm_download": "Download",
+    "declined": "The download was cancelled.",
+    "too_large": "The download was stopped because the file is larger than {{maxSize}} MB."
   },
   "remember_me": {
     "enable_remember_me": "Turn on Remember me",
