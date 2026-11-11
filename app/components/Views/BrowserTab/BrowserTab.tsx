@@ -1019,17 +1019,21 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   );
 
   const sendActiveAccount = useCallback(async () => {
-    // permittedAccountsList belongs to the resolved page; only push it to that page's bridge
+    // Only push accounts to the bridge of the resolved page, read for that bridge's
+    // own hostname so a callback captured during an earlier render can't leak
+    // another site's accounts
     const bridgeUrl = backgroundBridgeRef.current?.url;
     if (!bridgeUrl || getUrlOrigin(resolvedUrlRef.current) !== bridgeUrl) {
       return;
     }
     notifyAllConnections({
       method: NOTIFICATION_NAMES.accountsChanged,
-      params: permittedAccountsList,
+      params: getPermittedAccountsByHostname(
+        Engine.context.PermissionController.state,
+        new URLParse(bridgeUrl).hostname,
+      ),
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notifyAllConnections, permittedAccountsList]);
+  }, [notifyAllConnections]);
 
   /**
    * Website started to load
