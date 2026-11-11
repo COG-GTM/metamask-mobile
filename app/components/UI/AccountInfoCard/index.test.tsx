@@ -88,14 +88,16 @@ jest.mock('react-redux', () => ({
 jest.mock('is-url', () => jest.fn());
 jest.mock('../../../core/SDKConnect/SDKConnect', () => ({
   getInstance: () => ({
-    getConnections: jest.fn().mockReturnValue({
-      'https://metamask.io': {
-        originatorInfo: {
-          url: 'https://metamask.io',
-          icon: 'https://metamask.io/icon.png',
-        },
-      },
-    }),
+    getConnection: jest.fn(({ channelId }: { channelId: string }) =>
+      channelId === 'https://metamask.io'
+        ? {
+            originatorInfo: {
+              url: 'https://metamask.io',
+              icon: 'https://metamask.io/icon.png',
+            },
+          }
+        : undefined,
+    ),
   }),
 }));
 

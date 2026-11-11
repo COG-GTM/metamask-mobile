@@ -166,9 +166,9 @@ class AccountInfoCard extends PureComponent {
       ? weiToFiat(weiBalance, conversionRate, currentCurrency, 2)?.toUpperCase()
       : undefined;
 
-    const sdkConnections = SDKConnect.getInstance().getConnections();
-
-    const currentConnection = sdkConnections[origin ?? ''];
+    const currentConnection = SDKConnect.getInstance().getConnection({
+      channelId: origin ?? '',
+    });
 
     const isOriginUrl = isUrl(origin);
 

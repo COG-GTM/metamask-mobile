@@ -544,9 +544,9 @@ class TransactionReview extends PureComponent {
       `TransactionReview render channelIdOrHostname=${channelIdOrHostname}`,
     );
 
-    const sdkConnections = SDKConnect.getInstance().getConnections();
-
-    const currentConnection = sdkConnections[channelIdOrHostname ?? ''];
+    const currentConnection = SDKConnect.getInstance().getConnection({
+      channelId: channelIdOrHostname ?? '',
+    });
 
     let url = '';
     if (currentConnection) {

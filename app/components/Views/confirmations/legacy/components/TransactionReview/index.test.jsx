@@ -14,6 +14,7 @@ import * as TransactionUtils from '../../../../../../util/transactions';
 // eslint-disable-next-line import/no-namespace
 import { FALSE_POSITIVE_REPOST_LINE_TEST_ID } from '../BlockaidBanner/BlockaidBanner.constants';
 import { MOCK_KEYRING_CONTROLLER_STATE } from '../../../../../../util/test/keyringControllerTestUtils';
+import { SDKConnect } from '../../../../../../core/SDKConnect/SDKConnect';
 
 jest.mock('../../../../../../util/transactions', () => ({
   ...jest.requireActual('../../../../../../util/transactions'),
@@ -280,6 +281,44 @@ describe('TransactionReview', () => {
     expect(blockaidMetricsParamsSpy).toHaveBeenCalledWith(
       securityAlertResponse,
     );
+  });
+
+  it('shows the dapp of a deeplink or Android SDK session instead of its channel id origin', async () => {
+    const channelId = '70a863a4-a756-4660-8c72-dc367d02f625';
+    const getConnection = jest.fn(({ channelId: id }) =>
+      id === channelId
+        ? {
+            originatorInfo: {
+              url: 'https://dapp.example',
+              icon: 'https://dapp.example/icon.png',
+            },
+          }
+        : undefined,
+    );
+    jest.spyOn(SDKConnect, 'getInstance').mockReturnValue({ getConnection });
+
+    const { findByText, queryByText } = renderWithProvider(
+      <TransactionReview
+        EIP1559GasData={{}}
+        generateTransform={generateTransform}
+      />,
+      {
+        state: {
+          ...mockState,
+          transaction: {
+            ...mockState.transaction,
+            transaction: {
+              ...mockState.transaction.transaction,
+              origin: channelId,
+            },
+          },
+        },
+      },
+    );
+
+    expect(getConnection).toHaveBeenCalledWith({ channelId });
+    expect(await findByText('https://dapp.example')).toBeDefined();
+    expect(queryByText(channelId, { exact: false })).toBeNull();
   });
 
   it('should have enabled confirm button if from account has balance', async () => {
