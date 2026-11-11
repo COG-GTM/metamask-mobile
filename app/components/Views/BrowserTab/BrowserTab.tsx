@@ -103,7 +103,12 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import {
+  getMaskedUrl,
+  getUrlForOrigin,
+  isENSUrl,
+  isUrlFromOrigin,
+} from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -682,6 +687,43 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   }, [activeChainId, navigation, isFocused, isInTabsView, isTabActive]);
 
   /**
+   * Updates the resolved url, address bar, lock icon and stored tab url
+   */
+  const setDisplayedUrl = useCallback(
+    (url: string) => {
+      resolvedUrlRef.current = url;
+
+      const hostName = new URLParse(url).hostname;
+      // Prevent url from being set when the url bar is focused
+      !isUrlBarFocused && urlBarRef.current?.setNativeProps({ text: hostName });
+
+      const contentProtocol = getURLProtocol(url);
+      if (contentProtocol === PROTOCOLS.HTTPS) {
+        setConnectionType(ConnectionType.SECURE);
+      } else if (contentProtocol === PROTOCOLS.HTTP) {
+        setConnectionType(ConnectionType.UNSECURE);
+      }
+
+      isTabActive &&
+        navigation.setParams({
+          url: getMaskedUrl(url, sessionENSNamesRef.current),
+        });
+
+      updateTabInfo(tabId, {
+        url: getMaskedUrl(url, sessionENSNamesRef.current),
+      });
+    },
+    [
+      isUrlBarFocused,
+      setConnectionType,
+      isTabActive,
+      navigation,
+      tabId,
+      updateTabInfo,
+    ],
+  );
+
+  /**
    * Handles state changes for when the url changes
    */
   const handleSuccessfulPageResolution = useCallback(
@@ -692,31 +734,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       canGoBack: boolean;
       canGoForward: boolean;
     }) => {
-      resolvedUrlRef.current = siteInfo.url;
+      setDisplayedUrl(siteInfo.url);
       titleRef.current = siteInfo.title;
       if (siteInfo.icon) iconRef.current = siteInfo.icon;
 
-      const hostName = new URLParse(siteInfo.url).hostname;
-      // Prevent url from being set when the url bar is focused
-      !isUrlBarFocused && urlBarRef.current?.setNativeProps({ text: hostName });
-
-      const contentProtocol = getURLProtocol(siteInfo.url);
-      if (contentProtocol === PROTOCOLS.HTTPS) {
-        setConnectionType(ConnectionType.SECURE);
-      } else if (contentProtocol === PROTOCOLS.HTTP) {
-        setConnectionType(ConnectionType.UNSECURE);
-      }
       setBackEnabled(siteInfo.canGoBack);
       setForwardEnabled(siteInfo.canGoForward);
-
-      isTabActive &&
-        navigation.setParams({
-          url: getMaskedUrl(siteInfo.url, sessionENSNamesRef.current),
-        });
-
-      updateTabInfo(tabId, {
-        url: getMaskedUrl(siteInfo.url, sessionENSNamesRef.current),
-      });
 
       addToBrowserHistory({
         name: siteInfo.title,
@@ -725,16 +748,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
 
       checkTabPermissions();
     },
-    [
-      isUrlBarFocused,
-      setConnectionType,
-      isTabActive,
-      tabId,
-      updateTabInfo,
-      addToBrowserHistory,
-      navigation,
-      checkTabPermissions,
-    ],
+    [setDisplayedUrl, addToBrowserHistory, checkTabPermissions],
   );
 
   /**
@@ -914,10 +928,26 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             hostname,
             getProviderState,
             navigation,
-            // Website info
-            url: resolvedUrlRef,
-            title: titleRef,
-            icon: iconRef,
+            // Website info, scoped to the origin this bridge was created for
+            url: {
+              get current() {
+                return getUrlForOrigin(resolvedUrlRef.current, urlBridge);
+              },
+            },
+            title: {
+              get current() {
+                return isUrlFromOrigin(resolvedUrlRef.current, urlBridge)
+                  ? titleRef.current
+                  : new URLParse(urlBridge).hostname;
+              },
+            },
+            icon: {
+              get current() {
+                return isUrlFromOrigin(resolvedUrlRef.current, urlBridge)
+                  ? iconRef.current
+                  : undefined;
+              },
+            },
             // Bookmarks
             isHomepage,
             // Show autocomplete
@@ -977,8 +1007,19 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       }
 
       initializeBackgroundBridge(urlOrigin, true);
+
+      // The new page can use the provider before it finishes loading, so show
+      // its origin as soon as the navigation starts instead of on load end.
+      if (
+        loadingUrlRef.current === nativeEvent.url &&
+        !isUrlFromOrigin(resolvedUrlRef.current, urlOrigin)
+      ) {
+        titleRef.current = new URLParse(nativeEvent.url).hostname;
+        setDisplayedUrl(nativeEvent.url);
+      }
     },
     [
+      setDisplayedUrl,
       isAllowedOrigin,
       handleNotAllowedUrl,
       sendActiveAccount,

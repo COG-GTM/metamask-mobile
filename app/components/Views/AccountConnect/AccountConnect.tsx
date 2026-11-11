@@ -169,6 +169,12 @@ const AccountConnect = (props: AccountConnectProps) => {
 
   const isChannelId = isUUID(channelIdOrHostname);
 
+  // Only trust the active tab url when it belongs to the requesting origin
+  const requestingTabUrl =
+    inappBrowserOrigin && getHost(inappBrowserOrigin) === channelIdOrHostname
+      ? inappBrowserOrigin
+      : '';
+
   const sdkConnection = SDKConnect.getInstance().getConnection({
     channelId: channelIdOrHostname,
   });
@@ -199,7 +205,7 @@ const AccountConnect = (props: AccountConnectProps) => {
       dappHostname = title;
     } else if (!isChannelId && (dappUrl || channelIdOrHostname)) {
       title = prefixUrlWithProtocol(dappUrl || channelIdOrHostname);
-      dappHostname = inappBrowserOrigin;
+      dappHostname = requestingTabUrl || channelIdOrHostname;
     } else {
       title = strings('sdk.unknown');
       setIsSdkUrlUnknown(true);
@@ -208,7 +214,7 @@ const AccountConnect = (props: AccountConnectProps) => {
     return { domainTitle: title, hostname: dappHostname };
   }, [
     isOriginWalletConnect,
-    inappBrowserOrigin,
+    requestingTabUrl,
     isOriginMMSDKRemoteConn,
     isChannelId,
     dappUrl,
@@ -265,7 +271,7 @@ const AccountConnect = (props: AccountConnectProps) => {
   }, [dappUrl, channelIdOrHostname]);
 
   const faviconSource = useFavicon(
-    inappBrowserOrigin || (!isChannelId ? channelIdOrHostname : ''),
+    requestingTabUrl || (!isChannelId ? channelIdOrHostname : ''),
   );
 
   const actualIcon = useMemo(() => {

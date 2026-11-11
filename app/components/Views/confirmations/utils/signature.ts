@@ -20,6 +20,7 @@ import {
  } from '../../../../util/string';
 import { TOKEN_ADDRESS } from '../constants/tokens';
 import BigNumber from 'bignumber.js';
+import { isUUID } from '../../../../core/SDKConnect/utils/isUUID';
 
 type FieldValue = string | string[] | Record<string, unknown>;
 
@@ -259,3 +260,36 @@ export const isSIWESignatureRequest = (signatureRequest?: SignatureRequest) =>
 
 export const getSIWEDetails = (signatureRequest?: SignatureRequest) =>
   (signatureRequest?.messageParams as MessageParamsSIWE)?.siwe ?? {};
+
+const PROTOCOL_REGEX = /^https?:\/\//i;
+const BARE_HOST_REGEX = /^[a-z0-9-]+(\.[a-z0-9-]+)*(:\d+)?$/i;
+
+const getHostname = (url: string) => {
+  try {
+    return new URL(PROTOCOL_REGEX.test(url) ? url : `https://${url}`).hostname;
+  } catch {
+    return undefined;
+  }
+};
+
+/**
+ * Returns the url of the site that made a signature request.
+ * `meta.url` is only used when it belongs to the requesting origin.
+ */
+export const getSignatureRequestUrl = (requestData?: {
+  origin?: string;
+  meta?: { url?: string };
+}): string | undefined => {
+  const origin = requestData?.origin;
+  const metaUrl = requestData?.meta?.url;
+  if (!origin) return metaUrl;
+
+  if (metaUrl && PROTOCOL_REGEX.test(metaUrl)) {
+    const metaHostname = getHostname(metaUrl);
+    if (metaHostname && metaHostname === getHostname(origin)) return metaUrl;
+  }
+
+  if (PROTOCOL_REGEX.test(origin)) return origin;
+  if (!isUUID(origin) && BARE_HOST_REGEX.test(origin)) return `https://${origin}`;
+  return metaUrl ?? origin;
+};

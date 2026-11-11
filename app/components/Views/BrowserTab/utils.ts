@@ -79,3 +79,17 @@ export const getMaskedUrl = (
   }
   return urlToMask;
 };
+
+/**
+ * Checks whether a url belongs to the given origin (scheme, host and port)
+ */
+export const isUrlFromOrigin = (url: string | undefined, origin: string) => {
+  if (!url || !origin) return false;
+  return new URLParse(url).origin === new URLParse(origin).origin;
+};
+
+/**
+ * Returns the url if it belongs to the given origin, otherwise the origin
+ */
+export const getUrlForOrigin = (url: string | undefined, origin: string) =>
+  isUrlFromOrigin(url, origin) ? (url as string) : origin;

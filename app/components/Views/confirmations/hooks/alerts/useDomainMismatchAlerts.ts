@@ -4,7 +4,10 @@ import { RowAlertKey } from '../../components/UI/info-row/alert-row/constants';
 import useApprovalRequest from '../useApprovalRequest';
 import { Alert, Severity } from '../../types/alerts';
 import { useSignatureRequest } from '../signatures/useSignatureRequest';
-import { isSIWESignatureRequest } from '../../utils/signature';
+import {
+  getSignatureRequestUrl,
+  isSIWESignatureRequest,
+} from '../../utils/signature';
 import { strings } from '../../../../../../locales/i18n';
 import { regex } from '../../../../../util/regex';
 import { AlertKeys } from '../../constants/alerts';
@@ -16,9 +19,12 @@ export default function useDomainMismatchAlerts(): Alert[] {
   const { requestData } = approvalRequest || {};
   const isSIWE = isSIWESignatureRequest(signatureRequest);
 
-  const { meta } = requestData;
+  const requestUrl = getSignatureRequestUrl(requestData);
 
-  const originWithProtocol = regex.urlHttpToHttps.test(requestData.origin) || !isSIWE ? requestData.origin : new URL(meta?.url).origin;
+  const originWithProtocol =
+    regex.urlHttpToHttps.test(requestData.origin) || !isSIWE || !requestUrl
+      ? requestData.origin
+      : new URL(requestUrl).origin;
 
   const isInvalidSIWEDomain =
     isSIWE && !isValidSIWEOrigin({ ...requestData, origin: originWithProtocol } as WrappedSIWERequest);
