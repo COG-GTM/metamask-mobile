@@ -604,6 +604,30 @@ describe('WalletConnect2Session', () => {
         },
       );
 
+      it('does not open a native https redirect to a host other than the dapp url', () => {
+        session.session = {
+          ...mockSession,
+          peer: {
+            metadata: {
+              ...mockSession.peer.metadata,
+              url: 'https://example.com',
+              redirect: { native: 'https://attacker.example/' },
+            },
+          },
+        } as any;
+
+        session.redirect('test');
+        jest.runAllTimers();
+
+        expect(Linking.openURL).not.toHaveBeenCalled();
+        expect(mockNavigation.navigate).toHaveBeenCalledWith(
+          Routes.MODAL.ROOT_MODAL_FLOW,
+          {
+            screen: Routes.SHEET.RETURN_TO_DAPP_MODAL,
+          },
+        );
+      });
+
       it('falls back to a safe universal link when the native link is unsafe', () => {
         session.session = {
           ...mockSession,
