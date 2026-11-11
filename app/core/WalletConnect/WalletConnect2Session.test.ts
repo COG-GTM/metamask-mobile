@@ -295,6 +295,36 @@ describe('WalletConnect2Session', () => {
       expect(session.isHandlingRequest()).toBe(false);
     });
 
+    it('rejects requests whose Verify validation is INVALID', async () => {
+      const { checkWCPermissions } = jest.requireMock('./wc-utils');
+      checkWCPermissions.mockClear();
+      const respondSpy = jest
+        .spyOn(mockClient, 'respondSessionRequest')
+        .mockResolvedValue(undefined);
+
+      await session.handleRequest({
+        ...baseRequest,
+        verifyContext: {
+          verified: {
+            origin: 'https://phisher.example',
+            validation: 'INVALID',
+            verifyUrl: '',
+          },
+        },
+      } as any);
+
+      expect(respondSpy).toHaveBeenCalledWith({
+        topic: 'test-topic',
+        response: {
+          id: '7',
+          jsonrpc: '2.0',
+          error: { code: 5000, message: 'User reject' },
+        },
+      });
+      expect(checkWCPermissions).not.toHaveBeenCalled();
+      expect(session.isHandlingRequest()).toBe(false);
+    });
+
     it('passes the permission subject to the background bridge', () => {
       const BackgroundBridge = jest.requireMock(
         '../BackgroundBridge/BackgroundBridge',

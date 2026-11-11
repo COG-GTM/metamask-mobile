@@ -485,8 +485,12 @@ export class WC2Manager {
       verification,
     );
 
-    if (verification.isScam) {
-      DevLogger.log(`WC2::session_proposal rejected: flagged as scam`);
+    // INVALID means the Verify API saw the proposal come from a different
+    // origin than the one the dapp claims: a spoofing attempt.
+    if (verification.isScam || verification.validation === 'INVALID') {
+      DevLogger.log(
+        `WC2::session_proposal rejected: validation=${verification.validation} isScam=${verification.isScam}`,
+      );
       await this.web3Wallet.rejectSession({
         id: proposal.id,
         reason: getSdkError('USER_REJECTED'),
