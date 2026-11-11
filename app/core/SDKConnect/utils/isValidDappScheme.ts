@@ -30,6 +30,12 @@ const BLOCKED_DAPP_SCHEMES = new Set([
   'dapp',
 ]);
 
+/**
+ * Checks whether a dapp-supplied return scheme is safe to open via `Linking.openURL`.
+ *
+ * @param scheme - The bare URL scheme (without `://`) supplied by the dapp.
+ * @returns True only for a custom app scheme that is not a web, system or wallet scheme.
+ */
 export const isValidDappScheme = (scheme: unknown): scheme is string =>
   typeof scheme === 'string' &&
   DAPP_SCHEME_PATTERN.test(scheme) &&
