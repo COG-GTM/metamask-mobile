@@ -79,6 +79,11 @@ export default class DeeplinkProtocolService {
 
         this.connections[connection.id] = clientInfo;
 
+        if (connection.otherPublicKey) {
+          this.dappPublicKeyByClientId[connection.id] =
+            connection.otherPublicKey;
+        }
+
         this.setupBridge(clientInfo);
       });
     }
@@ -429,8 +434,6 @@ export default class DeeplinkProtocolService {
       return;
     }
 
-    this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
-
     const decodedOriginatorInfo = Buffer.from(
       params.originatorInfo,
       'base64',
@@ -448,11 +451,37 @@ export default class DeeplinkProtocolService {
       scheme: params.scheme,
     };
 
-    this.currentClientId = params.channelId;
+    const existingSession = this.connections?.[clientInfo.clientId];
 
-    const isSessionExists = this.connections?.[clientInfo.clientId];
+    if (existingSession) {
+      if (!this.isSessionBindingMatching(existingSession, params)) {
+        // A link with a different key or scheme does not come from the dapp
+        // the user approved for this channel; never rebind the session to it.
+        Logger.log(
+          `DeeplinkProtocolService::handleConnection rejected link for ${clientInfo.clientId}: public key or scheme does not match the approved session`,
+        );
+        return;
+      }
 
-    if (isSessionExists) {
+      // A session persisted without a key (or past its expiry) has nothing
+      // to prove ownership with, so the user approves it again before any
+      // presented key is bound and any request is run.
+      const isKeyUnbound = !this.dappPublicKeyByClientId[params.channelId];
+
+      if (this.isSessionExpired(existingSession) || isKeyUnbound) {
+        this.reauthorizeSession({ session: existingSession, params }).catch(
+          (err) => {
+            Logger.log(
+              err,
+              `DeeplinkProtocolService::handleConnection error re-authorizing session`,
+            );
+          },
+        );
+        return;
+      }
+
+      this.currentClientId = params.channelId;
+
       // Skip existing client -- bridge has been setup
 
       // Update connected state
@@ -480,6 +509,9 @@ export default class DeeplinkProtocolService {
       return;
     }
 
+    this.currentClientId = params.channelId;
+    this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
+
     await SDKConnect.getInstance().addDappConnection({
       id: clientInfo.clientId,
       lastAuthorized: Date.now(),
@@ -497,6 +529,162 @@ export default class DeeplinkProtocolService {
       Logger.log(
         err,
         `DeeplinkProtocolService::clients_connected error handling event`,
+      );
+    });
+  }
+
+  public isSessionExpired(session: DappClient) {
+    return (session.validUntil ?? 0) <= Date.now();
+  }
+
+  /**
+   * The deeplink protocol has no message authentication, so the best proof of
+   * ownership available is that the link matches what the user approved: the
+   * stored dapp public key (when one was bound) and the return scheme.
+   * With `requireBoundKey`, a session without a stored key never matches, so
+   * it has to be re-approved through a connect link first.
+   */
+  public isSessionBindingMatching(
+    session: DappClient,
+    params: { channelId: string; dappPublicKey?: string; scheme?: string },
+    { requireBoundKey = false }: { requireBoundKey?: boolean } = {},
+  ) {
+    const storedPublicKey = this.dappPublicKeyByClientId[params.channelId];
+    const isPublicKeyMatching = storedPublicKey
+      ? storedPublicKey === params.dappPublicKey
+      : !requireBoundKey;
+
+    return session.scheme === params.scheme && isPublicKeyMatching;
+  }
+
+  public isSessionOwnedByCaller(
+    session: DappClient,
+    params: { channelId: string; dappPublicKey?: string; scheme?: string },
+    options: { requireBoundKey?: boolean } = {},
+  ) {
+    return (
+      !this.isSessionExpired(session) &&
+      this.isSessionBindingMatching(session, params, options)
+    );
+  }
+
+  /**
+   * Re-approves an expired or keyless session for the dapp it was bound to.
+   * The stored scheme and dapp metadata are kept, so the prompt shows the dapp
+   * that will actually receive the responses; a key is only bound to a keyless
+   * session after the user approves.
+   */
+  public async reauthorizeSession({
+    session,
+    params,
+  }: {
+    session: DappClient;
+    params: {
+      dappPublicKey: string;
+      url: string;
+      scheme: string;
+      channelId: string;
+      originatorInfo?: string;
+      request?: string;
+    };
+  }) {
+    const keyringController = (
+      Engine.context as { KeyringController: KeyringController }
+    ).KeyringController;
+
+    await waitForKeychainUnlocked({
+      keyringController,
+      context: 'DeeplinkProtocolService::reauthorizeSession',
+    });
+
+    try {
+      await this.checkPermission({
+        channelId: session.clientId,
+        originatorInfo: session.originatorInfo,
+      });
+    } catch (error) {
+      Logger.log(
+        error,
+        `DeeplinkProtocolService::reauthorizeSession re-approval rejected for ${session.clientId}`,
+      );
+      this.sendReauthorizationError(session, params.request);
+      return;
+    }
+
+    // Another renewal may have bound a key while this prompt was open.
+    if (!this.isSessionBindingMatching(session, params)) {
+      Logger.log(
+        `DeeplinkProtocolService::reauthorizeSession dropped link for ${session.clientId}: public key no longer matches the session`,
+      );
+      return;
+    }
+
+    const refreshedSession: DappClient = {
+      ...session,
+      connected: true,
+      validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+    };
+
+    if (
+      !this.dappPublicKeyByClientId[session.clientId] &&
+      params.dappPublicKey
+    ) {
+      this.dappPublicKeyByClientId[session.clientId] = params.dappPublicKey;
+    }
+
+    this.connections[session.clientId] = refreshedSession;
+    this.setupBridge(refreshedSession);
+    this.currentClientId = session.clientId;
+
+    await SDKConnect.getInstance().addDappConnection({
+      id: session.clientId,
+      origin: AppConstants.MM_SDK.IOS_SDK,
+      lastAuthorized: Date.now(),
+      otherPublicKey: this.dappPublicKeyByClientId[session.clientId],
+      originatorInfo: session.originatorInfo,
+      scheme: session.scheme,
+      validUntil: refreshedSession.validUntil,
+    });
+
+    if (params.request) {
+      await this.processDappRpcRequest(params);
+      return;
+    }
+
+    this.sendMessage({ data: {} }, true).catch((err) => {
+      Logger.log(
+        err,
+        `DeeplinkProtocolService::reauthorizeSession error sending READY message to client`,
+      );
+    });
+  }
+
+  private sendReauthorizationError(session: DappClient, request?: string) {
+    let id: string | undefined;
+    try {
+      id = request ? JSON.parse(request)?.id : undefined;
+    } catch {
+      id = undefined;
+    }
+
+    this.openDeeplink({
+      message: {
+        data: {
+          id,
+          error: {
+            code: 4001,
+            message: 'User rejected the request.',
+          },
+          jsonrpc: '2.0',
+        },
+        name: 'metamask-provider',
+      },
+      clientId: session.clientId,
+      scheme: session.scheme,
+    }).catch((err) => {
+      Logger.log(
+        err,
+        `DeeplinkProtocolService::reauthorizeSession error sending rejection to ${session.clientId}`,
       );
     });
   }
@@ -813,6 +1001,36 @@ export default class DeeplinkProtocolService {
           clientId: sessionId,
           scheme: params.scheme,
         });
+
+        return;
+      }
+
+      if (
+        !this.isSessionOwnedByCaller(isSessionExists, params, {
+          requireBoundKey: true,
+        })
+      ) {
+        Logger.log(
+          `DeeplinkProtocolService::onMessageReceived rejected message for ${sessionId}: public key, scheme or expiry does not match the session`,
+        );
+
+        // Only the dapp's own scheme is told, so the dapp can reconnect.
+        if (isSessionExists.scheme === params.scheme) {
+          this.openDeeplink({
+            message: {
+              data: {
+                id: data.id,
+                error: {
+                  code: 4100,
+                  message: 'Unauthorized request',
+                },
+                jsonrpc: '2.0',
+              },
+              name: 'metamask-provider',
+            },
+            clientId: sessionId,
+          });
+        }
 
         return;
       }

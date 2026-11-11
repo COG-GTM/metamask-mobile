@@ -57,7 +57,7 @@ describe('reconnect', () => {
         setOtherPublicKey: mockRemoteSetOtherPublicKey,
         connect: mockRemoteConnect,
       },
-      otherPublicKey: 'test-other-public-key-2',
+      otherPublicKey: 'test-other-public-key',
       isReady: false,
       connect: mockRemoteConnect,
       setTrigger: mockSetTrigger,
@@ -231,6 +231,110 @@ describe('reconnect', () => {
       });
 
       expect(mockInstance.state.connecting['test-channel-id']).toEqual(false);
+    });
+  });
+  describe('Binding the approved public key', () => {
+    beforeEach(() => {
+      mockRemoteIsReady.mockReturnValue(false);
+      mockRemoteIsPaused.mockReturnValue(false);
+      mockRemoteIsConnected.mockReturnValue(false);
+    });
+
+    it('does not reconnect when the presented key differs from the approved one', async () => {
+      mockInstance.state.paused = true;
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'attacker-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(
+        mockInstance.state.connections['test-channel-id'].otherPublicKey,
+      ).toBe('test-other-public-key');
+      expect(mockRemoteSetOtherPublicKey).not.toHaveBeenCalled();
+      expect(Connection).not.toHaveBeenCalled();
+    });
+
+    it('binds the presented key to a session that has none', async () => {
+      mockInstance.state.paused = true;
+      mockInstance.state.connections['test-channel-id'] = {
+        ...mockInstance.state.connections['test-channel-id'],
+        otherPublicKey: '',
+      };
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'new-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(
+        mockInstance.state.connections['test-channel-id'].otherPublicKey,
+      ).toBe('new-public-key');
+      expect(mockRemoteSetOtherPublicKey).toHaveBeenCalledWith(
+        'new-public-key',
+      );
+    });
+
+    it('binds the presented key to an active keyless session', async () => {
+      mockInstance.state.connections['test-channel-id'] = {
+        ...mockInstance.state.connections['test-channel-id'],
+        otherPublicKey: '',
+      };
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'new-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(
+        mockInstance.state.connections['test-channel-id'].otherPublicKey,
+      ).toBe('new-public-key');
+
+      (Connection as unknown as jest.Mock).mockClear();
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'attacker-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(
+        mockInstance.state.connections['test-channel-id'].otherPublicKey,
+      ).toBe('new-public-key');
+      expect(Connection).not.toHaveBeenCalled();
+    });
+
+    it('reconnects with the approved key when no key is presented', async () => {
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: '',
+        context: 'test-context',
+      });
+
+      expect(Connection).toHaveBeenCalledWith(
+        expect.objectContaining({ otherPublicKey: 'test-other-public-key' }),
+      );
     });
   });
 });
