@@ -20,6 +20,7 @@ import getRpcMethodMiddleware from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { ERROR_MESSAGES } from './WalletConnectV2';
 import METHODS_TO_REDIRECT from './wc-config';
+import { getSafeWCRedirectLink } from './wc-redirect';
 import {
   checkWCPermissions,
   getHostname,
@@ -206,8 +207,11 @@ class WalletConnect2Session {
 
     setTimeout(() => {
       if (Device.isIos() && parseInt(Platform.Version as string) >= 17) {
-        const redirect = this.session.peer.metadata.redirect;
-        const peerLink = redirect?.native || redirect?.universal;
+        const { redirect, url } = this.session.peer.metadata;
+        const peerLink = getSafeWCRedirectLink(redirect, url);
+        if (!peerLink && (redirect?.native || redirect?.universal)) {
+          DevLogger.log('WC2::redirect ignored unsafe peer redirect link');
+        }
         if (peerLink) {
           Linking.openURL(peerLink).catch((error) => {
             DevLogger.log(
