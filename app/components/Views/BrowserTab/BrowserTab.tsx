@@ -103,7 +103,7 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import { getMaskedUrl, isENSUrl, isMessageFromBridgeFrame } from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -877,6 +877,17 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       if (dataParsed.name) {
+        if (
+          !isMessageFromBridgeFrame(
+            nativeEvent,
+            backgroundBridgeRef.current?.url,
+          )
+        ) {
+          Logger.log(
+            `Browser::onMessage dropped message from frame ${nativeEvent.frameOrigin} (main frame: ${nativeEvent.isMainFrame}) on ${resolvedUrlRef.current}`,
+          );
+          return;
+        }
         backgroundBridgeRef.current?.onMessage(dataParsed);
         return;
       }
