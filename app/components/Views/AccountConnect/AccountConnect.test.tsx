@@ -252,6 +252,88 @@ describe('AccountConnect', () => {
     });
   });
 
+  describe('WalletConnect origin verification', () => {
+    const renderWalletConnectRequest = (origin: string) =>
+      renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: { id: 'mockId', origin },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        {
+          state: {
+            ...mockInitialState,
+            sdk: {
+              wc2Metadata: {
+                id: '1',
+                url: 'https://example.com',
+                name: 'Example',
+                icon: '',
+              },
+            },
+          } as DeepPartial<RootState>,
+        },
+      );
+
+    it('shows an unverified WalletConnect origin with a warning', () => {
+      const { getByTestId, getByText } = renderWalletConnectRequest(
+        'example.com#wc-unverified-pairing-1',
+      );
+
+      expect(getByTestId('permission-summary-origin-warning')).toBeDefined();
+      expect(getByText('example.com wants to:')).toBeDefined();
+    });
+
+    it('warns for an unverified WalletConnect origin after the proposal metadata is cleared', () => {
+      const { getByTestId, getByText } = renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: {
+                  id: 'mockId',
+                  origin: 'example.com#wc-unverified-pairing-1',
+                },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        {
+          state: {
+            ...mockInitialState,
+            sdk: {
+              wc2Metadata: { id: '', url: '', name: '', icon: '' },
+            },
+          } as DeepPartial<RootState>,
+        },
+      );
+
+      expect(getByTestId('permission-summary-origin-warning')).toBeDefined();
+      expect(getByText('example.com wants to:')).toBeDefined();
+    });
+
+    it('does not warn for a verified WalletConnect origin', () => {
+      const { queryByTestId, getByText } = renderWalletConnectRequest(
+        'example.com#wc-verified-pairing-1',
+      );
+
+      expect(queryByTestId('permission-summary-origin-warning')).toBeNull();
+      expect(getByText('example.com wants to:')).toBeDefined();
+    });
+  });
+
   describe('AccountConnectMultiSelector handlers', () => {
     it('invokes onSubmit property and renders permissions summary', async () => {
       // Render the container component with necessary props

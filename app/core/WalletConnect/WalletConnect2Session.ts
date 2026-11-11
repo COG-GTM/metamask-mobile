@@ -22,7 +22,6 @@ import { ERROR_MESSAGES } from './WalletConnectV2';
 import METHODS_TO_REDIRECT from './wc-config';
 import {
   checkWCPermissions,
-  getHostname,
   getScopedPermissions,
   hideWCLoadingState,
 } from './wc-utils';
@@ -55,6 +54,9 @@ class WalletConnect2Session {
   private lastChainId: string;
   private isHandlingChainChange = false;
   private _isHandlingRequest = false;
+  // PermissionController subject of this session (see wc-verify.ts). Never
+  // derived from the dapp's self-declared metadata.url alone.
+  private permissionSubject: string;
 
   public session: SessionTypes.Struct;
 
@@ -64,6 +66,7 @@ class WalletConnect2Session {
     navigation,
     channelId,
     deeplink,
+    permissionSubject,
     backgroundBridgeFactory = {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       create: (options: any) => new BackgroundBridge(options),
@@ -73,6 +76,7 @@ class WalletConnect2Session {
     channelId: string;
     session: SessionTypes.Struct;
     deeplink: boolean;
+    permissionSubject: string;
     navigation?: NavigationContainerRef;
     backgroundBridgeFactory?: BackgroundBridgeFactory;
   }) {
@@ -80,6 +84,7 @@ class WalletConnect2Session {
     this.deeplink = deeplink;
     this.session = session;
     this.navigation = navigation;
+    this.permissionSubject = permissionSubject;
 
     DevLogger.log(
       `WalletConnect2Session::constructor channelId=${channelId} deeplink=${deeplink}`,
@@ -97,6 +102,7 @@ class WalletConnect2Session {
     this.backgroundBridge = backgroundBridgeFactory.create({
       webview: null,
       url,
+      permissionSubject,
       isWalletConnect: true,
       channelId,
       wcRequestActions: {
@@ -114,7 +120,7 @@ class WalletConnect2Session {
         getProviderState: any;
       }) =>
         getRpcMethodMiddleware({
-          hostname: getHostname(url),
+          hostname: permissionSubject,
           getProviderState,
           channelId,
           analytics: {},
@@ -389,16 +395,14 @@ class WalletConnect2Session {
         return;
       }
 
-      // const origin = normalizeOrigin(this.session.peer.metadata.url);
-      const origin = this.session.peer.metadata.url;
-      const hostname = getHostname(origin);
+      const origin = this.permissionSubject;
 
       DevLogger.log(
-        `WC2::updateSession origin=${origin} hostname=${hostname} - chainId=${chainId} - accounts=${accounts}`,
+        `WC2::updateSession subject=${origin} - chainId=${chainId} - accounts=${accounts}`,
       );
 
       if (accounts.length === 0) {
-        const approvedAccounts = getPermittedAccounts(hostname);
+        const approvedAccounts = getPermittedAccounts(origin);
         if (approvedAccounts.length > 0) {
           DevLogger.log(
             `WC2::updateSession found approved accounts`,
@@ -462,8 +466,31 @@ class WalletConnect2Session {
 
     hideWCLoadingState({ navigation: this.navigation });
 
-    const verified = requestEvent.verifyContext?.verified;
-    const origin = verified?.origin ?? this.session.peer.metadata.url;
+    if (requestEvent.verifyContext?.verified?.isScam) {
+      DevLogger.log(
+        `WC2::handleRequest rejected request ${requestEvent.id}: flagged as scam`,
+      );
+      try {
+        await this.web3Wallet.respondSessionRequest({
+          topic: this.session.topic,
+          response: {
+            id: requestEvent.id,
+            jsonrpc: '2.0',
+            error: {
+              code: ERROR_CODES.USER_REJECT_CODE,
+              message: ERROR_MESSAGES.USER_REJECT,
+            },
+          },
+        });
+      } finally {
+        this._isHandlingRequest = false;
+      }
+      return;
+    }
+
+    // verifyContext.verified.origin falls back to the dapp's self-declared
+    // metadata.url when validation is UNKNOWN, so it is not used as identity.
+    const origin = this.permissionSubject;
     const method = requestEvent.params.request.method;
     const isSwitchingChain = method === 'wallet_switchEthereumChain';
     const caip2ChainId = (isSwitchingChain ? `eip155:${parseInt(requestEvent.params.request.params[0].chainId, 16)}` : requestEvent.params.chainId) as CaipChainId;
@@ -549,6 +576,8 @@ class WalletConnect2Session {
       origin,
     });
   };
+
+  getPermissionSubject = () => this.permissionSubject;
 
   removeListeners = async () => {
     this.backgroundBridge.onDisconnect();

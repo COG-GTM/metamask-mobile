@@ -22,7 +22,6 @@ import { wait, waitForKeychainUnlocked } from '../SDKConnect/utils/wait.util';
 import extractApprovedAccounts from './extractApprovedAccounts';
 import WalletConnect from './WalletConnect';
 import {
-  getHostname,
   getScopedPermissions,
   hideWCLoadingState,
   parseWalletConnectUri,
@@ -32,6 +31,11 @@ import {
 import { Caip25CaveatType, Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
 import WalletConnect2Session from './WalletConnect2Session';
 import { CaipChainId } from '@metamask/utils';
+import {
+  buildWalletConnectPermissionSubject,
+  findWalletConnectPermissionSubject,
+  getWalletConnectVerification,
+} from './wc-verify';
 const { PROJECT_ID } = AppConstants.WALLET_CONNECT;
 export const isWC2Enabled =
   typeof PROJECT_ID === 'string' && PROJECT_ID?.length > 0;
@@ -76,6 +80,8 @@ export class WC2Manager {
       async (event: WalletKitTypes.SessionDelete) => {
         const session =
           this.getSession(event.topic) || this.sessions[event.topic]?.session;
+        const permissionSubject =
+          this.sessions[event.topic]?.getPermissionSubject();
         if (session && deeplinkSessions[session?.pairingTopic]) {
           delete deeplinkSessions[session.pairingTopic];
           await StorageWrapper.setItem(
@@ -86,6 +92,7 @@ export class WC2Manager {
         // Remove session from local list
         this.sessions[event.topic]?.removeListeners();
         delete this.sessions[event.topic];
+        this.revokeSubjectIfUnused(permissionSubject);
       },
     );
 
@@ -119,6 +126,25 @@ export class WC2Manager {
       activeSessions.forEach(async (session) => {
         const sessionKey = session.topic;
         try {
+          const permissionSubject = findWalletConnectPermissionSubject(
+            Object.keys(permissionController.state?.subjects ?? {}),
+            session.pairingTopic,
+          );
+
+          if (!permissionSubject) {
+            // Sessions approved before WalletConnect got its own permission
+            // subject share the browser grant of the dapp's self-declared
+            // hostname. Drop them so the dapp has to reconnect.
+            DevLogger.log(
+              `WC2::init no WalletConnect permission subject for ${sessionKey} -- disconnecting`,
+            );
+            await web3Wallet.disconnectSession({
+              topic: sessionKey,
+              reason: getSdkError('USER_DISCONNECTED'),
+            });
+            return;
+          }
+
           this.sessions[sessionKey] = new WalletConnect2Session({
             web3Wallet,
             channelId: sessionKey,
@@ -126,17 +152,16 @@ export class WC2Manager {
             deeplink:
               typeof deeplinkSessions[session.pairingTopic] !== 'undefined',
             session,
+            permissionSubject,
           });
 
           // Find approvedAccounts for current sessions
           DevLogger.log(
-            `WC2::init getPermittedAccounts for ${sessionKey} origin=${getHostname(
-              session.peer.metadata.url,
-            )}`,
+            `WC2::init getPermittedAccounts for ${sessionKey} subject=${permissionSubject}`,
             JSON.stringify(permissionController.state, null, 2),
           );
           const accountPermission = permissionController.getPermission(
-            session.peer.metadata.url,
+            permissionSubject,
             'eth_accounts',
           );
 
@@ -145,9 +170,8 @@ export class WC2Manager {
             JSON.stringify(accountPermission, null, 2),
           );
 
-          const hostname = getHostname(session.peer.metadata.url);
           let approvedAccounts =
-            getPermittedAccounts(hostname) ?? [];
+            getPermittedAccounts(permissionSubject) ?? [];
 
           DevLogger.log(
             `WC2::init approvedAccounts id ${accountPermission?.id}`,
@@ -305,8 +329,48 @@ export class WC2Manager {
     return this.getSessions().find((session) => session.topic === topic);
   }
 
+  private getPermissionController() {
+    return (
+      Engine.context as {
+        // TODO: Replace 'any' with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PermissionController: PermissionController<any, any>;
+      }
+    ).PermissionController;
+  }
+
+  /**
+   * Revokes the grant of a WalletConnect permission subject once no tracked
+   * session uses it anymore, so a later pairing can never inherit it.
+   */
+  private revokeSubjectIfUnused(permissionSubject?: string) {
+    if (!permissionSubject) return;
+    const stillUsed = Object.values(this.sessions).some(
+      (session) => session.getPermissionSubject() === permissionSubject,
+    );
+    if (stillUsed) return;
+    try {
+      const permissionsController = this.getPermissionController();
+      if (permissionsController.hasPermissions(permissionSubject)) {
+        DevLogger.log(
+          `WC2::revokeSubjectIfUnused revokeAllPermissions for ${permissionSubject}`,
+        );
+        permissionsController.revokeAllPermissions(permissionSubject);
+      }
+    } catch (err) {
+      DevLogger.log(`WC2::revokeSubjectIfUnused error`, err);
+    }
+  }
+
   public async removeSession(session: SessionTypes.Struct) {
     try {
+      const permissionSubject =
+        this.sessions[session.topic]?.getPermissionSubject() ??
+        findWalletConnectPermissionSubject(
+          Object.keys(this.getPermissionController().state?.subjects ?? {}),
+          session.pairingTopic,
+        );
+
       // Use disconnectSession directly
       await this.web3Wallet.disconnectSession({
         topic: session.topic,
@@ -318,18 +382,7 @@ export class WC2Manager {
       delete this.sessions[session.topic];
 
       // Remove associated permissions
-      const permissionsController = (
-        Engine.context as {
-          // TODO: Replace 'any' with type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          PermissionController: PermissionController<any, any>;
-        }
-      ).PermissionController;
-      DevLogger.log(
-        `WC2::removeSession revokeAllPermissions for ${session.topic}`,
-        permissionsController.state,
-      );
-      permissionsController.revokeAllPermissions(session.topic);
+      this.revokeSubjectIfUnused(permissionSubject);
     } catch (err) {
       DevLogger.log(`WC2::removeSession error while disconnecting`, err);
     }
@@ -350,7 +403,13 @@ export class WC2Manager {
     });
 
     // Clear local sessions
+    const permissionSubjects = Object.values(this.sessions).map((session) =>
+      session.getPermissionSubject(),
+    );
     this.sessions = {};
+    permissionSubjects.forEach((subject) =>
+      this.revokeSubjectIfUnused(subject),
+    );
 
     await StorageWrapper.setItem(
       AppConstants.WALLET_CONNECT.DEEPLINK_SESSIONS,
@@ -413,19 +472,51 @@ export class WC2Manager {
     const url = metadata.url ?? '';
     const name = metadata.description ?? '';
     const icons = metadata.icons;
-    const icon = icons?.[0] ?? '';
 
-    // Extract the hostname to ensure we're consistent with permission checks
-    const hostname = getHostname(url);
-    // Keep the full url for logging and UI display
-    const origin = url;
-
-    DevLogger.log(
-      `WC2::session_proposal metadata url=${origin} normalized to hostname=${hostname}`,
+    // metadata.url / icons are chosen by the dapp. Only an origin attested by
+    // the WalletConnect Verify API is treated as the dapp's identity.
+    const verification = getWalletConnectVerification(
+      proposal.verifyContext,
+      url,
     );
 
+    DevLogger.log(
+      `WC2::session_proposal metadata url=${url} verification`,
+      verification,
+    );
+
+    if (verification.isScam) {
+      DevLogger.log(`WC2::session_proposal rejected: flagged as scam`);
+      await this.web3Wallet.rejectSession({
+        id: proposal.id,
+        reason: getSdkError('USER_REJECTED'),
+      });
+      return;
+    }
+
+    // Never share the in-app browser's grant for the same hostname, and never
+    // share a grant between different pairings.
+    const permissionSubject = buildWalletConnectPermissionSubject({
+      hostname: verification.hostname,
+      isVerified: verification.isVerified,
+      pairingTopic,
+    });
+    // A self-declared icon would let an unverified dapp impersonate a brand.
+    const icon = verification.isVerified ? icons?.[0] ?? '' : '';
+
+    // A stale grant left on this subject (no tracked session uses it) must
+    // not be inherited by the new session.
+    this.revokeSubjectIfUnused(permissionSubject);
+
     // Save Connection info to redux store to be retrieved in ui.
-    store.dispatch(updateWC2Metadata({ url, name, icon, id: `${id}` }));
+    store.dispatch(
+      updateWC2Metadata({
+        url: verification.hostname ? `https://${verification.hostname}` : '',
+        name,
+        icon,
+        id: `${id}`,
+      }),
+    );
 
     // Get the current chain ID to include in permissions
     const walletChainIdHex = selectEvmChainId(store.getState());
@@ -435,15 +526,14 @@ export class WC2Manager {
       // Create a modified CAIP-25 caveat value that includes the current chain
       const caveatValue = getDefaultCaip25CaveatValue();
 
-      // Important: Use hostname as the origin for permission request to ensure consistency
-      DevLogger.log(`WC2::session_proposal requestPermissions for hostname`, {
-        hostname,
+      DevLogger.log(`WC2::session_proposal requestPermissions for subject`, {
+        permissionSubject,
         caveatValue,
       });
 
       // Request permissions via the permissions controller
       await permissionsController.requestPermissions(
-        { origin: hostname },
+        { origin: permissionSubject },
         {
           [Caip25EndowmentPermissionName]: {
             caveats: [
@@ -462,9 +552,9 @@ export class WC2Manager {
       // Explicitly add the current chain to permissions
       try {
         const hexChainId = `0x${walletChainIdDecimal.toString(16)}` as `0x${string}`;
-        DevLogger.log(`WC2::session_proposal ensuring chain ${hexChainId} is permitted for ${hostname}`);
+        DevLogger.log(`WC2::session_proposal ensuring chain ${hexChainId} is permitted for ${permissionSubject}`);
 
-        updatePermittedChains(hostname, [hexChainId]);
+        updatePermittedChains(permissionSubject, [hexChainId]);
         DevLogger.log(`WC2::session_proposal chain permission added successfully`);
       } catch (err) {
         DevLogger.log(`WC2::session_proposal error adding chain permission`, err);
@@ -481,18 +571,19 @@ export class WC2Manager {
     }
 
     try {
-      // Use the hostname for consistent permissions
-      const approvedAccounts = getPermittedAccounts(hostname);
+      const approvedAccounts = getPermittedAccounts(permissionSubject);
 
       DevLogger.log(`WC2::session_proposal getScopedPermissions`, {
-        hostname,
+        permissionSubject,
         approvedAccounts,
         walletChainIdHex,
         walletChainIdDecimal,
       });
 
       // Use getScopedPermissions to get properly formatted namespaces
-      const namespaces = await getScopedPermissions({ origin });
+      const namespaces = await getScopedPermissions({
+        origin: permissionSubject,
+      });
 
       DevLogger.log(`WC2::session_proposal namespaces`, namespaces);
 
@@ -508,6 +599,7 @@ export class WC2Manager {
         deeplink,
         web3Wallet: this.web3Wallet,
         navigation: this.navigation,
+        permissionSubject,
       });
 
       this.sessions[activeSession.topic] = session;
