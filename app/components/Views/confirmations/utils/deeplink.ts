@@ -57,20 +57,44 @@ export function isDeeplinkRedesignedConfirmationCompatible(
 export const INVALID_DEEPLINK_TRANSACTION_ERROR =
   'InvalidDeeplinkTransactionError';
 
+/**
+ * Creates an error for a deeplink that cannot be turned into a transaction.
+ *
+ * @param message - Reason the deeplink was rejected.
+ * @returns Error named {@link INVALID_DEEPLINK_TRANSACTION_ERROR}.
+ */
 const createInvalidDeeplinkTransactionError = (message: string) => {
   const error = new Error(message);
   error.name = INVALID_DEEPLINK_TRANSACTION_ERROR;
   return error;
 };
 
+/**
+ * Checks that a deeplink value is a non-negative integer as a decimal or `0x` hex string.
+ *
+ * @param value - Value parsed from the deeplink.
+ * @returns True if the value can be safely converted with `toHex`.
+ */
 const isValidQuantity = (value: unknown): value is string =>
   typeof value === 'string' &&
   (/^\d+$/u.test(value) || (isStrictHexString(value) && value.length > 2));
 
+/**
+ * Checks that a deeplink value is a valid hex address (checksum enforced for mixed case).
+ *
+ * @param address - Address parsed from the deeplink.
+ * @returns True if the address is valid.
+ */
 const isValidDeeplinkAddress = (address: unknown): address is string =>
   typeof address === 'string' &&
   isValidHexAddress(address, { mixedCaseUseChecksum: true });
 
+/**
+ * Validates the deeplink fields used to build the transaction.
+ *
+ * @param deeplink - Parsed `ethereum:` deeplink.
+ * @throws Error named {@link INVALID_DEEPLINK_TRANSACTION_ERROR} if a field is missing or invalid.
+ */
 function validateDeeplinkTransaction({
   chain_id,
   function_name,
