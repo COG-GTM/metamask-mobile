@@ -2,13 +2,13 @@ package io.metamask
 
 import android.app.Application
 import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Configuration
-import android.os.Build
 import android.webkit.WebView
 import android.database.CursorWindow
+
+import androidx.core.content.ContextCompat
 
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -61,13 +61,44 @@ class MainApplication : Application(), ShareApplication, ReactApplication {
     override val reactHost: ReactHost
         get() = ReactNativeHostWrapper.createReactHost(applicationContext, reactNativeHost)
 
+    // Libraries that call the two-argument registerReceiver on the application context
+    // (e.g. the native SDK's `local.client` / `local.service` receivers) must not be
+    // reachable by other apps. System broadcasts and broadcasts scoped to this package
+    // are still delivered to non-exported receivers.
     @Suppress("OVERRIDE_DEPRECATION")
     override fun registerReceiver(receiver: BroadcastReceiver?, filter: IntentFilter): Intent? {
-        return if (Build.VERSION.SDK_INT >= 34 && applicationInfo.targetSdkVersion >= 34) {
-            super.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
-        } else {
-            super.registerReceiver(receiver, filter)
+        if (receiver == null) {
+            return super.registerReceiver(null, filter)
         }
+        val flags = if (isCrossAppBroadcastFilter(filter)) {
+            ContextCompat.RECEIVER_EXPORTED
+        } else {
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        }
+        return ContextCompat.registerReceiver(this, receiver, filter, flags)
+    }
+
+    private fun isCrossAppBroadcastFilter(filter: IntentFilter): Boolean {
+        if (filter.countActions() == 0) return false
+        for (i in 0 until filter.countActions()) {
+            if (filter.getAction(i) !in CROSS_APP_BROADCAST_ACTIONS) return false
+        }
+        return true
+    }
+
+    // The native SDK talks to itself with implicit local.client / local.service broadcasts.
+    // Non-exported receivers only get broadcasts scoped to this package, so pin them here.
+    override fun sendBroadcast(intent: Intent?) {
+        super.sendBroadcast(scopeInAppBroadcast(intent))
+    }
+
+    private fun scopeInAppBroadcast(intent: Intent?): Intent? {
+        if (intent == null || intent.action !in IN_APP_BROADCAST_ACTIONS ||
+            intent.`package` != null || intent.component != null
+        ) {
+            return intent
+        }
+        return Intent(intent).setPackage(packageName)
     }
 
     override fun onCreate() {
@@ -105,4 +136,16 @@ class MainApplication : Application(), ShareApplication, ReactApplication {
         super.onConfigurationChanged(newConfig)
         ApplicationLifecycleDispatcher.onConfigurationChanged(this, newConfig)
     }
-} 
+
+    companion object {
+        // Broadcasts that legitimately come from other apps and are registered through
+        // the two-argument registerReceiver (netinfo's Amazon Fire connectivity poller).
+        private val CROSS_APP_BROADCAST_ACTIONS = setOf(
+            "com.amazon.tv.networkmonitor.INTERNET_DOWN",
+            "com.amazon.tv.networkmonitor.INTERNET_UP",
+        )
+
+        // Broadcasts the bundled MetaMask native SDK sends between its own components.
+        private val IN_APP_BROADCAST_ACTIONS = setOf("local.client", "local.service")
+    }
+}
