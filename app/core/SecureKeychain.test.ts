@@ -161,11 +161,63 @@ describe('SecureKeychain - setGenericPassword', () => {
         BIOMETRY_CHOICE_DISABLED,
         TRUE,
       );
+      expect(StorageWrapper.setItem).toHaveBeenCalledWith(
+        PASSCODE_DISABLED,
+        TRUE,
+      );
+      expect(Keychain.resetGenericPassword).toHaveBeenCalledWith({
+        service: 'com.metamask',
+      });
+      expect(Keychain.setGenericPassword).toHaveBeenCalledTimes(1);
+      expect(Keychain.setGenericPassword).toHaveBeenCalledWith(
+        'metamask-user',
+        expect.any(String),
+        expect.objectContaining({
+          accessControl: 'BIOMETRY_CURRENT_SET',
+          accessible: 'WHEN_UNLOCKED_THIS_DEVICE_ONLY',
+        }),
+      );
       expect(mockAddTraitsToUser).toHaveBeenLastCalledWith(
         expect.objectContaining({
           [UserProfileProperty.AUTHENTICATION_TYPE]:
             AUTHENTICATION_TYPE.PASSWORD,
         }),
+      );
+    });
+
+    it('never stores the password without access control after cancellation', async () => {
+      (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+        new Error('User canceled the operation.'),
+      );
+
+      await SecureKeychain.setGenericPassword(
+        mockPassword,
+        SecureKeychain.TYPES.BIOMETRICS,
+      );
+
+      const resetOrder = (Keychain.resetGenericPassword as jest.Mock).mock
+        .invocationCallOrder[0];
+      const setCalls = (Keychain.setGenericPassword as jest.Mock).mock;
+      setCalls.calls.forEach(([, , options], i) => {
+        expect(options.accessControl).toBeDefined();
+        expect(setCalls.invocationCallOrder[i]).toBeLessThan(resetOrder);
+      });
+    });
+
+    it('keeps the biometric-protected entry when the prompt fails for another reason', async () => {
+      (Keychain.getGenericPassword as jest.Mock).mockRejectedValueOnce(
+        new Error('Some other error'),
+      );
+
+      await SecureKeychain.setGenericPassword(
+        mockPassword,
+        SecureKeychain.TYPES.BIOMETRICS,
+      );
+
+      expect(Keychain.resetGenericPassword).not.toHaveBeenCalled();
+      expect(StorageWrapper.setItem).toHaveBeenCalledWith(
+        BIOMETRY_CHOICE,
+        TRUE,
       );
     });
 

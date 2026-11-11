@@ -164,26 +164,10 @@ export default {
         } catch (error) {
           // Specifically check for user cancellation
           if (error.message === 'User canceled the operation.') {
-            // Store password without biometrics
-            const encryptedPassword = await instance.encryptPassword(password);
-            await Keychain.setGenericPassword(
-              'metamask-user',
-              encryptedPassword,
-              {
-                ...defaultOptions,
-              },
-            );
-
-            // Update storage to reflect disabled biometrics
-            await StorageWrapper.removeItem(BIOMETRY_CHOICE);
+            // Fall back to password login: never keep the password in the
+            // keychain without access control
+            await this.resetGenericPassword();
             await StorageWrapper.setItem(BIOMETRY_CHOICE_DISABLED, TRUE);
-
-            // Update metrics
-            await metrics.addTraitsToUser({
-              [UserProfileProperty.AUTHENTICATION_TYPE]:
-                AUTHENTICATION_TYPE.PASSWORD,
-            });
-
             return;
           }
         }
