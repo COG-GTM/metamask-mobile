@@ -1,6 +1,5 @@
 /* eslint-disable import/no-namespace */
 import * as AddressUtilsModule from '../../../util/address';
-import * as NetworksUtilsModule from '../../../util/networks';
 import * as TransactionsUtilsModule from '../../../util/transactions';
 import Engine from '../../Engine';
 import NotificationManager from '../../NotificationManager';
@@ -16,14 +15,20 @@ const MOCK_INTERNAL_ACCOUNT = createMockInternalAccount(
   'Account 1',
 );
 
-jest.mock('../../../util/networks');
+jest.mock('../../../util/networks/global-network', () => ({
+  getGlobalNetworkClientId: jest.fn(() => 'selectedNetworkClientId'),
+}));
 jest.mock('../../../util/transactions');
 jest.mock('../../../util/address');
 jest.mock('../../Engine', () => ({
   context: {
     NetworkController: {
       setProviderType: jest.fn(),
+      setActiveNetwork: jest.fn(),
       findNetworkClientIdByChainId: jest.fn(),
+    },
+    MultichainNetworkController: {
+      setActiveNetwork: jest.fn(),
     },
     PreferencesController: {
       state: { selectedAddress: MOCK_SENDER_ADDRESS },
@@ -60,20 +65,13 @@ const mockDeeplinkManager = {
 const mockOrigin = 'testOrigin';
 
 describe('approveTransaction', () => {
-  const spyGetNetworkTypeById = jest.spyOn(
-    NetworksUtilsModule,
-    'getNetworkTypeById',
-  );
-
   const spyGenerateApproveData = jest.spyOn(
     TransactionsUtilsModule,
     'generateApprovalData',
   );
 
-  const spySetProviderType = jest.spyOn(
-    Engine.context.NetworkController,
-    'setProviderType',
-  );
+  const mockFindNetworkClientIdByChainId = Engine.context.NetworkController
+    .findNetworkClientIdByChainId as jest.Mock;
 
   const spyAddTransaction = addTransaction as jest.Mock;
 
@@ -87,14 +85,35 @@ describe('approveTransaction', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    spyGetNetworkTypeById.mockReturnValue('fakeNetworkType');
     spyGenerateApproveData.mockReturnValue('fakeApproveData');
+    spyGetAddress.mockResolvedValue('0xMockAddress');
+    mockFindNetworkClientIdByChainId.mockReturnValue('mainnet');
   });
 
-  it('should call setProviderType with the correct network type', async () => {
-    const fakeNetworkType = 'fakeNetworkType';
+  it('does not change the selected network', async () => {
+    await approveTransaction({
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      deeplinkManager: mockDeeplinkManager as any,
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ethUrl: { ...mockEthUrl, chain_id: '137' } as any,
+      origin: mockOrigin,
+    });
 
-    spyGetNetworkTypeById.mockReturnValue(fakeNetworkType);
+    expect(
+      Engine.context.NetworkController.setProviderType,
+    ).not.toHaveBeenCalled();
+    expect(
+      Engine.context.NetworkController.setActiveNetwork,
+    ).not.toHaveBeenCalled();
+    expect(
+      Engine.context.MultichainNetworkController.setActiveNetwork,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('adds the transaction on the network client of the deeplink chain', async () => {
+    mockFindNetworkClientIdByChainId.mockReturnValue('polygonClientId');
 
     await approveTransaction({
       // TODO: Replace "any" with type
@@ -102,14 +121,63 @@ describe('approveTransaction', () => {
       deeplinkManager: mockDeeplinkManager as any,
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ethUrl: mockEthUrl as any,
+      ethUrl: { ...mockEthUrl, chain_id: '137' } as any,
       origin: mockOrigin,
     });
 
-    expect(
-      Engine.context.NetworkController.setProviderType,
-    ).toHaveBeenCalledWith(fakeNetworkType);
+    expect(mockFindNetworkClientIdByChainId).toHaveBeenCalledWith('0x89');
+    expect(spyAddTransaction).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ networkClientId: 'polygonClientId' }),
+    );
   });
+
+  it('uses the selected network client when the deeplink has no chain id', async () => {
+    await approveTransaction({
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      deeplinkManager: mockDeeplinkManager as any,
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ethUrl: { ...mockEthUrl, chain_id: undefined } as any,
+      origin: mockOrigin,
+    });
+
+    expect(mockFindNetworkClientIdByChainId).not.toHaveBeenCalled();
+    expect(spyAddTransaction).toHaveBeenCalledWith(
+      expect.any(Object),
+      expect.objectContaining({ networkClientId: 'selectedNetworkClientId' }),
+    );
+  });
+
+  it.each([
+    ['returns undefined', () => undefined],
+    [
+      'throws',
+      () => {
+        throw new Error('No network client');
+      },
+    ],
+  ])(
+    'throws an unknown network error without adding a transaction when the lookup %s',
+    async (_, implementation) => {
+      mockFindNetworkClientIdByChainId.mockImplementation(implementation);
+
+      await expect(
+        approveTransaction({
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          deeplinkManager: mockDeeplinkManager as any,
+          // TODO: Replace "any" with type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ethUrl: { ...mockEthUrl, chain_id: '999999' } as any,
+          origin: mockOrigin,
+        }),
+      ).rejects.toThrow('Unknown network with id 999999');
+
+      expect(spyAddTransaction).not.toHaveBeenCalled();
+    },
+  );
 
   it('calls generateApprovalData with the correct parameters', async () => {
     spyGetAddress.mockResolvedValue('0xMockAddress');
@@ -150,6 +218,7 @@ describe('approveTransaction', () => {
       },
       {
         deviceConfirmedOn: 'metamask_mobile',
+        networkClientId: 'mainnet',
         origin: mockOrigin,
       },
     );
@@ -281,15 +350,8 @@ describe('approveTransaction', () => {
     ).rejects.toThrow('The parameter uint256 should be an integer');
   });
 
-  it('should spySetProviderType with the correct network type', async () => {
-    const mockEthUrlWithInvalidChainId = {
-      ...mockEthUrl,
-      chain_id: 'invalidChainId',
-    };
-
-    const fakeNetworkType = 'fakeNetworkType';
-
-    spyGetNetworkTypeById.mockReturnValue(fakeNetworkType);
+  it('does not add a transaction if the spender address is invalid', async () => {
+    spyGetAddress.mockResolvedValue('');
 
     await approveTransaction({
       // TODO: Replace "any" with type
@@ -297,10 +359,11 @@ describe('approveTransaction', () => {
       deeplinkManager: mockDeeplinkManager as any,
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ethUrl: mockEthUrlWithInvalidChainId as any,
+      ethUrl: mockEthUrl as any,
       origin: mockOrigin,
     });
 
-    expect(spySetProviderType).toHaveBeenCalledWith(fakeNetworkType);
+    expect(spyGenerateApproveData).not.toHaveBeenCalled();
+    expect(spyAddTransaction).not.toHaveBeenCalled();
   });
 });

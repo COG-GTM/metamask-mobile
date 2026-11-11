@@ -54,9 +54,12 @@ async function handleEthereumUrl({
     }
 
     /**
-     * Validate and switch network before performing any other action
+     * Approve runs on the deeplink's network client and must not change the
+     * wallet's selected network before the user confirms anything.
      */
-    deeplinkManager._handleNetworkSwitch(ethUrl.chain_id);
+    if (ethUrl.function_name !== ETH_ACTIONS.APPROVE) {
+      deeplinkManager._handleNetworkSwitch(ethUrl.chain_id);
+    }
 
     switch (ethUrl.function_name) {
       case ETH_ACTIONS.TRANSFER: {

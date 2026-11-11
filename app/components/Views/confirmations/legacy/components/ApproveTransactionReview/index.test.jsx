@@ -16,7 +16,9 @@ jest.mock('react-redux', () => ({
 }));
 
 jest.mock('../../../../../../selectors/smartTransactionsController', () => ({
-  ...jest.requireActual('../../../../../../selectors/smartTransactionsController'),
+  ...jest.requireActual(
+    '../../../../../../selectors/smartTransactionsController',
+  ),
   selectShouldUseSmartTransaction: jest.fn(),
 }));
 
@@ -123,19 +125,20 @@ describe('ApproveTransactionModal', () => {
     state.engine.backgroundState.TokenListController = {
       tokensChainsCache: {
         '0x1': {
-          data: [{
-            '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
-              address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
-              symbol: 'SNX',
-              decimals: 18,
-              name: 'Synthetix Network Token',
-              iconUrl:
-                'https://static.cx.metamask.io/api/v1/tokenIcons/1/0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f.png',
-              type: 'erc20',
-              aggregators: ['Aave'],
-              occurrences: 10,
-              fees: {
-                '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f': 0,
+          data: [
+            {
+              '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
+                address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
+                symbol: 'SNX',
+                decimals: 18,
+                name: 'Synthetix Network Token',
+                iconUrl:
+                  'https://static.cx.metamask.io/api/v1/tokenIcons/1/0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f.png',
+                type: 'erc20',
+                aggregators: ['Aave'],
+                occurrences: 10,
+                fees: {
+                  '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f': 0,
                   '0xda4ef8520b1a57d7d63f1e249606d1a459698876': 0,
                 },
               },
@@ -185,23 +188,25 @@ describe('ApproveTransactionModal', () => {
     state.engine.backgroundState.TokenListController = {
       tokensChainsCache: {
         '0x1': {
-          data: [{
-            '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
-              address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
-              symbol: 'SNX',
-              decimals: 18,
-              name: 'Synthetix Network Token',
-              iconUrl:
-                'https://static.cx.metamask.io/api/v1/tokenIcons/1/0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f.png',
-              type: 'erc20',
-              aggregators: ['Aave'],
-              occurrences: 10,
-              fees: {
-                '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f': 0,
-                '0xda4ef8520b1a57d7d63f1e249606d1a459698876': 0,
+          data: [
+            {
+              '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f': {
+                address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
+                symbol: 'SNX',
+                decimals: 18,
+                name: 'Synthetix Network Token',
+                iconUrl:
+                  'https://static.cx.metamask.io/api/v1/tokenIcons/1/0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f.png',
+                type: 'erc20',
+                aggregators: ['Aave'],
+                occurrences: 10,
+                fees: {
+                  '0x5fd79d46eba7f351fe49bff9e87cdea6c821ef9f': 0,
+                  '0xda4ef8520b1a57d7d63f1e249606d1a459698876': 0,
+                },
               },
             },
-          }],
+          ],
         },
       },
     };
@@ -233,5 +238,41 @@ describe('ApproveTransactionModal', () => {
       const isDisabled = getByTestId('Confirm').props.disabled;
       expect(isDisabled).toBe(true);
     });
+  });
+
+  it('reads token details from the network client of the transaction', async () => {
+    const mockGetTokenDetails = getTokenDetails;
+    mockGetTokenDetails.mockReturnValue({ standard: 'ERC20' });
+    const state = cloneDeep(initialState);
+    state.engine.backgroundState.AccountTrackerController.accounts = [];
+    state.transaction = {
+      to: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
+      origin: 'deeplink',
+      chainId: '0xaa36a7',
+      networkClientId: 'sepolia',
+      txParams: {
+        to: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
+        from: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
+        data,
+        origin: 'deeplink',
+      },
+      data,
+    };
+
+    renderScreen(
+      // eslint-disable-next-line react/react-in-jsx-scope
+      () => <ApproveTransactionModal onConfirm={jest.fn()} />,
+      { name: 'Approve' },
+      { state },
+    );
+
+    await waitFor(() =>
+      expect(mockGetTokenDetails).toHaveBeenCalledWith(
+        '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
+        undefined,
+        expect.any(String),
+        'sepolia',
+      ),
+    );
   });
 });
