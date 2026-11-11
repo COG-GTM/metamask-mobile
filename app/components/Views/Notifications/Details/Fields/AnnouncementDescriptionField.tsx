@@ -7,6 +7,11 @@ import Html, {
 import { ModalFieldAnnouncementDescription } from '../../../../../util/notifications/notification-states/types/NotificationModalDetails';
 import useStyles from '../useStyles';
 
+/**
+ * Announcement links are only opened when they use https.
+ * @param href - link target from the announcement HTML
+ * @returns true when href parses as an https URL
+ */
 const isHttpsUrl = (href: string) => {
   try {
     return new URL(href).protocol === 'https:';
