@@ -26,6 +26,7 @@ import {
   removePermittedAccounts,
   removeAccountsFromPermissions,
   updatePermittedChains,
+  removePermittedChain,
   sortAccountsByLastSelected,
   getPermittedAccounts,
 } from '.';
@@ -990,76 +991,80 @@ describe('Permission Utility Functions', () => {
     });
   });
 
-  // describe('removePermittedChain', () => {
-  //   it('removes a chain from permitted chains', async () => {
-  //     const hostname = 'example.com';
-  //     const chainId = '0x1';
-  //     Engine.context.PermissionController.getCaveat.mockReturnValue({
-  //       value: ['0xa', '0x1', '0x5'],
-  //     });
-  //     Engine.context.PermissionController.grantPermissions.mockResolvedValue(undefined);
+  describe('removePermittedChain', () => {
+    const mockCaveat = {
+      type: Caip25CaveatType,
+      value: {
+        optionalScopes: {},
+        requiredScopes: {},
+        isMultichainOrigin: false,
+        sessionProperties: {},
+      },
+    };
 
-  //     await removePermittedChain(hostname, chainId);
+    beforeEach(() => {
+      mockGetCaveat.mockReturnValue(mockCaveat);
+      (setPermittedEthChainIds as jest.Mock).mockImplementation(
+        (value) => value,
+      );
+      (getEthAccounts as jest.Mock).mockReturnValue([]);
+      (setEthAccounts as jest.Mock).mockImplementation((value) => value);
+    });
 
-  //     expect(Engine.context.PermissionController.getCaveat).toHaveBeenCalledWith(
-  //       hostname,
-  //       PermissionKeys.permittedChains,
-  //       CaveatTypes.restrictNetworkSwitching,
-  //     );
-  //     expect(Engine.context.PermissionController.grantPermissions).toHaveBeenCalledWith({
-  //       approvedPermissions: {
-  //         [PermissionKeys.permittedChains]: {
-  //           caveats: [
-  //             { type: CaveatTypes.restrictNetworkSwitching, value: ['0xa', '0x5'] },
-  //           ],
-  //         },
-  //       },
-  //       subject: {
-  //         origin: hostname,
-  //       },
-  //       preserveExistingPermissions: true,
-  //     });
-  //   });
+    it('removes a chain from permitted chains', () => {
+      (getPermittedEthChainIds as jest.Mock).mockReturnValue([
+        '0xa',
+        '0x1',
+        '0x5',
+      ]);
 
-  //   it('does not update permissions if chain is not in permitted chains', async () => {
-  //     const hostname = 'example.com';
-  //     const chainId = '0x99';
-  //     Engine.context.PermissionController.getCaveat.mockReturnValue({
-  //       value: ['0xa', '0x1'],
-  //     });
+      removePermittedChain('example.com', '0x1');
 
-  //     await removePermittedChain(hostname, chainId);
+      expect(getPermittedEthChainIds).toHaveBeenCalledWith(mockCaveat.value);
+      expect(setPermittedEthChainIds).toHaveBeenCalledWith(mockCaveat.value, [
+        '0xa',
+        '0x5',
+      ]);
+      expect(
+        Engine.context.PermissionController.updateCaveat,
+      ).toHaveBeenCalledWith(
+        'example.com',
+        Caip25EndowmentPermissionName,
+        Caip25CaveatType,
+        mockCaveat.value,
+      );
+    });
 
-  //     expect(Engine.context.PermissionController.getCaveat).toHaveBeenCalledWith(
-  //       hostname,
-  //       PermissionKeys.permittedChains,
-  //       CaveatTypes.restrictNetworkSwitching,
-  //     );
-  //     expect(Engine.context.PermissionController.grantPermissions).not.toHaveBeenCalled();
-  //   });
+    it('does not update permissions if chain is not in permitted chains', () => {
+      (getPermittedEthChainIds as jest.Mock).mockReturnValue(['0xa', '0x1']);
 
-  //   it('handles removing the last chain from permitted chains', async () => {
-  //     const hostname = 'example.com';
-  //     const chainId = '0x1';
-  //     Engine.context.PermissionController.getCaveat.mockReturnValue({
-  //       value: ['0x1'],
-  //     });
+      removePermittedChain('example.com', '0x99');
 
-  //     await removePermittedChain(hostname, chainId);
+      expect(
+        Engine.context.PermissionController.updateCaveat,
+      ).not.toHaveBeenCalled();
+    });
 
-  //     expect(Engine.context.PermissionController.grantPermissions).toHaveBeenCalledWith({
-  //       approvedPermissions: {
-  //         [PermissionKeys.permittedChains]: {
-  //           caveats: [
-  //             { type: CaveatTypes.restrictNetworkSwitching, value: [] },
-  //           ],
-  //         },
-  //       },
-  //       subject: {
-  //         origin: hostname,
-  //       },
-  //       preserveExistingPermissions: true,
-  //     });
-  //   });
-  // });
+    it('handles removing the last chain from permitted chains', () => {
+      (getPermittedEthChainIds as jest.Mock).mockReturnValue(['0x1']);
+
+      removePermittedChain('example.com', '0x1');
+
+      expect(setPermittedEthChainIds).toHaveBeenCalledWith(
+        mockCaveat.value,
+        [],
+      );
+      expect(
+        Engine.context.PermissionController.updateCaveat,
+      ).toHaveBeenCalled();
+    });
+
+    it('throws if no permission exists for the origin', () => {
+      mockGetCaveat.mockReturnValue(undefined);
+
+      expect(() => removePermittedChain('example.com', '0x1')).toThrow(
+        'Cannot remove chain permissions for origin "example.com": no permission currently exists for this origin.',
+      );
+    });
+  });
 });
