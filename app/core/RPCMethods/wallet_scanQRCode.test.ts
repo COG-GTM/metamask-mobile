@@ -30,6 +30,12 @@ describe('buildScanQRCodeMatcher', () => {
     '^(ethereum|bitcoin):',
     '0x[0-9a-fA-F]{40}',
     '^[a-z0-9.]+@example\\.com$',
+    '.*',
+    '.+',
+    '[\\s\\S]*',
+    '\\d+',
+    '0x.*',
+    'ethereum:.+?',
   ])('compiles the simple pattern %s', (pattern) => {
     expect(buildScanQRCodeMatcher([pattern])).toBeInstanceOf(RegExp);
   });
@@ -57,7 +63,9 @@ describe('buildScanQRCodeMatcher', () => {
     ['two unbounded quantifiers', 'a.*b.*c'],
     ['large bounded ranges', 'a{0,500}a{0,500}b'],
     ['stacked bounded ranges', '\\d{0,30}\\d{0,30}\\d{0,30}X'],
-    ['unanchored unbounded quantifier', '0x.*'],
+    ['unanchored unbounded quantifier', '0x.*y'],
+    ['trailing quantifier after an unbounded one', 'a.*b+'],
+    ['trailing quantifier inside a group', '(0x.*)'],
     ['anchor on one alternative only', '^0x|.*x'],
   ])('rejects a %s pattern with invalid params', (_, pattern) => {
     expect(() => buildScanQRCodeMatcher([pattern])).toThrow(

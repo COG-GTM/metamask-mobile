@@ -30,7 +30,8 @@ interface PatternGroup {
  * Rejects dapp patterns that could backtrack catastrophically on the JS thread.
  * Backreferences, lookarounds and quantified groups that themselves contain a
  * quantifier or alternation are refused outright; for the rest, the product of
- * every quantifier's range and alternation's branches, times the number of start
+ * every quantifier's range (except a quantifier that ends the pattern, which
+ * cannot backtrack) and alternation's branches, times the number of start
  * positions (one for patterns anchored with a leading ^), must stay within MAX_SCAN_QR_CODE_MATCH_COST for inputs of up to
  * MAX_SCAN_QR_CODE_MATCH_LENGTH characters.
  *
@@ -144,12 +145,17 @@ export function assertSafeScanPattern(pattern: string): void {
       throw invalidPatternError('nested quantifiers are not allowed');
     }
     stack[stack.length - 1].quantified = true;
-    cost *= width;
-    if (cost > MAX_SCAN_QR_CODE_MATCH_COST) {
-      throw invalidPatternError('pattern is too complex');
-    }
     i += length;
     if (pattern[i] === '?') i++;
+    // A quantifier that ends the whole pattern never backtracks: once it stops
+    // consuming, the match has succeeded.
+    const endsPattern = stack.length === 1 && i === pattern.length;
+    if (!endsPattern) {
+      cost *= width;
+      if (cost > MAX_SCAN_QR_CODE_MATCH_COST) {
+        throw invalidPatternError('pattern is too complex');
+      }
+    }
     canQuantify = false;
   }
   if (stack.length !== 1) {

@@ -1779,6 +1779,13 @@ describe('getRpcMethodMiddleware', () => {
       expect((response as JsonRpcFailure).error.code).toBe(4001);
     });
 
+    it('returns plain scanned text for a match-anything pattern', async () => {
+      const { responsePromise, getScannerParams } = setupScan(['.*']);
+      (await getScannerParams()).onScanSuccess({ content: 'hello' }, 'hello');
+      const response = await responsePromise;
+      expect((response as JsonRpcSuccess<string>).result).toBe('hello');
+    });
+
     it('rejects a non-matching scan without echoing the content', async () => {
       const { responsePromise, getScannerParams } = setupScan(['^0x']);
       (await getScannerParams()).onScanSuccess({ content: 'hello' }, 'hello');
