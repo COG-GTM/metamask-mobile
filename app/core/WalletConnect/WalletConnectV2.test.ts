@@ -12,6 +12,7 @@ import WalletConnect2Session from './WalletConnect2Session';
 // eslint-disable-next-line import/no-namespace
 import * as wcUtils from './wc-utils';
 import { Core } from '@walletconnect/core';
+import Logger from '../../util/Logger';
 
 jest.mock('../AppConstants', () => ({
   WALLET_CONNECT: {
@@ -365,6 +366,107 @@ describe('WC2Manager', () => {
 
       expect(consoleSpy).toHaveBeenCalled();
       consoleSpy.mockRestore();
+    });
+
+    describe('does not log WalletConnect URI secrets', () => {
+      const symKey =
+        'abc5484ce2a2a6ee3ba1962fdd7e8588e06200c46823bd18fbd67def96ad303';
+      const v2Topic =
+        '9f6e504bfad60b485450578e05678441fa7a8ea2b3d7d678ef6c72a2efe0f6ad';
+      const v2Uri = `wc:${v2Topic}@2?relay-protocol=irn&symKey=${symKey}`;
+      const v1Key =
+        '41791102999c339c844880b23950704cc43aa840f3739e365323cda4dfa89e7a';
+      const v1Uri = `wc:00e46b69-d0cc-4b3e-b6a2-cee442f97188@1?bridge=https%3A%2F%2Fbridge.walletconnect.org&key=${v1Key}`;
+      const redirectUrl = 'https://dapp.example/return?token=secret-token';
+
+      let loggedArgs: unknown[][];
+
+      const loggedText = () =>
+        loggedArgs
+          .map((args) =>
+            args
+              .map((arg) =>
+                arg instanceof Error ? `${arg.message}` : String(arg),
+              )
+              .join(' '),
+          )
+          .join('\n');
+
+      beforeEach(() => {
+        loggedArgs = [];
+        const record = (...args: unknown[]) => {
+          loggedArgs.push(args);
+        };
+        jest.spyOn(Logger, 'log').mockImplementation(async (...args) => {
+          record(...args);
+        });
+        jest.spyOn(console, 'log').mockImplementation(record);
+        jest.spyOn(console, 'warn').mockImplementation(record);
+        jest.spyOn(console, 'error').mockImplementation(record);
+      });
+
+      afterEach(() => {
+        jest.restoreAllMocks();
+      });
+
+      it('logs only the version and topic of a v2 URI', async () => {
+        await manager.connect({
+          wcUri: v2Uri,
+          redirectUrl,
+          origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
+        });
+
+        expect(Logger.log).toHaveBeenCalledWith(
+          `WC2Manager::connect protocol=wc version=2 topic=${v2Topic} origin=${AppConstants.DEEPLINKS.ORIGIN_DEEPLINK} hasRedirectUrl=true navigation=true`,
+        );
+        expect(loggedText()).not.toContain(symKey);
+        expect(loggedText()).not.toContain('abc');
+        expect(loggedText()).not.toContain('secret-token');
+      });
+
+      it('does not log the session key of a v1 URI', async () => {
+        await manager.connect({ wcUri: v1Uri, origin: 'qrcode' });
+
+        expect(Logger.log).toHaveBeenCalled();
+        expect(loggedText()).toContain('version=1');
+        expect(loggedText()).not.toContain(v1Key);
+      });
+
+      it('does not log the URI when pairing fails', async () => {
+        const web3Wallet = (manager as unknown as { web3Wallet: IWalletKit })
+          .web3Wallet;
+        jest
+          .spyOn(web3Wallet.core.pairing, 'pair')
+          .mockRejectedValueOnce(new Error('pairing failed'));
+
+        await manager.connect({ wcUri: v2Uri, origin: 'qrcode' });
+
+        expect(console.error).toHaveBeenCalledWith(
+          `Failed to connect uri protocol=wc version=2 topic=${v2Topic}`,
+          expect.any(Error),
+        );
+        expect(loggedText()).not.toContain(symKey);
+      });
+
+      it('does not log an unsupported URI version', async () => {
+        const unsupportedUri = `wc:${v2Topic}@3?symKey=${symKey}`;
+
+        await manager.connect({ wcUri: unsupportedUri, origin: 'qrcode' });
+
+        expect(console.warn).toHaveBeenCalledWith(
+          `Invalid wallet connect uri protocol=wc version=3 topic=${v2Topic}`,
+        );
+        expect(loggedText()).not.toContain(symKey);
+      });
+
+      it('does not leak secrets from malformed URIs', () => {
+        expect(wcUtils.getWCUriLogSummary(`wc:topic&symKey=${symKey}`)).toBe(
+          'protocol=wc version=invalid topic=invalid',
+        );
+        expect(wcUtils.getWCUriLogSummary(`symKey=${symKey}`)).toBe(
+          'protocol=invalid version=invalid topic=invalid',
+        );
+      });
     });
   });
 

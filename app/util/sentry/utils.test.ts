@@ -7,6 +7,7 @@ import {
   maskObject,
   sentryStateMask,
   AllProperties,
+  rewriteBreadcrumb,
 } from './utils';
 import { DeepPartial } from '../test/renderWithProvider';
 import { RootState } from '../../reducers';
@@ -730,5 +731,54 @@ describe('captureSentryFeedback', () => {
         exampleObj: 'object',
       },
     });
+  });
+});
+
+describe('rewriteBreadcrumb', () => {
+  const symKey =
+    '587d5484ce2a2a6ee3ba1962fdd7e8588e06200c46823bd18fbd67def96ad303';
+  const v1Key =
+    '41791102999c339c844880b23950704cc43aa840f3739e365323cda4dfa89e7a';
+
+  it('redacts WalletConnect v2 symKey from breadcrumb messages', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      message: JSON.stringify([
+        `WC2Manager::connect wc:7f6e@2?relay-protocol=irn&symKey=${symKey} origin=qrcode`,
+      ]),
+    });
+
+    expect(breadcrumb.message).not.toContain(symKey);
+    expect(breadcrumb.message).toBe(
+      JSON.stringify([
+        'WC2Manager::connect wc:7f6e@2?relay-protocol=irn&symKey=[REDACTED] origin=qrcode',
+      ]),
+    );
+  });
+
+  it('redacts WalletConnect v1 key from breadcrumb messages', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      message: `wc:00e4@1?key=${v1Key}&bridge=https%3A%2F%2Fbridge.walletconnect.org`,
+    });
+
+    expect(breadcrumb.message).toBe(
+      'wc:00e4@1?key=[REDACTED]&bridge=https%3A%2F%2Fbridge.walletconnect.org',
+    );
+  });
+
+  it('leaves messages without WalletConnect keys unchanged', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      message: 'Navigation to Home monkey=1&apiKey=abc',
+    });
+
+    expect(breadcrumb.message).toBe('Navigation to Home monkey=1&apiKey=abc');
+  });
+
+  it('still rewrites data urls to their protocol', () => {
+    const breadcrumb = rewriteBreadcrumb({
+      message: 'fetch',
+      data: { url: 'https://example.com/path?symKey=abc' },
+    });
+
+    expect(breadcrumb.data.url).toBe('https:');
   });
 });
