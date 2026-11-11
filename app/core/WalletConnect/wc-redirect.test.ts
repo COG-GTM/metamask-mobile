@@ -44,12 +44,26 @@ describe('isSafeWCRedirectLink', () => {
     'https://link.metamask.io/connect',
     'https://metamask-alternate.app.link/x',
     'https://metamask.test-app.link/x',
+    'https://metamask.test.app.link/wc',
+    'https://metamask-alternate.test.app.link/wc',
     'https://metamask.io/',
     'not a url',
     '',
   ])('rejects %s', (link) => {
     expect(isSafeWCRedirectLink(link, PEER_URL)).toBe(false);
   });
+
+  it.each([
+    'https://metamask.app.link',
+    'https://metamask.test.app.link',
+    'https://metamask-alternate.test.app.link',
+    'https://metamask.io',
+  ])(
+    'rejects wallet link hosts even when the peer claims them (%s)',
+    (peer) => {
+      expect(isSafeWCRedirectLink(`${peer}/wc`, peer)).toBe(false);
+    },
+  );
 
   it('rejects https links when the peer url is missing or invalid', () => {
     expect(isSafeWCRedirectLink('https://app.example.com', undefined)).toBe(

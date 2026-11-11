@@ -8,12 +8,15 @@ const WALLET_SCHEMES: string[] = [
   'expo-metamask',
 ];
 
-// Hosts the app claims as universal/app links (iOS entitlements, Android manifest).
+// Hosts the app claims as universal/app links (iOS entitlements and Branch
+// domains in Info.plist, Android manifest).
 const WALLET_UNIVERSAL_LINK_HOSTS = [
   'metamask.app.link',
   'metamask.test-app.link',
+  'metamask.test.app.link',
   'metamask-alternate.app.link',
   'metamask-alternate.test-app.link',
+  'metamask-alternate.test.app.link',
   'metamask.io',
   'link.metamask.io',
 ];
