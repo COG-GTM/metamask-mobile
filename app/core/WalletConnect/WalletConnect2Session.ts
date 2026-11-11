@@ -480,6 +480,7 @@ class WalletConnect2Session {
         `WC2::handleRequest rejected by WalletConnect Verify id=${requestEvent.id}`,
         requestEvent.verifyContext?.verified,
       );
+      this._isHandlingRequest = false;
       await this.web3Wallet.respondSessionRequest({
         topic: this.session.topic,
         response: {
