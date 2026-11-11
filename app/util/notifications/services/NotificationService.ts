@@ -192,7 +192,7 @@ class NotificationsService {
     callback,
   }: {
     detail: EventDetail;
-    callback?: (notification: Notification | undefined) => void;
+    callback?: (notification: Notification | undefined) => void | Promise<void>;
   }) => {
     this.decrementBadgeCount(1);
     if (detail?.notification?.id) {
@@ -200,7 +200,7 @@ class NotificationsService {
     }
 
     if (detail?.notification) {
-      callback?.(detail.notification);
+      await callback?.(detail.notification);
     }
   };
 
@@ -209,14 +209,14 @@ class NotificationsService {
     detail,
     callback,
   }: NotifeeEvent & {
-    callback?: (notification: Notification | undefined) => void;
+    callback?: (notification: Notification | undefined) => void | Promise<void>;
   }) => {
     switch (type) {
       case EventType.DELIVERED:
         this.incrementBadgeCount(1);
         break;
       case EventType.PRESS:
-        this.handleNotificationPress({
+        await this.handleNotificationPress({
           detail,
           callback,
         });

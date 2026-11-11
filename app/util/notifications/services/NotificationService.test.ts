@@ -370,6 +370,21 @@ describe('NotificationService - handleNotificationEvent', () => {
     expect(mocks.mockDecrementBadge).toHaveBeenCalled();
     expect(mocks.mockCancelTriggerNotification).toHaveBeenCalled();
   });
+
+  it('waits for an async click callback to finish', async () => {
+    const mocks = arrangeMocks();
+    let callbackFinished = false;
+    await NotificationService.handleNotificationEvent({
+      type: EventType.PRESS,
+      detail: mocks.mockEvent,
+      callback: async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        callbackFinished = true;
+      },
+    });
+
+    expect(callbackFinished).toBe(true);
+  });
 });
 
 describe('NotificationService - displayNotification', () => {
