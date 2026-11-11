@@ -1,7 +1,9 @@
-import { Linking } from 'react-native';
+import { Alert, Linking } from 'react-native';
 import isUrl from 'is-url';
 import Url from 'url-parse';
 import { regex, hasProtocol } from '../../util/regex';
+import Logger from '../Logger';
+import { strings } from '../../../locales/i18n';
 
 /**
  * Returns URL prefixed with protocol
@@ -109,6 +111,42 @@ export const trustedProtocolToDeeplink = [
 ];
 
 /**
+ * Protocols that are never loaded in the browser nor handed to the OS
+ */
+// eslint-disable-next-line no-script-url
+export const blockedProtocols = ['javascript:', 'vbscript:', 'data:', 'blob:'];
+
+/**
+ * Origin whitelist for the in-app browser WebView.
+ *
+ * The WebView library opens any URL that fails its origin whitelist with
+ * `Linking.openURL` without calling `onShouldStartLoadWithRequest`, so every
+ * URL has to pass it for `getProtocolNavigationAction` to be enforced.
+ */
+export const browserWebViewOriginWhitelist = ['*'];
+
+export type ProtocolNavigationAction = 'load' | 'deeplink' | 'block' | 'prompt';
+
+/**
+ * Decides how the in-app browser handles a navigation to the given protocol:
+ * load it in the WebView, deeplink a trusted protocol through the OS, block
+ * it, or prompt the user before handing it to the OS.
+ *
+ * @param protocol - URL protocol including the trailing colon, e.g. `sms:`
+ */
+export const getProtocolNavigationAction = (
+  protocol: string,
+): ProtocolNavigationAction => {
+  const normalizedProtocol = protocol.toLowerCase();
+  if (protocolAllowList.includes(normalizedProtocol)) return 'load';
+  if (trustedProtocolToDeeplink.includes(normalizedProtocol)) return 'deeplink';
+  if (!normalizedProtocol || blockedProtocols.includes(normalizedProtocol)) {
+    return 'block';
+  }
+  return 'prompt';
+};
+
+/**
  * Returns translated warning message for the
  * warning dialog box the user sees when the to be loaded
  * website tries to automatically start an external
@@ -152,6 +190,46 @@ export const allowLinkOpen = (url: string) =>
     .catch((e) => {
       console.warn(`Error opening URL: ${e}`);
     });
+
+/**
+ * Applies `getProtocolNavigationAction` to a WebView navigation request.
+ * Untrusted protocols are only handed to the OS after the user taps Allow.
+ *
+ * @param url - URL the WebView is about to navigate to
+ * @returns - `true` to let the WebView load the URL, `false` to stop it
+ */
+export const handleProtocolNavigation = (url: string): boolean => {
+  const { protocol } = new Url(url);
+  const action = getProtocolNavigationAction(protocol);
+  if (action === 'load') return true;
+  Logger.log(`Protocol not allowed ${protocol}`);
+
+  // Trusted deeplink protocols are handed to the OS without a warning
+  if (action === 'deeplink') {
+    allowLinkOpen(url);
+    return false;
+  }
+
+  if (action === 'block') return false;
+
+  Alert.alert(
+    strings('onboarding.warning_title'),
+    getAlertMessage(protocol, strings),
+    [
+      {
+        text: strings('browser.protocol_alert_options.ignore'),
+        onPress: () => null,
+        style: 'cancel',
+      },
+      {
+        text: strings('browser.protocol_alert_options.allow'),
+        onPress: () => allowLinkOpen(url),
+        style: 'default',
+      },
+    ],
+  );
+  return false;
+};
 
 /**
  * Appends search parameters to a URL and returns the complete URL string

@@ -3,6 +3,9 @@ import {
   getAlertMessage,
   protocolAllowList,
   trustedProtocolToDeeplink,
+  getProtocolNavigationAction,
+  browserWebViewOriginWhitelist,
+  handleProtocolNavigation,
   prefixUrlWithProtocol,
   getUrlObj,
   getHost,
@@ -10,6 +13,9 @@ import {
   processUrlForBrowser,
 } from '.';
 import { strings } from '../../../locales/i18n';
+import { Alert, Linking } from 'react-native';
+import URLParse from 'url-parse';
+import { createOnShouldStartLoadWithRequest } from '@metamask/react-native-webview/src/WebViewShared';
 
 describe('Browser utils :: prefixUrlWithProtocol', () => {
   it('should prefix url with https: protocol', () => {
@@ -199,6 +205,164 @@ describe('Browser utils :: protocolWhitelist', () => {
     const { protocol } = new URL('https://meta.io');
 
     expect(protocolAllowList.includes(protocol)).toBeTruthy();
+  });
+});
+
+describe('Browser utils :: getProtocolNavigationAction', () => {
+  const actionFor = (url: string) =>
+    getProtocolNavigationAction(new URLParse(url).protocol);
+
+  it.each(['https://meta.io', 'http://meta.io', 'about:srcdoc', 'about:blank'])(
+    'loads %s in the webview',
+    (url) => {
+      expect(actionFor(url)).toBe('load');
+    },
+  );
+
+  it.each([
+    'metamask://dapp/portfolio.metamask.io',
+    'wc:f82jdjfjakjskdfj@2',
+    'ethereum:0x0000000000000000000000000000000000000000',
+    'dapp://portfolio.metamask.io',
+    'market://details?id=io.metamask',
+  ])('deeplinks trusted %s', (url) => {
+    expect(actionFor(url)).toBe('deeplink');
+  });
+
+  it.each([
+    'sms:+15555550123?body=test',
+    'tel:+15555550123',
+    'mailto:mallory@example.com',
+    'facetime:+15555550123',
+    'itms-apps://apps.apple.com/app/id1',
+    'intent://scan/#Intent;scheme=zxing;end',
+    'otherwallet://connect?uri=wc:abc',
+    'file:///etc/hosts',
+    'SMS:+15555550123',
+  ])('prompts before opening untrusted %s', (url) => {
+    expect(actionFor(url)).toBe('prompt');
+  });
+
+  it.each([
+    // eslint-disable-next-line no-script-url
+    'javascript:alert(1)',
+    'data:text/html,<script>alert(1)</script>',
+    'blob:https://meta.io/0b6c7f43',
+  ])('blocks %s', (url) => {
+    expect(actionFor(url)).toBe('block');
+  });
+});
+
+describe('Browser utils :: browserWebViewOriginWhitelist + handleProtocolNavigation', () => {
+  type AlertButtons = { text: string; onPress: () => void }[];
+
+  const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
+
+  let alertSpy: jest.SpyInstance;
+  let canOpenURLSpy: jest.SpyInstance;
+  let openURLSpy: jest.SpyInstance;
+
+  // Drives the real WebView library request filter with the browser handler
+  const navigate = (
+    url: string,
+    originWhitelist = browserWebViewOriginWhitelist,
+  ) => {
+    const loadRequest = jest.fn();
+    createOnShouldStartLoadWithRequest(
+      loadRequest,
+      originWhitelist,
+      ({ url: requestUrl }) => handleProtocolNavigation(requestUrl),
+    )({
+      nativeEvent: { url, lockIdentifier: 1 },
+    } as unknown as Parameters<ReturnType<typeof createOnShouldStartLoadWithRequest>>[0]);
+    return loadRequest;
+  };
+
+  const pressAlertButton = (text: string) => {
+    const buttons = alertSpy.mock.calls[0][2] as AlertButtons;
+    buttons.find((button) => button.text === text)?.onPress();
+  };
+
+  beforeEach(() => {
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    canOpenURLSpy = jest.spyOn(Linking, 'canOpenURL').mockResolvedValue(true);
+    openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    alertSpy.mockClear();
+    canOpenURLSpy.mockClear();
+    openURLSpy.mockClear();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it.each([
+    'sms:+15555550123?body=test',
+    'tel:+15555550123',
+    'facetime:+15555550123',
+    'itms-apps://apps.apple.com/app/id1',
+    'otherwallet://connect?uri=wc:abc',
+  ])(
+    'prompts and opens nothing for %s until the user allows it',
+    async (url) => {
+      const loadRequest = navigate(url);
+      await flushPromises();
+
+      expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+      expect(alertSpy).toHaveBeenCalledTimes(1);
+      expect(alertSpy.mock.calls[0][0]).toBe(
+        strings('onboarding.warning_title'),
+      );
+      expect(canOpenURLSpy).not.toHaveBeenCalled();
+      expect(openURLSpy).not.toHaveBeenCalled();
+    },
+  );
+
+  it('opens the URL only after the user taps Allow', async () => {
+    const url = 'sms:+15555550123?body=test';
+    navigate(url);
+
+    pressAlertButton(strings('browser.protocol_alert_options.ignore'));
+    await flushPromises();
+    expect(openURLSpy).not.toHaveBeenCalled();
+
+    pressAlertButton(strings('browser.protocol_alert_options.allow'));
+    await flushPromises();
+    expect(canOpenURLSpy).toHaveBeenCalledWith(url);
+    expect(openURLSpy).toHaveBeenCalledWith(url);
+  });
+
+  it.each(['https://meta.io', 'about:srcdoc'])('loads %s', async (url) => {
+    const loadRequest = navigate(url);
+    await flushPromises();
+
+    expect(loadRequest).toHaveBeenCalledWith(true, url, 1);
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(openURLSpy).not.toHaveBeenCalled();
+  });
+
+  it('deeplinks trusted protocols without a prompt', async () => {
+    const url = 'metamask://dapp/portfolio.metamask.io';
+    const loadRequest = navigate(url);
+    await flushPromises();
+
+    expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(openURLSpy).toHaveBeenCalledWith(url);
+  });
+
+  it.each([
+    // eslint-disable-next-line no-script-url
+    'javascript:alert(1)',
+    'data:text/html,<script>alert(1)</script>',
+  ])('blocks %s without prompting or opening it', async (url) => {
+    const loadRequest = navigate(url);
+    await flushPromises();
+
+    expect(loadRequest).toHaveBeenCalledWith(false, url, 1);
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(canOpenURLSpy).not.toHaveBeenCalled();
+    expect(openURLSpy).not.toHaveBeenCalled();
   });
 });
 
