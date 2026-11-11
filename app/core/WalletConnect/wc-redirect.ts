@@ -5,9 +5,17 @@ const WALLET_SCHEMES: string[] = [
   PROTOCOLS.WC,
   PROTOCOLS.ETHEREUM,
   PROTOCOLS.DAPP,
+  'expo-metamask',
 ];
 
-const WALLET_UNIVERSAL_LINK_HOSTS = ['metamask.app.link', 'link.metamask.io'];
+// Hosts the app claims as universal/app links (iOS entitlements, Android manifest).
+const WALLET_UNIVERSAL_LINK_HOSTS = [
+  'metamask.app.link',
+  'metamask.test-app.link',
+  'metamask-alternate.app.link',
+  'metamask-alternate.test-app.link',
+  'metamask.io',
+];
 
 const BLOCKED_SCHEMES = [
   'javascript',
