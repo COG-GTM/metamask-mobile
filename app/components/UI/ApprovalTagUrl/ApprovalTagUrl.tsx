@@ -8,7 +8,11 @@ import { useStyles } from '../../../component-library/hooks';
 import AppConstants from '../../../core/AppConstants';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
 import { selectAccountsByChainId } from '../../../selectors/accountTrackerController';
-import { getHost, prefixUrlWithProtocol } from '../../../util/browser';
+import {
+  getHost,
+  getUrlForOrigin,
+  prefixUrlWithProtocol,
+} from '../../../util/browser';
 import useFavicon from '../../hooks/useFavicon/useFavicon';
 import stylesheet from './ApprovalTagUrl.styles';
 import { INTERNAL_ORIGINS } from '../../../constants/transaction';
@@ -49,6 +53,12 @@ const ApprovalTagUrl = ({
     setIsOriginDeepLink(isOriginDeepLinkVal);
   }, [accountsByChainId, internalAccounts, activeAddress, origin]);
 
+  // `url` is only trusted when it belongs to the request origin, or when it is
+  // the SDK dapp metadata the caller resolved for this origin's connection.
+  const requesterUrl =
+    getUrlForOrigin(url, origin) ??
+    (url && url === sdkDappMetadata?.url ? url : undefined);
+
   const domainTitle = useMemo(() => {
     let title = '';
 
@@ -56,8 +66,8 @@ const ApprovalTagUrl = ({
       title = prefixUrlWithProtocol(currentEnsName);
     } else if (origin && isOriginDeepLink) {
       title = prefixUrlWithProtocol(origin);
-    } else if (url) {
-      title = prefixUrlWithProtocol(getHost(url));
+    } else if (requesterUrl) {
+      title = prefixUrlWithProtocol(getHost(requesterUrl));
     } else if (origin) {
       title = prefixUrlWithProtocol(getHost(origin));
     } else {
@@ -65,7 +75,7 @@ const ApprovalTagUrl = ({
     }
 
     return title;
-  }, [currentEnsName, origin, url, isOriginDeepLink]);
+  }, [currentEnsName, origin, requesterUrl, isOriginDeepLink]);
 
   const faviconSource = useFavicon(origin as string) as
     | { uri: string }

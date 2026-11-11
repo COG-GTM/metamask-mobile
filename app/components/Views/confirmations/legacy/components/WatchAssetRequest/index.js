@@ -16,8 +16,6 @@ import { useTheme } from '../../../../../../util/theme';
 import NotificationManager from '../../../../../../core/NotificationManager';
 import { selectEvmChainId } from '../../../../../../selectors/networkController';
 import ApproveTransactionHeader from '../ApproveTransactionHeader';
-import { getActiveTabUrl } from '../../../../../../util/transactions';
-import { isEqual } from 'lodash';
 import { AssetWatcherSelectorsIDs } from '../../../../../../../e2e/selectors/Transactions/AssetWatcher.selectors';
 import { getDecimalChainId } from '../../../../../../util/networks';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
@@ -113,8 +111,6 @@ const WatchAssetRequest = ({
     ? strings('transaction.failed')
     : `${renderFromTokenMinimalUnit(balance, asset.decimals)} ${asset.symbol}`;
 
-  const activeTabUrl = useSelector(getActiveTabUrl, isEqual);
-
   const getTokenAddedAnalyticsParams = () => {
     try {
       const url = new URL(currentPageInformation?.url);
@@ -163,7 +159,7 @@ const WatchAssetRequest = ({
       <View style={styles.approveTransactionHeaderWrapper}>
         <ApproveTransactionHeader
           origin={currentPageInformation?.url}
-          url={activeTabUrl}
+          url={currentPageInformation?.url}
           from={suggestedAssetMeta.interactingAddress}
           asset={{
             address,

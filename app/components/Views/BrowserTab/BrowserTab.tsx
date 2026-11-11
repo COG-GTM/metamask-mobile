@@ -16,7 +16,7 @@ import {
 import { isEqual } from 'lodash';
 import { WebView, WebViewMessageEvent } from '@metamask/react-native-webview';
 import BrowserBottomBar from '../../UI/BrowserBottomBar';
-import { connect, useSelector } from 'react-redux';
+import { connect, useSelector, useStore } from 'react-redux';
 import BackgroundBridge from '../../../core/BackgroundBridge/BackgroundBridge';
 import Engine from '../../../core/Engine';
 import WebviewProgressBar from '../../UI/WebviewProgressBar';
@@ -55,6 +55,7 @@ import {
   getCaip25Caveat,
   getPermittedAccountsByHostname,
 } from '../../../core/Permissions';
+import { rejectOriginPendingApprovals } from '../../../util/permissions';
 import Routes from '../../../constants/navigation/Routes';
 import {
   selectIpfsGateway,
@@ -103,7 +104,7 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import { getHostnameLeftByNavigation, getMaskedUrl, isENSUrl } from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -593,11 +594,37 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     [isEnabled, getMetaMetricsId, bookmarks, searchEngine],
   );
 
+  const store = useStore<RootState>();
+
+  /**
+   * Rejects the pending approvals of the page being left when the tab moves to
+   * another host, unless another tab is still on that host.
+   */
+  const rejectApprovalsOfLeftOrigin = useCallback(
+    (nextUrl: string) => {
+      const leftHostname = getHostnameLeftByNavigation({
+        previousUrl: resolvedUrlRef.current,
+        nextUrl,
+        tabId,
+        tabs: store.getState().browser.tabs,
+      });
+      if (!leftHostname) return;
+
+      try {
+        rejectOriginPendingApprovals(leftHostname);
+      } catch (e) {
+        Logger.error(e as Error, 'BrowserTab: failed to reject approvals');
+      }
+    },
+    [store, tabId],
+  );
+
   /**
    * Handles error for example, ssl certificate error or cannot open page
    */
   const handleError = useCallback(
     (webViewError: WebViewError) => {
+      rejectApprovalsOfLeftOrigin(webViewError.url || submittedUrlRef.current);
       resolvedUrlRef.current = submittedUrlRef.current;
       titleRef.current = `Can't Open Page`;
       iconRef.current = undefined;
@@ -631,6 +658,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       isUrlBarFocused,
       isTabActive,
       navigation,
+      rejectApprovalsOfLeftOrigin,
     ],
   );
 
@@ -692,6 +720,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       canGoBack: boolean;
       canGoForward: boolean;
     }) => {
+      rejectApprovalsOfLeftOrigin(siteInfo.url);
       resolvedUrlRef.current = siteInfo.url;
       titleRef.current = siteInfo.title;
       if (siteInfo.icon) iconRef.current = siteInfo.icon;
@@ -734,6 +763,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       addToBrowserHistory,
       navigation,
       checkTabPermissions,
+      rejectApprovalsOfLeftOrigin,
     ],
   );
 

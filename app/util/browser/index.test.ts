@@ -6,6 +6,7 @@ import {
   prefixUrlWithProtocol,
   getUrlObj,
   getHost,
+  getUrlForOrigin,
   appendURLParams,
   processUrlForBrowser,
 } from '.';
@@ -293,5 +294,30 @@ describe('Browser utils :: appendURLParams', () => {
     const result = appendURLParams(baseUrl, params);
 
     expect(result.toString()).toBe('https://metamask.io/');
+  });
+});
+
+describe('Browser utils :: getUrlForOrigin', () => {
+  it('returns the url when it has the same host as a hostname origin', () => {
+    expect(
+      getUrlForOrigin('https://app.uniswap.org/swap', 'app.uniswap.org'),
+    ).toBe('https://app.uniswap.org/swap');
+  });
+
+  it('returns the url when it has the same host as a URL origin', () => {
+    expect(
+      getUrlForOrigin('https://app.uniswap.org/swap', 'https://app.uniswap.org'),
+    ).toBe('https://app.uniswap.org/swap');
+  });
+
+  it('returns undefined when the url belongs to another host', () => {
+    expect(
+      getUrlForOrigin('https://trusted-exchange.example', 'evil.example'),
+    ).toBeUndefined();
+  });
+
+  it('returns undefined when url or origin is missing', () => {
+    expect(getUrlForOrigin('', 'evil.example')).toBeUndefined();
+    expect(getUrlForOrigin('https://evil.example', undefined)).toBeUndefined();
   });
 });

@@ -78,6 +78,22 @@ export function getHost(url: string, defaultProtocol = 'https://') {
 }
 
 /**
+ * Returns `url` only when it has the same host as the request `origin`, so a
+ * URL from another source (e.g. the active browser tab) cannot be shown as the
+ * requester of an approval.
+ *
+ * @param url - Candidate URL for the requester
+ * @param origin - Origin of the request being approved
+ * @returns - `url` if it belongs to `origin`, otherwise `undefined`
+ */
+export function getUrlForOrigin(url?: string, origin?: string) {
+  if (!url || !origin) return undefined;
+  return getHost(url).toLowerCase() === getHost(origin).toLowerCase()
+    ? url
+    : undefined;
+}
+
+/**
  * This function verify if the hostname is a TLD
  * @param hostname - Represents the hostname of the URL
  * @param error - Represents the error of handleIpfsContent

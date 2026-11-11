@@ -30,7 +30,6 @@ import {
 import {
   getTicker,
   getNormalizedTxState,
-  getActiveTabUrl,
   getMethodData,
   decodeApproveData,
   generateTxWithNewTokenAllowance,
@@ -167,10 +166,6 @@ class ApproveTransactionReview extends PureComponent {
      * Primary currency, either ETH or Fiat
      */
     primaryCurrency: PropTypes.string,
-    /**
-     * Active tab URL, the currently active tab url
-     */
-    activeTabUrl: PropTypes.string,
     /**
      * Object that represents the navigator
      */
@@ -322,6 +317,8 @@ class ApproveTransactionReview extends PureComponent {
     channelId: this.channelIdOrHostname,
   });
   originIsMMSDKRemoteConn = Boolean(this.sdkConnection);
+
+  requesterUrl = this.sdkConnection?.originatorInfo?.url ?? '';
 
   fetchEstimatedL1Fee = async () => {
     const { transaction, chainId } = this.props;
@@ -822,7 +819,6 @@ class ApproveTransactionReview extends PureComponent {
     const {
       primaryCurrency,
       gasError,
-      activeTabUrl,
       transaction: { origin, from, to, id: transactionId },
       chainId,
       over,
@@ -902,7 +898,15 @@ class ApproveTransactionReview extends PureComponent {
             <ApproveTransactionHeader
               dontWatchAsset
               origin={origin}
-              url={activeTabUrl}
+              url={this.requesterUrl}
+              sdkDappMetadata={
+                this.originIsMMSDKRemoteConn
+                  ? {
+                      url: this.requesterUrl,
+                      icon: this.sdkConnection?.originatorInfo?.icon,
+                    }
+                  : undefined
+              }
               from={from}
               asset={{
                 address: to,
@@ -1300,7 +1304,6 @@ class ApproveTransactionReview extends PureComponent {
   renderQRDetails() {
     const { host, spenderAddress } = this.state;
     const {
-      activeTabUrl,
       transaction: { origin, from },
       QRState,
     } = this.props;
@@ -1312,7 +1315,7 @@ class ApproveTransactionReview extends PureComponent {
             origin,
             spenderAddress,
             title: host,
-            url: activeTabUrl,
+            url: this.requesterUrl,
           }}
         />
         <QRSigningDetails
@@ -1362,7 +1365,6 @@ const mapStateToProps = (state) => {
     providerType: selectProviderTypeByChainId(state, chainId),
     providerRpcTarget: selectRpcUrlByChainId(state, chainId),
     primaryCurrency: state.settings.primaryCurrency,
-    activeTabUrl: getActiveTabUrl(state),
     chainId,
     tokenList: selectTokenList(state),
     isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
