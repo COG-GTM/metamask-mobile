@@ -2552,7 +2552,9 @@
     "session_ended_title": "Session Ended",
     "session_ended_desc": "The selected session has been terminated",
     "session_already_exist": "This session is already connected.",
-    "close_current_session": "Close the current session before starting a new one."
+    "close_current_session": "Close the current session before starting a new one.",
+    "connection_blocked_title": "Connection blocked",
+    "connection_blocked_desc": "WalletConnect could not verify that this dApp is the website it claims to be, or flagged it as malicious. The connection was rejected to protect your funds."
   },
   "paymentRequest": {
     "title": "PAYMENT REQUEST",

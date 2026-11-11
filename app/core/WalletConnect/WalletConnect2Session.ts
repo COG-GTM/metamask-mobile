@@ -25,6 +25,8 @@ import {
   getHostname,
   getScopedPermissions,
   hideWCLoadingState,
+  isUnverifiedWCPermissionOrigin,
+  isWCVerifyRejected,
 } from './wc-utils';
 
 const ERROR_CODES = {
@@ -55,6 +57,9 @@ class WalletConnect2Session {
   private lastChainId: string;
   private isHandlingChainChange = false;
   private _isHandlingRequest = false;
+  // Permission subject and origin for approvals. Never derived from per-request data.
+  private permissionOrigin: string;
+  private origin: string;
 
   public session: SessionTypes.Struct;
 
@@ -64,6 +69,7 @@ class WalletConnect2Session {
     navigation,
     channelId,
     deeplink,
+    permissionOrigin,
     backgroundBridgeFactory = {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       create: (options: any) => new BackgroundBridge(options),
@@ -74,6 +80,7 @@ class WalletConnect2Session {
     session: SessionTypes.Struct;
     deeplink: boolean;
     navigation?: NavigationContainerRef;
+    permissionOrigin?: string;
     backgroundBridgeFactory?: BackgroundBridgeFactory;
   }) {
     this.web3Wallet = web3Wallet;
@@ -86,9 +93,16 @@ class WalletConnect2Session {
       navigation,
     );
 
-    const url = session.peer.metadata.url;
+    const claimedUrl = session.peer.metadata.url;
     const name = session.peer.metadata.name;
     const icons = session.peer.metadata.icons;
+
+    this.permissionOrigin = permissionOrigin ?? getHostname(claimedUrl);
+    // Unverified sessions must not surface the claimed url in approvals.
+    const url = isUnverifiedWCPermissionOrigin(this.permissionOrigin)
+      ? `https://${this.permissionOrigin}`
+      : claimedUrl;
+    this.origin = url;
 
     DevLogger.log(
       `WalletConnect2Session::constructor topic=${session.topic} pairingTopic=${session.pairingTopic} url=${url} name=${name} icons=${icons}`,
@@ -114,7 +128,7 @@ class WalletConnect2Session {
         getProviderState: any;
       }) =>
         getRpcMethodMiddleware({
-          hostname: getHostname(url),
+          hostname: this.permissionOrigin,
           getProviderState,
           channelId,
           analytics: {},
@@ -389,9 +403,8 @@ class WalletConnect2Session {
         return;
       }
 
-      // const origin = normalizeOrigin(this.session.peer.metadata.url);
       const origin = this.session.peer.metadata.url;
-      const hostname = getHostname(origin);
+      const hostname = this.permissionOrigin;
 
       DevLogger.log(
         `WC2::updateSession origin=${origin} hostname=${hostname} - chainId=${chainId} - accounts=${accounts}`,
@@ -462,8 +475,26 @@ class WalletConnect2Session {
 
     hideWCLoadingState({ navigation: this.navigation });
 
-    const verified = requestEvent.verifyContext?.verified;
-    const origin = verified?.origin ?? this.session.peer.metadata.url;
+    if (isWCVerifyRejected(requestEvent.verifyContext)) {
+      DevLogger.log(
+        `WC2::handleRequest rejected by WalletConnect Verify id=${requestEvent.id}`,
+        requestEvent.verifyContext?.verified,
+      );
+      await this.web3Wallet.respondSessionRequest({
+        topic: this.session.topic,
+        response: {
+          id: requestEvent.id,
+          jsonrpc: '2.0',
+          error: {
+            code: ERROR_CODES.USER_REJECT_CODE,
+            message: ERROR_MESSAGES.UNVERIFIED_ORIGIN,
+          },
+        },
+      });
+      return;
+    }
+
+    const origin = this.origin;
     const method = requestEvent.params.request.method;
     const isSwitchingChain = method === 'wallet_switchEthereumChain';
     const caip2ChainId = (isSwitchingChain ? `eip155:${parseInt(requestEvent.params.request.params[0].chainId, 16)}` : requestEvent.params.chainId) as CaipChainId;

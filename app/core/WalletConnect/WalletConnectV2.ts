@@ -7,7 +7,9 @@ import { IWalletKit, WalletKit, WalletKitTypes } from '@reown/walletkit';
 import { Core } from '@walletconnect/core';
 import { SessionTypes } from '@walletconnect/types';
 import { getSdkError } from '@walletconnect/utils';
+import { Alert } from 'react-native';
 
+import { strings } from '../../../locales/i18n';
 import { updateWC2Metadata } from '../../../app/actions/sdk';
 import { selectEvmChainId } from '../../selectors/networkController';
 import { store } from '../../store';
@@ -24,7 +26,10 @@ import WalletConnect from './WalletConnect';
 import {
   getHostname,
   getScopedPermissions,
+  getUnverifiedWCPermissionOrigin,
   hideWCLoadingState,
+  isWCOriginVerified,
+  isWCVerifyRejected,
   parseWalletConnectUri,
   showWCLoadingState,
 } from './wc-utils';
@@ -42,6 +47,7 @@ export const ERROR_MESSAGES = {
   USER_REJECT: 'User reject',
   AUTO_REMOVE: 'Automatic removal',
   INVALID_ID: 'Invalid Id',
+  UNVERIFIED_ORIGIN: 'Origin rejected by WalletConnect Verify',
 };
 
 export class WC2Manager {
@@ -119,6 +125,17 @@ export class WC2Manager {
       activeSessions.forEach(async (session) => {
         const sessionKey = session.topic;
         try {
+          // Sessions approved without a verified origin had their permissions
+          // stored under a WalletConnect-specific subject, not the claimed hostname.
+          const unverifiedOrigin = getUnverifiedWCPermissionOrigin(
+            session.pairingTopic,
+          );
+          const permissionOrigin = permissionController.hasPermissions(
+            unverifiedOrigin,
+          )
+            ? unverifiedOrigin
+            : getHostname(session.peer.metadata.url);
+
           this.sessions[sessionKey] = new WalletConnect2Session({
             web3Wallet,
             channelId: sessionKey,
@@ -126,17 +143,16 @@ export class WC2Manager {
             deeplink:
               typeof deeplinkSessions[session.pairingTopic] !== 'undefined',
             session,
+            permissionOrigin,
           });
 
           // Find approvedAccounts for current sessions
           DevLogger.log(
-            `WC2::init getPermittedAccounts for ${sessionKey} origin=${getHostname(
-              session.peer.metadata.url,
-            )}`,
+            `WC2::init getPermittedAccounts for ${sessionKey} origin=${permissionOrigin}`,
             JSON.stringify(permissionController.state, null, 2),
           );
           const accountPermission = permissionController.getPermission(
-            session.peer.metadata.url,
+            permissionOrigin,
             'eth_accounts',
           );
 
@@ -145,9 +161,8 @@ export class WC2Manager {
             JSON.stringify(accountPermission, null, 2),
           );
 
-          const hostname = getHostname(session.peer.metadata.url);
           let approvedAccounts =
-            getPermittedAccounts(hostname) ?? [];
+            getPermittedAccounts(permissionOrigin) ?? [];
 
           DevLogger.log(
             `WC2::init approvedAccounts id ${accountPermission?.id}`,
@@ -414,14 +429,39 @@ export class WC2Manager {
     const name = metadata.description ?? '';
     const icons = metadata.icons;
     const icon = icons?.[0] ?? '';
+    const { verifyContext } = proposal;
 
-    // Extract the hostname to ensure we're consistent with permission checks
-    const hostname = getHostname(url);
-    // Keep the full url for logging and UI display
-    const origin = url;
+    if (isWCVerifyRejected(verifyContext)) {
+      DevLogger.log(
+        `WC2::session_proposal rejected by WalletConnect Verify url=${url}`,
+        verifyContext?.verified,
+      );
+      try {
+        await this.web3Wallet.rejectSession({
+          id: proposal.id,
+          reason: getSdkError('USER_REJECTED'),
+        });
+      } catch (err) {
+        console.warn(`WC2::session_proposal can't reject session ${id}`, err);
+      }
+      Alert.alert(
+        strings('walletconnect_sessions.connection_blocked_title'),
+        strings('walletconnect_sessions.connection_blocked_desc'),
+      );
+      return;
+    }
+
+    // Only trust the self-reported dApp url when WalletConnect Verify confirmed it.
+    // Otherwise key permissions by a WalletConnect-specific subject so the dApp
+    // cannot impersonate, or share permissions with, the website it claims to be.
+    const isVerified = isWCOriginVerified({ verifyContext, url });
+    const hostname = isVerified
+      ? getHostname(url)
+      : getUnverifiedWCPermissionOrigin(pairingTopic);
+    const origin = hostname;
 
     DevLogger.log(
-      `WC2::session_proposal metadata url=${origin} normalized to hostname=${hostname}`,
+      `WC2::session_proposal metadata url=${url} verified=${isVerified} permission origin=${hostname}`,
     );
 
     // Save Connection info to redux store to be retrieved in ui.
@@ -508,6 +548,7 @@ export class WC2Manager {
         deeplink,
         web3Wallet: this.web3Wallet,
         navigation: this.navigation,
+        permissionOrigin: hostname,
       });
 
       this.sessions[activeSession.topic] = session;

@@ -2,7 +2,7 @@ import { toHex } from '@metamask/controller-utils';
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors';
 import { CaipChainId, KnownCaipNamespace } from '@metamask/utils';
 import { NavigationContainerRef } from '@react-navigation/native';
-import { RelayerTypes } from '@walletconnect/types';
+import { RelayerTypes, Verify } from '@walletconnect/types';
 import { parseRelayParams } from '@walletconnect/utils';
 import qs from 'qs';
 import Routes from '../../../app/constants/navigation/Routes';
@@ -62,6 +62,53 @@ export const getHostname = (uri: string): string => {
     return uri;
   }
 };
+
+// `.invalid` is reserved (RFC 2606/6761) so these keys can never collide with a real website's permissions.
+export const WC_UNVERIFIED_ORIGIN_SUFFIX = 'unverified.invalid';
+
+/**
+ * Returns true when WalletConnect Verify flagged the peer as malicious, or
+ * positively determined that the self-reported metadata url does not match
+ * the real origin of the dApp.
+ */
+export const isWCVerifyRejected = (verifyContext?: Verify.Context): boolean => {
+  const verified = verifyContext?.verified;
+  return verified?.isScam === true || verified?.validation === 'INVALID';
+};
+
+/**
+ * Returns true only when WalletConnect Verify confirmed that the dApp really
+ * is served from the domain it claims in its metadata.
+ */
+export const isWCOriginVerified = ({
+  verifyContext,
+  url,
+}: {
+  verifyContext?: Verify.Context;
+  url: string;
+}): boolean => {
+  const verified = verifyContext?.verified;
+  if (!verified || verified.isScam || verified.validation !== 'VALID') {
+    return false;
+  }
+  const verifiedHostname = getHostname(verified.origin ?? '');
+  return verifiedHostname.length > 0 && verifiedHostname === getHostname(url);
+};
+
+/**
+ * Permission subject used for WalletConnect sessions whose claimed domain
+ * could not be verified. It is derived from the pairing topic so it never
+ * shares a permission record with the website the dApp claims to be.
+ */
+export const getUnverifiedWCPermissionOrigin = (pairingTopic: string): string => {
+  const id =
+    (pairingTopic ?? '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 32) ||
+    'unknown';
+  return `wc-${id}.${WC_UNVERIFIED_ORIGIN_SUFFIX}`;
+};
+
+export const isUnverifiedWCPermissionOrigin = (origin: string): boolean =>
+  origin.endsWith(`.${WC_UNVERIFIED_ORIGIN_SUFFIX}`);
 
 export const parseWalletConnectUri = (uri: string): WCMultiVersionParams => {
   // Handle wc:{} and wc://{} format

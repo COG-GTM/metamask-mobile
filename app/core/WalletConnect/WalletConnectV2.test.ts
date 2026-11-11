@@ -12,6 +12,7 @@ import WalletConnect2Session from './WalletConnect2Session';
 // eslint-disable-next-line import/no-namespace
 import * as wcUtils from './wc-utils';
 import { Core } from '@walletconnect/core';
+import { Alert } from 'react-native';
 
 jest.mock('../AppConstants', () => ({
   WALLET_CONNECT: {
@@ -107,6 +108,7 @@ jest.mock('../Engine', () => ({
         id: 'mockPermissionId',
       }),
       revokeAllPermissions: jest.fn(),
+      hasPermissions: jest.fn().mockReturnValue(false),
     },
   },
 }));
@@ -662,6 +664,138 @@ describe('WC2Manager', () => {
         expect.any(Error),
       );
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('WC2Manager session proposal WalletConnect Verify', () => {
+    const buildProposal = (verified: {
+      origin: string;
+      validation: 'UNKNOWN' | 'VALID' | 'INVALID';
+      isScam?: boolean;
+    }) => ({
+      id: 2,
+      params: {
+        id: 2,
+        pairingTopic: 'abcdef0123456789',
+        proposer: {
+          publicKey: 'test-public-key',
+          metadata: {
+            name: 'Uniswap',
+            description: 'Uniswap',
+            url: 'https://app.uniswap.org',
+            icons: ['https://app.uniswap.org/icon.png'],
+          },
+        },
+        requiredNamespaces: {},
+        optionalNamespaces: {},
+        expiryTimestamp: 10000000,
+        relays: [{ protocol: 'irn' }],
+      },
+      verifyContext: {
+        verified: {
+          verifyUrl: 'https://verify.walletconnect.org',
+          ...verified,
+        },
+      },
+    });
+
+    let alertSpy: jest.SpyInstance;
+    beforeEach(() => {
+      alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
+      (
+        Engine.context.PermissionController.requestPermissions as jest.Mock
+      ).mockClear();
+    });
+    afterEach(() => {
+      alertSpy.mockRestore();
+    });
+
+    it.each([
+      [
+        'marked as a scam',
+        {
+          origin: 'https://app.uniswap.org',
+          validation: 'VALID' as const,
+          isScam: true,
+        },
+      ],
+      [
+        'with INVALID validation',
+        { origin: 'https://evil.example', validation: 'INVALID' as const },
+      ],
+    ])(
+      'rejects proposals %s without requesting permissions',
+      async (_, verified) => {
+        const mockWeb3Wallet = (
+          manager as unknown as { web3Wallet: IWalletKit }
+        ).web3Wallet;
+        const rejectSessionSpy = jest.spyOn(mockWeb3Wallet, 'rejectSession');
+
+        await manager.onSessionProposal(buildProposal(verified));
+
+        expect(rejectSessionSpy).toHaveBeenCalledWith({
+          id: 2,
+          reason: expect.any(Object),
+        });
+        expect(
+          Engine.context.PermissionController.requestPermissions,
+        ).not.toHaveBeenCalled();
+        expect(mockApproveSession).not.toHaveBeenCalledWith(
+          expect.objectContaining({ id: 2 }),
+        );
+        expect(alertSpy).toHaveBeenCalled();
+      },
+    );
+
+    it('keys permissions for unverified proposals by a WalletConnect-specific origin', async () => {
+      mockApproveSession.mockResolvedValueOnce({
+        topic: 'new-topic',
+        pairingTopic: 'abcdef0123456789',
+      } as unknown as SessionTypes.Struct);
+      await manager.onSessionProposal(
+        buildProposal({
+          origin: 'https://app.uniswap.org',
+          validation: 'UNKNOWN',
+        }),
+      );
+
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).toHaveBeenCalledWith(
+        { origin: 'wc-abcdef0123456789.unverified.invalid' },
+        expect.any(Object),
+      );
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalledWith(
+        { origin: 'app.uniswap.org' },
+        expect.any(Object),
+      );
+      expect(WalletConnect2Session).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          permissionOrigin: 'wc-abcdef0123456789.unverified.invalid',
+        }),
+      );
+    });
+
+    it('keys permissions for verified proposals by the verified hostname', async () => {
+      mockApproveSession.mockResolvedValueOnce({
+        topic: 'new-topic',
+        pairingTopic: 'abcdef0123456789',
+      } as unknown as SessionTypes.Struct);
+      await manager.onSessionProposal(
+        buildProposal({
+          origin: 'https://app.uniswap.org',
+          validation: 'VALID',
+        }),
+      );
+
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).toHaveBeenCalledWith({ origin: 'app.uniswap.org' }, expect.any(Object));
+      expect(WalletConnect2Session).toHaveBeenLastCalledWith(
+        expect.objectContaining({ permissionOrigin: 'app.uniswap.org' }),
+      );
     });
   });
 

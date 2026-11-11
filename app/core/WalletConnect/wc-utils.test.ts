@@ -10,6 +10,10 @@ import {
   networkModalOnboardingConfig,
   onRequestUserApproval,
   getHostname,
+  getUnverifiedWCPermissionOrigin,
+  isUnverifiedWCPermissionOrigin,
+  isWCOriginVerified,
+  isWCVerifyRejected,
 } from './wc-utils';
 import type { NavigationContainerRef } from '@react-navigation/native';
 import Routes from '../../../app/constants/navigation/Routes';
@@ -425,6 +429,119 @@ describe('WalletConnect Utils', () => {
     it('returns original URI when no protocol separator is found', () => {
       const noProtocolUri = 'example-with-no-protocol';
       expect(getHostname(noProtocolUri)).toBe(noProtocolUri);
+    });
+  });
+});
+
+describe('WalletConnect Verify helpers', () => {
+  const verifyContext = (verified: {
+    origin: string;
+    validation: 'UNKNOWN' | 'VALID' | 'INVALID';
+    isScam?: boolean;
+  }) => ({
+    verified: { verifyUrl: 'https://verify.walletconnect.org', ...verified },
+  });
+
+  describe('isWCVerifyRejected', () => {
+    it('rejects scams and INVALID validations', () => {
+      expect(
+        isWCVerifyRejected(
+          verifyContext({
+            origin: 'https://a.com',
+            validation: 'VALID',
+            isScam: true,
+          }),
+        ),
+      ).toBe(true);
+      expect(
+        isWCVerifyRejected(
+          verifyContext({ origin: 'https://a.com', validation: 'INVALID' }),
+        ),
+      ).toBe(true);
+    });
+
+    it('does not reject VALID, UNKNOWN or missing contexts', () => {
+      expect(
+        isWCVerifyRejected(
+          verifyContext({ origin: 'https://a.com', validation: 'VALID' }),
+        ),
+      ).toBe(false);
+      expect(
+        isWCVerifyRejected(
+          verifyContext({ origin: 'https://a.com', validation: 'UNKNOWN' }),
+        ),
+      ).toBe(false);
+      expect(isWCVerifyRejected(undefined)).toBe(false);
+    });
+  });
+
+  describe('isWCOriginVerified', () => {
+    it('is true only for VALID contexts matching the claimed hostname', () => {
+      expect(
+        isWCOriginVerified({
+          verifyContext: verifyContext({
+            origin: 'https://app.uniswap.org',
+            validation: 'VALID',
+          }),
+          url: 'https://app.uniswap.org/swap',
+        }),
+      ).toBe(true);
+    });
+
+    it('is false for UNKNOWN, INVALID, scam, missing or mismatched contexts', () => {
+      const url = 'https://app.uniswap.org';
+      expect(
+        isWCOriginVerified({
+          verifyContext: verifyContext({ origin: url, validation: 'UNKNOWN' }),
+          url,
+        }),
+      ).toBe(false);
+      expect(
+        isWCOriginVerified({
+          verifyContext: verifyContext({
+            origin: 'https://evil.com',
+            validation: 'INVALID',
+          }),
+          url,
+        }),
+      ).toBe(false);
+      expect(
+        isWCOriginVerified({
+          verifyContext: verifyContext({
+            origin: url,
+            validation: 'VALID',
+            isScam: true,
+          }),
+          url,
+        }),
+      ).toBe(false);
+      expect(
+        isWCOriginVerified({
+          verifyContext: verifyContext({
+            origin: 'https://evil.com',
+            validation: 'VALID',
+          }),
+          url,
+        }),
+      ).toBe(false);
+      expect(isWCOriginVerified({ verifyContext: undefined, url })).toBe(false);
+    });
+  });
+
+  describe('getUnverifiedWCPermissionOrigin', () => {
+    it('builds a reserved .invalid hostname from the pairing topic', () => {
+      const origin = getUnverifiedWCPermissionOrigin('ABCDEF0123456789');
+      expect(origin).toBe('wc-abcdef0123456789.unverified.invalid');
+      expect(isUnverifiedWCPermissionOrigin(origin)).toBe(true);
+      expect(getHostname(origin)).toBe(origin);
+      expect(new URL(`https://${origin}`).hostname).toBe(origin);
+    });
+
+    it('never yields a real website hostname', () => {
+      expect(isUnverifiedWCPermissionOrigin('app.uniswap.org')).toBe(false);
+      expect(getUnverifiedWCPermissionOrigin('')).toBe(
+        'wc-unknown.unverified.invalid',
+      );
     });
   });
 });
