@@ -186,6 +186,21 @@ const directFrameMessage = (url: string, id: number) => ({
   nativeEvent: { url, data: rawProviderMessage(id) },
 });
 
+// What the native WebView reports when it knows the sending frame (iOS frameInfo,
+// Android WebMessageListener); `url` is the WebView url, which may be a pending one
+const nativeFrameMessage = (
+  url: string,
+  id: number,
+  frameOrigin: string,
+  isMainFrame = true,
+) => ({
+  nativeEvent: {
+    ...providerMessage(url, id).nativeEvent,
+    frameOrigin,
+    isMainFrame,
+  },
+});
+
 const deferredScan = () => {
   const pending: Record<string, (value: typeof SAFE) => void> = {};
   mockGetPhishingTestResultAsync.mockImplementation(
@@ -491,5 +506,99 @@ describe('BrowserTab background bridge across navigations', () => {
     });
 
     expect(acmeBridge.onMessage).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops requests from the previous document after an iOS load start switched the bridge to the next site', async () => {
+    mockGetPhishingTestResultAsync.mockResolvedValue(SAFE);
+    const getWebView = await renderWebView();
+    await loadPage(getWebView, 'https://mallory.example/', 'Mallory');
+    // Mallory sets location.href to the connected site; iOS fires load start
+    // from the navigation policy, before the new document commits
+    await act(async () => {
+      await getWebView().props.onLoadStart({
+        nativeEvent: { url: 'https://acme-swap.example/' },
+      });
+    });
+    const [, acmeBridge] = mockBridges;
+    expect(acmeBridge.url).toBe('https://acme-swap.example');
+
+    act(() => {
+      // Mallory's page is still running (window.stop()) while WKWebView.URL
+      // already reports the pending url
+      getWebView().props.onMessage(
+        nativeFrameMessage(
+          'https://acme-swap.example/',
+          1,
+          'https://mallory.example',
+        ),
+      );
+    });
+    expect(acmeBridge.onMessage).not.toHaveBeenCalled();
+
+    act(() => {
+      getWebView().props.onMessage(
+        nativeFrameMessage(
+          'https://acme-swap.example/',
+          2,
+          'https://acme-swap.example',
+        ),
+      );
+    });
+    expect(acmeBridge.onMessage).toHaveBeenCalledTimes(1);
+    expect(acmeBridge.onMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ id: 2 }) }),
+    );
+  });
+
+  it('does not hold requests from the previous document while the next site is scanned', async () => {
+    mockGetPhishingTestResultAsync.mockResolvedValue(SAFE);
+    const getWebView = await renderWebView();
+    await loadPage(getWebView, 'https://mallory.example/', 'Mallory');
+    const scans = deferredScan();
+    let loadStart: Promise<unknown> = Promise.resolve();
+    act(() => {
+      loadStart = getWebView().props.onLoadStart({
+        nativeEvent: { url: 'https://acme-swap.example/' },
+      });
+      getWebView().props.onMessage(
+        nativeFrameMessage(
+          'https://acme-swap.example/',
+          1,
+          'https://mallory.example',
+        ),
+      );
+    });
+    await act(async () => {
+      scans['https://acme-swap.example'](SAFE);
+      await loadStart;
+    });
+
+    const [malloryBridge, acmeBridge] = mockBridges;
+    expect(acmeBridge.url).toBe('https://acme-swap.example');
+    expect(acmeBridge.onMessage).not.toHaveBeenCalled();
+    expect(malloryBridge.onMessage).not.toHaveBeenCalled();
+  });
+
+  it('drops requests the native WebView reports from an iframe, even a same-origin one', async () => {
+    mockGetPhishingTestResultAsync.mockResolvedValue(SAFE);
+    const getWebView = await renderWebView();
+    await loadPage(getWebView, 'https://acme-swap.example/', 'Acme Swap');
+    const [acmeBridge] = mockBridges;
+
+    act(() => {
+      getWebView().props.onMessage(
+        nativeFrameMessage(
+          'https://acme-swap.example/',
+          1,
+          'https://acme-swap.example',
+          false,
+        ),
+      );
+      getWebView().props.onMessage(
+        nativeFrameMessage('https://acme-swap.example/', 2, 'null'),
+      );
+    });
+
+    expect(acmeBridge.onMessage).not.toHaveBeenCalled();
   });
 });

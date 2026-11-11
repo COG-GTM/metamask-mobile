@@ -7,6 +7,7 @@ import {
   createProviderFrameToken,
   getProviderFrameTokenScript,
   unwrapProviderFrameMessage,
+  getProviderMessageSenderOrigin,
 } from './utils';
 // eslint-disable-next-line import/no-nodejs-modules
 import vm from 'vm';
@@ -258,6 +259,69 @@ describe('BrowserTab utils', () => {
           JSON.stringify({ mmFrameToken: token, mmData: { name: 'x' } }),
           token,
         ),
+      ).toBeUndefined();
+    });
+  });
+
+  describe('getProviderMessageSenderOrigin', () => {
+    it('uses the native sender frame origin over the WebView url', () => {
+      expect(
+        getProviderMessageSenderOrigin(
+          {
+            url: 'https://acme-swap.example/',
+            frameOrigin: 'https://mallory.example',
+            isMainFrame: true,
+          },
+          true,
+        ),
+      ).toBe('https://mallory.example');
+      expect(
+        getProviderMessageSenderOrigin(
+          {
+            url: 'https://app.example/',
+            frameOrigin: 'https://app.example:8443',
+            isMainFrame: true,
+          },
+          false,
+        ),
+      ).toBe('https://app.example:8443');
+    });
+
+    it('rejects iframes and opaque origins reported by the native WebView', () => {
+      expect(
+        getProviderMessageSenderOrigin(
+          {
+            url: 'https://app.example/',
+            frameOrigin: 'https://app.example',
+            isMainFrame: false,
+          },
+          true,
+        ),
+      ).toBeUndefined();
+      expect(
+        getProviderMessageSenderOrigin(
+          {
+            url: 'https://app.example/',
+            frameOrigin: 'null',
+            isMainFrame: true,
+          },
+          true,
+        ),
+      ).toBeUndefined();
+      expect(
+        getProviderMessageSenderOrigin(
+          { url: 'https://app.example/', frameOrigin: 'https://app.example' },
+          true,
+        ),
+      ).toBeUndefined();
+    });
+
+    it('falls back to the WebView url only for the top frame token wrapper', () => {
+      expect(
+        getProviderMessageSenderOrigin({ url: 'https://app.example/x' }, true),
+      ).toBe('https://app.example');
+      expect(
+        getProviderMessageSenderOrigin({ url: 'https://app.example/x' }, false),
       ).toBeUndefined();
     });
   });

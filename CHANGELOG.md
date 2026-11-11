@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - fix(browser): disconnect the previous site's provider bridge before the next page is phishing scanned and drop provider messages whose sender origin differs from the bridge, stop loading blocked pages, and only accept provider messages sealed with the top frame's per-tab token so iframes calling the native bridge directly are ignored
+- fix(browser): attribute provider messages to the sending document's origin reported by the native WebView (iOS `WKScriptMessage.frameInfo`, Android `WebMessageListener`) so a page cannot reach the previous or next site's bridge during navigation
 
 - fix(multi-srp): display multichain accounts in SRP list ([#14724](https://github.com/MetaMask/metamask-mobile/pull/14724))
 - fix(confirmations): remove transaction simulations from wallet initiated send flow ([#14994](https://github.com/MetaMask/metamask-mobile/pull/14994))

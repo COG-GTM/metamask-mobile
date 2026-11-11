@@ -109,6 +109,7 @@ import {
   createProviderFrameToken,
   getMaskedUrl,
   getProviderFrameTokenScript,
+  getProviderMessageSenderOrigin,
   getUrlOrigin,
   isENSUrl,
   MAX_FRAME_ENVELOPE_OVERHEAD,
@@ -908,12 +909,15 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       if (dataParsed.name) {
-        // Provider requests must come from the top frame's token wrapper, not from
-        // iframes calling the native bridge directly
-        if (!unwrapped.fromTokenFrame) {
+        // Bind the request to the document that sent it, never to whichever
+        // page the WebView is navigating to, and drop iframe messages
+        const senderOrigin = getProviderMessageSenderOrigin(
+          nativeEvent,
+          unwrapped.fromTokenFrame,
+        );
+        if (!senderOrigin) {
           return;
         }
-        const senderOrigin = getUrlOrigin(nativeEvent.url);
         const bridge = backgroundBridgeRef.current;
         if (bridge) {
           // Never let a page talk to a bridge bound to another origin

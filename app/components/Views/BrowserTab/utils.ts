@@ -193,3 +193,25 @@ export const unwrapProviderFrameMessage = (
   }
   return { data: envelope[PROVIDER_FRAME_DATA_KEY], fromTokenFrame: true };
 };
+
+/**
+ * Returns the origin of the document that posted a provider message, or undefined
+ * when the message must be dropped. Prefers the sender frame reported by the native
+ * WebView (WKScriptMessage.frameInfo on iOS, WebMessageListener on Android) because
+ * the WebView url can already point at a pending navigation while the previous
+ * document is still running. Without native frame info only the top frame's token
+ * wrapper is trusted, attributed to the WebView url.
+ */
+export const getProviderMessageSenderOrigin = (
+  nativeEvent: { url?: string; isMainFrame?: boolean; frameOrigin?: string },
+  fromTokenFrame: boolean,
+): string | undefined => {
+  if (nativeEvent.frameOrigin !== undefined) {
+    if (nativeEvent.isMainFrame !== true) {
+      return undefined;
+    }
+    const origin = getUrlOrigin(nativeEvent.frameOrigin);
+    return origin && origin !== 'null' ? origin : undefined;
+  }
+  return fromTokenFrame ? getUrlOrigin(nativeEvent.url) : undefined;
+};
