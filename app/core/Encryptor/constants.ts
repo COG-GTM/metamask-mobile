@@ -34,6 +34,14 @@ export const ENCRYPTION_LIBRARY = {
 export const KDF_ALGORITHM = 'PBKDF2';
 
 /**
+ * Bounds accepted for the iteration count stored in a payload's `keyMetadata`.
+ * Nothing this app writes uses fewer than the legacy 5,000 rounds, and the upper
+ * bound keeps a tampered payload from stalling the unlock flow.
+ */
+export const MIN_KEY_DERIVATION_ITERATIONS = KeyDerivationIteration.Legacy5000;
+export const MAX_KEY_DERIVATION_ITERATIONS = 10_000_000;
+
+/**
  * Legacy key derivation options.
  *
  * Only used as the fallback when decrypting payloads that carry no `keyMetadata`.

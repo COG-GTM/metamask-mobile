@@ -143,4 +143,70 @@ describe('vault key derivation', () => {
     expect(reopened.state.vault).toBe(upgradedVault);
     expect(await reopened.getAccounts()).toEqual([legacyAccount]);
   });
+
+  describe('stored key metadata validation', () => {
+    const withKeyMetadata = (vault: string, keyMetadata: unknown) =>
+      JSON.stringify({ ...JSON.parse(vault), keyMetadata });
+
+    it.each([
+      ['zero iterations', { algorithm: 'PBKDF2', params: { iterations: 0 } }],
+      ['one iteration', { algorithm: 'PBKDF2', params: { iterations: 1 } }],
+      [
+        'negative iterations',
+        { algorithm: 'PBKDF2', params: { iterations: -5000 } },
+      ],
+      [
+        'fractional iterations',
+        { algorithm: 'PBKDF2', params: { iterations: 600000.5 } },
+      ],
+      [
+        'string iterations',
+        { algorithm: 'PBKDF2', params: { iterations: '600000' } },
+      ],
+      [
+        'too many iterations',
+        { algorithm: 'PBKDF2', params: { iterations: 1e12 } },
+      ],
+      ['missing iterations', { algorithm: 'PBKDF2', params: {} }],
+      [
+        'unknown algorithm',
+        { algorithm: 'scrypt', params: { iterations: 600000 } },
+      ],
+      ['non-object metadata', 'PBKDF2'],
+    ])('rejects a payload with %s', async (_label, keyMetadata) => {
+      const encrypted = await defaultEncryptor.encrypt(PASSWORD, { secret: 3 });
+      const tampered = withKeyMetadata(encrypted, keyMetadata);
+
+      await expect(
+        defaultEncryptor.decrypt(PASSWORD, tampered),
+      ).rejects.toThrow('Invalid key derivation options');
+      await expect(
+        defaultEncryptor.decryptWithDetail(PASSWORD, tampered),
+      ).rejects.toThrow('Invalid key derivation options');
+      expect(defaultEncryptor.isVaultUpdated(tampered)).toBe(false);
+    });
+
+    it('rejects an exported key whose metadata is out of range', async () => {
+      const { exportedKeyString } = await defaultEncryptor.encryptWithDetail(
+        PASSWORD,
+        { secret: 4 },
+      );
+      const key = JSON.parse(
+        Buffer.from(exportedKeyString, 'base64').toString(),
+      );
+      const tampered = Buffer.from(
+        JSON.stringify({
+          ...key,
+          keyMetadata: { algorithm: 'PBKDF2', params: { iterations: 1 } },
+        }),
+      ).toString('base64');
+
+      await expect(
+        defaultEncryptor.importKey(exportedKeyString),
+      ).resolves.toEqual(key);
+      await expect(defaultEncryptor.importKey(tampered)).rejects.toThrow(
+        'Invalid exported key structure',
+      );
+    });
+  });
 });

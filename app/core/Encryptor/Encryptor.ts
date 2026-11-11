@@ -3,6 +3,9 @@ import {
   SALT_BYTES_COUNT,
   ENCRYPTION_LIBRARY,
   LEGACY_DERIVATION_OPTIONS,
+  KDF_ALGORITHM,
+  MIN_KEY_DERIVATION_ITERATIONS,
+  MAX_KEY_DERIVATION_ITERATIONS,
 } from './constants';
 import type {
   WithKeyEncryptor,
@@ -36,7 +39,35 @@ const isKeyDerivationOptions = (
 ): derivationOptions is KeyDerivationOptions =>
   isPlainObject(derivationOptions) &&
   hasProperty(derivationOptions, 'algorithm') &&
-  hasProperty(derivationOptions, 'params');
+  derivationOptions.algorithm === KDF_ALGORITHM &&
+  hasProperty(derivationOptions, 'params') &&
+  isPlainObject(derivationOptions.params) &&
+  hasProperty(derivationOptions.params, 'iterations') &&
+  Number.isSafeInteger(derivationOptions.params.iterations) &&
+  (derivationOptions.params.iterations as number) >=
+    MIN_KEY_DERIVATION_ITERATIONS &&
+  (derivationOptions.params.iterations as number) <=
+    MAX_KEY_DERIVATION_ITERATIONS;
+
+/**
+ * Returns the key derivation options stored with an encrypted payload.
+ * Payloads written before key metadata was stored fall back to the legacy options.
+ *
+ * @param keyMetadata - The `keyMetadata` value read from the payload.
+ * @returns The key derivation options to decrypt the payload with.
+ * @throws If the payload carries key metadata that is not valid.
+ */
+const getStoredKeyDerivationOptions = (
+  keyMetadata: unknown,
+): KeyDerivationOptions => {
+  if (keyMetadata === undefined || keyMetadata === null) {
+    return LEGACY_DERIVATION_OPTIONS;
+  }
+  if (!isKeyDerivationOptions(keyMetadata)) {
+    throw new Error('Invalid key derivation options');
+  }
+  return keyMetadata;
+};
 
 /**
  * Checks if the provided object is a `EncryptionKey`.
@@ -216,7 +247,7 @@ class Encryptor implements WithKeyEncryptor<EncryptionKey, Json> {
       password,
       payload.salt,
       false,
-      payload.keyMetadata ?? LEGACY_DERIVATION_OPTIONS,
+      getStoredKeyDerivationOptions(payload.keyMetadata),
       payload.lib,
     );
 
@@ -295,7 +326,13 @@ class Encryptor implements WithKeyEncryptor<EncryptionKey, Json> {
     const payload = JSON.parse(text);
 
     const { salt, keyMetadata } = payload;
-    const key = await this.keyFromPassword(password, salt, true, keyMetadata ?? LEGACY_DERIVATION_OPTIONS, payload.lib);
+    const key = await this.keyFromPassword(
+      password,
+      salt,
+      true,
+      getStoredKeyDerivationOptions(keyMetadata),
+      payload.lib,
+    );
     const exportedKeyString = await this.exportKey(key);
     const vault = await this.decryptWithKey(key, payload);
 
