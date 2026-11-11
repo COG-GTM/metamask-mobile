@@ -8,6 +8,7 @@ import { getPhishingTestResultAsync } from '../../../util/phishingDetection';
 import BrowserTab from './BrowserTab';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
 import { SPA_urlChangeListener } from '../../../util/browserScripts';
+import { MAX_MESSAGE_LENGTH } from '../../../constants/dapp';
 
 interface MockBridge {
   url: string;
@@ -464,5 +465,31 @@ describe('BrowserTab background bridge across navigations', () => {
       'https://acme-swap.example',
     ]);
     expect(mockBridges[0].onMessage).not.toHaveBeenCalled();
+  });
+
+  it('accepts a provider request under the size limit even when sealing doubles its length', async () => {
+    mockGetPhishingTestResultAsync.mockResolvedValue(SAFE);
+    const getWebView = await renderWebView();
+    await loadPage(getWebView, 'https://acme-swap.example/', 'Acme Swap');
+    const [acmeBridge] = mockBridges;
+    const raw = JSON.stringify({
+      name: 'metamask-provider',
+      data: {
+        id: 1,
+        method: 'eth_signTypedData_v4',
+        params: ['"'.repeat(MAX_MESSAGE_LENGTH * 0.3)],
+      },
+    });
+    const sealed = JSON.stringify({ mmFrameToken: frameToken, mmData: raw });
+    expect(raw.length).toBeLessThanOrEqual(MAX_MESSAGE_LENGTH);
+    expect(sealed.length).toBeGreaterThan(MAX_MESSAGE_LENGTH);
+
+    act(() => {
+      getWebView().props.onMessage({
+        nativeEvent: { url: 'https://acme-swap.example/', data: sealed },
+      });
+    });
+
+    expect(acmeBridge.onMessage).toHaveBeenCalledTimes(1);
   });
 });
