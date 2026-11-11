@@ -26,55 +26,63 @@ class SessionOwnerRegistryTest {
   fun bindsSessionToFirstCaller() {
     val registry = SessionOwnerRegistry(InMemoryStore())
 
-    assertTrue(registry.authorize("session-1", acme))
-    assertTrue(registry.authorize("session-1", acme))
+    assertTrue(registry.bind("session-1", acme))
+    assertTrue(registry.bind("session-1", acme))
   }
 
   @Test
   fun rejectsSessionUseFromAnotherApp() {
     val registry = SessionOwnerRegistry(InMemoryStore())
-    registry.authorize("session-1", acme)
+    registry.bind("session-1", acme)
 
-    assertFalse(registry.authorize("session-1", mallory))
-    assertTrue(registry.authorize("session-1", acme))
+    assertFalse(registry.bind("session-1", mallory))
+    assertTrue(registry.bind("session-1", acme))
   }
 
   @Test
   fun rejectsSameNameWithDifferentSigner() {
     val registry = SessionOwnerRegistry(InMemoryStore())
-    registry.authorize("session-1", acme)
+    registry.bind("session-1", acme)
 
-    assertFalse(registry.authorize("session-1", "packages=com.acme.swap;signers=cccc"))
+    assertFalse(registry.bind("session-1", "packages=com.acme.swap;signers=cccc"))
   }
 
   @Test
   fun bindingSurvivesRestart() {
     val store = InMemoryStore()
-    SessionOwnerRegistry(store).authorize("session-1", acme)
+    SessionOwnerRegistry(store).bind("session-1", acme)
 
-    assertFalse(SessionOwnerRegistry(store).authorize("session-1", mallory))
+    assertFalse(SessionOwnerRegistry(store).bind("session-1", mallory))
   }
 
   @Test
   fun rejectsEmptySessionOrIdentity() {
     val registry = SessionOwnerRegistry(InMemoryStore())
 
-    assertFalse(registry.authorize("", acme))
-    assertFalse(registry.authorize("session-1", ""))
+    assertFalse(registry.bind("", acme))
+    assertFalse(registry.bind("session-1", ""))
   }
 
   @Test
-  fun evictsOldestSessionsOfSameIdentityOnly() {
+  fun refusesNewSessionsOverLimitWithoutEvictingExistingBindings() {
     val store = InMemoryStore()
-    var now = 0L
-    val registry = SessionOwnerRegistry(store, maxSessionsPerIdentity = 2, clock = { now++ })
-    registry.authorize("mallory-1", mallory)
-    registry.authorize("acme-1", acme)
-    registry.authorize("acme-2", acme)
-    registry.authorize("acme-3", acme)
+    val registry = SessionOwnerRegistry(store, maxSessionsPerIdentity = 2)
+    registry.bind("mallory-1", mallory)
+    registry.bind("acme-1", acme)
+    registry.bind("acme-2", acme)
 
-    assertNull(store.get("acme-1"))
-    assertEquals(acme, store.get("acme-3")?.identity)
-    assertEquals(mallory, store.get("mallory-1")?.identity)
+    assertFalse(registry.bind("acme-3", acme))
+    assertNull(store.get("acme-3"))
+    assertEquals(acme, registry.ownerOf("acme-1"))
+    assertFalse(registry.bind("acme-1", mallory))
+    assertTrue(registry.bind("acme-1", acme))
+    assertEquals(mallory, registry.ownerOf("mallory-1"))
+  }
+
+  @Test
+  fun reportsNoOwnerForUnboundSession() {
+    val registry = SessionOwnerRegistry(InMemoryStore())
+
+    assertNull(registry.ownerOf("session-1"))
   }
 }

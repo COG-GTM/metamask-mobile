@@ -128,6 +128,11 @@ export default class AndroidService extends EventEmitter2 {
       const clientInfo: DappClient = JSON.parse(sClientInfo);
 
       DevLogger.log(`AndroidService::clients_connected`, clientInfo);
+      if (clientInfo.newBinding && this.connections?.[clientInfo.clientId]) {
+        // The session id was just claimed by an app the native service has no record of
+        // (e.g. a connection approved before sessions were bound to apps): approve it again.
+        await this.removeConnection(clientInfo.clientId);
+      }
       if (this.connections?.[clientInfo.clientId]) {
         // Skip existing client -- bridge has been setup
         Logger.log(

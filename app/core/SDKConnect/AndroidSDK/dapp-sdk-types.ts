@@ -6,6 +6,7 @@ export interface DappClient {
   connected: boolean;
   validUntil?: number;
   scheme?: string;
+  newBinding?: boolean;
 }
 
 export interface DappConnections {

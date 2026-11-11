@@ -17,9 +17,8 @@ import org.json.JSONObject
  * are handed to the wallet in-process instead of through device-wide broadcasts.
  */
 class MessageService : Service(), WalletChannel.DappEndpoint {
-  private class DappClient(val uid: Int) {
+  private class DappClient(val uid: Int, val identity: String?) {
     val keyExchange = KeyExchange()
-    var identity: String? = null
     var callback: IMessegeServiceCallback? = null
     var deathRecipient: IBinder.DeathRecipient? = null
     val pendingWalletEvents = ArrayList<Pair<EventType, String>>()
@@ -80,9 +79,16 @@ class MessageService : Service(), WalletChannel.DappEndpoint {
   }
 
   private fun registerDappCallback(uid: Int, callback: IMessegeServiceCallback) {
-    val client = synchronized(this) { clients.getOrPut(uid) { DappClient(uid) } }
-    if (client.identity == null) {
-      client.identity = CallerIdentity.of(applicationContext, uid)
+    // Resolved on every registration: a UID can be reassigned to another app after an uninstall.
+    val identity = CallerIdentity.of(applicationContext, uid)
+    val client = synchronized(this) {
+      val existing = clients[uid]
+      if (existing != null && existing.identity == identity) {
+        existing
+      } else {
+        existing?.let { removeClientLocked(it) }
+        DappClient(uid, identity).also { clients[uid] = it }
+      }
     }
     val recipient = IBinder.DeathRecipient { onDappDied(uid, callback) }
     try {
@@ -105,16 +111,26 @@ class MessageService : Service(), WalletChannel.DappEndpoint {
       if (client.callback?.asBinder() != callback.asBinder()) {
         return
       }
-      client.callback = null
       client.deathRecipient = null
-      val sessions = sessionUids.filterValues { it == uid }.keys.toList()
-      sessions.forEach { sessionUids.remove(it) }
-      sessions
+      removeClientLocked(client)
     }
     Logger.log("MessageService:: dapp uid=$uid disconnected")
     disconnectedSessions.forEach {
       WalletChannel.deliverToWallet(EventType.CLIENTS_DISCONNECTED.value, it)
     }
+  }
+
+  private fun removeClientLocked(client: DappClient): List<String> {
+    client.deathRecipient?.let { client.callback?.asBinder()?.unlinkToDeath(it, 0) }
+    client.callback = null
+    client.deathRecipient = null
+    client.pendingWalletEvents.clear()
+    if (clients[client.uid] === client) {
+      clients.remove(client.uid)
+    }
+    val sessions = sessionUids.filterValues { it == client.uid }.keys.toList()
+    sessions.forEach { sessionUids.remove(it) }
+    return sessions
   }
 
   private fun clientFor(uid: Int): DappClient? {
@@ -156,7 +172,8 @@ class MessageService : Service(), WalletChannel.DappEndpoint {
   private fun handleMessage(uid: Int, message: String, sessionId: String) {
     val client = clientFor(uid) ?: return
     val identity = client.identity
-    if (identity == null || !sessionOwners.authorize(sessionId, identity)) {
+    val owner = sessionOwners.ownerOf(sessionId)
+    if (identity == null || sessionId.isEmpty() || (owner != null && owner != identity)) {
       Logger.error("MessageService:: rejecting message for a session not owned by uid=$uid")
       return
     }
@@ -166,14 +183,26 @@ class MessageService : Service(), WalletChannel.DappEndpoint {
       Logger.error("MessageService:: could not decrypt message from uid=$uid")
       return
     }
+    val payloadJson = JSONObject(payload)
+    val isOriginatorInfo = payloadJson.optString("originatorInfo").isNotEmpty()
+    val newBinding = owner == null
+    if (newBinding) {
+      // A session can only be claimed by a connect request, which the wallet treats as new.
+      if (!isOriginatorInfo || !sessionOwners.bind(sessionId, identity)) {
+        Logger.error("MessageService:: rejecting unbound session from uid=$uid")
+        return
+      }
+    }
     synchronized(this) {
       sessionUids[sessionId] = uid
       lastActiveSessionId = sessionId
     }
 
-    val payloadJson = JSONObject(payload)
-    if (payloadJson.optString("originatorInfo").isNotEmpty()) {
+    if (isOriginatorInfo) {
       payloadJson.put("clientId", sessionId)
+      if (newBinding) {
+        payloadJson.put("newBinding", true)
+      }
       WalletChannel.deliverToWallet(EventType.CLIENTS_CONNECTED.value, payloadJson.toString())
       return
     }
@@ -182,7 +211,12 @@ class MessageService : Service(), WalletChannel.DappEndpoint {
     if (client.keyExchange.keysExchanged()) {
       WalletChannel.deliverToWallet(EventType.MESSAGE.value, messageJson)
     } else {
-      synchronized(this) { client.pendingWalletEvents.add(EventType.MESSAGE to messageJson) }
+      synchronized(this) {
+        if (client.pendingWalletEvents.size >= MAX_PENDING_EVENTS) {
+          client.pendingWalletEvents.removeAt(0)
+        }
+        client.pendingWalletEvents.add(EventType.MESSAGE to messageJson)
+      }
       val start = KeyExchangeMessage(
         KeyExchangeMessageType.KEY_HANDSHAKE_START.name,
         client.keyExchange.publicKey,
@@ -216,4 +250,8 @@ class MessageService : Service(), WalletChannel.DappEndpoint {
 
   private fun keyExchangeJson(message: KeyExchangeMessage): String =
     JSONObject().put("type", message.type).put("public_key", message.publicKey).toString()
+
+  private companion object {
+    const val MAX_PENDING_EVENTS = 32
+  }
 }
