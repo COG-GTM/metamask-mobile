@@ -61,4 +61,23 @@ describe('parseRampIntent', () => {
     const result = parseRampIntent(pathParams);
     expect(result).toEqual({ chainId: '56' });
   });
+
+  it.each(['0x89', '0', '01', '137abc', '-1', '1.5', ' 137', 'eip155:137'])(
+    'drops a chainId that is not a decimal chain id (%s)',
+    (chainId) => {
+      expect(parseRampIntent({ chainId, amount: '10' })).toEqual({
+        amount: '10',
+      });
+    },
+  );
+
+  it('does not default an invalid chainId to 1 when address is defined', () => {
+    expect(
+      parseRampIntent({ address: '0x1234567890', chainId: '0x89' }),
+    ).toEqual({ address: '0x1234567890' });
+  });
+
+  it('returns undefined when the only param is an invalid chainId', () => {
+    expect(parseRampIntent({ chainId: 'polygon' })).toBeUndefined();
+  });
 });

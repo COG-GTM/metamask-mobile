@@ -1,6 +1,6 @@
 import React from 'react';
 import { AggregatorNetwork } from '@consensys/on-ramp-sdk/dist/API';
-import { fireEvent, screen } from '@testing-library/react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { renderScreen } from '../../../../../util/test/renderWithProvider';
 
 import NetworkSwitcher from './NetworkSwitcher';
@@ -370,6 +370,60 @@ describe('NetworkSwitcher View', () => {
     expect(mockTrackEvent).toBeCalledWith('OFFRAMP_CANCELED', {
       chain_id_source: '56',
       location: 'Network Switcher Screen',
+    });
+  });
+
+  describe('deeplink intent chainId', () => {
+    const mockSetActiveNetwork = Engine.context.MultichainNetworkController
+      .setActiveNetwork as jest.Mock;
+
+    beforeEach(() => {
+      mockSetActiveNetwork.mockClear();
+    });
+
+    it('does not switch to an added network until the user confirms', async () => {
+      mockUseRampSDKValues.selectedChainId = '1';
+      mockUseRampSDKValues.intent = { chainId: '137' };
+      render(NetworkSwitcher, '0x1');
+
+      expect(mockSetActiveNetwork).not.toHaveBeenCalled();
+      expect(mockNavigate).not.toHaveBeenCalled();
+      expect(
+        screen.getByText(
+          'This link asks to use Polygon Mainnet. Your network will only change if you confirm.',
+        ),
+      ).toBeTruthy();
+
+      fireEvent.press(screen.getByText('Switch to Polygon Mainnet'));
+
+      await waitFor(() =>
+        expect(mockSetActiveNetwork).toHaveBeenCalledWith('networkId1'),
+      );
+      expect(mockSetActiveNetwork).toHaveBeenCalledTimes(1);
+      expect(mockNavigate).toHaveBeenCalledWith(Routes.RAMP.GET_STARTED, {
+        chainId: undefined,
+      });
+    });
+
+    it('does not switch to mainnet until the user confirms', async () => {
+      mockUseRampSDKValues.intent = { chainId: '1' };
+      render(NetworkSwitcher);
+
+      expect(mockSetActiveNetwork).not.toHaveBeenCalled();
+
+      fireEvent.press(screen.getByText('Switch to Ethereum Main Network'));
+
+      expect(mockSetActiveNetwork).toHaveBeenCalledWith('mainnet');
+      expect(mockSetActiveNetwork).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not offer a switch to a network the ramp does not support', async () => {
+      mockUseRampSDKValues.selectedChainId = '1';
+      mockUseRampSDKValues.intent = { chainId: '56' };
+      render(NetworkSwitcher, '0x1');
+
+      expect(mockSetActiveNetwork).not.toHaveBeenCalled();
+      expect(screen.queryByText(/This link asks to use/u)).toBeNull();
     });
   });
 

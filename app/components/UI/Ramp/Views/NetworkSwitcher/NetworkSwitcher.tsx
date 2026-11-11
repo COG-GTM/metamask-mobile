@@ -14,6 +14,7 @@ import LoadingNetworksSkeleton from './LoadingNetworksSkeleton';
 import ScreenLayout from '../../components/ScreenLayout';
 import ErrorView from '../../components/ErrorView';
 import Row from '../../components/Row';
+import StyledButton from '../../../StyledButton';
 
 import Avatar, {
   AvatarSize,
@@ -23,7 +24,10 @@ import imageIcons from '../../../../../images/image-icons';
 import Text from '../../../../Base/Text';
 import CustomNetwork from '../../../../Views/Settings/NetworksSettings/NetworkSettings/CustomNetworkView/CustomNetwork';
 import customNetworkStyles from '../../../../Views/Settings/NetworksSettings/NetworkSettings/styles';
-import { Network, ExtendedNetwork } from '../../../../Views/Settings/NetworksSettings/NetworkSettings/CustomNetworkView/CustomNetwork.types';
+import {
+  Network,
+  ExtendedNetwork,
+} from '../../../../Views/Settings/NetworksSettings/NetworkSettings/CustomNetworkView/CustomNetwork.types';
 
 import useFetchRampNetworks from '../../hooks/useFetchRampNetworks';
 import useRampNetwork from '../../hooks/useRampNetwork';
@@ -244,21 +248,56 @@ function NetworkSwitcher() {
     ],
   );
 
+  // A chainId coming from a deeplink intent is only proposed to the user,
+  // never switched to automatically: the switch requires an explicit tap.
+  const intentNetworkName = useMemo(() => {
+    const intentChainId = intent?.chainId;
+    if (
+      !intentChainId ||
+      intentChainId === selectedChainId ||
+      !isNetworkRampSupported(intentChainId, supportedNetworks)
+    ) {
+      return undefined;
+    }
+    if (getDecimalChainId(ChainId.mainnet) === intentChainId) {
+      return 'Ethereum Main Network';
+    }
+    if (getDecimalChainId(ChainId['linea-mainnet']) === intentChainId) {
+      return 'Linea Main Network';
+    }
+    let intentChainIdAsHex: `0x${string}`;
+    try {
+      intentChainIdAsHex = toHex(intentChainId);
+    } catch {
+      return undefined;
+    }
+    return rampNetworksDetails.find(
+      ({ chainId }) => toHex(chainId) === intentChainIdAsHex,
+    )?.nickname;
+  }, [
+    intent?.chainId,
+    rampNetworksDetails,
+    selectedChainId,
+    supportedNetworks,
+  ]);
+
+  const handleIntentNetworkPress = useCallback(() => {
+    if (intent?.chainId) {
+      handleIntentChainId(intent.chainId);
+    }
+  }, [handleIntentChainId, intent?.chainId]);
+
   useEffect(() => {
     if (
       isCurrentNetworkRampSupported &&
       (!intent?.chainId || selectedChainId === intent.chainId)
     ) {
       navigateToGetStarted();
-    } else if (intent?.chainId) {
-      handleIntentChainId(intent.chainId);
     }
   }, [
-    handleIntentChainId,
     intent?.chainId,
     isCurrentNetworkRampSupported,
     navigateToGetStarted,
-    navigation,
     selectedChainId,
   ]);
 
@@ -317,7 +356,29 @@ function NetworkSwitcher() {
               })}
             </Text>
 
-            <Row />
+            {!isLoading && intentNetworkName ? (
+              <Row>
+                <Text centered>
+                  {strings(
+                    'fiat_on_ramp_aggregator.network_switcher.intent_description',
+                    { networkName: intentNetworkName },
+                  )}
+                </Text>
+                <Row last>
+                  <StyledButton
+                    type={'confirm'}
+                    onPress={handleIntentNetworkPress}
+                  >
+                    {strings(
+                      'fiat_on_ramp_aggregator.network_switcher.switch_to_network',
+                      { networkName: intentNetworkName },
+                    )}
+                  </StyledButton>
+                </Row>
+              </Row>
+            ) : (
+              <Row />
+            )}
 
             {isLoading ? (
               <LoadingNetworksSkeleton />
