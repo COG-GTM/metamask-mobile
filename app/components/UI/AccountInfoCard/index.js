@@ -8,6 +8,7 @@ import Text, {
   TextVariant,
 } from '../../../component-library/components/Texts/Text';
 import SDKConnect from '../../../core/SDKConnect/SDKConnect';
+import { isUUID } from '../../../core/SDKConnect/utils/isUUID';
 import { selectAccounts } from '../../../selectors/accountTrackerController';
 import {
   selectConversionRate,
@@ -166,9 +167,9 @@ class AccountInfoCard extends PureComponent {
       ? weiToFiat(weiBalance, conversionRate, currentCurrency, 2)?.toUpperCase()
       : undefined;
 
-    const sdkConnections = SDKConnect.getInstance().getConnections();
-
-    const currentConnection = sdkConnections[origin ?? ''];
+    const currentConnection = isUUID(origin ?? '')
+      ? SDKConnect.getInstance().getConnection({ channelId: origin })
+      : SDKConnect.getInstance().getConnections()[origin ?? ''];
 
     const isOriginUrl = isUrl(origin);
 

@@ -1,4 +1,27 @@
 import { OriginatorInfo } from '@metamask/sdk-communication-layer';
+import { INTERNAL_ORIGINS } from '../../constants/transaction';
+
+const RESERVED_ORIGINATOR_VALUES = new Set(
+  [...INTERNAL_ORIGINS, 'MetaMask Mobile']
+    .filter((value): value is string => Boolean(value))
+    .map((value) => value.trim().toLowerCase()),
+);
+
+/**
+ * Whether dapp-reported originatorInfo impersonates the wallet itself
+ * (empty url, or url/title equal to an internal origin).
+ */
+export const isReservedOriginatorInfo = ({
+  url,
+  title,
+}: Pick<OriginatorInfo, 'url' | 'title'>): boolean => {
+  const normalizedUrl = url.trim().toLowerCase();
+  return (
+    normalizedUrl === '' ||
+    RESERVED_ORIGINATOR_VALUES.has(normalizedUrl) ||
+    RESERVED_ORIGINATOR_VALUES.has(title.trim().toLowerCase())
+  );
+};
 
 /**
  * Parses and validates a base64-encoded JSON string into an OriginatorInfo object.
@@ -52,7 +75,7 @@ const parseOriginatorInfo = ({
  * @param {unknown} data - The data to be validated.
  * @returns {boolean} True if the data conforms to the OriginatorInfo interface, false otherwise.
  */
-function isOriginatorInfo(data: unknown): data is OriginatorInfo {
+export function isOriginatorInfo(data: unknown): data is OriginatorInfo {
   if (typeof data !== 'object' || data === null) {
     return false;
   }

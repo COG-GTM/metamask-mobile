@@ -3,12 +3,23 @@ import AppConstants from '../../AppConstants';
 import getRpcMethodMiddleware from '../../RPCMethods/RPCMethodMiddleware';
 import { DappClient } from './dapp-sdk-types';
 
+/**
+ * Builds the RPC request origin for a deeplink or Android SDK session.
+ *
+ * The origin is scoped to the channel id and never derived from the
+ * dapp-reported `originatorInfo`, so a dapp cannot claim an internal origin.
+ *
+ * @param clientInfo - The connected SDK dapp client.
+ * @returns `MMSDKREMOTE::<channelId>`.
+ */
+export const getSDKRemoteOrigin = (clientInfo: DappClient) =>
+  `${AppConstants.MM_SDK.SDK_REMOTE_ORIGIN}${clientInfo.clientId}`;
+
 const getDefaultBridgeParams = (clientInfo: DappClient) => ({
   getApprovedHosts: (host: string) => ({
     [host]: true,
   }),
-  remoteConnHost:
-    clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title,
+  remoteConnHost: getSDKRemoteOrigin(clientInfo),
   getRpcMethodMiddleware: ({
     getProviderState,
   }: {
@@ -18,8 +29,7 @@ const getDefaultBridgeParams = (clientInfo: DappClient) => ({
     getProviderState: any;
   }) =>
     getRpcMethodMiddleware({
-      hostname:
-        clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title,
+      hostname: getSDKRemoteOrigin(clientInfo),
       channelId: clientInfo.clientId,
       getProviderState,
       isMMSDK: true,

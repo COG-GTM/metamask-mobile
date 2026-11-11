@@ -57,6 +57,7 @@ import TransactionReviewData from './TransactionReviewData';
 import TransactionReviewInformation from './TransactionReviewInformation';
 import TransactionReviewSummary from './TransactionReviewSummary';
 import DevLogger from '../../../../../../core/SDKConnect/utils/DevLogger';
+import { isUUID } from '../../../../../../core/SDKConnect/utils/isUUID';
 import { selectNativeCurrencyByChainId } from '../../../../../../selectors/networkController';
 import { selectContractExchangeRatesByChainId } from '../../../../../../selectors/tokenRatesController';
 import SmartTransactionsMigrationBanner from '../SmartTransactionsMigrationBanner/SmartTransactionsMigrationBanner';
@@ -544,9 +545,11 @@ class TransactionReview extends PureComponent {
       `TransactionReview render channelIdOrHostname=${channelIdOrHostname}`,
     );
 
-    const sdkConnections = SDKConnect.getInstance().getConnections();
-
-    const currentConnection = sdkConnections[channelIdOrHostname ?? ''];
+    const currentConnection = isUUID(channelIdOrHostname ?? '')
+      ? SDKConnect.getInstance().getConnection({
+          channelId: channelIdOrHostname,
+        })
+      : SDKConnect.getInstance().getConnections()[channelIdOrHostname ?? ''];
 
     let url = '';
     if (currentConnection) {

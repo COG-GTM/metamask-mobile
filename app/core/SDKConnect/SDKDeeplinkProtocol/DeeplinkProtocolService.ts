@@ -21,6 +21,10 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import {
+  isOriginatorInfo,
+  isReservedOriginatorInfo,
+} from '../../DeeplinkManager/parseOriginatorInfo';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -429,16 +433,31 @@ export default class DeeplinkProtocolService {
       return;
     }
 
+    let originatorInfo: unknown;
+    try {
+      const decodedOriginatorInfo = Buffer.from(
+        params.originatorInfo,
+        'base64',
+      ).toString('utf-8');
+      originatorInfo = JSON.parse(decodedOriginatorInfo)?.originatorInfo;
+    } catch (error) {
+      originatorInfo = undefined;
+    }
+
+    if (
+      !isOriginatorInfo(originatorInfo) ||
+      isReservedOriginatorInfo(originatorInfo)
+    ) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection invalid originatorInfo',
+        ),
+        { channelId: params.channelId },
+      );
+      return;
+    }
+
     this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
-
-    const decodedOriginatorInfo = Buffer.from(
-      params.originatorInfo,
-      'base64',
-    ).toString('utf-8');
-
-    const originatorInfoJson = JSON.parse(decodedOriginatorInfo);
-
-    const originatorInfo = originatorInfoJson.originatorInfo;
 
     const clientInfo: DappClient = {
       clientId: params.channelId,

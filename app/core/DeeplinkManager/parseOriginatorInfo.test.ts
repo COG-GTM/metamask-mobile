@@ -1,4 +1,6 @@
-import parseOriginatorInfo from './parseOriginatorInfo'; // Adjust the import path as needed
+import parseOriginatorInfo, {
+  isReservedOriginatorInfo,
+} from './parseOriginatorInfo';
 
 describe('parseOriginatorInfo', () => {
   it('should correctly parse a valid base64-encoded OriginatorInfo', () => {
@@ -126,5 +128,27 @@ describe('parseOriginatorInfo', () => {
     expect(() => parseOriginatorInfo({ base64OriginatorInfo })).toThrow(
       'Invalid OriginatorInfo structure',
     );
+  });
+});
+
+describe('isReservedOriginatorInfo', () => {
+  it.each([
+    [{ url: 'metamask', title: 'Example' }],
+    [{ url: ' MetaMask ', title: 'Example' }],
+    [{ url: '', title: 'Example' }],
+    [{ url: '   ', title: 'Example' }],
+    [{ url: 'https://example.com', title: 'MetaMask Mobile' }],
+    [{ url: 'https://example.com', title: 'metamask' }],
+  ])('flags %p as reserved', (info) => {
+    expect(isReservedOriginatorInfo(info)).toBe(true);
+  });
+
+  it('accepts a regular dapp', () => {
+    expect(
+      isReservedOriginatorInfo({
+        url: 'https://example.com',
+        title: 'Example DApp',
+      }),
+    ).toBe(false);
   });
 });
