@@ -48,6 +48,12 @@ async function getTrustedNotification(
     : undefined;
 }
 
+/**
+ * Handles a notification press: resolves the clicked notification from controller state and navigates to its details.
+ * @param pressActionId - Notifee press action id of the click
+ * @param notificationDataStr - serialized notification payload from the click
+ * @param navigation - navigation prop for page navigations
+ */
 async function handleNotificationClick(
   pressActionId: string | undefined,
   notificationDataStr: unknown,
