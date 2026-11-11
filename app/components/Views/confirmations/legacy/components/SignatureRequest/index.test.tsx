@@ -5,12 +5,11 @@ import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import renderWithProvider from '../../../../../../util/test/renderWithProvider';
-import { SDKConnect } from '../../../../../../core/SDKConnect/SDKConnect';
+import SDKConnect from '../../../../../../core/SDKConnect/SDKConnect';
 
 jest.mock('../../../../../../core/SDKConnect/SDKConnect', () => ({
-  SDKConnect: {
-    getInstance: jest.fn(),
-  },
+  __esModule: true,
+  default: { getInstance: jest.fn() },
 }));
 
 jest.mock('../../../../../UI/AccountInfoCard', () => () => null);
@@ -30,9 +29,9 @@ jest.mock('../../../../../../util/confirmation/signatureUtils', () => ({
   getAnalyticsParams: () => ({}),
 }));
 
-const mockGetConnections = jest.fn();
+const mockGetConnection = jest.fn();
 (SDKConnect.getInstance as jest.Mock).mockReturnValue({
-  getConnections: mockGetConnections,
+  getConnection: mockGetConnection,
 });
 
 const mockStore = configureMockStore();
@@ -75,11 +74,13 @@ describe('SignatureRequest unverified SDK origin', () => {
     );
 
   beforeEach(() => {
-    mockGetConnections.mockReturnValue({
-      [sdkChannelId]: {
-        originatorInfo: { url: 'https://swap.example', icon: declaredIcon },
-      },
-    });
+    mockGetConnection.mockImplementation(({ channelId }) =>
+      channelId === sdkChannelId
+        ? {
+            originatorInfo: { url: 'https://swap.example', icon: declaredIcon },
+          }
+        : undefined,
+    );
   });
 
   it('labels the declared site as unverified for an SDK connection', () => {

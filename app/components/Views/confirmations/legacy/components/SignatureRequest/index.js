@@ -8,7 +8,7 @@ import { strings } from '../../../../../../../locales/i18n';
 import { withMetricsAwareness } from '../../../../../../components/hooks/useMetrics';
 import ExtendedKeyringTypes from '../../../../../../constants/keyringTypes';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
-import { SDKConnect } from '../../../../../../core/SDKConnect/SDKConnect';
+import { isSDKChannel } from '../../../../../../core/SDKConnect/utils/isSDKChannel';
 import { selectSelectedInternalAccountFormattedAddress } from '../../../../../../selectors/accountsController';
 import { fontStyles } from '../../../../../../styles/common';
 import { isHardwareAccount } from '../../../../../../util/address';
@@ -257,10 +257,7 @@ class SignatureRequest extends PureComponent {
     } = this.props;
     const styles = this.getStyles();
     const url = currentPageInformation.url;
-    const channelId = currentPageInformation.channelId;
-    const isOriginUnverified = Boolean(
-      channelId && SDKConnect.getInstance().getConnections()[channelId],
-    );
+    const isOriginUnverified = isSDKChannel(currentPageInformation.channelId);
     const icon = isOriginUnverified ? undefined : currentPageInformation.icon;
 
     const title = getCleanUrl(url);
@@ -290,7 +287,7 @@ class SignatureRequest extends PureComponent {
           <WebsiteIcon
             style={styles.domainLogo}
             title={title}
-            url={url}
+            url={isOriginUnverified ? undefined : url}
             icon={icon}
           />
           <View style={styles.messageColumn}>

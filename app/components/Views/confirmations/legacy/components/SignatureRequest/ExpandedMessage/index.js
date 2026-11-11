@@ -10,11 +10,15 @@ import {
 } from 'react-native';
 import { fontStyles, baseStyles } from '../../../../../../../styles/common';
 import WebsiteIcon from '../../../../../../UI/WebsiteIcon';
+import { isSDKChannel } from '../../../../../../../core/SDKConnect/utils/isSDKChannel';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { strings } from '../../../../../../../../locales/i18n';
 import Device from '../../../../../../../util/device';
 import { getHost } from '../../../../../../../util/browser';
 import { ThemeContext, mockTheme } from '../../../../../../../util/theme';
+
+export const EXPANDED_MESSAGE_UNVERIFIED_ORIGIN_LABEL =
+  'expanded-message-unverified-origin-label';
 
 const createStyles = (colors) =>
   StyleSheet.create({
@@ -58,6 +62,14 @@ const createStyles = (colors) =>
       borderRadius: 20,
       marginBottom: 20,
     },
+    unverifiedOriginText: {
+      ...fontStyles.normal,
+      color: colors.warning.default,
+      fontSize: 12,
+      textAlign: 'center',
+      marginHorizontal: 20,
+      marginBottom: 12,
+    },
     messageFromLabel: {
       textAlign: 'center',
       ...fontStyles.bold,
@@ -92,7 +104,8 @@ export default class ExpandedMessage extends PureComponent {
     const { currentPageInformation, renderMessage, toggleExpandedMessage } =
       this.props;
     const url = currentPageInformation.url;
-    const icon = currentPageInformation.icon;
+    const isOriginUnverified = isSDKChannel(currentPageInformation.channelId);
+    const icon = isOriginUnverified ? undefined : currentPageInformation.icon;
     const title = getHost(url);
     const colors = this.context.colors || mockTheme.colors;
     const styles = createStyles(colors);
@@ -103,11 +116,7 @@ export default class ExpandedMessage extends PureComponent {
           style={styles.expandedMessageHeader}
           onPress={toggleExpandedMessage}
         >
-          <Ionicons
-            name={'arrow-back'}
-            size={30}
-            style={styles.arrowIcon}
-          />
+          <Ionicons name={'arrow-back'} size={30} style={styles.arrowIcon} />
           <Text style={styles.messageLabelTextExpanded}>
             {strings('signature_request.message')}
           </Text>
@@ -117,13 +126,21 @@ export default class ExpandedMessage extends PureComponent {
           <WebsiteIcon
             style={styles.domainLogo}
             title={title}
-            url={url}
+            url={isOriginUnverified ? undefined : url}
             icon={icon}
           />
           <Text style={styles.messageFromLabel}>
             {strings('signature_request.message_from')} {title}
           </Text>
         </View>
+        {isOriginUnverified && (
+          <Text
+            style={styles.unverifiedOriginText}
+            testID={EXPANDED_MESSAGE_UNVERIFIED_ORIGIN_LABEL}
+          >
+            {strings('sdk.unverified_origin')}
+          </Text>
+        )}
         <ScrollView style={styles.scrollView}>
           <TouchableWithoutFeedback>
             <View>{renderMessage()}</View>
