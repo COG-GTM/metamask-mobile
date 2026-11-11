@@ -1,4 +1,8 @@
-import parseOriginatorInfo from './parseOriginatorInfo'; // Adjust the import path as needed
+import parseOriginatorInfo, {
+  ORIGINATOR_INFO_MAX_FIELD_LENGTH,
+  ORIGINATOR_INFO_MAX_ICON_LENGTH,
+  ORIGINATOR_INFO_MAX_URL_LENGTH,
+} from './parseOriginatorInfo';
 
 describe('parseOriginatorInfo', () => {
   it('should correctly parse a valid base64-encoded OriginatorInfo', () => {
@@ -150,16 +154,68 @@ describe('parseOriginatorInfo', () => {
       expect(result.url).toBe('https://app.acmeswap.com:8443');
     });
 
-    it.each([scriptUrl, 'metamask://connect', 'not a url', ''])(
-      'blanks non-http(s) url %p',
-      (url) => {
-        const result = parseOriginatorInfo({
-          base64OriginatorInfo: encode({ url }),
-        });
+    it.each([
+      scriptUrl,
+      'metamask://connect',
+      'file:///etc/passwd',
+      'not a url',
+      '',
+    ])('rejects non-http(s) url %p', (url) => {
+      expect(() =>
+        parseOriginatorInfo({ base64OriginatorInfo: encode({ url }) }),
+      ).toThrow('Invalid OriginatorInfo url');
+    });
 
-        expect(result.url).toBe('');
+    it('rejects an oversized url', () => {
+      const url = `https://${'a'.repeat(ORIGINATOR_INFO_MAX_URL_LENGTH)}.com`;
+
+      expect(() =>
+        parseOriginatorInfo({ base64OriginatorInfo: encode({ url }) }),
+      ).toThrow('Invalid OriginatorInfo url');
+    });
+
+    it.each(['title', 'platform', 'dappId', 'scheme', 'source', 'apiVersion'])(
+      'rejects an oversized %s',
+      (field) => {
+        expect(() =>
+          parseOriginatorInfo({
+            base64OriginatorInfo: encode({
+              url: 'https://a.com',
+              [field]: 'x'.repeat(ORIGINATOR_INFO_MAX_FIELD_LENGTH + 1),
+            }),
+          }),
+        ).toThrow('Invalid OriginatorInfo structure');
       },
     );
+
+    it('drops unknown fields', () => {
+      const result = parseOriginatorInfo({
+        base64OriginatorInfo: encode({
+          url: 'https://a.com',
+          verified: true,
+          connector: 'sdk',
+        }),
+      });
+
+      expect(result).toEqual({
+        url: 'https://a.com',
+        title: 'Acme Swap',
+        platform: 'web',
+        dappId: 'acme',
+        connector: 'sdk',
+      });
+    });
+
+    it('drops an oversized icon', () => {
+      const result = parseOriginatorInfo({
+        base64OriginatorInfo: encode({
+          url: 'https://a.com',
+          icon: `https://a.com/${'x'.repeat(ORIGINATOR_INFO_MAX_ICON_LENGTH)}`,
+        }),
+      });
+
+      expect(result).not.toHaveProperty('icon');
+    });
 
     it.each([
       'http://app.acmeswap.com/logo.png',

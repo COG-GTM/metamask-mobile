@@ -10,6 +10,10 @@ const styleSheet = () =>
     tagUrl: {
       marginBottom: 16,
     },
+    unverifiedLabel: {
+      marginTop: 8,
+      textAlign: 'center',
+    },
   });
 
 export default styleSheet;

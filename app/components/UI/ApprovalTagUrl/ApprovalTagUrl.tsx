@@ -1,9 +1,14 @@
 import { toChecksumAddress } from 'ethereumjs-util';
 import React, { useEffect, useMemo, useState } from 'react';
+import { View } from 'react-native';
 import { useSelector } from 'react-redux';
 
 import { strings } from '../../../../locales/i18n';
 import TagUrl from '../../../component-library/components/Tags/TagUrl';
+import Text, {
+  TextColor,
+  TextVariant,
+} from '../../../component-library/components/Texts/Text';
 import { useStyles } from '../../../component-library/hooks';
 import AppConstants from '../../../core/AppConstants';
 import { selectInternalAccounts } from '../../../selectors/accountsController';
@@ -15,6 +20,8 @@ import { INTERNAL_ORIGINS } from '../../../constants/transaction';
 
 const { ORIGIN_DEEPLINK, ORIGIN_QR_CODE } = AppConstants.DEEPLINKS;
 export const APPROVAL_TAG_URL_ORIGIN_PILL = 'APPROVAL_TAG_URL_ORIGIN_PILL';
+export const APPROVAL_TAG_URL_UNVERIFIED_LABEL =
+  'APPROVAL_TAG_URL_UNVERIFIED_LABEL';
 
 interface ApprovalTagUrlProps {
   currentEnsName?: string;
@@ -25,6 +32,11 @@ interface ApprovalTagUrlProps {
     icon: string;
   };
   url: string;
+  /**
+   * The displayed url/icon were self-reported by the requester (e.g. an SDK
+   * connection opened from a link) and could not be verified.
+   */
+  isOriginUnverified?: boolean;
 }
 
 const ApprovalTagUrl = ({
@@ -33,6 +45,7 @@ const ApprovalTagUrl = ({
   url,
   sdkDappMetadata,
   currentEnsName,
+  isOriginUnverified = false,
 }: ApprovalTagUrlProps) => {
   const { styles } = useStyles(stylesheet, {});
   const [isOriginDeepLink, setIsOriginDeepLink] = useState(false);
@@ -71,7 +84,9 @@ const ApprovalTagUrl = ({
     | { uri: string }
     | undefined;
 
-  const imageSource = faviconSource?.uri
+  const imageSource = isOriginUnverified
+    ? { uri: '' }
+    : faviconSource?.uri
     ? faviconSource
     : sdkDappMetadata?.icon
     ? { uri: sdkDappMetadata.icon }
@@ -79,16 +94,35 @@ const ApprovalTagUrl = ({
         uri: '',
       };
 
-  const showOrigin = origin && !isOriginDeepLink && !INTERNAL_ORIGINS.includes(origin);
+  const showOrigin =
+    origin && !isOriginDeepLink && !INTERNAL_ORIGINS.includes(origin);
 
   if (showOrigin) {
-    return (
+    const tagUrl = (
       <TagUrl
         testID={APPROVAL_TAG_URL_ORIGIN_PILL}
         imageSource={imageSource}
         label={domainTitle || sdkDappMetadata?.url || strings('sdk.unknown')}
-        style={styles.tagUrl}
+        style={isOriginUnverified ? undefined : styles.tagUrl}
       />
+    );
+
+    if (!isOriginUnverified) {
+      return tagUrl;
+    }
+
+    return (
+      <View style={styles.tagUrl}>
+        {tagUrl}
+        <Text
+          variant={TextVariant.BodySM}
+          color={TextColor.Warning}
+          style={styles.unverifiedLabel}
+          testID={APPROVAL_TAG_URL_UNVERIFIED_LABEL}
+        >
+          {strings('sdk.unverified_origin')}
+        </Text>
+      </View>
     );
   }
   return null;

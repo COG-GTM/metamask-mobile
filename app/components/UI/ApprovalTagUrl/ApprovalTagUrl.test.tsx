@@ -1,6 +1,11 @@
 import React from 'react';
+import { Image } from 'react-native';
 import renderWithProvider from '../../../util/test/renderWithProvider';
-import ApprovalTagUrl, { APPROVAL_TAG_URL_ORIGIN_PILL } from './ApprovalTagUrl';
+import ApprovalTagUrl, {
+  APPROVAL_TAG_URL_ORIGIN_PILL,
+  APPROVAL_TAG_URL_UNVERIFIED_LABEL,
+} from './ApprovalTagUrl';
+import { strings } from '../../../../locales/i18n';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { INTERNAL_ORIGINS } from '../../../constants/transaction';
 
@@ -62,5 +67,42 @@ describe('ApprovalTagUrl', () => {
 
     expect(toJSON()).toMatchSnapshot();
     expect(getByTestId(APPROVAL_TAG_URL_ORIGIN_PILL)).toBeDefined();
+  });
+
+  it('does not mark verified origins as unverified', () => {
+    const { queryByTestId } = renderWithProvider(
+      <ApprovalTagUrl
+        from={ADDRESS_MOCK}
+        origin={DOMAIN_MOCK}
+        url={`https://${DOMAIN_MOCK}`}
+      />,
+      { state: mockInitialState },
+    );
+
+    expect(queryByTestId(APPROVAL_TAG_URL_UNVERIFIED_LABEL)).toBeNull();
+  });
+
+  it('labels self-reported SDK metadata as unverified and ignores its icon', () => {
+    const declaredIcon = 'https://swap.example/logo.png';
+    const { getByTestId, getByText, UNSAFE_root } = renderWithProvider(
+      <ApprovalTagUrl
+        from={ADDRESS_MOCK}
+        origin="https://swap.example"
+        url="https://swap.example"
+        sdkDappMetadata={{ url: 'https://swap.example', icon: declaredIcon }}
+        isOriginUnverified
+      />,
+      { state: mockInitialState },
+    );
+
+    expect(getByTestId(APPROVAL_TAG_URL_ORIGIN_PILL)).toBeDefined();
+    expect(getByText('https://swap.example')).toBeDefined();
+    expect(getByTestId(APPROVAL_TAG_URL_UNVERIFIED_LABEL)).toBeDefined();
+    expect(getByText(strings('sdk.unverified_origin'))).toBeDefined();
+    expect(
+      JSON.stringify(
+        UNSAFE_root.findAllByType(Image).map((i) => i.props.source),
+      ),
+    ).not.toContain(declaredIcon);
   });
 });

@@ -14,6 +14,14 @@ import * as TransactionUtils from '../../../../../../util/transactions';
 // eslint-disable-next-line import/no-namespace
 import { FALSE_POSITIVE_REPOST_LINE_TEST_ID } from '../BlockaidBanner/BlockaidBanner.constants';
 import { MOCK_KEYRING_CONTROLLER_STATE } from '../../../../../../util/test/keyringControllerTestUtils';
+import { APPROVAL_TAG_URL_UNVERIFIED_LABEL } from '../../../../../UI/ApprovalTagUrl/ApprovalTagUrl';
+
+const mockGetConnections = jest.fn(() => ({}));
+jest.mock('../../../../../../core/SDKConnect/SDKConnect', () => ({
+  SDKConnect: {
+    getInstance: () => ({ getConnections: mockGetConnections }),
+  },
+}));
 
 jest.mock('../../../../../../util/transactions', () => ({
   ...jest.requireActual('../../../../../../util/transactions'),
@@ -61,11 +69,10 @@ const MOCK_ADDRESS_1 = '0xC4955C0d639D99699Bfd7Ec54d9FaFEe40e4D272';
 const MOCK_ADDRESS_2 = '0xB374Ca013934e498e5baD3409147F34E6c462389';
 const MOCK_ADDRESS_3 = '0xd018538C87232FF95acbCe4870629b75640a78E7';
 
-const MOCK_ACCOUNTS_CONTROLLER_STATE =
-  createMockAccountsControllerState(
-    [MOCK_ADDRESS_1, MOCK_ADDRESS_2, MOCK_ADDRESS_3],
-    MOCK_ADDRESS_3,
-  );
+const MOCK_ACCOUNTS_CONTROLLER_STATE = createMockAccountsControllerState(
+  [MOCK_ADDRESS_1, MOCK_ADDRESS_2, MOCK_ADDRESS_3],
+  MOCK_ADDRESS_3,
+);
 
 jest.mock('../../../../../../core/Engine', () => {
   const { MOCK_ACCOUNTS_CONTROLLER_STATE: mockAccountsControllerState } =
@@ -200,9 +207,7 @@ describe('TransactionReview', () => {
     const store = mockStore(mockState);
     const wrapper = shallow(
       <Provider store={store}>
-        <TransactionReview
-          generateTransform={generateTransform}
-        />
+        <TransactionReview generateTransform={generateTransform} />
       </Provider>,
     );
     expect(wrapper).toMatchSnapshot();
@@ -232,13 +237,11 @@ describe('TransactionReview', () => {
 
     const blockaidMetricsParamsSpy = jest
       .spyOn(BlockaidUtils, 'getBlockaidMetricsParams')
-      .mockImplementation(
-        ({ result_type, reason, providerRequestsCount }) => ({
-          security_alert_response: result_type,
-          security_alert_reason: reason,
-          security_alert_provider_requests_count: providerRequestsCount,
-        }),
-      );
+      .mockImplementation(({ result_type, reason, providerRequestsCount }) => ({
+        security_alert_response: result_type,
+        security_alert_reason: reason,
+        security_alert_provider_requests_count: providerRequestsCount,
+      }));
     const { queryByText, queryByTestId, getByText } = renderWithProvider(
       <TransactionReview
         EIP1559GasData={{}}
@@ -347,5 +350,52 @@ describe('TransactionReview', () => {
     );
     const confirmButton = getByRole('button', { name: 'Confirm' });
     expect(confirmButton.props.disabled).toBe(true);
+  });
+
+  it('labels the dapp of an SDK connection as unverified', () => {
+    const channelId = 'f0b6a3e1-2a5c-4f43-9c2e-6a1f1d4e8a10';
+    mockGetConnections.mockReturnValueOnce({
+      [channelId]: {
+        originatorInfo: {
+          url: 'https://swap.example',
+          icon: 'https://swap.example/logo.png',
+        },
+      },
+    });
+    const { getByTestId, getByText } = renderWithProvider(
+      <TransactionReview
+        EIP1559GasData={{}}
+        generateTransform={generateTransform}
+      />,
+      {
+        state: {
+          ...mockState,
+          transaction: { ...mockState.transaction, origin: channelId },
+        },
+      },
+    );
+
+    expect(getByText('https://swap.example')).toBeDefined();
+    expect(getByTestId(APPROVAL_TAG_URL_UNVERIFIED_LABEL)).toBeDefined();
+  });
+
+  it('does not label browser transactions as unverified', () => {
+    const { queryByTestId } = renderWithProvider(
+      <TransactionReview
+        EIP1559GasData={{}}
+        generateTransform={generateTransform}
+      />,
+      {
+        state: {
+          ...mockState,
+          transaction: {
+            ...mockState.transaction,
+            origin: 'metamask.github.io',
+          },
+        },
+      },
+    );
+
+    expect(queryByTestId(APPROVAL_TAG_URL_UNVERIFIED_LABEL)).toBeNull();
   });
 });

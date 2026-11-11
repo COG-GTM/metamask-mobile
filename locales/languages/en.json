@@ -1260,6 +1260,7 @@
     "loading": "Connecting to MetaMask...",
     "unkown_dapp": "DAPP name not available",
     "unknown": "Unknown",
+    "unverified_origin": "Site reported by the requesting app. MetaMask can't verify it.",
     "no_connections": "No connections",
     "no_connections_desc": "If you connect an account to a site or an app, you’ll see it here."
   },

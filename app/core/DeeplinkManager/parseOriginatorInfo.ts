@@ -48,34 +48,74 @@ const parseOriginatorInfo = ({
 
 const ALLOWED_URL_PROTOCOLS = ['https:', 'http:'];
 
+export const ORIGINATOR_INFO_MAX_URL_LENGTH = 2048;
+export const ORIGINATOR_INFO_MAX_FIELD_LENGTH = 256;
+export const ORIGINATOR_INFO_MAX_ICON_LENGTH = 65536;
+
+const OPTIONAL_TEXT_FIELDS = [
+  'scheme',
+  'source',
+  'apiVersion',
+  'connector',
+] as const;
+
 /**
- * Normalizes link-supplied (unverified) originator metadata so it can't carry
- * paths, credentials or non-web schemes into the UI, and drops icons that are
- * not https or inline images.
+ * Normalizes link-supplied (unverified) originator metadata: only known fields
+ * are kept, the url must be http(s) and is reduced to its origin, text fields
+ * are length-capped, and icons that are not https or inline images are dropped.
  */
 function sanitizeOriginatorInfo(info: OriginatorInfo): OriginatorInfo {
-  let url = '';
+  if (info.url.length > ORIGINATOR_INFO_MAX_URL_LENGTH) {
+    throw new Error('Invalid OriginatorInfo url');
+  }
+
+  let url: string;
   try {
     const urlObj = new URL(info.url);
-    if (ALLOWED_URL_PROTOCOLS.includes(urlObj.protocol)) {
-      url = urlObj.origin;
+    if (!ALLOWED_URL_PROTOCOLS.includes(urlObj.protocol) || !urlObj.hostname) {
+      throw new Error('Invalid OriginatorInfo url');
     }
+    url = urlObj.origin;
   } catch (e) {
-    url = '';
+    throw new Error('Invalid OriginatorInfo url');
   }
 
-  const icon =
+  const sanitized: OriginatorInfo = {
+    url,
+    title: info.title,
+    platform: info.platform,
+    dappId: info.dappId,
+  };
+
+  for (const field of OPTIONAL_TEXT_FIELDS) {
+    if (info[field] !== undefined) {
+      sanitized[field] = info[field];
+    }
+  }
+
+  const textValues = [
+    sanitized.title,
+    sanitized.platform,
+    sanitized.dappId,
+    ...OPTIONAL_TEXT_FIELDS.map((field) => sanitized[field]),
+  ];
+  if (
+    textValues.some(
+      (value) =>
+        value !== undefined && value.length > ORIGINATOR_INFO_MAX_FIELD_LENGTH,
+    )
+  ) {
+    throw new Error('Invalid OriginatorInfo structure');
+  }
+
+  if (
     info.icon &&
+    info.icon.length <= ORIGINATOR_INFO_MAX_ICON_LENGTH &&
     (info.icon.startsWith('https://') || info.icon.startsWith('data:image/'))
-      ? info.icon
-      : undefined;
-
-  const sanitized: OriginatorInfo = { ...info, url };
-  if (icon === undefined) {
-    delete sanitized.icon;
-  } else {
-    sanitized.icon = icon;
+  ) {
+    sanitized.icon = info.icon;
   }
+
   return sanitized;
 }
 
@@ -90,8 +130,17 @@ function isOriginatorInfo(data: unknown): data is OriginatorInfo {
     return false;
   }
 
-  const { url, title, platform, dappId, icon, source, apiVersion } =
-    data as Partial<OriginatorInfo>;
+  const {
+    url,
+    title,
+    platform,
+    dappId,
+    icon,
+    scheme,
+    source,
+    apiVersion,
+    connector,
+  } = data as Partial<OriginatorInfo>;
 
   return (
     typeof url === 'string' &&
@@ -99,8 +148,10 @@ function isOriginatorInfo(data: unknown): data is OriginatorInfo {
     typeof platform === 'string' &&
     typeof dappId === 'string' &&
     (icon === undefined || typeof icon === 'string') &&
+    (scheme === undefined || typeof scheme === 'string') &&
     (source === undefined || typeof source === 'string') &&
-    (apiVersion === undefined || typeof apiVersion === 'string')
+    (apiVersion === undefined || typeof apiVersion === 'string') &&
+    (connector === undefined || typeof connector === 'string')
   );
 }
 
