@@ -24,6 +24,11 @@ import { AvatarFaviconProps } from './AvatarFavicon.types';
 
 const SVG_UTF8_DATA_URI_PREFIX = 'data:image/svg+xml;utf8,';
 
+/**
+ * Decodes the SVG markup of a `data:image/svg+xml;utf8,` URI
+ * @param uri - the SVG data URI
+ * @returns - the decoded SVG markup, or undefined if the URI is malformed
+ */
 const decodeSvgDataUri = (uri: string): string | undefined => {
   try {
     return decodeURIComponent(uri.slice(SVG_UTF8_DATA_URI_PREFIX.length));

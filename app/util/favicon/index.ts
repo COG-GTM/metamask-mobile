@@ -40,10 +40,15 @@ const parseHtmlSource = async (htmlSource: string | undefined) => {
   }
 };
 
+/**
+ * Returns whether a favicon URL uses an allowed scheme: http, https or an image data URI
+ * @param url - the resolved favicon URL
+ * @returns - true if the favicon URL can be used
+ */
 const isAllowedFaviconUrl = (url: URL) =>
   url.protocol === 'https:' ||
   url.protocol === 'http:' ||
-  (url.protocol === 'data:' && url.pathname.startsWith('image/'));
+  (url.protocol === 'data:' && url.pathname.toLowerCase().startsWith('image/'));
 
 /**
  * Returns the favicon URL from the HTML links collection

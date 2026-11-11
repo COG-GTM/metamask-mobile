@@ -207,8 +207,10 @@ describe('favicon utility getFaviconURLFromHtml() function', () => {
     );
   });
 
-  it('keeps inline image data URI favicons', async () => {
-    const dataUri = 'data:image/svg+xml;utf8,%3Csvg%3E%3C/svg%3E';
+  it.each([
+    'data:image/svg+xml;utf8,%3Csvg%3E%3C/svg%3E',
+    'data:IMAGE/PNG;base64,iVBORw0KGgo=',
+  ])('keeps inline image data URI favicon %s', async (dataUri) => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
         text: () =>
