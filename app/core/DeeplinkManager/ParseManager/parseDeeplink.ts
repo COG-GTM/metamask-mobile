@@ -12,6 +12,13 @@ import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
+/**
+ * Whether the text looks like a raw private key (64 chars, or 66 with a `0x`
+ * prefix, ignoring surrounding whitespace). Such input must never be reported.
+ *
+ * @param value - Text passed to the deeplink parser.
+ * @returns True if the text may be a private key.
+ */
 const isPrivateKeyCandidate = (value: string) => {
   const trimmed = value.trim();
   return (
