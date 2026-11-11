@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- fix(security): encrypt new vaults, keychain entries and Snap state with 600,000 PBKDF2 iterations (OWASP 2023 minimum) and upgrade legacy 5,000-iteration vaults on unlock
+- fix(security): encrypt new vaults, keychain entries and Snap state with 600,000 PBKDF2 iterations (OWASP 2023 minimum), upgrade legacy 5,000-iteration vaults on unlock and reject out-of-range stored key metadata ([#2197](https://github.com/COG-GTM/metamask-mobile/pull/2197))
 - fix(multi-srp): display multichain accounts in SRP list ([#14724](https://github.com/MetaMask/metamask-mobile/pull/14724))
 - fix(confirmations): remove transaction simulations from wallet initiated send flow ([#14994](https://github.com/MetaMask/metamask-mobile/pull/14994))
 - fix(bridge): add auto slippage option and improve slippage selection UI ([#15159](https://github.com/MetaMask/metamask-mobile/pull/15159))
