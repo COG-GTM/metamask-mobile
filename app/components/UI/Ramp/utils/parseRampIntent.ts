@@ -2,6 +2,12 @@ import { RampIntent } from '../types';
 
 const DECIMAL_CHAIN_ID_REGEX = /^[1-9]\d*$/u;
 
+/**
+ * Returns the chain id if it is a positive decimal integer string, otherwise undefined.
+ *
+ * @param chainId - The chainId value from the deeplink params.
+ * @returns The validated chain id or undefined.
+ */
 function parseChainId(chainId: string | undefined) {
   return chainId && DECIMAL_CHAIN_ID_REGEX.test(chainId) ? chainId : undefined;
 }
