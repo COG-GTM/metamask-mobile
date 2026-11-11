@@ -1077,7 +1077,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       }
 
       const bridge = initializeBackgroundBridge(urlOrigin, true);
-      pending.messages.forEach((message) => bridge.onMessage(message));
+      pending.messages.forEach((message) => bridge?.onMessage(message));
 
       sendActiveAccount();
     },

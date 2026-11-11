@@ -50,6 +50,21 @@ describe('browserScripts', () => {
       expect(alertSpy).not.toHaveBeenCalled();
       expect(postMessage).toHaveBeenCalledWith({}, origin);
     });
+    it('keeps a crafted host name with quotes, commas and parens as one origin argument', () => {
+      const origin = "https://x',window.__hit=1,'.evil.example";
+      const win: { postMessage: jest.Mock; __hit?: number } = {
+        postMessage: jest.fn(),
+      };
+      // eslint-disable-next-line no-new-func
+      new Function('window', JS_POST_MESSAGE_TO_PROVIDER({ a: 1 }, origin))(
+        win,
+      );
+
+      expect(win.postMessage).toHaveBeenCalledTimes(1);
+      expect(win.postMessage.mock.calls[0]).toHaveLength(2);
+      expect(win.postMessage.mock.calls[0][1]).toBe(origin);
+      expect(win.__hit).toBeUndefined();
+    });
   });
 
   describe('JS_IFRAME_POST_MESSAGE_TO_PROVIDER', () => {
@@ -75,6 +90,8 @@ describe('browserScripts', () => {
 
     it.each([
       MALICIOUS_ORIGIN,
+      "https://x',window.__hit=1,'.evil.example",
+      "https://x',eval(atob(location.hash.slice(1))),'.evil.example",
       "https://x');import(location.pathname.at(0)+'evil.tld');('",
       'https://x%27);alert(1);(%27',
       'https://a"b.com',
