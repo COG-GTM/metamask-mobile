@@ -1585,6 +1585,59 @@ describe('getRpcMethodMiddleware', () => {
     });
   });
 
+  describe('homepage methods', () => {
+    const homepageMethods = [
+      'metamask_removeFavorite',
+      'metamask_showTutorial',
+      'metamask_showAutocomplete',
+      'metamask_injectHomepageScripts',
+    ];
+
+    it.each(homepageMethods)(
+      '%s is forbidden when the request is not from the homepage',
+      async (method) => {
+        const injectHomePageScripts = jest.fn();
+        const toggleUrlModal = jest.fn();
+        const middleware = getRpcMethodMiddleware({
+          ...getMinimalOptions(),
+          hostname: 'evil.example',
+          isHomepage: jest.fn().mockReturnValue(false),
+          injectHomePageScripts,
+          toggleUrlModal,
+        });
+
+        const response = await callMiddleware({
+          middleware,
+          request: { jsonrpc, id: 1, method, params: ['https://a.example'] },
+        });
+
+        expect((response as JsonRpcFailure).error.code).toBe(
+          providerErrors.unauthorized().code,
+        );
+        expect(injectHomePageScripts).not.toHaveBeenCalled();
+        expect(toggleUrlModal).not.toHaveBeenCalled();
+      },
+    );
+
+    it('metamask_injectHomepageScripts injects when the request is from the homepage', async () => {
+      const injectHomePageScripts = jest.fn();
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalOptions(),
+        hostname: 'portfolio.metamask.io',
+        isHomepage: jest.fn().mockReturnValue(true),
+        injectHomePageScripts,
+      });
+
+      const response = await callMiddleware({
+        middleware,
+        request: { jsonrpc, id: 1, method: 'metamask_injectHomepageScripts' },
+      });
+
+      expect((response as JsonRpcSuccess<boolean>).result).toBe(true);
+      expect(injectHomePageScripts).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('personal_sign', () => {
     async function sendRequest() {
       const { middleware } = setupSignature();

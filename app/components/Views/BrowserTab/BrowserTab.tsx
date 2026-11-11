@@ -29,7 +29,6 @@ import {
   trustedProtocolToDeeplink,
   getAlertMessage,
   allowLinkOpen,
-  getUrlObj,
 } from '../../../util/browser';
 import {
   SPA_urlChangeListener,
@@ -65,7 +64,6 @@ import useFavicon from '../../hooks/useFavicon/useFavicon';
 import {
   HOMEPAGE_HOST,
   IPFS_GATEWAY_DISABLED_ERROR,
-  OLD_HOMEPAGE_URL_HOST,
   NOTIFICATION_NAMES,
   MM_MIXPANEL_TOKEN,
 } from './constants';
@@ -103,7 +101,12 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import {
+  getMaskedUrl,
+  guardScriptToHomepageOrigin,
+  isENSUrl,
+  isHomepageUrl,
+} from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -221,14 +224,11 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   /**
    * Checks if a given url or the current url is the homepage
    */
-  const isHomepage = useCallback((checkUrl?: string | null) => {
-    const currentPage = checkUrl || resolvedUrlRef.current;
-    const prefixedUrl = prefixUrlWithProtocol(currentPage);
-    const { host: currentHost } = getUrlObj(prefixedUrl);
-    return (
-      currentHost === HOMEPAGE_HOST || currentHost === OLD_HOMEPAGE_URL_HOST
-    );
-  }, []);
+  const isHomepage = useCallback(
+    (checkUrl?: string | null) =>
+      isHomepageUrl(checkUrl || resolvedUrlRef.current),
+    [],
+  );
 
   const notifyAllConnections = useCallback((payload: unknown) => {
     backgroundBridgeRef.current?.sendNotification(payload);
@@ -571,7 +571,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       const { current } = webviewRef;
       const analyticsEnabled = isEnabled();
       const disctinctId = await getMetaMetricsId();
-      const homepageScripts = `
+      const homepageScripts = guardScriptToHomepageOrigin(`
               window.__mmFavorites = ${JSON.stringify(
                 injectedBookmarks || bookmarks,
               )};
@@ -586,7 +586,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
                       //Nothing to do
                   }
               })()
-          `;
+          `);
 
       current?.injectJavaScript(homepageScripts);
     },
@@ -895,6 +895,13 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
 
   const initializeBackgroundBridge = useCallback(
     (urlBridge: string, isMainFrame: boolean) => {
+      const isHomepageBridge = isMainFrame && isHomepageUrl(urlBridge);
+      // Homepage methods are only allowed for a bridge created for a homepage
+      // origin while the WebView is still loading or showing that homepage
+      const isHomepageRequest = () =>
+        isHomepageBridge &&
+        isHomepageUrl(loadingUrlRef.current || resolvedUrlRef.current);
+
       // First disconnect and reset bridge
       backgroundBridgeRef.current?.onDisconnect();
       backgroundBridgeRef.current = undefined;
@@ -919,7 +926,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
             title: titleRef,
             icon: iconRef,
             // Bookmarks
-            isHomepage,
+            isHomepage: isHomepageRequest,
             // Show autocomplete
             fromHomepage,
             toggleUrlModal,
@@ -936,7 +943,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       });
       backgroundBridgeRef.current = newBridge;
     },
-    [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
+    [navigation, toggleUrlModal, tabId, injectHomePageScripts],
   );
 
   const sendActiveAccount = useCallback(async () => {
