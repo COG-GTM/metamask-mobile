@@ -41,7 +41,6 @@ import {
 } from '../../selectors/networkController';
 import { setEventStageError, setEventStage } from '../../actions/rpcEvents';
 import { isWhitelistedRPC, RPCStageTypes } from '../../reducers/rpcEvents';
-import { regex } from '../../../app/util/regex';
 import Logger from '../../../app/util/Logger';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { addTransaction } from '../../util/transaction-controller';
@@ -52,6 +51,11 @@ import {
   SignatureController,
 } from '@metamask/signature-controller';
 import { createAsyncWalletMiddleware } from './createAsyncWalletMiddleware';
+import {
+  buildScanQRCodeMatcher,
+  getScanQRCodeError,
+  getScanQRCodeResult,
+} from './wallet_scanQRCode';
 
 
 // TODO: Replace "any" with type
@@ -838,37 +842,27 @@ export const getRpcMethodMiddleware = ({
           res.result = `MetaMask/${appVersion}/Mobile`;
         },
 
-        wallet_scanQRCode: () =>
-          new Promise<void>((resolve, reject) => {
-            checkTabActive();
+        wallet_scanQRCode: async () => {
+          checkTabActive();
+          const matcher = buildScanQRCodeMatcher(req.params);
+          await new Promise<void>((resolve, reject) => {
             navigation.navigate(Routes.QR_TAB_SWITCHER, {
-              // TODO: Replace "any" with type
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onScanSuccess: (data: any) => {
-                if (!regex.exec(req.params[0], data)) {
-                  reject({ message: 'NO_REGEX_MATCH', data });
-                } else if (regex.walletAddress.exec(data.target_address)) {
-                  reject({
-                    message: 'INVALID_ETHEREUM_ADDRESS',
-                    data: data.target_address,
-                  });
+              dappOrigin: hostname,
+              disableTabber: true,
+              onScanSuccess: (data: unknown, content?: string) => {
+                try {
+                  res.result = getScanQRCodeResult(data, content, matcher);
+                  resolve();
+                } catch (error) {
+                  reject(error);
                 }
-                let result = data;
-                if (data.target_address) {
-                  result = data.target_address;
-                } else if (data.scheme) {
-                  result = JSON.stringify(data);
-                }
-                res.result = result;
-                resolve();
               },
-              // TODO: Replace "any" with type
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onScanError: (e: { toString: () => any }) => {
-                throw rpcErrors.internal(e.toString());
+              onScanError: (error: unknown) => {
+                reject(getScanQRCodeError(error));
               },
             });
-          }),
+          });
+        },
 
         wallet_watchAsset: async () =>
           RPCMethods.wallet_watchAsset({ req, res, hostname, checkTabActive }),

@@ -25,10 +25,12 @@ import { getURLProtocol } from '../../../util/general';
 import {
   failedSeedPhraseRequirements,
   isValidMnemonic,
+  isWalletOnlyQRContent,
 } from '../../../util/validators';
 import createStyles from './styles';
 import { useTheme } from '../../../util/theme';
 import { ScanSuccess, StartScan } from '../QRTabSwitcher';
+import { SCAN_QR_CODE_WALLET_ONLY_CONTENT } from '../../../core/RPCMethods/wallet_scanQRCode';
 
 const frameImage = require('../../../images/frame.png'); // eslint-disable-line import/no-commonjs
 
@@ -40,11 +42,13 @@ const QRScanner = ({
   onScanError,
   onStartScan,
   origin,
+  dappOrigin,
 }: {
   onScanSuccess: (data: ScanSuccess, content?: string) => void;
   onStartScan?: (data: StartScan) => Promise<void>;
   onScanError?: (error: string) => void;
   origin?: string;
+  dappOrigin?: string;
 }) => {
   const navigation = useNavigation();
 
@@ -105,6 +109,25 @@ const QRScanner = ({
        * Think of this as a allow or disallow bar code reading
        */
       if (!shouldReadBarCodeRef.current || !mountedRef.current || !content) {
+        return;
+      }
+
+      // Dapp-requested scans return raw text only: no secret/key classification,
+      // no deeplink or redirect handling, and never wallet-only content.
+      if (dappOrigin) {
+        shouldReadBarCodeRef.current = false;
+        end();
+        if (isWalletOnlyQRContent(content)) {
+          Alert.alert(
+            strings('qr_scanner.dapp_secret_blocked_title'),
+            strings('qr_scanner.dapp_secret_blocked_desc', {
+              origin: dappOrigin,
+            }),
+          );
+          onScanError?.(SCAN_QR_CODE_WALLET_ONLY_CONTENT);
+          return;
+        }
+        onScanSuccess({ content }, content);
         return;
       }
 
@@ -238,6 +261,8 @@ const QRScanner = ({
     },
     [
       origin,
+      dappOrigin,
+      onScanError,
       end,
       showAlertForURLRedirection,
       navigation,
@@ -307,7 +332,11 @@ const QRScanner = ({
 
         <View style={styles.overlayContainerRow}>
           <Text variant={TextVariant.BodyLGMedium} style={styles.overlayText}>
-            {strings('qr_scanner.label')}
+            {dappOrigin
+              ? strings('qr_scanner.dapp_request_label', {
+                  origin: dappOrigin,
+                })
+              : strings('qr_scanner.label')}
           </Text>
           <View style={styles.overlay} />
           <Image source={frameImage} style={styles.frame} />
