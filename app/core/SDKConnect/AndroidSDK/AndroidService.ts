@@ -33,6 +33,7 @@ import AndroidSDKEventHandler from './AndroidNativeSDKEventHandler';
 import sendMessage from './AndroidService/sendMessage';
 import { DappClient, DappConnections } from './dapp-sdk-types';
 import getDefaultBridgeParams from './getDefaultBridgeParams';
+import { hasInternalOriginatorInfo } from '../../../util/transactions/internal-origins';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import Routes from '../../../constants/navigation/Routes';
@@ -128,6 +129,16 @@ export default class AndroidService extends EventEmitter2 {
       const clientInfo: DappClient = JSON.parse(sClientInfo);
 
       DevLogger.log(`AndroidService::clients_connected`, clientInfo);
+
+      if (hasInternalOriginatorInfo(clientInfo?.originatorInfo)) {
+        Logger.error(
+          new Error(
+            'AndroidService::clients_connected originatorInfo claims an internal origin',
+          ),
+          { clientId: clientInfo.clientId },
+        );
+        return;
+      }
       if (this.connections?.[clientInfo.clientId]) {
         // Skip existing client -- bridge has been setup
         Logger.log(
