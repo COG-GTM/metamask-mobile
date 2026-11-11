@@ -46,6 +46,16 @@ export const getAccounts = async (req?: JsonRpcRequest): Promise<string[]> => {
   return getPermittedAccounts(origin);
 };
 
+/**
+ * Resolves the sender for a `wallet_sendCalls` request from the accounts the
+ * requesting origin is permitted to use.
+ *
+ * @param paramFrom - The `from` address provided by the dapp, if any.
+ * @param req - The JSON-RPC request, including its `origin`.
+ * @returns `paramFrom` if permitted, otherwise the first permitted account.
+ * @throws Unauthorized error if the origin has no permitted accounts or
+ * `paramFrom` is not one of them.
+ */
 async function getPermittedFrom(
   paramFrom: Hex | undefined,
   req: JSONRPCRequest,
