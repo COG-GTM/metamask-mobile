@@ -93,6 +93,9 @@ jest.mock('./wc-utils', () => ({
   }),
   normalizeOrigin: jest.fn().mockImplementation((url) => url),
   getHostname: jest.fn().mockReturnValue('example.com'),
+  isUnverifiedWCPermissionOrigin:
+    jest.requireActual('./wc-utils').isUnverifiedWCPermissionOrigin,
+  isWCVerifyRejected: jest.requireActual('./wc-utils').isWCVerifyRejected,
 }));
 jest.mock('../../selectors/networkController', () => ({
   selectEvmChainId: jest.fn(),
@@ -708,6 +711,119 @@ describe('WalletConnect2Session', () => {
     expect(approveRequestSpy).toHaveBeenCalledWith({
       id: switchChainRequest.id + '',
       result: true,
+    });
+  });
+
+  describe('WalletConnect Verify', () => {
+    const buildRequest = (verified: Record<string, unknown>) => ({
+      id: '7',
+      topic: mockSession.topic,
+      params: {
+        chainId: 'eip155:1',
+        request: { method: 'personal_sign', params: ['0xdead', '0xbeef'] },
+      },
+      verifyContext: { verified },
+    });
+
+    it.each([
+      [
+        'INVALID validation',
+        { origin: 'https://evil.com', validation: 'INVALID' },
+      ],
+      [
+        'scam flag',
+        { origin: 'https://example.com', validation: 'VALID', isScam: true },
+      ],
+    ])('rejects requests with %s', async (_, verified) => {
+      const respondSpy = jest
+        .spyOn(mockClient, 'respondSessionRequest')
+        .mockResolvedValue(undefined as never);
+      const onMessageSpy = jest.spyOn(
+        (session as any).backgroundBridge,
+        'onMessage',
+      );
+      const { checkWCPermissions } = jest.requireMock('./wc-utils');
+      checkWCPermissions.mockClear();
+
+      await session.handleRequest(buildRequest(verified) as any);
+
+      expect(respondSpy).toHaveBeenCalledWith({
+        topic: mockSession.topic,
+        response: {
+          id: '7',
+          jsonrpc: '2.0',
+          error: {
+            code: 5000,
+            message: 'Origin rejected by WalletConnect Verify',
+          },
+        },
+      });
+      expect(checkWCPermissions).not.toHaveBeenCalled();
+      expect(onMessageSpy).not.toHaveBeenCalled();
+    });
+
+    it('ignores the per-request verified origin and uses the session origin', async () => {
+      const onMessageSpy = jest.spyOn(
+        (session as any).backgroundBridge,
+        'onMessage',
+      );
+      const { checkWCPermissions } = jest.requireMock('./wc-utils');
+      checkWCPermissions.mockClear();
+
+      await session.handleRequest(
+        buildRequest({
+          origin: 'https://app.uniswap.org',
+          validation: 'UNKNOWN',
+        }) as any,
+      );
+
+      expect(checkWCPermissions).toHaveBeenCalledWith(
+        expect.objectContaining({ origin: 'https://example.com' }),
+      );
+      expect(onMessageSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ origin: 'https://example.com' }),
+      );
+    });
+
+    it('uses the WalletConnect-specific origin for unverified sessions', async () => {
+      const unverifiedOrigin = 'wc-testpairing.unverified.invalid';
+      const unverifiedSession = new WalletConnect2Session({
+        web3Wallet: mockClient,
+        session: {
+          ...mockSession,
+          peer: {
+            metadata: {
+              url: 'https://app.uniswap.org',
+              name: 'Uniswap',
+              icons: [],
+            },
+          },
+        } as unknown as SessionTypes.Struct,
+        channelId: 'test-channel-2',
+        deeplink: false,
+        navigation: mockNavigation,
+        permissionOrigin: unverifiedOrigin,
+      });
+      const onMessageSpy = jest.spyOn(
+        (unverifiedSession as any).backgroundBridge,
+        'onMessage',
+      );
+      const { checkWCPermissions } = jest.requireMock('./wc-utils');
+      checkWCPermissions.mockClear();
+
+      await unverifiedSession.handleRequest(
+        buildRequest({
+          origin: 'https://app.uniswap.org',
+          validation: 'UNKNOWN',
+        }) as any,
+      );
+
+      expect(checkWCPermissions).toHaveBeenCalledWith(
+        expect.objectContaining({ origin: `https://${unverifiedOrigin}` }),
+      );
+      expect(onMessageSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ origin: `https://${unverifiedOrigin}` }),
+      );
     });
   });
 });
