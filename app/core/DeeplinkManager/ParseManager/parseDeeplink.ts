@@ -12,6 +12,21 @@ import { Alert } from 'react-native';
 import { strings } from '../../../../locales/i18n';
 import AppConstants from '../../../core/AppConstants';
 
+/**
+ * Whether the text looks like a raw private key (64 chars, or 66 with a `0x`
+ * prefix, ignoring surrounding whitespace). Such input must never be reported.
+ *
+ * @param value - Text passed to the deeplink parser.
+ * @returns True if the text may be a private key.
+ */
+const isPrivateKeyCandidate = (value: string) => {
+  const trimmed = value.trim();
+  return (
+    trimmed.length === 64 ||
+    (trimmed.length === 66 && trimmed.substring(0, 2).toLowerCase() === '0x')
+  );
+};
+
 function parseDeeplink({
   deeplinkManager: instance,
   url,
@@ -25,8 +40,10 @@ function parseDeeplink({
   browserCallBack?: (url: string) => void;
   onHandled?: () => void;
 }) {
+  let isValidUrl = false;
   try {
     const validatedUrl = new URL(url);
+    isValidUrl = true;
     DevLogger.log('DeepLinkManager:parse validatedUrl', validatedUrl);
 
     const { urlObj, params } = extractURLParams(url);
@@ -93,10 +110,11 @@ function parseDeeplink({
 
     return true;
   } catch (error) {
-    const isPrivateKey = url.length === 64;
+    const isPrivateKey = isPrivateKeyCandidate(url);
     if (error && !isPrivateKey) {
+      // URL parse errors echo the raw input, which may be a scanned secret.
       Logger.error(
-        error as Error,
+        isValidUrl ? (error as Error) : new Error('Invalid deeplink URL'),
         'DeepLinkManager:parse error parsing deeplink',
       );
       if (origin === AppConstants.DEEPLINKS.ORIGIN_QR_CODE) {

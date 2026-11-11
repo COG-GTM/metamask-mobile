@@ -5,6 +5,7 @@ import handleMetaMaskDeeplink from './handleMetaMaskDeeplink';
 import handleUniversalLink from './handleUniversalLink';
 import connectWithWC from './connectWithWC';
 import parseDeeplink from './parseDeeplink';
+import Logger from '../../../util/Logger';
 
 jest.mock('../../../constants/deeplinks');
 jest.mock('../../../util/Logger');
@@ -205,5 +206,115 @@ describe('parseDeeplink', () => {
 
       expect(result).toBe(false);
     });
+  });
+
+  const privateKeys = [
+    'a'.repeat(64),
+    `0x${'a'.repeat(64)}`,
+    `0X${'A'.repeat(64)}`,
+    `z${'a'.repeat(63)}`,
+    `0xz${'a'.repeat(63)}`,
+  ];
+
+  privateKeys.forEach((url) => {
+    it(`should not log private key content to Logger.error => url=${url.slice(
+      0,
+      4,
+    )}...`, () => {
+      const result = parseDeeplink({
+        deeplinkManager: instance,
+        url,
+        origin: 'testOrigin',
+        browserCallBack: mockBrowserCallBack,
+        onHandled: mockOnHandled,
+      });
+
+      expect(result).toBe(false);
+      expect(Logger.error).not.toHaveBeenCalled();
+    });
+  });
+
+  it('should not include the raw url in the error reported to Logger.error', () => {
+    const url = 'secret-content that is not a url';
+
+    parseDeeplink({
+      deeplinkManager: instance,
+      url,
+      origin: 'testOrigin',
+      browserCallBack: mockBrowserCallBack,
+      onHandled: mockOnHandled,
+    });
+
+    expect(Logger.error).toHaveBeenCalledTimes(1);
+    const [loggedError] = (Logger.error as jest.Mock).mock.calls[0];
+    expect(loggedError.message).not.toContain('secret-content');
+  });
+
+  describe('scanned secrets', () => {
+    const hexKey = '0123456789abcdef'.repeat(4);
+    const secrets = [
+      `0x${hexKey}`,
+      `${hexKey}\n`,
+      `0x${hexKey}\r\n`,
+      ` ${hexKey} `,
+      'test test test test test test test test test test test tset',
+    ];
+
+    it.each(secrets)(
+      'never reports any part of the scanned text => %j',
+      (url) => {
+        parseDeeplink({
+          deeplinkManager: instance,
+          url,
+          origin: 'qr-code',
+          browserCallBack: mockBrowserCallBack,
+          onHandled: mockOnHandled,
+        });
+
+        const reported = JSON.stringify(
+          (Logger.error as jest.Mock).mock.calls.map(([error, extra]) => [
+            error instanceof Error ? error.message : error,
+            extra,
+          ]),
+        );
+        expect(reported).not.toContain(hexKey.slice(-24));
+        expect(reported).not.toContain('tset');
+      },
+    );
+
+    it.each([`${hexKey}\n`, ` 0x${hexKey} `])(
+      'does not log or alert for a private key with surrounding whitespace => %j',
+      (url) => {
+        parseDeeplink({
+          deeplinkManager: instance,
+          url,
+          origin: 'qr-code',
+          browserCallBack: mockBrowserCallBack,
+          onHandled: mockOnHandled,
+        });
+
+        expect(Logger.error).not.toHaveBeenCalled();
+      },
+    );
+  });
+
+  it('reports the original error when a handler throws for a valid url', () => {
+    const handlerError = new Error('handler failed');
+    mockHandleUniversalLinks.mockImplementationOnce(() => {
+      throw handlerError;
+    });
+
+    parseDeeplink({
+      deeplinkManager: instance,
+      url: 'https://example.com/',
+      origin: 'testOrigin',
+      browserCallBack: mockBrowserCallBack,
+      onHandled: mockOnHandled,
+    });
+
+    expect(Logger.error).toHaveBeenCalledWith(
+      handlerError,
+      'DeepLinkManager:parse error parsing deeplink',
+    );
   });
 });

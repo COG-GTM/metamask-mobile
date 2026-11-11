@@ -32,6 +32,12 @@ import { ScanSuccess, StartScan } from '../QRTabSwitcher';
 
 const frameImage = require('../../../images/frame.png'); // eslint-disable-line import/no-commonjs
 
+const HEX_PRIVATE_KEY_REGEX = /^(0x)?[0-9a-f]{64}$/iu;
+
+const toPrivateKeyScanData = (content: string) => ({
+  private_key: content.length === 64 ? content : content.substr(2),
+});
+
 /**
  * View that wraps the QR code scanner screen
  */
@@ -197,6 +203,16 @@ const QRScanner = ({
           return;
         }
 
+        // Hex private keys are never URLs; keep them away from the deeplink
+        // parser so they cannot end up in its error reporting.
+        if (HEX_PRIVATE_KEY_REGEX.test(content)) {
+          shouldReadBarCodeRef.current = false;
+          data = toPrivateKeyScanData(content);
+          onScanSuccess(data, content);
+          end();
+          return;
+        }
+
         // Checking if it can be handled like deeplinks
         const handledByDeeplink = SharedDeeplinkManager.parse(content, {
           origin: AppConstants.DEEPLINKS.ORIGIN_QR_CODE,
@@ -218,9 +234,7 @@ const QRScanner = ({
             content.length === 66)
         ) {
           shouldReadBarCodeRef.current = false;
-          data = {
-            private_key: content.length === 64 ? content : content.substr(2),
-          };
+          data = toPrivateKeyScanData(content);
         } else if (content.substring(0, 2).toLowerCase() === '0x') {
           shouldReadBarCodeRef.current = false;
           data = { target_address: content, action: 'send-eth' };
