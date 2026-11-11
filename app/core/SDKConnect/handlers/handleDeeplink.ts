@@ -9,6 +9,7 @@ import AppConstants from '../../AppConstants';
 import Engine from '../../Engine';
 import SDKConnect from '../SDKConnect';
 import DevLogger from '../utils/DevLogger';
+import { isUUID } from '../utils/isUUID';
 import { waitForCondition, waitForKeychainUnlocked } from '../utils/wait.util';
 import handleConnectionMessage from './handleConnectionMessage';
 
@@ -49,6 +50,11 @@ const handleDeeplink = async ({
     );
   }
 
+  if (typeof channelId !== 'string' || !isUUID(channelId)) {
+    Logger.log(`handleDeeplink:: rejected link: channelId is not a UUID`);
+    return;
+  }
+
   DevLogger.log(`handleDeeplink:: origin=${origin} url=${url}`);
 
   // Wait for keychain to be unlocked before handling rpc calls.
@@ -84,6 +90,16 @@ const handleDeeplink = async ({
 
   try {
     if (channelExists) {
+      const storedPublicKey = connections[channelId]?.otherPublicKey;
+      if (storedPublicKey && storedPublicKey !== otherPublicKey) {
+        // The link does not come from the dapp the user approved for this
+        // channel; never rebind the session to it or run its request.
+        Logger.log(
+          `handleDeeplink:: rejected link for channel=${channelId}: public key does not match the approved session`,
+        );
+        return;
+      }
+
       // is it already connected?
       let connected = sdkConnect.getConnected()[channelId]?.remote.isConnected() ?? false;
       if(!connected) {
@@ -108,7 +124,8 @@ const handleDeeplink = async ({
             protocolVersion,
             initialConnection: false,
             trigger: 'deeplink',
-            updateKey: true,
+            // Keyless sessions bind a key only after the user re-approves.
+            updateKey: false,
           });
         }
       } else {
@@ -119,8 +136,9 @@ const handleDeeplink = async ({
       DevLogger.log(
         `handleDeeplink:: channel=${channelId} reconnected=${connected} -- handle rcp`,
       );
-      // If msg contains rpc calls, handle them
-      if (rpc) {
+      // If msg contains rpc calls, handle them. A keyless session has not
+      // re-approved the dapp yet, so its link cannot run a request.
+      if (rpc && storedPublicKey) {
         const connection = sdkConnect.getConnected()[channelId];
         if (!connection) {
           DevLogger.log(`handleDeeplink:: connection not found`);

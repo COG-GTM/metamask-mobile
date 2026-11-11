@@ -186,6 +186,72 @@ describe('connectToChannel', () => {
   });
 
   describe('Handling originatorInfo and initialConnection', () => {
+    const useNewConnection = () => {
+      mockInstance.state.connected = {};
+      MockedConnection.mockImplementation(
+        () =>
+          ({
+            remote: {
+              getKeyInfo: jest.fn().mockReturnValue({
+                ecies: { private: 'mock-private-key' },
+              }),
+              state: {},
+            },
+            navigation: {
+              getCurrentRoute: jest.fn().mockReturnValue({ name: 'Home' }),
+            },
+            connect: jest.fn().mockResolvedValue(undefined),
+            isReady: false,
+          } as unknown as Connection),
+      );
+    };
+
+    it('requires a fresh approval when no session is stored for the channel', async () => {
+      (checkPermissions as jest.Mock).mockResolvedValue(true);
+      useNewConnection();
+
+      await connectToChannel({
+        instance: mockInstance,
+        id,
+        trigger,
+        otherPublicKey,
+        origin,
+        validUntil,
+        originatorInfo,
+        initialConnection: true,
+      });
+
+      expect(checkPermissions).toHaveBeenCalledWith(
+        expect.objectContaining({ requireFreshApproval: true }),
+      );
+    });
+
+    it('keeps the existing permission check when a session is stored for the channel', async () => {
+      (checkPermissions as jest.Mock).mockResolvedValue(true);
+      useNewConnection();
+      mockInstance.state.connections[id] = {
+        id,
+        otherPublicKey,
+        origin,
+        validUntil,
+      } as unknown as (typeof mockInstance.state.connections)[string];
+
+      await connectToChannel({
+        instance: mockInstance,
+        id,
+        trigger,
+        otherPublicKey,
+        origin,
+        validUntil,
+        originatorInfo,
+        initialConnection: true,
+      });
+
+      expect(checkPermissions).toHaveBeenCalledWith(
+        expect.objectContaining({ requireFreshApproval: false }),
+      );
+    });
+
     it('should set relayPersistence to true if authorized', async () => {
       (checkPermissions as jest.Mock).mockResolvedValue(true);
 

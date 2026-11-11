@@ -9,7 +9,7 @@ import handleSendMessage from './handleSendMessage';
 
 import { providerErrors } from '@metamask/rpc-errors';
 import Engine from '../../Engine';
-import { approveHostProps } from '../SDKConnect';
+import SDKConnect, { approveHostProps } from '../SDKConnect';
 import generateOTP from '../utils/generateOTP.util';
 import { setupBridge } from './setupBridge';
 import { HOUR_IN_MS } from '../SDKConnectConstants';
@@ -60,6 +60,37 @@ export const handleConnectionReady = async ({
   );
   if (!originatorInfo) {
     return;
+  }
+
+  const isDeeplinkReconnection =
+    !connection.initialConnection &&
+    connection.origin !== AppConstants.DEEPLINKS.ORIGIN_QR_CODE &&
+    (connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK ||
+      connection.trigger === 'deeplink');
+
+  // Deeplink re-connections skip the prompt only while the dapp still holds the
+  // key the session was approved with. Checked before any session metadata is
+  // updated so a rejected client cannot overwrite the stored dapp details.
+  let requireFreshApproval = false;
+  if (!connection.isReady && isDeeplinkReconnection) {
+    const storedOtherPublicKey =
+      SDKConnect.getInstance().getConnections()[connection.channelId]
+        ?.otherPublicKey;
+    const currentOtherPublicKey =
+      connection.remote.getKeyInfo()?.ecies.otherPubKey;
+    if (!storedOtherPublicKey) {
+      requireFreshApproval = true;
+    } else if (currentOtherPublicKey !== storedOtherPublicKey) {
+      // Drop only this client: removing the channel would let any client
+      // that joins it revoke the approved session.
+      Logger.log(
+        `SDKConnect::CLIENTS_READY channel=${connection.channelId} dapp key does not match the approved session key`,
+      );
+      disapprove(connection.channelId);
+      connection.setLoading(false);
+      connection.remote.disconnect();
+      return;
+    }
   }
 
   let dappUrl = '';
@@ -173,7 +204,34 @@ export const handleConnectionReady = async ({
       (connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK ||
         connection.trigger === 'deeplink')
     ) {
-      // Deeplink channels are automatically approved on re-connection.
+      if (requireFreshApproval) {
+        // No approved key to compare against: the user has to approve again.
+        connection.approvalPromise = undefined;
+        disapprove(connection.channelId);
+        const allowed = await checkPermissions({
+          connection,
+          engine,
+          requireFreshApproval: true,
+        });
+        if (!allowed) {
+          throw new Error(
+            `SDKConnect::CLIENTS_READY channel=${connection.channelId} re-approval was not granted`,
+          );
+        }
+        // The key is bound only once the user has approved the dapp holding it.
+        const storedSession =
+          SDKConnect.getInstance().getConnections()[connection.channelId];
+        const approvedOtherPublicKey =
+          connection.remote.getKeyInfo()?.ecies.otherPubKey;
+        if (storedSession && approvedOtherPublicKey) {
+          storedSession.otherPublicKey = approvedOtherPublicKey;
+          updateOriginatorInfos({
+            channelId: connection.channelId,
+            originatorInfo: connection.originatorInfo ?? originatorInfo,
+          });
+        }
+      }
+      // Deeplink channels bound to their approved key are approved on re-connection.
       const hostname =
         AppConstants.MM_SDK.SDK_REMOTE_ORIGIN + connection.channelId;
       approveHost({
@@ -190,8 +248,13 @@ export const handleConnectionReady = async ({
       connection.initialConnection &&
       connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK
     ) {
-      // Should ask for confirmation to reconnect?
-      await checkPermissions({ connection, engine });
+      // Without an approval from connectToChannel, a permission left on this
+      // channel id must not authorize the new connection without a prompt.
+      await checkPermissions({
+        connection,
+        engine,
+        requireFreshApproval: !connection.approvalPromise,
+      });
       connection.sendAuthorized(true);
     }
     // }

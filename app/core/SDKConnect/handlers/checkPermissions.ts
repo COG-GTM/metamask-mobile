@@ -26,11 +26,17 @@ export const checkPermissions = async ({
   engine,
   message,
   lastAuthorized,
+  requireFreshApproval = false,
 }: {
   connection: Connection;
   engine: typeof Engine;
   message?: CommunicationLayerMessage;
   lastAuthorized?: number;
+  /**
+   * Ask the user to approve the channel again even when it already holds a
+   * permission, e.g. when the dapp key no longer proves who is connecting.
+   */
+  requireFreshApproval?: boolean;
 }) => {
   try {
     // close poientially open loading modal
@@ -45,7 +51,7 @@ export const checkPermissions = async ({
     const permittedAccounts = getPermittedAccounts(connection.channelId);
     DevLogger.log(`checkPermissions permittedAccounts`, permittedAccounts);
 
-    if (permittedAccounts.length > 0) {
+    if (permittedAccounts.length > 0 && !requireFreshApproval) {
       return true;
     }
 
@@ -82,7 +88,7 @@ export const checkPermissions = async ({
       context: 'connection::on_message',
     });
 
-    if (connection.approvalPromise) {
+    if (connection.approvalPromise && !requireFreshApproval) {
       DevLogger.log(
         `checkPermissions approvalPromise exists currentRouteName=${currentRouteName}`,
       );
@@ -108,7 +114,7 @@ export const checkPermissions = async ({
       caip25Permission,
       moreAccountPermission,
     );
-    if (!caip25Permission) {
+    if (!caip25Permission || requireFreshApproval) {
       connection.approvalPromise = permissionsController.requestPermissions(
         { origin: connection.channelId },
         {
