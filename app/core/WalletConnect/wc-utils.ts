@@ -107,6 +107,10 @@ export const getUnverifiedWCPermissionOrigin = (pairingTopic: string): string =>
   return `wc-${id}.${WC_UNVERIFIED_ORIGIN_SUFFIX}`;
 };
 
+/**
+ * Returns true when the given permission origin was produced by
+ * `getUnverifiedWCPermissionOrigin`, i.e. the session's dApp url is unverified.
+ */
 export const isUnverifiedWCPermissionOrigin = (origin: string): boolean =>
   origin.endsWith(`.${WC_UNVERIFIED_ORIGIN_SUFFIX}`);
 
