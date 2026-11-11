@@ -4,7 +4,12 @@ import {
   getMaskedUrl,
   getUrlOrigin,
   scopeRefToOrigin,
+  createProviderFrameToken,
+  getProviderFrameTokenScript,
+  unwrapProviderFrameMessage,
 } from './utils';
+// eslint-disable-next-line import/no-nodejs-modules
+import vm from 'vm';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -139,6 +144,121 @@ describe('BrowserTab utils', () => {
 
       scoped.current = 'New';
       expect(titleRef.current).toBe('New');
+    });
+  });
+
+  describe('provider frame token', () => {
+    const runInFrame = (script: string, setup = '') => {
+      const posted: string[] = [];
+      const context = vm.createContext({
+        nativePostMessage: (message: string) => posted.push(message),
+      });
+      vm.runInContext(
+        // A plain object keeps real property semantics (vm's global proxy ignores writable: false)
+        `var window = {};
+        window.ReactNativeWebView = { postMessage: nativePostMessage };
+        ${setup}`,
+        context,
+      );
+      vm.runInContext(script, context);
+      return { context, posted };
+    };
+
+    it('creates distinct 32 hex character tokens', () => {
+      const token = createProviderFrameToken();
+      expect(token).toMatch(/^[0-9a-f]{32}$/);
+      expect(createProviderFrameToken()).not.toBe(token);
+    });
+
+    it('rejects tokens that could break out of the injected script', () => {
+      expect(() => getProviderFrameTokenScript('"};alert(1);//')).toThrow();
+    });
+
+    it('seals top frame messages with the token so they unwrap as trusted', () => {
+      const token = createProviderFrameToken();
+      const { context, posted } = runInFrame(
+        getProviderFrameTokenScript(token),
+      );
+      const message = JSON.stringify({ name: 'metamask-provider', data: 1 });
+
+      vm.runInContext(
+        `window.ReactNativeWebView.postMessage(${JSON.stringify(message)})`,
+        context,
+      );
+
+      expect(posted).toHaveLength(1);
+      expect(unwrapProviderFrameMessage(posted[0], token)).toEqual({
+        data: message,
+        fromTokenFrame: true,
+      });
+    });
+
+    it('keeps the token away from page scripts that patch builtins or the wrapper', () => {
+      const token = createProviderFrameToken();
+      const { context, posted } = runInFrame(
+        getProviderFrameTokenScript(token),
+      );
+
+      const seen = vm.runInContext(
+        `var seen = [];
+        var record = function (a, b) { seen.push('' + a + ' ' + b); };
+        JSON.stringify = function (v) { record(v); return '""'; };
+        String = function (v) { record(v); return ''; };
+        Function.prototype.call = record;
+        Function.prototype.apply = record;
+        Function.prototype.bind = record;
+        try { window.ReactNativeWebView = { postMessage: record }; } catch (e) {}
+        try { window.ReactNativeWebView.postMessage = record; } catch (e) {}
+        window.ReactNativeWebView.postMessage('{"name":"x"}');
+        seen.join('|')`,
+        context,
+      );
+
+      expect(seen).not.toContain(token);
+      expect(posted).toHaveLength(1);
+      expect(unwrapProviderFrameMessage(posted[0], token)?.fromTokenFrame).toBe(
+        true,
+      );
+    });
+
+    it('does not wrap the bridge twice when the script is injected again', () => {
+      const token = createProviderFrameToken();
+      const script = getProviderFrameTokenScript(token);
+      const { context, posted } = runInFrame(script);
+      vm.runInContext(script, context);
+
+      vm.runInContext(`window.ReactNativeWebView.postMessage('{}')`, context);
+
+      expect(unwrapProviderFrameMessage(posted[0], token)).toEqual({
+        data: '{}',
+        fromTokenFrame: true,
+      });
+    });
+
+    it('treats messages without an envelope as untrusted and drops envelopes with another token', () => {
+      const token = createProviderFrameToken();
+      const raw = JSON.stringify({ name: 'metamask-provider' });
+
+      expect(unwrapProviderFrameMessage(raw, token)).toEqual({
+        data: raw,
+        fromTokenFrame: false,
+      });
+      expect(unwrapProviderFrameMessage('not json', token)).toEqual({
+        data: 'not json',
+        fromTokenFrame: false,
+      });
+      expect(
+        unwrapProviderFrameMessage(
+          JSON.stringify({ mmFrameToken: 'f'.repeat(32), mmData: raw }),
+          token,
+        ),
+      ).toBeUndefined();
+      expect(
+        unwrapProviderFrameMessage(
+          JSON.stringify({ mmFrameToken: token, mmData: { name: 'x' } }),
+          token,
+        ),
+      ).toBeUndefined();
     });
   });
 });

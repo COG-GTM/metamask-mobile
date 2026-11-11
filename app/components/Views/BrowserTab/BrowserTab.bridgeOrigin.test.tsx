@@ -7,6 +7,7 @@ import AppConstants from '../../../core/AppConstants';
 import { getPhishingTestResultAsync } from '../../../util/phishingDetection';
 import BrowserTab from './BrowserTab';
 import { BrowserViewSelectorsIDs } from '../../../../e2e/selectors/Browser/BrowserView.selectors';
+import { SPA_urlChangeListener } from '../../../util/browserScripts';
 
 interface MockBridge {
   url: string;
@@ -144,6 +145,9 @@ const SAFE = { result: false } as Awaited<
   ReturnType<typeof getPhishingTestResultAsync>
 >;
 
+// Token the top-frame wrapper of the rendered tab seals provider messages with
+let frameToken = '';
+
 const renderWebView = async () => {
   const { getByTestId } = renderWithProvider(<BrowserTab {...mockProps} />, {
     state: mockInitialState,
@@ -151,17 +155,34 @@ const renderWebView = async () => {
   const getWebView = () =>
     getByTestId(BrowserViewSelectorsIDs.BROWSER_WEBVIEW_ID);
   await waitFor(() => expect(getWebView()).toBeTruthy());
+  const injected: string =
+    getWebView().props.injectedJavaScriptBeforeContentLoaded;
+  frameToken = /"mmFrameToken":"([0-9a-f]{32})"/.exec(injected)?.[1] ?? '';
+  expect(frameToken).toHaveLength(32);
+  expect(injected.endsWith('entry-script' + SPA_urlChangeListener)).toBe(true);
   return getWebView;
 };
 
-const providerMessage = (url: string, id: number) => ({
+const rawProviderMessage = (id: number) =>
+  JSON.stringify({
+    name: 'metamask-provider',
+    data: { id, method: 'eth_accounts' },
+  });
+
+// What the top frame's token wrapper posts
+const providerMessage = (url: string, id: number, token = frameToken) => ({
   nativeEvent: {
     url,
     data: JSON.stringify({
-      name: 'metamask-provider',
-      data: { id, method: 'eth_accounts' },
+      mmFrameToken: token,
+      mmData: rawProviderMessage(id),
     }),
   },
+});
+
+// What a frame calling the native ReactNativeWebView bridge directly posts
+const directFrameMessage = (url: string, id: number) => ({
+  nativeEvent: { url, data: rawProviderMessage(id) },
 });
 
 const deferredScan = () => {
@@ -393,6 +414,55 @@ describe('BrowserTab background bridge across navigations', () => {
       'https://acme-swap.example',
     ]);
     expect(mockBridges[0].onDisconnect).not.toHaveBeenCalled();
+    expect(mockBridges[0].onMessage).not.toHaveBeenCalled();
+  });
+
+  it('drops provider messages that bypass the top frame token wrapper, as Android iframes can', async () => {
+    mockGetPhishingTestResultAsync.mockResolvedValue(SAFE);
+    const getWebView = await renderWebView();
+    await loadPage(getWebView, 'https://acme-swap.example/', 'Acme Swap');
+    const [acmeBridge] = mockBridges;
+
+    act(() => {
+      // Android reports the top-level url for messages posted by any frame
+      getWebView().props.onMessage(
+        directFrameMessage('https://acme-swap.example/', 1),
+      );
+      getWebView().props.onMessage(
+        providerMessage('https://acme-swap.example/', 2, 'f'.repeat(32)),
+      );
+      getWebView().props.onMessage(
+        providerMessage('https://acme-swap.example/', 3),
+      );
+    });
+
+    expect(acmeBridge.onMessage).toHaveBeenCalledTimes(1);
+    expect(acmeBridge.onMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ id: 3 }) }),
+    );
+  });
+
+  it('does not hold iframe messages sent while the next site is being scanned', async () => {
+    mockGetPhishingTestResultAsync.mockResolvedValue(SAFE);
+    const getWebView = await renderWebView();
+    const scans = deferredScan();
+    let loadStart: Promise<unknown> = Promise.resolve();
+    act(() => {
+      loadStart = getWebView().props.onLoadStart({
+        nativeEvent: { url: 'https://acme-swap.example/' },
+      });
+      getWebView().props.onMessage(
+        directFrameMessage('https://acme-swap.example/', 1),
+      );
+    });
+    await act(async () => {
+      scans['https://acme-swap.example'](SAFE);
+      await loadStart;
+    });
+
+    expect(mockBridges.map(({ url }) => url)).toEqual([
+      'https://acme-swap.example',
+    ]);
     expect(mockBridges[0].onMessage).not.toHaveBeenCalled();
   });
 });
