@@ -229,6 +229,12 @@ function setSecurityAlertResponse(
   }
 }
 
+/**
+ * Finds the ID of the transaction created with the given security alert ID.
+ *
+ * @param securityAlertId - The security alert ID set on the transaction metadata.
+ * @returns The matching transaction ID, or undefined if no transaction exists yet.
+ */
 function findTransactionIdBySecurityAlertId(securityAlertId: string) {
   const { TransactionController } = Engine.context;
 
@@ -240,9 +246,15 @@ function findTransactionIdBySecurityAlertId(securityAlertId: string) {
 }
 
 /**
- * Batch transactions (wallet_sendCalls) are validated before the transaction
- * exists, so the result is keyed by securityAlertId and applied to the
- * transaction created with that securityAlertId as soon as it is available.
+ * Attaches a security alert response to the transaction with the given
+ * security alert ID. Batch transactions (wallet_sendCalls) are validated
+ * before the transaction exists, so if it does not exist yet the response is
+ * applied when it is added, or discarded after a timeout.
+ *
+ * @param request - The validated request.
+ * @param response - The security alert response.
+ * @param securityAlertId - The security alert ID of the transaction.
+ * @param updateControllerState - Whether to update TransactionController state.
  */
 function setSecurityAlertResponseBySecurityAlertId(
   request: PPOMRequest,
