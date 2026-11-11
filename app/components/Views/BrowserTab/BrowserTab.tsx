@@ -111,6 +111,7 @@ import {
   getProviderFrameTokenScript,
   getUrlOrigin,
   isENSUrl,
+  MAX_FRAME_ENVELOPE_OVERHEAD,
   scopeRefToOrigin,
   unwrapProviderFrameMessage,
 } from './utils';
@@ -888,7 +889,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const onMessage = ({ nativeEvent }: WebViewMessageEvent) => {
     const data = nativeEvent.data;
     try {
-      if (data.length > MAX_MESSAGE_LENGTH) {
+      // The frame token envelope JSON-escapes the message, which can double its length
+      if (data.length > MAX_MESSAGE_LENGTH * 2 + MAX_FRAME_ENVELOPE_OVERHEAD) {
         console.warn(
           `message exceeded size limit and will be dropped: ${data.slice(
             0,
@@ -898,7 +900,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       const unwrapped = unwrapProviderFrameMessage(data, providerFrameToken);
-      if (!unwrapped) {
+      if (!unwrapped || unwrapped.data.length > MAX_MESSAGE_LENGTH) {
         return;
       }
       const dataParsed = JSON.parse(unwrapped.data);

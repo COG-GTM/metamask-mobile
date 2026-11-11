@@ -111,6 +111,11 @@ const PROVIDER_FRAME_TOKEN_KEY = 'mmFrameToken';
 const PROVIDER_FRAME_DATA_KEY = 'mmData';
 
 /**
+ * Upper bound on the characters the frame token envelope adds around a message
+ */
+export const MAX_FRAME_ENVELOPE_OVERHEAD = 128;
+
+/**
  * Returns a fresh random secret used to tell the top frame's messages apart from
  * frames that call the native `ReactNativeWebView` / `webkit.messageHandlers`
  * bridge directly (Android exposes it to every frame, including cross-origin iframes).
