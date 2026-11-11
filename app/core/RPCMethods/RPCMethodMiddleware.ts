@@ -951,9 +951,10 @@ export const getRpcMethodMiddleware = ({
         },
 
         metamask_injectHomepageScripts: async () => {
-          if (isHomepage()) {
-            injectHomePageScripts();
+          if (!isHomepage()) {
+            throw providerErrors.unauthorized('Forbidden.');
           }
+          injectHomePageScripts();
           res.result = true;
         },
 

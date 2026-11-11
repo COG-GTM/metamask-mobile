@@ -1,6 +1,42 @@
 import AppConstants from '../../../core/AppConstants';
 import URLParse from 'url-parse';
 import { SessionENSNames } from './types';
+import { HOMEPAGE_HOST, OLD_HOMEPAGE_URL_HOST } from './constants';
+import { prefixUrlWithProtocol } from '../../../util/browser';
+
+export const HOMEPAGE_HOSTS: string[] = [HOMEPAGE_HOST, OLD_HOMEPAGE_URL_HOST];
+
+/**
+ * Checks if a url is served from an allowed homepage origin (https only)
+ *
+ * @param url - The url to check. Urls without a protocol are treated as https.
+ * @returns - True if the url is an https url on a homepage host
+ */
+export const isHomepageUrl = (url?: string | null): boolean => {
+  if (!url) return false;
+  const { protocol, host } = new URLParse(prefixUrlWithProtocol(url));
+  return protocol === 'https:' && HOMEPAGE_HOSTS.includes(host);
+};
+
+/**
+ * Wraps a script so it only runs if the document currently loaded in the
+ * WebView is an allowed homepage origin
+ *
+ * @param script - The script to guard
+ * @returns - The guarded script
+ */
+export const guardScriptToHomepageOrigin = (script: string): string => `
+(function () {
+  var homepageHosts = ${JSON.stringify(HOMEPAGE_HOSTS)};
+  if (
+    window.location.protocol !== 'https:' ||
+    homepageHosts.indexOf(window.location.host) === -1
+  ) {
+    return;
+  }
+  ${script}
+})();
+`;
 
 /**
  * Validates url for browser
