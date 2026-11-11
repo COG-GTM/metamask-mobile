@@ -384,6 +384,10 @@ export class WC2Manager {
     );
   }
 
+  /**
+   * Reads the persisted map of session topic to permission subject.
+   * Returns an empty map when nothing is stored or the value is unreadable.
+   */
   private static async getStoredPermissionOrigins(): Promise<
     Record<string, string>
   > {
@@ -398,7 +402,13 @@ export class WC2Manager {
     }
   }
 
-  // Records (or clears, when permissionOrigin is omitted) a session's permission subject.
+  /**
+   * Records a session's permission subject, or clears it when
+   * `permissionOrigin` is omitted.
+   *
+   * @param topic - WalletConnect session topic.
+   * @param permissionOrigin - Permission subject the session was approved under.
+   */
   private static async setStoredPermissionOrigin(
     topic: string,
     permissionOrigin?: string,
