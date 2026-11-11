@@ -35,7 +35,7 @@ const pump = require('pump');
 const EventEmitter = require('events').EventEmitter;
 const { NOTIFICATION_NAMES } = AppConstants;
 import DevLogger from '../SDKConnect/utils/DevLogger';
-import { getPermittedAccounts } from '../Permissions';
+import { getPermittedAccounts, isInternalOrigin } from '../Permissions';
 import { NetworkStatus } from '@metamask/network-controller';
 import { NETWORK_ID_LOADING } from '../redux/slices/inpageProvider';
 import createUnsupportedMethodMiddleware from '../RPCMethods/createUnsupportedMethodMiddleware';
@@ -272,6 +272,18 @@ export class BackgroundBridge extends EventEmitter {
     });
   }
 
+  /**
+   * Bridges only serve external requesters (in-app browser pages, SDK clients
+   * and WalletConnect peers), so an origin that collides with one of the
+   * wallet's own origins gets no accounts.
+   */
+  getExternalPermittedAccounts(origin, ...args) {
+    if (isInternalOrigin(origin)) {
+      return [];
+    }
+    return getPermittedAccounts(origin, ...args);
+  }
+
   async notifySelectedAddressChanged(selectedAddress) {
     try {
       let approvedAccounts = [];
@@ -279,9 +291,9 @@ export class BackgroundBridge extends EventEmitter {
         `notifySelectedAddressChanged: ${selectedAddress} channelId=${this.channelId} wc=${this.isWalletConnect} url=${this.url}`,
       );
       if (this.isWalletConnect) {
-        approvedAccounts = getPermittedAccounts(this.url);
+        approvedAccounts = this.getExternalPermittedAccounts(this.url);
       } else {
-        approvedAccounts = getPermittedAccounts(
+        approvedAccounts = this.getExternalPermittedAccounts(
           this.channelId ?? this.hostname,
         );
       }
@@ -441,7 +453,10 @@ export class BackgroundBridge extends EventEmitter {
       createEip1193MethodMiddleware({
         // Permission-related
         getAccounts: (...args) =>
-          getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
+          this.getExternalPermittedAccounts(
+            this.isMMSDK ? this.channelId : origin,
+            ...args,
+          ),
         getCaip25PermissionFromLegacyPermissionsForOrigin: (
           requestedPermissions,
         ) =>
@@ -495,7 +510,10 @@ export class BackgroundBridge extends EventEmitter {
     engine.push(
       createEthAccountsMethodMiddleware({
         getAccounts: (...args) =>
-          getPermittedAccounts(this.isMMSDK ? this.channelId : origin, ...args),
+          this.getExternalPermittedAccounts(
+            this.isMMSDK ? this.channelId : origin,
+            ...args,
+          ),
       }),
     );
 

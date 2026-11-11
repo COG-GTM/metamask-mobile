@@ -592,6 +592,35 @@ describe('getRpcMethodMiddleware', () => {
           ]);
         });
 
+        it.each(['MetaMask Mobile', 'EXAMPLE_FOX_CODE'])(
+          'rejects a channel id that matches the internal origin %s',
+          async (channelId) => {
+            const mockAddress = '0x0000000000000000000000000000000000000001';
+            setupGlobalState({
+              permittedAccounts: { [channelId]: [mockAddress] },
+              selectedAddress: mockAddress,
+              selectedNetworkClientId: 'testNetworkClientId',
+            });
+            const middleware = getRpcMethodMiddleware({
+              ...getMinimalSDKOptions(),
+              hostname: 'example.metamask.io',
+              channelId,
+            });
+            const request = {
+              jsonrpc,
+              id: 1,
+              method,
+            };
+
+            const response = await callMiddleware({ middleware, request });
+
+            expect((response as JsonRpcFailure).error.code).toBe(
+              providerErrors.unauthorized().code,
+            );
+            expect(mockGetPermittedAccounts).not.toHaveBeenCalled();
+          },
+        );
+
         it('returns an empty array for an unconnected channel', async () => {
           const mockAddress2 = '0x0000000000000000000000000000000000000001';
           setupGlobalState({

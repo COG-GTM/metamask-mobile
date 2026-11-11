@@ -9,6 +9,7 @@ import AndroidService from './AndroidSDK/AndroidService';
 import addDappConnection from './AndroidSDK/addDappConnection';
 import bindAndroidSDK from './AndroidSDK/bindAndroidSDK';
 import loadDappConnections from './AndroidSDK/loadDappConnections';
+import removeDappConnection from './AndroidSDK/removeDappConnection';
 import { Connection, ConnectionProps } from './Connection';
 import {
   approveHost,
@@ -238,6 +239,10 @@ export class SDKConnect {
 
   async addDappConnection(connection: ConnectionProps) {
     return addDappConnection(connection, this);
+  }
+
+  async removeDappConnection(id: string) {
+    return removeDappConnection(id, this);
   }
 
   public async refreshChannel({ channelId }: { channelId: string }) {

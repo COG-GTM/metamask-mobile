@@ -40,7 +40,12 @@ import {
   Caip25CaveatType,
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
-import { getDefaultCaip25CaveatValue } from '../../Permissions';
+import {
+  getDefaultCaip25CaveatValue,
+  isInternalOrigin,
+} from '../../Permissions';
+import { isUUID } from '../utils/isUUID';
+import { providerErrors } from '@metamask/rpc-errors';
 
 export default class AndroidService extends EventEmitter2 {
   public communicationClient = NativeModules.CommunicationClient;
@@ -85,6 +90,22 @@ export default class AndroidService extends EventEmitter2 {
 
       if (rawConnections) {
         Object.values(rawConnections).forEach((connection) => {
+          if (!this.isApprovedClient(connection.id)) {
+            DevLogger.log(
+              `AndroidService::setupEventListeners skip unapproved client: ${connection.id}`,
+            );
+            if (connection.origin === AppConstants.MM_SDK.ANDROID_SDK) {
+              SDKConnect.getInstance()
+                .removeDappConnection(connection.id)
+                .catch((err) => {
+                  Logger.log(
+                    err,
+                    `AndroidService::setupEventListeners error removing unapproved client`,
+                  );
+                });
+            }
+            return;
+          }
           DevLogger.log(
             `AndroidService::setupEventListeners recover client: ${connection.id}`,
           );
@@ -123,11 +144,91 @@ export default class AndroidService extends EventEmitter2 {
     );
   }
 
+  private getPermissionController() {
+    return (
+      Engine.context as {
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PermissionController: PermissionController<any, any>;
+      }
+    ).PermissionController;
+  }
+
+  /**
+   * The client id is chosen by the connecting app and is used as the
+   * permission subject, so only accept random UUIDs that cannot collide with
+   * the wallet's own origins or with in-app browser / WalletConnect hostnames.
+   */
+  private isValidClientId(clientId: unknown): clientId is string {
+    return (
+      typeof clientId === 'string' &&
+      isUUID(clientId) &&
+      !isInternalOrigin(clientId)
+    );
+  }
+
+  private isApprovedClient(clientId: unknown): clientId is string {
+    if (!this.isValidClientId(clientId)) {
+      return false;
+    }
+    try {
+      return this.getPermissionController().hasPermission(
+        clientId,
+        Caip25EndowmentPermissionName,
+      );
+    } catch (err) {
+      Logger.log(err, `AndroidService::isApprovedClient error`);
+      return false;
+    }
+  }
+
+  /**
+   * A permission subject without an Android SDK connection record was
+   * approved for another requester (e.g. a remote SDK channel), so a new
+   * Android client must not be allowed to take over its identity.
+   */
+  private isClientIdOwnedElsewhere(clientId: string): boolean {
+    return (
+      !this.connections[clientId] &&
+      Boolean(this.getPermissionController().hasPermissions(clientId))
+    );
+  }
+
+  private async discardUnapprovedClient(clientId: string) {
+    delete this.bridgeByClientId[clientId];
+    delete this.connections[clientId];
+    await SDKConnect.getInstance().removeDappConnection(clientId);
+  }
+
+  private rejectInvalidClient(clientId: unknown, context: string) {
+    Logger.log(
+      new Error(`Invalid Android SDK client id`),
+      `AndroidService::${context} rejecting client id ${String(clientId)}`,
+    );
+    this.sendMessage({
+      data: {
+        error: providerErrors.unauthorized(),
+        jsonrpc: '2.0',
+      },
+      name: 'metamask-provider',
+    }).catch((err) => {
+      Logger.log(
+        err,
+        `AndroidService::${context} error sending jsonrpc error to client`,
+      );
+    });
+  }
+
   private setupOnClientsConnectedListener() {
     this.eventHandler.onClientsConnected(async (sClientInfo: string) => {
       const clientInfo: DappClient = JSON.parse(sClientInfo);
 
       DevLogger.log(`AndroidService::clients_connected`, clientInfo);
+
+      if (!this.isValidClientId(clientInfo?.clientId)) {
+        this.rejectInvalidClient(clientInfo?.clientId, 'clients_connected');
+        return;
+      }
       if (this.connections?.[clientInfo.clientId]) {
         // Skip existing client -- bridge has been setup
         Logger.log(
@@ -157,15 +258,6 @@ export default class AndroidService extends EventEmitter2 {
         return;
       }
 
-      await SDKConnect.getInstance().addDappConnection({
-        id: clientInfo.clientId,
-        lastAuthorized: Date.now(),
-        origin: AppConstants.MM_SDK.ANDROID_SDK,
-        originatorInfo: clientInfo.originatorInfo,
-        otherPublicKey: '',
-        validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      });
-
       const handleEventAsync = async () => {
         const keyringController = (
           Engine.context as { KeyringController: KeyringController }
@@ -182,6 +274,9 @@ export default class AndroidService extends EventEmitter2 {
               `AndroidService::clients_connected - new client ${clientInfo.clientId}}`,
               this.connections,
             );
+            if (this.isClientIdOwnedElsewhere(clientInfo.clientId)) {
+              throw providerErrors.unauthorized();
+            }
             // Ask for account permissions
             await this.checkPermission({
               originatorInfo: clientInfo.originatorInfo,
@@ -226,6 +321,14 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::clients_connected sending jsonrpc error to client - connection rejected`,
           );
+          await this.discardUnapprovedClient(clientInfo.clientId).catch(
+            (err) => {
+              Logger.log(
+                err,
+                `AndroidService::clients_connected error removing rejected client`,
+              );
+            },
+          );
           this.sendMessage({
             data: {
               error,
@@ -265,15 +368,7 @@ export default class AndroidService extends EventEmitter2 {
     originatorInfo: OriginatorInfo;
     channelId: string;
   }): Promise<unknown> {
-    const permissionsController = (
-      Engine.context as {
-        // TODO: Replace "any" with type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        PermissionController: PermissionController<any, any>;
-      }
-    ).PermissionController;
-
-    return permissionsController.requestPermissions(
+    return this.getPermissionController().requestPermissions(
       { origin: channelId },
       {
         [Caip25EndowmentPermissionName]: {
@@ -322,12 +417,6 @@ export default class AndroidService extends EventEmitter2 {
           sessionId = parsedMsg.id;
           message = parsedMsg.message;
           data = JSON.parse(message);
-
-          // Update connected state
-          this.connections[sessionId] = {
-            ...this.connections[sessionId],
-            connected: true,
-          };
         } catch (error) {
           Logger.log(
             error,
@@ -348,6 +437,19 @@ export default class AndroidService extends EventEmitter2 {
           return;
         }
 
+        if (!this.isValidClientId(sessionId)) {
+          this.rejectInvalidClient(sessionId, 'onMessageReceived');
+          return;
+        }
+
+        if (this.connections[sessionId]) {
+          // Update connected state
+          this.connections[sessionId] = {
+            ...this.connections[sessionId],
+            connected: true,
+          };
+        }
+
         let bridge = this.bridgeByClientId[sessionId];
 
         if (!bridge) {
@@ -357,14 +459,38 @@ export default class AndroidService extends EventEmitter2 {
           );
 
           try {
+            if (this.isClientIdOwnedElsewhere(sessionId)) {
+              throw providerErrors.unauthorized();
+            }
+
+            const originatorInfo =
+              this.connections[sessionId]?.originatorInfo ??
+              ({} as OriginatorInfo);
+
             // Ask users permissions again - it probably means the channel was removed
             await this.checkPermission({
-              originatorInfo: this.connections[sessionId]?.originatorInfo ?? {},
+              originatorInfo,
               channelId: sessionId,
             });
 
+            const clientInfo: DappClient = {
+              ...this.connections[sessionId],
+              clientId: sessionId,
+              connected: true,
+              originatorInfo,
+            };
+            this.connections[sessionId] = clientInfo;
+            await SDKConnect.getInstance().addDappConnection({
+              id: sessionId,
+              lastAuthorized: Date.now(),
+              origin: AppConstants.MM_SDK.ANDROID_SDK,
+              originatorInfo,
+              otherPublicKey: '',
+              validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+            });
+
             // Create new bridge
-            this.setupBridge(this.connections[sessionId]);
+            this.setupBridge(clientInfo);
             bridge = this.bridgeByClientId[sessionId];
           } catch (err) {
             Logger.log(
