@@ -1702,6 +1702,86 @@ describe('getRpcMethodMiddleware', () => {
     });
   });
 
+  describe('wallet_sendCalls', () => {
+    const mockOrigin = 'example.metamask.io';
+    const mockSendCallsRequest = {
+      jsonrpc,
+      id: 1,
+      method: 'wallet_sendCalls',
+      origin: mockOrigin,
+      networkClientId: 'mainnet',
+      params: [
+        {
+          version: '2.0.0',
+          chainId: '0x1',
+          atomicRequired: true,
+          calls: [{ to: '0x0000000000000000000000000000000000000002' }],
+        },
+      ],
+    } as unknown as JsonRpcRequest<JsonRpcParams>;
+
+    it('returns an unauthorized error if the origin has no permitted accounts', async () => {
+      mockGetPermittedAccounts.mockReturnValue([]);
+      setupGlobalState({ activeTab: 1, selectedNetworkClientId: 'mainnet' });
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalBrowserOptions(),
+        hostname: mockOrigin,
+      });
+
+      const response = await callMiddleware({
+        middleware,
+        request: mockSendCallsRequest,
+      });
+
+      expect((response as JsonRpcFailure).error.code).toBe(4100);
+      expect(mockGetPermittedAccounts).toHaveBeenCalledWith(mockOrigin);
+    });
+
+    it('returns a JSON-RPC error if requested by a non-active tab', async () => {
+      mockGetPermittedAccounts.mockReturnValue([
+        '0x0000000000000000000000000000000000000001',
+      ]);
+      setupGlobalState({ activeTab: 20, selectedNetworkClientId: 'mainnet' });
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalBrowserOptions(),
+        hostname: mockOrigin,
+        tabId: 10,
+      });
+
+      const response = await callMiddleware({
+        middleware,
+        request: mockSendCallsRequest,
+      });
+
+      expect((response as JsonRpcFailure).error.code).toBe(
+        providerErrors.userRejectedRequest().code,
+      );
+      expect(mockGetPermittedAccounts).not.toHaveBeenCalled();
+    });
+
+    it('applies origin throttling', async () => {
+      mockGetPermittedAccounts.mockReturnValue([]);
+      setupGlobalState({ activeTab: 1, selectedNetworkClientId: 'mainnet' });
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalBrowserOptions(),
+        hostname: mockOrigin,
+      });
+
+      await callMiddleware({ middleware, request: mockSendCallsRequest });
+
+      expect(mockValidateOriginThrottling).toHaveBeenCalledWith(
+        expect.objectContaining({
+          req: expect.objectContaining({ method: 'wallet_sendCalls' }),
+        }),
+      );
+      expect(mockProcessOriginThrottlingRejection).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: expect.objectContaining({ code: 4100 }),
+        }),
+      );
+    });
+  });
+
   describe('originThrottling', () => {
     const assumedBlockableRPCMethod = 'eth_sendTransaction';
     const mockBlockedOrigin = 'blocked.origin';

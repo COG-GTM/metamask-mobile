@@ -1,5 +1,6 @@
 import { getAccounts, getCallsStatus, processSendCalls } from './eip5792';
 import Engine from '../Engine';
+import { getPermittedAccounts } from '../Permissions';
 import {
   GetCallsStatusCode,
   SendCalls,
@@ -46,20 +47,37 @@ jest.mock('../Engine', () => ({
   },
 }));
 
-const MockEngine = jest.mocked(Engine);
+jest.mock('../Permissions', () => ({
+  getPermittedAccounts: jest.fn(),
+}));
+
+const mockGetPermittedAccounts = jest.mocked(getPermittedAccounts);
 
 describe('getAccounts', () => {
-  it('return selected account address', async () => {
-    const accounts = await getAccounts();
-    expect(accounts).toStrictEqual([MOCK_ACCOUNT]);
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('return empty array if origin is metamask and AccountsController returns no selected account', async () => {
-    MockEngine.context.AccountsController.getSelectedAccount = (() =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      undefined) as any;
-    const accounts = await getAccounts();
+  it('returns the accounts permitted for the request origin', async () => {
+    mockGetPermittedAccounts.mockReturnValueOnce([MOCK_ACCOUNT]);
+    const accounts = await getAccounts({
+      origin: 'example.com',
+    } as unknown as JsonRpcRequest);
+    expect(accounts).toStrictEqual([MOCK_ACCOUNT]);
+    expect(mockGetPermittedAccounts).toHaveBeenCalledWith('example.com');
+  });
+
+  it('returns no accounts if the origin has no permission', async () => {
+    mockGetPermittedAccounts.mockReturnValueOnce([]);
+    const accounts = await getAccounts({
+      origin: 'unconnected.example',
+    } as unknown as JsonRpcRequest);
     expect(accounts).toStrictEqual([]);
+  });
+
+  it('returns no accounts if the request has no origin', async () => {
+    expect(await getAccounts()).toStrictEqual([]);
+    expect(mockGetPermittedAccounts).not.toHaveBeenCalled();
   });
 });
 
@@ -87,6 +105,11 @@ describe('processSendCalls', () => {
     networkClientId: 'sepolia',
   } as JsonRpcRequest;
 
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetPermittedAccounts.mockReturnValue([MOCK_PARAMS.from as string]);
+  });
+
   it('creates transaction instance for batch request', async () => {
     const result = await processSendCalls(MOCK_PARAMS, MOCK_REQUEST);
     expect(
@@ -95,22 +118,71 @@ describe('processSendCalls', () => {
     expect(result.id).toStrictEqual(123);
   });
 
+  it('throws unauthorized if the origin has no permitted accounts', async () => {
+    mockGetPermittedAccounts.mockReturnValue([]);
+    const { from: _from, ...paramsWithoutFrom } = MOCK_PARAMS;
+
+    await expect(
+      processSendCalls(paramsWithoutFrom as SendCalls, MOCK_REQUEST),
+    ).rejects.toMatchObject({ code: 4100 });
+    expect(
+      Engine.context.TransactionController.addTransactionBatch,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('throws unauthorized if from is not a permitted account', async () => {
+    mockGetPermittedAccounts.mockReturnValue([MOCK_ACCOUNT]);
+
+    await expect(
+      processSendCalls(MOCK_PARAMS, MOCK_REQUEST),
+    ).rejects.toMatchObject({ code: 4100 });
+    expect(
+      Engine.context.TransactionController.addTransactionBatch,
+    ).not.toHaveBeenCalled();
+  });
+
+  it('defaults from to the first permitted account, not the selected account', async () => {
+    const permittedAccount = '0x0dcd5d886577d5081b0c52e242ef29e70be3e7bc';
+    mockGetPermittedAccounts.mockReturnValue([permittedAccount]);
+    const { from: _from, ...paramsWithoutFrom } = MOCK_PARAMS;
+
+    await processSendCalls(paramsWithoutFrom as SendCalls, MOCK_REQUEST);
+
+    expect(
+      Engine.context.TransactionController.isAtomicBatchSupported,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({ address: permittedAccount }),
+    );
+    expect(
+      Engine.context.TransactionController.addTransactionBatch,
+    ).toHaveBeenCalledWith(expect.objectContaining({ from: permittedAccount }));
+  });
+
+  it('accepts a permitted from address regardless of case', async () => {
+    mockGetPermittedAccounts.mockReturnValue([
+      (MOCK_PARAMS.from as string).toUpperCase().replace('0X', '0x'),
+    ]);
+
+    await processSendCalls(MOCK_PARAMS, MOCK_REQUEST);
+
+    expect(
+      Engine.context.TransactionController.addTransactionBatch,
+    ).toHaveBeenCalledWith(expect.objectContaining({ from: MOCK_PARAMS.from }));
+  });
+
   it('throw error if wrong version of request is used', async () => {
-    expect(async () => {
-      await processSendCalls(
-        { ...MOCK_PARAMS, version: '3.0.0' },
-        MOCK_REQUEST,
-      );
-    }).rejects.toThrow('Version not supported: Got 3.0.0, expected 2.0.0');
+    await expect(
+      processSendCalls({ ...MOCK_PARAMS, version: '3.0.0' }, MOCK_REQUEST),
+    ).rejects.toThrow('Version not supported: Got 3.0.0, expected 2.0.0');
   });
 
   it('throw error if TransactionController.isAtomicBatchSupported returns false', async () => {
     Engine.context.TransactionController.isAtomicBatchSupported = jest
       .fn()
       .mockResolvedValue([false]);
-    expect(async () => {
-      await processSendCalls(MOCK_PARAMS, MOCK_REQUEST);
-    }).rejects.toThrow('EIP-7702 not supported on chain: 0xaa36a7');
+    await expect(processSendCalls(MOCK_PARAMS, MOCK_REQUEST)).rejects.toThrow(
+      'EIP-7702 not supported on chain: 0xaa36a7',
+    );
     Engine.context.TransactionController.isAtomicBatchSupported = jest
       .fn()
       .mockResolvedValue([true]);

@@ -5,6 +5,7 @@ import {
 import { ApprovalControllerActions } from '@metamask/approval-controller';
 import { RemoteFeatureFlagControllerGetStateAction } from '@metamask/remote-feature-flag-controller';
 import { Messenger } from '@metamask/base-controller';
+import { GetPermissions } from '@metamask/permission-controller';
 import {
   NetworkControllerFindNetworkClientIdByChainIdAction,
   NetworkControllerGetEIP1559CompatibilityAction,
@@ -34,6 +35,8 @@ type MessengerActions =
   | NetworkControllerGetEIP1559CompatibilityAction
   | NetworkControllerGetNetworkClientByIdAction
   | RemoteFeatureFlagControllerGetStateAction;
+
+type InitMessengerActions = MessengerActions | GetPermissions;
 
 type MessengerEvents =
   | TransactionControllerTransactionApprovedEvent
@@ -70,7 +73,7 @@ export function getTransactionControllerMessenger(
 }
 
 export function getTransactionControllerInitMessenger(
-  messenger: Messenger<MessengerActions, MessengerEvents>,
+  messenger: Messenger<InitMessengerActions, MessengerEvents>,
 ) {
   return messenger.getRestricted({
     name: 'TransactionControllerInit',
@@ -91,6 +94,7 @@ export function getTransactionControllerInitMessenger(
       'ApprovalController:startFlow',
       'ApprovalController:updateRequestState',
       'NetworkController:getEIP1559Compatibility',
+      'PermissionController:getPermissions',
     ],
   });
 }
