@@ -90,6 +90,28 @@ export const parseWalletConnectUri = (uri: string): WCMultiVersionParams => {
   return result;
 };
 
+const WC_URI_LOG_TOKEN_REGEX = /^[A-Za-z0-9-]{1,128}$/;
+
+/**
+ * Summarises a WalletConnect URI for logging without its query string,
+ * which carries the pairing `symKey` (v2) or session `key` (v1).
+ */
+export const getWCUriLogSummary = (uri: string): string => {
+  try {
+    const { protocol, version, topic } = parseWalletConnectUri(uri);
+    const safe = (value: unknown) =>
+      typeof value === 'string' && WC_URI_LOG_TOKEN_REGEX.test(value)
+        ? value
+        : 'invalid';
+    const safeVersion = Number.isInteger(version) ? version : 'invalid';
+    return `protocol=${safe(protocol)} version=${safeVersion} topic=${safe(
+      topic,
+    )}`;
+  } catch {
+    return 'protocol=invalid version=invalid topic=invalid';
+  }
+};
+
 export const hideWCLoadingState = ({
   navigation,
 }: {

@@ -288,7 +288,23 @@ function getProtocolFromURL(url) {
   return new URL(url).protocol;
 }
 
-function rewriteBreadcrumb(breadcrumb) {
+// WalletConnect URIs carry the pairing `symKey` (v2) or session `key` (v1).
+const WALLETCONNECT_KEY_PARAM_REGEX = /([?&](?:symKey|key)=)[^&\s"'\\]+/gi;
+
+/**
+ * Replaces WalletConnect `symKey`/`key` query parameter values with `[REDACTED]`.
+ *
+ * @param {string} text - Text that may contain a WalletConnect URI.
+ * @returns {string} The text with WalletConnect keys redacted.
+ */
+export function redactWalletConnectKeys(text) {
+  return text.replace(WALLETCONNECT_KEY_PARAM_REGEX, '$1[REDACTED]');
+}
+
+export function rewriteBreadcrumb(breadcrumb) {
+  if (typeof breadcrumb.message === 'string') {
+    breadcrumb.message = redactWalletConnectKeys(breadcrumb.message);
+  }
   if (breadcrumb.data?.url) {
     breadcrumb.data.url = getProtocolFromURL(breadcrumb.data.url);
   }

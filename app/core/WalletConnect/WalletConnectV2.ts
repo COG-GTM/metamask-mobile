@@ -24,6 +24,7 @@ import WalletConnect from './WalletConnect';
 import {
   getHostname,
   getScopedPermissions,
+  getWCUriLogSummary,
   hideWCLoadingState,
   parseWalletConnectUri,
   showWCLoadingState,
@@ -614,7 +615,10 @@ export class WC2Manager {
   }) {
     try {
       Logger.log(
-        `WC2Manager::connect ${wcUri} origin=${origin} redirectUrl=${redirectUrl} navigation=${this.navigation !== undefined
+        `WC2Manager::connect ${getWCUriLogSummary(
+          wcUri,
+        )} origin=${origin} hasRedirectUrl=${Boolean(redirectUrl)} navigation=${
+          this.navigation !== undefined
         }`,
       );
       const params = parseWalletConnectUri(wcUri);
@@ -679,10 +683,10 @@ export class WC2Manager {
           );
         }
       } else {
-        console.warn(`Invalid wallet connect uri`, wcUri);
+        console.warn(`Invalid wallet connect uri ${getWCUriLogSummary(wcUri)}`);
       }
     } catch (err) {
-      console.error(`Failed to connect uri=${wcUri}`, err);
+      console.error(`Failed to connect uri ${getWCUriLogSummary(wcUri)}`, err);
     }
   }
 }
