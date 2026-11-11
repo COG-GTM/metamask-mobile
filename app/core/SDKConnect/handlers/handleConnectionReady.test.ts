@@ -36,6 +36,7 @@ describe('handleConnectionReady deeplink re-connection', () => {
   const mockUpdateOriginatorInfos = jest.fn();
   const mockSendMessage = jest.fn().mockResolvedValue(undefined);
   const mockGetConnections = jest.fn();
+  const mockDisconnect = jest.fn();
 
   const buildConnection = (liveKey: string | undefined) =>
     ({
@@ -44,8 +45,10 @@ describe('handleConnectionReady deeplink re-connection', () => {
       origin: AppConstants.DEEPLINKS.ORIGIN_DEEPLINK,
       trigger: 'deeplink',
       isReady: false,
+      setLoading: jest.fn(),
       remote: {
         sendMessage: mockSendMessage,
+        disconnect: mockDisconnect,
         getKeyInfo: jest
           .fn()
           .mockReturnValue(
@@ -108,7 +111,9 @@ describe('handleConnectionReady deeplink re-connection', () => {
       expect(setupBridge).not.toHaveBeenCalled();
       expect(connection.isReady).toBe(false);
       expect(mockDisapprove).toHaveBeenCalledWith(channelId);
-      expect(mockOnError).toHaveBeenCalledWith(expect.any(Error));
+      expect(mockDisconnect).toHaveBeenCalled();
+      // The approved session is kept: onError would remove the channel.
+      expect(mockOnError).not.toHaveBeenCalled();
       expect(mockUpdateOriginatorInfos).not.toHaveBeenCalled();
       expect(connection.originatorInfo).toBeUndefined();
     },
@@ -139,6 +144,30 @@ describe('handleConnectionReady deeplink re-connection', () => {
       expect(mockOnError).not.toHaveBeenCalled();
     },
   );
+
+  it('binds the live key to a keyless stored session only after approval', async () => {
+    const storedSession = { id: channelId, otherPublicKey: '' };
+    mockGetConnections.mockReturnValue({ [channelId]: storedSession });
+    (checkPermissions as jest.Mock).mockImplementation(async () => {
+      expect(storedSession.otherPublicKey).toBe('');
+      return true;
+    });
+
+    await run(buildConnection('approved-key'));
+
+    expect(storedSession.otherPublicKey).toBe('approved-key');
+    expect(mockUpdateOriginatorInfos).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not bind the live key when the fresh approval is rejected', async () => {
+    const storedSession = { id: channelId, otherPublicKey: '' };
+    mockGetConnections.mockReturnValue({ [channelId]: storedSession });
+    (checkPermissions as jest.Mock).mockRejectedValue(new Error('rejected'));
+
+    await run(buildConnection('attacker-key'));
+
+    expect(storedSession.otherPublicKey).toBe('');
+  });
 
   it.each([
     ['rejects', () => Promise.reject(new Error('User rejected'))],
@@ -173,6 +202,25 @@ describe('handleConnectionReady deeplink re-connection', () => {
     expect(checkPermissions).toHaveBeenCalledWith({
       connection,
       engine: Engine,
+      requireFreshApproval: true,
+    });
+  });
+
+  it('reuses the connectToChannel approval for an initial deeplink connection', async () => {
+    (checkPermissions as jest.Mock).mockResolvedValue(true);
+    const connection = buildConnection('dapp-key');
+    Object.assign(connection, {
+      initialConnection: true,
+      approvalPromise: Promise.resolve(true),
+      sendAuthorized: jest.fn(),
+    });
+
+    await run(connection);
+
+    expect(checkPermissions).toHaveBeenCalledWith({
+      connection,
+      engine: Engine,
+      requireFreshApproval: false,
     });
   });
 });

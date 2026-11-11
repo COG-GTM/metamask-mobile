@@ -196,7 +196,7 @@ describe('handleDeeplink', () => {
       protocolVersion,
       initialConnection: false,
       trigger: 'deeplink',
-      updateKey: true,
+      updateKey: false,
     });
   });
 
@@ -246,9 +246,38 @@ describe('handleDeeplink', () => {
     );
   });
 
-  it('should handle rpc calls for existing connections', async () => {
+  it('does not run a link rpc on a keyless session before re-approval', async () => {
     mockHasInitialized.mockReturnValue(true);
     mockGetConnections.mockReturnValue({ [channelId]: {} });
+    sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
+    mockGetConnected.mockReturnValue({
+      [channelId]: {
+        remote: {
+          isConnected: jest.fn().mockReturnValue(true),
+          decrypt: mockDecrypt,
+          getRPCMethodTracker: jest.fn().mockReturnValue({}),
+        },
+      },
+    });
+
+    await handleDeeplink({
+      sdkConnect,
+      channelId,
+      origin,
+      url,
+      otherPublicKey,
+      protocolVersion,
+      context,
+      rpc,
+    });
+
+    expect(mockDecrypt).not.toHaveBeenCalled();
+    expect(handleConnectionMessage).not.toHaveBeenCalled();
+  });
+
+  it('should handle rpc calls for existing connections', async () => {
+    mockHasInitialized.mockReturnValue(true);
+    mockGetConnections.mockReturnValue({ [channelId]: { otherPublicKey } });
 
     sdkConnect.state = { connecting: {} } as unknown as SDKConnectState;
 

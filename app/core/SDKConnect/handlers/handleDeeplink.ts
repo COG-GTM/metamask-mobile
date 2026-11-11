@@ -124,7 +124,8 @@ const handleDeeplink = async ({
             protocolVersion,
             initialConnection: false,
             trigger: 'deeplink',
-            updateKey: !storedPublicKey,
+            // Keyless sessions bind a key only after the user re-approves.
+            updateKey: false,
           });
         }
       } else {
@@ -135,8 +136,9 @@ const handleDeeplink = async ({
       DevLogger.log(
         `handleDeeplink:: channel=${channelId} reconnected=${connected} -- handle rcp`,
       );
-      // If msg contains rpc calls, handle them
-      if (rpc) {
+      // If msg contains rpc calls, handle them. A keyless session has not
+      // re-approved the dapp yet, so its link cannot run a request.
+      if (rpc && storedPublicKey) {
         const connection = sdkConnect.getConnected()[channelId];
         if (!connection) {
           DevLogger.log(`handleDeeplink:: connection not found`);

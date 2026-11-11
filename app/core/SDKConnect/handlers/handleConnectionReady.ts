@@ -81,12 +81,14 @@ export const handleConnectionReady = async ({
     if (!storedOtherPublicKey) {
       requireFreshApproval = true;
     } else if (currentOtherPublicKey !== storedOtherPublicKey) {
-      disapprove(connection.channelId);
-      onError?.(
-        new Error(
-          `SDKConnect::CLIENTS_READY channel=${connection.channelId} dapp key does not match the approved session key`,
-        ),
+      // Drop only this client: removing the channel would let any client
+      // that joins it revoke the approved session.
+      Logger.log(
+        `SDKConnect::CLIENTS_READY channel=${connection.channelId} dapp key does not match the approved session key`,
       );
+      disapprove(connection.channelId);
+      connection.setLoading(false);
+      connection.remote.disconnect();
       return;
     }
   }
@@ -216,6 +218,18 @@ export const handleConnectionReady = async ({
             `SDKConnect::CLIENTS_READY channel=${connection.channelId} re-approval was not granted`,
           );
         }
+        // The key is bound only once the user has approved the dapp holding it.
+        const storedSession =
+          SDKConnect.getInstance().getConnections()[connection.channelId];
+        const approvedOtherPublicKey =
+          connection.remote.getKeyInfo()?.ecies.otherPubKey;
+        if (storedSession && approvedOtherPublicKey) {
+          storedSession.otherPublicKey = approvedOtherPublicKey;
+          updateOriginatorInfos({
+            channelId: connection.channelId,
+            originatorInfo: connection.originatorInfo ?? originatorInfo,
+          });
+        }
       }
       // Deeplink channels bound to their approved key are approved on re-connection.
       const hostname =
@@ -234,8 +248,13 @@ export const handleConnectionReady = async ({
       connection.initialConnection &&
       connection.origin === AppConstants.DEEPLINKS.ORIGIN_DEEPLINK
     ) {
-      // Should ask for confirmation to reconnect?
-      await checkPermissions({ connection, engine });
+      // Without an approval from connectToChannel, a permission left on this
+      // channel id must not authorize the new connection without a prompt.
+      await checkPermissions({
+        connection,
+        engine,
+        requireFreshApproval: !connection.approvalPromise,
+      });
       connection.sendAuthorized(true);
     }
     // }
