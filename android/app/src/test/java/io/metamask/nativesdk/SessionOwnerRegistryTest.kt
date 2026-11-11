@@ -80,6 +80,20 @@ class SessionOwnerRegistryTest {
   }
 
   @Test
+  fun evictedSessionCanOnlyBeReclaimedByPreviousOwnerUntilRestart() {
+    val store = InMemoryStore()
+    val registry = SessionOwnerRegistry(store, maxSessionsPerIdentity = 1)
+    registry.bind("acme-1", acme)
+    registry.bind("acme-2", acme)
+
+    assertNull(registry.ownerOf("acme-1"))
+    assertFalse(registry.bind("acme-1", mallory))
+    assertTrue(registry.bind("acme-1", acme))
+    assertNull(registry.ownerOf("acme-2"))
+    assertTrue(SessionOwnerRegistry(store, maxSessionsPerIdentity = 1).bind("acme-2", mallory))
+  }
+
+  @Test
   fun reportsNoOwnerForUnboundSession() {
     val registry = SessionOwnerRegistry(InMemoryStore())
 
