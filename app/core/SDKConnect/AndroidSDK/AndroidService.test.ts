@@ -274,21 +274,84 @@ describe('AndroidService client approval', () => {
     expect(service.bridgeByClientId[CLIENT_ID]).toBeUndefined();
   });
 
-  it('prompts and persists a valid unknown client that messages before connecting', async () => {
+  it('rejects a valid unknown client that messages before connecting', async () => {
+    const service = await startService();
+
+    await receive(CLIENT_ID);
+
+    expect(PermissionController.requestPermissions).not.toHaveBeenCalled();
+    expect(sdkConnect.addDappConnection).not.toHaveBeenCalled();
+    expect(service.connections[CLIENT_ID]).toBeUndefined();
+    expect(service.bridgeByClientId[CLIENT_ID]).toBeUndefined();
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      service,
+      expect.objectContaining({
+        data: expect.objectContaining({
+          error: expect.objectContaining({
+            code: providerErrors.unauthorized().code,
+          }),
+        }),
+      }),
+      undefined,
+    );
+  });
+
+  it('keeps an approved client when a concurrent request for it is rejected', async () => {
+    let approveFirst: (() => void) | undefined;
+    PermissionController.requestPermissions
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            approveFirst = () => {
+              grantedOrigins.add(CLIENT_ID);
+              resolve([{}]);
+            };
+          }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise((_resolve, reject) => {
+            setImmediate(() => {
+              approveFirst?.();
+              setImmediate(() => reject(providerErrors.userRejectedRequest()));
+            });
+          }),
+      );
+    const service = await startService();
+
+    await connectClient(CLIENT_ID);
+    await connectClient(CLIENT_ID);
+    await flushPromises();
+    await flushPromises();
+
+    expect(PermissionController.requestPermissions).toHaveBeenCalledTimes(2);
+    expect(sdkConnect.removeDappConnection).not.toHaveBeenCalled();
+    expect(storedConnections[CLIENT_ID]).toBeDefined();
+    expect(service.connections[CLIENT_ID]).toBeDefined();
+    expect(service.bridgeByClientId[CLIENT_ID]).toBeDefined();
+  });
+
+  it('re-prompts a known client whose bridge is missing', async () => {
     PermissionController.requestPermissions.mockImplementation(async () => {
       grantedOrigins.add(CLIENT_ID);
       return [{}];
     });
     const service = await startService();
+    service.connections[CLIENT_ID] = {
+      clientId: CLIENT_ID,
+      connected: false,
+      originatorInfo,
+      validUntil: Date.now(),
+    } as never;
 
     await receive(CLIENT_ID);
 
-    expect(PermissionController.requestPermissions).toHaveBeenCalledTimes(1);
-    expect(sdkConnect.addDappConnection).toHaveBeenCalledWith(
-      expect.objectContaining({ id: CLIENT_ID }),
+    expect(PermissionController.requestPermissions).toHaveBeenCalledWith(
+      { origin: CLIENT_ID },
+      expect.anything(),
     );
-    expect(service.connections[CLIENT_ID]).toEqual(
-      expect.objectContaining({ clientId: CLIENT_ID, connected: true }),
+    expect(sdkConnect.addDappConnection).toHaveBeenCalledWith(
+      expect.objectContaining({ id: CLIENT_ID, originatorInfo }),
     );
     expect(service.bridgeByClientId[CLIENT_ID].onMessage).toHaveBeenCalled();
   });

@@ -195,6 +195,10 @@ export default class AndroidService extends EventEmitter2 {
   }
 
   private async discardUnapprovedClient(clientId: string) {
+    if (this.isApprovedClient(clientId)) {
+      // A concurrent request for the same client was approved meanwhile.
+      return;
+    }
     delete this.bridgeByClientId[clientId];
     delete this.connections[clientId];
     await SDKConnect.getInstance().removeDappConnection(clientId);
@@ -458,14 +462,15 @@ export default class AndroidService extends EventEmitter2 {
             `sessionId=${sessionId} data.id=${data.id}`,
           );
 
-          try {
-            if (this.isClientIdOwnedElsewhere(sessionId)) {
-              throw providerErrors.unauthorized();
-            }
+          const existingClient = this.connections[sessionId];
+          if (!existingClient) {
+            // New clients must connect (with their originator info) first.
+            this.rejectInvalidClient(sessionId, 'onMessageReceived');
+            return;
+          }
 
-            const originatorInfo =
-              this.connections[sessionId]?.originatorInfo ??
-              ({} as OriginatorInfo);
+          try {
+            const { originatorInfo } = existingClient;
 
             // Ask users permissions again - it probably means the channel was removed
             await this.checkPermission({
@@ -474,10 +479,8 @@ export default class AndroidService extends EventEmitter2 {
             });
 
             const clientInfo: DappClient = {
-              ...this.connections[sessionId],
-              clientId: sessionId,
+              ...existingClient,
               connected: true,
-              originatorInfo,
             };
             this.connections[sessionId] = clientInfo;
             await SDKConnect.getInstance().addDappConnection({
