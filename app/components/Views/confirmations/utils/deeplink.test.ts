@@ -7,6 +7,7 @@ import Engine from '../../../../core/Engine';
 import { generateTransferData } from '../../../../util/transactions';
 
 import {
+  INVALID_DEEPLINK_TRANSACTION_ERROR,
   addTransactionForDeeplink,
   isDeeplinkRedesignedConfirmationCompatible,
 } from './deeplink';
@@ -235,6 +236,90 @@ describe('addTransactionForDeeplink', () => {
         origin: 'deeplink',
         type: TransactionType.tokenMethodTransfer,
       },
+    );
+  });
+
+  it.each([
+    [
+      'native transfer without value',
+      { parameters: {}, target_address: TO_ADDRESS_MOCK },
+    ],
+    [
+      'native transfer with non-integer value',
+      { parameters: { value: '1.5' }, target_address: TO_ADDRESS_MOCK },
+    ],
+    [
+      'invalid target address',
+      { parameters: { value: '1000' }, target_address: '0x1234' },
+    ],
+    [
+      'invalid chain ID',
+      {
+        chain_id: 'abc',
+        parameters: { value: '1000' },
+        target_address: TO_ADDRESS_MOCK,
+      },
+    ],
+    [
+      'ERC20 transfer without amount',
+      {
+        function_name: 'transfer',
+        parameters: { address: TO_ADDRESS_MOCK },
+        target_address: TO_ADDRESS_MOCK,
+      },
+    ],
+    [
+      'ERC20 transfer without recipient',
+      {
+        function_name: 'transfer',
+        parameters: { uint256: '1000' },
+        target_address: TO_ADDRESS_MOCK,
+      },
+    ],
+  ])('rejects %s without adding a transaction', async (_, deeplink) => {
+    await expect(
+      addTransactionForDeeplink(deeplink as unknown as ParseOutput),
+    ).rejects.toMatchObject({ name: INVALID_DEEPLINK_TRANSACTION_ERROR });
+
+    expect(mockAddTransaction).not.toHaveBeenCalled();
+  });
+
+  it('accepts later deeplinks after a rejected deeplink', async () => {
+    await expect(
+      addTransactionForDeeplink({
+        target_address: TO_ADDRESS_MOCK,
+      } as unknown as ParseOutput),
+    ).rejects.toThrow('Invalid amount');
+
+    await addTransactionForDeeplink({
+      parameters: { value: '1000' },
+      target_address: TO_ADDRESS_MOCK,
+    } as unknown as ParseOutput);
+
+    expect(mockAddTransaction).toHaveBeenCalledTimes(1);
+  });
+
+  it('accepts later deeplinks after addTransaction throws', async () => {
+    mockAddTransaction.mockRejectedValueOnce(
+      new Error('addTransaction failed'),
+    );
+
+    await expect(
+      addTransactionForDeeplink({
+        parameters: { value: '1000' },
+        target_address: TO_ADDRESS_MOCK,
+      } as unknown as ParseOutput),
+    ).rejects.toThrow('addTransaction failed');
+
+    await addTransactionForDeeplink({
+      parameters: { value: '2000' },
+      target_address: TO_ADDRESS_MOCK,
+    } as unknown as ParseOutput);
+
+    expect(mockAddTransaction).toHaveBeenCalledTimes(2);
+    expect(mockAddTransaction).toHaveBeenLastCalledWith(
+      expect.objectContaining({ value: '0x7d0' }),
+      expect.anything(),
     );
   });
 });

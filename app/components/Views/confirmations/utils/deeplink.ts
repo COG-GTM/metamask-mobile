@@ -3,14 +3,17 @@ import {
   TransactionType,
   type TransactionParams,
 } from '@metamask/transaction-controller';
-import { Hex } from '@metamask/utils';
+import { Hex, isStrictHexString } from '@metamask/utils';
 import { toHex } from '@metamask/controller-utils';
 import { ParseOutput } from 'eth-url-parser';
 
 import { selectConfirmationRedesignFlagsFromRemoteFeatureFlags } from '../../../../selectors/featureFlagController/confirmations';
 import { addTransaction } from '../../../../util/transaction-controller';
 import { generateTransferData } from '../../../../util/transactions';
-import { safeToChecksumAddress } from '../../../../util/address';
+import {
+  isValidHexAddress,
+  safeToChecksumAddress,
+} from '../../../../util/address';
 import { getGlobalNetworkClientId } from '../../../../util/networks/global-network';
 import { ETH_ACTIONS } from '../../../../constants/deeplinks';
 import Engine from '../../../../core/Engine';
@@ -51,16 +54,82 @@ export function isDeeplinkRedesignedConfirmationCompatible(
   }
 }
 
-// This will prevent back to back deeplink requests
-// It will be removed once `DeeplinkManager.parse` is called once per request
-let isAddingDeeplinkTransaction = false;
+export const INVALID_DEEPLINK_TRANSACTION_ERROR =
+  'InvalidDeeplinkTransactionError';
 
-export async function addTransactionForDeeplink({
+/**
+ * Creates an error for a deeplink that cannot be turned into a transaction.
+ *
+ * @param message - Reason the deeplink was rejected.
+ * @returns Error named {@link INVALID_DEEPLINK_TRANSACTION_ERROR}.
+ */
+const createInvalidDeeplinkTransactionError = (message: string) => {
+  const error = new Error(message);
+  error.name = INVALID_DEEPLINK_TRANSACTION_ERROR;
+  return error;
+};
+
+/**
+ * Checks that a deeplink value is a non-negative integer as a decimal or `0x` hex string.
+ *
+ * @param value - Value parsed from the deeplink.
+ * @returns True if the value can be safely converted with `toHex`.
+ */
+const isValidQuantity = (value: unknown): value is string =>
+  typeof value === 'string' &&
+  (/^\d+$/u.test(value) || (isStrictHexString(value) && value.length > 2));
+
+/**
+ * Checks that a deeplink value is a valid hex address (checksum enforced for mixed case).
+ *
+ * @param address - Address parsed from the deeplink.
+ * @returns True if the address is valid.
+ */
+const isValidDeeplinkAddress = (address: unknown): address is string =>
+  typeof address === 'string' &&
+  isValidHexAddress(address, { mixedCaseUseChecksum: true });
+
+/**
+ * Validates the deeplink fields used to build the transaction.
+ *
+ * @param deeplink - Parsed `ethereum:` deeplink.
+ * @throws Error named {@link INVALID_DEEPLINK_TRANSACTION_ERROR} if a field is missing or invalid.
+ */
+function validateDeeplinkTransaction({
   chain_id,
   function_name,
   parameters,
   target_address,
 }: ParseOutput) {
+  const isValidChainId =
+    isValidQuantity(chain_id) ||
+    (typeof chain_id === 'number' && Number.isSafeInteger(chain_id));
+  if (chain_id && !isValidChainId) {
+    throw createInvalidDeeplinkTransactionError('Invalid chain ID');
+  }
+
+  if (!isValidDeeplinkAddress(target_address)) {
+    throw createInvalidDeeplinkTransactionError('Invalid target address');
+  }
+
+  if (function_name === ETH_ACTIONS.TRANSFER) {
+    if (!isValidDeeplinkAddress(parameters?.address)) {
+      throw createInvalidDeeplinkTransactionError('Invalid recipient address');
+    }
+    if (!isValidQuantity(parameters?.uint256)) {
+      throw createInvalidDeeplinkTransactionError('Invalid amount');
+    }
+  } else if (!isValidQuantity(parameters?.value)) {
+    throw createInvalidDeeplinkTransactionError('Invalid amount');
+  }
+}
+
+// This will prevent back to back deeplink requests
+// It will be removed once `DeeplinkManager.parse` is called once per request
+let isAddingDeeplinkTransaction = false;
+
+export async function addTransactionForDeeplink(deeplink: ParseOutput) {
+  const { chain_id, function_name, parameters, target_address } = deeplink;
   const { AccountsController } = Engine.context;
 
   // Temporary solution for preventing back to back deeplink requests
@@ -69,56 +138,62 @@ export async function addTransactionForDeeplink({
     return;
   }
 
+  validateDeeplinkTransaction(deeplink);
+
   isAddingDeeplinkTransaction = true;
 
-  const selectedAccountAddress =
-    AccountsController.getSelectedAccount().address;
+  try {
+    const selectedAccountAddress =
+      AccountsController.getSelectedAccount().address;
 
-  let chainId: Hex;
-  if (chain_id) {
-    chainId = toHex(chain_id as string);
-  } else {
-    // Deeplinks are fallback to mainnet rather than the selected network
-    chainId = CHAIN_IDS.MAINNET;
+    let chainId: Hex;
+    if (chain_id) {
+      chainId = toHex(chain_id as string);
+    } else {
+      // Deeplinks are fallback to mainnet rather than the selected network
+      chainId = CHAIN_IDS.MAINNET;
+    }
+
+    // This should be anything *except* 'MMM' (MetaMask Mobile) to avoid layout issues in redesigned confirmations
+    const origin = 'deeplink';
+    const networkClientId = getNetworkClientIdForChainId(chainId);
+    const from = safeToChecksumAddress(selectedAccountAddress) as string;
+    const to = safeToChecksumAddress(target_address);
+    const checkSummedParamAddress = safeToChecksumAddress(
+      parameters?.address ?? '',
+    );
+
+    if (function_name === ETH_ACTIONS.TRANSFER) {
+      // ERC20 transfer
+      const txParams: TransactionParams = {
+        from,
+        to,
+        data: generateTransferData('transfer', {
+          toAddress: checkSummedParamAddress,
+          amount: toHex(parameters?.uint256 as string),
+        }),
+      };
+
+      await addTransaction(txParams, {
+        networkClientId,
+        origin,
+        type: TransactionType.tokenMethodTransfer,
+      });
+    } else {
+      // Native transfer
+      const txParams: TransactionParams = {
+        from,
+        to,
+        value: toHex(parameters?.value as string),
+      };
+
+      await addTransaction(txParams, {
+        networkClientId,
+        origin,
+        type: TransactionType.simpleSend,
+      });
+    }
+  } finally {
+    isAddingDeeplinkTransaction = false;
   }
-
-  // This should be anything *except* 'MMM' (MetaMask Mobile) to avoid layout issues in redesigned confirmations
-  const origin = 'deeplink';
-  const networkClientId = getNetworkClientIdForChainId(chainId);
-  const from = safeToChecksumAddress(selectedAccountAddress) as string;
-  const to = safeToChecksumAddress(target_address);
-  const checkSummedParamAddress = safeToChecksumAddress(parameters?.address ?? '');
-
-  if (function_name === ETH_ACTIONS.TRANSFER) {
-    // ERC20 transfer
-    const txParams: TransactionParams = {
-      from,
-      to,
-      data: generateTransferData('transfer', {
-        toAddress: checkSummedParamAddress,
-        amount: toHex(parameters?.uint256 as string),
-      }),
-    };
-
-    await addTransaction(txParams, {
-      networkClientId,
-      origin,
-      type: TransactionType.tokenMethodTransfer,
-    });
-  } else {
-    // Native transfer
-    const txParams: TransactionParams = {
-      from,
-      to,
-      value: toHex(parameters?.value as string),
-    };
-
-    await addTransaction(txParams, {
-      networkClientId,
-      origin,
-      type: TransactionType.simpleSend,
-    });
-  }
-
-  isAddingDeeplinkTransaction = false;
 }
