@@ -464,11 +464,9 @@ export default class DeeplinkProtocolService {
       }
 
       // A session persisted without a key (or past its expiry) has nothing
-      // to prove ownership with, so the user approves it again before the
+      // to prove ownership with, so the user approves it again before any
       // presented key is bound and any request is run.
-      const isKeyUnbound =
-        !this.dappPublicKeyByClientId[params.channelId] &&
-        !!params.dappPublicKey;
+      const isKeyUnbound = !this.dappPublicKeyByClientId[params.channelId];
 
       if (this.isSessionExpired(existingSession) || isKeyUnbound) {
         this.reauthorizeSession({ session: existingSession, params }).catch(

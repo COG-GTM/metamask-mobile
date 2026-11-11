@@ -569,6 +569,29 @@ describe('DeeplinkProtocolService', () => {
       ).toHaveBeenCalledWith({ origin: 'acme' }, expect.any(Object));
     });
 
+    it('requires re-approval for a keyless session when the link has no key', async () => {
+      delete service.dappPublicKeyByClientId.acme;
+      (
+        Engine.context.PermissionController.requestPermissions as jest.Mock
+      ).mockRejectedValue(new Error('User rejected'));
+
+      await service.handleConnection({
+        channelId: 'acme',
+        url: 'url',
+        scheme: 'acmeswap',
+        dappPublicKey: '',
+        originatorInfo,
+        request,
+      });
+      await flush();
+
+      expect(onMessage).not.toHaveBeenCalled();
+      expect(service.currentClientId).not.toBe('acme');
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).toHaveBeenCalledWith({ origin: 'acme' }, expect.any(Object));
+    });
+
     it('tells the dapp when the user rejects the renewal', async () => {
       service.connections.acme.validUntil = Date.now() - 1;
       (
