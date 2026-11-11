@@ -6,13 +6,14 @@ import { ETH_ACTIONS } from '../../../constants/deeplinks';
 import formattedDeeplinkParsedValue from '../../../util/formattedDeeplinkParsedValue';
 import { NetworkSwitchErrorType } from '../../../constants/error';
 import { getDecimalChainId } from '../../../util/networks';
-import { MAINNET } from '../../../constants/network';
 import Engine from '../../Engine';
 import DeeplinkManager from '../DeeplinkManager';
 import {
   addTransactionForDeeplink,
   isDeeplinkRedesignedConfirmationCompatible,
 } from '../../../components/Views/confirmations/utils/deeplink';
+
+const MAINNET_DECIMAL_CHAIN_ID = '1';
 
 async function handleEthereumUrl({
   deeplinkManager,
@@ -35,10 +36,8 @@ async function handleEthereumUrl({
 
   try {
     const { MultichainNetworkController } = Engine.context;
+    const { isEvmSelected } = MultichainNetworkController.state;
 
-    if (!MultichainNetworkController.state.isEvmSelected) {
-      await MultichainNetworkController.setActiveNetwork(MAINNET);
-    }
     // If the deeplink has a goerli chainId, show deprecation modal and return
     if (
       ethUrl.chain_id === getDecimalChainId(CHAIN_IDS.GOERLI) ||
@@ -48,15 +47,28 @@ async function handleEthereumUrl({
       return;
     }
 
+    // The redesigned confirmation uses the chain from the link, so the active
+    // network only changes (with confirmation) when a non-EVM network is selected
     if (isDeeplinkRedesignedConfirmationCompatible(ethUrl.function_name)) {
+      if (
+        !isEvmSelected &&
+        !(await deeplinkManager._handleNetworkSwitch(MAINNET_DECIMAL_CHAIN_ID))
+      ) {
+        return;
+      }
       await addTransactionForDeeplink(txMeta);
       return;
     }
 
     /**
-     * Validate and switch network before performing any other action
+     * Validate and switch network (after user confirmation) before performing
+     * any other action
      */
-    deeplinkManager._handleNetworkSwitch(ethUrl.chain_id);
+    const switchToChainId =
+      ethUrl.chain_id ?? (isEvmSelected ? undefined : MAINNET_DECIMAL_CHAIN_ID);
+    if (!(await deeplinkManager._handleNetworkSwitch(switchToChainId))) {
+      return;
+    }
 
     switch (ethUrl.function_name) {
       case ETH_ACTIONS.TRANSFER: {

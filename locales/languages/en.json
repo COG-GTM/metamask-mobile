@@ -3069,7 +3069,9 @@
   },
   "deeplink": {
     "invalid": "Invalid deeplink",
-    "not_supported": "Deeplink not supported"
+    "not_supported": "Deeplink not supported",
+    "switch_network_title": "Switch network?",
+    "switch_network_description": "This link wants to switch your selected network to {{networkName}}. Only switch if you trust where this link came from."
   },
   "error_screen": {
     "title": "An error occurred",
