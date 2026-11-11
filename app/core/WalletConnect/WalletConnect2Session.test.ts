@@ -225,6 +225,45 @@ describe('WalletConnect2Session', () => {
     });
   });
 
+  it('rejects requests whose origin impersonates an internal origin', async () => {
+    const mockRespondSessionRequest = jest
+      .spyOn(mockClient, 'respondSessionRequest')
+      .mockImplementation(async () => {
+        /* empty implementation */
+      });
+    const { checkWCPermissions } = jest.requireMock('./wc-utils');
+    checkWCPermissions.mockClear();
+
+    const requestEvent = {
+      id: '1',
+      topic: 'test-topic',
+      params: {
+        chainId: '0x1',
+        request: {
+          method: 'eth_sendTransaction',
+          params: [],
+        },
+      },
+      verifyContext: {
+        verified: {
+          origin: process.env.MM_FOX_CODE,
+        },
+      },
+    };
+
+    await session.handleRequest(requestEvent as any);
+
+    expect(mockRespondSessionRequest).toHaveBeenCalledWith({
+      topic: mockSession.topic,
+      response: {
+        id: '1',
+        jsonrpc: '2.0',
+        error: { code: 4100, message: 'Unauthorized origin' },
+      },
+    });
+    expect(checkWCPermissions).not.toHaveBeenCalled();
+  });
+
   it('removes listeners correctly', async () => {
     const mockOnDisconnect = jest.spyOn(
       (session as any).backgroundBridge,

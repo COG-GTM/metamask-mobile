@@ -22,7 +22,6 @@ import {
   getTokenAddressParam,
   calcTokenAmount,
   getTokenValueParamAsHex,
-  getIsSwapApproveOrSwapTransaction,
   isApprovalTransaction,
 } from '../../../util/transactions';
 import BN from 'bnjs4';
@@ -70,6 +69,7 @@ import { getSmartTransactionMetricsProperties } from '../../../util/smart-transa
 import { cloneDeep, isEqual } from 'lodash';
 import { selectSwapsTransactions } from '../../../selectors/transactionController';
 import { updateSwapsTransaction } from '../../../util/swaps/swaps-transactions';
+import { shouldAutoSignSwapsTransaction } from '../../../util/swaps/swaps-transaction-registry';
 
 ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
 import InstallSnapApproval from '../../Approvals/InstallSnapApproval';
@@ -381,16 +381,8 @@ const RootRPCMethodsUI = (props) => {
       if (transactionMeta.origin === TransactionTypes.MMM) return;
 
       const to = transactionMeta.txParams.to?.toLowerCase();
-      const { data } = transactionMeta.txParams;
 
-      if (
-        getIsSwapApproveOrSwapTransaction(
-          data,
-          transactionMeta.origin,
-          to,
-          props.chainId,
-        )
-      ) {
+      if (shouldAutoSignSwapsTransaction(transactionMeta, props.chainId)) {
         autoSign(transactionMeta);
       } else {
         const {

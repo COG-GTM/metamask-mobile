@@ -2,13 +2,39 @@ import { ImageSourcePropType } from 'react-native';
 import AppConstants from '../../AppConstants';
 import getRpcMethodMiddleware from '../../RPCMethods/RPCMethodMiddleware';
 import { DappClient } from './dapp-sdk-types';
+import { INTERNAL_ORIGINS } from '../../../constants/transaction';
+
+const isInternalOrigin = (value?: string) => {
+  if (!value) {
+    return false;
+  }
+  const strippedValue = value
+    .split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)
+    .join('');
+  return INTERNAL_ORIGINS.some(
+    (internalOrigin) =>
+      internalOrigin &&
+      (value === internalOrigin || strippedValue === internalOrigin),
+  );
+};
+
+export const getSdkClientHostname = (clientInfo: DappClient): string => {
+  const hostname =
+    clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title;
+  if (
+    isInternalOrigin(clientInfo.originatorInfo.url) ||
+    isInternalOrigin(clientInfo.originatorInfo.title)
+  ) {
+    return clientInfo.clientId;
+  }
+  return hostname;
+};
 
 const getDefaultBridgeParams = (clientInfo: DappClient) => ({
   getApprovedHosts: (host: string) => ({
     [host]: true,
   }),
-  remoteConnHost:
-    clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title,
+  remoteConnHost: getSdkClientHostname(clientInfo),
   getRpcMethodMiddleware: ({
     getProviderState,
   }: {
@@ -18,8 +44,7 @@ const getDefaultBridgeParams = (clientInfo: DappClient) => ({
     getProviderState: any;
   }) =>
     getRpcMethodMiddleware({
-      hostname:
-        clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title,
+      hostname: getSdkClientHostname(clientInfo),
       channelId: clientInfo.clientId,
       getProviderState,
       isMMSDK: true,

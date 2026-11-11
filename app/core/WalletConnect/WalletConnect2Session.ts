@@ -20,6 +20,7 @@ import getRpcMethodMiddleware from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { ERROR_MESSAGES } from './WalletConnectV2';
 import METHODS_TO_REDIRECT from './wc-config';
+import { INTERNAL_ORIGINS } from '../../constants/transaction';
 import {
   checkWCPermissions,
   getHostname,
@@ -472,6 +473,22 @@ class WalletConnect2Session {
     DevLogger.log(
       `WalletConnect2Session::handleRequest caip2ChainId=${caip2ChainId} method=${method} origin=${origin}`,
     );
+
+    if (
+      INTERNAL_ORIGINS.some(
+        (internalOrigin) => internalOrigin && internalOrigin === origin,
+      )
+    ) {
+      await this.web3Wallet.respondSessionRequest({
+        topic: this.session.topic,
+        response: {
+          id: requestEvent.id,
+          jsonrpc: '2.0',
+          error: { code: 4100, message: 'Unauthorized origin' },
+        },
+      });
+      return;
+    }
 
     try {
       const allowed = await checkWCPermissions({ origin, caip2ChainId, allowSwitchingToNewChain: isSwitchingChain });
