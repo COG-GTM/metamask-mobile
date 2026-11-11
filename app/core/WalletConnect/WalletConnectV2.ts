@@ -86,6 +86,10 @@ export class WC2Manager {
         // Remove session from local list
         this.sessions[event.topic]?.removeListeners();
         delete this.sessions[event.topic];
+
+        if (session) {
+          this.revokeSessionPermissions([session]);
+        }
       },
     );
 
@@ -305,6 +309,51 @@ export class WC2Manager {
     return this.getSessions().find((session) => session.topic === topic);
   }
 
+  /**
+   * Revokes the permissions granted to the hostnames of the given sessions.
+   * Permissions are granted under `getHostname(peer.metadata.url)` in
+   * `onSessionProposal`, so that is the subject that must be revoked. A
+   * hostname is left untouched while another active session still uses it.
+   */
+  private revokeSessionPermissions(removedSessions: SessionTypes.Struct[]) {
+    const permissionsController = (
+      Engine.context as {
+        // TODO: Replace 'any' with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PermissionController: PermissionController<any, any>;
+      }
+    ).PermissionController;
+
+    const removedTopics = new Set(removedSessions.map(({ topic }) => topic));
+    const hostnamesInUse = new Set(
+      this.getSessions()
+        .filter(({ topic }) => !removedTopics.has(topic))
+        .map((session) => getHostname(session.peer?.metadata?.url ?? '')),
+    );
+    const hostnames = new Set(
+      removedSessions.map((session) =>
+        getHostname(session.peer?.metadata?.url ?? ''),
+      ),
+    );
+
+    hostnames.forEach((hostname) => {
+      if (!hostname || hostnamesInUse.has(hostname)) {
+        return;
+      }
+      try {
+        if (permissionsController.hasPermissions(hostname)) {
+          DevLogger.log(`WC2::revokeAllPermissions for ${hostname}`);
+          permissionsController.revokeAllPermissions(hostname);
+        }
+      } catch (err) {
+        Logger.error(
+          err as Error,
+          `WC2::revokeSessionPermissions failed for ${hostname}`,
+        );
+      }
+    });
+  }
+
   public async removeSession(session: SessionTypes.Struct) {
     try {
       // Use disconnectSession directly
@@ -316,29 +365,19 @@ export class WC2Manager {
       // Remove session from local list
       this.sessions[session.topic]?.removeListeners();
       delete this.sessions[session.topic];
-
-      // Remove associated permissions
-      const permissionsController = (
-        Engine.context as {
-          // TODO: Replace 'any' with type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          PermissionController: PermissionController<any, any>;
-        }
-      ).PermissionController;
-      DevLogger.log(
-        `WC2::removeSession revokeAllPermissions for ${session.topic}`,
-        permissionsController.state,
-      );
-      permissionsController.revokeAllPermissions(session.topic);
     } catch (err) {
       DevLogger.log(`WC2::removeSession error while disconnecting`, err);
+    } finally {
+      // The user asked to disconnect: drop the dapp's access even if the
+      // relay could not be notified.
+      this.revokeSessionPermissions([session]);
     }
   }
 
   public async removeAll() {
     this.deeplinkSessions = {};
-    const actives = this.web3Wallet.getActiveSessions() || {};
-    Object.values(actives).forEach(async (session) => {
+    const actives = Object.values(this.web3Wallet.getActiveSessions() || {});
+    actives.forEach(async (session) => {
       this.web3Wallet
         .disconnectSession({
           topic: session.topic,
@@ -351,6 +390,8 @@ export class WC2Manager {
 
     // Clear local sessions
     this.sessions = {};
+
+    this.revokeSessionPermissions(actives);
 
     await StorageWrapper.setItem(
       AppConstants.WALLET_CONNECT.DEEPLINK_SESSIONS,

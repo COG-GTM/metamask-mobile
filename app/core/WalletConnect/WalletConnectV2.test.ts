@@ -107,6 +107,7 @@ jest.mock('../Engine', () => ({
         id: 'mockPermissionId',
       }),
       revokeAllPermissions: jest.fn(),
+      hasPermissions: jest.fn().mockReturnValue(true),
     },
   },
 }));
@@ -514,7 +515,157 @@ describe('WC2Manager', () => {
         },
         topic: 'test-topic',
       });
-      expect(revokeAllPermissionsSpy).toHaveBeenCalledWith('test-topic');
+      expect(revokeAllPermissionsSpy).toHaveBeenCalledWith('example.com');
+      expect(revokeAllPermissionsSpy).not.toHaveBeenCalledWith('test-topic');
+    });
+  });
+
+  describe('WC2Manager permission revocation on disconnect', () => {
+    let mockWeb3Wallet: IWalletKit;
+    let revokeAllPermissions: jest.Mock;
+    let hasPermissions: jest.Mock;
+    let getActiveSessions: jest.Mock;
+    let originalActiveSessions: ReturnType<IWalletKit['getActiveSessions']>;
+
+    const buildSession = (topic: string, url: string) =>
+      ({
+        topic,
+        pairingTopic: `${topic}-pairing`,
+        peer: { metadata: { url, name: 'Dapp', icons: [] } },
+      } as unknown as SessionTypes.Struct);
+
+    const getSessionDeleteCallback = () =>
+      (mockWeb3Wallet.on as jest.Mock).mock.calls.find(
+        ([event]) => event === 'session_delete',
+      )?.[1];
+
+    beforeEach(() => {
+      mockWeb3Wallet = (manager as unknown as { web3Wallet: IWalletKit })
+        .web3Wallet;
+      revokeAllPermissions = Engine.context.PermissionController
+        .revokeAllPermissions as jest.Mock;
+      hasPermissions = (
+        Engine.context.PermissionController as unknown as {
+          hasPermissions: jest.Mock;
+        }
+      ).hasPermissions;
+      getActiveSessions = mockWeb3Wallet.getActiveSessions as jest.Mock;
+      originalActiveSessions = getActiveSessions();
+      revokeAllPermissions.mockClear();
+      hasPermissions.mockClear();
+      hasPermissions.mockReturnValue(true);
+    });
+
+    afterEach(() => {
+      getActiveSessions.mockReturnValue(originalActiveSessions);
+      (mockWeb3Wallet.disconnectSession as jest.Mock).mockClear();
+      hasPermissions.mockReturnValue(true);
+    });
+
+    it('removeSession revokes the hostname subject used when the session was approved', async () => {
+      const session = buildSession(
+        'topic-a',
+        'https://evil-dapp.example/app?x=1',
+      );
+      getActiveSessions.mockReturnValue({ 'topic-a': session });
+
+      await manager.removeSession(session);
+
+      expect(hasPermissions).toHaveBeenCalledWith('evil-dapp.example');
+      expect(revokeAllPermissions).toHaveBeenCalledTimes(1);
+      expect(revokeAllPermissions).toHaveBeenCalledWith('evil-dapp.example');
+    });
+
+    it('removeSession revokes permissions even when the relay disconnect fails', async () => {
+      const session = buildSession('topic-a', 'https://evil-dapp.example');
+      getActiveSessions.mockReturnValue({ 'topic-a': session });
+      (mockWeb3Wallet.disconnectSession as jest.Mock).mockRejectedValueOnce(
+        new Error('relay down'),
+      );
+
+      await manager.removeSession(session);
+
+      expect(revokeAllPermissions).toHaveBeenCalledWith('evil-dapp.example');
+    });
+
+    it('removeSession keeps permissions while another active session uses the same hostname', async () => {
+      const session = buildSession('topic-a', 'https://evil-dapp.example');
+      const sibling = buildSession(
+        'topic-b',
+        'https://evil-dapp.example/other',
+      );
+      getActiveSessions.mockReturnValue({
+        'topic-a': session,
+        'topic-b': sibling,
+      });
+
+      await manager.removeSession(session);
+
+      expect(revokeAllPermissions).not.toHaveBeenCalled();
+    });
+
+    it('removeSession does not call revokeAllPermissions when the hostname has no permissions', async () => {
+      const session = buildSession('topic-a', 'https://evil-dapp.example');
+      getActiveSessions.mockReturnValue({ 'topic-a': session });
+      hasPermissions.mockReturnValue(false);
+
+      await manager.removeSession(session);
+
+      expect(revokeAllPermissions).not.toHaveBeenCalled();
+    });
+
+    it('session_delete from the dapp revokes the hostname permissions', async () => {
+      const session = buildSession('topic-a', 'https://evil-dapp.example');
+      // WalletKit drops the session from its store before emitting session_delete
+      getActiveSessions.mockReturnValue({});
+      (manager as unknown as { sessions: Record<string, unknown> }).sessions[
+        'topic-a'
+      ] = { session, removeListeners: jest.fn() };
+
+      await getSessionDeleteCallback()({ topic: 'topic-a' });
+
+      expect(revokeAllPermissions).toHaveBeenCalledWith('evil-dapp.example');
+      expect(
+        (manager as unknown as { sessions: Record<string, unknown> }).sessions[
+          'topic-a'
+        ],
+      ).toBeUndefined();
+    });
+
+    it('session_delete keeps permissions while another active session uses the same hostname', async () => {
+      const session = buildSession('topic-a', 'https://evil-dapp.example');
+      const sibling = buildSession('topic-b', 'https://evil-dapp.example');
+      getActiveSessions.mockReturnValue({ 'topic-b': sibling });
+      (manager as unknown as { sessions: Record<string, unknown> }).sessions[
+        'topic-a'
+      ] = { session, removeListeners: jest.fn() };
+
+      await getSessionDeleteCallback()({ topic: 'topic-a' });
+
+      expect(revokeAllPermissions).not.toHaveBeenCalled();
+    });
+
+    it('session_delete for an unknown topic revokes nothing', async () => {
+      getActiveSessions.mockReturnValue({});
+
+      await getSessionDeleteCallback()({ topic: 'unknown-topic' });
+
+      expect(revokeAllPermissions).not.toHaveBeenCalled();
+    });
+
+    it('removeAll revokes the permissions of every disconnected hostname once', async () => {
+      getActiveSessions.mockReturnValue({
+        'topic-a': buildSession('topic-a', 'https://evil-dapp.example'),
+        'topic-b': buildSession('topic-b', 'https://evil-dapp.example/b'),
+        'topic-c': buildSession('topic-c', 'https://other-dapp.example'),
+      });
+
+      await manager.removeAll();
+
+      expect(mockWeb3Wallet.disconnectSession).toHaveBeenCalledTimes(3);
+      expect(revokeAllPermissions).toHaveBeenCalledTimes(2);
+      expect(revokeAllPermissions).toHaveBeenCalledWith('evil-dapp.example');
+      expect(revokeAllPermissions).toHaveBeenCalledWith('other-dapp.example');
     });
   });
 
