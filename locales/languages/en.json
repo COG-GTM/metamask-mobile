@@ -2694,7 +2694,9 @@
     "network_switcher": {
       "title": "Unsupported {{rampType}} Network",
       "description": "To {{rampType}} crypto, you'll need to switch to a supported network",
-      "no_networks_found": "No supported networks found"
+      "no_networks_found": "No supported networks found",
+      "intent_description": "This link asks to use {{networkName}}. Your network will only change if you confirm.",
+      "switch_to_network": "Switch to {{networkName}}"
     },
     "onboarding": {
       "what_to_expect": "What to Expect",

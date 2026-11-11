@@ -1,12 +1,24 @@
 import { RampIntent } from '../types';
 
+const DECIMAL_CHAIN_ID_REGEX = /^[1-9]\d*$/u;
+
+/**
+ * Returns the chain id if it is a positive decimal integer string, otherwise undefined.
+ *
+ * @param chainId - The chainId value from the deeplink params.
+ * @returns The validated chain id or undefined.
+ */
+function parseChainId(chainId: string | undefined) {
+  return chainId && DECIMAL_CHAIN_ID_REGEX.test(chainId) ? chainId : undefined;
+}
+
 export default function parseRampIntent(
   pathParams: Record<string, string | undefined>,
 ): RampIntent | undefined {
   // create a rampIntent object if the pathParams contain the necessary fields
   const rampIntent: RampIntent = {
     address: pathParams.address,
-    chainId: pathParams.chainId,
+    chainId: parseChainId(pathParams.chainId),
     amount: pathParams.amount,
     currency: pathParams.currency,
   };
@@ -21,7 +33,7 @@ export default function parseRampIntent(
     return undefined;
   }
 
-  if (rampIntent.address && !rampIntent.chainId) {
+  if (rampIntent.address && pathParams.chainId === undefined) {
     rampIntent.chainId = '1';
   }
 
