@@ -188,6 +188,22 @@ public class RNTarTest {
   }
 
   @Test
+  public void testUnTar_rejectsArchiveWithPersistStoreAndTraversalEntries() throws Exception {
+    File base = Files.createTempDirectory("rntar-persist-traversal").toFile();
+    File output = new File(base, "output");
+    File tgz = writeTgz(base,
+        file("persistStore/persist-root", "{\"attacker\":true}"),
+        file("../x", "pwned"));
+
+    Throwable error = runUnTar(tgz, output);
+
+    assertTrue("Expected rejection for ../x", error != null);
+    assertTrue(error.getMessage().contains("outside the destination"));
+    assertFalse(new File(output, "persistStore/persist-root").exists());
+    assertFalse(new File(base, "x").exists());
+  }
+
+  @Test
   public void testUnTar_rejectsSymlinkEntries() throws Exception {
     File base = Files.createTempDirectory("rntar-symlink").toFile();
     File output = new File(base, "output");
