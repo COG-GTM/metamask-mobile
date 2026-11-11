@@ -26,6 +26,12 @@ const NON_PUBLIC_IPV4_RANGES: [number, number][] = [
   [0xe0000000, 3], // 224.0.0.0/4 multicast + 240.0.0.0/4 reserved
 ];
 
+/**
+ * Parses one IPv4 component in decimal, octal (`0` prefix) or hex (`0x`).
+ *
+ * @param part - A single dot-separated component.
+ * @returns The numeric value, or `NaN` if the component is malformed.
+ */
 const parseIpv4Part = (part: string): number => {
   if (/^0x[0-9a-f]*$/i.test(part)) {
     return part.length === 2 ? 0 : parseInt(part.slice(2), 16);
@@ -70,6 +76,10 @@ const parseIpv4 = (hostname: string): number | null => {
   return head.reduce((acc, n, i) => acc + n * 256 ** (3 - i), tail);
 };
 
+/**
+ * @param address - An IPv4 address as an unsigned 32-bit number.
+ * @returns Whether the address falls in a `NON_PUBLIC_IPV4_RANGES` entry.
+ */
 const isNonPublicIpv4 = (address: number) =>
   NON_PUBLIC_IPV4_RANGES.some(
     ([network, prefix]) =>
@@ -80,6 +90,9 @@ const isNonPublicIpv4 = (address: number) =>
 /**
  * Only global unicast (2000::/3) is treated as public. 6to4 (2002::/16) is
  * rejected because it embeds an arbitrary IPv4 address.
+ *
+ * @param hostname - An IPv6 address without brackets.
+ * @returns Whether the address is not global unicast.
  */
 const isNonPublicIpv6 = (hostname: string) => {
   const firstGroup = hostname.split(':')[0];
