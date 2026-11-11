@@ -18,6 +18,7 @@ describe('isSafeWCRedirectLink', () => {
   it.each([
     'metamask://',
     'METAMASK://connect',
+    'expo-metamask://',
     'wc:abc@2',
     'ethereum:0x0000000000000000000000000000000000000000',
     'dapp://evil.com',
@@ -41,6 +42,9 @@ describe('isSafeWCRedirectLink', () => {
     'https://user:pass@app.example.com',
     'https://metamask.app.link/send/0x0',
     'https://link.metamask.io/connect',
+    'https://metamask-alternate.app.link/x',
+    'https://metamask.test-app.link/x',
+    'https://metamask.io/',
     'not a url',
     '',
   ])('rejects %s', (link) => {
