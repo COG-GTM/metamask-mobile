@@ -647,6 +647,8 @@ export class WC2Manager {
       }
     } catch (err) {
       console.error(`invalid wallet status`, err);
+      // If no session was created, drop the grant so it is not left hidden.
+      this.revokeSubjectIfUnused(permissionSubject);
     } finally {
       store.dispatch(
         updateWC2Metadata({

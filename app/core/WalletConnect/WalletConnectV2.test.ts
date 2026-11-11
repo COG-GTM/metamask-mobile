@@ -1164,6 +1164,35 @@ describe('WC2Manager', () => {
       expect(mockApproveSession).not.toHaveBeenCalled();
     });
 
+    it('revokes the new grant when approveSession fails', async () => {
+      const permissionController = Engine.context.PermissionController;
+      (permissionController.hasPermissions as jest.Mock).mockImplementation(
+        (subject: string) =>
+          subject === 'example.com#wc-unverified-failed-pairing',
+      );
+      (permissionController.revokeAllPermissions as jest.Mock).mockClear();
+      (
+        permissionController.requestPermissions as jest.Mock
+      ).mockImplementationOnce(async () => {
+        // Revoke checks before the grant exists must not count.
+        (permissionController.revokeAllPermissions as jest.Mock).mockClear();
+        return [{}, {}];
+      });
+      mockApproveSession.mockRejectedValueOnce(new Error('relay down'));
+
+      await manager.onSessionProposal(
+        buildProposal('failed-pairing', {
+          validation: 'UNKNOWN',
+          origin: `https://${browserHost}`,
+        }) as unknown as Parameters<WC2Manager['onSessionProposal']>[0],
+      );
+
+      expect(permissionController.revokeAllPermissions).toHaveBeenCalledWith(
+        'example.com#wc-unverified-failed-pairing',
+      );
+      (permissionController.hasPermissions as jest.Mock).mockReturnValue(false);
+    });
+
     it('rejects proposals flagged as scam without requesting permissions', async () => {
       const web3Wallet = (manager as unknown as { web3Wallet: IWalletKit })
         .web3Wallet;
