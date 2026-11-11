@@ -777,7 +777,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     handleNonWebProtocolLink({
       url: urlToLoad,
       protocol,
-      requesterUrl: resolvedUrlRef.current,
+      // A page that is still loading has not replaced resolvedUrlRef yet.
+      requesterUrl: loadingUrlRef.current || resolvedUrlRef.current,
       isTopFrame,
       i18nService: strings,
     });
