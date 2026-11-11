@@ -41,6 +41,10 @@ import {
   Caip25EndowmentPermissionName,
 } from '@metamask/chain-agnostic-permission';
 import { getDefaultCaip25CaveatValue } from '../../Permissions';
+import { isUUID } from '../utils/isUUID';
+import { store } from '../../../store';
+import { removeDappConnection } from '../../../actions/sdk';
+import { ConnectionProps } from '../Connection';
 
 export default class AndroidService extends EventEmitter2 {
   public communicationClient = NativeModules.CommunicationClient;
@@ -85,6 +89,19 @@ export default class AndroidService extends EventEmitter2 {
 
       if (rawConnections) {
         Object.values(rawConnections).forEach((connection) => {
+          const restorable = this.canRestoreConnection(connection);
+          if (restorable !== true) {
+            Logger.log(
+              `AndroidService::setupEventListeners skip unapproved client: ${connection.id}`,
+            );
+            if (
+              restorable === false &&
+              connection.origin === AppConstants.MM_SDK.ANDROID_SDK
+            ) {
+              this.discardClient(connection.id);
+            }
+            return;
+          }
           DevLogger.log(
             `AndroidService::setupEventListeners recover client: ${connection.id}`,
           );
@@ -123,9 +140,67 @@ export default class AndroidService extends EventEmitter2 {
     );
   }
 
+  private isValidClientId(clientId: unknown): clientId is string {
+    return typeof clientId === 'string' && isUUID(clientId);
+  }
+
+  private hasAccountPermission(clientId: string): boolean {
+    const permissionsController = (
+      Engine.context as {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PermissionController: PermissionController<any, any>;
+      }
+    ).PermissionController;
+
+    return permissionsController.hasPermission(
+      clientId,
+      Caip25EndowmentPermissionName,
+    );
+  }
+
+  // Returns undefined when the permission state could not be read.
+  private canRestoreConnection(
+    connection: ConnectionProps,
+  ): boolean | undefined {
+    if (!this.isValidClientId(connection?.id)) {
+      return false;
+    }
+    try {
+      return this.hasAccountPermission(connection.id);
+    } catch (err) {
+      Logger.log(err, `AndroidService::canRestoreConnection error`);
+      return undefined;
+    }
+  }
+
+  private discardClient(clientId: string) {
+    delete this.bridgeByClientId[clientId];
+    delete this.connections[clientId];
+    const sdkConnect = SDKConnect.getInstance();
+    if (sdkConnect.state.dappConnections?.[clientId]) {
+      const { [clientId]: _removed, ...dappConnections } =
+        sdkConnect.state.dappConnections;
+      sdkConnect.state.dappConnections = dappConnections;
+    }
+    store.dispatch(removeDappConnection(clientId));
+  }
+
   private setupOnClientsConnectedListener() {
     this.eventHandler.onClientsConnected(async (sClientInfo: string) => {
-      const clientInfo: DappClient = JSON.parse(sClientInfo);
+      let clientInfo: DappClient;
+      try {
+        clientInfo = JSON.parse(sClientInfo);
+      } catch (err) {
+        Logger.log(err, `AndroidService::clients_connected invalid json`);
+        return;
+      }
+
+      if (!this.isValidClientId(clientInfo?.clientId)) {
+        Logger.log(
+          `AndroidService::clients_connected - rejected invalid client id`,
+        );
+        return;
+      }
 
       DevLogger.log(`AndroidService::clients_connected`, clientInfo);
       if (this.connections?.[clientInfo.clientId]) {
@@ -157,14 +232,19 @@ export default class AndroidService extends EventEmitter2 {
         return;
       }
 
-      await SDKConnect.getInstance().addDappConnection({
-        id: clientInfo.clientId,
-        lastAuthorized: Date.now(),
-        origin: AppConstants.MM_SDK.ANDROID_SDK,
-        originatorInfo: clientInfo.originatorInfo,
-        otherPublicKey: '',
-        validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
-      });
+      // Expose the pending client's metadata to the approval UI without persisting it.
+      const sdkState = SDKConnect.getInstance().state;
+      sdkState.dappConnections = {
+        ...sdkState.dappConnections,
+        [clientInfo.clientId]: {
+          id: clientInfo.clientId,
+          lastAuthorized: Date.now(),
+          origin: AppConstants.MM_SDK.ANDROID_SDK,
+          originatorInfo: clientInfo.originatorInfo,
+          otherPublicKey: '',
+          validUntil: Date.now() + DEFAULT_SESSION_TIMEOUT_MS,
+        },
+      };
 
       const handleEventAsync = async () => {
         const keyringController = (
@@ -226,6 +306,9 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::clients_connected sending jsonrpc error to client - connection rejected`,
           );
+          if (!this.hasAccountPermission(clientInfo.clientId)) {
+            this.discardClient(clientInfo.clientId);
+          }
           this.sendMessage({
             data: {
               error,
@@ -323,9 +406,17 @@ export default class AndroidService extends EventEmitter2 {
           message = parsedMsg.message;
           data = JSON.parse(message);
 
+          if (!this.isValidClientId(sessionId)) {
+            Logger.log(
+              `AndroidService::onMessageReceived - rejected invalid client id`,
+            );
+            return;
+          }
+
           // Update connected state
           this.connections[sessionId] = {
             ...this.connections[sessionId],
+            clientId: sessionId,
             connected: true,
           };
         } catch (error) {
@@ -371,6 +462,9 @@ export default class AndroidService extends EventEmitter2 {
               err,
               `AndroidService::onMessageReceived error checking permissions`,
             );
+            if (!this.bridgeByClientId[sessionId]) {
+              delete this.connections[sessionId];
+            }
             return;
           }
         }
@@ -489,6 +583,11 @@ export default class AndroidService extends EventEmitter2 {
         delete this.bridgeByClientId[channelId];
       }
       delete this.connections[channelId];
+      const dappConnection =
+        SDKConnect.getInstance().state.dappConnections?.[channelId];
+      if (dappConnection?.origin === AppConstants.MM_SDK.ANDROID_SDK) {
+        this.discardClient(channelId);
+      }
     } catch (err) {
       Logger.log(err, `AndroidService::remove error`);
     }
