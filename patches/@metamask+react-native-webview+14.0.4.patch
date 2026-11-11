@@ -24,3 +24,243 @@ index 4aa4617..8098026 100644
  				);
  				LIBRARY_SEARCH_PATHS = "$(inherited)";
  				OTHER_LDFLAGS = "-ObjC";
+diff --git a/node_modules/@metamask/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java b/node_modules/@metamask/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
+index ac7c832..e19efdf 100644
+--- a/node_modules/@metamask/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
++++ b/node_modules/@metamask/react-native-webview/android/src/main/java/com/reactnativecommunity/webview/RNCWebView.java
+@@ -4,6 +4,7 @@ import static android.view.inputmethod.EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARN
+ 
+ import android.annotation.SuppressLint;
+ import android.graphics.Rect;
++import android.net.Uri;
+ import android.os.Build;
+ import android.text.TextUtils;
+ import android.view.ActionMode;
+@@ -20,7 +21,12 @@ import android.webkit.WebChromeClient;
+ import android.webkit.WebView;
+ import android.webkit.WebViewClient;
+ 
++import androidx.annotation.NonNull;
+ import androidx.annotation.Nullable;
++import androidx.webkit.JavaScriptReplyProxy;
++import androidx.webkit.WebMessageCompat;
++import androidx.webkit.WebViewCompat;
++import androidx.webkit.WebViewFeature;
+ 
+ import com.facebook.common.logging.FLog;
+ import com.facebook.react.bridge.Arguments;
+@@ -42,6 +48,7 @@ import com.reactnativecommunity.webview.events.TopMessageEvent;
+ import org.json.JSONException;
+ import org.json.JSONObject;
+ 
++import java.util.Collections;
+ import java.util.List;
+ import java.util.Map;
+ 
+@@ -273,7 +280,13 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+     protected RNCWebViewBridge createRNCWebViewBridge(RNCWebView webView) {
+         if (bridge == null) {
+             bridge = new RNCWebViewBridge(webView);
+-            addJavascriptInterface(bridge, JAVASCRIPT_INTERFACE);
++            if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
++                // Unlike addJavascriptInterface, a WebMessageListener reports the
++                // origin and main-frame flag of the frame that posted each message.
++                WebViewCompat.addWebMessageListener(this, JAVASCRIPT_INTERFACE, Collections.singleton("*"), bridge);
++            } else {
++                addJavascriptInterface(bridge, JAVASCRIPT_INTERFACE);
++            }
+         }
+         return bridge;
+     }
+@@ -323,10 +336,21 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+         if (getSettings().getJavaScriptEnabled()) {
+             RNCWebViewBridge b = createRNCWebViewBridge(this);
+             b.setInjectedObjectJson(obj);
++            if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
++                FLog.w("RNCWebView", "injectedJavaScriptObject is not exposed when the WebMessageListener bridge is used.");
++            }
+         }
+     }
+ 
+     public void onMessage(String message) {
++        onMessage(message, null, null);
++    }
++
++    /**
++     * @param frameOrigin origin of the frame that posted the message, or null when unknown
++     * @param isMainFrame whether the message came from the main frame, or null when unknown
++     */
++    public void onMessage(String message, @Nullable String frameOrigin, @Nullable Boolean isMainFrame) {
+         ThemedReactContext reactContext = getThemedReactContext();
+         RNCWebView mWebView = this;
+ 
+@@ -340,6 +364,7 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+                     }
+                     WritableMap data = mRNCWebViewClient.createWebViewEvent(webView, webView.getUrl());
+                     data.putString("data", message);
++                    putFrameInfo(data, frameOrigin, isMainFrame);
+ 
+                     if (mCatalystInstance != null) {
+                         mWebView.sendDirectMessage("onMessage", data);
+@@ -351,6 +376,7 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+         } else {
+             WritableMap eventData = Arguments.createMap();
+             eventData.putString("data", message);
++            putFrameInfo(eventData, frameOrigin, isMainFrame);
+ 
+             if (mCatalystInstance != null) {
+                 this.sendDirectMessage("onMessage", eventData);
+@@ -360,6 +386,15 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+         }
+     }
+ 
++    private static void putFrameInfo(WritableMap event, @Nullable String frameOrigin, @Nullable Boolean isMainFrame) {
++        if (frameOrigin != null) {
++            event.putString("frameOrigin", frameOrigin);
++        }
++        if (isMainFrame != null) {
++            event.putBoolean("isMainFrame", isMainFrame);
++        }
++    }
++
+     protected void sendDirectMessage(final String method, WritableMap data) {
+         WritableNativeMap event = new WritableNativeMap();
+         event.putMap("nativeEvent", data);
+@@ -421,7 +456,7 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+     return (ThemedReactContext) this.getContext();
+   }
+ 
+-  protected class RNCWebViewBridge {
++  protected class RNCWebViewBridge implements WebViewCompat.WebMessageListener {
+         private String TAG = "RNCWebViewBridge";
+         RNCWebView mWebView;
+         String injectedObjectJson;
+@@ -449,6 +484,20 @@ public class RNCWebView extends WebView implements LifecycleEventListener {
+ 
+         @JavascriptInterface
+         public String injectedObjectJson() { return injectedObjectJson; }
++
++        /**
++         * Called (on the UI thread) when JavaScript in any frame calls
++         * window[JAVASCRIPT_INTERFACE].postMessage while the WebMessageListener bridge is in use.
++         */
++        @Override
++        public void onPostMessage(@NonNull WebView view, @NonNull WebMessageCompat message, @NonNull Uri sourceOrigin, boolean isMainFrame, @NonNull JavaScriptReplyProxy replyProxy) {
++            if (!mWebView.getMessagingEnabled()) {
++                FLog.w(TAG, "ReactNativeWebView.postMessage method was called but messaging is disabled. Pass an onMessage handler to the WebView.");
++                return;
++            }
++            String data = message.getData();
++            mWebView.onMessage(data == null ? "" : data, sourceOrigin.toString(), isMainFrame);
++        }
+     }
+ 
+ 
+diff --git a/node_modules/@metamask/react-native-webview/apple/RNCWebView.mm b/node_modules/@metamask/react-native-webview/apple/RNCWebView.mm
+index 70d5ee4..6be112b 100644
+--- a/node_modules/@metamask/react-native-webview/apple/RNCWebView.mm
++++ b/node_modules/@metamask/react-native-webview/apple/RNCWebView.mm
+@@ -126,7 +126,9 @@ auto stringToOnLoadingFinishNavigationTypeEnum(std::string value) {
+                     .canGoBack = [[dictionary valueForKey:@"canGoBack"] boolValue],
+                     .canGoForward = [[dictionary valueForKey:@"canGoBack"] boolValue],
+                     .loading = [[dictionary valueForKey:@"loading"] boolValue],
+-                    .data = std::string([[dictionary valueForKey:@"data"] UTF8String])
++                    .data = std::string([[dictionary valueForKey:@"data"] UTF8String]),
++                    .isMainFrame = [[dictionary valueForKey:@"isMainFrame"] boolValue],
++                    .frameOrigin = std::string([([dictionary valueForKey:@"frameOrigin"] ?: @"null") UTF8String])
+                 };
+                 webViewEventEmitter->onMessage(data);
+             }
+diff --git a/node_modules/@metamask/react-native-webview/apple/RNCWebViewImpl.m b/node_modules/@metamask/react-native-webview/apple/RNCWebViewImpl.m
+index 6a58db3..99dd53b 100644
+--- a/node_modules/@metamask/react-native-webview/apple/RNCWebViewImpl.m
++++ b/node_modules/@metamask/react-native-webview/apple/RNCWebViewImpl.m
+@@ -736,6 +736,20 @@ RCTAutoInsetsProtocol>
+     if (_onMessage) {
+       NSMutableDictionary<NSString *, id> *event = [self baseEvent];
+       [event addEntriesFromDictionary: @{@"data": message.body}];
++      // Report which frame sent the message so the JS side can reject
++      // messages posted by iframes / other origins.
++      WKFrameInfo *frameInfo = message.frameInfo;
++      WKSecurityOrigin *securityOrigin = frameInfo.securityOrigin;
++      NSString *frameOrigin = @"null";
++      if (securityOrigin != nil && securityOrigin.protocol.length > 0 && securityOrigin.host.length > 0) {
++        frameOrigin = securityOrigin.port > 0
++          ? [NSString stringWithFormat:@"%@://%@:%ld", securityOrigin.protocol, securityOrigin.host, (long)securityOrigin.port]
++          : [NSString stringWithFormat:@"%@://%@", securityOrigin.protocol, securityOrigin.host];
++      }
++      [event addEntriesFromDictionary: @{
++        @"isMainFrame": @(frameInfo != nil && frameInfo.isMainFrame),
++        @"frameOrigin": frameOrigin
++      }];
+       _onMessage(event);
+     }
+   }
+diff --git a/node_modules/@metamask/react-native-webview/lib/RNCWebViewNativeComponent.d.ts b/node_modules/@metamask/react-native-webview/lib/RNCWebViewNativeComponent.d.ts
+index 7a1e785..6fafc01 100644
+--- a/node_modules/@metamask/react-native-webview/lib/RNCWebViewNativeComponent.d.ts
++++ b/node_modules/@metamask/react-native-webview/lib/RNCWebViewNativeComponent.d.ts
+@@ -22,6 +22,8 @@ export declare type WebViewMessageEvent = Readonly<{
+     canGoForward: boolean;
+     lockIdentifier: Double;
+     data: string;
++    isMainFrame: boolean;
++    frameOrigin: string;
+ }>;
+ export declare type WebViewOpenWindowEvent = Readonly<{
+     targetUrl: string;
+diff --git a/node_modules/@metamask/react-native-webview/lib/WebViewTypes.d.ts b/node_modules/@metamask/react-native-webview/lib/WebViewTypes.d.ts
+index 317fa32..54f806e 100644
+--- a/node_modules/@metamask/react-native-webview/lib/WebViewTypes.d.ts
++++ b/node_modules/@metamask/react-native-webview/lib/WebViewTypes.d.ts
+@@ -68,6 +68,16 @@ export interface FileDownload {
+ export declare type DecelerationRateConstant = 'normal' | 'fast';
+ export interface WebViewMessage extends WebViewNativeEvent {
+     data: string;
++    /**
++     * Whether the message was posted by the top-level document. `false` for
++     * messages posted from iframes.
++     */
++    isMainFrame?: boolean;
++    /**
++     * Serialized origin (`scheme://host[:port]`, or `"null"` for opaque origins)
++     * of the frame that posted the message.
++     */
++    frameOrigin?: string;
+ }
+ export interface WebViewError extends WebViewNativeEvent {
+     /**
+diff --git a/node_modules/@metamask/react-native-webview/src/RNCWebViewNativeComponent.ts b/node_modules/@metamask/react-native-webview/src/RNCWebViewNativeComponent.ts
+index ae52bc8..3c4c1f2 100644
+--- a/node_modules/@metamask/react-native-webview/src/RNCWebViewNativeComponent.ts
++++ b/node_modules/@metamask/react-native-webview/src/RNCWebViewNativeComponent.ts
+@@ -24,6 +24,8 @@ export type WebViewMessageEvent = Readonly<{
+   canGoForward: boolean;
+   lockIdentifier: Double;
+   data: string;
++  isMainFrame: boolean;
++  frameOrigin: string;
+ }>
+ export type WebViewOpenWindowEvent = Readonly<{
+   targetUrl: string;
+diff --git a/node_modules/@metamask/react-native-webview/src/WebViewTypes.ts b/node_modules/@metamask/react-native-webview/src/WebViewTypes.ts
+index 3214318..b505879 100644
+--- a/node_modules/@metamask/react-native-webview/src/WebViewTypes.ts
++++ b/node_modules/@metamask/react-native-webview/src/WebViewTypes.ts
+@@ -115,6 +115,16 @@ export type DecelerationRateConstant = 'normal' | 'fast';
+ 
+ export interface WebViewMessage extends WebViewNativeEvent {
+   data: string;
++  /**
++   * Whether the message was posted by the top-level document. `false` for
++   * messages posted from iframes.
++   */
++  isMainFrame?: boolean;
++  /**
++   * Serialized origin (`scheme://host[:port]`, or `"null"` for opaque origins)
++   * of the frame that posted the message.
++   */
++  frameOrigin?: string;
+ }
+ 
+ export interface WebViewError extends WebViewNativeEvent {

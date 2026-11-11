@@ -1,5 +1,7 @@
+import { MutableRefObject } from 'react';
 import AppConstants from '../../../core/AppConstants';
 import URLParse from 'url-parse';
+import { v4 as uuidv4 } from 'uuid';
 import { SessionENSNames } from './types';
 
 /**
@@ -78,4 +80,138 @@ export const getMaskedUrl = (
     }
   }
   return urlToMask;
+};
+
+/**
+ * Returns the origin (e.g. `https://app.example`) of a url, or undefined when missing
+ */
+export const getUrlOrigin = (url: string | undefined) =>
+  url ? new URLParse(url).origin : undefined;
+
+/**
+ * Wraps a page metadata ref so it only exposes its value while the resolved page
+ * belongs to `origin`, returning `fallback` otherwise. Keeps approvals raised by a
+ * bridge from being labelled with another site's url, title or icon.
+ */
+export const scopeRefToOrigin = <T>(
+  ref: MutableRefObject<T>,
+  pageUrlRef: MutableRefObject<string>,
+  origin: string,
+  fallback: T,
+): MutableRefObject<T> => ({
+  get current() {
+    return getUrlOrigin(pageUrlRef.current) === origin ? ref.current : fallback;
+  },
+  set current(value: T) {
+    ref.current = value;
+  },
+});
+
+const PROVIDER_FRAME_TOKEN_KEY = 'mmFrameToken';
+const PROVIDER_FRAME_DATA_KEY = 'mmData';
+
+/**
+ * Upper bound on the characters the frame token envelope adds around a message
+ */
+export const MAX_FRAME_ENVELOPE_OVERHEAD = 128;
+
+/**
+ * Returns a fresh random secret used to tell the top frame's messages apart from
+ * frames that call the native `ReactNativeWebView` / `webkit.messageHandlers`
+ * bridge directly (Android exposes it to every frame, including cross-origin iframes).
+ */
+export const createProviderFrameToken = () => uuidv4().replace(/-/g, '');
+
+/**
+ * Script injected into the top frame before any page script runs. It replaces
+ * `window.ReactNativeWebView` with a wrapper that seals every message in an
+ * envelope carrying `token`. Every builtin it needs is captured up front so page
+ * scripts can't observe the token by patching `JSON`, `String` or prototypes.
+ */
+export const getProviderFrameTokenScript = (token: string) => {
+  if (!/^[0-9a-f]{32}$/.test(token)) {
+    throw new Error('Invalid provider frame token');
+  }
+  return `(function () {
+  var nativeBridge = window.ReactNativeWebView;
+  if (!nativeBridge || nativeBridge.__mmProviderFrameToken) return;
+  var handler = window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.ReactNativeWebView;
+  var send = handler ? handler.postMessage.bind(handler) : nativeBridge.postMessage.bind(nativeBridge);
+  var stringify = JSON.stringify;
+  var toString = String;
+  var defineProperty = Object.defineProperty;
+  var prefix = '{"${PROVIDER_FRAME_TOKEN_KEY}":"${token}","${PROVIDER_FRAME_DATA_KEY}":';
+  var wrapper = {};
+  defineProperty(wrapper, '__mmProviderFrameToken', { value: true });
+  defineProperty(wrapper, 'postMessage', {
+    value: function (message) {
+      send(prefix + stringify(toString(message)) + '}');
+    },
+  });
+  try {
+    defineProperty(window, 'ReactNativeWebView', {
+      value: wrapper,
+      enumerable: true,
+      writable: false,
+      configurable: false,
+    });
+  } catch (e) {
+    window.ReactNativeWebView = wrapper;
+  }
+})();
+`;
+};
+
+/**
+ * Opens a message posted through the frame token wrapper. Messages without an
+ * envelope come from a frame without the token (or an outdated page script) and
+ * are returned as untrusted; envelopes with the wrong token are rejected.
+ */
+export const unwrapProviderFrameMessage = (
+  data: string,
+  token: string,
+): { data: string; fromTokenFrame: boolean } | undefined => {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(data);
+  } catch {
+    return { data, fromTokenFrame: false };
+  }
+  if (
+    !parsed ||
+    typeof parsed !== 'object' ||
+    !(PROVIDER_FRAME_TOKEN_KEY in parsed)
+  ) {
+    return { data, fromTokenFrame: false };
+  }
+  const envelope = parsed as Record<string, unknown>;
+  if (
+    envelope[PROVIDER_FRAME_TOKEN_KEY] !== token ||
+    typeof envelope[PROVIDER_FRAME_DATA_KEY] !== 'string'
+  ) {
+    return undefined;
+  }
+  return { data: envelope[PROVIDER_FRAME_DATA_KEY], fromTokenFrame: true };
+};
+
+/**
+ * Returns the origin of the document that posted a provider message, or undefined
+ * when the message must be dropped. Prefers the sender frame reported by the native
+ * WebView (WKScriptMessage.frameInfo on iOS, WebMessageListener on Android) because
+ * the WebView url can already point at a pending navigation while the previous
+ * document is still running. Without native frame info only the top frame's token
+ * wrapper is trusted, attributed to the WebView url.
+ */
+export const getProviderMessageSenderOrigin = (
+  nativeEvent: { url?: string; isMainFrame?: boolean; frameOrigin?: string },
+  fromTokenFrame: boolean,
+): string | undefined => {
+  if (nativeEvent.frameOrigin !== undefined) {
+    if (nativeEvent.isMainFrame !== true) {
+      return undefined;
+    }
+    const origin = getUrlOrigin(nativeEvent.frameOrigin);
+    return origin && origin !== 'null' ? origin : undefined;
+  }
+  return fromTokenFrame ? getUrlOrigin(nativeEvent.url) : undefined;
 };
