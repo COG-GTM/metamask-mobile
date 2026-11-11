@@ -64,18 +64,18 @@ class SessionOwnerRegistryTest {
   }
 
   @Test
-  fun refusesNewSessionsOverLimitWithoutEvictingExistingBindings() {
+  fun evictsOldestSessionOfSameIdentityOverLimit() {
+    var now = 0L
     val store = InMemoryStore()
-    val registry = SessionOwnerRegistry(store, maxSessionsPerIdentity = 2)
+    val registry = SessionOwnerRegistry(store, maxSessionsPerIdentity = 2, clock = { now++ })
     registry.bind("mallory-1", mallory)
     registry.bind("acme-1", acme)
     registry.bind("acme-2", acme)
 
-    assertFalse(registry.bind("acme-3", acme))
-    assertNull(store.get("acme-3"))
-    assertEquals(acme, registry.ownerOf("acme-1"))
-    assertFalse(registry.bind("acme-1", mallory))
-    assertTrue(registry.bind("acme-1", acme))
+    assertTrue(registry.bind("acme-3", acme))
+    assertNull(registry.ownerOf("acme-1"))
+    assertEquals(acme, registry.ownerOf("acme-2"))
+    assertEquals(acme, registry.ownerOf("acme-3"))
     assertEquals(mallory, registry.ownerOf("mallory-1"))
   }
 

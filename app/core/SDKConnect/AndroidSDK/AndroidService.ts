@@ -128,9 +128,10 @@ export default class AndroidService extends EventEmitter2 {
       const clientInfo: DappClient = JSON.parse(sClientInfo);
 
       DevLogger.log(`AndroidService::clients_connected`, clientInfo);
-      if (clientInfo.newBinding && this.connections?.[clientInfo.clientId]) {
-        // The session id was just claimed by an app the native service has no record of
-        // (e.g. a connection approved before sessions were bound to apps): approve it again.
+      if (clientInfo.newBinding) {
+        // The native service had no owner for this session id (approved before sessions were
+        // bound to apps, or evicted): drop any previous approval and ask again.
+        this.revokePermissions(clientInfo.clientId);
         await this.removeConnection(clientInfo.clientId);
       }
       if (this.connections?.[clientInfo.clientId]) {
@@ -268,6 +269,19 @@ export default class AndroidService extends EventEmitter2 {
         );
       });
     });
+  }
+
+  private revokePermissions(channelId: string) {
+    const permissionsController = (
+      Engine.context as {
+        // TODO: Replace "any" with type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        PermissionController: PermissionController<any, any>;
+      }
+    ).PermissionController;
+    if (permissionsController.getPermissions(channelId)) {
+      permissionsController.revokeAllPermissions(channelId);
+    }
   }
 
   private async checkPermission({

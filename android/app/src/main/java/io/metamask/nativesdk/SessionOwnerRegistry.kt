@@ -12,8 +12,9 @@ interface SessionOwnerStore {
 /**
  * Binds each SDK session id to the identity (packages + signing certificates) of the app that first
  * used it. Later messages for that session are only accepted from the same identity, so knowing a
- * session id is not enough to act under another dapp's approved connection. Bindings are never
- * evicted: a session that loses its binding could be claimed by another app.
+ * session id is not enough to act under another dapp's approved connection. When an app reaches
+ * [maxSessionsPerIdentity], its oldest binding is evicted; a later claim of an evicted session is a
+ * new binding, for which the wallet drops the old connection and asks for approval again.
  */
 class SessionOwnerRegistry(
   private val store: SessionOwnerStore,
@@ -30,9 +31,11 @@ class SessionOwnerRegistry(
       return false
     }
     store.get(sessionId)?.let { return it.identity == identity }
-    if (store.all().count { it.value.identity == identity } >= maxSessionsPerIdentity) {
-      return false
-    }
+    val owned = store.all().filterValues { it.identity == identity }
+    owned.entries
+      .sortedBy { it.value.boundAt }
+      .take(maxOf(0, owned.size - maxSessionsPerIdentity + 1))
+      .forEach { store.remove(it.key) }
     store.put(sessionId, SessionOwner(identity, clock()))
     return true
   }
