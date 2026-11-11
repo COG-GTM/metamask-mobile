@@ -66,7 +66,7 @@ jest.mock('../SDKConnect/utils/DevLogger', () => ({
 jest.mock('../Permissions', () => ({
   getPermittedAccounts: jest
     .fn()
-    .mockResolvedValue(['0x1234567890abcdef1234567890abcdef12345678']),
+    .mockReturnValue(['0x1234567890abcdef1234567890abcdef12345678']),
   getPermittedChains: jest.fn().mockResolvedValue(['eip155:1']),
 }));
 jest.mock('../../store', () => ({
@@ -93,6 +93,16 @@ jest.mock('./wc-utils', () => ({
   }),
   normalizeOrigin: jest.fn().mockImplementation((url) => url),
   getHostname: jest.fn().mockReturnValue('example.com'),
+}));
+jest.mock('../../util/transaction-controller', () => ({
+  addTransaction: jest.fn(),
+}));
+jest.mock('../../util/networks/global-network', () => ({
+  getGlobalNetworkClientId: jest.fn().mockReturnValue('mainnet'),
+}));
+jest.mock('../../../app/lib/ppom/ppom-util', () => ({
+  __esModule: true,
+  default: { validateRequest: jest.fn() },
 }));
 jest.mock('../../selectors/networkController', () => ({
   selectEvmChainId: jest.fn(),
@@ -708,6 +718,150 @@ describe('WalletConnect2Session', () => {
     expect(approveRequestSpy).toHaveBeenCalledWith({
       id: switchChainRequest.id + '',
       result: true,
+    });
+  });
+
+  describe('eth_sendTransaction', () => {
+    const PERMITTED_ACCOUNT = '0x1234567890abcdef1234567890abcdef12345678';
+    const UNPERMITTED_ACCOUNT = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd';
+
+    const buildRequest = (txParams: Record<string, unknown>) => ({
+      id: 77,
+      topic: mockSession.topic,
+      params: {
+        chainId: 'eip155:1',
+        request: {
+          method: 'eth_sendTransaction',
+          params: [txParams],
+        },
+      },
+      verifyContext: {
+        verified: {
+          origin: 'https://example.com',
+        },
+      },
+    });
+
+    let addTransaction: jest.Mock;
+    let getPermittedAccounts: jest.Mock;
+    let getHostname: jest.Mock;
+
+    beforeEach(() => {
+      addTransaction = jest.requireMock(
+        '../../util/transaction-controller',
+      ).addTransaction;
+      getPermittedAccounts = jest.requireMock('../Permissions')
+        .getPermittedAccounts;
+      getHostname = jest.requireMock('./wc-utils').getHostname;
+      addTransaction.mockReset();
+      addTransaction.mockResolvedValue({
+        transactionMeta: { id: 'tx-1' },
+        result: Promise.resolve('0xhash'),
+      });
+      getPermittedAccounts.mockClear();
+      getPermittedAccounts.mockReturnValue([PERMITTED_ACCOUNT]);
+      getHostname.mockClear();
+      jest.spyOn(mockClient, 'respondSessionRequest').mockResolvedValue();
+      jest
+        .spyOn(mockClient, 'getPendingSessionRequests')
+        .mockReturnValue([] as any);
+    });
+
+    it('rejects a from address that was not granted to the session before creating a transaction', async () => {
+      const request = buildRequest({
+        from: UNPERMITTED_ACCOUNT,
+        to: PERMITTED_ACCOUNT,
+        value: '0x1',
+      });
+
+      await session.handleRequest(request as any);
+
+      expect(getHostname).toHaveBeenCalledWith('https://example.com');
+      expect(getPermittedAccounts).toHaveBeenCalledWith('example.com', {
+        ignoreLock: true,
+      });
+      expect(addTransaction).not.toHaveBeenCalled();
+      expect(mockClient.respondSessionRequest).toHaveBeenCalledWith({
+        topic: mockSession.topic,
+        response: {
+          id: 77,
+          jsonrpc: '2.0',
+          error: {
+            code: 4100,
+            message:
+              'The requested account has not been authorized by the user.',
+          },
+        },
+      });
+    });
+
+    it('rejects a transaction without a from address', async () => {
+      const request = buildRequest({ to: PERMITTED_ACCOUNT, value: '0x1' });
+
+      await session.handleRequest(request as any);
+
+      expect(addTransaction).not.toHaveBeenCalled();
+      expect(mockClient.respondSessionRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          response: expect.objectContaining({
+            error: expect.objectContaining({ code: 4100 }),
+          }),
+        }),
+      );
+    });
+
+    it('rejects when the session has no permitted accounts', async () => {
+      getPermittedAccounts.mockReturnValue([]);
+      const request = buildRequest({
+        from: PERMITTED_ACCOUNT,
+        to: PERMITTED_ACCOUNT,
+      });
+
+      await session.handleRequest(request as any);
+
+      expect(addTransaction).not.toHaveBeenCalled();
+    });
+
+    it('responds with an error when permitted accounts cannot be read', async () => {
+      getPermittedAccounts.mockImplementation(() => {
+        throw new Error('Missing identity for address');
+      });
+      const request = buildRequest({
+        from: PERMITTED_ACCOUNT,
+        to: PERMITTED_ACCOUNT,
+      });
+
+      await session.handleRequest(request as any);
+
+      expect(addTransaction).not.toHaveBeenCalled();
+      expect(mockClient.respondSessionRequest).toHaveBeenCalledWith({
+        topic: mockSession.topic,
+        response: {
+          id: request.id,
+          jsonrpc: '2.0',
+          error: expect.objectContaining({ code: 4100 }),
+        },
+      });
+    });
+
+    it('creates the transaction when from is a permitted account (case-insensitive)', async () => {
+      const txParams = {
+        from: PERMITTED_ACCOUNT.toUpperCase().replace('0X', '0x'),
+        to: UNPERMITTED_ACCOUNT,
+        value: '0x1',
+      };
+      const request = buildRequest(txParams);
+
+      await session.handleRequest(request as any);
+
+      expect(addTransaction).toHaveBeenCalledWith(
+        txParams,
+        expect.objectContaining({ origin: 'https://example.com' }),
+      );
+      expect(mockClient.respondSessionRequest).toHaveBeenCalledWith({
+        topic: mockSession.topic,
+        response: { id: 77, jsonrpc: '2.0', result: '0xhash' },
+      });
     });
   });
 });

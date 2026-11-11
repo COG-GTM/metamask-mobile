@@ -1,3 +1,4 @@
+import { providerErrors } from '@metamask/rpc-errors';
 import { WalletDevice } from '@metamask/transaction-controller';
 import { NavigationContainerRef } from '@react-navigation/native';
 import { IWalletKit, WalletKitTypes } from '@reown/walletkit';
@@ -550,6 +551,51 @@ class WalletConnect2Session {
     });
   };
 
+  private isPermittedAccount(origin: string, address: unknown): boolean {
+    if (typeof address !== 'string' || address.length === 0) {
+      return false;
+    }
+    try {
+      const permittedAccounts =
+        getPermittedAccounts(getHostname(origin), { ignoreLock: true }) ?? [];
+      const normalizedAddress = address.toLowerCase();
+      return permittedAccounts.some(
+        (account) => account.toLowerCase() === normalizedAddress,
+      );
+    } catch (error) {
+      DevLogger.log(
+        `WC2::isPermittedAccount failed to read permitted accounts origin=${origin}`,
+        error,
+      );
+      return false;
+    }
+  }
+
+  private async respondWithError(
+    id: string,
+    error: { code: number; message: string },
+  ) {
+    const topic = this.topicByRequestId[id] ?? this.session.topic;
+    try {
+      await this.web3Wallet.respondSessionRequest({
+        topic,
+        response: {
+          id: parseInt(id),
+          jsonrpc: '2.0',
+          error: { code: error.code, message: error.message },
+        },
+      });
+      this._isHandlingRequest = false;
+    } catch (err) {
+      console.warn(
+        `WC2::respondWithError error while rejecting request id=${id} topic=${topic}`,
+        err,
+      );
+    }
+
+    this.needsRedirect(id);
+  }
+
   removeListeners = async () => {
     this.backgroundBridge.onDisconnect();
   };
@@ -560,6 +606,20 @@ class WalletConnect2Session {
     methodParams: any,
     origin: string,
   ) {
+    const from = methodParams?.[0]?.from;
+    if (!this.isPermittedAccount(origin, from)) {
+      DevLogger.log(
+        `WC2::handleSendTransaction rejected unpermitted from=${from} origin=${origin}`,
+      );
+      await this.respondWithError(
+        requestEvent.id + '',
+        providerErrors.unauthorized({
+          message: 'The requested account has not been authorized by the user.',
+        }),
+      );
+      return;
+    }
+
     try {
       const networkClientId = getGlobalNetworkClientId();
 
