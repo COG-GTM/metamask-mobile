@@ -9,7 +9,10 @@ import {
 import { providerErrors } from '@metamask/rpc-errors';
 import type { Hex } from '@metamask/utils';
 import { checkWCPermissions } from './wc-utils';
-import { getDefaultCaip25CaveatValue } from '../Permissions';
+import {
+  getDefaultCaip25CaveatValue,
+  removePermittedChain,
+} from '../Permissions';
 import Engine from '../Engine';
 import MetaMetrics from '../Analytics/MetaMetrics';
 import { MetricsEventBuilder } from '../Analytics/MetricsEventBuilder';
@@ -270,5 +273,16 @@ describe('checkWCPermissions wallet_switchEthereumChain approval', () => {
     expect(MultichainNetworkController.setActiveNetwork).toHaveBeenCalledWith(
       'polygon',
     );
+  });
+
+  it('removePermittedChain revokes a chain from a real CAIP-25 caveat', () => {
+    mockSubjects[SUBJECT] = setPermittedEthChainIds(
+      getDefaultCaip25CaveatValue(),
+      ['0x1', '0x89'],
+    );
+
+    removePermittedChain(SUBJECT, '0x89');
+
+    expect(permittedChains(SUBJECT)).toEqual(['0x1']);
   });
 });
