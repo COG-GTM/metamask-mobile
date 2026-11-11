@@ -336,6 +336,7 @@ class WalletConnect {
     this.backgroundBridge = new BackgroundBridge({
       webview: null,
       url: this.url.current,
+      origin: WALLET_CONNECT_ORIGIN + this.hostname,
       isWalletConnect: true,
       wcWalletConnector: this.walletConnector,
       wcRequestActions: {

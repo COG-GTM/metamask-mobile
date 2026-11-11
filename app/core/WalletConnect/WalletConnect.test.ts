@@ -30,6 +30,10 @@ jest.mock('../Engine', () => ({
   },
 }));
 const MockEngine = jest.mocked(Engine);
+jest.mock('../BackgroundBridge/BackgroundBridge', () => jest.fn());
+jest.mock('../../selectors/networkController', () => ({
+  selectEvmChainId: () => '0x1',
+}));
 jest.mock('uuid', () => ({
   v1: jest.fn(() => mockRandomId),
 }));
@@ -113,5 +117,49 @@ describe('WalletConnect', () => {
     await flushPromises();
 
     expect(walletConnectorRejectSessionMock).toHaveBeenCalled();
+  });
+
+  it('runs the v1 session pipeline under the wc:: prefixed origin, not the bare dapp hostname', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    const MockBackgroundBridge = require('../BackgroundBridge/BackgroundBridge');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    const WCClient = require('@walletconnect/client').default;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    const MockedEngine = require('../Engine');
+    MockedEngine.context.AccountsController = {
+      getSelectedAccount: () => ({ address: '0xABC' }),
+    };
+    MockedEngine.context.KeyringController.isUnlocked.mockReturnValue(true);
+    MockedEngine.context.ApprovalController.add.mockResolvedValueOnce({});
+    jest
+      .spyOn(WCClient.prototype, 'on')
+      .mockImplementation((event: unknown, callback: unknown) => {
+        if (event === 'session_request') {
+          (callback as (e: unknown, p: unknown) => void)(
+            null,
+            mockSessionRequest,
+          );
+        }
+      });
+    jest
+      .spyOn(WCClient.prototype, 'approveSession')
+      .mockResolvedValue(undefined);
+    // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
+    const WalletConnect = require('./WalletConnect').default;
+
+    await WalletConnect.init();
+    await WalletConnect.newSession(
+      'URI',
+      mockRedirectUrl,
+      mockAutoSign,
+      'qr-code',
+    );
+    await flushPromises();
+
+    expect(MockBackgroundBridge).toHaveBeenCalledTimes(1);
+    const bridgeOptions = MockBackgroundBridge.mock.calls[0][0];
+    expect(bridgeOptions.url).toBe(mockDappUrl);
+    expect(bridgeOptions.isWalletConnect).toBe(true);
+    expect(bridgeOptions.origin).toBe(`wc::${mockDappHost}`);
   });
 });

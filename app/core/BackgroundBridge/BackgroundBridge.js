@@ -70,11 +70,16 @@ export class BackgroundBridge extends EventEmitter {
     remoteConnHost,
     isMMSDK,
     channelId,
+    origin,
   }) {
     super();
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
     this.hostname = new URL(url).hostname;
+    // Permission subject and per-domain network key for this connection. Callers whose
+    // url is self-declared by a remote peer (e.g. WalletConnect) must pass an origin
+    // that cannot collide with in-app browser hostnames.
+    this.origin = origin ?? this.hostname;
     this.remoteConnHost = remoteConnHost;
     this.isMainFrame = isMainFrame;
     this.isWalletConnect = isWalletConnect;
@@ -98,7 +103,7 @@ export class BackgroundBridge extends EventEmitter {
 
     const networkClientId = Engine.controllerMessenger.call(
       'SelectedNetworkController:getNetworkClientIdForDomain',
-      this.hostname,
+      this.origin,
     );
 
     const networkClient = Engine.controllerMessenger.call(
@@ -268,7 +273,7 @@ export class BackgroundBridge extends EventEmitter {
     DevLogger.log(`notifyChainChanged: `, params);
     this.sendNotification({
       method: NOTIFICATION_NAMES.chainChanged,
-      params: params ?? (await this.getProviderNetworkState(this.hostname)),
+      params: params ?? (await this.getProviderNetworkState(this.origin)),
     });
   }
 
@@ -322,7 +327,7 @@ export class BackgroundBridge extends EventEmitter {
     if (!memState) {
       memState = this.getState();
     }
-    const publicState = await this.getProviderNetworkState(this.hostname);
+    const publicState = await this.getProviderNetworkState(this.origin);
 
     // Check if update already sent
     if (
@@ -400,7 +405,7 @@ export class BackgroundBridge extends EventEmitter {
    * A method for creating a provider that is safely restricted for the requesting domain.
    **/
   setupProviderEngine() {
-    const origin = this.isMMSDK ? this.channelId : this.hostname;
+    const origin = this.isMMSDK ? this.channelId : this.origin;
     // setup json rpc engine stack
     const engine = new JsonRpcEngine();
 

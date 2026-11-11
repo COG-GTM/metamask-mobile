@@ -52,6 +52,7 @@ jest.mock('@metamask/eth-json-rpc-filters/subscriptionManager', () => () => ({
   events: {
     on: jest.fn(),
   },
+  middleware: (_req, _res, next) => next(),
 }));
 
 function setupBackgroundBridge(url) {
@@ -104,6 +105,24 @@ function setupBackgroundBridge(url) {
     url,
     isRemoteConn: true,
     ...defaultBridgeParams,
+  });
+}
+
+function setupWalletConnectBackgroundBridge(url, origin) {
+  setupBackgroundBridge(url);
+  jest.clearAllMocks();
+  return new BackgroundBridge({
+    webview: null,
+    url,
+    origin,
+    isWalletConnect: true,
+    isMainFrame: true,
+    wcRequestActions: {
+      approveRequest: jest.fn(),
+      rejectRequest: jest.fn(),
+      updateSession: jest.fn(),
+    },
+    getRpcMethodMiddleware: () => (_req, _res, next) => next(),
   });
 }
 
@@ -189,6 +208,100 @@ describe('BackgroundBridge', () => {
       // Assert getAccounts
       ethAccountsMethodMiddlewareHooks.getAccounts();
       expect(getPermittedAccounts).toHaveBeenCalledWith(bridge.channelId);
+    });
+  });
+
+  describe('WalletConnect origin isolation', () => {
+    const browserSiteAccounts = ['0x1111', '0x2222'];
+    const { PermissionController } = Engine.context;
+
+    beforeEach(() => {
+      getPermittedAccounts.mockImplementation((subject) =>
+        subject === 'example.com' ? browserSiteAccounts : [],
+      );
+    });
+
+    afterEach(() => {
+      getPermittedAccounts.mockReset();
+      createEip1193MethodMiddleware.mockReset();
+      createEthAccountsMethodMiddleware.mockReset();
+    });
+
+    it('uses the provided origin instead of the bare hostname for the whole pipeline', () => {
+      const bridge = setupWalletConnectBackgroundBridge(
+        'https://example.com',
+        'wc::example.com',
+      );
+      expect(bridge.hostname).toBe('example.com');
+      expect(bridge.origin).toBe('wc::example.com');
+
+      const eip1193Hooks = createEip1193MethodMiddleware.mock.calls[0][0];
+      expect(eip1193Hooks.getAccounts()).toStrictEqual([]);
+      expect(getPermittedAccounts).toHaveBeenLastCalledWith('wc::example.com');
+
+      eip1193Hooks.getPermissionsForOrigin();
+      expect(PermissionController.getPermissions).toHaveBeenCalledWith(
+        'wc::example.com',
+      );
+      eip1193Hooks.requestPermissionsForOrigin({ eth_accounts: {} });
+      expect(PermissionController.requestPermissions).toHaveBeenCalledWith(
+        { origin: 'wc::example.com' },
+        { eth_accounts: {} },
+      );
+      eip1193Hooks.revokePermissionsForOrigin(['endowment:caip25']);
+      expect(PermissionController.revokePermissions).toHaveBeenCalledWith({
+        'wc::example.com': ['endowment:caip25'],
+      });
+      expect(PermissionController.revokePermissions).not.toHaveBeenCalledWith(
+        expect.objectContaining({ 'example.com': expect.anything() }),
+      );
+
+      const ethAccountsHooks =
+        createEthAccountsMethodMiddleware.mock.calls[0][0];
+      expect(ethAccountsHooks.getAccounts()).toStrictEqual([]);
+
+      expect(
+        PermissionController.createPermissionMiddleware,
+      ).toHaveBeenCalledWith({ origin: 'wc::example.com' });
+      expect(
+        Engine.context.SelectedNetworkController.getProviderAndBlockTracker,
+      ).toHaveBeenCalledWith('wc::example.com');
+    });
+
+    it('does not return the in-app browser site accounts for eth_accounts', async () => {
+      createEip1193MethodMiddleware.mockImplementation(
+        jest.requireActual('../RPCMethods/createEip1193MethodMiddleware')
+          .createEip1193MethodMiddleware,
+      );
+      createEthAccountsMethodMiddleware.mockImplementation(
+        jest.requireActual('../RPCMethods/createEthAccountsMethodMiddleware')
+          .default,
+      );
+      require('@metamask/eth-json-rpc-filters').mockImplementation(
+        () => (_req, _res, next) => next(),
+      );
+      const bridge = setupWalletConnectBackgroundBridge(
+        'https://example.com',
+        'wc::example.com',
+      );
+
+      const response = await bridge.engine.handle({
+        id: 1,
+        jsonrpc: '2.0',
+        method: 'eth_accounts',
+        params: [],
+      });
+
+      expect(response.error).toBeUndefined();
+      expect(response.result).toStrictEqual([]);
+      expect(getPermittedAccounts).not.toHaveBeenCalledWith('example.com');
+    });
+
+    it('keeps the bare hostname as origin when none is provided', () => {
+      const bridge = setupWalletConnectBackgroundBridge('https://example.com');
+      expect(bridge.origin).toBe('example.com');
+      const eip1193Hooks = createEip1193MethodMiddleware.mock.calls[0][0];
+      expect(eip1193Hooks.getAccounts()).toStrictEqual(browserSiteAccounts);
     });
   });
 });
