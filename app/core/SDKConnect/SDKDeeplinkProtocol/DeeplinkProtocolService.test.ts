@@ -312,13 +312,64 @@ describe('DeeplinkProtocolService', () => {
   });
 
   describe('openDeeplink', () => {
+    const storedClient = (scheme: string): DappClient => ({
+      clientId: 'client1',
+      originatorInfo: {
+        url: 'test.com',
+        title: 'Test',
+        platform: 'test',
+        dappId: 'dappId',
+      },
+      connected: true,
+      validUntil: Date.now(),
+      scheme,
+    });
+
     it('should open a deeplink with the provided message', async () => {
+      service.connections.client1 = storedClient('mydapp');
       const spy = jest.spyOn(Linking, 'openURL');
       await service.openDeeplink({
         message: { test: 'test' },
         clientId: 'client1',
       });
-      expect(spy).toHaveBeenCalled();
+      expect(spy).toHaveBeenCalledWith(
+        expect.stringMatching(/^mydapp:\/\/mmsdk\?message=/),
+      );
+    });
+
+    it('uses the stored scheme of a known session instead of the link scheme', async () => {
+      service.connections.client1 = storedClient('mydapp');
+      await service.openDeeplink({
+        message: { test: 'test' },
+        clientId: 'client1',
+        scheme: 'https://evil.example/#',
+      });
+      expect(Linking.openURL).toHaveBeenCalledTimes(1);
+      expect(Linking.openURL).toHaveBeenCalledWith(
+        expect.stringMatching(/^mydapp:\/\/mmsdk\?message=/),
+      );
+    });
+
+    it.each(['https://evil.example/#', 'https', 'tel', 'metamask', undefined])(
+      'does not open a deeplink for scheme %p',
+      async (scheme) => {
+        await service.openDeeplink({
+          message: { test: 'test' },
+          clientId: 'unknown-client',
+          scheme,
+        });
+        expect(Linking.openURL).not.toHaveBeenCalled();
+      },
+    );
+
+    it('does not open a deeplink when the stored scheme is invalid', async () => {
+      service.connections.client1 = storedClient('https');
+      await service.openDeeplink({
+        message: { test: 'test' },
+        clientId: 'client1',
+        scheme: 'mydapp',
+      });
+      expect(Linking.openURL).not.toHaveBeenCalled();
     });
   });
 
@@ -356,6 +407,28 @@ describe('DeeplinkProtocolService', () => {
       };
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
+    });
+
+    it('rejects a connection whose scheme is not a safe app scheme', async () => {
+      const handleConnectionEventAsyncSpy = jest.spyOn(
+        service,
+        'handleConnectionEventAsync',
+      );
+      await service.handleConnection({
+        dappPublicKey: 'key',
+        url: 'url',
+        scheme: 'https://evil.example/login#',
+        channelId: 'evil-channel',
+        originatorInfo: Buffer.from(
+          JSON.stringify({
+            originatorInfo: { url: 'test.com', title: 'Test' },
+          }),
+        ).toString('base64'),
+      });
+      expect(handleConnectionEventAsyncSpy).not.toHaveBeenCalled();
+      expect(SDKConnect.getInstance().addDappConnection).not.toHaveBeenCalled();
+      expect(service.connections['evil-channel']).toBeUndefined();
+      expect(Linking.openURL).not.toHaveBeenCalled();
     });
   });
 
@@ -469,7 +542,7 @@ describe('DeeplinkProtocolService', () => {
           },
           name: 'metamask-provider',
         },
-        clientId: '',
+        clientId: clientInfo.clientId,
         scheme: clientInfo.scheme,
       });
     });
@@ -507,6 +580,68 @@ describe('DeeplinkProtocolService', () => {
       };
       service.handleMessage(params);
       expect(DevLogger.log).toHaveBeenCalled();
+    });
+
+    describe('unknown session', () => {
+      const flush = () => new Promise((resolve) => setTimeout(resolve, 400));
+
+      beforeEach(() => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (Engine.context as any).KeyringController = {
+          isUnlocked: jest.fn().mockReturnValue(true),
+        };
+      });
+
+      it.each(['evil-account-without-at-sign', '@', undefined])(
+        'does not open the link scheme for an unknown channelId (account=%p)',
+        async (account) => {
+          const onMessage = jest.fn();
+          service.bridgeByClientId['unknown-channel'] = {
+            onMessage,
+          } as unknown as BackgroundBridge;
+          service.handleMessage({
+            dappPublicKey: 'key',
+            url: 'metamask://mmsdk',
+            message: Buffer.from(
+              JSON.stringify({ id: '1', method: 'eth_accounts', params: [] }),
+            ).toString('base64'),
+            channelId: 'unknown-channel',
+            scheme: 'https://evil.example/#',
+            account: account as string,
+          });
+          await flush();
+          expect(Linking.openURL).not.toHaveBeenCalled();
+          expect(onMessage).not.toHaveBeenCalled();
+        },
+      );
+
+      it('does not redirect to the current session on account mismatch from an unknown channelId', async () => {
+        service.connections.channel1 = {
+          clientId: 'channel1',
+          originatorInfo: {
+            url: 'test.com',
+            title: 'Test',
+            platform: 'test',
+            dappId: 'dappId',
+          },
+          connected: true,
+          validUntil: Date.now(),
+          scheme: 'mydapp',
+        };
+        service.currentClientId = 'channel1';
+        service.handleMessage({
+          dappPublicKey: 'key',
+          url: 'metamask://mmsdk',
+          message: Buffer.from(
+            JSON.stringify({ id: '1', method: 'eth_accounts', params: [] }),
+          ).toString('base64'),
+          channelId: 'unknown-channel',
+          scheme: 'https://evil.example/#',
+          account: '0x0000000000000000000000000000000000000000@0x1',
+        });
+        await flush();
+        expect(Linking.openURL).not.toHaveBeenCalled();
+      });
     });
   });
 

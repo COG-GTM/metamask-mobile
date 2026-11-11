@@ -21,6 +21,7 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import { isValidDappScheme } from '../utils/isValidDappScheme';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -256,6 +257,13 @@ export default class DeeplinkProtocolService {
         `DeeplinkProtocolService::openDeeplink scheme=${scheme} dappScheme=${dappScheme} clientId=${clientId}`,
       );
 
+      if (!isValidDappScheme(dappScheme)) {
+        DevLogger.log(
+          `DeeplinkProtocolService::openDeeplink invalid dapp scheme --- skip redirect clientId=${clientId}`,
+        );
+        return;
+      }
+
       DevLogger.log(`DeeplinkProtocolService::openDeeplink message=${message}`);
 
       const deeplink = `${dappScheme}://mmsdk?message=${base64Message}`;
@@ -404,7 +412,7 @@ export default class DeeplinkProtocolService {
 
       this.openDeeplink({
         message,
-        clientId: this.currentClientId ?? '',
+        clientId: clientInfo.clientId,
         scheme: clientInfo.scheme,
       });
 
@@ -425,6 +433,15 @@ export default class DeeplinkProtocolService {
         'DeeplinkProtocolService::handleConnection no originatorInfo',
       );
       Logger.error(deepLinkError, params);
+
+      return;
+    }
+
+    if (!isValidDappScheme(params.scheme)) {
+      Logger.error(
+        new Error('DeeplinkProtocolService::handleConnection invalid scheme'),
+        { channelId: params.channelId },
+      );
 
       return;
     }
@@ -695,6 +712,32 @@ export default class DeeplinkProtocolService {
         Logger.log(error, `DeeplinkProtocolService::onMessageReceived error`);
       }
 
+      const isSessionExists = this.connections?.[sessionId];
+
+      DevLogger.log(
+        `DeeplinkProtocolService::onMessageReceived connections=`,
+        this.connections,
+      );
+
+      DevLogger.log(
+        `DeeplinkProtocolService::onMessageReceived sessionId=${sessionId}`,
+      );
+
+      DevLogger.log(
+        `DeeplinkProtocolService::onMessageReceived isSessionExists`,
+        isSessionExists,
+      );
+
+      if (!isSessionExists) {
+        // Never redirect for an unknown session: the scheme comes from an
+        // unauthenticated link and would make MetaMask an open redirect.
+        DevLogger.log(
+          `DeeplinkProtocolService::onMessageReceived unknown session ${sessionId} --- ignore message`,
+        );
+
+        return;
+      }
+
       try {
         const message = JSON.parse(parsedMessage); // handle message and redirect to corresponding bridge
         DevLogger.log('DeeplinkProtocolService:: parsed message:-', message);
@@ -774,44 +817,6 @@ export default class DeeplinkProtocolService {
             err,
             `DeeplinkProtocolService::onMessageReceived error sending jsonrpc error message to client ${sessionId}`,
           );
-        });
-
-        return;
-      }
-
-      const isSessionExists = this.connections?.[sessionId];
-
-      DevLogger.log(
-        `DeeplinkProtocolService::onMessageReceived connections=`,
-        this.connections,
-      );
-
-      DevLogger.log(
-        `DeeplinkProtocolService::onMessageReceived sessionId=${sessionId}`,
-      );
-
-      DevLogger.log(
-        `DeeplinkProtocolService::onMessageReceived isSessionExists`,
-        isSessionExists,
-      );
-
-      if (!isSessionExists) {
-        const message = {
-          data: {
-            id: data.id,
-            error: {
-              code: 4100,
-              message: 'Unauthorized request',
-            },
-            jsonrpc: '2.0',
-          },
-          name: 'metamask-provider',
-        };
-
-        this.openDeeplink({
-          message,
-          clientId: sessionId,
-          scheme: params.scheme,
         });
 
         return;
