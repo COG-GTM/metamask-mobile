@@ -37,6 +37,14 @@ const safeUrl = (url?: string): URL | undefined => {
   }
 };
 
+/**
+ * Derives a WalletConnect dapp's identity from the Verify API result.
+ *
+ * @param verifyContext - `verifyContext` attached to the proposal or request.
+ * @param metadataUrl - The dapp's self-declared `metadata.url`.
+ * @returns Validation status, scam flag, whether the claimed origin was
+ * attested, and the hostname to display and key permissions with.
+ */
 export const getWalletConnectVerification = (
   verifyContext: Verify.Context | undefined,
   metadataUrl: string | undefined,
@@ -71,6 +79,12 @@ export const getWalletConnectVerification = (
   return { validation, isScam, isVerified, hostname };
 };
 
+/**
+ * Builds the PermissionController subject for a WalletConnect pairing.
+ *
+ * @param subject - Hostname, verification status and pairing topic.
+ * @returns `<hostname>#wc-<verified|unverified>-<pairingTopic>`.
+ */
 export const buildWalletConnectPermissionSubject = ({
   hostname,
   isVerified,
@@ -80,6 +94,12 @@ export const buildWalletConnectPermissionSubject = ({
     isVerified ? 'verified' : 'unverified'
   }-${pairingTopic}`;
 
+/**
+ * Parses a WalletConnect permission subject.
+ *
+ * @param subject - A PermissionController subject.
+ * @returns The subject's parts, or `undefined` if it is not a WalletConnect subject.
+ */
 export const parseWalletConnectPermissionSubject = (
   subject: string | undefined,
 ): WalletConnectPermissionSubject | undefined => {
@@ -93,10 +113,23 @@ export const parseWalletConnectPermissionSubject = (
   };
 };
 
+/**
+ * Checks whether a PermissionController subject belongs to WalletConnect.
+ *
+ * @param subject - A PermissionController subject.
+ * @returns True for subjects built by `buildWalletConnectPermissionSubject`.
+ */
 export const isWalletConnectPermissionSubject = (
   subject: string | undefined,
 ): boolean => parseWalletConnectPermissionSubject(subject) !== undefined;
 
+/**
+ * Finds the WalletConnect permission subject of a pairing.
+ *
+ * @param subjects - PermissionController subject keys.
+ * @param pairingTopic - The WalletConnect pairing topic.
+ * @returns The first subject for that pairing, if any.
+ */
 export const findWalletConnectPermissionSubject = (
   subjects: string[],
   pairingTopic: string,
