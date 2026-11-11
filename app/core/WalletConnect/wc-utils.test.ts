@@ -340,6 +340,7 @@ describe('WalletConnect Utils', () => {
       // Call the handler
       const result = await approvalHandler(args);
 
+      expect(rejectOriginPendingApprovals).toHaveBeenCalledTimes(1);
       expect(rejectOriginPendingApprovals).toHaveBeenCalledWith('test-origin');
       expect(Engine.context.ApprovalController.clear).not.toHaveBeenCalled();
 

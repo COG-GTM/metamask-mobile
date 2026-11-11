@@ -94,4 +94,32 @@ describe('onRequestUserApproval approval scope', () => {
     approvalController.clear(new Error('cleanup') as never);
     await expect(switchPrompt).rejects.toThrow('cleanup');
   });
+
+  it('rejects pending approvals the requesting dapp has under its hostname', async () => {
+    const ownRpcApproval = approvalController.add({
+      id: 'own-rpc-approval',
+      origin: 'mallory.example',
+      type: 'transaction',
+    });
+    const otherOriginApproval = approvalController.add({
+      id: 'other-origin-rpc-approval',
+      origin: 'trusted-dapp.example',
+      type: 'transaction',
+    });
+
+    const switchPrompt = onRequestUserApproval('https://mallory.example')({
+      type: 'SWITCH_ETHEREUM_CHAIN',
+      requestData: { chainId: '0x89' },
+    });
+
+    await expect(ownRpcApproval).rejects.toMatchObject({ code: 4001 });
+    expect(approvalController.has({ id: 'other-origin-rpc-approval' })).toBe(
+      true,
+    );
+    expect(approvalController.getTotalApprovalCount()).toBe(2);
+
+    approvalController.clear(new Error('cleanup') as never);
+    await expect(switchPrompt).rejects.toThrow('cleanup');
+    await expect(otherOriginApproval).rejects.toThrow('cleanup');
+  });
 });

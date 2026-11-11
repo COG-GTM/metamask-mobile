@@ -240,7 +240,10 @@ export const getScopedPermissions = async ({ origin }: { origin: string }) => {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const onRequestUserApproval = (origin: string) => async (args: any) => {
-  rejectOriginPendingApprovals(origin);
+  // RPC middleware approvals for WalletConnect are keyed by hostname
+  new Set([origin, getHostname(origin)]).forEach((approvalOrigin) => {
+    if (approvalOrigin) rejectOriginPendingApprovals(approvalOrigin);
+  });
   const responseData = await Engine.context.ApprovalController.add({
     origin,
     type: args.type,
