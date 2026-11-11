@@ -79,7 +79,10 @@ import {
   selectProviderTypeByChainId,
   selectRpcUrlByChainId,
 } from '../../../../../../selectors/networkController';
-import { selectTokenList } from '../../../../../../selectors/tokenListController';
+import {
+  selectERC20TokensByChain,
+  selectTokenList,
+} from '../../../../../../selectors/tokenListController';
 import { selectTokensLength } from '../../../../../../selectors/tokensController';
 import { selectAccountsLength } from '../../../../../../selectors/accountTrackerController';
 import { selectCurrentTransactionSecurityAlertResponse } from '../../../../../../selectors/confirmTransaction';
@@ -329,9 +332,11 @@ class ApproveTransactionReview extends PureComponent {
       return;
     }
     try {
-      const eth = new Eth(
-        Engine.context.NetworkController.getProviderAndBlockTracker().provider,
-      );
+      const { NetworkController } = Engine.context;
+      const { provider } = transaction.networkClientId
+        ? NetworkController.getNetworkClientById(transaction.networkClientId)
+        : NetworkController.getProviderAndBlockTracker();
+      const eth = new Eth(provider);
       const result = await fetchEstimatedMultiLayerL1Fee(eth, {
         txParams: transaction.transaction,
         chainId,
@@ -351,7 +356,7 @@ class ApproveTransactionReview extends PureComponent {
     const { chainId } = this.props;
     const {
       // We need to extract transaction.transaction here to retrieve up-to-date nonce
-      transaction: { origin, to, data, from, transaction },
+      transaction: { origin, to, data, from, transaction, networkClientId },
       setTransactionObject,
       tokenList,
       tokenAllowanceState,
@@ -412,7 +417,12 @@ class ApproveTransactionReview extends PureComponent {
       createdSpendCap = isReadyToApprove;
     } else {
       try {
-        const result = await getTokenDetails(to, from, encodedDecimalAmount);
+        const result = await getTokenDetails(
+          to,
+          from,
+          encodedDecimalAmount,
+          networkClientId,
+        );
 
         const { standard, name, decimals, symbol } = result;
 
@@ -422,7 +432,11 @@ class ApproveTransactionReview extends PureComponent {
           tokenStandard = standard;
         } else {
           const erc20TokenBalance =
-            await AssetsContractController.getERC20BalanceOf(to, from);
+            await AssetsContractController.getERC20BalanceOf(
+              to,
+              from,
+              networkClientId,
+            );
           tokenDecimals = decimals;
           tokenSymbol = symbol;
           tokenStandard = standard;
@@ -448,7 +462,7 @@ class ApproveTransactionReview extends PureComponent {
       false,
     );
 
-    const { name: method } = await getMethodData(data);
+    const { name: method } = await getMethodData(data, networkClientId);
     const minTokenAllowance = minimumTokenAllowance(tokenDecimals);
 
     const approvalData = generateApprovalData({
@@ -1364,7 +1378,9 @@ const mapStateToProps = (state) => {
     primaryCurrency: state.settings.primaryCurrency,
     activeTabUrl: getActiveTabUrl(state),
     chainId,
-    tokenList: selectTokenList(state),
+    tokenList: chainId
+      ? selectERC20TokensByChain(state)?.[chainId]?.data || []
+      : selectTokenList(state),
     isNativeTokenBuySupported: isNetworkRampNativeTokenSupported(
       chainId,
       getRampNetworks(state),
