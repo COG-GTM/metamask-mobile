@@ -2,6 +2,7 @@ import { rpcErrors } from '@metamask/rpc-errors';
 import validUrl from 'valid-url';
 import { ApprovalType, isSafeChainId } from '@metamask/controller-utils';
 import { jsonRpcRequest } from '../../../util/jsonRpcRequest';
+import { isPrivateNetworkUrl } from './isPrivateNetworkUrl';
 import {
   getDecimalChainId,
   isChainPermissionsFeatureEnabled,
@@ -110,6 +111,12 @@ function validateRpcUrls(rpcUrls) {
     );
   }
 
+  if (isPrivateNetworkUrl(firstValidRPCUrl)) {
+    throw rpcErrors.invalidParams(
+      `Expected a public HTTPS url in 'rpcUrls'. Local, private and link-local hosts are not allowed. Received:\n${firstValidRPCUrl}`,
+    );
+  }
+
   return firstValidRPCUrl;
 }
 
@@ -171,20 +178,24 @@ function validateNativeCurrency(nativeCurrency) {
   return ticker;
 }
 
+/**
+ * Checks that the RPC URL serves the expected chain. The URL is untrusted
+ * (dapp-supplied), so the same error is thrown for every failure and nothing
+ * from the endpoint's response is returned to the caller.
+ *
+ * @param {string} rpcUrl - The RPC endpoint URL.
+ * @param {string} chainId - The expected 0x-prefixed chain ID.
+ */
 export async function validateRpcEndpoint(rpcUrl, chainId) {
   let endpointChainId;
   try {
     endpointChainId = await jsonRpcRequest(rpcUrl, 'eth_chainId');
-  } catch (err) {
-    throw rpcErrors.internal({
-      message: `Request for method 'eth_chainId on ${rpcUrl} failed`,
-      data: { networkErr: err },
-    });
+  } catch {
+    endpointChainId = undefined;
   }
   if (chainId !== endpointChainId) {
     throw rpcErrors.invalidParams({
-      message: `Chain ID returned by RPC URL ${rpcUrl} does not match ${chainId}`,
-      data: { chainId: endpointChainId },
+      message: `Could not verify that RPC URL ${rpcUrl} serves chain ID ${chainId}`,
     });
   }
 }
