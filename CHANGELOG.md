@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix(browser): ask before web pages open MetaMask deeplinks (`wc:`, `metamask:`, `ethereum:`, `dapp:`) and ignore them from embedded frames ([#2219](https://github.com/COG-GTM/metamask-mobile/pull/2219))
 - fix(bridge): show "Auto" slippage for Solana swaps
 
 ### Added

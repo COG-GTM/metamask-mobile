@@ -381,6 +381,12 @@ export default class DeeplinkProtocolService {
         `DeeplinkProtocolService::clients_connected sending jsonrpc error to client - connection rejected`,
       );
 
+      if (!this.connections?.[clientInfo.clientId]) {
+        SDKConnect.getInstance().removePendingDappConnection(
+          clientInfo.clientId,
+        );
+      }
+
       this.sendMessage({
         data: {
           error,
@@ -480,7 +486,10 @@ export default class DeeplinkProtocolService {
       return;
     }
 
-    await SDKConnect.getInstance().addDappConnection({
+    // The approval sheet reads the requested dapp metadata from SDKConnect,
+    // but the connection is only persisted (addDappConnection) after
+    // checkPermission succeeds in handleConnectionEventAsync.
+    SDKConnect.getInstance().setPendingDappConnection({
       id: clientInfo.clientId,
       lastAuthorized: Date.now(),
       origin: AppConstants.MM_SDK.IOS_SDK,
