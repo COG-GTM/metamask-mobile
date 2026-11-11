@@ -285,6 +285,43 @@ describe('reconnect', () => {
       );
     });
 
+    it('binds the presented key to an active keyless session', async () => {
+      mockInstance.state.connections['test-channel-id'] = {
+        ...mockInstance.state.connections['test-channel-id'],
+        otherPublicKey: '',
+      };
+
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'new-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(
+        mockInstance.state.connections['test-channel-id'].otherPublicKey,
+      ).toBe('new-public-key');
+
+      (Connection as unknown as jest.Mock).mockClear();
+      await reconnect({
+        initialConnection: false,
+        instance: mockInstance,
+        channelId: 'test-channel-id',
+        trigger: 'deeplink',
+        otherPublicKey: 'attacker-public-key',
+        updateKey: true,
+        context: 'test-context',
+      });
+
+      expect(
+        mockInstance.state.connections['test-channel-id'].otherPublicKey,
+      ).toBe('new-public-key');
+      expect(Connection).not.toHaveBeenCalled();
+    });
+
     it('reconnects with the approved key when no key is presented', async () => {
       await reconnect({
         initialConnection: false,
