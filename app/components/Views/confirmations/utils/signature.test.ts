@@ -6,6 +6,7 @@ import {
   sanitizeParsedMessage,
   parseAndSanitizeSignTypedData,
   parseAndNormalizeSignTypedDataFromSignatureRequest,
+  getSignatureRequestUrl,
 } from './signature';
 import {
   PRIMARY_TYPES_ORDER,
@@ -336,6 +337,50 @@ describe('Signature Utils', () => {
         },
         type: 'Mail',
       });
+    });
+  });
+
+  describe('getSignatureRequestUrl', () => {
+    it('returns meta.url when it belongs to the requesting origin', () => {
+      expect(
+        getSignatureRequestUrl({
+          origin: 'metamask.github.io',
+          meta: { url: 'https://metamask.github.io/test-dapp/' },
+        }),
+      ).toBe('https://metamask.github.io/test-dapp/');
+    });
+
+    it('returns the requesting origin when meta.url is from another site', () => {
+      expect(
+        getSignatureRequestUrl({
+          origin: 'evil.example',
+          meta: { url: 'https://acme.example/listing' },
+        }),
+      ).toBe('https://evil.example');
+    });
+
+    it('returns an origin that already has a protocol when meta.url mismatches', () => {
+      expect(
+        getSignatureRequestUrl({
+          origin: 'http://evil.example',
+          meta: { url: 'https://acme.example/' },
+        }),
+      ).toBe('http://evil.example');
+    });
+
+    it('keeps meta.url for non-hostname origins such as SDK channels', () => {
+      expect(
+        getSignatureRequestUrl({
+          origin: 'MMSDKREMOTE::0b64ed0a-0f3e-4b8f-9d1e-5f0ab1c2d3e4',
+          meta: { url: 'https://dapp.example' },
+        }),
+      ).toBe('https://dapp.example');
+      expect(
+        getSignatureRequestUrl({
+          origin: '0b64ed0a-0f3e-4b8f-9d1e-5f0ab1c2d3e4',
+          meta: { url: 'https://dapp.example' },
+        }),
+      ).toBe('https://dapp.example');
     });
   });
 });

@@ -336,4 +336,51 @@ describe('AccountConnect', () => {
     // Verify createEventBuilder was called
     expect(mockCreateEventBuilder).toHaveBeenCalled();
   });
+
+  describe('in-app browser requests', () => {
+    const renderForOrigin = (origin: string, activeTabUrl: string) =>
+      renderWithProvider(
+        <AccountConnect
+          route={{
+            params: {
+              hostInfo: {
+                metadata: { id: 'mockId', origin },
+                permissions: {
+                  eth_accounts: { parentCapability: 'eth_accounts' },
+                },
+              },
+              permissionRequestId: 'test',
+            },
+          }}
+        />,
+        {
+          state: {
+            ...mockInitialState,
+            browser: {
+              activeTab: 1,
+              tabs: [{ id: 1, url: activeTabUrl }],
+            },
+          } as DeepPartial<RootState>,
+        },
+      );
+
+    it('shows the requesting origin when the active tab url is from another site', () => {
+      const { queryAllByText } = renderForOrigin(
+        'evil.example',
+        'https://acme.example/listing',
+      );
+
+      expect(queryAllByText(/evil\.example/).length).toBeGreaterThan(0);
+      expect(queryAllByText(/acme\.example/)).toHaveLength(0);
+    });
+
+    it('uses the active tab url when it belongs to the requesting origin', () => {
+      const { queryAllByText } = renderForOrigin(
+        'acme.example',
+        'http://acme.example/listing',
+      );
+
+      expect(queryAllByText(/acme\.example/).length).toBeGreaterThan(0);
+    });
+  });
 });

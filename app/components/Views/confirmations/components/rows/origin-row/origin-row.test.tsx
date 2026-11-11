@@ -23,4 +23,48 @@ describe('InfoRowOrigin', () => {
     expect(getByText('Signing in with')).toBeDefined();
     expect(getByText('0x935E7...05477')).toBeDefined();
   });
+
+  it('shows the requesting origin when meta.url is from another site', async () => {
+    const approvalId = Object.keys(
+      typedSignV1ConfirmationState.engine.backgroundState.ApprovalController
+        .pendingApprovals,
+    )[0];
+    const approvals =
+      typedSignV1ConfirmationState.engine.backgroundState.ApprovalController
+        .pendingApprovals as Record<string, Record<string, any>>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const approval = approvals[approvalId];
+    const state = {
+      ...typedSignV1ConfirmationState,
+      engine: {
+        ...typedSignV1ConfirmationState.engine,
+        backgroundState: {
+          ...typedSignV1ConfirmationState.engine.backgroundState,
+          ApprovalController: {
+            ...typedSignV1ConfirmationState.engine.backgroundState
+              .ApprovalController,
+            pendingApprovals: {
+              [approvalId]: {
+                ...approval,
+                origin: 'evil.example',
+                requestData: {
+                  ...approval.requestData,
+                  origin: 'evil.example',
+                  meta: {
+                    ...approval.requestData.meta,
+                    url: 'https://metamask.github.io/test-dapp/',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    const { getByText, queryByText } = renderWithProvider(
+      <InfoRowOrigin isSignatureRequest />,
+      { state },
+    );
+    expect(getByText('evil.example')).toBeDefined();
+    expect(queryByText('metamask.github.io')).toBeNull();
+  });
 });

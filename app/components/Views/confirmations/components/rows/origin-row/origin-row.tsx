@@ -4,7 +4,10 @@ import { Hex } from '@metamask/utils';
 import { ConfirmationPageSectionsSelectorIDs } from '../../../../../../../e2e/selectors/Confirmation/ConfirmationView.selectors';
 import { strings } from '../../../../../../../locales/i18n';
 import useApprovalRequest from '../../../hooks/useApprovalRequest';
-import { getSIWEDetails } from '../../../utils/signature';
+import {
+  getSIWEDetails,
+  getSignatureRequestUrl,
+} from '../../../utils/signature';
 import { useSignatureRequest } from '../../../hooks/signatures/useSignatureRequest';
 import Address from '../../UI/info-row/info-value/address';
 import DisplayURL from '../../UI/info-row/info-value/display-url';
@@ -32,7 +35,7 @@ const InfoRowOrigin = ({
     chainId = signatureRequest?.chainId;
     isSIWEMessage = getSIWEDetails(signatureRequest).isSIWEMessage;
     fromAddress = signatureRequest?.messageParams?.from;
-    url = approvalRequest?.requestData?.meta?.url;
+    url = getSignatureRequestUrl(approvalRequest?.requestData);
   } else {
     if (!transactionMetadata) return null;
 

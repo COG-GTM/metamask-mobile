@@ -1,4 +1,10 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
+import {
+  isValidUrl,
+  isENSUrl,
+  getMaskedUrl,
+  isUrlFromOrigin,
+  getUrlForOrigin,
+} from './utils';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -89,6 +95,45 @@ describe('BrowserTab utils', () => {
       it(`should correctly mask ${input}`, () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
+    });
+  });
+
+  describe('isUrlFromOrigin', () => {
+    it('matches urls on the same scheme, host and port', () => {
+      expect(
+        isUrlFromOrigin('https://acme.example/a?b=1', 'https://acme.example'),
+      ).toBe(true);
+    });
+
+    it('rejects urls from another host, scheme or port', () => {
+      expect(
+        isUrlFromOrigin('https://acme.example/a', 'https://evil.example'),
+      ).toBe(false);
+      expect(
+        isUrlFromOrigin('http://acme.example/a', 'https://acme.example'),
+      ).toBe(false);
+      expect(
+        isUrlFromOrigin('https://acme.example:8443/', 'https://acme.example'),
+      ).toBe(false);
+    });
+
+    it('rejects empty values', () => {
+      expect(isUrlFromOrigin(undefined, 'https://acme.example')).toBe(false);
+      expect(isUrlFromOrigin('https://acme.example', '')).toBe(false);
+    });
+  });
+
+  describe('getUrlForOrigin', () => {
+    it('keeps the url when it belongs to the origin', () => {
+      expect(
+        getUrlForOrigin('https://acme.example/listing', 'https://acme.example'),
+      ).toBe('https://acme.example/listing');
+    });
+
+    it('falls back to the origin when the url is from another site', () => {
+      expect(
+        getUrlForOrigin('https://acme.example/listing', 'https://evil.example'),
+      ).toBe('https://evil.example');
     });
   });
 });

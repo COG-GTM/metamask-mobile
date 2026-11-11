@@ -8,7 +8,10 @@ import { siweSignatureConfirmationState } from '../../../../../util/test/confirm
 import { AlertKeys } from '../../constants/alerts';
 
 jest.mock('@metamask/controller-utils');
-jest.mock('../../utils/signature');
+jest.mock('../../utils/signature', () => ({
+  ...jest.requireActual('../../utils/signature'),
+  isSIWESignatureRequest: jest.fn(),
+}));
 
 describe('useDomainMismatchAlerts', () => {
   const ALERT_MOCK = {
@@ -96,5 +99,43 @@ describe('useDomainMismatchAlerts', () => {
     });
 
     expect(result.current).toEqual([ALERT_MOCK]);
+  });
+
+  it('checks the requesting origin when meta.url is from another site', () => {
+    (isSIWESignatureRequest as jest.Mock).mockReturnValue(true);
+    (isValidSIWEOrigin as jest.Mock).mockReturnValue(true);
+    const approvalId = '72424261-e22f-11ef-8e59-bf627a5d8354';
+    const approval =
+      siweSignatureConfirmationState.engine.backgroundState.ApprovalController
+        .pendingApprovals[approvalId];
+
+    renderHookWithProvider(() => useDomainMismatchAlerts(), {
+      state: {
+        ...siweSignatureConfirmationState,
+        engine: {
+          ...siweSignatureConfirmationState.engine,
+          backgroundState: {
+            ...siweSignatureConfirmationState.engine.backgroundState,
+            ApprovalController: {
+              ...siweSignatureConfirmationState.engine.backgroundState.ApprovalController,
+              pendingApprovals: {
+                [approvalId]: {
+                  ...approval,
+                  origin: 'evil.example',
+                  requestData: {
+                    ...approval.requestData,
+                    origin: 'evil.example',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(isValidSIWEOrigin).toHaveBeenCalledWith(
+      expect.objectContaining({ origin: 'https://evil.example' }),
+    );
   });
 });
