@@ -26,6 +26,7 @@ import Logger from '../../../../../../util/Logger';
 import { safeToChecksumAddress } from '../../../../../../util/address';
 import { getBlockaidMetricsParams } from '../../../../../../util/blockaid';
 import Device from '../../../../../../util/device';
+import { getHost, prefixUrlWithProtocol } from '../../../../../../util/browser';
 import { isMultiLayerFeeNetwork } from '../../../../../../util/networks';
 import { fetchEstimatedMultiLayerL1Fee } from '../../../../../../util/networks/engineNetworkUtils';
 import {
@@ -471,6 +472,17 @@ class TransactionReview extends PureComponent {
     this.setState({ dataVisible: true });
   };
 
+  getDappGasOriginUrl(url) {
+    const { origin } = this.props.transaction;
+    const originUrl =
+      url || (origin ? prefixUrlWithProtocol(getHost(origin)) : '');
+    try {
+      return new URL(originUrl).href && originUrl;
+    } catch {
+      return null;
+    }
+  }
+
   getRequesterUrl() {
     const { origin } = this.props.transaction;
     const connection = SDKConnect.getInstance().getConnections()[origin ?? ''];
@@ -633,7 +645,11 @@ class TransactionReview extends PureComponent {
                         onCancelPress={this.props.onCancel}
                         gasEstimateType={gasEstimateType}
                         EIP1559GasData={EIP1559GasData}
-                        origin={dappSuggestedGas ? url : null}
+                        origin={
+                          dappSuggestedGas
+                            ? this.getDappGasOriginUrl(url)
+                            : null
+                        }
                         gasSelected={gasSelected}
                         originWarning={dappSuggestedGasWarning}
                         onUpdatingValuesStart={onUpdatingValuesStart}
