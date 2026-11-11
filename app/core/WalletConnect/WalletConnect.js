@@ -25,6 +25,7 @@ import { msBetweenDates, msToHours } from '../../util/date';
 import { addTransaction } from '../../util/transaction-controller';
 import URL from 'url-parse';
 import { parseWalletConnectUri } from './wc-utils';
+import { getSafeWalletConnectV1RedirectUrl } from './wc-v1-redirect';
 import { store } from '../../store';
 import { selectEvmChainId } from '../../selectors/networkController';
 import ppomUtil from '../../../app/lib/ppom/ppom-util';
@@ -88,7 +89,7 @@ class WalletConnect {
   url = { current: null };
   title = { current: null };
   icon = { current: null };
-  dappScheme = { current: null };
+  sessionApproved = false;
   requestsToRedirect = {};
   hostname = null;
   requestOriginatedFrom = null;
@@ -138,6 +139,7 @@ class WalletConnect {
 
         this.redirect();
       } catch (e) {
+        this.sessionApproved = false;
         this.walletConnector.rejectSession();
         this.redirect();
       }
@@ -268,13 +270,13 @@ class WalletConnect {
     if (this.requestOriginatedFrom === AppConstants.DEEPLINKS.ORIGIN_QR_CODE)
       return;
 
+    const safeRedirectUrl = this.sessionApproved
+      ? getSafeWalletConnectV1RedirectUrl(this.redirectUrl, this.url.current)
+      : null;
+
     setTimeout(() => {
-      if (this.dappScheme.current || this.redirectUrl) {
-        Linking.openURL(
-          this.dappScheme.current
-            ? `${this.dappScheme.current}://`
-            : this.redirectUrl,
-        );
+      if (safeRedirectUrl) {
+        Linking.openURL(safeRedirectUrl);
       } else {
         Minimizer.goBack();
       }
@@ -329,7 +331,7 @@ class WalletConnect {
     this.url.current = sessionData.peerMeta.url;
     this.title.current = sessionData.peerMeta?.name;
     this.icon.current = sessionData.peerMeta?.icons?.[0];
-    this.dappScheme.current = sessionData.peerMeta?.dappScheme;
+    this.sessionApproved = true;
 
     this.hostname = new URL(this.url.current).hostname;
 

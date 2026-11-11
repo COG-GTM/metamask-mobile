@@ -19,6 +19,9 @@ const mockSessionRequest = {
   ],
 };
 jest.mock('@walletconnect/client');
+jest.mock('../NativeModules', () => ({
+  Minimizer: { goBack: jest.fn() },
+}));
 jest.mock('../Engine', () => ({
   context: {
     KeyringController: {
