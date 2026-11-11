@@ -4,6 +4,13 @@ import getRpcMethodMiddleware from '../../RPCMethods/RPCMethodMiddleware';
 import { DappClient } from './dapp-sdk-types';
 import { INTERNAL_ORIGINS } from '../../../constants/transaction';
 
+/**
+ * Checks whether a dapp-supplied value matches a wallet-internal origin,
+ * including after removing the SDK remote origin prefix.
+ *
+ * @param value - The originatorInfo url or title.
+ * @returns Whether the value impersonates an internal origin.
+ */
 const isInternalOrigin = (value?: string) => {
   if (!value) {
     return false;
@@ -18,6 +25,13 @@ const isInternalOrigin = (value?: string) => {
   );
 };
 
+/**
+ * Returns the hostname used as the RPC/transaction origin for an SDK client.
+ * Falls back to the channel ID when originatorInfo impersonates an internal origin.
+ *
+ * @param clientInfo - The SDK dapp client.
+ * @returns The hostname for the client.
+ */
 export const getSdkClientHostname = (clientInfo: DappClient): string => {
   const hostname =
     clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title;
