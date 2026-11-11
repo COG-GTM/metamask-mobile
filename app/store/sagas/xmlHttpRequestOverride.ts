@@ -29,6 +29,12 @@ if (process.env.JEST_WORKER_ID !== undefined) {
 const originalSend = global.XMLHttpRequest.prototype.send;
 const originalOpen = global.XMLHttpRequest.prototype.open;
 
+/**
+ * Extracts the normalized hostname of a URL.
+ *
+ * @param url - The URL to parse.
+ * @returns The lower-cased hostname without trailing dots, or `undefined` if the URL cannot be parsed.
+ */
 const getHostname = (url: string): string | undefined => {
   try {
     return new URL(url).hostname.toLowerCase().replace(/\.+$/u, '');
@@ -37,6 +43,14 @@ const getHostname = (url: string): string | undefined => {
   }
 };
 
+/**
+ * Determines whether a request must be blocked while basic functionality is disabled.
+ * Only the parsed hostname is matched: a blocked domain matches itself and its subdomains,
+ * and legacy fragments match anywhere in the hostname. URLs that cannot be parsed are blocked.
+ *
+ * @param url - The request URL.
+ * @returns `true` if the request should be blocked.
+ */
 export const shouldBlockRequest = (url: string | undefined): boolean => {
   const hostname = getHostname(url ?? '');
   if (!hostname) {
