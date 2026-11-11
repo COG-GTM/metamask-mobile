@@ -21,6 +21,7 @@ import {
 import handleBatchRpcResponse from '../handlers/handleBatchRpcResponse';
 import handleCustomRpcCalls from '../handlers/handleCustomRpcCalls';
 import DevLogger from '../utils/DevLogger';
+import { isUUID } from '../utils/isUUID';
 import { wait, waitForKeychainUnlocked } from '../utils/wait.util';
 import { AccountsController } from '@metamask/accounts-controller';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
@@ -69,6 +70,13 @@ export default class DeeplinkProtocolService {
 
     if (rawConnections) {
       Object.values(rawConnections).forEach((connection) => {
+        if (!isUUID(connection.id)) {
+          DevLogger.log(
+            `DeeplinkProtocolService::init skip connection with invalid channelId ${connection.id}`,
+          );
+          return;
+        }
+
         const permissionState = this.getCaip25PermissionState(connection.id);
         if (permissionState !== 'granted') {
           DevLogger.log(
@@ -503,6 +511,17 @@ export default class DeeplinkProtocolService {
     originatorInfo?: string;
     request?: string;
   }) {
+    if (!isUUID(params.channelId)) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection invalid channelId',
+        ),
+        { channelId: params.channelId },
+      );
+
+      return;
+    }
+
     if (!params.originatorInfo) {
       const deepLinkError = new Error(
         'DeeplinkProtocolService::handleConnection no originatorInfo',
@@ -714,6 +733,15 @@ export default class DeeplinkProtocolService {
     scheme: string;
     account: string; // account@chainid
   }) {
+    if (!isUUID(params.channelId)) {
+      Logger.error(
+        new Error('DeeplinkProtocolService::handleMessage invalid channelId'),
+        { channelId: params.channelId },
+      );
+
+      return;
+    }
+
     let walletSelectedAddress = '';
     let walletSelectedChainId = '';
     let dappAccountChainId = '';
