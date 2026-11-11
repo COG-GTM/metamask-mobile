@@ -22,6 +22,10 @@ import android.os.Build;
 
 public class RNTar extends ReactContextBaseJavaModule {
   private static String MODULE_NAME = "RNTar";
+  // Mirrors TARBALL_SIZE_SAFETY_LIMIT in @metamask/snaps-controllers.
+  static final long MAX_EXTRACTED_BYTES = 262144000L;
+  // npm tarballs keep every file under this top-level directory.
+  static final String PACKAGE_DIRECTORY = "package";
 
   public RNTar(ReactApplicationContext context) {
     super(context);
@@ -62,6 +66,24 @@ public class RNTar extends ReactContextBaseJavaModule {
     }
   }
 
+  // Resolves a tar entry under outputDir, rejecting entries that escape it.
+  static File containedFile(File outputDir, String entryName) throws IOException {
+    String canonicalRoot = outputDir.getCanonicalPath();
+    File outputFile = new File(outputDir, entryName);
+    String canonicalPath = outputFile.getCanonicalPath();
+    if (!canonicalPath.equals(canonicalRoot)
+        && !canonicalPath.startsWith(canonicalRoot + File.separator)) {
+      throw new IOException("Tar entry resolves outside the destination: " + entryName);
+    }
+    return new File(canonicalPath);
+  }
+
+  static boolean isInside(File file, File directory) throws IOException {
+    String filePath = file.getCanonicalPath();
+    String directoryPath = directory.getCanonicalPath();
+    return filePath.equals(directoryPath) || filePath.startsWith(directoryPath + File.separator);
+  }
+
   private String extractTgzFile(String tgzPath, String outputPath) throws IOException {
     try {
       // Check if .tgz file exists
@@ -69,8 +91,17 @@ public class RNTar extends ReactContextBaseJavaModule {
         throw new IOException("The specified .tgz file does not exist.");
       }
 
+      // Only extract into a new or empty directory so entries cannot overwrite existing app files
+      String[] existingEntries = new File(outputPath).list();
+      if (existingEntries != null && existingEntries.length > 0) {
+        throw new IOException("The output directory must be new or empty.");
+      }
+
       // Create output directory if it doesn't exist
       createDirectories(outputPath);
+      File outputDir = new File(outputPath);
+      File packageDir = new File(outputDir, PACKAGE_DIRECTORY);
+      long extractedBytes = 0;
 
       // Check if the output directory is readable and writable
       if (!isReadableWritable(outputPath)) {
@@ -86,12 +117,25 @@ public class RNTar extends ReactContextBaseJavaModule {
 
         // Loop through the entries in the .tgz file
         while ((entry = (TarArchiveEntry) tarInputStream.getNextEntry()) != null) {
-          File outputFile = new File(outputPath, entry.getName());
+          if (entry.isSymbolicLink() || entry.isLink() || entry.isCharacterDevice()
+              || entry.isBlockDevice() || entry.isFIFO()
+              || !(entry.isDirectory() || entry.isFile())) {
+            throw new IOException("Unsupported tar entry type: " + entry.getName());
+          }
+          File outputFile = containedFile(outputDir, entry.getName());
+          // Only files under package/ are read back; never write anything else.
+          if (!isInside(outputFile, packageDir)) {
+            continue;
+          }
 
           // If it is a directory, create the output directory
           if (entry.isDirectory()) {
             createDirectories(outputFile.getAbsolutePath());
           } else {
+            // A later duplicate entry must not replace a file that was already extracted.
+            if (outputFile.exists()) {
+              throw new IOException("Duplicate tar entry: " + entry.getName());
+            }
             // Create parent directories if they don't exist
             createDirectories(outputFile.getParent());
 
@@ -103,6 +147,10 @@ public class RNTar extends ReactContextBaseJavaModule {
               byte[] buffer = new byte[4096];
               int length;
               while ((length = tarInputStream.read(buffer)) != -1) {
+                extractedBytes += length;
+                if (extractedBytes > MAX_EXTRACTED_BYTES) {
+                  throw new IOException("Snap tarball exceeds limit of " + MAX_EXTRACTED_BYTES + " bytes.");
+                }
                 dest.write(buffer, 0, length);
               }
             }
