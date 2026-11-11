@@ -741,8 +741,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    */
   const onShouldStartLoadWithRequest = ({
     url: urlToLoad,
+    isTopFrame,
   }: {
     url: string;
+    isTopFrame?: boolean;
   }) => {
     webStates.current[urlToLoad] = {
       ...webStates.current[urlToLoad],
@@ -776,6 +778,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       url: urlToLoad,
       protocol,
       requesterUrl: resolvedUrlRef.current,
+      isTopFrame,
       i18nService: strings,
     });
 

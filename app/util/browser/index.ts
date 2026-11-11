@@ -178,48 +178,71 @@ export const allowLinkOpen = (url: string) =>
       console.warn(`Error opening URL: ${e}`);
     });
 
+let isNonWebProtocolPromptPending = false;
+
 /**
  * Handles a webview navigation to a non-web protocol. Only protocols in
  * `trustedProtocolToDeeplink` are opened directly; everything else,
  * including MetaMask's own deeplink schemes, requires the user to allow it.
+ * Navigations from embedded frames are ignored, and only one prompt is shown
+ * at a time so a page cannot stack prompts behind the one the user sees.
  *
  * @param params.url - URL the webview tried to load
  * @param params.protocol - Protocol of `url`, e.g. `metamask:`
  * @param params.requesterUrl - URL of the page that triggered the navigation
+ * @param params.isTopFrame - Whether the navigation targets the main frame
  * @param params.i18nService - translator function
  */
 export const handleNonWebProtocolLink = ({
   url,
   protocol,
   requesterUrl,
+  isTopFrame = true,
   i18nService,
 }: {
   url: string;
   protocol: string;
   requesterUrl: string;
+  isTopFrame?: boolean;
   i18nService: (id: string, options?: object) => string;
 }) => {
+  if (!isTopFrame) return;
+
   if (trustedProtocolToDeeplink.includes(protocol)) {
     allowLinkOpen(url);
     return;
   }
 
+  if (isNonWebProtocolPromptPending) return;
+  isNonWebProtocolPromptPending = true;
+  const settle = () => {
+    isNonWebProtocolPromptPending = false;
+  };
+
   const alertMsg = inAppDeeplinkProtocols.includes(protocol)
     ? getInAppDeeplinkAlertMessage(requesterUrl, i18nService)
     : getAlertMessage(protocol, i18nService);
 
-  Alert.alert(i18nService('onboarding.warning_title'), alertMsg, [
-    {
-      text: i18nService('browser.protocol_alert_options.ignore'),
-      onPress: () => null,
-      style: 'cancel',
-    },
-    {
-      text: i18nService('browser.protocol_alert_options.allow'),
-      onPress: () => allowLinkOpen(url),
-      style: 'default',
-    },
-  ]);
+  Alert.alert(
+    i18nService('onboarding.warning_title'),
+    alertMsg,
+    [
+      {
+        text: i18nService('browser.protocol_alert_options.ignore'),
+        onPress: settle,
+        style: 'cancel',
+      },
+      {
+        text: i18nService('browser.protocol_alert_options.allow'),
+        onPress: () => {
+          settle();
+          allowLinkOpen(url);
+        },
+        style: 'default',
+      },
+    ],
+    { cancelable: true, onDismiss: settle },
+  );
 };
 
 /**

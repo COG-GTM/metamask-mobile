@@ -1,4 +1,4 @@
-import { Alert, AlertButton, Linking } from 'react-native';
+import { Alert, AlertButton, AlertOptions, Linking } from 'react-native';
 import {
   isTLD,
   getAlertMessage,
@@ -270,10 +270,16 @@ describe('Browser utils :: handleNonWebProtocolLink', () => {
   });
 
   afterEach(() => {
+    alertSpy.mock.calls.forEach(([, , , options]) =>
+      (options as AlertOptions | undefined)?.onDismiss?.(),
+    );
     jest.restoreAllMocks();
   });
 
   const flush = () => new Promise((resolve) => setImmediate(resolve));
+
+  const ethereumUrl =
+    'ethereum:0x0000000000000000000000000000000000000001@137?value=1';
 
   it.each([
     'ethereum:0x0000000000000000000000000000000000000001@137?value=5e18',
@@ -332,6 +338,54 @@ describe('Browser utils :: handleNonWebProtocolLink', () => {
       strings('browser.protocol_alerts.tel'),
     );
     expect(openSpy).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [ethereumUrl, 'ethereum:'],
+    ['market://details?id=io.metamask', 'market:'],
+    ['tel:123', 'tel:'],
+  ])('ignores %s requested by an embedded frame', async (url, protocol) => {
+    handleNonWebProtocolLink({
+      url,
+      protocol,
+      requesterUrl,
+      isTopFrame: false,
+      i18nService: strings,
+    });
+    await flush();
+
+    expect(alertSpy).not.toHaveBeenCalled();
+    expect(canOpenSpy).not.toHaveBeenCalled();
+    expect(openSpy).not.toHaveBeenCalled();
+  });
+
+  it('shows only one prompt at a time', async () => {
+    const request = () =>
+      handleNonWebProtocolLink({
+        url: ethereumUrl,
+        protocol: 'ethereum:',
+        requesterUrl,
+        isTopFrame: true,
+        i18nService: strings,
+      });
+
+    request();
+    request();
+    request();
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+
+    (alertSpy.mock.calls[0][2] as AlertButton[])[0].onPress?.();
+    request();
+    expect(alertSpy).toHaveBeenCalledTimes(2);
+
+    (alertSpy.mock.calls[1][3] as AlertOptions).onDismiss?.();
+    request();
+    expect(alertSpy).toHaveBeenCalledTimes(3);
+
+    (alertSpy.mock.calls[2][2] as AlertButton[])[1].onPress?.();
+    await flush();
+    expect(openSpy).toHaveBeenCalledTimes(1);
+    expect(openSpy).toHaveBeenCalledWith(ethereumUrl);
   });
 });
 
