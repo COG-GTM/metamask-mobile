@@ -138,9 +138,12 @@ export default {
     SMART_TXS:
       'https://support.metamask.io/transactions-and-gas/transactions/smart-transactions/',
     STAKING_RISK_DISCLOSURE: 'https://consensys.io/staking-risk-disclosures',
-    ADD_SOLANA_ACCOUNT_PRIVACY_POLICY: 'https://support.metamask.io/configure/accounts/how-to-add-accounts-in-your-wallet/#solana-accounts'
+    ADD_SOLANA_ACCOUNT_PRIVACY_POLICY:
+      'https://support.metamask.io/configure/accounts/how-to-add-accounts-in-your-wallet/#solana-accounts',
   },
-  DECODING_API_URL: process.env.DECODING_API_URL || 'https://signature-insights.api.cx.metamask.io/v1',
+  DECODING_API_URL:
+    process.env.DECODING_API_URL ||
+    'https://signature-insights.api.cx.metamask.io/v1',
   ERRORS: {
     INFURA_BLOCKED_MESSAGE:
       'EthQuery - RPC Error - This service is not available in your country',
@@ -209,7 +212,18 @@ export default {
   FAVICON_CACHE_MAX_SIZE: 100,
   PPOM_INITIALISATION_STATE_CHANGE_EVENT:
     'PPOMController:initialisationStateChangeEvent',
-  BASIC_FUNCTIONALITY_BLOCK_LIST: [
+  // Hosts that must not be contacted while "Basic functionality" is off.
+  // Matched against the parsed, lower-cased hostname of each request:
+  // a domain blocks itself and every subdomain.
+  BASIC_FUNCTIONALITY_BLOCKED_DOMAINS: [
+    'cx.metamask.io',
+    'config-api.metamask.io',
+    'infura.io',
+    'metaswap.codefi.network',
+    'static.metafi.codefi.network',
+  ],
+  // Legacy service name fragments, matched against the hostname only
+  BASIC_FUNCTIONALITY_BLOCKED_HOST_FRAGMENTS: [
     'token-api',
     'token.api',
     'gas-api',
@@ -218,10 +232,6 @@ export default {
     'price.api',
     'phishing-detection',
     'dapp-scanning',
-    'infura.io',
-    'static.metafi',
-    'static.cx',
-    'config-api.metamask.io/featureFlags',
   ],
   FEATURE_FLAGS_API: {
     BASE_URL: 'https://client-config.api.cx.metamask.io',

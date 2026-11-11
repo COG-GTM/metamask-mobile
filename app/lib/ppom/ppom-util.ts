@@ -22,6 +22,7 @@ import {
   validateWithSecurityAlertsAPI,
 } from './security-alerts-api';
 import { PPOMController } from '@metamask/ppom-validator';
+import { selectBasicFunctionalityEnabled } from '../../selectors/settings';
 
 export interface PPOMRequest {
   method: string;
@@ -73,8 +74,16 @@ async function validateRequest(
     NetworkController.state?.selectedNetworkClientId,
   );
   const isConfirmationMethod = CONFIRMATION_METHODS.includes(req.method);
+  const isBasicFunctionalityEnabled = Boolean(
+    selectBasicFunctionalityEnabled(store.getState()),
+  );
   const isBlockaidFeatEnabled = await isBlockaidFeatureEnabled();
-  if (!ppomController || !isBlockaidFeatEnabled || !isConfirmationMethod) {
+  if (
+    !ppomController ||
+    !isBasicFunctionalityEnabled ||
+    !isBlockaidFeatEnabled ||
+    !isConfirmationMethod
+  ) {
     return;
   }
 

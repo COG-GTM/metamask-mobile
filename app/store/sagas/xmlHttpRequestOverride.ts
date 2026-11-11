@@ -29,37 +29,57 @@ if (process.env.JEST_WORKER_ID !== undefined) {
 const originalSend = global.XMLHttpRequest.prototype.send;
 const originalOpen = global.XMLHttpRequest.prototype.open;
 
+const getHostname = (url: string): string | undefined => {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/\.+$/u, '');
+  } catch {
+    return undefined;
+  }
+};
+
+export const shouldBlockRequest = (url: string | undefined): boolean => {
+  const hostname = getHostname(url ?? '');
+  if (!hostname) {
+    // Fail closed on URLs whose host cannot be determined
+    return true;
+  }
+  return (
+    AppConstants.BASIC_FUNCTIONALITY_BLOCKED_DOMAINS.some(
+      (domain) => hostname === domain || hostname.endsWith(`.${domain}`),
+    ) ||
+    AppConstants.BASIC_FUNCTIONALITY_BLOCKED_HOST_FRAGMENTS.some((fragment) =>
+      hostname.includes(fragment),
+    )
+  );
+};
+
 export function overrideXMLHttpRequest() {
-  // Store the URL of the current request - only valid under assumption of no new requests being initiated between `open` and `send` of one
-  let currentUrl = '';
+  // Each request keeps its own URL so that `send` checks the request being sent
+  const requestUrls = new WeakMap<XMLHttpRequest, string>();
 
-  // TODO: This should operate on an allowlist rather than fuzzy-blocklist approach
-  // Only known "good" URLs should be explicitly allowed, as opposed to only "bad" ones disallowed
-  // see https://github.com/MetaMask/metamask-mobile/issues/10391
-  const shouldBlockRequest = (url: string) =>
-    AppConstants.BASIC_FUNCTIONALITY_BLOCK_LIST.some((blockedUrl) =>
-      url.includes(blockedUrl),
-    );
-
-  const handleError = () =>
-    Promise.reject(new Error(`Disallowed URL: ${currentUrl}`)).catch(
-      (error) => {
-        console.error(error);
-      },
-    );
+  const failBlockedRequest = (request: XMLHttpRequest, url: string) => {
+    console.error(new Error(`Disallowed URL: ${url}`));
+    // Emit `error` so callers such as `fetch` reject instead of hanging
+    setTimeout(() => {
+      request.dispatchEvent({ type: 'error' } as unknown as Event);
+      request.dispatchEvent({ type: 'loadend' } as unknown as Event);
+    }, 0);
+  };
 
   // Override the 'open' method to capture the request URL
   global.XMLHttpRequest.prototype.open = function (
+    this: XMLHttpRequest,
     method: string,
     url: string | URL,
     async?: boolean,
     user?: string | null,
     password?: string | null,
   ) {
-    currentUrl = url?.toString();
+    const requestUrl = url?.toString();
+    requestUrls.set(this, requestUrl);
     return originalOpen.apply(this, [
       method,
-      currentUrl,
+      requestUrl,
       async,
       user,
       password,
@@ -67,13 +87,15 @@ export function overrideXMLHttpRequest() {
   };
 
   // Override the 'send' method to implement the blocking logic
-  global.XMLHttpRequest.prototype.send = function (...args: unknown[]) {
-    // Check if the current request should be blocked
-    if (shouldBlockRequest(currentUrl)) {
-      handleError(); // Trigger an error callback or handle the blocked request as needed
-      return; // Do not proceed with the request
+  global.XMLHttpRequest.prototype.send = function (
+    this: XMLHttpRequest,
+    ...args: unknown[]
+  ) {
+    const requestUrl = requestUrls.get(this) ?? '';
+    if (shouldBlockRequest(requestUrl)) {
+      failBlockedRequest(this, requestUrl);
+      return;
     }
-    // For non-blocked requests, proceed as normal
     return originalSend.call(this, ...args);
   };
 }
