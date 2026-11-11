@@ -148,6 +148,7 @@ export default class AndroidService extends EventEmitter2 {
             },
           },
           false,
+          clientInfo.clientId,
         ).catch((err) => {
           Logger.log(
             `AndroidService::clients_connected - error sending ready message to client ${clientInfo.clientId}`,
@@ -215,6 +216,7 @@ export default class AndroidService extends EventEmitter2 {
               },
             },
             false,
+            clientInfo.clientId,
           ).catch((err) => {
             Logger.log(
               err,
@@ -226,13 +228,17 @@ export default class AndroidService extends EventEmitter2 {
             error,
             `AndroidService::clients_connected sending jsonrpc error to client - connection rejected`,
           );
-          this.sendMessage({
-            data: {
-              error,
-              jsonrpc: '2.0',
+          this.sendMessage(
+            {
+              data: {
+                error,
+                jsonrpc: '2.0',
+              },
+              name: 'metamask-provider',
             },
-            name: 'metamask-provider',
-          }).catch((err) => {
+            undefined,
+            clientInfo.clientId,
+          ).catch((err) => {
             Logger.log(
               err,
               `AndroidService::clients_connected error failed sending jsonrpc error to client`,
@@ -439,6 +445,7 @@ export default class AndroidService extends EventEmitter2 {
               },
             },
             false,
+            clientInfo.clientId,
           ).catch((err) => {
             Logger.log(
               err,
@@ -473,7 +480,10 @@ export default class AndroidService extends EventEmitter2 {
       isMMSDK: true,
       url: PROTOCOLS.METAMASK + '://' + AppConstants.MM_SDK.SDK_REMOTE_ORIGIN,
       isRemoteConn: true,
-      sendMessage: this.sendMessage.bind(this),
+      // TODO: Replace "any" with type
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sendMessage: (msg: any, forceRedirect?: boolean) =>
+        this.sendMessage(msg, forceRedirect, clientInfo.clientId),
       ...defaultBridgeParams,
     });
 
@@ -494,9 +504,13 @@ export default class AndroidService extends EventEmitter2 {
     }
   }
 
-  // TODO: Replace "any" with type
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async sendMessage(message: any, forceRedirect?: boolean) {
-    return sendMessage(this, message, forceRedirect);
+  async sendMessage(
+    // TODO: Replace "any" with type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    message: any,
+    forceRedirect?: boolean,
+    targetClientId?: string,
+  ) {
+    return sendMessage(this, message, forceRedirect, targetClientId);
   }
 }

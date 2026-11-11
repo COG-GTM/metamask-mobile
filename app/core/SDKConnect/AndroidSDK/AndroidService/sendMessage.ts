@@ -12,6 +12,7 @@ async function sendMessage(
   instance: AndroidService,
   message: any,
   forceRedirect?: boolean,
+  targetClientId?: string,
 ) {
   const id = message?.data?.id;
   let rpcMethod = instance.rpcQueueManager.getId(id);
@@ -58,7 +59,10 @@ async function sendMessage(
     }
   }
 
-  instance.communicationClient.sendMessage(JSON.stringify(message));
+  instance.communicationClient.sendMessage(
+    JSON.stringify(message),
+    targetClientId ?? instance.currentClientId ?? '',
+  );
 
   DevLogger.log(`AndroidService::sendMessage method=${rpcMethod}`, message);
 
@@ -71,7 +75,8 @@ async function sendMessage(
       backgroundBridge:
         instance.bridgeByClientId[instance.currentClientId ?? ''],
       batchRPCManager: instance.batchRPCManager,
-      sendMessage: ({ msg }) => instance.sendMessage(msg),
+      sendMessage: ({ msg }) =>
+        instance.sendMessage(msg, undefined, targetClientId),
     });
     DevLogger.log(
       `AndroidService::sendMessage isLastRpc=${isLastRpcOrError}`,
