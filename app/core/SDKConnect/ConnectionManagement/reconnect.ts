@@ -51,12 +51,7 @@ async function reconnect({
       return;
     }
 
-    if (
-      instance.state.paused &&
-      updateKey &&
-      otherPublicKey &&
-      !storedOtherPublicKey
-    ) {
+    if (updateKey && otherPublicKey && !storedOtherPublicKey) {
       DevLogger.log(
         `SDKConnect::reconnect[${context}] existing=${
           existingConnection !== undefined
