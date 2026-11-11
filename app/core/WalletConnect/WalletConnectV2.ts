@@ -67,6 +67,7 @@ export class WC2Manager {
     },
     navigation: NavigationContainerRef,
     sessions: { [topic: string]: WalletConnect2Session } = {},
+    permissionOrigins: Record<string, string> = {},
   ) {
     this.web3Wallet = web3Wallet;
     this.deeplinkSessions = deeplinkSessions;
@@ -123,7 +124,6 @@ export class WC2Manager {
     const activeSessions = this.getSessions();
 
     if (activeSessions) {
-      const storedPermissionOrigins = WC2Manager.getStoredPermissionOrigins();
       activeSessions.forEach(async (session) => {
         const sessionKey = session.topic;
         try {
@@ -134,7 +134,7 @@ export class WC2Manager {
             session.pairingTopic,
           );
           const permissionOrigin =
-            (await storedPermissionOrigins)[sessionKey] ??
+            permissionOrigins[sessionKey] ??
             (permissionController.hasPermissions(unverifiedOrigin)
               ? unverifiedOrigin
               : getHostname(session.peer.metadata.url));
@@ -281,6 +281,8 @@ export class WC2Manager {
       console.warn(`WC2@init() Failed to parse storage values`);
     }
 
+    const permissionOrigins = await WC2Manager.getStoredPermissionOrigins();
+
     try {
       // Add delay before returning instance
       await wait(1000);
@@ -289,6 +291,7 @@ export class WC2Manager {
         deeplinkSessions,
         navigation,
         sessions,
+        permissionOrigins,
       );
     } catch (error) {
       Logger.error(error as Error, `WC2@init() failed to create instance`);

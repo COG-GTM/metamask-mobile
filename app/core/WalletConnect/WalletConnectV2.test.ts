@@ -845,17 +845,18 @@ describe('WC2Manager', () => {
     });
 
     it('restores active sessions with their recorded permission origin', async () => {
-      (StorageWrapper.getItem as jest.Mock).mockResolvedValueOnce(
-        JSON.stringify({ 'test-topic': 'wc-testpairing.unverified.invalid' }),
-      );
       (WalletConnect2Session as unknown as jest.Mock).mockClear();
       const web3Wallet = (manager as unknown as { web3Wallet: IWalletKit })
         .web3Wallet;
 
       new (WC2Manager as unknown as new (
         ...args: unknown[]
-      ) => WC2Manager)(web3Wallet, {}, mockNavigation);
-      await new Promise((resolve) => setImmediate(resolve));
+      ) => WC2Manager)(web3Wallet, {}, mockNavigation, {}, {
+        'test-topic': 'wc-testpairing.unverified.invalid',
+      });
+
+      // Restored sessions must be registered synchronously so startup
+      // requests are not rejected before restoration completes.
 
       expect(WalletConnect2Session).toHaveBeenCalledWith(
         expect.objectContaining({
