@@ -33,8 +33,10 @@ function parseDeeplink({
   browserCallBack?: (url: string) => void;
   onHandled?: () => void;
 }) {
+  let isValidUrl = false;
   try {
     const validatedUrl = new URL(url);
+    isValidUrl = true;
     DevLogger.log('DeepLinkManager:parse validatedUrl', validatedUrl);
 
     const { urlObj, params } = extractURLParams(url);
@@ -103,8 +105,9 @@ function parseDeeplink({
   } catch (error) {
     const isPrivateKey = isPrivateKeyCandidate(url);
     if (error && !isPrivateKey) {
+      // URL parse errors echo the raw input, which may be a scanned secret.
       Logger.error(
-        new Error('Invalid deeplink URL'),
+        isValidUrl ? (error as Error) : new Error('Invalid deeplink URL'),
         'DeepLinkManager:parse error parsing deeplink',
       );
       if (origin === AppConstants.DEEPLINKS.ORIGIN_QR_CODE) {

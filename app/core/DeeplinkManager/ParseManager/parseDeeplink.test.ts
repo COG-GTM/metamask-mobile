@@ -297,4 +297,24 @@ describe('parseDeeplink', () => {
       },
     );
   });
+
+  it('reports the original error when a handler throws for a valid url', () => {
+    const handlerError = new Error('handler failed');
+    mockHandleUniversalLinks.mockImplementationOnce(() => {
+      throw handlerError;
+    });
+
+    parseDeeplink({
+      deeplinkManager: instance,
+      url: 'https://example.com/',
+      origin: 'testOrigin',
+      browserCallBack: mockBrowserCallBack,
+      onHandled: mockOnHandled,
+    });
+
+    expect(Logger.error).toHaveBeenCalledWith(
+      handlerError,
+      'DeepLinkManager:parse error parsing deeplink',
+    );
+  });
 });
