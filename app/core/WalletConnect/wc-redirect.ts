@@ -12,8 +12,10 @@ const WALLET_SCHEMES: string[] = [
 const WALLET_UNIVERSAL_LINK_HOSTS = [
   'metamask.app.link',
   'metamask.test-app.link',
+  'metamask.test.app.link',
   'metamask-alternate.app.link',
   'metamask-alternate.test-app.link',
+  'metamask-alternate.test.app.link',
   'metamask.io',
   'link.metamask.io',
 ];
@@ -46,6 +48,7 @@ const BLOCKED_SCHEMES = [
 
 const CUSTOM_SCHEME_REGEX = /^[a-z][a-z0-9+.-]*$/;
 
+/** Parses a URL, returning undefined instead of throwing when invalid. */
 const parseUrl = (value: string): URL | undefined => {
   try {
     return new URL(value);
@@ -54,6 +57,7 @@ const parseUrl = (value: string): URL | undefined => {
   }
 };
 
+/** Whether `host` equals `parentHost` or is one of its subdomains. */
 const isSameOrSubdomain = (host: string, parentHost: string) =>
   host === parentHost || host.endsWith(`.${parentHost}`);
 
