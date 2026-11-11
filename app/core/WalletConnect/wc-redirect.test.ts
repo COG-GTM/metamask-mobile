@@ -44,6 +44,8 @@ describe('isSafeWCRedirectLink', () => {
     'https://link.metamask.io/connect',
     'https://metamask-alternate.app.link/x',
     'https://metamask.test-app.link/x',
+    'https://metamask.test.app.link/x',
+    'https://metamask-alternate.test.app.link/x',
     'https://metamask.io/',
     'not a url',
     '',
@@ -77,6 +79,12 @@ describe('isSafeWCRedirectLink', () => {
       isSafeWCRedirectLink(
         'https://metamask.app.link/x',
         'https://metamask.app.link',
+      ),
+    ).toBe(false);
+    expect(
+      isSafeWCRedirectLink(
+        'https://metamask.test.app.link/x',
+        'https://metamask.test.app.link',
       ),
     ).toBe(false);
   });
