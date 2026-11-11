@@ -1,4 +1,9 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
+import {
+  isValidUrl,
+  isENSUrl,
+  getMaskedUrl,
+  getHostnameLeftByNavigation,
+} from './utils';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -90,5 +95,56 @@ describe('BrowserTab utils', () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
     });
+  });
+});
+
+describe('getHostnameLeftByNavigation', () => {
+  const tabs = [
+    { id: 1, url: 'https://evil.example/approve' },
+    { id: 2, url: 'https://metamask.io' },
+  ];
+
+  it('returns the previous hostname when the tab moves to another host', () => {
+    expect(
+      getHostnameLeftByNavigation({
+        previousUrl: 'https://evil.example/approve',
+        nextUrl: 'https://trusted-exchange.example/',
+        tabId: 1,
+        tabs,
+      }),
+    ).toBe('evil.example');
+  });
+
+  it('returns undefined when the host does not change', () => {
+    expect(
+      getHostnameLeftByNavigation({
+        previousUrl: 'https://evil.example/approve',
+        nextUrl: 'https://evil.example/other?x=1',
+        tabId: 1,
+        tabs,
+      }),
+    ).toBeUndefined();
+  });
+
+  it('returns undefined when another tab is still on the previous host', () => {
+    expect(
+      getHostnameLeftByNavigation({
+        previousUrl: 'https://metamask.io/',
+        nextUrl: 'https://evil.example/',
+        tabId: 3,
+        tabs,
+      }),
+    ).toBeUndefined();
+  });
+
+  it('returns undefined when there was no previous page', () => {
+    expect(
+      getHostnameLeftByNavigation({
+        previousUrl: '',
+        nextUrl: 'https://evil.example/',
+        tabId: 1,
+        tabs,
+      }),
+    ).toBeUndefined();
   });
 });

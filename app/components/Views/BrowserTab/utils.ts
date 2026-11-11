@@ -79,3 +79,38 @@ export const getMaskedUrl = (
   }
   return urlToMask;
 };
+
+/**
+ * Returns the hostname a tab is leaving when it navigates from `previousUrl`
+ * to `nextUrl`, or `undefined` if the host does not change or another tab is
+ * still on that host. Pending approvals of that hostname should be rejected.
+ *
+ * @param params.previousUrl - URL the tab was on
+ * @param params.nextUrl - URL the tab is moving to
+ * @param params.tabId - Id of the navigating tab
+ * @param params.tabs - All browser tabs
+ * @returns - The hostname that was left
+ */
+export const getHostnameLeftByNavigation = ({
+  previousUrl,
+  nextUrl,
+  tabId,
+  tabs = [],
+}: {
+  previousUrl: string;
+  nextUrl: string;
+  tabId: number;
+  tabs?: { id: number; url?: string }[];
+}): string | undefined => {
+  const previousHostname = new URLParse(previousUrl).hostname;
+  if (!previousHostname || previousHostname === new URLParse(nextUrl).hostname)
+    return undefined;
+
+  const isOpenInOtherTab = tabs.some(
+    (tab) =>
+      tab.id !== tabId &&
+      Boolean(tab.url) &&
+      new URLParse(tab.url as string).hostname === previousHostname,
+  );
+  return isOpenInOtherTab ? undefined : previousHostname;
+};
