@@ -107,8 +107,101 @@ function setupBackgroundBridge(url) {
   });
 }
 
+const SelectedNetworkControllerProviderOrigin = () =>
+  Engine.context.SelectedNetworkController.getProviderAndBlockTracker.mock
+    .calls[0][0];
+
+function setupInAppBrowserBridge(url) {
+  setupBackgroundBridge('https://unused.example');
+  jest.clearAllMocks();
+  const { AccountsController, SelectedNetworkController } = Engine.context;
+  AccountsController.getSelectedAccount.mockReturnValue({ address: '0x0' });
+  SelectedNetworkController.getProviderAndBlockTracker.mockReturnValue({
+    provider: {},
+  });
+  const getRpcMethodMiddleware = jest.fn(() => (_req, _res, next) => next());
+  const bridge = new BackgroundBridge({
+    webview: null,
+    url,
+    getRpcMethodMiddleware,
+    isMainFrame: true,
+  });
+  return { bridge, getRpcMethodMiddleware };
+}
+
 describe('BackgroundBridge', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  describe('in-app browser permission subject', () => {
+    const { PermissionController } = Engine.context;
+    const grantedAccounts = { 'dapp.example': ['0xabc'] };
+
+    beforeEach(() => {
+      getPermittedAccounts.mockImplementation(
+        (subject) => grantedAccounts[subject] ?? [],
+      );
+    });
+
+    it('keeps the bare hostname as the subject for default-port https pages', () => {
+      const { bridge, getRpcMethodMiddleware } = setupInAppBrowserBridge(
+        'https://dapp.example',
+      );
+      const hooks = createEip1193MethodMiddleware.mock.calls[0][0];
+      const ethAccountsHooks =
+        createEthAccountsMethodMiddleware.mock.calls[0][0];
+
+      expect(bridge.hostname).toBe('dapp.example');
+      expect(hooks.getAccounts()).toStrictEqual(['0xabc']);
+      expect(ethAccountsHooks.getAccounts()).toStrictEqual(['0xabc']);
+      expect(
+        PermissionController.createPermissionMiddleware,
+      ).toHaveBeenCalledWith({ origin: 'dapp.example' });
+      expect(getRpcMethodMiddleware).toHaveBeenCalledWith(
+        expect.objectContaining({ hostname: 'dapp.example' }),
+      );
+    });
+
+    it.each([
+      ['http://dapp.example', 'http://dapp.example'],
+      ['https://dapp.example:8443', 'https://dapp.example:8443'],
+    ])('does not expose https grants to %s', (url, expectedSubject) => {
+      const { bridge, getRpcMethodMiddleware } = setupInAppBrowserBridge(url);
+      const hooks = createEip1193MethodMiddleware.mock.calls[0][0];
+      const ethAccountsHooks =
+        createEthAccountsMethodMiddleware.mock.calls[0][0];
+
+      expect(bridge.hostname).toBe(expectedSubject);
+
+      // eth_accounts returns nothing for the http / other-port page
+      expect(hooks.getAccounts()).toStrictEqual([]);
+      expect(ethAccountsHooks.getAccounts()).toStrictEqual([]);
+      expect(getPermittedAccounts).toHaveBeenCalledWith(expectedSubject);
+      expect(getPermittedAccounts).not.toHaveBeenCalledWith('dapp.example');
+
+      // eth_requestAccounts asks for a fresh grant for the distinct subject
+      const requested = { eth_accounts: {} };
+      hooks.requestPermissionsForOrigin(requested);
+      expect(PermissionController.requestPermissions).toHaveBeenCalledWith(
+        { origin: expectedSubject },
+        requested,
+      );
+
+      // Restricted methods and approval requests are keyed by the same subject
+      expect(
+        PermissionController.createPermissionMiddleware,
+      ).toHaveBeenCalledWith({ origin: expectedSubject });
+      expect(SelectedNetworkControllerProviderOrigin()).toBe(expectedSubject);
+      expect(getRpcMethodMiddleware).toHaveBeenCalledWith(
+        expect.objectContaining({ hostname: expectedSubject }),
+      );
+    });
+
+    it('keeps hostname keying for remote (SDK) connections', () => {
+      const bridge = setupBackgroundBridge('http://dapp.example');
+      expect(bridge.hostname).toBe('dapp.example');
+    });
+  });
+
   describe('constructor', () => {
     const { KeyringController, PermissionController } = Engine.context;
 
