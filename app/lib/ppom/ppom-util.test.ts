@@ -1,4 +1,7 @@
-import { normalizeTransactionParams } from '@metamask/transaction-controller';
+import {
+  TransactionMeta,
+  normalizeTransactionParams,
+} from '@metamask/transaction-controller';
 import * as SignatureRequestActions from '../../actions/signatureRequest'; // eslint-disable-line import/no-namespace
 import * as TransactionActions from '../../actions/transaction'; // eslint-disable-line import/no-namespace
 import * as NetworkControllerSelectors from '../../selectors/networkController'; // eslint-disable-line import/no-namespace
@@ -22,6 +25,8 @@ import {
   SecurityAlertSource,
 } from '../../components/Views/confirmations/legacy/components/BlockaidBanner/BlockaidBanner.types';
 import Logger from '../../util/Logger';
+import { Messenger } from '@metamask/base-controller';
+import { updateSecurityAlertResponse } from '../../util/transaction-controller';
 
 const CHAIN_ID_MOCK = '0x1';
 
@@ -469,6 +474,198 @@ describe('PPOM Utils', () => {
         );
       },
     );
+  });
+
+  describe('createValidatorForSecurityAlertId', () => {
+    let securityAlertIdCounter = 0;
+    let SECURITY_ALERT_ID_MOCK: string;
+    const BATCH_CHAIN_ID_MOCK = '0x89' as Hex;
+    const BATCH_TRANSACTION_ID_MOCK = 'batch-transaction-id';
+
+    const securityResponseMock = {
+      result_type: ResultType.Malicious,
+      reason: Reason.transferFarming,
+      description: 'Malicious batch',
+    };
+
+    const batchSecurityRequestMock = {
+      method: 'eth_sendTransaction',
+      params: [
+        {
+          from: '0x8eeee1781fd885ff5ddef7789486676961873d12',
+          to: '0x8eeee1781fd885ff5ddef7789486676961873d12',
+          data: '0xe9ae5c53',
+          type: '0x2',
+        },
+      ],
+      delegationMock: '0x63c0c19a282a1b52b07dd5a65b58948a07dae32b',
+    };
+
+    let messenger: Messenger<
+      never,
+      {
+        type: 'TransactionController:unapprovedTransactionAdded';
+        payload: [TransactionMeta];
+      }
+    >;
+
+    const updateSecurityAlertResponseMock = jest.mocked(
+      updateSecurityAlertResponse,
+    );
+
+    function setTransactions(transactions: Partial<TransactionMeta>[]) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (MockEngine.context as any).TransactionController = {
+        state: { transactions },
+      };
+    }
+
+    function publishTransactionAdded() {
+      messenger.publish('TransactionController:unapprovedTransactionAdded', {
+        id: BATCH_TRANSACTION_ID_MOCK,
+        securityAlertResponse: { securityAlertId: SECURITY_ALERT_ID_MOCK },
+      } as unknown as TransactionMeta);
+    }
+
+    beforeEach(() => {
+      securityAlertIdCounter += 1;
+      SECURITY_ALERT_ID_MOCK = `security-alert-id-${securityAlertIdCounter}`;
+      messenger = new Messenger();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (MockEngine as any).controllerMessenger = messenger;
+      setTransactions([]);
+      isSecurityAlertsEnabledMock.mockReturnValue(true);
+      validateWithSecurityAlertsAPIMock.mockResolvedValue(
+        securityResponseMock as never,
+      );
+    });
+
+    it('validates using the chain ID passed by TransactionController', async () => {
+      const validator = PPOMUtil.createValidatorForSecurityAlertId(
+        SECURITY_ALERT_ID_MOCK,
+      );
+
+      await validator(batchSecurityRequestMock, BATCH_CHAIN_ID_MOCK);
+
+      expect(validateWithSecurityAlertsAPIMock).toHaveBeenCalledTimes(1);
+      expect(validateWithSecurityAlertsAPIMock).toHaveBeenCalledWith(
+        BATCH_CHAIN_ID_MOCK,
+        batchSecurityRequestMock,
+      );
+    });
+
+    it('never stores the result under the chain ID', async () => {
+      const spy = jest.spyOn(
+        TransactionActions,
+        'setTransactionSecurityAlertResponse',
+      );
+
+      const validator = PPOMUtil.createValidatorForSecurityAlertId(
+        SECURITY_ALERT_ID_MOCK,
+      );
+
+      await validator(batchSecurityRequestMock, BATCH_CHAIN_ID_MOCK);
+      publishTransactionAdded();
+
+      expect(spy).not.toHaveBeenCalledWith(
+        BATCH_CHAIN_ID_MOCK,
+        expect.anything(),
+      );
+      expect(updateSecurityAlertResponseMock).not.toHaveBeenCalledWith(
+        BATCH_CHAIN_ID_MOCK,
+        expect.anything(),
+      );
+    });
+
+    it('attaches the result to the batch transaction once it is added', async () => {
+      const spy = jest.spyOn(
+        TransactionActions,
+        'setTransactionSecurityAlertResponse',
+      );
+
+      const validator = PPOMUtil.createValidatorForSecurityAlertId(
+        SECURITY_ALERT_ID_MOCK,
+      );
+
+      // TransactionController calls the validator before adding the batch transaction
+      await validator(batchSecurityRequestMock, BATCH_CHAIN_ID_MOCK);
+
+      expect(updateSecurityAlertResponseMock).not.toHaveBeenCalled();
+
+      publishTransactionAdded();
+
+      const expectedResponse = {
+        ...securityResponseMock,
+        source: SecurityAlertSource.API,
+        req: batchSecurityRequestMock,
+        chainId: BATCH_CHAIN_ID_MOCK,
+      };
+
+      expect(spy).toHaveBeenCalledWith(
+        BATCH_TRANSACTION_ID_MOCK,
+        expectedResponse,
+      );
+      expect(updateSecurityAlertResponseMock).toHaveBeenCalledTimes(1);
+      expect(updateSecurityAlertResponseMock).toHaveBeenCalledWith(
+        BATCH_TRANSACTION_ID_MOCK,
+        { ...expectedResponse, securityAlertId: SECURITY_ALERT_ID_MOCK },
+      );
+
+      publishTransactionAdded();
+      expect(updateSecurityAlertResponseMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('attaches the result to an existing transaction with the security alert ID', async () => {
+      setTransactions([
+        {
+          id: 'other-transaction',
+          securityAlertResponse: { securityAlertId: 'other-id' } as never,
+        },
+        {
+          id: BATCH_TRANSACTION_ID_MOCK,
+          securityAlertResponse: {
+            securityAlertId: SECURITY_ALERT_ID_MOCK,
+          } as never,
+        },
+      ]);
+
+      const validator = PPOMUtil.createValidatorForSecurityAlertId(
+        SECURITY_ALERT_ID_MOCK,
+      );
+
+      await validator(batchSecurityRequestMock, BATCH_CHAIN_ID_MOCK);
+
+      expect(updateSecurityAlertResponseMock).toHaveBeenCalledTimes(1);
+      expect(updateSecurityAlertResponseMock).toHaveBeenCalledWith(
+        BATCH_TRANSACTION_ID_MOCK,
+        expect.objectContaining({
+          result_type: ResultType.Malicious,
+          securityAlertId: SECURITY_ALERT_ID_MOCK,
+        }),
+      );
+    });
+
+    it('ignores transactions with a different security alert ID', async () => {
+      const validator = PPOMUtil.createValidatorForSecurityAlertId(
+        SECURITY_ALERT_ID_MOCK,
+      );
+
+      await validator(batchSecurityRequestMock, BATCH_CHAIN_ID_MOCK);
+
+      messenger.publish('TransactionController:unapprovedTransactionAdded', {
+        id: 'other-transaction',
+        securityAlertResponse: { securityAlertId: 'other-id' },
+      } as unknown as TransactionMeta);
+
+      expect(updateSecurityAlertResponseMock).not.toHaveBeenCalled();
+
+      publishTransactionAdded();
+
+      expect(updateSecurityAlertResponseMock).toHaveBeenCalledWith(
+        BATCH_TRANSACTION_ID_MOCK,
+        expect.objectContaining({ securityAlertId: SECURITY_ALERT_ID_MOCK }),
+      );
+    });
   });
 
   describe('clearSignatureSecurityAlertResponse', () => {

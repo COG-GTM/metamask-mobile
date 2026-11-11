@@ -12,6 +12,7 @@ import { isBlockaidFeatureEnabled } from '../../util/blockaid';
 import Logger from '../../util/Logger';
 import { updateSecurityAlertResponse } from '../../util/transaction-controller';
 import {
+  TransactionMeta,
   TransactionParams,
   normalizeTransactionParams,
 } from '@metamask/transaction-controller';
@@ -22,6 +23,7 @@ import {
   validateWithSecurityAlertsAPI,
 } from './security-alerts-api';
 import { PPOMController } from '@metamask/ppom-validator';
+import { Hex } from '@metamask/utils';
 
 export interface PPOMRequest {
   method: string;
@@ -56,10 +58,26 @@ const SECURITY_ALERT_RESPONSE_IN_PROGRESS = {
   description: 'Validating the confirmation in progress.',
 };
 
+const PENDING_SECURITY_ALERT_TIMEOUT_MS = 5 * 60 * 1000;
+
+interface PendingSecurityAlertResponse {
+  request: PPOMRequest;
+  response: SecurityAlertResponse;
+  updateControllerState?: boolean;
+  cleanup: () => void;
+  timeout: ReturnType<typeof setTimeout>;
+}
+
+const pendingSecurityAlertResponses = new Map<
+  string,
+  PendingSecurityAlertResponse
+>();
+
 async function validateRequest(
   req: PPOMRequest,
   transactionId?: string,
   securityAlertId?: string,
+  requestChainId?: Hex,
 ) {
   const {
     AccountsController,
@@ -67,11 +85,11 @@ async function validateRequest(
     PPOMController: ppomController,
   } = Engine.context;
 
-  const {
-    configuration: { chainId },
-  } = NetworkController.getNetworkClientById(
-    NetworkController.state?.selectedNetworkClientId,
-  );
+  const chainId =
+    requestChainId ??
+    NetworkController.getNetworkClientById(
+      NetworkController.state?.selectedNetworkClientId,
+    ).configuration.chainId;
   const isConfirmationMethod = CONFIRMATION_METHODS.includes(req.method);
   const isBlockaidFeatEnabled = await isBlockaidFeatureEnabled();
   if (!ppomController || !isBlockaidFeatEnabled || !isConfirmationMethod) {
@@ -98,7 +116,7 @@ async function validateRequest(
   let securityAlertResponse: SecurityAlertResponse | undefined;
 
   try {
-    if (isTransaction && !transactionId) {
+    if (isTransaction && !transactionId && !securityAlertId) {
       securityAlertResponse = SECURITY_ALERT_RESPONSE_FAILED;
       return;
     }
@@ -185,6 +203,16 @@ function setSecurityAlertResponse(
   }: { updateControllerState?: boolean; securityAlertId?: string } = {},
 ) {
   if (isTransactionRequest(request)) {
+    if (!transactionId && securityAlertId) {
+      setSecurityAlertResponseBySecurityAlertId(
+        request,
+        response,
+        securityAlertId,
+        updateControllerState,
+      );
+      return;
+    }
+
     store.dispatch(
       setTransactionSecurityAlertResponse(transactionId, response),
     );
@@ -199,6 +227,98 @@ function setSecurityAlertResponse(
   } else {
     store.dispatch(setSignatureRequestSecurityAlertResponse(response));
   }
+}
+
+function findTransactionIdBySecurityAlertId(securityAlertId: string) {
+  const { TransactionController } = Engine.context;
+
+  return TransactionController.state.transactions.find(
+    (transactionMeta: TransactionMeta) =>
+      transactionMeta.securityAlertResponse?.securityAlertId ===
+      securityAlertId,
+  )?.id;
+}
+
+/**
+ * Batch transactions (wallet_sendCalls) are validated before the transaction
+ * exists, so the result is keyed by securityAlertId and applied to the
+ * transaction created with that securityAlertId as soon as it is available.
+ */
+function setSecurityAlertResponseBySecurityAlertId(
+  request: PPOMRequest,
+  response: SecurityAlertResponse,
+  securityAlertId: string,
+  updateControllerState?: boolean,
+) {
+  const transactionId = findTransactionIdBySecurityAlertId(securityAlertId);
+
+  if (transactionId) {
+    pendingSecurityAlertResponses.get(securityAlertId)?.cleanup();
+    setSecurityAlertResponse(request, response, transactionId, {
+      updateControllerState,
+      securityAlertId,
+    });
+    return;
+  }
+
+  const existing = pendingSecurityAlertResponses.get(securityAlertId);
+
+  if (existing) {
+    pendingSecurityAlertResponses.set(securityAlertId, {
+      ...existing,
+      request,
+      response,
+      updateControllerState,
+    });
+    return;
+  }
+
+  const { controllerMessenger } = Engine;
+
+  const onTransactionAdded = (transactionMeta: TransactionMeta) => {
+    if (
+      transactionMeta.securityAlertResponse?.securityAlertId !== securityAlertId
+    ) {
+      return;
+    }
+
+    const pending = pendingSecurityAlertResponses.get(securityAlertId);
+    pending?.cleanup();
+
+    if (pending) {
+      setSecurityAlertResponse(
+        pending.request,
+        pending.response,
+        transactionMeta.id,
+        {
+          updateControllerState: pending.updateControllerState,
+          securityAlertId,
+        },
+      );
+    }
+  };
+
+  const cleanup = () => {
+    clearTimeout(pendingSecurityAlertResponses.get(securityAlertId)?.timeout);
+    pendingSecurityAlertResponses.delete(securityAlertId);
+    controllerMessenger.unsubscribe(
+      'TransactionController:unapprovedTransactionAdded',
+      onTransactionAdded,
+    );
+  };
+
+  pendingSecurityAlertResponses.set(securityAlertId, {
+    request,
+    response,
+    updateControllerState,
+    cleanup,
+    timeout: setTimeout(cleanup, PENDING_SECURITY_ALERT_TIMEOUT_MS),
+  });
+
+  controllerMessenger.subscribe(
+    'TransactionController:unapprovedTransactionAdded',
+    onTransactionAdded,
+  );
 }
 
 function isTransactionRequest(request: PPOMRequest) {
@@ -244,8 +364,8 @@ function clearSignatureSecurityAlertResponse() {
 }
 
 function createValidatorForSecurityAlertId(securityAlertId: string) {
-  return (req: PPOMRequest, transactionId?: string) =>
-    validateRequest(req, transactionId, securityAlertId);
+  return (req: PPOMRequest, chainId: Hex) =>
+    validateRequest(req, undefined, securityAlertId, chainId);
 }
 
 export default {
