@@ -37,4 +37,27 @@ describe('handleWCProtocol', () => {
       redirectUrl: params.redirect,
     });
   });
+
+  it('drops a non-string redirect parameter', async () => {
+    const connectMock = jest.fn().mockResolvedValue(null);
+    WC2Manager.getInstance = jest.fn().mockResolvedValue({
+      connect: connectMock,
+    });
+
+    await connectWithWC({
+      handled: jest.fn(),
+      wcURL: 'wc:test',
+      origin: 'testOrigin',
+      params: {
+        redirect: ['https://evil.example', 'https://evil2.example'],
+      } as unknown as Parameters<typeof connectWithWC>[0]['params'],
+    });
+    await new Promise((resolve) => setImmediate(resolve));
+
+    expect(connectMock).toHaveBeenCalledWith({
+      wcUri: 'wc:test',
+      origin: 'testOrigin',
+      redirectUrl: undefined,
+    });
+  });
 });

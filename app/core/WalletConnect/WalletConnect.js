@@ -25,6 +25,7 @@ import { msBetweenDates, msToHours } from '../../util/date';
 import { addTransaction } from '../../util/transaction-controller';
 import URL from 'url-parse';
 import { parseWalletConnectUri } from './wc-utils';
+import { isSafeWCRedirectLink } from './wc-redirect';
 import { store } from '../../store';
 import { selectEvmChainId } from '../../selectors/networkController';
 import ppomUtil from '../../../app/lib/ppom/ppom-util';
@@ -92,6 +93,7 @@ class WalletConnect {
   requestsToRedirect = {};
   hostname = null;
   requestOriginatedFrom = null;
+  requestedPeerUrl = null;
 
   constructor(options, existing) {
     if (options.session.redirectUrl) {
@@ -120,6 +122,8 @@ class WalletConnect {
       }
 
       await waitForKeychainUnlocked();
+
+      this.requestedPeerUrl = payload?.params?.[0]?.peerMeta?.url || null;
 
       try {
         const sessionData = {
@@ -269,16 +273,22 @@ class WalletConnect {
       return;
 
     setTimeout(() => {
-      if (this.dappScheme.current || this.redirectUrl) {
-        Linking.openURL(
-          this.dappScheme.current
-            ? `${this.dappScheme.current}://`
-            : this.redirectUrl,
-        );
+      const redirectLink = this.getSafeRedirectLink();
+      if (redirectLink) {
+        Linking.openURL(redirectLink);
       } else {
         Minimizer.goBack();
       }
     }, 300);
+  };
+
+  getSafeRedirectLink = () => {
+    const peerUrl = this.url.current || this.requestedPeerUrl;
+    const candidates = [
+      this.dappScheme.current ? `${this.dappScheme.current}://` : null,
+      this.redirectUrl,
+    ];
+    return candidates.find((link) => isSafeWCRedirectLink(link, peerUrl));
   };
 
   needsRedirect = (id) => {
@@ -438,7 +448,7 @@ const instance = {
     }
 
     const data = { uri, session: {} };
-    if (redirectUrl) {
+    if (redirectUrl && typeof redirectUrl === 'string') {
       data.session.redirectUrl = redirectUrl;
     }
     if (autosign) {

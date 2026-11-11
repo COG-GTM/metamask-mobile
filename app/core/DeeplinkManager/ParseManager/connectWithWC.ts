@@ -19,7 +19,8 @@ export function connectWithWC({
       instance.connect({
         wcUri: wcURL,
         origin,
-        redirectUrl: params?.redirect,
+        redirectUrl:
+          typeof params?.redirect === 'string' ? params.redirect : undefined,
       }),
     )
     .catch((err) => {

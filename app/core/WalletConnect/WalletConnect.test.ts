@@ -33,6 +33,10 @@ const MockEngine = jest.mocked(Engine);
 jest.mock('uuid', () => ({
   v1: jest.fn(() => mockRandomId),
 }));
+const mockMinimizerGoBack = jest.fn();
+jest.mock('../NativeModules', () => ({
+  Minimizer: { goBack: () => mockMinimizerGoBack() },
+}));
 
 describe('WalletConnect', () => {
   const walletConnectorSessionRequestCallbackMock = jest
@@ -113,5 +117,106 @@ describe('WalletConnect', () => {
     await flushPromises();
 
     expect(walletConnectorRejectSessionMock).toHaveBeenCalled();
+  });
+
+  describe('redirect after session request', () => {
+    const peerUrl = 'https://dapp.example';
+
+    const rejectSessionWithRedirect = async (
+      redirectUrl: unknown,
+      requestOriginatedFrom = 'deeplink',
+    ) => {
+      // eslint-disable-next-line
+      const FreshRNWalletConnect = require('@walletconnect/client').default;
+      jest
+        .spyOn(FreshRNWalletConnect.prototype, 'on')
+        .mockImplementation((...args: unknown[]) => {
+          const [event, callback] = args as [
+            string,
+            (error: Error | null, payload: unknown) => void,
+          ];
+          if (event === 'session_request') {
+            callback(null, { params: [{ peerMeta: { url: peerUrl } }] });
+          }
+        });
+      const rejectSession = jest
+        .spyOn(FreshRNWalletConnect.prototype, 'rejectSession')
+        .mockImplementation(jest.fn());
+      // eslint-disable-next-line
+      const WalletConnect = require('./WalletConnect').default;
+      // eslint-disable-next-line
+      const { Linking } = require('react-native');
+      // eslint-disable-next-line
+      const FreshEngine = require('../Engine');
+      const openURL = jest
+        .spyOn(Linking, 'openURL')
+        .mockResolvedValue(undefined);
+      FreshEngine.context.ApprovalController.add.mockRejectedValueOnce(
+        new Error('User rejected'),
+      );
+
+      await WalletConnect.init();
+      await WalletConnect.newSession(
+        'URI',
+        redirectUrl,
+        mockAutoSign,
+        requestOriginatedFrom,
+      );
+      await flushPromises();
+      await new Promise((resolve) => setTimeout(resolve, 350));
+      return { openURL, rejectSession };
+    };
+
+    beforeEach(() => {
+      mockMinimizerGoBack.mockClear();
+    });
+
+    it.each([
+      'https://evil.example/phish',
+      'https://dapp.example.evil.example/',
+      'http://dapp.example/',
+      ['javascript', 'alert(1)'].join(':'),
+      'metamask://wc?uri=x',
+      'https://metamask.app.link/send/0x0',
+      'tel:123',
+    ])('does not open untrusted redirect %s', async (redirectUrl) => {
+      const { openURL, rejectSession } = await rejectSessionWithRedirect(
+        redirectUrl,
+      );
+
+      expect(rejectSession).toHaveBeenCalled();
+      expect(openURL).not.toHaveBeenCalled();
+      expect(mockMinimizerGoBack).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not store a non-string redirect', async () => {
+      const { openURL } = await rejectSessionWithRedirect([
+        'https://dapp.example/',
+      ]);
+
+      expect(openURL).not.toHaveBeenCalled();
+      expect(mockMinimizerGoBack).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      'https://dapp.example/done',
+      'https://app.dapp.example/',
+      'dapp-app://done',
+    ])('opens redirect %s that matches the dApp', async (redirectUrl) => {
+      const { openURL } = await rejectSessionWithRedirect(redirectUrl);
+
+      expect(openURL).toHaveBeenCalledWith(redirectUrl);
+      expect(mockMinimizerGoBack).not.toHaveBeenCalled();
+    });
+
+    it('does not redirect when the request came from a QR code', async () => {
+      const { openURL } = await rejectSessionWithRedirect(
+        'https://dapp.example/done',
+        'qr-code',
+      );
+
+      expect(openURL).not.toHaveBeenCalled();
+      expect(mockMinimizerGoBack).not.toHaveBeenCalled();
+    });
   });
 });
