@@ -92,6 +92,14 @@ describe('NpmLocation', () => {
     );
   });
 
+  it('uses canonical paths that do not depend on the extraction directory', async () => {
+    const location = createLocation();
+    const manifest = await location.fetch('snap.manifest.json');
+    expect(manifest.data.canonicalPath).toStrictEqual(
+      'npm://registry.npmjs.org/@metamask/example-snap/snap.manifest.json',
+    );
+  });
+
   it('extracts into a fresh directory outside the documents directory', async () => {
     const location = createLocation();
     await location.fetch('snap.manifest.json');

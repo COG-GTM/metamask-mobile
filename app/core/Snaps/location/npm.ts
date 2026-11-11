@@ -144,7 +144,9 @@ export class NpmLocation extends BaseNpmLocation {
           new VirtualFile({
             value: contents,
             path: normalizedPath,
-            data: { canonicalPath: new URL(path, canonicalBase).toString() },
+            data: {
+              canonicalPath: new URL(normalizedPath, canonicalBase).toString(),
+            },
           }),
         );
       });
