@@ -104,11 +104,7 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import {
-  getHostnameLeftByNavigation,
-  getMaskedUrl,
-  isENSUrl,
-} from './utils';
+import { getHostnameLeftByNavigation, getMaskedUrl, isENSUrl } from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -628,7 +624,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    */
   const handleError = useCallback(
     (webViewError: WebViewError) => {
-      rejectApprovalsOfLeftOrigin(submittedUrlRef.current);
+      rejectApprovalsOfLeftOrigin(webViewError.url || submittedUrlRef.current);
       resolvedUrlRef.current = submittedUrlRef.current;
       titleRef.current = `Can't Open Page`;
       iconRef.current = undefined;
