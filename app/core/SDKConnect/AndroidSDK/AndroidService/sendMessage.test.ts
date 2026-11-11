@@ -87,6 +87,18 @@ describe('sendMessage', () => {
           result: ['0x1', '0x2'],
         },
       }),
+      'test-client-id',
+    );
+  });
+
+  it('routes the message to the target client instead of the current client', async () => {
+    mockGetId.mockReturnValue(undefined);
+
+    await sendMessage(instance, message, false, 'other-client-id');
+
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      JSON.stringify(message),
+      'other-client-id',
     );
   });
 
@@ -105,7 +117,10 @@ describe('sendMessage', () => {
 
     await sendMessage(instance, message);
 
-    expect(mockSendMessage).toHaveBeenCalledWith(JSON.stringify(message));
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      JSON.stringify(message),
+      'test-client-id',
+    );
   });
 
   it('should handle multichain rpc call responses separately', async () => {
@@ -117,7 +132,10 @@ describe('sendMessage', () => {
 
     expect(handleBatchRpcResponse).toHaveBeenCalled();
     expect(mockRemove).toHaveBeenCalledWith('test-id');
-    expect(mockSendMessage).toHaveBeenCalledWith(JSON.stringify(message));
+    expect(mockSendMessage).toHaveBeenCalledWith(
+      JSON.stringify(message),
+      'test-client-id',
+    );
   });
 
   it('should not call goBack if rpcQueueManager is not empty', async () => {

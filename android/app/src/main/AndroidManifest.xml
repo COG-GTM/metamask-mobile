@@ -168,11 +168,11 @@
 				android:resource="@xml/filepaths"
 			/>
 		</provider>
+    <!-- Exported for native dapps using the MetaMask Android SDK. MessageService authenticates every
+         caller by Binder UID and signing certificate and binds each session id to its owner. -->
     <service
       android:name="io.metamask.nativesdk.MessageService"
       android:enabled="true"
-      android:exported="true">
-
-    </service>
+      android:exported="true" />
 	</application>
 </manifest>
