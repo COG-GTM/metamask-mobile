@@ -84,6 +84,16 @@ const handleDeeplink = async ({
 
   try {
     if (channelExists) {
+      const storedPublicKey = connections[channelId]?.otherPublicKey;
+      if (storedPublicKey && storedPublicKey !== otherPublicKey) {
+        // The link does not come from the dapp the user approved for this
+        // channel; never rebind the session to it or run its request.
+        Logger.log(
+          `handleDeeplink:: rejected link for channel=${channelId}: public key does not match the approved session`,
+        );
+        return;
+      }
+
       // is it already connected?
       let connected = sdkConnect.getConnected()[channelId]?.remote.isConnected() ?? false;
       if(!connected) {
@@ -108,7 +118,7 @@ const handleDeeplink = async ({
             protocolVersion,
             initialConnection: false,
             trigger: 'deeplink',
-            updateKey: true,
+            updateKey: !storedPublicKey,
           });
         }
       } else {

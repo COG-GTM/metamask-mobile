@@ -35,21 +35,36 @@ async function reconnect({
       return;
     }
 
-    if (instance.state.paused && updateKey) {
+    const storedOtherPublicKey =
+      instance.state.connections[channelId]?.otherPublicKey;
+
+    if (
+      storedOtherPublicKey &&
+      otherPublicKey &&
+      storedOtherPublicKey !== otherPublicKey
+    ) {
+      // A session stays bound to the key it was approved with; a caller
+      // presenting another key must not take it over.
+      DevLogger.log(
+        `SDKConnect::reconnect[${context}] - otherPublicKey does not match the approved session -- ignoring`,
+      );
+      return;
+    }
+
+    if (
+      instance.state.paused &&
+      updateKey &&
+      otherPublicKey &&
+      !storedOtherPublicKey
+    ) {
+      DevLogger.log(
+        `SDKConnect::reconnect[${context}] existing=${
+          existingConnection !== undefined
+        } - bind otherPublicKey ${otherPublicKey}`,
+      );
       instance.state.connections[channelId].otherPublicKey = otherPublicKey;
-      const currentOtherPublicKey =
-        instance.state.connections[channelId].otherPublicKey;
-      if (currentOtherPublicKey !== otherPublicKey) {
-        console.warn(
-          `SDKConnect::reconnect[${context}] existing=${
-            existingConnection !== undefined
-          } - update otherPublicKey -  ${currentOtherPublicKey} --> ${otherPublicKey}`,
-        );
-        if (existingConnection) {
-          existingConnection.remote.setOtherPublicKey(otherPublicKey);
-        }
-      } else {
-        DevLogger.log(`SDKConnect::reconnect[${context}] - same otherPublicKey`);
+      if (existingConnection) {
+        existingConnection.remote.setOtherPublicKey(otherPublicKey);
       }
     }
 
@@ -130,7 +145,7 @@ async function reconnect({
     instance.state.connected[channelId] = new Connection({
       ...connection,
       socketServerUrl: instance.state.socketServerUrl,
-      otherPublicKey,
+      otherPublicKey: storedOtherPublicKey || otherPublicKey,
       reconnect: true,
       trigger,
       initialConnection,
