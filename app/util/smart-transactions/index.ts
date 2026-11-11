@@ -23,32 +23,39 @@ export const getTransactionType = (
 ) => {
   // Determine tx type
   // If it isn't a dapp tx, check if it's MM Swaps or Send
-  // process.env.MM_FOX_CODE is from MM Swaps
-  const isDapp =
-    transactionMeta?.origin !== TransactionTypes.MMM &&
-    transactionMeta?.origin !== process.env.MM_FOX_CODE;
-
+  // MM Swaps txs carry origin MM_FOX_CODE and an actionId issued to the Swaps flow
   const to = transactionMeta.txParams.to?.toLowerCase();
   const data = transactionMeta.txParams.data; // undefined for send txs of gas tokens
+  const { origin, actionId } = transactionMeta;
+  const { value } = transactionMeta.txParams;
 
   const isSwapApproveOrSwapTransaction = getIsSwapApproveOrSwapTransaction(
     data,
-    transactionMeta.origin,
+    origin,
     to,
     chainId,
+    actionId,
+    value,
   );
   const isSwapApproveTx = getIsSwapApproveTransaction(
     data,
-    transactionMeta.origin,
+    origin,
     to,
     chainId,
+    actionId,
+    value,
   );
   const isSwapTransaction = getIsSwapTransaction(
     data,
-    transactionMeta.origin,
+    origin,
     to,
     chainId,
+    actionId,
+    value,
   );
+
+  const isDapp =
+    origin !== TransactionTypes.MMM && !isSwapApproveOrSwapTransaction;
 
   const isNativeTokenTransferred = getIsNativeTokenTransferred(
     transactionMeta.txParams,

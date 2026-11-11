@@ -7,6 +7,7 @@ import { PROTOCOLS } from '../../../constants/deeplinks';
 import AppConstants from '../../../core/AppConstants';
 import Engine from '../../../core/Engine';
 import Logger from '../../../util/Logger';
+import { hasInternalOriginatorInfo } from '../../../util/transactions/internal-origins';
 import BackgroundBridge from '../../BackgroundBridge/BackgroundBridge';
 import { DappClient, DappConnections } from '../AndroidSDK/dapp-sdk-types';
 import getDefaultBridgeParams from '../AndroidSDK/getDefaultBridgeParams';
@@ -429,8 +430,6 @@ export default class DeeplinkProtocolService {
       return;
     }
 
-    this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
-
     const decodedOriginatorInfo = Buffer.from(
       params.originatorInfo,
       'base64',
@@ -439,6 +438,19 @@ export default class DeeplinkProtocolService {
     const originatorInfoJson = JSON.parse(decodedOriginatorInfo);
 
     const originatorInfo = originatorInfoJson.originatorInfo;
+
+    if (hasInternalOriginatorInfo(originatorInfo)) {
+      Logger.error(
+        new Error(
+          'DeeplinkProtocolService::handleConnection originatorInfo claims an internal origin',
+        ),
+        { channelId: params.channelId },
+      );
+
+      return;
+    }
+
+    this.dappPublicKeyByClientId[params.channelId] = params.dappPublicKey;
 
     const clientInfo: DappClient = {
       clientId: params.channelId,

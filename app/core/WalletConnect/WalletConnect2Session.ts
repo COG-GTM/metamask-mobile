@@ -20,6 +20,7 @@ import getRpcMethodMiddleware from '../RPCMethods/RPCMethodMiddleware';
 import DevLogger from '../SDKConnect/utils/DevLogger';
 import { ERROR_MESSAGES } from './WalletConnectV2';
 import METHODS_TO_REDIRECT from './wc-config';
+import { isInternalOrigin } from '../../util/transactions/internal-origins';
 import {
   checkWCPermissions,
   getHostname,
@@ -465,6 +466,24 @@ class WalletConnect2Session {
     const verified = requestEvent.verifyContext?.verified;
     const origin = verified?.origin ?? this.session.peer.metadata.url;
     const method = requestEvent.params.request.method;
+
+    if (isInternalOrigin(origin) || isInternalOrigin(getHostname(origin))) {
+      DevLogger.log(
+        `WC2::handleRequest rejected request claiming internal origin=${origin}`,
+      );
+      await this.web3Wallet.respondSessionRequest({
+        topic: this.session.topic,
+        response: {
+          id: requestEvent.id,
+          jsonrpc: '2.0',
+          error: {
+            code: 4100,
+            message: 'Requests from this origin are not allowed.',
+          },
+        },
+      });
+      return;
+    }
     const isSwitchingChain = method === 'wallet_switchEthereumChain';
     const caip2ChainId = (isSwitchingChain ? `eip155:${parseInt(requestEvent.params.request.params[0].chainId, 16)}` : requestEvent.params.chainId) as CaipChainId;
     const methodParams = requestEvent.params.request.params;

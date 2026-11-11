@@ -14,6 +14,7 @@ import { getPermissionsHandler, requestPermissionsHandler, revokePermissionsHand
 import { Caip25CaveatType, Caip25EndowmentPermissionName } from '@metamask/chain-agnostic-permission';
 import RPCMethods from './index.js';
 import { RPC } from '../../constants/network';
+import { isInternalOrigin } from '../../util/transactions/internal-origins';
 import { ChainId, NetworkType } from '@metamask/controller-utils';
 import {
   PermissionController,
@@ -397,6 +398,11 @@ export const getRpcMethodMiddleware = ({
   hostname = hostname.replace(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN, '');
   const origin = isWalletConnect ? hostname : channelId ?? hostname;
   const hooks = getRpcMethodMiddlewareHooks(origin);
+  // External requesters must never act under a wallet-internal origin such as
+  // MM_FOX_CODE: transactions with that origin are auto-signed as Swaps and
+  // getPermittedAccounts returns every account for it.
+  const isSpoofingInternalOrigin =
+    isInternalOrigin(hostname) || isInternalOrigin(channelId);
 
   DevLogger.log(
     `getRpcMethodMiddleware hostname=${hostname} channelId=${channelId}`,
@@ -406,6 +412,12 @@ export const getRpcMethodMiddleware = ({
   return mergeMiddleware([
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     createAsyncMiddleware(async (req: any, res: any, next: any) => {
+      if (isSpoofingInternalOrigin) {
+        throw providerErrors.unauthorized({
+          message: 'Requests from this origin are not allowed.',
+        });
+      }
+
       // Used by eth_accounts and eth_coinbase RPCs.
       const getEthAccounts = async () => {
         const accounts = getPermittedAccounts(origin);

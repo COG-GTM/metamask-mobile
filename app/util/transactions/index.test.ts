@@ -40,6 +40,7 @@ import {
   getTransactionReviewActionKey,
   getTransactionById,
 } from '.';
+import { createSwapsActionId } from './internal-origins';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
 import { TransactionType } from '@metamask/transaction-controller';
@@ -917,6 +918,8 @@ const swapFlowSwapEthTxMeta = {
   },
 };
 
+const swapsActionId = createSwapsActionId();
+
 describe('Transactions utils :: getIsSwapApproveOrSwapTransaction', () => {
   it('returns true if the transaction is an approve tx in the swap flow for ERC20 from token', () => {
     const result = getIsSwapApproveOrSwapTransaction(
@@ -924,6 +927,8 @@ describe('Transactions utils :: getIsSwapApproveOrSwapTransaction', () => {
       swapFlowApproveERC20TxMeta.origin,
       swapFlowApproveERC20TxMeta.transaction.to,
       swapFlowApproveERC20TxMeta.chainId,
+      swapsActionId,
+      swapFlowApproveERC20TxMeta.transaction.value,
     );
     expect(result).toBe(true);
   });
@@ -933,6 +938,8 @@ describe('Transactions utils :: getIsSwapApproveOrSwapTransaction', () => {
       swapFlowSwapERC20TxMeta.origin,
       swapFlowSwapERC20TxMeta.transaction.to,
       swapFlowSwapERC20TxMeta.chainId,
+      swapsActionId,
+      swapFlowSwapERC20TxMeta.transaction.value,
     );
     expect(result).toBe(true);
   });
@@ -942,6 +949,8 @@ describe('Transactions utils :: getIsSwapApproveOrSwapTransaction', () => {
       swapFlowSwapEthTxMeta.origin,
       swapFlowSwapEthTxMeta.transaction.to,
       swapFlowSwapEthTxMeta.chainId,
+      swapsActionId,
+      swapFlowSwapEthTxMeta.transaction.value,
     );
     expect(result).toBe(true);
   });
@@ -951,6 +960,8 @@ describe('Transactions utils :: getIsSwapApproveOrSwapTransaction', () => {
       sendERC20TxMeta.origin,
       sendERC20TxMeta.transaction.to,
       sendERC20TxMeta.chainId,
+      swapsActionId,
+      sendERC20TxMeta.transaction.value,
     );
     expect(result).toBe(false);
   });
@@ -960,6 +971,8 @@ describe('Transactions utils :: getIsSwapApproveOrSwapTransaction', () => {
       sendEthTxMeta.origin,
       sendEthTxMeta.transaction.to,
       sendEthTxMeta.chainId,
+      swapsActionId,
+      sendEthTxMeta.transaction.value,
     );
     expect(result).toBe(false);
   });
@@ -969,6 +982,8 @@ describe('Transactions utils :: getIsSwapApproveOrSwapTransaction', () => {
       dappTxMeta.origin,
       dappTxMeta.transaction.to,
       dappTxMeta.chainId,
+      swapsActionId,
+      dappTxMeta.transaction.value,
     );
     expect(result).toBe(false);
   });
@@ -981,6 +996,8 @@ describe('Transactions utils :: getIsSwapApproveTransaction', () => {
       swapFlowApproveERC20TxMeta.origin,
       swapFlowApproveERC20TxMeta.transaction.to,
       swapFlowApproveERC20TxMeta.chainId,
+      swapsActionId,
+      swapFlowApproveERC20TxMeta.transaction.value,
     );
     expect(result).toBe(true);
   });
@@ -990,6 +1007,8 @@ describe('Transactions utils :: getIsSwapApproveTransaction', () => {
       swapFlowSwapERC20TxMeta.origin,
       swapFlowSwapERC20TxMeta.transaction.to,
       swapFlowSwapERC20TxMeta.chainId,
+      swapsActionId,
+      swapFlowSwapERC20TxMeta.transaction.value,
     );
     expect(result).toBe(false);
   });
@@ -999,6 +1018,8 @@ describe('Transactions utils :: getIsSwapApproveTransaction', () => {
       sendEthTxMeta.origin,
       sendEthTxMeta.transaction.to,
       sendEthTxMeta.chainId,
+      swapsActionId,
+      sendEthTxMeta.transaction.value,
     );
     expect(result).toBe(false);
   });
@@ -1008,6 +1029,8 @@ describe('Transactions utils :: getIsSwapApproveTransaction', () => {
       sendERC20TxMeta.origin,
       sendERC20TxMeta.transaction.to,
       sendERC20TxMeta.chainId,
+      swapsActionId,
+      sendERC20TxMeta.transaction.value,
     );
     expect(result).toBe(false);
   });
@@ -1017,6 +1040,8 @@ describe('Transactions utils :: getIsSwapApproveTransaction', () => {
       dappTxMeta.origin,
       dappTxMeta.transaction.to,
       dappTxMeta.chainId,
+      swapsActionId,
+      dappTxMeta.transaction.value,
     );
     expect(result).toBe(false);
   });
@@ -1029,6 +1054,8 @@ describe('Transactions utils :: getIsSwapTransaction', () => {
       swapFlowApproveERC20TxMeta.origin,
       swapFlowApproveERC20TxMeta.transaction.to,
       swapFlowApproveERC20TxMeta.chainId,
+      swapsActionId,
+      swapFlowApproveERC20TxMeta.transaction.value,
     );
     expect(result).toBe(false);
   });
@@ -1038,6 +1065,8 @@ describe('Transactions utils :: getIsSwapTransaction', () => {
       swapFlowSwapERC20TxMeta.origin,
       swapFlowSwapERC20TxMeta.transaction.to,
       swapFlowSwapERC20TxMeta.chainId,
+      swapsActionId,
+      swapFlowSwapERC20TxMeta.transaction.value,
     );
     expect(result).toBe(true);
   });
@@ -1047,6 +1076,8 @@ describe('Transactions utils :: getIsSwapTransaction', () => {
       swapFlowSwapEthTxMeta.origin,
       swapFlowSwapEthTxMeta.transaction.to,
       swapFlowSwapEthTxMeta.chainId,
+      swapsActionId,
+      swapFlowSwapEthTxMeta.transaction.value,
     );
     expect(result).toBe(true);
   });
@@ -1056,6 +1087,8 @@ describe('Transactions utils :: getIsSwapTransaction', () => {
       sendEthTxMeta.origin,
       sendEthTxMeta.transaction.to,
       sendEthTxMeta.chainId,
+      swapsActionId,
+      sendEthTxMeta.transaction.value,
     );
     expect(result).toBe(false);
   });
@@ -1065,8 +1098,73 @@ describe('Transactions utils :: getIsSwapTransaction', () => {
       dappTxMeta.origin,
       dappTxMeta.transaction.to,
       dappTxMeta.chainId,
+      swapsActionId,
+      dappTxMeta.transaction.value,
     );
     expect(result).toBe(false);
+  });
+});
+
+describe('Transactions utils :: Swaps auto-sign origin spoofing', () => {
+  const attackerContract = '0x000000000000000000000000000000000000dead';
+
+  it('returns false for a Swaps-origin tx without a Swaps action ID', () => {
+    expect(
+      getIsSwapApproveOrSwapTransaction(
+        swapFlowApproveERC20TxMeta.transaction.data,
+        process.env.MM_FOX_CODE,
+        swapFlowApproveERC20TxMeta.transaction.to,
+        swapFlowApproveERC20TxMeta.chainId,
+        undefined,
+        swapFlowApproveERC20TxMeta.transaction.value,
+      ),
+    ).toBe(false);
+    expect(
+      getIsSwapTransaction(
+        swapFlowSwapEthTxMeta.transaction.data,
+        process.env.MM_FOX_CODE,
+        swapFlowSwapEthTxMeta.transaction.to,
+        swapFlowSwapEthTxMeta.chainId,
+        undefined,
+        swapFlowSwapEthTxMeta.transaction.value,
+      ),
+    ).toBe(false);
+  });
+
+  it('returns false for a Swaps-origin tx with a forged action ID', () => {
+    expect(
+      getIsSwapApproveOrSwapTransaction(
+        swapFlowApproveERC20TxMeta.transaction.data,
+        process.env.MM_FOX_CODE,
+        swapFlowApproveERC20TxMeta.transaction.to,
+        swapFlowApproveERC20TxMeta.chainId,
+        'mm-swaps-forged',
+        '0x0',
+      ),
+    ).toBe(false);
+  });
+
+  it('returns false for an approve-shaped tx that sends native value', () => {
+    expect(
+      getIsSwapApproveOrSwapTransaction(
+        swapFlowApproveERC20TxMeta.transaction.data,
+        process.env.MM_FOX_CODE,
+        attackerContract,
+        swapFlowApproveERC20TxMeta.chainId,
+        swapsActionId,
+        '0xde0b6b3a7640000',
+      ),
+    ).toBe(false);
+    expect(
+      getIsSwapApproveTransaction(
+        swapFlowApproveERC20TxMeta.transaction.data,
+        process.env.MM_FOX_CODE,
+        attackerContract,
+        swapFlowApproveERC20TxMeta.chainId,
+        swapsActionId,
+        '0xde0b6b3a7640000',
+      ),
+    ).toBe(false);
   });
 });
 

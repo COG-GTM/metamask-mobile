@@ -65,6 +65,8 @@ import {
 import { CaveatTypes } from '../Permissions/constants';
 import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
 import { toHex } from '@metamask/controller-utils';
+import getDefaultBridgeParams from '../SDKConnect/AndroidSDK/getDefaultBridgeParams';
+import { DappClient } from '../SDKConnect/AndroidSDK/dapp-sdk-types';
 
 jest.mock('../../util/permissions', () => ({
   __esModule: true,
@@ -1469,6 +1471,153 @@ describe('getRpcMethodMiddleware', () => {
       expect((response as JsonRpcFailure).error.message).toBe(
         expectedError.message,
       );
+    });
+  });
+
+  describe('internal origin spoofing', () => {
+    const mockAddress = '0x0000000000000000000000000000000000000001';
+    const channelId = '70a863a4-a756-4660-8c72-dc367d02f625';
+    // approve(swapsContract, amount) sent to an attacker contract with value
+    const spoofedSwapsTx = {
+      from: mockAddress,
+      to: '0x000000000000000000000000000000000000dead',
+      value: '0xde0b6b3a7640000',
+      data: '0x095ea7b3000000000000000000000000881d40237659c251811cec9c364ef91dc08d300c000000000000000000000000000000000000000000000000000000001cd7f673',
+      chainId: '0x1',
+    };
+
+    const setupSdkState = (permittedOrigin: string) =>
+      setupGlobalState({
+        addTransactionResult: Promise.resolve('fake-hash'),
+        permittedAccounts: { [permittedOrigin]: [mockAddress] },
+        selectedNetworkClientId: 'mainnet',
+        networksMetadata: {},
+        networkConfigurationsByChainId: {
+          '0x1': {
+            blockExplorerUrls: ['https://etherscan.com'],
+            chainId: '0x1',
+            defaultRpcEndpointIndex: 0,
+            name: 'Ethereum Mainnet',
+            nativeCurrency: 'ETH',
+            rpcEndpoints: [
+              {
+                networkClientId: 'mainnet',
+                type: 'Custom',
+                url: 'https://mainnet.infura.io/v3',
+              },
+            ],
+          },
+        },
+        selectedAddress: mockAddress,
+      });
+
+    it.each([
+      ['url and title', { url: process.env.MM_FOX_CODE, title: process.env.MM_FOX_CODE }],
+      ['title', { title: process.env.MM_FOX_CODE }],
+    ])(
+      'rejects eth_sendTransaction from an SDK bridge whose originatorInfo %s is MM_FOX_CODE',
+      async (_fields, originatorInfo) => {
+        setupSdkState(channelId);
+        const bridgeParams = getDefaultBridgeParams({
+          clientId: channelId,
+          connected: true,
+          originatorInfo: {
+            platform: 'web',
+            dappId: 'attacker',
+            ...originatorInfo,
+          } as DappClient['originatorInfo'],
+        });
+        const middleware = bridgeParams.getRpcMethodMiddleware({
+          hostname: '',
+          getProviderState: jest.fn(),
+        });
+
+        const response = await callMiddleware({
+          middleware,
+          request: {
+            jsonrpc,
+            id: 1,
+            method: 'eth_sendTransaction',
+            params: [spoofedSwapsTx],
+          },
+        });
+
+        expect((response as JsonRpcFailure).error.code).toBe(
+          providerErrors.unauthorized().code,
+        );
+        expect(mockAddTransaction).not.toHaveBeenCalled();
+      },
+    );
+
+    it('still sends eth_sendTransaction from an SDK bridge with regular originatorInfo', async () => {
+      setupSdkState(channelId);
+      const middleware = getDefaultBridgeParams({
+        clientId: channelId,
+        connected: true,
+        originatorInfo: {
+          url: 'https://dapp.example',
+          title: 'Dapp',
+          platform: 'web',
+          dappId: 'dapp',
+        } as DappClient['originatorInfo'],
+      }).getRpcMethodMiddleware({ hostname: '', getProviderState: jest.fn() });
+
+      const response = await callMiddleware({
+        middleware,
+        request: {
+          jsonrpc,
+          id: 1,
+          method: 'eth_sendTransaction',
+          params: [spoofedSwapsTx],
+        },
+      });
+
+      expect((response as JsonRpcSuccess<string>).result).toBe('fake-hash');
+      expect(mockAddTransaction).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ origin: 'https://dapp.example' }),
+      );
+    });
+
+    it('rejects requests whose SDK channel ID is an internal origin', async () => {
+      setupSdkState(process.env.MM_FOX_CODE as string);
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalSDKOptions(),
+        hostname: 'example.metamask.io',
+        channelId: process.env.MM_FOX_CODE,
+      });
+
+      const response = await callMiddleware({
+        middleware,
+        request: { jsonrpc, id: 1, method: 'eth_accounts', params: [] },
+      });
+
+      expect((response as JsonRpcFailure).error.code).toBe(
+        providerErrors.unauthorized().code,
+      );
+    });
+
+    it('rejects requests from a browser hostname equal to an internal origin', async () => {
+      setupSdkState(process.env.MM_FOX_CODE as string);
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalOptions(),
+        hostname: process.env.MM_FOX_CODE as string,
+      });
+
+      const response = await callMiddleware({
+        middleware,
+        request: {
+          jsonrpc,
+          id: 1,
+          method: 'eth_sendTransaction',
+          params: [spoofedSwapsTx],
+        },
+      });
+
+      expect((response as JsonRpcFailure).error.code).toBe(
+        providerErrors.unauthorized().code,
+      );
+      expect(mockAddTransaction).not.toHaveBeenCalled();
     });
   });
 

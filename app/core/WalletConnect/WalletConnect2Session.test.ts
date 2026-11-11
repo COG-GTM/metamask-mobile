@@ -94,6 +94,9 @@ jest.mock('./wc-utils', () => ({
   normalizeOrigin: jest.fn().mockImplementation((url) => url),
   getHostname: jest.fn().mockReturnValue('example.com'),
 }));
+jest.mock('../../util/transaction-controller', () => ({
+  addTransaction: jest.fn(),
+}));
 jest.mock('../../selectors/networkController', () => ({
   selectEvmChainId: jest.fn(),
 }));
@@ -223,6 +226,46 @@ describe('WalletConnect2Session', () => {
         error: { code: 4902, message: 'Invalid chainId' },
       },
     });
+  });
+
+  it('rejects requests whose origin claims the internal Swaps origin', async () => {
+    const mockRespondSessionRequest = jest
+      .spyOn(mockClient, 'respondSessionRequest')
+      .mockImplementation(async () => {
+        /* empty implementation */
+      });
+    const { addTransaction } = jest.requireMock(
+      '../../util/transaction-controller',
+    );
+    const { checkWCPermissions } = jest.requireMock('./wc-utils');
+    checkWCPermissions.mockClear();
+
+    await session.handleRequest({
+      id: '1',
+      topic: 'test-topic',
+      params: {
+        chainId: 'eip155:1',
+        request: {
+          method: 'eth_sendTransaction',
+          params: [{ from: '0x1', to: '0x2', value: '0x1', data: '0x' }],
+        },
+      },
+      verifyContext: { verified: { origin: process.env.MM_FOX_CODE } },
+    } as any);
+
+    expect(mockRespondSessionRequest).toHaveBeenCalledWith({
+      topic: mockSession.topic,
+      response: {
+        id: '1',
+        jsonrpc: '2.0',
+        error: {
+          code: 4100,
+          message: 'Requests from this origin are not allowed.',
+        },
+      },
+    });
+    expect(checkWCPermissions).not.toHaveBeenCalled();
+    expect(addTransaction).not.toHaveBeenCalled();
   });
 
   it('removes listeners correctly', async () => {

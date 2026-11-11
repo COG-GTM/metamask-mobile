@@ -357,6 +357,39 @@ describe('DeeplinkProtocolService', () => {
       await service.handleConnection(connectionParams);
       expect(service.connections.connection1).toBeDefined();
     });
+
+    it.each([
+      ['url', { url: process.env.MM_FOX_CODE, title: 'Test' }],
+      ['title', { title: process.env.MM_FOX_CODE }],
+    ])(
+      'rejects originatorInfo whose %s claims the internal Swaps origin',
+      async (_field, originatorInfo) => {
+        const checkPermissionSpy = jest.spyOn(service, 'checkPermission');
+        const setupBridgeSpy = jest.spyOn(service, 'setupBridge');
+        const processRequestSpy = jest.spyOn(service, 'processDappRpcRequest');
+
+        await service.handleConnection({
+          dappPublicKey: 'key',
+          url: 'url',
+          scheme: 'scheme',
+          channelId: 'spoofed-channel',
+          originatorInfo: Buffer.from(
+            JSON.stringify({ originatorInfo }),
+          ).toString('base64'),
+          request: JSON.stringify({
+            id: '1',
+            method: 'eth_sendTransaction',
+            params: [{ from: '0x1', to: '0x2', value: '0x1' }],
+          }),
+        });
+
+        expect(checkPermissionSpy).not.toHaveBeenCalled();
+        expect(setupBridgeSpy).not.toHaveBeenCalled();
+        expect(processRequestSpy).not.toHaveBeenCalled();
+        expect(service.connections['spoofed-channel']).toBeUndefined();
+        expect(service.currentClientId).not.toBe('spoofed-channel');
+      },
+    );
   });
 
   describe('handleConnectionEventAsync', () => {
