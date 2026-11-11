@@ -106,10 +106,13 @@ import BrowserUrlBar, {
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
 import {
+  createProviderFrameToken,
   getMaskedUrl,
+  getProviderFrameTokenScript,
   getUrlOrigin,
   isENSUrl,
   scopeRefToOrigin,
+  unwrapProviderFrameMessage,
 } from './utils';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
@@ -204,6 +207,8 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     messages: Record<string, unknown>[];
     size: number;
   }>();
+  // Secret only the top frame's injected wrapper attaches to provider messages
+  const [providerFrameToken] = useState(createProviderFrameToken);
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
   const searchEngine = useSelector(selectSearchEngine);
@@ -518,12 +523,16 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
 
     const getEntryScriptWeb3 = async () => {
       const entryScriptWeb3Fetched = await EntryScriptWeb3.get();
-      setEntryScriptWeb3(entryScriptWeb3Fetched + SPA_urlChangeListener);
+      setEntryScriptWeb3(
+        getProviderFrameTokenScript(providerFrameToken) +
+          entryScriptWeb3Fetched +
+          SPA_urlChangeListener,
+      );
     };
 
     getEntryScriptWeb3();
     handleFirstUrl();
-  }, [isTabActive, handleFirstUrl]);
+  }, [isTabActive, handleFirstUrl, providerFrameToken]);
 
   // Cleanup bridges when tab is closed
   useEffect(
@@ -888,11 +897,20 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         );
         return;
       }
-      const dataParsed = typeof data === 'string' ? JSON.parse(data) : data;
+      const unwrapped = unwrapProviderFrameMessage(data, providerFrameToken);
+      if (!unwrapped) {
+        return;
+      }
+      const dataParsed = JSON.parse(unwrapped.data);
       if (!dataParsed || (!dataParsed.type && !dataParsed.name)) {
         return;
       }
       if (dataParsed.name) {
+        // Provider requests must come from the top frame's token wrapper, not from
+        // iframes calling the native bridge directly
+        if (!unwrapped.fromTokenFrame) {
+          return;
+        }
         const senderOrigin = getUrlOrigin(nativeEvent.url);
         const bridge = backgroundBridgeRef.current;
         if (bridge) {
