@@ -157,6 +157,7 @@ describe('WalletConnect2Session', () => {
     });
 
     session = new WalletConnect2Session({
+      permissionSubject: 'example.com#wc-verified-test-pairing',
       web3Wallet: mockClient,
       session: mockSession,
       channelId: 'test-channel',
@@ -222,6 +223,120 @@ describe('WalletConnect2Session', () => {
         jsonrpc: '2.0',
         error: { code: 4902, message: 'Invalid chainId' },
       },
+    });
+  });
+
+  describe('origin used for permission checks', () => {
+    const baseRequest = {
+      id: '7',
+      topic: 'test-topic',
+      params: {
+        chainId: 'eip155:1',
+        request: { method: 'personal_sign', params: [] },
+      },
+    };
+
+    it('uses the session permission subject, not the self-declared verify origin', async () => {
+      const { checkWCPermissions } = jest.requireMock('./wc-utils');
+      checkWCPermissions.mockClear();
+      const onMessage = (session as any).backgroundBridge.onMessage;
+
+      await session.handleRequest({
+        ...baseRequest,
+        verifyContext: {
+          verified: {
+            origin: 'https://app.wellknown-exchange.example',
+            validation: 'UNKNOWN',
+            verifyUrl: '',
+          },
+        },
+      } as any);
+
+      expect(checkWCPermissions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          origin: 'example.com#wc-verified-test-pairing',
+        }),
+      );
+      expect(onMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          origin: 'example.com#wc-verified-test-pairing',
+        }),
+      );
+    });
+
+    it('rejects requests flagged as scam', async () => {
+      const { checkWCPermissions } = jest.requireMock('./wc-utils');
+      checkWCPermissions.mockClear();
+      const respondSpy = jest
+        .spyOn(mockClient, 'respondSessionRequest')
+        .mockResolvedValue(undefined);
+
+      await session.handleRequest({
+        ...baseRequest,
+        verifyContext: {
+          verified: {
+            origin: 'https://example.com',
+            validation: 'VALID',
+            verifyUrl: '',
+            isScam: true,
+          },
+        },
+      } as any);
+
+      expect(respondSpy).toHaveBeenCalledWith({
+        topic: 'test-topic',
+        response: {
+          id: '7',
+          jsonrpc: '2.0',
+          error: { code: 5000, message: 'User reject' },
+        },
+      });
+      expect(checkWCPermissions).not.toHaveBeenCalled();
+      expect(session.isHandlingRequest()).toBe(false);
+    });
+
+    it('rejects requests whose Verify validation is INVALID', async () => {
+      const { checkWCPermissions } = jest.requireMock('./wc-utils');
+      checkWCPermissions.mockClear();
+      const respondSpy = jest
+        .spyOn(mockClient, 'respondSessionRequest')
+        .mockResolvedValue(undefined);
+
+      await session.handleRequest({
+        ...baseRequest,
+        verifyContext: {
+          verified: {
+            origin: 'https://phisher.example',
+            validation: 'INVALID',
+            verifyUrl: '',
+          },
+        },
+      } as any);
+
+      expect(respondSpy).toHaveBeenCalledWith({
+        topic: 'test-topic',
+        response: {
+          id: '7',
+          jsonrpc: '2.0',
+          error: { code: 5000, message: 'User reject' },
+        },
+      });
+      expect(checkWCPermissions).not.toHaveBeenCalled();
+      expect(session.isHandlingRequest()).toBe(false);
+    });
+
+    it('passes the permission subject to the background bridge', () => {
+      const BackgroundBridge = jest.requireMock(
+        '../BackgroundBridge/BackgroundBridge',
+      );
+      expect(BackgroundBridge).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          permissionSubject: 'example.com#wc-verified-test-pairing',
+        }),
+      );
+      expect(session.getPermissionSubject()).toBe(
+        'example.com#wc-verified-test-pairing',
+      );
     });
   });
 
@@ -331,6 +446,7 @@ describe('WalletConnect2Session', () => {
     (selectEvmChainId as unknown as jest.Mock).mockReturnValue('0x1');
 
     session = new WalletConnect2Session({
+      permissionSubject: 'example.com#wc-verified-test-pairing',
       web3Wallet: mockClient,
       session: mockSession,
       channelId: 'test-channel',
@@ -370,6 +486,7 @@ describe('WalletConnect2Session', () => {
     (selectEvmChainId as unknown as jest.Mock).mockReturnValue('0x1');
 
     session = new WalletConnect2Session({
+      permissionSubject: 'example.com#wc-verified-test-pairing',
       web3Wallet: mockClient,
       session: mockSession,
       channelId: 'test-channel',
@@ -409,6 +526,7 @@ describe('WalletConnect2Session', () => {
     (selectEvmChainId as unknown as jest.Mock).mockReturnValue('0x1');
 
     session = new WalletConnect2Session({
+      permissionSubject: 'example.com#wc-verified-test-pairing',
       web3Wallet: mockClient,
       session: mockSession,
       channelId: 'test-channel',

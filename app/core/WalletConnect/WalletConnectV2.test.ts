@@ -12,6 +12,7 @@ import WalletConnect2Session from './WalletConnect2Session';
 // eslint-disable-next-line import/no-namespace
 import * as wcUtils from './wc-utils';
 import { Core } from '@walletconnect/core';
+import { store } from '../../store';
 
 jest.mock('../AppConstants', () => ({
   WALLET_CONNECT: {
@@ -102,10 +103,17 @@ jest.mock('../Engine', () => ({
       isUnlocked: jest.fn().mockReturnValue(true),
     },
     PermissionController: {
+      state: {
+        subjects: {
+          'example.com': {},
+          'example.com#wc-verified-test-pairing': {},
+        },
+      },
       requestPermissions: jest.fn().mockResolvedValue(true),
       getPermission: jest.fn().mockReturnValue({
         id: 'mockPermissionId',
       }),
+      hasPermissions: jest.fn().mockReturnValue(false),
       revokeAllPermissions: jest.fn(),
     },
   },
@@ -137,13 +145,16 @@ jest.mock('../../store/storage-wrapper', () => ({
 
 jest.mock('./WalletConnect2Session', () => ({
   __esModule: true,
-  default: jest.fn().mockImplementation(() => ({
-    updateSession: jest.fn(),
-    handleRequest: jest.fn(),
-    removeListeners: jest.fn(),
-    setDeeplink: jest.fn(),
-    isHandlingRequest: jest.fn().mockReturnValue(false),
-  })),
+  default: jest
+    .fn()
+    .mockImplementation((opts?: { permissionSubject?: string }) => ({
+      updateSession: jest.fn(),
+      handleRequest: jest.fn(),
+      removeListeners: jest.fn(),
+      setDeeplink: jest.fn(),
+      isHandlingRequest: jest.fn().mockReturnValue(false),
+      getPermissionSubject: jest.fn().mockReturnValue(opts?.permissionSubject),
+    })),
 }));
 
 jest.mock('../BackgroundBridge/BackgroundBridge', () => ({
@@ -503,6 +514,9 @@ describe('WC2Manager', () => {
         Engine.context.PermissionController,
         'revokeAllPermissions',
       );
+      (
+        Engine.context.PermissionController.hasPermissions as jest.Mock
+      ).mockReturnValueOnce(true);
 
       await manager.removeSession(session as SessionTypes.Struct);
 
@@ -514,7 +528,10 @@ describe('WC2Manager', () => {
         },
         topic: 'test-topic',
       });
-      expect(revokeAllPermissionsSpy).toHaveBeenCalledWith('test-topic');
+      expect(revokeAllPermissionsSpy).toHaveBeenCalledWith(
+        'example.com#wc-verified-test-pairing',
+      );
+      expect(revokeAllPermissionsSpy).not.toHaveBeenCalledWith('example.com');
     });
   });
 
@@ -1006,6 +1023,263 @@ describe('WC2Manager', () => {
 
       // Trigger the session delete event
       await sessionDeleteCallback({ topic: 'test-topic' });
+    });
+  });
+
+  describe('WC2Manager session proposal origin verification', () => {
+    const browserHost = 'example.com';
+    const browserAccount = '0x1234567890abcdef1234567890abcdef12345678';
+
+    const buildProposal = (
+      pairingTopic: string,
+      verified?: {
+        validation: 'VALID' | 'INVALID' | 'UNKNOWN';
+        origin: string;
+        isScam?: boolean;
+      },
+    ) => ({
+      id: 42,
+      params: {
+        id: 42,
+        pairingTopic,
+        proposer: {
+          publicKey: 'attacker-public-key',
+          metadata: {
+            name: 'Spoofed App',
+            description: 'Spoofed App',
+            url: `https://${browserHost}`,
+            icons: ['https://example.com/brand-logo.png'],
+          },
+        },
+        expiryTimestamp: Date.now() + 300000,
+        relays: [{ protocol: 'irn' }],
+        requiredNamespaces: {},
+        optionalNamespaces: {},
+      },
+      verifyContext: {
+        verified: {
+          verifyUrl: 'https://verify.walletconnect.org',
+          ...verified,
+        },
+      },
+    });
+
+    let permittedAccountsMock: jest.Mock;
+
+    beforeEach(() => {
+      permittedAccountsMock = jest.requireMock('../Permissions')
+        .getPermittedAccounts as jest.Mock;
+      // Only the in-app browser subject for example.com holds a grant.
+      permittedAccountsMock.mockImplementation((subject: string) =>
+        subject === browserHost ? [browserAccount] : [],
+      );
+      (
+        Engine.context.PermissionController.requestPermissions as jest.Mock
+      ).mockClear();
+      mockApproveSession.mockClear();
+    });
+
+    afterEach(() => {
+      permittedAccountsMock.mockReturnValue([browserAccount]);
+    });
+
+    it('does not give an UNKNOWN-validation proposal the accounts of an already-permitted browser host', async () => {
+      const dispatchSpy = jest.spyOn(store, 'dispatch');
+      mockApproveSession.mockResolvedValueOnce({
+        topic: 'attacker-topic',
+        pairingTopic: 'attacker-pairing',
+      });
+
+      await manager.onSessionProposal(
+        buildProposal('attacker-pairing', {
+          validation: 'UNKNOWN',
+          origin: `https://${browserHost}`,
+        }) as unknown as Parameters<WC2Manager['onSessionProposal']>[0],
+      );
+
+      const expectedSubject = 'example.com#wc-unverified-attacker-pairing';
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).toHaveBeenCalledWith({ origin: expectedSubject }, expect.any(Object));
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalledWith({ origin: browserHost }, expect.anything());
+      expect(permittedAccountsMock).not.toHaveBeenCalledWith(browserHost);
+
+      const approvedNamespaces = mockApproveSession.mock.calls[0][0].namespaces;
+      expect(approvedNamespaces.eip155.accounts).toEqual([]);
+
+      // Shown as unverified: dapp-chosen icon is dropped.
+      expect(dispatchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            url: 'https://example.com',
+            icon: '',
+          }),
+        }),
+      );
+      expect(WalletConnect2Session).toHaveBeenLastCalledWith(
+        expect.objectContaining({ permissionSubject: expectedSubject }),
+      );
+      dispatchSpy.mockRestore();
+    });
+
+    it('keys a VALID proposal by its verified origin in a WalletConnect-only subject', async () => {
+      await manager.onSessionProposal(
+        buildProposal('verified-pairing', {
+          validation: 'VALID',
+          origin: `https://${browserHost}`,
+        }) as unknown as Parameters<WC2Manager['onSessionProposal']>[0],
+      );
+
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).toHaveBeenCalledWith(
+        { origin: 'example.com#wc-verified-verified-pairing' },
+        expect.any(Object),
+      );
+    });
+
+    it('rejects an INVALID proposal (attested origin differs from metadata.url) without requesting permissions', async () => {
+      const web3Wallet = (manager as unknown as { web3Wallet: IWalletKit })
+        .web3Wallet;
+      const rejectSpy = jest
+        .spyOn(web3Wallet, 'rejectSession')
+        .mockResolvedValue(undefined);
+      rejectSpy.mockClear();
+
+      await manager.onSessionProposal(
+        buildProposal('invalid-pairing', {
+          validation: 'INVALID',
+          origin: 'https://phisher.example',
+        }) as unknown as Parameters<WC2Manager['onSessionProposal']>[0],
+      );
+
+      expect(rejectSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 42 }),
+      );
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalled();
+      expect(mockApproveSession).not.toHaveBeenCalled();
+    });
+
+    it('revokes the new grant when approveSession fails', async () => {
+      const permissionController = Engine.context.PermissionController;
+      (permissionController.hasPermissions as jest.Mock).mockImplementation(
+        (subject: string) =>
+          subject === 'example.com#wc-unverified-failed-pairing',
+      );
+      (permissionController.revokeAllPermissions as jest.Mock).mockClear();
+      (
+        permissionController.requestPermissions as jest.Mock
+      ).mockImplementationOnce(async () => {
+        // Revoke checks before the grant exists must not count.
+        (permissionController.revokeAllPermissions as jest.Mock).mockClear();
+        return [{}, {}];
+      });
+      mockApproveSession.mockRejectedValueOnce(new Error('relay down'));
+
+      await manager.onSessionProposal(
+        buildProposal('failed-pairing', {
+          validation: 'UNKNOWN',
+          origin: `https://${browserHost}`,
+        }) as unknown as Parameters<WC2Manager['onSessionProposal']>[0],
+      );
+
+      expect(permissionController.revokeAllPermissions).toHaveBeenCalledWith(
+        'example.com#wc-unverified-failed-pairing',
+      );
+      (permissionController.hasPermissions as jest.Mock).mockReturnValue(false);
+    });
+
+    it('rejects proposals flagged as scam without requesting permissions', async () => {
+      const web3Wallet = (manager as unknown as { web3Wallet: IWalletKit })
+        .web3Wallet;
+      const rejectSpy = jest
+        .spyOn(web3Wallet, 'rejectSession')
+        .mockResolvedValue(undefined);
+
+      await manager.onSessionProposal(
+        buildProposal('scam-pairing', {
+          validation: 'VALID',
+          origin: `https://${browserHost}`,
+          isScam: true,
+        }) as unknown as Parameters<WC2Manager['onSessionProposal']>[0],
+      );
+
+      expect(rejectSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ id: 42 }),
+      );
+      expect(
+        Engine.context.PermissionController.requestPermissions,
+      ).not.toHaveBeenCalled();
+      expect(mockApproveSession).not.toHaveBeenCalled();
+    });
+
+    it('revokes a stale grant left on the new subject before requesting permissions', async () => {
+      const permissionController = Engine.context.PermissionController;
+      (permissionController.hasPermissions as jest.Mock).mockImplementation(
+        (subject: string) =>
+          subject === 'example.com#wc-unverified-stale-pairing',
+      );
+
+      await manager.onSessionProposal(
+        buildProposal('stale-pairing', {
+          validation: 'UNKNOWN',
+          origin: `https://${browserHost}`,
+        }) as unknown as Parameters<WC2Manager['onSessionProposal']>[0],
+      );
+
+      expect(permissionController.revokeAllPermissions).toHaveBeenCalledWith(
+        'example.com#wc-unverified-stale-pairing',
+      );
+      (permissionController.hasPermissions as jest.Mock).mockReturnValue(false);
+    });
+  });
+
+  describe('WC2Manager restored sessions', () => {
+    it('restores sessions by their WalletConnect subject and disconnects sessions without one', async () => {
+      const web3Wallet = {
+        on: jest.fn(),
+        disconnectSession: jest.fn().mockResolvedValue(undefined),
+        getActiveSessions: jest.fn().mockReturnValue({
+          'test-topic': {
+            topic: 'test-topic',
+            pairingTopic: 'test-pairing',
+            peer: {
+              metadata: { url: 'https://example.com', name: 'App', icons: [] },
+            },
+          },
+          'legacy-topic': {
+            topic: 'legacy-topic',
+            pairingTopic: 'legacy-pairing',
+            peer: {
+              metadata: { url: 'https://example.com', name: 'Old', icons: [] },
+            },
+          },
+        }),
+      } as unknown as IWalletKit;
+      (WalletConnect2Session as unknown as jest.Mock).mockClear();
+
+      const WC2ManagerCtor = WC2Manager as unknown as new (
+        ...args: unknown[]
+      ) => WC2Manager;
+      new WC2ManagerCtor(web3Wallet, {}, mockNavigation, {});
+      await new Promise(process.nextTick);
+
+      expect(web3Wallet.disconnectSession).toHaveBeenCalledWith(
+        expect.objectContaining({ topic: 'legacy-topic' }),
+      );
+      expect(web3Wallet.disconnectSession).not.toHaveBeenCalledWith(
+        expect.objectContaining({ topic: 'test-topic' }),
+      );
+      expect(WalletConnect2Session).toHaveBeenCalledTimes(1);
+      expect(WalletConnect2Session).toHaveBeenCalledWith(
+        expect.objectContaining({
+          permissionSubject: 'example.com#wc-verified-test-pairing',
+        }),
+      );
     });
   });
 
