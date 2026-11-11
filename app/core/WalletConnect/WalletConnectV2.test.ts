@@ -6,7 +6,7 @@ import { SessionTypes } from '@walletconnect/types/dist/types/sign-client/sessio
 import StorageWrapper from '../../store/storage-wrapper';
 import AppConstants from '../AppConstants';
 import Engine from '../Engine';
-import { IWalletKit } from '@reown/walletkit';
+import { IWalletKit, WalletKitTypes } from '@reown/walletkit';
 import WalletConnect from './WalletConnect';
 import WalletConnect2Session from './WalletConnect2Session';
 // eslint-disable-next-line import/no-namespace
@@ -17,6 +17,7 @@ import { Alert } from 'react-native';
 jest.mock('../AppConstants', () => ({
   WALLET_CONNECT: {
     PROJECT_ID: 'test-project-id',
+    PERMISSION_ORIGINS: 'wc2sessions_permission_origins',
     METADATA: {
       name: 'Test Wallet',
       description: 'Test Wallet Description',
@@ -795,6 +796,74 @@ describe('WC2Manager', () => {
       ).toHaveBeenCalledWith({ origin: 'app.uniswap.org' }, expect.any(Object));
       expect(WalletConnect2Session).toHaveBeenLastCalledWith(
         expect.objectContaining({ permissionOrigin: 'app.uniswap.org' }),
+      );
+    });
+  });
+
+  describe('WC2Manager WalletConnect permission origin persistence', () => {
+    it('records the permission origin of an approved unverified session', async () => {
+      const setItemSpy = jest.spyOn(StorageWrapper, 'setItem');
+      mockApproveSession.mockResolvedValueOnce({
+        topic: 'new-topic',
+        pairingTopic: 'abcdef0123456789',
+      } as unknown as SessionTypes.Struct);
+
+      await manager.onSessionProposal({
+        id: 1,
+        params: {
+          id: 1,
+          pairingTopic: 'abcdef0123456789',
+          proposer: {
+            publicKey: 'test-public-key',
+            metadata: {
+              name: 'Spoofed',
+              description: 'Spoofed',
+              url: 'https://app.uniswap.org',
+              icons: [],
+            },
+          },
+          expiryTimestamp: Date.now() + 300000,
+          relays: [{ protocol: 'irn' }],
+          requiredNamespaces: {},
+          optionalNamespaces: {},
+        },
+        verifyContext: {
+          verified: {
+            verifyUrl: 'https://verify.walletconnect.com',
+            validation: 'UNKNOWN' as const,
+            origin: 'https://app.uniswap.org',
+          },
+        },
+      } as unknown as WalletKitTypes.SessionProposal);
+
+      expect(setItemSpy).toHaveBeenCalledWith(
+        AppConstants.WALLET_CONNECT.PERMISSION_ORIGINS,
+        JSON.stringify({
+          'new-topic': 'wc-abcdef0123456789.unverified.invalid',
+        }),
+      );
+    });
+
+    it('restores active sessions with their recorded permission origin', async () => {
+      (StorageWrapper.getItem as jest.Mock).mockResolvedValueOnce(
+        JSON.stringify({ 'test-topic': 'wc-testpairing.unverified.invalid' }),
+      );
+      (WalletConnect2Session as unknown as jest.Mock).mockClear();
+      const web3Wallet = (manager as unknown as { web3Wallet: IWalletKit })
+        .web3Wallet;
+
+      new (WC2Manager as unknown as new (
+        ...args: unknown[]
+      ) => WC2Manager)(web3Wallet, {}, mockNavigation);
+      await new Promise((resolve) => setImmediate(resolve));
+
+      expect(WalletConnect2Session).toHaveBeenCalledWith(
+        expect.objectContaining({
+          permissionOrigin: 'wc-testpairing.unverified.invalid',
+        }),
+      );
+      expect(WalletConnect2Session).not.toHaveBeenCalledWith(
+        expect.objectContaining({ permissionOrigin: 'example.com' }),
       );
     });
   });

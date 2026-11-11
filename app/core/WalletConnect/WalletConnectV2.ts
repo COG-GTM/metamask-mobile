@@ -89,6 +89,7 @@ export class WC2Manager {
             JSON.stringify(this.deeplinkSessions),
           );
         }
+        await WC2Manager.setStoredPermissionOrigin(event.topic);
         // Remove session from local list
         this.sessions[event.topic]?.removeListeners();
         delete this.sessions[event.topic];
@@ -122,19 +123,21 @@ export class WC2Manager {
     const activeSessions = this.getSessions();
 
     if (activeSessions) {
+      const storedPermissionOrigins = WC2Manager.getStoredPermissionOrigins();
       activeSessions.forEach(async (session) => {
         const sessionKey = session.topic;
         try {
-          // Sessions approved without a verified origin had their permissions
-          // stored under a WalletConnect-specific subject, not the claimed hostname.
+          // Reuse the permission subject recorded at approval so a revoked
+          // unverified session never falls back to its claimed hostname.
+          // Sessions approved before this was recorded used the hostname.
           const unverifiedOrigin = getUnverifiedWCPermissionOrigin(
             session.pairingTopic,
           );
-          const permissionOrigin = permissionController.hasPermissions(
-            unverifiedOrigin,
-          )
-            ? unverifiedOrigin
-            : getHostname(session.peer.metadata.url);
+          const permissionOrigin =
+            (await storedPermissionOrigins)[sessionKey] ??
+            (permissionController.hasPermissions(unverifiedOrigin)
+              ? unverifiedOrigin
+              : getHostname(session.peer.metadata.url));
 
           this.sessions[sessionKey] = new WalletConnect2Session({
             web3Wallet,
@@ -331,6 +334,7 @@ export class WC2Manager {
       // Remove session from local list
       this.sessions[session.topic]?.removeListeners();
       delete this.sessions[session.topic];
+      await WC2Manager.setStoredPermissionOrigin(session.topic);
 
       // Remove associated permissions
       const permissionsController = (
@@ -370,6 +374,43 @@ export class WC2Manager {
     await StorageWrapper.setItem(
       AppConstants.WALLET_CONNECT.DEEPLINK_SESSIONS,
       JSON.stringify(this.deeplinkSessions),
+    );
+    await StorageWrapper.setItem(
+      AppConstants.WALLET_CONNECT.PERMISSION_ORIGINS,
+      JSON.stringify({}),
+    );
+  }
+
+  private static async getStoredPermissionOrigins(): Promise<
+    Record<string, string>
+  > {
+    try {
+      const stored = await StorageWrapper.getItem(
+        AppConstants.WALLET_CONNECT.PERMISSION_ORIGINS,
+      );
+      return stored ? JSON.parse(stored) : {};
+    } catch (err) {
+      DevLogger.log(`WC2::getStoredPermissionOrigins failed to parse`, err);
+      return {};
+    }
+  }
+
+  // Records (or clears, when permissionOrigin is omitted) a session's permission subject.
+  private static async setStoredPermissionOrigin(
+    topic: string,
+    permissionOrigin?: string,
+  ) {
+    const origins = await WC2Manager.getStoredPermissionOrigins();
+    if (permissionOrigin) {
+      origins[topic] = permissionOrigin;
+    } else if (topic in origins) {
+      delete origins[topic];
+    } else {
+      return;
+    }
+    await StorageWrapper.setItem(
+      AppConstants.WALLET_CONNECT.PERMISSION_ORIGINS,
+      JSON.stringify(origins),
     );
   }
 
@@ -540,6 +581,8 @@ export class WC2Manager {
         id: proposal.id,
         namespaces,
       });
+
+      await WC2Manager.setStoredPermissionOrigin(activeSession.topic, hostname);
 
       const deeplink = !!this.deeplinkSessions[activeSession.pairingTopic];
       const session = new WalletConnect2Session({
