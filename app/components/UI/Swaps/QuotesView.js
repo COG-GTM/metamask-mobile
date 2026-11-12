@@ -117,6 +117,10 @@ import { selectShouldUseSmartTransaction } from '../../../selectors/smartTransac
 import { selectGasFeeControllerEstimateType } from '../../../selectors/gasFeeController';
 import { addSwapsTransaction } from '../../../util/swaps/swaps-transactions';
 import {
+  createSwapsActionId,
+  releaseSwapsActionId,
+} from '../../../util/swaps/swaps-transaction-registry';
+import {
   DEFAULT_GAS_FEE_OPTION_FEE_MARKET,
   DEFAULT_GAS_FEE_OPTION_LEGACY,
   getGasFeeEstimatesForTransaction,
@@ -990,17 +994,25 @@ function SwapsQuotesView({
           { chainId, isEIP1559Network },
         );
 
-        const { transactionMeta, result } = await addTransaction(
-          {
-            ...tradeTransaction,
-            ...tradeGasFeeEstimates,
-          },
-          {
-            deviceConfirmedOn: WalletDevice.MM_MOBILE,
-            networkClientId,
-            origin: process.env.MM_FOX_CODE,
-          },
-        );
+        const actionId = createSwapsActionId();
+        let addTransactionResponse;
+        try {
+          addTransactionResponse = await addTransaction(
+            {
+              ...tradeTransaction,
+              ...tradeGasFeeEstimates,
+            },
+            {
+              actionId,
+              deviceConfirmedOn: WalletDevice.MM_MOBILE,
+              networkClientId,
+              origin: process.env.MM_FOX_CODE,
+            },
+          );
+        } finally {
+          releaseSwapsActionId(actionId);
+        }
+        const { transactionMeta, result } = addTransactionResponse;
 
         Logger.log(LOG_PREFIX, 'Added trade transaction', transactionMeta.id);
 
@@ -1052,17 +1064,25 @@ function SwapsQuotesView({
           { chainId, isEIP1559Network },
         );
 
-        const { transactionMeta, result } = await addTransaction(
-          {
-            ...approvalTransaction,
-            ...approvalGasFeeEstimates,
-          },
-          {
-            deviceConfirmedOn: WalletDevice.MM_MOBILE,
-            networkClientId,
-            origin: process.env.MM_FOX_CODE,
-          },
-        );
+        const actionId = createSwapsActionId();
+        let addTransactionResponse;
+        try {
+          addTransactionResponse = await addTransaction(
+            {
+              ...approvalTransaction,
+              ...approvalGasFeeEstimates,
+            },
+            {
+              actionId,
+              deviceConfirmedOn: WalletDevice.MM_MOBILE,
+              networkClientId,
+              origin: process.env.MM_FOX_CODE,
+            },
+          );
+        } finally {
+          releaseSwapsActionId(actionId);
+        }
+        const { transactionMeta, result } = addTransactionResponse;
 
         Logger.log(
           LOG_PREFIX,

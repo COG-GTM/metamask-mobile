@@ -2,13 +2,53 @@ import { ImageSourcePropType } from 'react-native';
 import AppConstants from '../../AppConstants';
 import getRpcMethodMiddleware from '../../RPCMethods/RPCMethodMiddleware';
 import { DappClient } from './dapp-sdk-types';
+import { INTERNAL_ORIGINS } from '../../../constants/transaction';
+
+/**
+ * Checks whether a dapp-supplied value matches a wallet-internal origin,
+ * including after removing the SDK remote origin prefix.
+ *
+ * @param value - The originatorInfo url or title.
+ * @returns Whether the value impersonates an internal origin.
+ */
+const isInternalOrigin = (value?: string) => {
+  if (!value) {
+    return false;
+  }
+  const strippedValue = value
+    .split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)
+    .join('');
+  return INTERNAL_ORIGINS.some(
+    (internalOrigin) =>
+      internalOrigin &&
+      (value === internalOrigin || strippedValue === internalOrigin),
+  );
+};
+
+/**
+ * Returns the hostname used as the RPC/transaction origin for an SDK client.
+ * Falls back to the channel ID when originatorInfo impersonates an internal origin.
+ *
+ * @param clientInfo - The SDK dapp client.
+ * @returns The hostname for the client.
+ */
+export const getSdkClientHostname = (clientInfo: DappClient): string => {
+  const hostname =
+    clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title;
+  if (
+    isInternalOrigin(clientInfo.originatorInfo.url) ||
+    isInternalOrigin(clientInfo.originatorInfo.title)
+  ) {
+    return clientInfo.clientId;
+  }
+  return hostname;
+};
 
 const getDefaultBridgeParams = (clientInfo: DappClient) => ({
   getApprovedHosts: (host: string) => ({
     [host]: true,
   }),
-  remoteConnHost:
-    clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title,
+  remoteConnHost: getSdkClientHostname(clientInfo),
   getRpcMethodMiddleware: ({
     getProviderState,
   }: {
@@ -18,8 +58,7 @@ const getDefaultBridgeParams = (clientInfo: DappClient) => ({
     getProviderState: any;
   }) =>
     getRpcMethodMiddleware({
-      hostname:
-        clientInfo.originatorInfo.url ?? clientInfo.originatorInfo.title,
+      hostname: getSdkClientHostname(clientInfo),
       channelId: clientInfo.clientId,
       getProviderState,
       isMMSDK: true,
