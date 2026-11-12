@@ -119,8 +119,8 @@ describe('RootRPCMethodsUI', () => {
     onUnapprovedTransaction = undefined;
   });
 
-  it('does not auto sign a transaction that only spoofs the swaps origin', async () => {
-    renderComponent();
+  it('shows a confirmation instead of auto signing a transaction that only spoofs the swaps origin', async () => {
+    const { store } = renderComponent();
 
     await act(async () => {
       await onUnapprovedTransaction?.(buildTransactionMeta());
@@ -128,10 +128,15 @@ describe('RootRPCMethodsUI', () => {
 
     expect(onUnapprovedTransaction).toBeDefined();
     expect(Engine.acceptPendingApproval).not.toHaveBeenCalled();
+    expect(store.getState().transaction).toMatchObject({
+      id: 'tx-id',
+      origin: process.env.MM_FOX_CODE,
+      transaction: { to: ATTACKER_CONTRACT },
+    });
   });
 
   it('auto signs a swaps transaction registered by the swaps flow', async () => {
-    renderComponent();
+    const { store } = renderComponent();
     const actionId = createSwapsActionId();
 
     await act(async () => {
@@ -150,5 +155,6 @@ describe('RootRPCMethodsUI', () => {
     });
 
     expect(Engine.acceptPendingApproval).toHaveBeenCalledWith('tx-id');
+    expect(store.getState().transaction.id).toBeUndefined();
   });
 });
