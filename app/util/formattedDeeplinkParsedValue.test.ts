@@ -18,4 +18,18 @@ describe('formattedDeeplinkParsedValue', () => {
       '420000000000000000',
     );
   });
+
+  it('keeps every digit of values above Number.MAX_SAFE_INTEGER', () => {
+    expect(
+      formattedDeeplinkParsedValue('1.23456789012345678901234e+23'),
+    ).toEqual('123456789012345678901234');
+    expect(formattedDeeplinkParsedValue('12345678901234567891')).toEqual(
+      '12345678901234567891',
+    );
+  });
+
+  it('does not round long fractional values to an integer', () => {
+    const value = `1.${'0'.repeat(36)}1`;
+    expect(formattedDeeplinkParsedValue(value)).toEqual(value);
+  });
 });

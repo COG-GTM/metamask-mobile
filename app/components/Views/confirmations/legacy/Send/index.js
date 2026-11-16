@@ -10,13 +10,7 @@ import {
 import Engine from '../../../../../core/Engine';
 import EditAmount from '../SendFlow/Amount';
 import ConfirmSend from '../SendFlow/Confirm';
-import {
-  toBN,
-  BNToHex,
-  hexToBN,
-  fromWei,
-  fromTokenMinimalUnit,
-} from '../../../../../util/number';
+import { toBN, BNToHex, hexToBN } from '../../../../../util/number';
 import { toChecksumAddress } from 'ethereumjs-util';
 import { strings } from '../../../../../../locales/i18n';
 import { getTransactionOptionsTitle } from '../../../../UI/Navbar';
@@ -33,12 +27,10 @@ import {
   getTransactionReviewActionKey,
   decodeTransferData,
   getTransactionToName,
-  generateTransferData,
 } from '../../../../../util/transactions';
 import Logger from '../../../../../util/Logger';
 import { getAddress } from '../../../../../util/address';
 import { MAINNET } from '../../../../../constants/network';
-import BigNumber from 'bignumber.js';
 import { WalletDevice } from '@metamask/transaction-controller';
 import {
   addTransaction,
@@ -63,6 +55,11 @@ import { STX_NO_HASH_ERROR } from '../../../../../util/smart-transactions/smart-
 import { toLowerCaseEquals } from '../../../../../util/general';
 import { selectAddressBook } from '../../../../../selectors/addressBookController';
 import TransactionTypes from '../../../../../core/TransactionTypes';
+import {
+  buildSendEthTxMeta,
+  buildSendTokenTxMeta,
+  InvalidPaymentRequestError,
+} from './utils/paymentRequestTxMeta';
 import {
   // Pending updated multichain UX to specify the send chain.
   /* eslint-disable no-restricted-syntax */
@@ -328,73 +325,50 @@ class Send extends PureComponent {
       this.props;
 
     let newTxMeta = {};
-    let txRecipient;
-    switch (action) {
-      case 'send-eth':
-        txRecipient = await this.handleNewTxMetaRecipient(target_address);
-        if (!txRecipient.to) return;
-        newTxMeta = {
-          symbol: 'ETH',
-          assetType: 'ETH',
-          paymentRequest: true,
-          selectedAsset: { symbol: 'ETH', isETH: true },
-          ...txRecipient,
-        };
-
-        if (parameters && parameters.value) {
-          newTxMeta.value = BNToHex(toBN(parameters.value));
-          newTxMeta.transactionValue = newTxMeta.value;
-          newTxMeta.readableValue = fromWei(newTxMeta.value);
-        }
-
-        newTxMeta.transactionToName = getTransactionToName({
-          addressBook,
-          chainId: globalChainId,
-          toAddress: newTxMeta.to,
-          internalAccounts,
-          ensRecipient: newTxMeta.ensRecipient,
-        });
-
-        newTxMeta.transactionTo = newTxMeta.to;
-        break;
-      case 'send-token': {
-        const selectedAsset = await this.handleTokenDeeplink(target_address);
-
-        const { ensRecipient, to } = await this.handleNewTxMetaRecipient(
-          parameters.address,
-        );
-        if (!to) return;
-        const tokenAmount =
-          (parameters.uint256 &&
-            new BigNumber(parameters.uint256).toString(16)) ||
-          '0';
-        newTxMeta = {
-          assetType: 'ERC20',
-          paymentRequest: true,
-          selectedAsset,
-          ensRecipient,
-          to: selectedAsset.address,
-          transactionTo: to,
-          data: generateTransferData('transfer', {
+    try {
+      switch (action) {
+        case 'send-eth': {
+          const { to } = await this.handleNewTxMetaRecipient(target_address);
+          if (!to) return;
+          newTxMeta = buildSendEthTxMeta({ to, value: parameters?.value });
+          newTxMeta.transactionToName = getTransactionToName({
+            addressBook,
+            chainId: globalChainId,
             toAddress: to,
-            amount: tokenAmount,
-          }),
-          value: '0x0',
-          readableValue:
-            fromTokenMinimalUnit(
-              parameters.uint256 || '0',
-              selectedAsset.decimals,
-            ) || '0',
-        };
-        newTxMeta.transactionToName = getTransactionToName({
-          addressBook,
-          chainId: globalChainId,
-          toAddress: to,
-          internalAccounts,
-          ensRecipient,
-        });
-        break;
+            internalAccounts,
+          });
+          break;
+        }
+        case 'send-token': {
+          const selectedAsset = await this.handleTokenDeeplink(target_address);
+          if (!selectedAsset) return;
+
+          const { ensRecipient, to } = await this.handleNewTxMetaRecipient(
+            parameters?.address,
+          );
+          if (!to) return;
+          newTxMeta = buildSendTokenTxMeta({
+            selectedAsset,
+            to,
+            ensRecipient,
+            uint256: parameters?.uint256,
+          });
+          newTxMeta.transactionToName = getTransactionToName({
+            addressBook,
+            chainId: globalChainId,
+            toAddress: to,
+            internalAccounts,
+            ensRecipient,
+          });
+          break;
+        }
       }
+    } catch (error) {
+      if (!(error instanceof InvalidPaymentRequestError)) throw error;
+      Logger.error(error, 'Send: invalid payment request deeplink');
+      this.showDeeplinkFailure();
+      this.props.navigation.navigate('WalletView');
+      return;
     }
 
     if (parameters) {
@@ -403,7 +377,7 @@ class Send extends PureComponent {
         newTxMeta.gas = toBN(gas);
       }
       if (gasPrice) {
-        newTxMeta.gasPrice = toBN(gas);
+        newTxMeta.gasPrice = toBN(gasPrice);
       }
 
       // if gas and gasPrice is not defined in the deeplink, we should define them
@@ -435,6 +409,15 @@ class Send extends PureComponent {
     this.mounted && this.setState({ ready: true, transactionKey: Date.now() });
   };
 
+  showDeeplinkFailure = () => {
+    this.props.showAlert({
+      isVisible: true,
+      autodismiss: 2000,
+      content: 'clipboard-alert',
+      data: { msg: strings(`send.deeplink_failure`) },
+    });
+  };
+
   /**
    * Retrieves ERC20 asset information (symbol and decimals) to be used with deeplinks
    *
@@ -464,13 +447,9 @@ class Send extends PureComponent {
       token.decimals = parseInt(String(decimals));
     } catch (e) {
       // Drop tx since we don't have any form to get decimals and send the correct tx
-      this.props.showAlert({
-        isVisible: true,
-        autodismiss: 2000,
-        content: 'clipboard-alert',
-        data: { msg: strings(`send.deeplink_failure`) },
-      });
-      this.onCancel();
+      this.showDeeplinkFailure();
+      this.props.navigation.navigate('WalletView');
+      return undefined;
     }
     try {
       token.symbol = await AssetsContractController.getERC721AssetSymbol(
