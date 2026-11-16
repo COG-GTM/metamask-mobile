@@ -25,6 +25,13 @@ import { isNonEvmChainId } from '../core/Multichain/utils';
 const selectSelectedNetworkControllerState = (state: RootState) =>
   state?.engine?.backgroundState?.SelectedNetworkController;
 
+/**
+ * Finds the network configuration that owns the RPC endpoint with the given network client ID.
+ *
+ * @param networkConfigurations - EVM network configurations keyed by chain ID.
+ * @param networkClientId - The network client ID to look up.
+ * @returns The matching network configuration, or `undefined` if none owns the endpoint.
+ */
 const findNetworkConfigurationByClientId = (
   networkConfigurations: Record<string, NetworkConfiguration> | undefined,
   networkClientId: string,
