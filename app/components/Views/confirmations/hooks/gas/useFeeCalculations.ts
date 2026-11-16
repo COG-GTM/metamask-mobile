@@ -123,10 +123,12 @@ export const useFeeCalculations = (transactionMeta: TransactionMeta) => {
     );
 
     const minimumFeePerGasBN = hexToBN(minimumFeePerGas as Hex);
+    // `maxFeePerGas` from useEIP1559TxFees is a decimal string
+    const maxFeePerGasHex = decimalToHex(maxFeePerGas) as Hex;
 
     // `minimumFeePerGas` should never be higher than the `maxFeePerGas`
-    if (minimumFeePerGasBN.gt(hexToBN(maxFeePerGas as Hex))) {
-      minimumFeePerGas = decimalToHex(maxFeePerGas) as Hex;
+    if (minimumFeePerGasBN.gt(hexToBN(maxFeePerGasHex))) {
+      minimumFeePerGas = maxFeePerGasHex;
     }
     const gasLimitNoBuffer = transactionMeta.gasLimitNoBuffer || HEX_ZERO;
     const estimatedFee = multiplyHexes(
