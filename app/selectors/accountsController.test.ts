@@ -22,12 +22,16 @@ import {
   selectSolanaAccountAddress,
   selectSolanaAccount,
   selectPreviouslySelectedEvmAccount,
+  selectOrderedInternalAccountsByLastSelected,
+  selectLastSelectedEvmAccount,
+  selectLastSelectedSolanaAccount,
 } from './accountsController';
 import {
   MOCK_ACCOUNTS_CONTROLLER_STATE,
   expectedUuid,
   expectedUuid2,
   internalAccount1,
+  internalAccount2,
   MOCK_ADDRESS_2,
   createMockInternalAccount,
   createMockUuidFromAddress,
@@ -744,5 +748,181 @@ describe('selectPreviouslySelectedEvmAccount', () => {
 
     // Should return undefined as there are no EVM accounts
     expect(selectPreviouslySelectedEvmAccount(state)).toBeUndefined();
+  });
+});
+
+describe('Last selected account selectors', () => {
+  const withLastSelected = (
+    account: InternalAccount,
+    lastSelected?: number,
+  ): InternalAccount => ({
+    ...account,
+    metadata: { ...account.metadata, lastSelected },
+  });
+
+  const solanaAccount = createMockInternalAccount(
+    '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV',
+    'Solana Account',
+    KeyringTypes.snap,
+    SolAccountType.DataAccount,
+  );
+
+  const btcAccount = createMockInternalAccount(
+    'bc1qwl8399fz829uqvqly9tcatgrgtwp3udnhxfq4k',
+    'Bitcoin Account',
+    KeyringTypes.snap,
+    BtcAccountType.P2wpkh,
+  );
+
+  const createState = (accounts: InternalAccount[]): RootState =>
+    ({
+      engine: {
+        backgroundState: {
+          AccountsController: {
+            internalAccounts: {
+              accounts: Object.fromEntries(
+                accounts.map((account) => [account.id, account]),
+              ),
+              selectedAccount: accounts[0]?.id ?? '',
+            },
+          },
+        },
+      },
+    } as unknown as RootState);
+
+  describe('selectOrderedInternalAccountsByLastSelected', () => {
+    it('sorts accounts by lastSelected descending with missing lastSelected last', () => {
+      const evmRecent = withLastSelected(internalAccount1, 1);
+      const evmNever = withLastSelected(internalAccount2, undefined);
+      const solanaMostRecent = withLastSelected(solanaAccount, 3);
+
+      const result = selectOrderedInternalAccountsByLastSelected(
+        createState([evmNever, evmRecent, solanaMostRecent]),
+      );
+
+      expect(result.map((account) => account.metadata.lastSelected)).toEqual([
+        3,
+        1,
+        undefined,
+      ]);
+      expect(result).toEqual([solanaMostRecent, evmRecent, evmNever]);
+    });
+
+    it('keeps insertion order when no account has lastSelected', () => {
+      const result = selectOrderedInternalAccountsByLastSelected({
+        engine: {
+          backgroundState: {
+            AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
+          },
+        },
+      } as unknown as RootState);
+
+      expect(result).toEqual([internalAccount1, internalAccount2]);
+    });
+
+    it('returns an empty array when there are no accounts', () => {
+      expect(
+        selectOrderedInternalAccountsByLastSelected(createState([])),
+      ).toEqual([]);
+    });
+
+    it('does not mutate the accounts in state', () => {
+      const state = createState([
+        withLastSelected(internalAccount1, 1),
+        withLastSelected(internalAccount2, 3),
+      ]);
+      const accountIdsBefore = Object.keys(
+        state.engine.backgroundState.AccountsController.internalAccounts
+          .accounts,
+      );
+
+      selectOrderedInternalAccountsByLastSelected(state);
+
+      expect(
+        Object.keys(
+          state.engine.backgroundState.AccountsController.internalAccounts
+            .accounts,
+        ),
+      ).toEqual(accountIdsBefore);
+    });
+  });
+
+  describe('selectLastSelectedEvmAccount', () => {
+    it('returns the most recently selected EVM account', () => {
+      const evmOlder = withLastSelected(internalAccount1, 1);
+      const evmNewer = withLastSelected(internalAccount2, 3);
+
+      expect(
+        selectLastSelectedEvmAccount(createState([evmOlder, evmNewer])),
+      ).toEqual(evmNewer);
+    });
+
+    it('skips more recently selected non-EVM accounts', () => {
+      const evmAccount = withLastSelected(internalAccount1, 1);
+      const evmNever = withLastSelected(internalAccount2, undefined);
+      const solanaMostRecent = withLastSelected(solanaAccount, 3);
+      const btcRecent = withLastSelected(btcAccount, 2);
+
+      expect(
+        selectLastSelectedEvmAccount(
+          createState([solanaMostRecent, btcRecent, evmNever, evmAccount]),
+        ),
+      ).toEqual(evmAccount);
+    });
+
+    it('returns undefined when there is no EVM account', () => {
+      expect(
+        selectLastSelectedEvmAccount(
+          createState([
+            withLastSelected(solanaAccount, 3),
+            withLastSelected(btcAccount, 1),
+          ]),
+        ),
+      ).toBeUndefined();
+    });
+  });
+
+  describe('selectLastSelectedSolanaAccount', () => {
+    it('skips more recently selected EVM accounts', () => {
+      const evmMostRecent = withLastSelected(internalAccount1, 3);
+      const solanaOlder = withLastSelected(solanaAccount, 1);
+
+      expect(
+        selectLastSelectedSolanaAccount(
+          createState([evmMostRecent, solanaOlder]),
+        ),
+      ).toEqual(solanaOlder);
+    });
+
+    it('returns the most recently selected of several Solana accounts', () => {
+      const solanaOlder = withLastSelected(solanaAccount, 1);
+      const solanaNewer = withLastSelected(
+        createMockInternalAccount(
+          'DRpbCBMxVnDK7maPM5tGv6MvB3v1sRMC86PZ8okm21hy',
+          'Solana Account 2',
+          KeyringTypes.snap,
+          SolAccountType.DataAccount,
+        ),
+        3,
+      );
+
+      expect(
+        selectLastSelectedSolanaAccount(
+          createState([solanaOlder, solanaNewer]),
+        ),
+      ).toEqual(solanaNewer);
+    });
+
+    it('returns undefined when there is no Solana account', () => {
+      expect(
+        selectLastSelectedSolanaAccount({
+          engine: {
+            backgroundState: {
+              AccountsController: MOCK_ACCOUNTS_CONTROLLER_STATE,
+            },
+          },
+        } as unknown as RootState),
+      ).toBeUndefined();
+    });
   });
 });
