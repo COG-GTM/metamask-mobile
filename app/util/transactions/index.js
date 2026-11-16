@@ -1444,9 +1444,16 @@ export const parseTransactionLegacy = (
  * @param {object} transaction - Transaction meta (`txParams`) or legacy (`transaction`) object to validate
  * @param {number} rate - Rate to validate
  * @param {object} accounts - Map of accounts to information objects including balances
+ * @param {object} [options]
+ * @param {boolean} [options.isCancel] - Cancellations send no value, so only the replacement gas is required
  * @returns {boolean} - True when the balance cannot cover the replacement transaction
  */
-export function validateTransactionActionBalance(transaction, rate, accounts) {
+export function validateTransactionActionBalance(
+  transaction,
+  rate,
+  accounts,
+  { isCancel = false } = {},
+) {
   try {
     const transactionToCheck = transaction.txParams ?? transaction.transaction;
     const checksummedFrom = safeToChecksumAddress(transactionToCheck.from);
@@ -1463,7 +1470,7 @@ export function validateTransactionActionBalance(transaction, rate, accounts) {
         .mul(new BN(rate * 10))
         .div(new BN(10))
         .mul(hexToBN(transactionToCheck.gas))
-        .add(hexToBN(transactionToCheck.value)),
+        .add(isCancel ? new BN(0) : hexToBN(transactionToCheck.value)),
     );
   } catch (e) {
     return false;

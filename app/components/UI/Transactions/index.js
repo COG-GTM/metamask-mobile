@@ -512,6 +512,7 @@ class Transactions extends PureComponent {
         tx,
         CANCEL_RATE,
         this.props.accounts,
+        { isCancel: true },
       );
       this.setState({ cancelIsOpen: cancelAction, cancelConfirmDisabled });
     }

@@ -1295,6 +1295,26 @@ describe('Transactions utils :: validateTransactionActionBalance', () => {
     ).toBe(true);
   });
 
+  it('ignores the transaction value for cancellations', () => {
+    const withValue = { ...txParams, value: `0x${(1000 * 1e9).toString(16)}` };
+    expect(
+      validateTransactionActionBalance(
+        { txParams: withValue },
+        1.1,
+        accountsWith(23100),
+        { isCancel: true },
+      ),
+    ).toBe(false);
+    expect(
+      validateTransactionActionBalance(
+        { txParams: withValue },
+        1.1,
+        accountsWith(23099),
+        { isCancel: true },
+      ),
+    ).toBe(true);
+  });
+
   it('uses maxFeePerGas for EIP-1559 transactions', () => {
     const eip1559 = {
       from: FROM,

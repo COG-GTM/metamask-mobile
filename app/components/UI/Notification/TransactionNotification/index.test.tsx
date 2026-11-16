@@ -269,6 +269,7 @@ describe('TransactionNotification', () => {
         expect.objectContaining({ id: TX_ID }),
         CANCEL_RATE,
         expect.any(Object),
+        { isCancel: true },
       );
       // 0.001 ETH * 1.5
       expect(mockChildProps.TransactionActionContent.feeText).toBe(
@@ -373,6 +374,30 @@ describe('TransactionNotification', () => {
       expect(mockChildProps.ActionContent.confirmDisabled).toBe(true);
     },
   );
+
+  it('allows cancel but not speed up when the balance covers the replacement gas but not the original value (real balance check)', async () => {
+    // Replacement gas: 21000 * 0.001 ETH * 1.2 = 25.2 ETH (speed up), * 1.5 = 31.5 ETH (cancel).
+    const state = buildState({
+      transactions: [
+        buildTx({
+          txParams: {
+            ...buildTx().txParams,
+            value: '0x2b5e3af16b1880000', // 50 ETH
+          },
+        }),
+      ],
+      balance: '0x22b1c8c1227a00000', // 40 ETH
+    });
+
+    await renderNotification(state);
+    await openDetails();
+    await press('TransactionDetails', 'showSpeedUpModal');
+    expect(mockChildProps.ActionContent.confirmDisabled).toBe(true);
+
+    await press('ActionContent', 'onCancelPress');
+    await press('TransactionDetails', 'showCancelModal');
+    expect(mockChildProps.ActionContent.confirmDisabled).toBe(false);
+  });
 
   it('keeps confirm enabled when the sender balance covers the replacement (real balance check)', async () => {
     // 100 ETH

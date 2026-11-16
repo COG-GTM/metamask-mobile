@@ -175,6 +175,7 @@ function TransactionNotification(props) {
       tx,
       CANCEL_RATE,
       accounts,
+      { isCancel: true },
     );
     setTransactionAction(ACTION_CANCEL);
     setTransactionActionDisabled(transactionActionDisabled);
