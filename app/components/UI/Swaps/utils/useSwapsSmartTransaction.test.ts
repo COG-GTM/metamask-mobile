@@ -10,6 +10,7 @@ import {
   getGasIncludedTransactionFees,
   type GasIncludedQuote
 } from '../../../../util/smart-transactions';
+import Logger from '../../../../util/Logger';
 
 // Mock selectors directly
 jest.mock('../../../../selectors/networkController', () => ({
@@ -272,6 +273,148 @@ describe('useSwapsSmartTransaction', () => {
     expect(returnValue).toEqual({
       approvalTxUuid: undefined,
       tradeTxUuid: 'trade-uuid-456',
+    });
+  });
+
+  describe('failure and edge paths', () => {
+    const mockedSubmit = () =>
+      Engine.context.SmartTransactionsController.submitSignedTransactions as jest.Mock;
+    const mockedUpdate = () =>
+      Engine.context.SmartTransactionsController.updateSmartTransaction as jest.Mock;
+    let loggerErrorSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      mockedSubmit().mockReset();
+      mockedUpdate().mockReset();
+      (getGasIncludedTransactionFees as jest.Mock).mockReset();
+      loggerErrorSpy = jest.spyOn(Logger, 'error').mockImplementation(jest.fn());
+    });
+
+    afterEach(() => {
+      mockedSubmit().mockReset();
+      loggerErrorSpy.mockRestore();
+    });
+
+    const renderSubmit = (quote: Quote & Partial<GasIncludedQuote> = { trade: mockTradeTransaction } as Quote) => {
+      const { result } = renderHookWithProvider(() =>
+        useSwapsSmartTransaction({ quote, gasEstimates: mockGasEstimates }),
+      );
+      return result.current.submitSwapsSmartTransaction;
+    };
+
+    it('rejects, logs and does not submit the trade when the approval submission fails', async () => {
+      (selectSwapsApprovalTransaction as unknown as jest.Mock).mockReturnValue(mockApprovalTransaction);
+      const approvalError = new Error('approval submission failed');
+      mockedSubmit().mockRejectedValueOnce(approvalError).mockResolvedValueOnce(mockTradeResponse);
+
+      const submitSwapsSmartTransaction = renderSubmit();
+
+      await expect(submitSwapsSmartTransaction()).rejects.toThrow(approvalError);
+      expect(loggerErrorSpy).toHaveBeenCalledWith(approvalError);
+      expect(mockedSubmit()).toHaveBeenCalledTimes(1);
+      expect(mockedSubmit()).toHaveBeenCalledWith(
+        expect.objectContaining({
+          txParams: expect.objectContaining({ to: '0xtoken', data: '0xapprovedata', value: '0x0' }),
+        }),
+      );
+      expect(mockedSubmit()).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          txParams: expect.objectContaining({ to: '0xto', data: '0xdata' }),
+        }),
+      );
+      expect(Engine.context.TransactionController.approveTransactionsWithSameNonce).toHaveBeenCalledTimes(1);
+      expect(mockedUpdate()).not.toHaveBeenCalled();
+    });
+
+    it('rejects and logs when the trade submission fails after the approval succeeded', async () => {
+      (selectSwapsApprovalTransaction as unknown as jest.Mock).mockReturnValue(mockApprovalTransaction);
+      const tradeError = new Error('trade submission failed');
+      mockedSubmit().mockResolvedValueOnce(mockApprovalResponse).mockRejectedValueOnce(tradeError);
+
+      const submitSwapsSmartTransaction = renderSubmit();
+
+      await expect(submitSwapsSmartTransaction()).rejects.toThrow(tradeError);
+      expect(loggerErrorSpy).toHaveBeenCalledWith(tradeError);
+      expect(mockedSubmit()).toHaveBeenCalledTimes(2);
+      expect(mockedUpdate()).toHaveBeenCalledTimes(1);
+      expect(mockedUpdate()).toHaveBeenCalledWith(
+        expect.objectContaining({ uuid: 'approval-uuid-123', type: TransactionType.swapApproval }),
+      );
+    });
+
+    it('rejects without signing or submitting when getFees fails', async () => {
+      (selectSwapsApprovalTransaction as unknown as jest.Mock).mockReturnValue(mockApprovalTransaction);
+      const feesError = new Error('getFees failed');
+      (Engine.context.SmartTransactionsController.getFees as jest.Mock).mockRejectedValueOnce(feesError);
+
+      const submitSwapsSmartTransaction = renderSubmit();
+
+      await expect(submitSwapsSmartTransaction()).rejects.toThrow(feesError);
+      expect(Engine.context.TransactionController.approveTransactionsWithSameNonce).not.toHaveBeenCalled();
+      expect(mockedSubmit()).not.toHaveBeenCalled();
+      expect(mockedUpdate()).not.toHaveBeenCalled();
+    });
+
+    it('skips the approval and submits only the trade when approvalTxFees is missing', async () => {
+      (selectSwapsApprovalTransaction as unknown as jest.Mock).mockReturnValue(mockApprovalTransaction);
+      (Engine.context.SmartTransactionsController.getFees as jest.Mock).mockResolvedValueOnce({
+        tradeTxFees: mockSmartTransactionFees.tradeTxFees,
+        approvalTxFees: undefined,
+      });
+      mockedSubmit().mockResolvedValueOnce(mockTradeResponse);
+
+      const submitSwapsSmartTransaction = renderSubmit();
+      const returnValue = await submitSwapsSmartTransaction();
+
+      expect(Engine.context.SmartTransactionsController.getFees).toHaveBeenCalledWith(
+        mockTradeTransaction,
+        mockApprovalTransaction,
+      );
+      expect(mockedSubmit()).toHaveBeenCalledTimes(1);
+      expect(mockedSubmit()).toHaveBeenCalledWith(
+        expect.objectContaining({
+          txParams: expect.objectContaining({ to: '0xto', data: '0xdata' }),
+        }),
+      );
+      expect(mockedUpdate()).toHaveBeenCalledTimes(1);
+      expect(mockedUpdate()).toHaveBeenCalledWith(
+        expect.objectContaining({ uuid: 'trade-uuid-456', type: TransactionType.swap }),
+      );
+      expect(returnValue).toEqual({ approvalTxUuid: undefined, tradeTxUuid: 'trade-uuid-456' });
+    });
+
+    it('does not call updateSmartTransaction when submissions return no uuid', async () => {
+      (selectSwapsApprovalTransaction as unknown as jest.Mock).mockReturnValue(mockApprovalTransaction);
+      mockedSubmit().mockResolvedValueOnce({}).mockResolvedValueOnce({ uuid: undefined });
+
+      const submitSwapsSmartTransaction = renderSubmit();
+      const returnValue = await submitSwapsSmartTransaction();
+
+      expect(mockedSubmit()).toHaveBeenCalledTimes(2);
+      expect(mockedUpdate()).not.toHaveBeenCalled();
+      expect(loggerErrorSpy).not.toHaveBeenCalled();
+      expect(returnValue).toEqual({ approvalTxUuid: undefined, tradeTxUuid: undefined });
+    });
+
+    it('falls back to getFees when getGasIncludedTransactionFees returns undefined', async () => {
+      const mockGasIncludedQuote = {
+        trade: mockTradeTransaction,
+        isGasIncludedTrade: true,
+      } as unknown as Quote & Partial<GasIncludedQuote>;
+      (getGasIncludedTransactionFees as jest.Mock).mockReturnValueOnce(undefined);
+      mockedSubmit().mockResolvedValueOnce(mockTradeResponse);
+
+      const submitSwapsSmartTransaction = renderSubmit(mockGasIncludedQuote);
+      const returnValue = await submitSwapsSmartTransaction();
+
+      expect(getGasIncludedTransactionFees).toHaveBeenCalledWith(mockGasIncludedQuote);
+      expect(Engine.context.SmartTransactionsController.getFees).toHaveBeenCalledWith(mockTradeTransaction, null);
+      expect(mockedSubmit()).toHaveBeenCalledWith(
+        expect.objectContaining({
+          txParams: expect.objectContaining({ gas: '186a0' }),
+        }),
+      );
+      expect(returnValue).toEqual({ approvalTxUuid: undefined, tradeTxUuid: 'trade-uuid-456' });
     });
   });
 });
