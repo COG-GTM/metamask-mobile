@@ -11,8 +11,9 @@ import Logger from '../../../../util/Logger';
 import { RemoteFeatureFlagInitParamTypes } from './types';
 import AppConstants from '../../../AppConstants';
 
-const getFeatureFlagAppEnvironment = () => {
-  const env = process.env.METAMASK_ENVIRONMENT;
+export const getFeatureFlagAppEnvironment = (
+  env: string | undefined = process.env.METAMASK_ENVIRONMENT,
+) => {
   switch (env) {
     case 'local':
       return EnvironmentType.Development;
@@ -25,8 +26,9 @@ const getFeatureFlagAppEnvironment = () => {
   }
 };
 
-const getFeatureFlagAppDistribution = () => {
-  const dist = process.env.METAMASK_BUILD_TYPE;
+export const getFeatureFlagAppDistribution = (
+  dist: string | undefined = process.env.METAMASK_BUILD_TYPE,
+) => {
   switch (dist) {
     case 'main':
       return DistributionType.Main;
@@ -47,6 +49,7 @@ export const createRemoteFeatureFlagController = ({
   disabled,
   getMetaMetricsId,
   fetchInterval = AppConstants.FEATURE_FLAGS_API.DEFAULT_FETCH_INTERVAL,
+  overrideActivated = isRemoteFeatureFlagOverrideActivated,
 }: RemoteFeatureFlagInitParamTypes) => {
   const remoteFeatureFlagController = new RemoteFeatureFlagController({
     messenger,
@@ -66,12 +69,17 @@ export const createRemoteFeatureFlagController = ({
 
   if (disabled) {
     Logger.log('Feature flag controller disabled');
-  } else if (isRemoteFeatureFlagOverrideActivated) {
+  } else if (overrideActivated) {
     Logger.log('Remote feature flags override activated');
   } else {
-    remoteFeatureFlagController.updateRemoteFeatureFlags().then(() => {
-      Logger.log('Feature flags updated');
-    });
+    remoteFeatureFlagController
+      .updateRemoteFeatureFlags()
+      .then(() => {
+        Logger.log('Feature flags updated');
+      })
+      .catch((error) => {
+        Logger.error(error, 'Failed to update remote feature flags');
+      });
   }
   return remoteFeatureFlagController;
 };
