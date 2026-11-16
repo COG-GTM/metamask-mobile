@@ -66,6 +66,7 @@ import {
 import { CaveatTypes } from '../Permissions/constants';
 import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
 import { toHex } from '@metamask/controller-utils';
+import { Alert } from 'react-native';
 
 jest.mock('../../util/permissions', () => ({
   __esModule: true,
@@ -447,6 +448,490 @@ describe('checkActiveAccountAndChainId', () => {
       }),
     ).resolves.toBeUndefined();
     expect(mockGetPermittedAccounts).toHaveBeenCalledWith(hostMock);
+  });
+});
+
+describe('checkActiveAccountAndChainId account and chain validation', () => {
+  const permittedAccount = '0x0000000000000000000000000000000000000002';
+  const requestedAccount = '0x0000000000000000000000000000000000000001';
+  const mixedCaseAccount = '0xAbCdEf0123456789aBcDeF0123456789AbCdEf01';
+  let alertSpy: jest.SpyInstance;
+
+  function setupNetwork({
+    chainId,
+    networkClientId,
+    rpcEndpointType,
+  }: {
+    chainId: string;
+    networkClientId: string;
+    rpcEndpointType: 'infura' | 'custom';
+  }) {
+    setupGlobalState({
+      activeTab: 1,
+      addTransactionResult: Promise.resolve('fake-hash'),
+      permittedAccounts: { [hostMock]: [permittedAccount] },
+      selectedNetworkClientId: networkClientId,
+      networksMetadata: {},
+      networkConfigurationsByChainId: {
+        [chainId]: {
+          blockExplorerUrls: [],
+          chainId,
+          defaultRpcEndpointIndex: 0,
+          name: 'Test network',
+          nativeCurrency: 'ETH',
+          rpcEndpoints: [
+            {
+              networkClientId,
+              type: rpcEndpointType,
+              url: 'https://rpc.example.test',
+            },
+          ],
+        },
+      },
+    });
+  }
+
+  const setupMainnet = () =>
+    setupNetwork({
+      chainId: '0x1',
+      networkClientId: 'mainnet',
+      rpcEndpointType: 'infura',
+    });
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetPermittedAccounts.mockReset();
+    alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    alertSpy.mockRestore();
+  });
+
+  describe('permitted address', () => {
+    it('rejects an address the origin has not permitted when other accounts are permitted', async () => {
+      setupMainnet();
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: requestedAccount,
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).rejects.toThrow(
+        'Invalid parameters: must provide a permitted Ethereum address.',
+      );
+      expect(mockGetPermittedAccounts).toHaveBeenCalledWith(hostMock);
+    });
+
+    it('rejects with the generic error when the origin has no permitted accounts', async () => {
+      setupMainnet();
+      mockGetPermittedAccounts.mockReturnValue([]);
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: requestedAccount,
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).rejects.toThrow(
+        'Invalid parameters: must provide an Ethereum address.',
+      );
+    });
+
+    it('accepts a mixed-case address matching a lowercase permitted account', async () => {
+      setupMainnet();
+      mockGetPermittedAccounts.mockReturnValue([
+        mixedCaseAccount.toLowerCase(),
+      ]);
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: mixedCaseAccount,
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).resolves.toBeUndefined();
+    });
+
+    it('accepts a lowercase address matching a checksummed permitted account', async () => {
+      setupMainnet();
+      mockGetPermittedAccounts.mockReturnValue([mixedCaseAccount]);
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: mixedCaseAccount.toLowerCase(),
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).resolves.toBeUndefined();
+    });
+
+    it('looks up permitted accounts by channelId for SDK connections', async () => {
+      setupMainnet();
+      mockGetPermittedAccounts.mockImplementation((origin: string) =>
+        origin === 'sdk-channel' ? [requestedAccount] : [permittedAccount],
+      );
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: requestedAccount,
+          channelId: 'sdk-channel',
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).resolves.toBeUndefined();
+      expect(mockGetPermittedAccounts).toHaveBeenCalledWith('sdk-channel');
+    });
+
+    it('looks up permitted accounts by hostname for WalletConnect even when a channelId is set', async () => {
+      setupMainnet();
+      mockGetPermittedAccounts.mockImplementation((origin: string) =>
+        origin === hostMock ? [permittedAccount] : [requestedAccount],
+      );
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: requestedAccount,
+          channelId: 'sdk-channel',
+          hostname: hostMock,
+          isWalletConnect: true,
+        }),
+      ).rejects.toThrow(
+        'Invalid parameters: must provide a permitted Ethereum address.',
+      );
+      expect(mockGetPermittedAccounts).toHaveBeenCalledWith(hostMock);
+    });
+  });
+
+  describe('chainId', () => {
+    beforeEach(() => {
+      mockGetPermittedAccounts.mockReturnValue([permittedAccount]);
+    });
+
+    it.each([
+      ['hex string', '0x5'],
+      ['decimal number', 5],
+      ['decimal string', '5'],
+    ])(
+      'rejects and alerts when the requested chainId (%s) differs from the active initial network',
+      async (_label, chainId) => {
+        setupMainnet();
+
+        await expect(
+          checkActiveAccountAndChainId({
+            address: permittedAccount,
+            chainId: chainId as number,
+            hostname: hostMock,
+            isWalletConnect: false,
+          }),
+        ).rejects.toThrow(
+          'Invalid parameters: active chainId is different than the one provided.',
+        );
+        expect(alertSpy).toHaveBeenCalledTimes(1);
+        expect(alertSpy).toHaveBeenCalledWith(
+          'Active chainId is 0x1 but received 0x5',
+        );
+      },
+    );
+
+    it.each([
+      ['hex string', '0x1'],
+      ['decimal number', 1],
+    ])(
+      'accepts a requested chainId (%s) matching the active initial network',
+      async (_label, chainId) => {
+        setupMainnet();
+
+        await expect(
+          checkActiveAccountAndChainId({
+            address: permittedAccount,
+            chainId: chainId as number,
+            hostname: hostMock,
+            isWalletConnect: false,
+          }),
+        ).resolves.toBeUndefined();
+        expect(alertSpy).not.toHaveBeenCalled();
+      },
+    );
+
+    it('derives the active chainId from the initial network type, not the provider config chainId', async () => {
+      // Infura `sepolia` client registered under a config whose chainId is 0x1
+      setupNetwork({
+        chainId: '0x1',
+        networkClientId: 'sepolia',
+        rpcEndpointType: 'infura',
+      });
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: permittedAccount,
+          chainId: 11155111,
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).resolves.toBeUndefined();
+      await expect(
+        checkActiveAccountAndChainId({
+          address: permittedAccount,
+          chainId: 1,
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).rejects.toThrow(
+        'Invalid parameters: active chainId is different than the one provided.',
+      );
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Active chainId is 0xaa36a7 but received 0x1',
+      );
+    });
+
+    it('accepts a matching chainId on another initial network', async () => {
+      setupNetwork({
+        chainId: '0xe708',
+        networkClientId: 'linea-mainnet',
+        rpcEndpointType: 'infura',
+      });
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: permittedAccount,
+          chainId: 59144,
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).resolves.toBeUndefined();
+    });
+
+    it.each([
+      ['hex string', '0x89'],
+      ['decimal number', 137],
+    ])(
+      'converts a decimal RPC provider chainId to hex and accepts a matching %s request',
+      async (_label, chainId) => {
+        setupNetwork({
+          chainId: '137',
+          networkClientId: 'custom-polygon',
+          rpcEndpointType: 'custom',
+        });
+
+        await expect(
+          checkActiveAccountAndChainId({
+            address: permittedAccount,
+            chainId: chainId as number,
+            hostname: hostMock,
+            isWalletConnect: false,
+          }),
+        ).resolves.toBeUndefined();
+        expect(alertSpy).not.toHaveBeenCalled();
+      },
+    );
+
+    it('rejects and alerts when the request differs from a decimal RPC provider chainId', async () => {
+      setupNetwork({
+        chainId: '137',
+        networkClientId: 'custom-polygon',
+        rpcEndpointType: 'custom',
+      });
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: permittedAccount,
+          chainId: 1,
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).rejects.toThrow(
+        'Invalid parameters: active chainId is different than the one provided.',
+      );
+      expect(alertSpy).toHaveBeenCalledWith(
+        'Active chainId is 0x89 but received 0x1',
+      );
+    });
+
+    it('accepts a matching hex RPC provider chainId', async () => {
+      setupNetwork({
+        chainId: '0x89',
+        networkClientId: 'custom-polygon',
+        rpcEndpointType: 'custom',
+      });
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: permittedAccount,
+          chainId: 137,
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).resolves.toBeUndefined();
+    });
+
+    it('checks the account before the chainId', async () => {
+      setupMainnet();
+
+      await expect(
+        checkActiveAccountAndChainId({
+          address: requestedAccount,
+          chainId: 5,
+          hostname: hostMock,
+          isWalletConnect: false,
+        }),
+      ).rejects.toThrow(
+        'Invalid parameters: must provide a permitted Ethereum address.',
+      );
+      expect(alertSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('through getRpcMethodMiddleware', () => {
+    const expectedPermittedAddressError = rpcErrors.invalidParams({
+      message: 'Invalid parameters: must provide a permitted Ethereum address.',
+    });
+    const expectedChainIdError = rpcErrors.invalidParams({
+      message:
+        'Invalid parameters: active chainId is different than the one provided.',
+    });
+
+    function getMiddleware() {
+      return getRpcMethodMiddleware({
+        ...getMinimalBrowserOptions(),
+        hostname: hostMock,
+      });
+    }
+
+    function expectError(
+      response: JsonRpcResponse<Json>,
+      expected: { code: number; message: string },
+    ) {
+      expect((response as JsonRpcFailure).error.code).toBe(expected.code);
+      expect((response as JsonRpcFailure).error.message).toBe(expected.message);
+    }
+
+    it('eth_sendTransaction rejects an unpermitted from address without adding the transaction', async () => {
+      setupMainnet();
+
+      const response = await callMiddleware({
+        middleware: getMiddleware(),
+        request: {
+          jsonrpc,
+          id: 1,
+          method: 'eth_sendTransaction',
+          params: [{ from: requestedAccount, chainId: '0x1' }],
+        },
+      });
+
+      expectError(response, expectedPermittedAddressError);
+      expect(mockAddTransaction).not.toHaveBeenCalled();
+    });
+
+    it('eth_sendTransaction adds the transaction for a mixed-case from matching a permitted account', async () => {
+      setupMainnet();
+      mockGetPermittedAccounts.mockReturnValue([
+        mixedCaseAccount.toLowerCase(),
+      ]);
+
+      const response = await callMiddleware({
+        middleware: getMiddleware(),
+        request: {
+          jsonrpc,
+          id: 1,
+          method: 'eth_sendTransaction',
+          params: [{ from: mixedCaseAccount, chainId: '0x1' }],
+        },
+      });
+
+      expect((response as JsonRpcFailure).error).toBeUndefined();
+      expect((response as JsonRpcSuccess<string>).result).toBe('fake-hash');
+      expect(mockAddTransaction).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['hex string', '0x5'],
+      ['decimal number', 5],
+    ])(
+      'eth_sendTransaction rejects a mismatched chainId (%s) and alerts without adding the transaction',
+      async (_label, chainId) => {
+        setupMainnet();
+
+        const response = await callMiddleware({
+          middleware: getMiddleware(),
+          request: {
+            jsonrpc,
+            id: 1,
+            method: 'eth_sendTransaction',
+            params: [{ from: permittedAccount, chainId }],
+          },
+        });
+
+        expectError(response, expectedChainIdError);
+        expect(alertSpy).toHaveBeenCalledWith(
+          'Active chainId is 0x1 but received 0x5',
+        );
+        expect(mockAddTransaction).not.toHaveBeenCalled();
+      },
+    );
+
+    it('eth_sendTransaction adds the transaction when a hex request matches a decimal RPC provider chainId', async () => {
+      setupNetwork({
+        chainId: '137',
+        networkClientId: 'custom-polygon',
+        rpcEndpointType: 'custom',
+      });
+
+      const response = await callMiddleware({
+        middleware: getMiddleware(),
+        request: {
+          jsonrpc,
+          id: 1,
+          method: 'eth_sendTransaction',
+          params: [{ from: permittedAccount, chainId: '0x89' }],
+        },
+      });
+
+      expect((response as JsonRpcFailure).error).toBeUndefined();
+      expect((response as JsonRpcSuccess<string>).result).toBe('fake-hash');
+      expect(alertSpy).not.toHaveBeenCalled();
+    });
+
+    it('personal_sign rejects an unpermitted address without creating a message', async () => {
+      setupMainnet();
+
+      const response = await callMiddleware({
+        middleware: getMiddleware(),
+        request: {
+          jsonrpc,
+          id: 1,
+          method: 'personal_sign',
+          params: [dataMock, requestedAccount],
+        },
+      });
+
+      expectError(response, expectedPermittedAddressError);
+      expect(
+        MockEngine.context.SignatureController.newUnsignedPersonalMessage,
+      ).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['eth_signTypedData', [dataJsonMock, requestedAccount]],
+      ['eth_signTypedData_v3', [requestedAccount, dataJsonMock]],
+      ['eth_signTypedData_v4', [requestedAccount, dataJsonMock]],
+    ])(
+      '%s rejects an unpermitted address without creating a message',
+      async (method, params) => {
+        setupMainnet();
+
+        const response = await callMiddleware({
+          middleware: getMiddleware(),
+          request: { jsonrpc, id: 1, method, params },
+        });
+
+        expectError(response, expectedPermittedAddressError);
+        expect(
+          MockEngine.context.SignatureController.newUnsignedTypedMessage,
+        ).not.toHaveBeenCalled();
+      },
+    );
   });
 });
 
