@@ -12,6 +12,10 @@ import { mockNetworkState } from '../../util/test/network';
 import { Hex } from '@metamask/utils';
 import { KeyringControllerState } from '@metamask/keyring-controller';
 import { backupVault } from '../BackupVault';
+import {
+  BACKGROUND_STATE_CHANGE_EVENT_NAMES,
+  STATELESS_NON_CONTROLLER_NAMES,
+} from './constants';
 
 jest.mock('../BackupVault', () => ({
   backupVault: jest.fn().mockResolvedValue({ success: true, vault: 'vault' }),
@@ -155,6 +159,71 @@ describe('Engine', () => {
     const engine = Engine.init({});
     const initialBackgroundState = engine.datamodel.state;
     expect(initialBackgroundState).toStrictEqual(backgroundState);
+  });
+
+  describe('BACKGROUND_STATE_CHANGE_EVENT_NAMES', () => {
+    afterEach(async () => {
+      await Engine.destroyEngine();
+    });
+
+    it('has no duplicate entries', () => {
+      expect(new Set(BACKGROUND_STATE_CHANGE_EVENT_NAMES).size).toBe(
+        BACKGROUND_STATE_CHANGE_EVENT_NAMES.length,
+      );
+    });
+
+    it('only contains `<ControllerName>:stateChange` events', () => {
+      BACKGROUND_STATE_CHANGE_EVENT_NAMES.forEach((eventName) => {
+        expect(eventName).toMatch(/^[A-Za-z]+:stateChange$/u);
+      });
+    });
+
+    it('matches the stateful controllers in the datamodel', () => {
+      const engine = Engine.init({});
+      const expectedEventNames = Object.keys(engine.datamodel.state)
+        .map((controllerName) => `${controllerName}:stateChange`)
+        .sort();
+
+      expect([...BACKGROUND_STATE_CHANGE_EVENT_NAMES].sort()).toStrictEqual(
+        expectedEventNames,
+      );
+    });
+
+    it('covers every stateful controller in the Engine context', () => {
+      const engine = Engine.init({});
+      const statelessNames: readonly string[] = STATELESS_NON_CONTROLLER_NAMES;
+      const statefulContextNames = Object.keys(engine.context).filter(
+        (name) => !statelessNames.includes(name),
+      );
+      const subscribedControllerNames = BACKGROUND_STATE_CHANGE_EVENT_NAMES.map(
+        (eventName) => eventName.split(':')[0],
+      );
+
+      expect(subscribedControllerNames).toStrictEqual(
+        expect.arrayContaining(statefulContextNames),
+      );
+    });
+
+    it('propagates a published controller stateChange into the datamodel state', () => {
+      const engine = Engine.init({});
+      const handler = jest.fn();
+      engine.controllerMessenger.subscribe(
+        'AddressBookController:stateChange',
+        handler,
+      );
+
+      engine.context.AddressBookController.set(
+        zeroAddress(),
+        'Test Contact',
+        '0x1',
+      );
+
+      expect(handler).toHaveBeenCalled();
+      const { addressBook } = engine.datamodel.state.AddressBookController;
+      expect(Object.values(addressBook['0x1'] ?? {})).toStrictEqual([
+        expect.objectContaining({ name: 'Test Contact', chainId: '0x1' }),
+      ]);
+    });
   });
 
   it('setSelectedAccount throws an error if no account exists for the given address', () => {
