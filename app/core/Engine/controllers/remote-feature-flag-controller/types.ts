@@ -6,5 +6,7 @@ export interface RemoteFeatureFlagInitParamTypes {
   disabled: boolean;
   getMetaMetricsId: () => string;
   fetchInterval?: number;
+  /** Defaults to OVERRIDE_REMOTE_FEATURE_FLAGS === 'true' at build time. */
+  overrideActivated?: boolean;
 }
 
