@@ -1441,18 +1441,25 @@ export const parseTransactionLegacy = (
 /**
  * Validate transaction value for speed up or cancel transaction actions
  *
- * @param {object} transaction - Transaction object to validate
- * @param {string} rate - Rate to validate
- * @param {string} accounts - Map of accounts to information objects including balances
- * @returns {string} - Whether the balance is validated or not
+ * @param {object} transaction - Transaction meta (`txParams`) or legacy (`transaction`) object to validate
+ * @param {number} rate - Rate to validate
+ * @param {object} accounts - Map of accounts to information objects including balances
+ * @param {object} [options]
+ * @param {boolean} [options.isCancel] - Cancellations send no value, so only the replacement gas is required
+ * @returns {boolean} - True when the balance cannot cover the replacement transaction
  */
-export function validateTransactionActionBalance(transaction, rate, accounts) {
+export function validateTransactionActionBalance(
+  transaction,
+  rate,
+  accounts,
+  { isCancel = false } = {},
+) {
   try {
-    const checksummedFrom = safeToChecksumAddress(transaction.transaction.from);
+    const transactionToCheck = transaction.txParams ?? transaction.transaction;
+    const checksummedFrom = safeToChecksumAddress(transactionToCheck.from);
     const balance = accounts[checksummedFrom].balance;
 
-    let gasPrice = transaction.transaction.gasPrice;
-    const transactionToCheck = transaction.transaction;
+    let gasPrice = transactionToCheck.gasPrice;
 
     if (isEIP1559Transaction(transactionToCheck)) {
       gasPrice = transactionToCheck.maxFeePerGas;
@@ -1462,8 +1469,8 @@ export function validateTransactionActionBalance(transaction, rate, accounts) {
       hexToBN(gasPrice)
         .mul(new BN(rate * 10))
         .div(new BN(10))
-        .mul(hexToBN(transaction.transaction.gas))
-        .add(hexToBN(transaction.transaction.value)),
+        .mul(hexToBN(transactionToCheck.gas))
+        .add(isCancel ? new BN(0) : hexToBN(transactionToCheck.value)),
     );
   } catch (e) {
     return false;
