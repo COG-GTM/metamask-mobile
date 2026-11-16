@@ -168,16 +168,12 @@ const ImportFromSecretRecoveryPhrase = ({
       false,
       false,
     );
-    try {
-      await Authentication.newWalletAndRestore(
-        password,
-        newAuthData,
-        parsedSeed,
-        true,
-      );
-    } catch (err) {
-      this.setState({ loading: false, error: err.toString() });
-    }
+    await Authentication.newWalletAndRestore(
+      password,
+      newAuthData,
+      parsedSeed,
+      true,
+    );
     setBiometryType(newAuthData.availableBiometryType);
     updateBiometryChoice(false);
   };
@@ -225,9 +221,15 @@ const ImportFromSecretRecoveryPhrase = ({
             true,
           );
         } catch (err) {
-          // retry faceID if the user cancels the
-          if (Device.isIos && err.toString() === IOS_REJECTED_BIOMETRICS_ERROR)
+          // retry with password auth if the user rejects the OS biometrics prompt
+          if (
+            Device.isIos() &&
+            err.toString() === IOS_REJECTED_BIOMETRICS_ERROR
+          ) {
             await handleRejectedOsBiometricPrompt(parsedSeed);
+          } else {
+            throw err;
+          }
         }
         // Get onboarding wizard state
         const onboardingWizard = await StorageWrapper.getItem(
