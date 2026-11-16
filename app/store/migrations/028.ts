@@ -78,6 +78,8 @@ export default async function migrate(state: unknown) {
     string,
     Record<string, unknown>
   >;
+  // Controller files that could not be read or parsed must be kept on disk
+  const unreadControllerKeys = new Set<string>();
   // Populate root object with controller data
   const controllerMergeMigration = controllerList.map(
     async ({ name: controllerName }) => {
@@ -102,6 +104,7 @@ export default async function migrate(state: unknown) {
           }
         }
       } catch (e) {
+        unreadControllerKeys.add(persistedControllerKey);
         captureException(
           new Error(
             `Migration 28: Failed to populate root object with persisted controller data for key ${persistedControllerKey}: ${String(
@@ -130,6 +133,9 @@ export default async function migrate(state: unknown) {
     // Root file successfully populated with controller data - Can safely delete persisted controller files
     const controllerDeleteMigration = controllerList.map(async ({ name }) => {
       const persistedControllerKey = `persist:${name}`;
+      if (unreadControllerKeys.has(persistedControllerKey)) {
+        return;
+      }
       try {
         // Remove persisted controller file
         await FilesystemStorage.removeItem(persistedControllerKey);
