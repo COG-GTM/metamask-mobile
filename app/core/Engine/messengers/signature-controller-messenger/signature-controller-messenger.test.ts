@@ -1,11 +1,36 @@
-import { BaseControllerMessenger } from '../../types';
-import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenger';
+import { Messenger } from '@metamask/base-controller';
+import type { AccountsControllerGetStateAction } from '@metamask/accounts-controller';
+import type { AddApprovalRequest } from '@metamask/approval-controller';
+import {
+  KeyringControllerGetStateAction,
+  KeyringControllerSignMessageAction,
+  KeyringControllerSignPersonalMessageAction,
+  KeyringControllerSignTypedMessageAction,
+  SignTypedDataVersion,
+} from '@metamask/keyring-controller';
+import {
+  AddLog,
+  EthSignLog,
+  LogType,
+  SigningMethod,
+  SigningStage,
+} from '@metamask/logging-controller';
+import type { NetworkControllerGetNetworkClientByIdAction } from '@metamask/network-controller';
 import { getSignatureControllerMessenger } from './signature-controller-messenger';
+
+type BaseMessengerActions =
+  | AccountsControllerGetStateAction
+  | AddApprovalRequest
+  | AddLog
+  | NetworkControllerGetNetworkClientByIdAction
+  | KeyringControllerSignMessageAction
+  | KeyringControllerSignPersonalMessageAction
+  | KeyringControllerSignTypedMessageAction
+  | KeyringControllerGetStateAction;
 
 describe('getSignatureControllerMessenger', () => {
   const arrangeMocks = () => {
-    const baseMessenger: BaseControllerMessenger =
-      new ExtendedControllerMessenger();
+    const baseMessenger = new Messenger<BaseMessengerActions, never>();
     const mockGetRestricted = jest.spyOn(baseMessenger, 'getRestricted');
     return { baseMessenger, mockGetRestricted };
   };
@@ -58,8 +83,7 @@ describe('getSignatureControllerMessenger', () => {
       restrictedMessenger.call(
         'KeyringController:signTypedMessage',
         typedParams,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        'V4' as any,
+        SignTypedDataVersion.V4,
       ),
     ).resolves.toBe('0xtyped');
     await expect(
@@ -72,7 +96,10 @@ describe('getSignatureControllerMessenger', () => {
       restrictedMessenger.call('KeyringController:signMessage', personalParams),
     ).resolves.toBe('0xmessage');
 
-    expect(signTypedMessage).toHaveBeenCalledWith(typedParams, 'V4');
+    expect(signTypedMessage).toHaveBeenCalledWith(
+      typedParams,
+      SignTypedDataVersion.V4,
+    );
     expect(signPersonalMessage).toHaveBeenCalledWith(personalParams);
     expect(signMessage).toHaveBeenCalledWith(personalParams);
   });
@@ -92,9 +119,12 @@ describe('getSignatureControllerMessenger', () => {
       origin: 'https://dapp.example',
       type: 'personal_sign',
     };
-    const log = {
-      type: 'EthSign',
-      data: { signingMethod: 'personal_sign', stage: 'proposed' },
+    const log: EthSignLog = {
+      type: LogType.EthSignLog,
+      data: {
+        signingMethod: SigningMethod.PersonalSign,
+        stage: SigningStage.Proposed,
+      },
     };
 
     await expect(
@@ -104,8 +134,7 @@ describe('getSignatureControllerMessenger', () => {
         true,
       ),
     ).resolves.toEqual({ value: 'approved' });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    restrictedMessenger.call('LoggingController:add', log as any);
+    restrictedMessenger.call('LoggingController:add', log);
 
     expect(addRequest).toHaveBeenCalledWith(approvalRequest, true);
     expect(addLog).toHaveBeenCalledWith(log);
