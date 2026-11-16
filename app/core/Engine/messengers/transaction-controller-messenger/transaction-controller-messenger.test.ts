@@ -1,4 +1,4 @@
-import { BaseControllerMessenger } from '../../types';
+import { Messenger } from '@metamask/base-controller';
 import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenger';
 import {
   getTransactionControllerInitMessenger,
@@ -36,9 +36,27 @@ const TRANSACTION_CONTROLLER_INIT_ALLOWED_EVENTS = [
   'SmartTransactionsController:smartTransactionConfirmationDone',
 ];
 
+type BaseMessenger = Parameters<
+  typeof getTransactionControllerInitMessenger
+>[0];
+type MessengerTypes<M> = M extends Messenger<infer Actions, infer Events>
+  ? { actions: Actions; events: Events }
+  : never;
+type BaseMessengerTypes = MessengerTypes<BaseMessenger>;
+
+interface UntypedMessenger {
+  call: (action: string, ...args: unknown[]) => unknown;
+  subscribe: (event: string, handler: (...args: unknown[]) => void) => void;
+  publish: (event: string, ...payload: unknown[]) => void;
+}
+
+const asUntyped = (messenger: unknown) => messenger as UntypedMessenger;
+
 const arrangeMocks = () => {
-  const baseMessenger: BaseControllerMessenger =
-    new ExtendedControllerMessenger();
+  const baseMessenger = new ExtendedControllerMessenger<
+    BaseMessengerTypes['actions'],
+    BaseMessengerTypes['events']
+  >();
   const mockGetRestricted = jest.spyOn(baseMessenger, 'getRestricted');
   return { baseMessenger, mockGetRestricted };
 };
@@ -67,9 +85,9 @@ describe('getTransactionControllerMessenger', () => {
       getStateHandler,
     );
 
-    const restrictedMessenger = getTransactionControllerMessenger(
-      baseMessenger,
-    ) as unknown as BaseControllerMessenger;
+    const restrictedMessenger = asUntyped(
+      getTransactionControllerMessenger(baseMessenger),
+    );
 
     expect(
       restrictedMessenger.call('RemoteFeatureFlagController:getState'),
@@ -84,9 +102,9 @@ describe('getTransactionControllerMessenger', () => {
       jest.fn(),
     );
 
-    const restrictedMessenger = getTransactionControllerMessenger(
-      baseMessenger,
-    ) as unknown as BaseControllerMessenger;
+    const restrictedMessenger = asUntyped(
+      getTransactionControllerMessenger(baseMessenger),
+    );
 
     expect(() =>
       restrictedMessenger.call('ApprovalController:startFlow'),
@@ -119,11 +137,11 @@ describe('getTransactionControllerInitMessenger', () => {
     const handler = jest.fn().mockReturnValue(result);
     baseMessenger.registerActionHandler(action, handler);
 
-    const initMessenger = getTransactionControllerInitMessenger(
-      baseMessenger,
-    ) as unknown as BaseControllerMessenger;
+    const initMessenger = asUntyped(
+      getTransactionControllerInitMessenger(baseMessenger),
+    );
 
-    expect(initMessenger.call(action as never)).toEqual(result);
+    expect(initMessenger.call(action)).toEqual(result);
     expect(handler).toHaveBeenCalledTimes(1);
   });
 
@@ -131,14 +149,14 @@ describe('getTransactionControllerInitMessenger', () => {
     'delivers %s to init messenger subscribers',
     (eventType) => {
       const { baseMessenger } = arrangeMocks();
-      const initMessenger = getTransactionControllerInitMessenger(
-        baseMessenger,
-      ) as unknown as BaseControllerMessenger;
+      const initMessenger = asUntyped(
+        getTransactionControllerInitMessenger(baseMessenger),
+      );
       const listener = jest.fn();
       const payload = { id: 'tx-1' };
 
-      initMessenger.subscribe(eventType as never, listener);
-      baseMessenger.publish(eventType as never, payload as never);
+      initMessenger.subscribe(eventType, listener);
+      asUntyped(baseMessenger).publish(eventType, payload);
 
       expect(listener).toHaveBeenCalledWith(payload);
     },
@@ -151,9 +169,9 @@ describe('getTransactionControllerInitMessenger', () => {
       jest.fn(),
     );
 
-    const initMessenger = getTransactionControllerInitMessenger(
-      baseMessenger,
-    ) as unknown as BaseControllerMessenger;
+    const initMessenger = asUntyped(
+      getTransactionControllerInitMessenger(baseMessenger),
+    );
 
     expect(() =>
       initMessenger.call('AccountsController:getSelectedAccount'),
