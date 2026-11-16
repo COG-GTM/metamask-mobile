@@ -14,7 +14,7 @@ export default async function migrate(state: unknown) {
   for (const key of Object.keys(keyValues)) {
     try {
       if (keyValues[key] != null) {
-        StorageWrapper.setItem(key, keyValues[key]);
+        await StorageWrapper.setItem(key, keyValues[key]);
       }
       await DefaultPreference.clear(key);
     } catch (error) {
