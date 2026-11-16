@@ -358,8 +358,8 @@ const EditGasFeeLegacy = ({
                 />
               </View>
             </View>
-            {renderWarning}
-            {renderError}
+            {renderWarning()}
+            {renderError()}
             <FadeAnimationView
               valueToWatch={valueToWatch}
               animateOnChange={animateOnChange}
@@ -389,7 +389,7 @@ const EditGasFeeLegacy = ({
                   <HorizontalSelector
                     selected={selectedOption}
                     onPress={selectOption}
-                    options={renderOptions}
+                    options={renderOptions()}
                   />
                 </View>
               )}
