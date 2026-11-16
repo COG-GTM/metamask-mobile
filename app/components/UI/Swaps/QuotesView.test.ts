@@ -798,6 +798,13 @@ describe('QuotesView quote ordering, balances and hardware approvals', () => {
     const approvalTxId = 'approval-tx-id';
     const tradeTxId = 'trade-tx-id';
 
+    beforeEach(() => {
+      jest.mocked(query).mockReset();
+      jest
+        .mocked(Engine.context.TransactionController.addTransaction)
+        .mockReset();
+    });
+
     const mockTransactionMeta = (id: string) => ({
       result: Promise.resolve(`${id}-hash`),
       transactionMeta: {
