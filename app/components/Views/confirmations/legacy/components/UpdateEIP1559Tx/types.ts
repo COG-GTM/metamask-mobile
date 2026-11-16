@@ -65,11 +65,11 @@ export interface UpdateTx1559Options {
   /**
    * The legacy calculated max priorty fee used in subcomponent for threshold warning messages
    */
-  maxPriortyFeeThreshold: BigNumber;
+  maxPriortyFeeThreshold: BigNumber | string;
   /**
    * The legacy calculated max fee used in subcomponent for threshold warning messages
    */
-  maxFeeThreshold: BigNumber;
+  maxFeeThreshold: BigNumber | string;
   /**
    * Boolean to indicate to sumcomponent if the view should display only advanced settings
    */
