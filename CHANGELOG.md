@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- test(vault): cover recreateVaultWithNewPassword and recreateVaultWithSamePassword ([#2322](https://github.com/COG-GTM/metamask-mobile/pull/2322))
 
 ### Added
 
