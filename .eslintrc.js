@@ -68,6 +68,13 @@ module.exports = {
       },
     },
     {
+      files: ['app/util/smart-transactions/**/*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-floating-promises': 'error',
+        'jest/valid-expect': 'error',
+      },
+    },
+    {
       files: ['**/*.test.{js,ts,tsx}', '**/*.stories.{js,ts,tsx}'],
       rules: {
         '@metamask/design-tokens/color-no-hex': 'off',

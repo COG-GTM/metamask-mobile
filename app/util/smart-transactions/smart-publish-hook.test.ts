@@ -21,7 +21,7 @@ import {
   AllowedEvents,
   SubmitSmartTransactionRequest,
   submitSmartTransactionHook,
-  submitBatchSmartTransactionHook
+  submitBatchSmartTransactionHook,
 } from './smart-publish-hook';
 import { ChainId } from '@metamask/controller-utils';
 import { ApprovalController } from '@metamask/approval-controller';
@@ -226,9 +226,26 @@ function withRequest<ReturnValue>(
 
 jest.setTimeout(10 * 1000);
 
+function publishMinedSmartTransaction(
+  controllerMessenger: SubmitSmartTransactionRequestMocked['controllerMessenger'],
+) {
+  setImmediate(() => {
+    controllerMessenger.publish(
+      'SmartTransactionsController:smartTransaction',
+      {
+        status: 'success',
+        statusMetadata: {
+          minedHash: transactionHash,
+        },
+        uuid: stxUuid,
+      } as SmartTransaction,
+    );
+  });
+}
+
 describe('submitSmartTransactionHook', () => {
   it('does not submit a transaction that is not a smart transaction', async () => {
-    withRequest(async ({ request }) => {
+    await withRequest(async ({ request }) => {
       request.shouldUseSmartTransaction = false;
       const result = await submitSmartTransactionHook(request);
       expect(result).toEqual({ transactionHash: undefined });
@@ -236,7 +253,7 @@ describe('submitSmartTransactionHook', () => {
   });
 
   it('returns a txHash asap if the feature flag requires it', async () => {
-    withRequest(async ({ request }) => {
+    await withRequest(async ({ request }) => {
       request.featureFlags.smartTransactions.mobileReturnTxHashAsap = true;
       const result = await submitSmartTransactionHook(request);
       expect(result).toEqual({ transactionHash });
@@ -244,7 +261,8 @@ describe('submitSmartTransactionHook', () => {
   });
 
   it('throws an error if there is no uuid', async () => {
-    withRequest(async ({ request, submitSignedTransactionsSpy }) => {
+    expect.assertions(1);
+    await withRequest(async ({ request, submitSignedTransactionsSpy }) => {
       submitSignedTransactionsSpy.mockResolvedValue({
         uuid: undefined,
       });
@@ -255,7 +273,8 @@ describe('submitSmartTransactionHook', () => {
   });
 
   it('throws an error if there is no transaction hash', async () => {
-    withRequest(async ({ request, controllerMessenger }) => {
+    expect.assertions(1);
+    await withRequest(async ({ request, controllerMessenger }) => {
       setImmediate(() => {
         controllerMessenger.publish(
           'SmartTransactionsController:smartTransaction',
@@ -275,7 +294,8 @@ describe('submitSmartTransactionHook', () => {
   });
 
   it('throws an error if there is no origin', async () => {
-    withRequest(async ({ request }) => {
+    expect.assertions(1);
+    await withRequest(async ({ request }) => {
       request.transactionMeta.origin = undefined;
       await expect(submitSmartTransactionHook(request)).rejects.toThrow(
         'Origin is required',
@@ -284,7 +304,7 @@ describe('submitSmartTransactionHook', () => {
   });
 
   it('submits a smart transaction', async () => {
-    withRequest(
+    await withRequest(
       async ({ request, controllerMessenger, submitSignedTransactionsSpy }) => {
         setImmediate(() => {
           controllerMessenger.publish(
@@ -333,7 +353,7 @@ describe('submitSmartTransactionHook', () => {
             signedCanceledTransactions: [],
             txParams,
             transactionMeta: request.transactionMeta,
-          })
+          }),
         );
 
         expect(
@@ -378,7 +398,7 @@ describe('submitSmartTransactionHook', () => {
   });
 
   it('submits a smart transaction without the smart transaction status page', async () => {
-    withRequest(
+    await withRequest(
       async ({ request, controllerMessenger, submitSignedTransactionsSpy }) => {
         request.featureFlags.smartTransactions.mobileReturnTxHashAsap = true;
         setImmediate(() => {
@@ -429,7 +449,7 @@ describe('submitSmartTransactionHook', () => {
             signedCanceledTransactions: [],
             txParams,
             transactionMeta: request.transactionMeta,
-          })
+          }),
         );
 
         expect(
@@ -444,7 +464,7 @@ describe('submitSmartTransactionHook', () => {
 
   describe('MM Swaps', () => {
     it('starts an approval and does not end it if there is an swap tx that requires allowance', async () => {
-      withRequest(
+      await withRequest(
         {
           transactionMeta: {
             ...defaultTransactionMeta,
@@ -526,7 +546,7 @@ describe('submitSmartTransactionHook', () => {
               signedCanceledTransactions: [],
               txParams,
               transactionMeta: request.transactionMeta,
-            })
+            }),
           );
 
           expect(
@@ -554,7 +574,7 @@ describe('submitSmartTransactionHook', () => {
       );
     });
     it('does not start an approval if a swap tx is after a swap allowance tx and ends the allowance', async () => {
-      withRequest(
+      await withRequest(
         {
           pendingApprovals: [
             {
@@ -648,7 +668,7 @@ describe('submitSmartTransactionHook', () => {
               signedCanceledTransactions: [],
               txParams,
               transactionMeta: request.transactionMeta,
-            })
+            }),
           );
 
           expect(
@@ -678,39 +698,48 @@ describe('submitSmartTransactionHook', () => {
     });
   });
   it('sets the status refresh interval if provided in feature flags', async () => {
-    withRequest(async ({ request, smartTransactionsController }) => {
-      const setStatusRefreshIntervalSpy = jest.spyOn(
-        smartTransactionsController,
-        'setStatusRefreshInterval',
-      );
+    await withRequest(
+      async ({ request, controllerMessenger, smartTransactionsController }) => {
+        const setStatusRefreshIntervalSpy = jest.spyOn(
+          smartTransactionsController,
+          'setStatusRefreshInterval',
+        );
 
-      request.featureFlags.smartTransactions.batchStatusPollingInterval = 2000;
+        request.featureFlags.smartTransactions.batchStatusPollingInterval = 2000;
 
-      await submitSmartTransactionHook(request);
+        publishMinedSmartTransaction(controllerMessenger);
 
-      expect(setStatusRefreshIntervalSpy).toHaveBeenCalledWith(2000);
-    });
+        await submitSmartTransactionHook(request);
+
+        expect(setStatusRefreshIntervalSpy).toHaveBeenCalledWith(2000);
+      },
+    );
   });
 
   it('does not set the status refresh interval if not provided in feature flags', async () => {
-    withRequest(async ({ request, smartTransactionsController }) => {
-      const setStatusRefreshIntervalSpy = jest.spyOn(
-        smartTransactionsController,
-        'setStatusRefreshInterval',
-      );
+    await withRequest(
+      async ({ request, controllerMessenger, smartTransactionsController }) => {
+        const setStatusRefreshIntervalSpy = jest.spyOn(
+          smartTransactionsController,
+          'setStatusRefreshInterval',
+        );
 
-      request.featureFlags.smartTransactions.batchStatusPollingInterval = 0;
+        request.featureFlags.smartTransactions.batchStatusPollingInterval = 0;
 
-      await submitSmartTransactionHook(request);
+        publishMinedSmartTransaction(controllerMessenger);
 
-      expect(setStatusRefreshIntervalSpy).not.toHaveBeenCalled();
-    });
+        await submitSmartTransactionHook(request);
+
+        expect(setStatusRefreshIntervalSpy).not.toHaveBeenCalled();
+      },
+    );
   });
 });
 
 describe('submitBatchSmartTransactionHook', () => {
   it('throws an error when smart transaction is not enabled', async () => {
-    withRequest(
+    expect.assertions(1);
+    await withRequest(
       {
         transactions: [
           { signedTx: createSignedTransaction(), id: '1', params: {} },
@@ -718,46 +747,48 @@ describe('submitBatchSmartTransactionHook', () => {
       },
       async ({ request }) => {
         request.shouldUseSmartTransaction = false;
-        
+
         // The function should throw an error because smart transactions are disabled
         await expect(submitBatchSmartTransactionHook(request)).rejects.toThrow(
-          'STX publishHook: Smart Transaction is required for batch submissions'
+          'STX publishHook: Smart Transaction is required for batch submissions',
         );
-      }
+      },
     );
   });
 
   it('throws an error when transactions is undefined', async () => {
-    withRequest(
+    expect.assertions(1);
+    await withRequest(
       {
         transactions: undefined,
       },
-      async ({ request }) => {        
+      async ({ request }) => {
         // The function should throw an error because transactions is required
         await expect(submitBatchSmartTransactionHook(request)).rejects.toThrow(
-          'STX publishHook: A list of transactions are required for batch submissions'
+          'STX publishHook: A list of transactions are required for batch submissions',
         );
-      }
+      },
     );
   });
 
   it('throws an error when transactions is an empty array', async () => {
-    withRequest(
+    expect.assertions(1);
+    await withRequest(
       {
         transactions: [],
       },
       async ({ request }) => {
-        
         // The function should throw an error because transactions cannot be empty
         await expect(submitBatchSmartTransactionHook(request)).rejects.toThrow(
-          'STX publishHook: A list of transactions are required for batch submissions'
+          'STX publishHook: A list of transactions are required for batch submissions',
         );
-      }
+      },
     );
   });
 
   it('throws an error if there is no uuid', async () => {
-    withRequest(
+    expect.assertions(1);
+    await withRequest(
       {
         transactions: [
           { signedTx: createSignedTransaction(), id: '1', params: {} },
@@ -770,12 +801,13 @@ describe('submitBatchSmartTransactionHook', () => {
         await expect(submitBatchSmartTransactionHook(request)).rejects.toThrow(
           'No smart transaction UUID',
         );
-      }
+      },
     );
   });
 
   it('throws an error if there is no transaction hash', async () => {
-    withRequest(
+    expect.assertions(1);
+    await withRequest(
       {
         transactions: [
           { signedTx: createSignedTransaction(), id: '1', params: {} },
@@ -797,13 +829,13 @@ describe('submitBatchSmartTransactionHook', () => {
         await expect(submitBatchSmartTransactionHook(request)).rejects.toThrow(
           'Smart Transaction does not have a transaction hash, there was a problem',
         );
-      }
+      },
     );
   });
 
   it('submits a batch of smart transactions', async () => {
     const mockSignedTx = createSignedTransaction();
-    withRequest(
+    await withRequest(
       {
         transactions: [
           { signedTx: mockSignedTx, id: '1', params: {} },
@@ -816,7 +848,7 @@ describe('submitBatchSmartTransactionHook', () => {
           txHash: transactionHash,
           txHashes: [transactionHash, transactionHash],
         });
-        
+
         setImmediate(() => {
           controllerMessenger.publish(
             'SmartTransactionsController:smartTransaction',
@@ -840,22 +872,19 @@ describe('submitBatchSmartTransactionHook', () => {
             } as SmartTransaction,
           );
         });
-        
+
         const result = await submitBatchSmartTransactionHook(request);
 
         expect(result).toEqual({
-          results: [
-            { transactionHash },
-            { transactionHash },
-          ],
+          results: [{ transactionHash }, { transactionHash }],
         });
-        
+
         expect(submitSignedTransactionsSpy).toHaveBeenCalledWith(
           expect.objectContaining({
             signedTransactions: [mockSignedTx, mockSignedTx],
             signedCanceledTransactions: [],
             transactionMeta: request.transactionMeta,
-          })
+          }),
         );
 
         expect(
@@ -876,7 +905,7 @@ describe('submitBatchSmartTransactionHook', () => {
             isSwapTransaction: false,
           },
         });
-        
+
         expect(
           request.approvalController.updateRequestState,
         ).toHaveBeenCalledWith({
@@ -901,7 +930,7 @@ describe('submitBatchSmartTransactionHook', () => {
 
   it('submits a batch without the smart transaction status page when mobileReturnTxHashAsap is true', async () => {
     const mockSignedTx = createSignedTransaction();
-    withRequest(
+    await withRequest(
       {
         transactions: [
           { signedTx: mockSignedTx, id: '1', params: {} },
@@ -915,7 +944,7 @@ describe('submitBatchSmartTransactionHook', () => {
           txHash: transactionHash,
           txHashes: [transactionHash, transactionHash],
         });
-        
+
         setImmediate(() => {
           controllerMessenger.publish(
             'SmartTransactionsController:smartTransaction',
@@ -939,22 +968,19 @@ describe('submitBatchSmartTransactionHook', () => {
             } as SmartTransaction,
           );
         });
-        
+
         const result = await submitBatchSmartTransactionHook(request);
 
         expect(result).toEqual({
-          results: [
-            { transactionHash },
-            { transactionHash },
-          ],
+          results: [{ transactionHash }, { transactionHash }],
         });
-        
+
         expect(submitSignedTransactionsSpy).toHaveBeenCalledWith(
           expect.objectContaining({
             signedTransactions: [mockSignedTx, mockSignedTx],
             signedCanceledTransactions: [],
             transactionMeta: request.transactionMeta,
-          })
+          }),
         );
 
         expect(
@@ -969,20 +995,22 @@ describe('submitBatchSmartTransactionHook', () => {
 
   it('sets the status refresh interval if provided in feature flags', async () => {
     const mockSignedTx = createSignedTransaction();
-    withRequest(
+    await withRequest(
       {
         transactions: [
           { signedTx: mockSignedTx, id: '1', params: {} },
           { signedTx: mockSignedTx, id: '2', params: {} },
         ],
       },
-      async ({ request, smartTransactionsController }) => {
+      async ({ request, controllerMessenger, smartTransactionsController }) => {
         const setStatusRefreshIntervalSpy = jest.spyOn(
           smartTransactionsController,
           'setStatusRefreshInterval',
         );
 
         request.featureFlags.smartTransactions.batchStatusPollingInterval = 2000;
+
+        publishMinedSmartTransaction(controllerMessenger);
 
         await submitBatchSmartTransactionHook(request);
 
@@ -993,11 +1021,9 @@ describe('submitBatchSmartTransactionHook', () => {
 
   it('handles empty batch results when no txHashes are returned', async () => {
     const mockSignedTx = createSignedTransaction();
-    withRequest(
+    await withRequest(
       {
-        transactions: [
-          { signedTx: mockSignedTx, id: '1', params: {} },
-        ],
+        transactions: [{ signedTx: mockSignedTx, id: '1', params: {} }],
       },
       async ({ request, controllerMessenger, submitSignedTransactionsSpy }) => {
         submitSignedTransactionsSpy.mockResolvedValue({
@@ -1005,7 +1031,7 @@ describe('submitBatchSmartTransactionHook', () => {
           txHash: transactionHash,
           // No txHashes property
         });
-        
+
         setImmediate(() => {
           controllerMessenger.publish(
             'SmartTransactionsController:smartTransaction',
@@ -1018,7 +1044,7 @@ describe('submitBatchSmartTransactionHook', () => {
             } as SmartTransaction,
           );
         });
-        
+
         const result = await submitBatchSmartTransactionHook(request);
 
         expect(result).toEqual({
