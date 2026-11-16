@@ -375,13 +375,11 @@ describe('Approval confirm flow', () => {
       await confirm(wrapper);
 
       expect(mockUpdateTransaction).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: TRANSACTION_ID_MOCK,
-          txParams: expect.not.objectContaining({
-            gasPrice: expect.anything(),
-          }),
-        }),
+        expect.objectContaining({ id: TRANSACTION_ID_MOCK }),
       );
+      expect(
+        mockUpdateTransaction.mock.calls[0][0].txParams,
+      ).not.toHaveProperty('gasPrice');
       expect(mockAccept).toHaveBeenCalledWith(TRANSACTION_ID_MOCK, undefined, {
         waitForResult: true,
       });
