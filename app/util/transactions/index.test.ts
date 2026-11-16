@@ -39,12 +39,18 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  SWAPS_TRANSACTION_ACTION_KEY,
+  BRIDGE_TRANSACTION_ACTION_KEY,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
 import { TransactionType } from '@metamask/transaction-controller';
 import { Provider } from '@metamask/network-controller';
 import BigNumber from 'bignumber.js';
+import {
+  ETH_CHAIN_ID,
+  ETH_SWAPS_CONTRACT_ADDRESS,
+} from '@metamask/swaps-controller/dist/constants';
 
 jest.mock('@metamask/controller-utils', () => ({
   ...jest.requireActual('@metamask/controller-utils'),
@@ -417,17 +423,70 @@ describe('Transactions utils :: getMethodData', () => {
     );
   });
 
-  it('calls handleMethodData with the correct data', async () => {
-    (handleMethodData as jest.Mock).mockResolvedValue({
-      parsedRegistryMethod: { name: TOKEN_METHOD_TRANSFER },
+  describe('on-chain registry fallback', () => {
+    const unknownSelectorData =
+      '0x9876543200000000000000000000000056ced0d816c668d7c0bcc3fbf0ab2c6896f589a';
+
+    beforeEach(() => {
+      (handleMethodData as jest.Mock).mockReset();
     });
-    const transferData =
-      '0xa9059cbb00000000000000000000000056ced0d816c668d7c0bcc3fbf0ab2c6896f589a';
-    await getMethodData(transferData, MOCK_NETWORK_CLIENT_ID);
-    expect(handleMethodData).toHaveBeenCalledWith(
-      '0x98765432',
-      MOCK_NETWORK_CLIENT_ID,
-    );
+
+    it('returns parsedRegistryMethod resolved by handleMethodData for an unknown selector', async () => {
+      const parsedRegistryMethod = {
+        name: 'Swap Exact Tokens',
+        args: [{ type: 'uint256' }],
+      };
+      (handleMethodData as jest.Mock).mockResolvedValue({
+        parsedRegistryMethod,
+      });
+
+      const result = await getMethodData(
+        unknownSelectorData,
+        MOCK_NETWORK_CLIENT_ID,
+      );
+
+      expect(handleMethodData).toHaveBeenCalledTimes(1);
+      expect(handleMethodData).toHaveBeenCalledWith(
+        '0x98765432',
+        MOCK_NETWORK_CLIENT_ID,
+      );
+      expect(result).toBe(parsedRegistryMethod);
+    });
+
+    it('returns an empty object when handleMethodData resolves undefined', async () => {
+      (handleMethodData as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await getMethodData(
+        unknownSelectorData,
+        MOCK_NETWORK_CLIENT_ID,
+      );
+
+      expect(result).toEqual({});
+    });
+
+    it('returns an empty object when handleMethodData rejects', async () => {
+      (handleMethodData as jest.Mock).mockRejectedValue(
+        new Error('registry lookup failed'),
+      );
+
+      const result = await getMethodData(
+        unknownSelectorData,
+        MOCK_NETWORK_CLIENT_ID,
+      );
+
+      expect(handleMethodData).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({});
+    });
+
+    it('does not query the registry for a known transfer selector', async () => {
+      const transferData =
+        '0xa9059cbb00000000000000000000000056ced0d816c668d7c0bcc3fbf0ab2c6896f589a';
+
+      const result = await getMethodData(transferData, MOCK_NETWORK_CLIENT_ID);
+
+      expect(result).toEqual({ name: TOKEN_METHOD_TRANSFER });
+      expect(handleMethodData).not.toHaveBeenCalled();
+    });
   });
 });
 
@@ -1122,6 +1181,83 @@ describe('Transactions utils :: getTransactionActionKey', () => {
     const actionKey = await getTransactionActionKey(transaction, chainId);
 
     expect(actionKey).toBe(type);
+  });
+
+  describe('swaps and bridge branches', () => {
+    const transferData =
+      '0xa9059cbb00000000000000000000000056ced0d816c668d7c0bcc3fbf0ab2c6896f589a00000000000000000000000000000000000000000000000000000000000000001';
+
+    it('returns the transfer method key for transfer data sent to a non-swaps contract', async () => {
+      const transaction = {
+        txParams: { to: MOCK_ADDRESS3, data: transferData },
+        toSmartContract: true,
+      };
+
+      const actionKey = await getTransactionActionKey(
+        transaction,
+        ETH_CHAIN_ID,
+      );
+
+      expect(actionKey).toBe(TOKEN_METHOD_TRANSFER);
+    });
+
+    it('returns swaps action key when sent to the swaps contract, even with transfer data', async () => {
+      const transaction = {
+        txParams: { to: ETH_SWAPS_CONTRACT_ADDRESS, data: transferData },
+        toSmartContract: true,
+      };
+
+      const actionKey = await getTransactionActionKey(
+        transaction,
+        ETH_CHAIN_ID,
+      );
+
+      expect(actionKey).toBe(SWAPS_TRANSACTION_ACTION_KEY);
+    });
+
+    it('returns swaps action key for a bridge-typed transaction sent to the swaps contract', async () => {
+      const transaction = {
+        type: TransactionType.bridge,
+        txParams: { to: ETH_SWAPS_CONTRACT_ADDRESS, data: transferData },
+      };
+
+      const actionKey = await getTransactionActionKey(
+        transaction,
+        ETH_CHAIN_ID,
+      );
+
+      expect(actionKey).toBe(SWAPS_TRANSACTION_ACTION_KEY);
+    });
+
+    it('returns bridge action key for a bridge transaction, even with transfer data', async () => {
+      const transaction = {
+        type: TransactionType.bridge,
+        txParams: { to: MOCK_ADDRESS3, data: transferData },
+        toSmartContract: true,
+      };
+
+      const actionKey = await getTransactionActionKey(
+        transaction,
+        ETH_CHAIN_ID,
+      );
+
+      expect(actionKey).toBe(BRIDGE_TRANSACTION_ACTION_KEY);
+    });
+
+    it('returns bridge action key for a bridge transaction using the legacy transaction field', async () => {
+      const transaction = {
+        type: TransactionType.bridge,
+        transaction: { to: MOCK_ADDRESS3, data: '0x' },
+        toSmartContract: true,
+      };
+
+      const actionKey = await getTransactionActionKey(
+        transaction,
+        ETH_CHAIN_ID,
+      );
+
+      expect(actionKey).toBe(BRIDGE_TRANSACTION_ACTION_KEY);
+    });
   });
 });
 
