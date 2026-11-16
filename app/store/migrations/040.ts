@@ -3,6 +3,28 @@ import { hasProperty, isObject } from '@metamask/utils';
 import { ensureValidState } from './util';
 
 /**
+ * Converts a `{ address, lastUsed }` caveat entry to its address string.
+ * Entries that are already strings (or otherwise unrecognized) are kept as-is
+ * so re-running the migration never drops permitted accounts.
+ *
+ * @param entry - A single caveat value entry.
+ * @returns The address string, or the original entry.
+ */
+const toAddress = (entry: unknown) =>
+  isObject(entry) &&
+  hasProperty(entry, 'address') &&
+  typeof entry.address === 'string'
+    ? entry.address
+    : entry;
+
+const migrateCaveat = (caveat: unknown) => {
+  if (!isObject(caveat) || !Array.isArray(caveat.value)) {
+    return caveat;
+  }
+  return { ...caveat, value: caveat.value.map(toAddress) };
+};
+
+/**
  * Migration to remove metadata from Permissioned accounts
  *
  * @param state Persisted Redux state
@@ -42,12 +64,7 @@ export default function migrate(state: unknown) {
             hasProperty(ethAccounts, 'caveats') &&
             Array.isArray(ethAccounts.caveats)
           ) {
-            ethAccounts.caveats = ethAccounts.caveats.map((caveat) => ({
-              ...caveat,
-              value: caveat.value.map(
-                ({ address }: { address: string }) => address,
-              ),
-            }));
+            ethAccounts.caveats = ethAccounts.caveats.map(migrateCaveat);
           }
         }
       }
