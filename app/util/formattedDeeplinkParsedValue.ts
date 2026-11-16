@@ -1,8 +1,6 @@
-const formattedDeeplinkParsedValue = (value: string) => {
-  const resolvedValue = Number(value).toLocaleString(undefined, {
-    useGrouping: false,
-  });
-  return resolvedValue;
-};
+import BigNumber from 'bignumber.js';
+
+const formattedDeeplinkParsedValue = (value: string) =>
+  new BigNumber(value, 10).toFixed();
 
 export default formattedDeeplinkParsedValue;
