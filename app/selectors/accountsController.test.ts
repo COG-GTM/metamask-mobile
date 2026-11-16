@@ -831,19 +831,15 @@ describe('Last selected account selectors', () => {
         withLastSelected(internalAccount1, 1),
         withLastSelected(internalAccount2, 3),
       ]);
-      const accountIdsBefore = Object.keys(
-        state.engine.backgroundState.AccountsController.internalAccounts
-          .accounts,
+      const accountsControllerStateBefore = structuredClone(
+        state.engine.backgroundState.AccountsController,
       );
 
       selectOrderedInternalAccountsByLastSelected(state);
 
-      expect(
-        Object.keys(
-          state.engine.backgroundState.AccountsController.internalAccounts
-            .accounts,
-        ),
-      ).toEqual(accountIdsBefore);
+      expect(state.engine.backgroundState.AccountsController).toEqual(
+        accountsControllerStateBefore,
+      );
     });
   });
 
