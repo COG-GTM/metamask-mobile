@@ -315,6 +315,13 @@ class WalletConnect {
     this.needsRedirect(id);
   };
 
+  /**
+   * Records the accounts this wallet exposed to the dapp for this v1 session,
+   * used to validate `from` on `eth_sendTransaction`.
+   *
+   * @param {string[]} accounts - Accounts sent in the session approval/update.
+   * Non-string and empty entries are dropped; the rest are lowercased.
+   */
   setApprovedAccounts = (accounts) => {
     const validAccounts = (accounts || [])
       .filter((account) => typeof account === 'string' && account)
