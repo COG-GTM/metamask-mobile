@@ -299,6 +299,16 @@ describe('EditGasFee1559Update', () => {
         result.queryByText(strings('edit_gas_fee_eip1559.max_fee_low')),
       ).toBeNull();
     });
+
+    it('shows no warning at the update floor', () => {
+      const result = renderComponent({
+        updateOption: createUpdateOption(true),
+      });
+
+      typeInto(result, INITIAL_MAX_FEE, MAX_FEE_FLOOR);
+
+      expectNoFeeErrors(result);
+    });
   });
 
   it('does not show warnings when no estimates or floor are available', () => {
