@@ -602,6 +602,14 @@ export const isPortfolioViewEnabled = () =>
 
 export const isMultichainV1Enabled = () => process.env.MULTICHAIN_V1 === 'true';
 
+/**
+ * Whether per-dApp selected networks are enabled via `MM_PER_DAPP_SELECTED_NETWORK`.
+ *
+ * @returns `true` when the flag is set.
+ */
+export const isPerDappSelectedNetworkEnabled = () =>
+  Boolean(process.env.MM_PER_DAPP_SELECTED_NETWORK);
+
 // The whitelisted network names for the given chain IDs to prevent showing warnings on Network Settings.
 export const WHILELIST_NETWORK_NAME = {
   [ChainId.mainnet]: 'Mainnet',
