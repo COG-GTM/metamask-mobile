@@ -222,7 +222,7 @@ export const selectIsEIP1559Network = createSelector(
   (networkControllerState: NetworkState) =>
     networkControllerState?.networksMetadata?.[
       networkControllerState.selectedNetworkClientId
-    ].EIPS[1559] === true,
+    ]?.EIPS?.[1559] === true,
 );
 
 // Selector to get the popular network configurations, this filter also testnet networks
