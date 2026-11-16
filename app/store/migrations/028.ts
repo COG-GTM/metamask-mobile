@@ -78,6 +78,8 @@ export default async function migrate(state: unknown) {
     string,
     Record<string, unknown>
   >;
+  // Only controller files that were read and parsed successfully may be deleted
+  const readControllerKeys = new Set<string>();
   // Populate root object with controller data
   const controllerMergeMigration = controllerList.map(
     async ({ name: controllerName }) => {
@@ -101,6 +103,7 @@ export default async function migrate(state: unknown) {
               persistedControllerJSON;
           }
         }
+        readControllerKeys.add(persistedControllerKey);
       } catch (e) {
         captureException(
           new Error(
@@ -130,6 +133,9 @@ export default async function migrate(state: unknown) {
     // Root file successfully populated with controller data - Can safely delete persisted controller files
     const controllerDeleteMigration = controllerList.map(async ({ name }) => {
       const persistedControllerKey = `persist:${name}`;
+      if (!readControllerKeys.has(persistedControllerKey)) {
+        return;
+      }
       try {
         // Remove persisted controller file
         await FilesystemStorage.removeItem(persistedControllerKey);
