@@ -1,9 +1,17 @@
 export default function migrate(state) {
-  if (state?.engine?.backgroundState?.PreferencesController?.openSeaEnabled) {
-    state.engine.backgroundState.PreferencesController.displayNftMedia =
-      state.engine.backgroundState.PreferencesController.openSeaEnabled ?? true;
+  const preferencesControllerState =
+    state?.engine?.backgroundState?.PreferencesController;
+  if (
+    preferencesControllerState &&
+    Object.prototype.hasOwnProperty.call(
+      preferencesControllerState,
+      'openSeaEnabled',
+    )
+  ) {
+    preferencesControllerState.displayNftMedia =
+      preferencesControllerState.openSeaEnabled ?? true;
 
-    delete state.engine.backgroundState.PreferencesController.openSeaEnabled;
+    delete preferencesControllerState.openSeaEnabled;
   }
   if (state?.user?.nftDetectionDismissed) {
     delete state.user.nftDetectionDismissed;
