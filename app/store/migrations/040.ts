@@ -17,6 +17,13 @@ const toAddress = (entry: unknown) =>
     ? entry.address
     : entry;
 
+/**
+ * Converts a caveat's value entries to address strings. Caveats that are not
+ * objects or whose value is not an array are returned unchanged.
+ *
+ * @param caveat - A single `eth_accounts` caveat.
+ * @returns The migrated caveat, or the original caveat.
+ */
 const migrateCaveat = (caveat: unknown) => {
   if (!isObject(caveat) || !Array.isArray(caveat.value)) {
     return caveat;
