@@ -12,14 +12,33 @@ import { mockNetworkState } from '../../util/test/network';
 import { Hex } from '@metamask/utils';
 import { KeyringControllerState } from '@metamask/keyring-controller';
 import { backupVault } from '../BackupVault';
+import { NetworkState, NetworkStatus } from '@metamask/network-controller';
+import { store } from '../../store';
+import { deprecatedGetNetworkId } from '../../util/networks/engineNetworkUtils';
+import { getGlobalChainId } from '../../util/networks/global-network';
+import {
+  networkIdUpdated,
+  networkIdWillUpdate,
+} from '../redux/slices/inpageProvider';
 
 jest.mock('../BackupVault', () => ({
   backupVault: jest.fn().mockResolvedValue({ success: true, vault: 'vault' }),
 }));
 jest.unmock('./Engine');
 jest.mock('../../store', () => ({
-  store: { getState: jest.fn(() => ({ engine: {} })) },
+  store: { getState: jest.fn(() => ({ engine: {} })), dispatch: jest.fn() },
 }));
+jest.mock('../../util/networks/engineNetworkUtils', () => ({
+  ...jest.requireActual('../../util/networks/engineNetworkUtils'),
+  deprecatedGetNetworkId: jest.fn(),
+}));
+jest.mock('../../util/networks/global-network', () => {
+  const actual = jest.requireActual('../../util/networks/global-network');
+  return {
+    ...actual,
+    getGlobalChainId: jest.fn(actual.getGlobalChainId),
+  };
+});
 jest.mock('../../selectors/smartTransactionsController', () => ({
   selectShouldUseSmartTransaction: jest.fn().mockReturnValue(false),
   selectSmartTransactionsEnabled: jest.fn().mockReturnValue(false),
@@ -141,6 +160,148 @@ describe('Engine', () => {
       [],
     );
     expect(backupVault).not.toHaveBeenCalled();
+  });
+
+  describe('network change subscriptions', () => {
+    const actualGetGlobalChainId = jest.requireActual(
+      '../../util/networks/global-network',
+    ).getGlobalChainId;
+
+    const buildNetworkState = (status: NetworkStatus) =>
+      ({
+        selectedNetworkClientId: 'mainnet',
+        networksMetadata: { mainnet: { status, EIPS: {} } },
+        networkConfigurationsByChainId: {},
+      } as unknown as NetworkState);
+
+    const publishNetworkStateChange = (
+      engine: EngineClass,
+      status: NetworkStatus,
+    ) =>
+      engine.controllerMessenger.publish(
+        'NetworkController:stateChange',
+        buildNetworkState(status),
+        [],
+      );
+
+    const flushPromises = () =>
+      new Promise((resolve) =>
+        jest.requireActual('timers').setImmediate(resolve),
+      );
+
+    let engine: EngineClass;
+    let configureSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      engine = Engine.init({}) as unknown as EngineClass;
+      jest.useFakeTimers();
+      (store.dispatch as jest.Mock).mockClear();
+      (deprecatedGetNetworkId as jest.Mock).mockResolvedValue('1');
+      configureSpy = jest
+        .spyOn(EngineClass.prototype, 'configureControllersOnNetworkChange')
+        .mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+      jest.clearAllTimers();
+      jest.useRealTimers();
+      (getGlobalChainId as jest.Mock).mockImplementation(
+        actualGetGlobalChainId,
+      );
+    });
+
+    // currentChainId is only updated when the delayed reconfiguration runs, so
+    // repeated events within the 500ms window each schedule a reconfiguration;
+    // this test covers events arriving after the previous one has completed.
+    it('reconfigures controllers 500ms after the selected network becomes available on a new chain, and not again for the same chain once that has run', () => {
+      (getGlobalChainId as jest.Mock).mockReturnValue('0xc2221');
+
+      publishNetworkStateChange(engine, NetworkStatus.Available);
+      jest.advanceTimersByTime(499);
+      expect(configureSpy).not.toHaveBeenCalled();
+      jest.advanceTimersByTime(1);
+      expect(configureSpy).toHaveBeenCalledTimes(1);
+
+      publishNetworkStateChange(engine, NetworkStatus.Available);
+      jest.advanceTimersByTime(500);
+      expect(configureSpy).toHaveBeenCalledTimes(1);
+
+      (getGlobalChainId as jest.Mock).mockReturnValue('0xc2222');
+      publishNetworkStateChange(engine, NetworkStatus.Available);
+      jest.advanceTimersByTime(500);
+      expect(configureSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it.each([
+      NetworkStatus.Unknown,
+      NetworkStatus.Unavailable,
+      NetworkStatus.Blocked,
+    ])(
+      'does not reconfigure controllers when the selected network status is %s',
+      (status) => {
+        (getGlobalChainId as jest.Mock).mockReturnValue(`0xc2230`);
+
+        publishNetworkStateChange(engine, status);
+        jest.advanceTimersByTime(1000);
+        expect(configureSpy).not.toHaveBeenCalled();
+      },
+    );
+
+    it('reconfigures controllers once the selected network on a new chain becomes available', () => {
+      (getGlobalChainId as jest.Mock).mockReturnValue('0xc2231');
+
+      publishNetworkStateChange(engine, NetworkStatus.Unavailable);
+      jest.advanceTimersByTime(500);
+      expect(configureSpy).not.toHaveBeenCalled();
+
+      publishNetworkStateChange(engine, NetworkStatus.Available);
+      jest.advanceTimersByTime(500);
+      expect(configureSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('dispatches networkIdUpdated with the fetched network ID on network state change', async () => {
+      (deprecatedGetNetworkId as jest.Mock).mockResolvedValue('11155111');
+
+      publishNetworkStateChange(engine, NetworkStatus.Available);
+      await flushPromises();
+
+      expect(deprecatedGetNetworkId).toHaveBeenCalled();
+      expect(store.dispatch).toHaveBeenCalledWith(networkIdUpdated('11155111'));
+    });
+
+    it('logs and does not dispatch networkIdUpdated when fetching the network ID fails', async () => {
+      const error = new Error('net_version failed');
+      (deprecatedGetNetworkId as jest.Mock).mockRejectedValue(error);
+      (getGlobalChainId as jest.Mock).mockReturnValue('0xc2232');
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+
+      expect(() =>
+        publishNetworkStateChange(engine, NetworkStatus.Available),
+      ).not.toThrow();
+      await flushPromises();
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        error,
+        'Network ID not changed, current chainId: 0xc2232',
+      );
+      expect(store.dispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: networkIdUpdated.type }),
+      );
+    });
+
+    it('dispatches networkIdWillUpdate on NetworkController:networkWillChange', () => {
+      engine.controllerMessenger.publish(
+        'NetworkController:networkWillChange',
+        buildNetworkState(NetworkStatus.Available),
+      );
+
+      expect(store.dispatch).toHaveBeenCalledWith(networkIdWillUpdate());
+      expect(store.dispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: networkIdUpdated.type }),
+      );
+    });
   });
 
   it('calling Engine.destroy deletes the old instance', async () => {
