@@ -847,11 +847,17 @@ export const getRpcMethodMiddleware = ({
               onScanSuccess: (data: any) => {
                 if (!regex.exec(req.params[0], data)) {
                   reject({ message: 'NO_REGEX_MATCH', data });
-                } else if (regex.walletAddress.exec(data.target_address)) {
+                  return;
+                }
+                if (
+                  data.target_address &&
+                  !regex.walletAddress.exec(data.target_address)
+                ) {
                   reject({
                     message: 'INVALID_ETHEREUM_ADDRESS',
                     data: data.target_address,
                   });
+                  return;
                 }
                 let result = data;
                 if (data.target_address) {
@@ -865,7 +871,7 @@ export const getRpcMethodMiddleware = ({
               // TODO: Replace "any" with type
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onScanError: (e: { toString: () => any }) => {
-                throw rpcErrors.internal(e.toString());
+                reject(rpcErrors.internal(e.toString()));
               },
             });
           }),

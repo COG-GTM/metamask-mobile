@@ -65,6 +65,7 @@ import {
 import { CaveatTypes } from '../Permissions/constants';
 import { getCaip25PermissionFromLegacyPermissions, rejectOriginPendingApprovals, requestPermittedChainsPermissionIncremental } from '../../util/permissions';
 import { toHex } from '@metamask/controller-utils';
+import { Alert } from 'react-native';
 
 jest.mock('../../util/permissions', () => ({
   __esModule: true,
@@ -1781,6 +1782,506 @@ describe('getRpcMethodMiddleware', () => {
           error: providerErrors.userRejectedRequest(),
         }),
       );
+    });
+  });
+  describe('homepage-only methods', () => {
+    const homepageOnlyMethods = [
+      'metamask_removeFavorite',
+      'metamask_showTutorial',
+      'metamask_showAutocomplete',
+    ];
+
+    beforeEach(() => {
+      mockStore.getState.mockImplementation(() => ({
+        browser: { activeTab: 1 },
+        bookmarks: [],
+      }));
+      mockStore.dispatch.mockImplementation((obj) => obj);
+    });
+
+    it.each(homepageOnlyMethods)(
+      '%s returns an unauthorized error when the page is not the homepage',
+      async (method) => {
+        const alertSpy = jest.spyOn(Alert, 'alert');
+        const navigation = { navigate: jest.fn() };
+        const options = {
+          ...getMinimalBrowserOptions(),
+          hostname: 'evil.example.com',
+          isHomepage: jest.fn().mockReturnValue(false),
+          navigation,
+          wizardScrollAdjusted: { current: true },
+        };
+        const middleware = getRpcMethodMiddleware(options);
+
+        const response = await callMiddleware({
+          middleware,
+          request: {
+            jsonrpc,
+            id: 1,
+            method,
+            params: ['https://bookmark.example.com'],
+          },
+        });
+
+        const expectedError = providerErrors.unauthorized('Forbidden.');
+        expect((response as JsonRpcFailure).error.code).toBe(
+          expectedError.code,
+        );
+        expect((response as JsonRpcFailure).error.code).toBe(4100);
+        expect((response as JsonRpcFailure).error.message).toBe(
+          expectedError.message,
+        );
+        expect(options.isHomepage).toHaveBeenCalled();
+        expect(alertSpy).not.toHaveBeenCalled();
+        expect(mockStore.dispatch).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'REMOVE_BOOKMARK' }),
+        );
+        expect(mockStore.dispatch).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'SET_ONBOARDING_WIZARD_STEP' }),
+        );
+        expect(navigation.navigate).not.toHaveBeenCalled();
+        expect(options.toggleUrlModal).not.toHaveBeenCalled();
+        expect(options.injectHomePageScripts).not.toHaveBeenCalled();
+        expect(options.fromHomepage.current).toBe(false);
+        expect(options.wizardScrollAdjusted.current).toBe(true);
+      },
+    );
+
+    it.each(homepageOnlyMethods)(
+      '%s returns a user rejected error when the tab is not active',
+      async (method) => {
+        mockStore.getState.mockImplementation(() => ({
+          browser: { activeTab: 2 },
+          bookmarks: [],
+        }));
+        const options = {
+          ...getMinimalBrowserOptions(),
+          isHomepage: jest.fn().mockReturnValue(true),
+          navigation: { navigate: jest.fn() },
+        };
+        const middleware = getRpcMethodMiddleware(options);
+
+        const response = await callMiddleware({
+          middleware,
+          request: { jsonrpc, id: 1, method, params: [] },
+        });
+
+        expect((response as JsonRpcFailure).error.code).toBe(
+          providerErrors.userRejectedRequest().code,
+        );
+        expect(options.isHomepage).not.toHaveBeenCalled();
+        expect(options.toggleUrlModal).not.toHaveBeenCalled();
+        expect(options.navigation.navigate).not.toHaveBeenCalled();
+      },
+    );
+
+    describe('metamask_removeFavorite', () => {
+      const bookmarkToRemove = { url: 'https://bookmark.example.com' };
+      const otherBookmark = { url: 'https://other.example.com' };
+      const request = {
+        jsonrpc,
+        id: 1,
+        method: 'metamask_removeFavorite',
+        params: [bookmarkToRemove.url],
+      };
+
+      beforeEach(() => {
+        mockStore.getState
+          .mockImplementationOnce(() => ({
+            browser: { activeTab: 1 },
+            bookmarks: [bookmarkToRemove, otherBookmark],
+          }))
+          .mockImplementationOnce(() => ({
+            browser: { activeTab: 1 },
+            bookmarks: [bookmarkToRemove, otherBookmark],
+          }))
+          .mockImplementation(() => ({
+            browser: { activeTab: 1 },
+            bookmarks: [otherBookmark],
+          }));
+      });
+
+      it('removes the bookmark and re-injects homepage scripts when the user confirms', async () => {
+        const alertSpy = jest
+          .spyOn(Alert, 'alert')
+          .mockImplementation((_title, _message, buttons) => {
+            buttons?.[1].onPress?.();
+          });
+        const options = {
+          ...getMinimalBrowserOptions(),
+          isHomepage: jest.fn().mockReturnValue(true),
+        };
+        const middleware = getRpcMethodMiddleware(options);
+
+        const response = await callMiddleware({ middleware, request });
+
+        assertIsJsonRpcSuccess(response);
+        expect(alertSpy).toHaveBeenCalledTimes(1);
+        expect(mockStore.dispatch).toHaveBeenCalledWith({
+          type: 'REMOVE_BOOKMARK',
+          bookmark: bookmarkToRemove,
+        });
+        expect(options.injectHomePageScripts).toHaveBeenCalledWith([
+          otherBookmark,
+        ]);
+        expect(response.result).toStrictEqual({
+          favorites: [bookmarkToRemove, otherBookmark],
+        });
+      });
+
+      it('does not remove the bookmark when the user cancels', async () => {
+        jest
+          .spyOn(Alert, 'alert')
+          .mockImplementation((_title, _message, buttons) => {
+            buttons?.[0].onPress?.();
+          });
+        const options = {
+          ...getMinimalBrowserOptions(),
+          isHomepage: jest.fn().mockReturnValue(true),
+        };
+        const middleware = getRpcMethodMiddleware(options);
+
+        const response = await callMiddleware({ middleware, request });
+
+        assertIsJsonRpcSuccess(response);
+        expect(mockStore.dispatch).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'REMOVE_BOOKMARK' }),
+        );
+        expect(options.injectHomePageScripts).not.toHaveBeenCalled();
+        expect(response.result).toStrictEqual({
+          favorites: [bookmarkToRemove, otherBookmark],
+        });
+      });
+    });
+
+    describe('metamask_showTutorial', () => {
+      it('starts the onboarding wizard and navigates to the wallet on the homepage', async () => {
+        const options = {
+          ...getMinimalBrowserOptions(),
+          isHomepage: jest.fn().mockReturnValue(true),
+          navigation: { navigate: jest.fn() },
+          wizardScrollAdjusted: { current: true },
+        };
+        const middleware = getRpcMethodMiddleware(options);
+
+        const response = await callMiddleware({
+          middleware,
+          request: { jsonrpc, id: 1, method: 'metamask_showTutorial' },
+        });
+
+        assertIsJsonRpcSuccess(response);
+        expect(response.result).toBe(true);
+        expect(mockStore.dispatch).toHaveBeenCalledWith({
+          type: 'SET_ONBOARDING_WIZARD_STEP',
+          step: 1,
+        });
+        expect(options.navigation.navigate).toHaveBeenCalledWith('WalletView');
+        expect(options.wizardScrollAdjusted.current).toBe(false);
+      });
+    });
+
+    describe('metamask_showAutocomplete', () => {
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it('opens the URL modal on the homepage and resets fromHomepage after 1500ms', async () => {
+        jest.useFakeTimers();
+        const options = {
+          ...getMinimalBrowserOptions(),
+          isHomepage: jest.fn().mockReturnValue(true),
+        };
+        const middleware = getRpcMethodMiddleware(options);
+
+        const response = await callMiddleware({
+          middleware,
+          request: { jsonrpc, id: 1, method: 'metamask_showAutocomplete' },
+        });
+
+        assertIsJsonRpcSuccess(response);
+        expect(response.result).toBe(true);
+        expect(options.toggleUrlModal).toHaveBeenCalledWith(true);
+        expect(options.fromHomepage.current).toBe(true);
+
+        jest.advanceTimersByTime(1499);
+        expect(options.fromHomepage.current).toBe(true);
+        jest.advanceTimersByTime(1);
+        expect(options.fromHomepage.current).toBe(false);
+      });
+    });
+
+    describe('metamask_injectHomepageScripts', () => {
+      it('injects homepage scripts on the homepage', async () => {
+        const options = {
+          ...getMinimalBrowserOptions(),
+          isHomepage: jest.fn().mockReturnValue(true),
+        };
+        const middleware = getRpcMethodMiddleware(options);
+
+        const response = await callMiddleware({
+          middleware,
+          request: { jsonrpc, id: 1, method: 'metamask_injectHomepageScripts' },
+        });
+
+        assertIsJsonRpcSuccess(response);
+        expect(response.result).toBe(true);
+        expect(options.injectHomePageScripts).toHaveBeenCalledTimes(1);
+      });
+
+      it('does not inject homepage scripts on other pages', async () => {
+        const options = {
+          ...getMinimalBrowserOptions(),
+          isHomepage: jest.fn().mockReturnValue(false),
+        };
+        const middleware = getRpcMethodMiddleware(options);
+
+        const response = await callMiddleware({
+          middleware,
+          request: { jsonrpc, id: 1, method: 'metamask_injectHomepageScripts' },
+        });
+
+        assertIsJsonRpcSuccess(response);
+        expect(response.result).toBe(true);
+        expect(options.injectHomePageScripts).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('metamask_getProviderState', () => {
+    const permittedAddress = '0x0000000000000000000000000000000000000001';
+    const providerState = {
+      isUnlocked: true,
+      chainId: '0x1',
+      networkVersion: '1',
+    };
+
+    beforeEach(() => {
+      mockStore.getState.mockImplementation(() => ({ browser: {} }));
+    });
+
+    it('merges the provider state with the accounts permitted for the origin', async () => {
+      mockGetPermittedAccounts.mockImplementation((origin) =>
+        origin === 'example.metamask.io' ? [permittedAddress] : [],
+      );
+      const options = {
+        ...getMinimalOptions(),
+        hostname: 'example.metamask.io',
+        getProviderState: jest.fn().mockResolvedValue({
+          ...providerState,
+          accounts: ['0x00000000000000000000000000000000000000ff'],
+        }),
+      };
+      const middleware = getRpcMethodMiddleware(options);
+
+      const response = await callMiddleware({
+        middleware,
+        request: { jsonrpc, id: 1, method: 'metamask_getProviderState' },
+      });
+
+      assertIsJsonRpcSuccess(response);
+      expect(options.getProviderState).toHaveBeenCalledWith(
+        'example.metamask.io',
+      );
+      expect(mockGetPermittedAccounts).toHaveBeenCalledWith(
+        'example.metamask.io',
+      );
+      expect(response.result).toStrictEqual({
+        ...providerState,
+        accounts: [permittedAddress],
+      });
+    });
+
+    it('returns no accounts when the origin has no permitted accounts', async () => {
+      mockGetPermittedAccounts.mockReturnValue([]);
+      const options = {
+        ...getMinimalOptions(),
+        hostname: 'unpermitted.example.com',
+        getProviderState: jest.fn().mockResolvedValue({
+          ...providerState,
+          accounts: [permittedAddress],
+        }),
+      };
+      const middleware = getRpcMethodMiddleware(options);
+
+      const response = await callMiddleware({
+        middleware,
+        request: { jsonrpc, id: 1, method: 'metamask_getProviderState' },
+      });
+
+      assertIsJsonRpcSuccess(response);
+      expect(response.result).toStrictEqual({ ...providerState, accounts: [] });
+    });
+
+    it('uses the SDK channel ID as the origin', async () => {
+      mockGetPermittedAccounts.mockImplementation((origin) =>
+        origin === 'sdk-channel-id' ? [permittedAddress] : [],
+      );
+      const options = {
+        ...getMinimalSDKOptions(),
+        hostname: 'example.metamask.io',
+        channelId: 'sdk-channel-id',
+        getProviderState: jest.fn().mockResolvedValue(providerState),
+      };
+      const middleware = getRpcMethodMiddleware(options);
+
+      const response = await callMiddleware({
+        middleware,
+        request: { jsonrpc, id: 1, method: 'metamask_getProviderState' },
+      });
+
+      assertIsJsonRpcSuccess(response);
+      expect(options.getProviderState).toHaveBeenCalledWith('sdk-channel-id');
+      expect(mockGetPermittedAccounts).toHaveBeenCalledWith('sdk-channel-id');
+      expect(response.result).toStrictEqual({
+        ...providerState,
+        accounts: [permittedAddress],
+      });
+    });
+  });
+
+  describe('web3_clientVersion', () => {
+    it('returns the MetaMask Mobile client version', async () => {
+      mockStore.getState.mockImplementation(() => ({ browser: {} }));
+      const middleware = getRpcMethodMiddleware(getMinimalOptions());
+
+      const response = await callMiddleware({
+        middleware,
+        request: { jsonrpc, id: 1, method: 'web3_clientVersion' },
+      });
+
+      assertIsJsonRpcSuccess(response);
+      expect(response.result).toBe('MetaMask/version/Mobile');
+    });
+  });
+
+  describe('wallet_scanQRCode', () => {
+    const validAddress = '0x0000000000000000000000000000000000000001';
+
+    beforeEach(() => {
+      mockStore.getState.mockImplementation(() => ({
+        browser: { activeTab: 1 },
+      }));
+    });
+
+    function getNavigationMock(
+      scan: (params: {
+        onScanSuccess: (data: unknown) => void;
+        onScanError: (e: { toString: () => string }) => void;
+      }) => void,
+    ) {
+      return {
+        navigate: jest.fn().mockImplementation((_route, params) => {
+          // The scanner reports results asynchronously, after navigation.
+          setTimeout(() => scan(params), 0);
+        }),
+      };
+    }
+
+    async function scanQRCode(
+      navigation: ReturnType<typeof getNavigationMock>,
+      params: string[],
+    ) {
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalBrowserOptions(),
+        navigation,
+      });
+      return await callMiddleware({
+        middleware,
+        request: { jsonrpc, id: 1, method: 'wallet_scanQRCode', params },
+      });
+    }
+
+    it('opens the QR scanner and returns the scanned target address', async () => {
+      const navigation = getNavigationMock(({ onScanSuccess }) =>
+        onScanSuccess({ target_address: validAddress, action: 'send-eth' }),
+      );
+
+      const response = await scanQRCode(navigation, ['.*']);
+
+      assertIsJsonRpcSuccess(response);
+      expect(navigation.navigate).toHaveBeenCalledWith(
+        'QRTabSwitcher',
+        expect.objectContaining({
+          onScanSuccess: expect.any(Function),
+          onScanError: expect.any(Function),
+        }),
+      );
+      expect(response.result).toBe(validAddress);
+    });
+
+    it('returns an INVALID_ETHEREUM_ADDRESS error for a malformed target address', async () => {
+      const navigation = getNavigationMock(({ onScanSuccess }) =>
+        onScanSuccess({ target_address: '0x1234', action: 'send-eth' }),
+      );
+
+      const response = await scanQRCode(navigation, ['.*']);
+
+      const { error } = response as JsonRpcFailure;
+      expect(error).toBeDefined();
+      expect(JSON.stringify(error)).toContain('INVALID_ETHEREUM_ADDRESS');
+      expect('result' in response).toBe(false);
+    });
+
+    it('returns the scanned data as JSON when it has a scheme', async () => {
+      const data = { scheme: 'ethereum', target_address: undefined };
+      const navigation = getNavigationMock(({ onScanSuccess }) =>
+        onScanSuccess(data),
+      );
+
+      const response = await scanQRCode(navigation, ['.*']);
+
+      assertIsJsonRpcSuccess(response);
+      expect(response.result).toBe(JSON.stringify(data));
+    });
+
+    it('returns raw scanned text that matches the requested regex', async () => {
+      const navigation = getNavigationMock(({ onScanSuccess }) =>
+        onScanSuccess('hello world'),
+      );
+
+      const response = await scanQRCode(navigation, ['^hello']);
+
+      assertIsJsonRpcSuccess(response);
+      expect(response.result).toBe('hello world');
+    });
+
+    it('returns a NO_REGEX_MATCH error when the scanned data does not match the requested regex', async () => {
+      const navigation = getNavigationMock(({ onScanSuccess }) =>
+        onScanSuccess('hello world'),
+      );
+
+      const response = await scanQRCode(navigation, ['^0x']);
+
+      const { error } = response as JsonRpcFailure;
+      expect(error).toBeDefined();
+      expect(JSON.stringify(error)).toContain('NO_REGEX_MATCH');
+      expect('result' in response).toBe(false);
+    });
+
+    it('returns an internal error when the scanner fails', async () => {
+      const navigation = getNavigationMock(({ onScanError }) =>
+        onScanError({ toString: () => 'camera unavailable' }),
+      );
+
+      const response = await scanQRCode(navigation, ['.*']);
+
+      const { error } = response as JsonRpcFailure;
+      expect(error.code).toBe(rpcErrors.internal().code);
+      expect(error.message).toBe('camera unavailable');
+    });
+
+    it('returns a user rejected error without opening the scanner when the tab is not active', async () => {
+      mockStore.getState.mockImplementation(() => ({
+        browser: { activeTab: 2 },
+      }));
+      const navigation = getNavigationMock(() => undefined);
+
+      const response = await scanQRCode(navigation, ['.*']);
+
+      expect((response as JsonRpcFailure).error.code).toBe(
+        providerErrors.userRejectedRequest().code,
+      );
+      expect(navigation.navigate).not.toHaveBeenCalled();
     });
   });
 });
