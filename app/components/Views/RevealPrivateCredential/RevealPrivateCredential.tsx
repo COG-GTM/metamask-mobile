@@ -211,13 +211,13 @@ const RevealPrivateCredential = ({
       // Try to use biometrics to unlock
       const { availableBiometryType } = await Authentication.getType();
       if (!passwordSet) {
-        tryUnlockWithPassword('');
+        tryUnlockWithPassword('', credentialSlug);
       } else if (availableBiometryType) {
         const biometryChoice = await StorageWrapper.getItem(BIOMETRY_CHOICE);
         if (biometryChoice !== '' && biometryChoice === availableBiometryType) {
           const credentials = await Authentication.getPassword();
           if (credentials) {
-            tryUnlockWithPassword(credentials.password);
+            tryUnlockWithPassword(credentials.password, credentialSlug);
           }
         }
       }
