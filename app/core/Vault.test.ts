@@ -221,6 +221,49 @@ describe('Vault', () => {
       }
     });
 
+    it('waits for the vault to be recreated before restoring accounts', async () => {
+      const { KeyringController } = MockEngine.context;
+      let resolveCreate: () => void = () => undefined;
+      KeyringController.createNewVaultAndRestore.mockReturnValue(
+        new Promise<void>((resolve) => {
+          resolveCreate = resolve;
+        }),
+      );
+      mockWithKeyringSerialize();
+      mockKeyringState.keyrings = [
+        hdKeyring(),
+        {
+          type: KeyringTypes.simple,
+          accounts: ['0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'],
+        },
+        {
+          type: KeyringTypes.qr,
+          accounts: ['0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'],
+        },
+      ];
+
+      const recreatePromise = recreateVaultWithNewPassword(
+        PASSWORD,
+        NEW_PASSWORD,
+        hdAccounts[0],
+      );
+      await new Promise(process.nextTick);
+
+      expect(KeyringController.createNewVaultAndRestore).toHaveBeenCalled();
+      expect(KeyringController.restoreQRKeyring).not.toHaveBeenCalled();
+      expect(KeyringController.addNewAccount).not.toHaveBeenCalled();
+      expect(
+        KeyringController.importAccountWithStrategy,
+      ).not.toHaveBeenCalled();
+
+      resolveCreate();
+      await recreatePromise;
+
+      expect(KeyringController.restoreQRKeyring).toHaveBeenCalled();
+      expect(KeyringController.addNewAccount).toHaveBeenCalledTimes(2);
+      expect(KeyringController.importAccountWithStrategy).toHaveBeenCalled();
+    });
+
     it('does not add accounts when the HD keyring has a single account', async () => {
       mockKeyringState.keyrings = [hdKeyring([hdAccounts[0]])];
 
