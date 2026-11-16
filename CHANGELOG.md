@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- test(encryptor): round-trip vault encryption against real WebCrypto, covering wrong-password, tampered/non-JSON vaults, legacy KDF fallback and library routing ([#2278](https://github.com/COG-GTM/metamask-mobile/pull/2278))
 
 ### Added
 
