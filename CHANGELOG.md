@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- fix: `conversionGTE`/`conversionLTE` no longer throw with bignumber.js 9 ([#2339](https://github.com/COG-GTM/metamask-mobile/pull/2339))
 
 ### Added
 

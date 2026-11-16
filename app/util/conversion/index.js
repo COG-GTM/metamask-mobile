@@ -259,13 +259,13 @@ const conversionMax = ({ ...firstProps }, { ...secondProps }) => {
 const conversionGTE = ({ ...firstProps }, { ...secondProps }) => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
-  return firstValue.greaterThanOrEqualTo(secondValue);
+  return firstValue.isGreaterThanOrEqualTo(secondValue);
 };
 
 const conversionLTE = ({ ...firstProps }, { ...secondProps }) => {
   const firstValue = converter({ ...firstProps });
   const secondValue = converter({ ...secondProps });
-  return firstValue.lessThanOrEqualTo(secondValue);
+  return firstValue.isLessThanOrEqualTo(secondValue);
 };
 
 const toNegative = (n, options = {}) => multiplyCurrencies(n, -1, options);
