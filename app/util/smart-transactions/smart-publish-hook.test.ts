@@ -31,6 +31,7 @@ import {
   NetworkControllerStateChangeEvent,
 } from '@metamask/network-controller';
 import { Hex } from '@metamask/utils';
+import { RAMPS_SEND } from '../../components/UI/Ramp/constants';
 
 interface PendingApprovalsData {
   id: string;
@@ -233,6 +234,42 @@ describe('submitSmartTransactionHook', () => {
       const result = await submitSmartTransactionHook(request);
       expect(result).toEqual({ transactionHash: undefined });
     });
+  });
+
+  it('falls back to regular publish for RAMPS_SEND transactions without fetching fees', async () => {
+    await withRequest(
+      async ({ request, getFeesSpy, submitSignedTransactionsSpy }) => {
+        request.transactionMeta.origin = RAMPS_SEND;
+        const result = await submitSmartTransactionHook(request);
+        expect(result).toEqual({ transactionHash: undefined });
+        expect(getFeesSpy).not.toHaveBeenCalled();
+        expect(submitSignedTransactionsSpy).not.toHaveBeenCalled();
+      },
+    );
+  });
+
+  it('falls back to regular publish when getFees throws', async () => {
+    await withRequest(
+      async ({ request, getFeesSpy, submitSignedTransactionsSpy }) => {
+        getFeesSpy.mockRejectedValue(new Error('STX API unavailable'));
+        const result = await submitSmartTransactionHook(request);
+        expect(result).toEqual({ transactionHash: undefined });
+        expect(getFeesSpy).toHaveBeenCalledTimes(1);
+        expect(submitSignedTransactionsSpy).not.toHaveBeenCalled();
+      },
+    );
+  });
+
+  it('falls back to regular publish when getFees resolves undefined', async () => {
+    await withRequest(
+      async ({ request, getFeesSpy, submitSignedTransactionsSpy }) => {
+        getFeesSpy.mockResolvedValue(undefined);
+        const result = await submitSmartTransactionHook(request);
+        expect(result).toEqual({ transactionHash: undefined });
+        expect(getFeesSpy).toHaveBeenCalledTimes(1);
+        expect(submitSignedTransactionsSpy).not.toHaveBeenCalled();
+      },
+    );
   });
 
   it('returns a txHash asap if the feature flag requires it', async () => {
