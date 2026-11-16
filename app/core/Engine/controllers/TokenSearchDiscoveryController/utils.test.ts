@@ -1,7 +1,12 @@
-import { createTokenSearchDiscoveryController } from './utils';
+import {
+  createTokenSearchDiscoveryController,
+  getPortfolioApiBaseUrl,
+} from './utils';
+import { PORTFOLIO_API_URL } from './constants';
 import Logger from '../../../../util/Logger';
 
 import {
+  TokenDiscoveryApiService,
   TokenSearchApiService,
   TokenSearchDiscoveryControllerState,
 } from '@metamask/token-search-discovery-controller';
@@ -126,67 +131,31 @@ describe('TokenSearchDiscoveryController utils', () => {
   });
 
   describe('getPortfolioApiBaseUrl', () => {
-    const originalEnv = process.env;
-
     beforeEach(() => {
-      jest.resetModules();
-      process.env = { ...originalEnv };
+      jest.clearAllMocks();
+      (TokenSearchApiService as jest.Mock).mockImplementation(() => ({}));
     });
 
-    afterEach(() => {
-      process.env = originalEnv;
+    it.each([
+      ['local', PORTFOLIO_API_URL.dev],
+      ['pre-release', PORTFOLIO_API_URL.prod],
+      ['production', PORTFOLIO_API_URL.prod],
+      ['unknown', PORTFOLIO_API_URL.dev],
+    ])('returns the expected URL when environment is %s', (env, expected) => {
+      expect(getPortfolioApiBaseUrl(env)).toBe(expected);
     });
 
-    it('returns dev URL when environment is local', () => {
-      process.env.METAMASK_ENVIRONMENT = 'local';
-      jest.isolateModules(() => {
-        const { createTokenSearchDiscoveryController: freshCreate } =
-          jest.requireActual('./utils');
-        const controller = freshCreate({
-          state: undefined,
-          messenger,
-        });
-        expect(controller.state).toBeDefined();
+    it('builds both API services with the environment URL', () => {
+      createTokenSearchDiscoveryController({
+        state: undefined,
+        messenger,
       });
-    });
 
-    it('returns prod URL when environment is pre-release', () => {
-      process.env.METAMASK_ENVIRONMENT = 'pre-release';
-      jest.isolateModules(() => {
-        const { createTokenSearchDiscoveryController: freshCreate } =
-          jest.requireActual('./utils');
-        const controller = freshCreate({
-          state: undefined,
-          messenger,
-        });
-        expect(controller.state).toBeDefined();
-      });
-    });
-
-    it('returns prod URL when environment is production', () => {
-      process.env.METAMASK_ENVIRONMENT = 'production';
-      jest.isolateModules(() => {
-        const { createTokenSearchDiscoveryController: freshCreate } =
-          jest.requireActual('./utils');
-        const controller = freshCreate({
-          state: undefined,
-          messenger,
-        });
-        expect(controller.state).toBeDefined();
-      });
-    });
-
-    it('returns dev URL when environment is not recognized', () => {
-      process.env.METAMASK_ENVIRONMENT = 'unknown';
-      jest.isolateModules(() => {
-        const { createTokenSearchDiscoveryController: freshCreate } =
-          jest.requireActual('./utils');
-        const controller = freshCreate({
-          state: undefined,
-          messenger,
-        });
-        expect(controller.state).toBeDefined();
-      });
+      const expectedUrl = getPortfolioApiBaseUrl();
+      expect(TokenSearchApiService).toHaveBeenCalledTimes(1);
+      expect(TokenSearchApiService).toHaveBeenCalledWith(expectedUrl);
+      expect(TokenDiscoveryApiService).toHaveBeenCalledTimes(1);
+      expect(TokenDiscoveryApiService).toHaveBeenCalledWith(expectedUrl);
     });
   });
 });

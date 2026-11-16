@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- fix(token-search): assert the Portfolio API base URL per environment in TokenSearchDiscoveryController tests ([#2254](https://github.com/COG-GTM/metamask-mobile/pull/2254))
 
 ### Added
 

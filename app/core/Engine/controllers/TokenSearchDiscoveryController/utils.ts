@@ -7,8 +7,9 @@ import {
 import { TokenSearchDiscoveryControllerParams } from './types';
 import { PORTFOLIO_API_URL } from './constants';
 
-const getPortfolioApiBaseUrl = () => {
-  const env = process.env.METAMASK_ENVIRONMENT;
+export const getPortfolioApiBaseUrl = (
+  env: string | undefined = process.env.METAMASK_ENVIRONMENT,
+) => {
   switch (env) {
     case 'local':
       return PORTFOLIO_API_URL.dev;
