@@ -26,7 +26,9 @@ const mockMetrics = {
 
 jest.mock('../../../../../../core/Engine', () => {
   const { MOCK_ACCOUNTS_CONTROLLER_STATE: mockAccountsControllerState } =
-    jest.requireActual('../../../../../../util/test/accountsControllerTestUtils');
+    jest.requireActual(
+      '../../../../../../util/test/accountsControllerTestUtils',
+    );
   return {
     acceptPendingApproval: jest.fn(),
     rejectPendingApproval: jest.fn(),
@@ -343,14 +345,14 @@ describe('TypedSign', () => {
     });
   });
 
-  // FIXME: This test suite is failing because the event test is going far beyond its scope
-  //   this should be refactored to test only the event tracking on the TypedSign component
-  //   and not the whole event tracking system (including events from app/util/confirmation/signatureUtils.js)
-  // eslint-disable-next-line jest/no-disabled-tests
-  describe.skip('trackEvent', () => {
-    it('tracks event for rejected requests', async () => {
+  describe('trackEvent', () => {
+    beforeEach(() => {
+      mockMetrics.trackEvent.mockClear();
+      mockConfirm.mockClear();
       mockReject.mockClear();
+    });
 
+    it('tracks event for rejected requests', async () => {
       const container = renderWithProvider(
         <TypedSign
           currentPageInformation={{
@@ -369,18 +371,15 @@ describe('TypedSign', () => {
       );
       fireEvent.press(rejectButton);
 
+      await waitFor(() => expect(mockMetrics.trackEvent).toHaveBeenCalled());
       expect(mockReject).toHaveBeenCalledTimes(1);
 
-      const rejectedMocks = mockMetrics.trackEvent.mock.calls.filter(
-        (call) => call[0].category === 'Signature Rejected',
-      );
+      const rejectedEvents = mockMetrics.trackEvent.mock.calls
+        .map((call) => call[0])
+        .filter((event) => event.name === 'Signature Rejected');
 
-      const mockCallsLength = rejectedMocks.length;
-
-      const lastMockCall = rejectedMocks[mockCallsLength - 1];
-
-      expect(lastMockCall[0]).toEqual({ category: 'Signature Rejected' });
-      expect(lastMockCall[1]).toEqual({
+      expect(rejectedEvents).toHaveLength(1);
+      expect(rejectedEvents[0].properties).toStrictEqual({
         account_type: 'Metamask',
         dapp_host_name: 'N/A',
         chain_id: '1',
@@ -411,16 +410,16 @@ describe('TypedSign', () => {
         SigningBottomSheetSelectorsIDs.SIGN_BUTTON,
       );
       fireEvent.press(signButton);
-      const signedMocks = mockMetrics.trackEvent.mock.calls.filter(
-        (call) => call[0].category === 'Signature Approved',
-      );
 
-      const mockCallsLength = signedMocks.length;
+      await waitFor(() => expect(mockMetrics.trackEvent).toHaveBeenCalled());
+      expect(mockConfirm).toHaveBeenCalledTimes(1);
 
-      const lastMockCall = signedMocks[mockCallsLength - 1];
+      const signedEvents = mockMetrics.trackEvent.mock.calls
+        .map((call) => call[0])
+        .filter((event) => event.name === 'Signature Approved');
 
-      expect(lastMockCall[0]).toEqual({ category: 'Signature Approved' });
-      expect(lastMockCall[1]).toEqual({
+      expect(signedEvents).toHaveLength(1);
+      expect(signedEvents[0].properties).toStrictEqual({
         account_type: 'Metamask',
         dapp_host_name: 'N/A',
         chain_id: '1',
