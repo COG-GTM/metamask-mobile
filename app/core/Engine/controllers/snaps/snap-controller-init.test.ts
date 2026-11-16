@@ -71,8 +71,35 @@ describe('SnapControllerInit', () => {
     });
   });
 
+  describe('when METAMASK_BUILD_TYPE is flask', () => {
+    const originalBuildType = process.env.METAMASK_BUILD_TYPE;
+
+    beforeEach(() => {
+      process.env.METAMASK_BUILD_TYPE = 'flask';
+    });
+
+    afterEach(() => {
+      if (originalBuildType === undefined) {
+        delete process.env.METAMASK_BUILD_TYPE;
+      } else {
+        process.env.METAMASK_BUILD_TYPE = originalBuildType;
+      }
+    });
+
+    it('enables local snaps and installation without an allowlist', () => {
+      snapControllerInit(getInitRequestMock());
+
+      const controllerMock = jest.mocked(SnapController);
+      expect(controllerMock.mock.calls[0][0].featureFlags).toEqual({
+        allowLocalSnaps: true,
+        disableSnapInstallation: false,
+        requireAllowlist: false,
+      });
+    });
+  });
+
   describe('getMnemonicSeed', () => {
-    it('returns the mnemonic seed', () => {
+    it('returns the mnemonic seed', async () => {
       const messenger = new ExtendedControllerMessenger<
         KeyringControllerGetKeyringsByTypeAction,
         never
@@ -94,10 +121,10 @@ describe('SnapControllerInit', () => {
         ],
       );
 
-      expect(getMnemonicSeed()).resolves.toBe(seed);
+      await expect(getMnemonicSeed()).resolves.toBe(seed);
     });
 
-    it('throws an error if the keyring is not available', () => {
+    it('throws an error if the keyring is not available', async () => {
       const messenger = new ExtendedControllerMessenger<
         KeyringControllerGetKeyringsByTypeAction,
         never
@@ -113,10 +140,37 @@ describe('SnapControllerInit', () => {
         () => [],
       );
 
-      expect(getMnemonicSeed()).rejects.toThrow(
+      await expect(getMnemonicSeed()).rejects.toThrow(
         'Primary keyring mnemonic unavailable.',
       );
     });
+    it.each([
+      ['has no seed', { type: 'HD Key Tree' }],
+      ['has a string seed', { type: 'HD Key Tree', seed: '0x01020304' }],
+      ['has an array seed', { type: 'HD Key Tree', seed: [1, 2, 3, 4] }],
+    ])(
+      'throws an error if the primary keyring %s',
+      async (_description, keyring) => {
+        const messenger = new ExtendedControllerMessenger<
+          KeyringControllerGetKeyringsByTypeAction,
+          never
+        >();
+
+        snapControllerInit(getInitRequestMock(messenger));
+
+        const controllerMock = jest.mocked(SnapController);
+        const getMnemonicSeed = controllerMock.mock.calls[0][0].getMnemonicSeed;
+
+        messenger.registerActionHandler(
+          'KeyringController:getKeyringsByType',
+          () => [keyring],
+        );
+
+        await expect(getMnemonicSeed()).rejects.toThrow(
+          'Primary keyring mnemonic unavailable.',
+        );
+      },
+    );
   });
 
   describe('getFeatureFlags', () => {
