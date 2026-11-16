@@ -122,7 +122,7 @@ describe('resolveEnsToIpfsContentId', () => {
       },
     );
 
-    it.each([undefined, null, '0x', '0x0', ZERO_BYTES32])(
+    it.each([undefined, null, '0x', '0x0', ZERO_ADDRESS, ZERO_BYTES32])(
       'throws when the registry returns empty resolver address %s',
       async (resolverAddress) => {
         mockRegistry.resolver.mockResolvedValue([resolverAddress]);
@@ -133,14 +133,6 @@ describe('resolveEnsToIpfsContentId', () => {
         expect(mockResolver.supportsInterface).not.toHaveBeenCalled();
       },
     );
-
-    it('does not treat the 20-byte zero address as empty', async () => {
-      mockRegistry.resolver.mockResolvedValue([ZERO_ADDRESS]);
-
-      await resolve();
-
-      expect(mockAt).toHaveBeenCalledWith(resolverAbi, ZERO_ADDRESS);
-    });
   });
 
   describe('EIP-1577 contenthash resolver', () => {
