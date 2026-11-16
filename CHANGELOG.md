@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- test(transaction-controller): cover publishBatch guards, transactionApproved notification and incoming transactions disabled branches ([#2326](https://github.com/COG-GTM/metamask-mobile/pull/2326))
 - feat: migrate eth_accounts and permittedChains to CAIP-25 endowment ([#13970](https://github.com/MetaMask/metamask-mobile/pull/13970))
 - feat(identity): rebrand "Profile syncing" to "Backup and sync", adding a dedicated settings menu and more ([#15003](https://github.com/MetaMask/metamask-mobile/pull/15003))
 - feat(bridge): implement quote expiration handling in Bridge feature ([#14872](https://github.com/MetaMask/metamask-mobile/pull/14872))
