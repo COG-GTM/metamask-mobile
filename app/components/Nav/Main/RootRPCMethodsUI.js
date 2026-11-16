@@ -346,8 +346,8 @@ const RootRPCMethodsUI = (props) => {
         }
       } catch (error) {
         if (
-          !error?.message.startsWith(KEYSTONE_TX_CANCELED) &&
-          !error?.message.startsWith(STX_NO_HASH_ERROR)
+          !error?.message?.startsWith(KEYSTONE_TX_CANCELED) &&
+          !error?.message?.startsWith(STX_NO_HASH_ERROR)
         ) {
           Alert.alert(
             strings('transactions.transaction_error'),
