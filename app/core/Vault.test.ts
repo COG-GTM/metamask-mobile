@@ -190,6 +190,7 @@ describe('Vault', () => {
       const callOrder: string[] = [];
       mockKeyringController.createNewVaultAndRestore.mockImplementation(
         async () => {
+          await Promise.resolve();
           callOrder.push('createNewVaultAndRestore');
         },
       );
@@ -223,6 +224,7 @@ describe('Vault', () => {
       const callOrder: string[] = [];
       mockKeyringController.createNewVaultAndRestore.mockImplementation(
         async () => {
+          await Promise.resolve();
           callOrder.push('createNewVaultAndRestore');
         },
       );
@@ -327,6 +329,7 @@ describe('Vault', () => {
       const callOrder: string[] = [];
       mockKeyringController.createNewVaultAndRestore.mockImplementation(
         async () => {
+          await Promise.resolve();
           callOrder.push('createNewVaultAndRestore');
         },
       );
@@ -385,13 +388,24 @@ describe('Vault', () => {
 
     it('reselects a checksummed address that matches a lowercased recreated account', async () => {
       const checksummedAddress = '0xAbCdEf0000000000000000000000000000000001';
+      const lowercasedAddress = checksummedAddress.toLowerCase();
       setKeyrings([
         { type: KeyringTypes.hd, accounts: ['0xaaa1'] },
-        {
-          type: KeyringTypes.simple,
-          accounts: [checksummedAddress.toLowerCase()],
-        },
+        { type: KeyringTypes.simple, accounts: [lowercasedAddress] },
       ]);
+      mockKeyringController.createNewVaultAndRestore.mockImplementation(
+        async () => {
+          setKeyrings([{ type: KeyringTypes.hd, accounts: ['0xaaa1'] }]);
+        },
+      );
+      mockKeyringController.importAccountWithStrategy.mockImplementation(
+        async () => {
+          mockKeyringController.state.keyrings.push({
+            type: KeyringTypes.simple,
+            accounts: [lowercasedAddress],
+          });
+        },
+      );
 
       await recreateVaultWithNewPassword(
         PASSWORD,
@@ -404,10 +418,22 @@ describe('Vault', () => {
     });
 
     it('does not reselect an address that is missing from the recreated keyrings', async () => {
+      const droppedAddress = '0x0000000000000000000000000000000000000999';
+      setKeyrings([
+        { type: KeyringTypes.hd, accounts: ['0xaaa1'] },
+        { type: KeyringTypes.ledger, accounts: [droppedAddress] },
+      ]);
+      mockWithLedgerKeyring.mockResolvedValue(undefined);
+      mockKeyringController.createNewVaultAndRestore.mockImplementation(
+        async () => {
+          setKeyrings([{ type: KeyringTypes.hd, accounts: ['0xaaa1'] }]);
+        },
+      );
+
       await recreateVaultWithNewPassword(
         PASSWORD,
         NEW_PASSWORD,
-        '0x0000000000000000000000000000000000000999',
+        droppedAddress,
       );
 
       expect(mockSetSelectedAddress).not.toHaveBeenCalled();
