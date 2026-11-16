@@ -380,6 +380,113 @@ describe('BackgroundBridge', () => {
       });
     });
 
+    describe('state update notifications', () => {
+      const prototypeSpies = [];
+      const spyOnPrototype = (method) => {
+        const spy = jest.spyOn(BackgroundBridge.prototype, method);
+        prototypeSpies.push(spy);
+        return spy;
+      };
+
+      afterEach(() => {
+        prototypeSpies.splice(0).forEach((spy) => spy.mockRestore());
+      });
+
+      async function triggerStateUpdate(bridge, eventName) {
+        const onStateUpdateSpy = jest.spyOn(bridge, 'onStateUpdate');
+        getSubscription(eventName).handler();
+        const { results } = onStateUpdateSpy.mock;
+        await results[results.length - 1].value;
+      }
+
+      const callsWithMethod = (spy, method) =>
+        spy.mock.calls.filter(([payload]) => payload.method === method);
+
+      it('sends chainChanged when the network state changes to a new chain', async () => {
+        const bridge = setupBackgroundBridge(url, { isRemoteConn: false });
+        jest
+          .spyOn(bridge, 'getProviderNetworkState')
+          .mockResolvedValue({ chainId: '0x5', networkVersion: '5' });
+        const sendNotificationSpy = jest
+          .spyOn(bridge, 'sendNotification')
+          .mockImplementation(() => undefined);
+
+        await triggerStateUpdate(
+          bridge,
+          AppConstants.NETWORK_STATE_CHANGE_EVENT,
+        );
+
+        expect(sendNotificationSpy).toHaveBeenCalledWith({
+          method: AppConstants.NOTIFICATION_NAMES.chainChanged,
+          params: { chainId: '0x5', networkVersion: '5' },
+        });
+        expect(bridge.lastChainIdSent).toBe('0x5');
+      });
+
+      it('does not send chainChanged when the chain is unchanged', async () => {
+        const bridge = setupBackgroundBridge(url, { isRemoteConn: false });
+        jest
+          .spyOn(bridge, 'getProviderNetworkState')
+          .mockResolvedValue({ chainId: '0x1', networkVersion: '1' });
+        const sendNotificationSpy = jest
+          .spyOn(bridge, 'sendNotification')
+          .mockImplementation(() => undefined);
+
+        await triggerStateUpdate(
+          bridge,
+          AppConstants.NETWORK_STATE_CHANGE_EVENT,
+        );
+
+        expect(sendNotificationSpy).not.toHaveBeenCalled();
+      });
+
+      it('sends accountsChanged once when the selected address changes for a remote connection', async () => {
+        getPermittedAccounts.mockReturnValue([selectedAddress]);
+        spyOnPrototype('notifyChainChanged').mockResolvedValue(undefined);
+        const sendNotificationSpy = spyOnPrototype(
+          'sendNotification',
+        ).mockImplementation(() => undefined);
+        const bridge = setupBackgroundBridge(url, { isRemoteConn: true });
+        bridge.addressSent = '0x0';
+        jest
+          .spyOn(bridge, 'getProviderNetworkState')
+          .mockResolvedValue({ chainId: '0x1', networkVersion: '1' });
+        sendNotificationSpy.mockClear();
+
+        await triggerStateUpdate(bridge, 'PreferencesController:stateChange');
+        await triggerStateUpdate(bridge, 'PreferencesController:stateChange');
+
+        const accountsChangedCalls = callsWithMethod(
+          sendNotificationSpy,
+          AppConstants.NOTIFICATION_NAMES.accountsChanged,
+        );
+        expect(accountsChangedCalls).toEqual([
+          [
+            {
+              method: AppConstants.NOTIFICATION_NAMES.accountsChanged,
+              params: [selectedAddress],
+            },
+          ],
+        ]);
+        expect(bridge.addressSent).toBe(selectedAddress);
+      });
+
+      it('does not send accountsChanged on selected address change for an in-app browser connection', async () => {
+        getPermittedAccounts.mockReturnValue([selectedAddress]);
+        const bridge = setupBackgroundBridge(url, { isRemoteConn: false });
+        jest
+          .spyOn(bridge, 'getProviderNetworkState')
+          .mockResolvedValue({ chainId: '0x1', networkVersion: '1' });
+        const sendNotificationSpy = jest
+          .spyOn(bridge, 'sendNotification')
+          .mockImplementation(() => undefined);
+
+        await triggerStateUpdate(bridge, 'PreferencesController:stateChange');
+
+        expect(sendNotificationSpy).not.toHaveBeenCalled();
+      });
+    });
+
     describe('initial notifications', () => {
       it('notifies chain and selected address on construction for a remote connection', () => {
         const notifyChainChangedSpy = jest
