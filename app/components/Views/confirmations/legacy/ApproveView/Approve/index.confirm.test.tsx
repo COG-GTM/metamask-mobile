@@ -381,15 +381,35 @@ describe('Approve onConfirm', () => {
     });
 
     it('ignores a second confirm while the first is being handled', async () => {
+      let resolveAccept: (value: unknown) => void = () => undefined;
+      mockEngine.context.ApprovalController.accept.mockReturnValue(
+        new Promise((resolve) => {
+          resolveAccept = resolve;
+        }),
+      );
       renderApprove();
       await setGas(LEGACY_GAS_MOCK);
 
-      await confirm();
-      await confirm();
-
+      let firstConfirm: Promise<void> = Promise.resolve();
+      await act(async () => {
+        firstConfirm = mockReviewProps.onConfirm();
+      });
       expect(
         mockEngine.context.ApprovalController.accept,
       ).toHaveBeenCalledTimes(1);
+
+      await confirm();
+
+      expect(updateTransactionMock).toHaveBeenCalledTimes(1);
+      expect(
+        mockEngine.context.ApprovalController.accept,
+      ).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        resolveAccept({});
+        await firstConfirm;
+      });
+      expect(trackedEvents()).toContain(MetaMetricsEvents.APPROVAL_COMPLETED);
     });
   });
 
