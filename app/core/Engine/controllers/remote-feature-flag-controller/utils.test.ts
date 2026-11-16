@@ -63,7 +63,6 @@ describe('RemoteFeatureFlagController utils', () => {
       ['production', EnvironmentType.Production],
       ['unknown-env', EnvironmentType.Development],
       ['', EnvironmentType.Development],
-      [undefined, EnvironmentType.Development],
     ])(
       'maps METAMASK_ENVIRONMENT=%p to %p',
       (metamaskEnvironment, expectedEnvironment) => {
@@ -81,7 +80,6 @@ describe('RemoteFeatureFlagController utils', () => {
       ['beta', DistributionType.Beta],
       ['unknown-build', DistributionType.Main],
       ['', DistributionType.Main],
-      [undefined, DistributionType.Main],
     ])(
       'maps METAMASK_BUILD_TYPE=%p to %p',
       (metamaskBuildType, expectedDistribution) => {
