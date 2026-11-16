@@ -39,6 +39,7 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  validateTransactionActionBalance,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
@@ -1214,7 +1215,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1222,7 +1223,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx2', mockTransactionController);
-    
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1232,7 +1233,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1240,7 +1241,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('nonexistent', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1253,83 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
+  });
+});
+
+describe('Transactions utils :: validateTransactionActionBalance', () => {
+  const FROM = '0x0000000000000000000000000000000000000001';
+  // 21000 gas * 1 gwei = 21000 gwei; * 1.1 = 23100 gwei
+  const txParams = {
+    from: FROM,
+    to: '0x0000000000000000000000000000000000000002',
+    gas: '0x5208',
+    gasPrice: '0x3b9aca00',
+    value: '0x0',
+  };
+  const accountsWith = (balanceGwei: number) => ({
+    [FROM]: { balance: `0x${(balanceGwei * 1e9).toString(16)}` },
+  });
+
+  it('returns true when the balance cannot cover the replacement fee (TransactionMeta txParams)', () => {
+    expect(
+      validateTransactionActionBalance({ txParams }, 1.1, accountsWith(23099)),
+    ).toBe(true);
+  });
+
+  it('returns false when the balance covers the replacement fee (TransactionMeta txParams)', () => {
+    expect(
+      validateTransactionActionBalance({ txParams }, 1.1, accountsWith(23100)),
+    ).toBe(false);
+  });
+
+  it('includes the transaction value in the required balance', () => {
+    const withValue = { ...txParams, value: `0x${(1000 * 1e9).toString(16)}` };
+    expect(
+      validateTransactionActionBalance(
+        { txParams: withValue },
+        1.1,
+        accountsWith(23100),
+      ),
+    ).toBe(true);
+  });
+
+  it('uses maxFeePerGas for EIP-1559 transactions', () => {
+    const eip1559 = {
+      from: FROM,
+      gas: '0x5208',
+      maxFeePerGas: '0x77359400', // 2 gwei -> 46200 gwei at 1.1
+      maxPriorityFeePerGas: '0x1',
+      value: '0x0',
+    };
+    expect(
+      validateTransactionActionBalance(
+        { txParams: eip1559 },
+        1.1,
+        accountsWith(46199),
+      ),
+    ).toBe(true);
+    expect(
+      validateTransactionActionBalance(
+        { txParams: eip1559 },
+        1.1,
+        accountsWith(46200),
+      ),
+    ).toBe(false);
+  });
+
+  it('still supports the legacy `transaction` shape', () => {
+    expect(
+      validateTransactionActionBalance(
+        { transaction: txParams },
+        1.1,
+        accountsWith(23099),
+      ),
+    ).toBe(true);
+  });
+
+  it('returns false when the sender account is unknown', () => {
+    expect(validateTransactionActionBalance({ txParams }, 1.1, {})).toBe(false);
   });
 });
