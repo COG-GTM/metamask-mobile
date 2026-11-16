@@ -18,6 +18,11 @@ import {
   MOCK_KEYRING_CONTROLLER,
 } from './testUtils';
 
+/**
+ * Builds a minimal RootState containing only the given KeyringController state.
+ * @param KeyringController - KeyringController state to embed
+ * @returns RootState for selector tests
+ */
 const buildState = (KeyringController: KeyringControllerState) =>
   ({
     engine: {
