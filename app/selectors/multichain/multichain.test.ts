@@ -14,6 +14,8 @@ import {
   selectSolanaAccountTransactions,
   selectMultichainHistoricalPrices,
   makeSelectNonEvmAssetById,
+  selectMultichainTokenListForAccountId,
+  selectMultichainNetworkAggregatedBalanceForAllAccounts,
 } from './multichain';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
@@ -692,6 +694,350 @@ describe('MultichainNonEvm Selectors', () => {
       expect(result.totalBalanceFiat).toBeUndefined();
       expect(result.tokenBalances).toEqual({
         [btcNativeAssetId]: { amount: '0.5', unit: 'BTC' },
+      });
+    });
+  });
+
+  describe('selectMultichainTokenListForAccountId', () => {
+    const solanaAccountId = MOCK_SOLANA_ACCOUNT.id;
+    const solNativeAssetId = MultichainNativeAssets.Solana;
+    const solTokenAssetId: CaipAssetType = `${SolScope.Mainnet}/token:JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN`;
+    const solDevnetAssetId = MultichainNativeAssets.SolanaDevnet;
+    const btcNativeAssetId = MultichainNativeAssets.Bitcoin;
+
+    const solMetadata = {
+      name: 'Solana',
+      symbol: 'SOL',
+      fungible: true as const,
+      iconUrl: 'https://example.com/sol.png',
+      units: [{ name: 'Solana', symbol: 'SOL', decimals: 9 }],
+    };
+    const jupMetadata = {
+      name: 'Jupiter',
+      symbol: 'JUP',
+      fungible: true as const,
+      iconUrl: 'https://example.com/jup.png',
+      units: [{ name: 'Jupiter', symbol: 'JUP', decimals: 6 }],
+    };
+
+    const buildState = ({
+      assets = [solNativeAssetId, solTokenAssetId],
+      balances = {
+        [solNativeAssetId]: { amount: '10', unit: 'SOL' },
+        [solTokenAssetId]: { amount: '20', unit: 'JUP' },
+      },
+      rates = {
+        [solNativeAssetId]: { rate: '100', conversionTime: 0 },
+        [solTokenAssetId]: { rate: '2', conversionTime: 0 },
+      },
+      metadata = {
+        [solNativeAssetId]: solMetadata,
+        [solTokenAssetId]: jupMetadata,
+      },
+    }: {
+      assets?: CaipAssetType[];
+      balances?: Record<string, { amount: string; unit: string }>;
+      rates?: Record<string, { rate: string; conversionTime: number }>;
+      metadata?: Record<string, unknown>;
+    } = {}) => {
+      const state = getNonEvmState(MOCK_SOLANA_ACCOUNT);
+      const { backgroundState } = state.engine;
+      backgroundState.MultichainAssetsController = {
+        accountsAssets: { [solanaAccountId]: assets },
+        assetsMetadata: metadata,
+      } as unknown as typeof backgroundState.MultichainAssetsController;
+      backgroundState.MultichainBalancesController.balances = {
+        [solanaAccountId]: balances,
+      };
+      backgroundState.MultichainAssetsRatesController = {
+        conversionRates: rates,
+        historicalPrices: {},
+      } as unknown as typeof backgroundState.MultichainAssetsRatesController;
+      return state;
+    };
+
+    it('returns an empty array when no accountId is provided', () => {
+      expect(
+        selectMultichainTokenListForAccountId(buildState(), undefined),
+      ).toStrictEqual([]);
+    });
+
+    it('returns an empty array when the account has no assets', () => {
+      expect(
+        selectMultichainTokenListForAccountId(
+          buildState(),
+          'unknown-account-id',
+        ),
+      ).toStrictEqual([]);
+    });
+
+    it('builds native and SPL tokens with fiat values from balance x rate', () => {
+      const result = selectMultichainTokenListForAccountId(
+        buildState(),
+        solanaAccountId,
+      );
+
+      expect(result).toStrictEqual([
+        {
+          name: 'Solana',
+          address: solNativeAssetId,
+          symbol: 'SOL',
+          image: 'https://example.com/sol.png',
+          logo: 'https://example.com/sol.png',
+          decimals: 9,
+          chainId: SolScope.Mainnet,
+          isNative: true,
+          balance: '10',
+          secondary: '1000',
+          string: '',
+          balanceFiat: '1000',
+          isStakeable: false,
+          aggregators: [],
+          isETH: false,
+          ticker: 'SOL',
+        },
+        {
+          name: 'Jupiter',
+          address: solTokenAssetId,
+          symbol: 'JUP',
+          image: 'https://example.com/jup.png',
+          logo: 'https://example.com/jup.png',
+          decimals: 6,
+          chainId: SolScope.Mainnet,
+          isNative: false,
+          balance: '20',
+          secondary: '40',
+          string: '',
+          balanceFiat: '40',
+          isStakeable: false,
+          aggregators: [],
+          isETH: false,
+          ticker: 'JUP',
+        },
+      ]);
+    });
+
+    it('excludes assets that belong to another CAIP chain', () => {
+      const state = buildState({
+        assets: [
+          solNativeAssetId,
+          solDevnetAssetId,
+          btcNativeAssetId,
+          solTokenAssetId,
+        ],
+        balances: {
+          [solNativeAssetId]: { amount: '10', unit: 'SOL' },
+          [solDevnetAssetId]: { amount: '5', unit: 'SOL' },
+          [btcNativeAssetId]: { amount: '1', unit: 'BTC' },
+          [solTokenAssetId]: { amount: '20', unit: 'JUP' },
+        },
+      });
+
+      const result = selectMultichainTokenListForAccountId(
+        state,
+        solanaAccountId,
+      );
+
+      expect(result.map((token) => token.address)).toStrictEqual([
+        solNativeAssetId,
+        solTokenAssetId,
+      ]);
+      expect(result.every((token) => token.chainId === SolScope.Mainnet)).toBe(
+        true,
+      );
+    });
+
+    it('only returns assets for the selected non-EVM chain', () => {
+      const state = buildState({
+        assets: [solNativeAssetId, solDevnetAssetId],
+        balances: {
+          [solNativeAssetId]: { amount: '10', unit: 'SOL' },
+          [solDevnetAssetId]: { amount: '5', unit: 'SOL' },
+        },
+        rates: {},
+        metadata: {},
+      });
+      state.engine.backgroundState.MultichainNetworkController.selectedMultichainNetworkChainId =
+        SolScope.Devnet;
+
+      const result = selectMultichainTokenListForAccountId(
+        state,
+        solanaAccountId,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].address).toBe(solDevnetAssetId);
+      expect(result[0].chainId).toBe(SolScope.Devnet);
+      expect(result[0].balance).toBe('5');
+    });
+
+    it('leaves balance and fiat values undefined when the balance is missing', () => {
+      const state = buildState({
+        balances: { [solTokenAssetId]: { amount: '20', unit: 'JUP' } },
+      });
+
+      const [nativeToken] = selectMultichainTokenListForAccountId(
+        state,
+        solanaAccountId,
+      );
+
+      expect(nativeToken.address).toBe(solNativeAssetId);
+      expect(nativeToken.balance).toBeUndefined();
+      expect(nativeToken.balanceFiat).toBeUndefined();
+      expect(nativeToken.secondary).toBeUndefined();
+    });
+
+    it('returns a fiat value of 0 when the rate is missing', () => {
+      const state = buildState({
+        rates: { [solNativeAssetId]: { rate: '100', conversionTime: 0 } },
+      });
+
+      const [nativeToken, splToken] = selectMultichainTokenListForAccountId(
+        state,
+        solanaAccountId,
+      );
+
+      expect(nativeToken.balanceFiat).toBe('1000');
+      expect(splToken.balance).toBe('20');
+      expect(splToken.balanceFiat).toBe('0');
+      expect(splToken.secondary).toBe('0');
+      expect(splToken.balanceFiat).not.toBe('NaN');
+    });
+
+    it('falls back to the balance unit for name and symbol and 0 decimals when metadata is missing', () => {
+      const state = buildState({
+        metadata: { [solNativeAssetId]: solMetadata },
+      });
+
+      const [, splToken] = selectMultichainTokenListForAccountId(
+        state,
+        solanaAccountId,
+      );
+
+      expect(splToken).toMatchObject({
+        name: 'JUP',
+        symbol: 'JUP',
+        ticker: 'JUP',
+        decimals: 0,
+        image: undefined,
+        logo: undefined,
+        isNative: false,
+        balanceFiat: '40',
+      });
+    });
+
+    it('falls back to empty name and symbol when both metadata and balance are missing', () => {
+      const state = buildState({ balances: {}, metadata: {} });
+
+      const [nativeToken] = selectMultichainTokenListForAccountId(
+        state,
+        solanaAccountId,
+      );
+
+      expect(nativeToken).toMatchObject({
+        name: '',
+        symbol: '',
+        decimals: 0,
+        balance: undefined,
+        balanceFiat: undefined,
+      });
+    });
+
+    it('defaults decimals to 0 when the metadata has no units', () => {
+      const state = buildState({
+        metadata: {
+          [solNativeAssetId]: { ...solMetadata, units: [] },
+          [solTokenAssetId]: jupMetadata,
+        },
+      });
+
+      const [nativeToken, splToken] = selectMultichainTokenListForAccountId(
+        state,
+        solanaAccountId,
+      );
+
+      expect(nativeToken.decimals).toBe(0);
+      expect(nativeToken.name).toBe('Solana');
+      expect(splToken.decimals).toBe(6);
+    });
+
+    it('marks only slip44 assets as native', () => {
+      const result = selectMultichainTokenListForAccountId(
+        buildState(),
+        solanaAccountId,
+      );
+
+      expect(
+        result.map(({ address, isNative }) => ({ address, isNative })),
+      ).toStrictEqual([
+        { address: solNativeAssetId, isNative: true },
+        { address: solTokenAssetId, isNative: false },
+      ]);
+    });
+  });
+
+  describe('selectMultichainNetworkAggregatedBalanceForAllAccounts', () => {
+    it('returns the aggregated balance for every internal account on the selected chain', () => {
+      const mockState = getNonEvmState(MOCK_SOLANA_ACCOUNT);
+      const solanaAccountId = MOCK_SOLANA_ACCOUNT.id;
+      const btcAccountId = MOCK_ACCOUNT_BIP122_P2WPKH.id;
+      const btcTestnetAccountId = MOCK_ACCOUNT_BIP122_P2WPKH_TESTNET.id;
+      const solNativeAssetId = MultichainNativeAssets.Solana;
+      const solTokenAssetId: CaipAssetType = `${SolScope.Mainnet}/token:JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN`;
+      const btcNativeAssetId = MultichainNativeAssets.Bitcoin;
+
+      mockState.engine.backgroundState.MultichainBalancesController.balances = {
+        [solanaAccountId]: {
+          [solNativeAssetId]: { amount: '10', unit: 'SOL' },
+          [solTokenAssetId]: { amount: '20', unit: 'JUP' },
+        },
+        [btcAccountId]: {
+          [btcNativeAssetId]: { amount: '0.5', unit: 'BTC' },
+        },
+      };
+      mockState.engine.backgroundState.MultichainAssetsController.accountsAssets =
+        {
+          [solanaAccountId]: [solNativeAssetId, solTokenAssetId],
+          [btcAccountId]: [btcNativeAssetId],
+        };
+      mockState.engine.backgroundState.MultichainAssetsRatesController.conversionRates =
+        {
+          [solNativeAssetId]: { rate: '100', conversionTime: 0 },
+          [solTokenAssetId]: { rate: '2', conversionTime: 0 },
+          [btcNativeAssetId]: { rate: '40000', conversionTime: 0 },
+        };
+
+      const result =
+        selectMultichainNetworkAggregatedBalanceForAllAccounts(mockState);
+
+      expect(Object.keys(result).sort()).toStrictEqual(
+        [solanaAccountId, btcAccountId, btcTestnetAccountId].sort(),
+      );
+      expect(result[solanaAccountId]).toStrictEqual({
+        totalNativeTokenBalance: { amount: '10', unit: 'SOL' },
+        totalBalanceFiat: 1040,
+        tokenBalances: {
+          [solNativeAssetId]: { amount: '10', unit: 'SOL' },
+          [solTokenAssetId]: { amount: '20', unit: 'JUP' },
+        },
+        fiatBalances: {
+          [solNativeAssetId]: '1000',
+          [solTokenAssetId]: '40',
+        },
+      });
+      expect(result[btcAccountId]).toStrictEqual({
+        totalNativeTokenBalance: undefined,
+        totalBalanceFiat: undefined,
+        tokenBalances: {
+          [btcNativeAssetId]: { amount: '0.5', unit: 'BTC' },
+        },
+        fiatBalances: {},
+      });
+      expect(result[btcTestnetAccountId]).toStrictEqual({
+        totalNativeTokenBalance: undefined,
+        totalBalanceFiat: undefined,
+        tokenBalances: {},
+        fiatBalances: {},
       });
     });
   });
