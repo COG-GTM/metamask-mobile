@@ -249,6 +249,32 @@ describe('Migration #64', () => {
     );
   });
 
+  it('should capture a single exception when selectedNetworkClientId is missing and there is no valid mainnet configuration', async () => {
+    const missingSelectedIdState = {
+      engine: {
+        backgroundState: {
+          NetworkController: {
+            networkConfigurationsByChainId: {
+              '0x5': {
+                chainId: '0x5',
+                defaultRpcEndpointIndex: 0,
+                rpcEndpoints: [{ networkClientId: 'goerli' }],
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const newState = await migration(missingSelectedIdState);
+
+    expect(
+      (newState as RootState).engine.backgroundState.NetworkController
+        .selectedNetworkClientId,
+    ).toBe('mainnet');
+    expect(mockedCaptureException).toHaveBeenCalledTimes(1);
+  });
+
   it('should not modify the state if it is already valid', async () => {
     const validState = merge({}, oldState, {
       engine: {

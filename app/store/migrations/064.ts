@@ -185,12 +185,9 @@ function ensureSelectedNetworkClientId(
 
   if (
     !hasProperty(networkControllerState, 'selectedNetworkClientId') ||
-    typeof networkControllerState.selectedNetworkClientId !== 'string'
+    typeof networkControllerState.selectedNetworkClientId !== 'string' ||
+    !networkClientIdExists
   ) {
-    setDefaultMainnetClientId();
-  }
-
-  if (!networkClientIdExists) {
     setDefaultMainnetClientId();
   }
 }
