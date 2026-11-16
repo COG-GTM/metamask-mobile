@@ -9,11 +9,25 @@ const LEGACY_NETWORKS_CHAIN_ID = {
   ropsten: '3',
 };
 
+/**
+ * Resolves a legacy network type to its decimal chain ID.
+ *
+ * @param {string} networkType - Legacy network type key (e.g. `mainnet`).
+ * @returns {string | undefined} The chain ID, or undefined for custom networks.
+ */
 const getLegacyChainId = (networkType) =>
   Object.prototype.hasOwnProperty.call(LEGACY_NETWORKS_CHAIN_ID, networkType)
     ? LEGACY_NETWORKS_CHAIN_ID[networkType]
     : undefined;
 
+/**
+ * Re-keys an `address -> networkType -> assets` map by chain ID. Assets under
+ * unknown network types are copied to every chain ID in `frequentRpcList`.
+ *
+ * @param {object} assetsByAddress - Assets keyed by address, then network type.
+ * @param {Array<{chainId?: string}>} frequentRpcList - Custom RPC entries.
+ * @returns {object} Assets keyed by address, then chain ID.
+ */
 const rekeyByChainId = (assetsByAddress, frequentRpcList) => {
   const migrated = {};
   Object.keys(assetsByAddress).forEach((address) => {
@@ -35,6 +49,14 @@ const rekeyByChainId = (assetsByAddress, frequentRpcList) => {
   return migrated;
 };
 
+/**
+ * Returns a copy of a controller state with each present map re-keyed by chain ID.
+ *
+ * @param {object} controllerState - Controller state holding the asset maps.
+ * @param {string[]} mapNames - Names of the maps to re-key.
+ * @param {Array<{chainId?: string}>} frequentRpcList - Custom RPC entries.
+ * @returns {object} The updated controller state.
+ */
 const rekeyMaps = (controllerState, mapNames, frequentRpcList) => {
   const migrated = { ...controllerState };
   mapNames.forEach((mapName) => {
