@@ -162,6 +162,10 @@ describe('Engine', () => {
   });
 
   describe('BACKGROUND_STATE_CHANGE_EVENT_NAMES', () => {
+    afterEach(async () => {
+      await Engine.destroyEngine();
+    });
+
     it('has no duplicate entries', () => {
       expect(new Set(BACKGROUND_STATE_CHANGE_EVENT_NAMES).size).toBe(
         BACKGROUND_STATE_CHANGE_EVENT_NAMES.length,
