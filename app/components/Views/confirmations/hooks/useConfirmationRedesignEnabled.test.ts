@@ -28,6 +28,14 @@ const enabledFeatureFlags = {
   transfer: true,
 };
 
+/**
+ * Returns a deep copy of a confirmation fixture state with the first
+ * transaction's type replaced, leaving the shared fixture untouched.
+ *
+ * @param state - Confirmation fixture state to copy.
+ * @param type - Transaction type to set on the first transaction.
+ * @returns The copied state.
+ */
 function withTransactionType<
   T extends {
     engine: {
