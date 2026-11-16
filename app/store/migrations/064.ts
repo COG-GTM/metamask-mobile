@@ -57,6 +57,7 @@ export default async function migrate(stateAsync: unknown) {
     isMainnetRpcExists,
     networkConfigurationsByChainId,
     mainnetChainId,
+    migrationVersion,
   );
 
   return state;
@@ -132,10 +133,14 @@ function doesNetworkClientIdExist(
 function isMainnetRpcConfigured(
   networkConfigurationsByChainId: Record<Hex, NetworkConfiguration>,
 ) {
-  return Object.values(networkConfigurationsByChainId).some((networkConfig) =>
-    networkConfig.rpcEndpoints.some(
-      (endpoint) => endpoint.networkClientId === 'mainnet',
-    ),
+  return Object.values(networkConfigurationsByChainId).some(
+    (networkConfig) =>
+      isObject(networkConfig) &&
+      Array.isArray(networkConfig.rpcEndpoints) &&
+      networkConfig.rpcEndpoints.some(
+        (endpoint) =>
+          isObject(endpoint) && endpoint.networkClientId === 'mainnet',
+      ),
   );
 }
 
@@ -145,23 +150,44 @@ function ensureSelectedNetworkClientId(
   isMainnetRpcExists: boolean,
   networkConfigurationsByChainId: Record<Hex, NetworkConfiguration>,
   mainnetChainId: Hex,
+  migrationVersion: number,
 ) {
+  const getDefaultMainnetClientId = (): NetworkClientId => {
+    if (isMainnetRpcExists) {
+      return 'mainnet';
+    }
+
+    const mainnetConfig = networkConfigurationsByChainId[mainnetChainId];
+    const defaultEndpoint =
+      isObject(mainnetConfig) && Array.isArray(mainnetConfig.rpcEndpoints)
+        ? mainnetConfig.rpcEndpoints[mainnetConfig.defaultRpcEndpointIndex]
+        : undefined;
+
+    if (
+      isObject(defaultEndpoint) &&
+      typeof defaultEndpoint.networkClientId === 'string'
+    ) {
+      return defaultEndpoint.networkClientId;
+    }
+
+    captureException(
+      new Error(
+        `Migration ${migrationVersion}: Missing or invalid mainnet ('${mainnetChainId}') network configuration, falling back to 'mainnet'`,
+      ),
+    );
+    return 'mainnet';
+  };
+
   const setDefaultMainnetClientId = () => {
-    networkControllerState.selectedNetworkClientId = isMainnetRpcExists
-      ? 'mainnet'
-      : networkConfigurationsByChainId[mainnetChainId].rpcEndpoints[
-          networkConfigurationsByChainId[mainnetChainId].defaultRpcEndpointIndex
-        ].networkClientId;
+    networkControllerState.selectedNetworkClientId =
+      getDefaultMainnetClientId();
   };
 
   if (
     !hasProperty(networkControllerState, 'selectedNetworkClientId') ||
-    typeof networkControllerState.selectedNetworkClientId !== 'string'
+    typeof networkControllerState.selectedNetworkClientId !== 'string' ||
+    !networkClientIdExists
   ) {
-    setDefaultMainnetClientId();
-  }
-
-  if (!networkClientIdExists) {
     setDefaultMainnetClientId();
   }
 }

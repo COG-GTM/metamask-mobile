@@ -156,6 +156,125 @@ describe('Migration #64', () => {
     ).toBe('another-mainnet');
   });
 
+  it('should capture exception and not throw if a network configuration has no rpcEndpoints array', async () => {
+    const malformedState = {
+      engine: {
+        backgroundState: {
+          NetworkController: {
+            selectedNetworkClientId: 'unknown-client-id',
+            networkConfigurationsByChainId: {
+              '0x5': { chainId: '0x5' },
+              '0xaa36a7': { chainId: '0xaa36a7', rpcEndpoints: 'invalid' },
+              '0x1': {
+                chainId: '0x1',
+                defaultRpcEndpointIndex: 0,
+                rpcEndpoints: [{ networkClientId: 'mainnet' }],
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const newState = await migration(malformedState);
+
+    expect(
+      (newState as RootState).engine.backgroundState.NetworkController
+        .selectedNetworkClientId,
+    ).toBe('mainnet');
+    expect(
+      mockedCaptureException.mock.calls.map(([error]) => error.message),
+    ).toStrictEqual([
+      "Migration 64: Invalid network configuration or missing 'rpcEndpoints' for chainId: '0x5'",
+      "Migration 64: Invalid network configuration or missing 'rpcEndpoints' for chainId: '0xaa36a7'",
+    ]);
+  });
+
+  it('should not throw if there is no 0x1 configuration and no endpoint uses the mainnet client id', async () => {
+    const noMainnetConfigState = {
+      engine: {
+        backgroundState: {
+          NetworkController: {
+            selectedNetworkClientId: 'unknown-client-id',
+            networkConfigurationsByChainId: {
+              '0x5': {
+                chainId: '0x5',
+                defaultRpcEndpointIndex: 0,
+                rpcEndpoints: [{ networkClientId: 'goerli' }],
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const newState = await migration(noMainnetConfigState);
+
+    expect(
+      (newState as RootState).engine.backgroundState.NetworkController
+        .selectedNetworkClientId,
+    ).toBe('mainnet');
+    expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
+    expect(mockedCaptureException.mock.calls[0][0].message).toBe(
+      "Migration 64: Missing or invalid mainnet ('0x1') network configuration, falling back to 'mainnet'",
+    );
+  });
+
+  it('should not throw if the 0x1 configuration has an out-of-range defaultRpcEndpointIndex', async () => {
+    const badIndexState = {
+      engine: {
+        backgroundState: {
+          NetworkController: {
+            selectedNetworkClientId: 'unknown-client-id',
+            networkConfigurationsByChainId: {
+              '0x1': {
+                chainId: '0x1',
+                defaultRpcEndpointIndex: 5,
+                rpcEndpoints: [{ networkClientId: 'another-mainnet' }],
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const newState = await migration(badIndexState);
+
+    expect(
+      (newState as RootState).engine.backgroundState.NetworkController
+        .selectedNetworkClientId,
+    ).toBe('mainnet');
+    expect(mockedCaptureException.mock.calls[0][0].message).toBe(
+      "Migration 64: Missing or invalid mainnet ('0x1') network configuration, falling back to 'mainnet'",
+    );
+  });
+
+  it('should capture a single exception when selectedNetworkClientId is missing and there is no valid mainnet configuration', async () => {
+    const missingSelectedIdState = {
+      engine: {
+        backgroundState: {
+          NetworkController: {
+            networkConfigurationsByChainId: {
+              '0x5': {
+                chainId: '0x5',
+                defaultRpcEndpointIndex: 0,
+                rpcEndpoints: [{ networkClientId: 'goerli' }],
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const newState = await migration(missingSelectedIdState);
+
+    expect(
+      (newState as RootState).engine.backgroundState.NetworkController
+        .selectedNetworkClientId,
+    ).toBe('mainnet');
+    expect(mockedCaptureException).toHaveBeenCalledTimes(1);
+  });
+
   it('should not modify the state if it is already valid', async () => {
     const validState = merge({}, oldState, {
       engine: {
