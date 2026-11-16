@@ -27,4 +27,9 @@ describe('formattedDeeplinkParsedValue', () => {
       '12345678901234567891',
     );
   });
+
+  it('does not round long fractional values to an integer', () => {
+    const value = `1.${'0'.repeat(36)}1`;
+    expect(formattedDeeplinkParsedValue(value)).toEqual(value);
+  });
 });

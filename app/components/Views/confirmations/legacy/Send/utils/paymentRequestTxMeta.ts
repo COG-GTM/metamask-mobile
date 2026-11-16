@@ -6,6 +6,7 @@ import {
 import { generateTransferData } from '../../../../../../util/transactions';
 
 const MAX_UINT256 = new BigNumber(2).pow(256).minus(1);
+const DECIMAL_NUMBER_REGEX = /^-?\d+(\.\d+)?(e[+-]?\d+)?$/i;
 
 export class InvalidPaymentRequestError extends Error {
   constructor(message: string) {
@@ -37,7 +38,12 @@ export function parsePaymentRequestAmount(amount: unknown): BigNumber {
   if (typeof amount !== 'string' && typeof amount !== 'number') {
     throw new InvalidPaymentRequestError('Invalid amount');
   }
-  const parsed = new BigNumber(String(amount).trim(), 10);
+  const raw = String(amount).trim();
+  if (!DECIMAL_NUMBER_REGEX.test(raw)) {
+    throw new InvalidPaymentRequestError(`Invalid amount: ${amount}`);
+  }
+  // No base argument: with a base, BigNumber rounds to DECIMAL_PLACES first.
+  const parsed = new BigNumber(raw);
   if (
     !parsed.isFinite() ||
     parsed.isNegative() ||

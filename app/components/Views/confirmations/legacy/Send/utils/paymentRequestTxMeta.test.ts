@@ -32,14 +32,21 @@ describe('parsePaymentRequestAmount', () => {
     expect(parsePaymentRequestAmount(input).toFixed()).toBe(expected);
   });
 
-  it.each(['-1', '1.5', 'abc', 'Infinity', 'NaN', {}, '1e78'])(
-    'rejects %p',
-    (input) => {
-      expect(() => parsePaymentRequestAmount(input)).toThrow(
-        InvalidPaymentRequestError,
-      );
-    },
-  );
+  it.each([
+    '-1',
+    '1.5',
+    `1.${'0'.repeat(36)}1`,
+    '0x10',
+    'abc',
+    'Infinity',
+    'NaN',
+    {},
+    '1e78',
+  ])('rejects %p', (input) => {
+    expect(() => parsePaymentRequestAmount(input)).toThrow(
+      InvalidPaymentRequestError,
+    );
+  });
 
   it('accepts the max uint256', () => {
     const max =

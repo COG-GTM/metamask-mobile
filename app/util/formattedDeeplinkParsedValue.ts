@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 
 const formattedDeeplinkParsedValue = (value: string) =>
-  new BigNumber(value, 10).toFixed();
+  new BigNumber(value).toFixed();
 
 export default formattedDeeplinkParsedValue;
