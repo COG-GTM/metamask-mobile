@@ -125,7 +125,7 @@ describe('Migration #40', () => {
     expect(newState).toStrictEqual(expectedNewState);
   });
 
-  const buildState = (PermissionController: unknown) => ({
+  const buildState = <T>(PermissionController: T) => ({
     engine: { backgroundState: { PermissionController } },
   });
   const ADDRESS_1 = '0x04B09A749Bc6a1C111de308694Ba1Cd74A698523';
