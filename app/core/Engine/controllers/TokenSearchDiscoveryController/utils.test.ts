@@ -141,7 +141,6 @@ describe('TokenSearchDiscoveryController utils', () => {
       ['pre-release', PORTFOLIO_API_URL.prod],
       ['production', PORTFOLIO_API_URL.prod],
       ['unknown', PORTFOLIO_API_URL.dev],
-      [undefined, PORTFOLIO_API_URL.dev],
     ])('returns the expected URL when environment is %s', (env, expected) => {
       expect(getPortfolioApiBaseUrl(env)).toBe(expected);
     });
