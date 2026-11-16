@@ -12,6 +12,7 @@ import { mockNetworkState } from '../../util/test/network';
 import { Hex } from '@metamask/utils';
 import { KeyringControllerState } from '@metamask/keyring-controller';
 import { backupVault } from '../BackupVault';
+import { providerErrors } from '@metamask/rpc-errors';
 
 jest.mock('../BackupVault', () => ({
   backupVault: jest.fn().mockResolvedValue({ success: true, vault: 'vault' }),
@@ -257,6 +258,57 @@ describe('Engine', () => {
     const result = await engine.getSnapKeyring();
     expect(getSnapKeyringSpy).toHaveBeenCalled();
     expect(result).toEqual(mockSnapKeyring);
+  });
+
+  it('rejects only pending snap_dialog approvals from a Snap when it is terminated', async () => {
+    const engine = Engine.init({});
+    const { ApprovalController: approvalController } = engine.context;
+    const snapA = 'npm:@metamask/snap-a';
+    const snapB = 'npm:@metamask/snap-b';
+
+    const addApproval = (id: string, origin: string, type: string) =>
+      approvalController
+        .add({ id, origin, type, requestData: {} })
+        .catch((error: Error) => error);
+
+    const dialogA = addApproval('dialog-a', snapA, 'snap_dialog');
+    const alertDialogA = addApproval(
+      'alert-dialog-a',
+      snapA,
+      'snap_dialog:alert',
+    );
+    addApproval('dialog-b', snapB, 'snap_dialog');
+    addApproval('transaction-a', snapA, 'transaction');
+
+    try {
+      const rejectSpy = jest.spyOn(approvalController, 'reject');
+
+      engine.controllerMessenger.publish(
+        'SnapController:snapTerminated',
+        // @ts-expect-error The handler only reads the Snap ID.
+        { id: snapA },
+      );
+
+      expect(rejectSpy).toHaveBeenCalledTimes(2);
+      expect(rejectSpy).toHaveBeenCalledWith(
+        'dialog-a',
+        new Error('Snap was terminated.'),
+      );
+      expect(rejectSpy).toHaveBeenCalledWith(
+        'alert-dialog-a',
+        new Error('Snap was terminated.'),
+      );
+      expect(await dialogA).toStrictEqual(new Error('Snap was terminated.'));
+      expect(await alertDialogA).toStrictEqual(
+        new Error('Snap was terminated.'),
+      );
+      expect(
+        Object.keys(approvalController.state.pendingApprovals).sort(),
+      ).toStrictEqual(['dialog-b', 'transaction-a']);
+    } finally {
+      approvalController.clear(providerErrors.userRejectedRequest());
+      await engine.destroyEngineInstance();
+    }
   });
 
   it('normalizes CurrencyController state property conversionRate from null to 0', () => {
