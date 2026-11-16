@@ -238,6 +238,39 @@ describe('ResetPassword', () => {
       expect(Logger.error).not.toHaveBeenCalled();
     });
 
+    it('waits for the vault to be re-encrypted before resetting biometrics', async () => {
+      let resolveVault: () => void = () => undefined;
+      (recreateVaultWithNewPassword as jest.Mock).mockReturnValue(
+        new Promise<void>((resolve) => {
+          resolveVault = resolve;
+        }),
+      );
+      const utils = renderResetPassword();
+
+      await unlockAndSubmitNewPassword(utils);
+
+      await waitFor(() =>
+        expect(recreateVaultWithNewPassword).toHaveBeenCalledTimes(1),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(Authentication.resetPassword).not.toHaveBeenCalled();
+      expect(Authentication.storePassword).not.toHaveBeenCalled();
+      expect(mockNavigation.navigate).not.toHaveBeenCalled();
+
+      resolveVault();
+
+      await waitFor(() =>
+        expect(mockNavigation.navigate).toHaveBeenCalledWith(
+          'SecuritySettings',
+        ),
+      );
+      expect(Authentication.resetPassword).toHaveBeenCalledTimes(1);
+      expect(Authentication.storePassword).toHaveBeenCalledWith(
+        NEW_PASSWORD,
+        MOCK_AUTH_TYPE,
+      );
+    });
+
     it('logs the error and still completes the flow when storePassword rejects', async () => {
       const storeError = new Error('Keychain write failed');
       (Authentication.storePassword as jest.Mock).mockRejectedValue(storeError);
