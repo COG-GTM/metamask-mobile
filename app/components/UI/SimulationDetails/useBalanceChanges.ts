@@ -171,7 +171,7 @@ function getTokenBalanceChanges(
         : 0;
     const amount = getAssetAmount(tokenBc, decimals);
 
-    const fiatRate = erc20FiatRates[tokenBc.address];
+    const fiatRate = erc20FiatRates[asset.address];
     const fiatAmount = fiatRate
       ? amount.times(fiatRate).toNumber()
       : FIAT_UNAVAILABLE;

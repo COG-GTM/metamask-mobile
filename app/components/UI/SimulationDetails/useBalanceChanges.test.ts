@@ -53,6 +53,11 @@ const ERC20_DECIMALS_INVALID_MOCK = null;
 const ERC20_TO_FIAT_RATE_1_MOCK = 1.5;
 const ERC20_TO_FIAT_RATE_2_MOCK = 6;
 
+const ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK: Hex =
+  '0xAbCdEf0123456789aBcDeF0123456789AbCdEf01';
+const ERC20_DECIMALS_MIXED_CASE_MOCK = 2;
+const ERC20_TO_FIAT_RATE_MIXED_CASE_MOCK = 2.5;
+
 const NFT_TOKEN_ADDRESS_MOCK: Hex = '0x0nft';
 
 const TOKEN_ID_1_MOCK: Hex = '0x123';
@@ -82,6 +87,8 @@ describe('useBalanceChanges', () => {
         [ERC20_TOKEN_ADDRESS_2_MOCK]: ERC20_DECIMALS_2_MOCK,
         [ERC20_TOKEN_ADDRESS_3_MOCK]:
           ERC20_DECIMALS_INVALID_MOCK as unknown as number,
+        [ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK.toLowerCase() as Hex]:
+          ERC20_DECIMALS_MIXED_CASE_MOCK,
       };
       if (decimalMap[address]) {
         return Promise.resolve({
@@ -316,6 +323,123 @@ describe('useBalanceChanges', () => {
       await waitForNextUpdate();
 
       expect(result.current.value[0].fiatAmount).toBe(-0.002098765413209875);
+    });
+
+    it.each([
+      ['checksummed', ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK],
+      ['lowercase', ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK.toLowerCase()],
+    ])(
+      'computes fiat amount for a mixed-case token address when rates are keyed %s',
+      async (_keyCase, rateKey) => {
+        mockFetchTokenContractExchangeRates.mockResolvedValue({
+          [rateKey]: ERC20_TO_FIAT_RATE_MIXED_CASE_MOCK,
+        });
+        const { result, waitForNextUpdate } = setupHook([
+          {
+            ...dummyBalanceChange,
+            difference: DIFFERENCE_1_MOCK,
+            isDecrease: true,
+            address: ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK,
+            standard: SimulationTokenStandard.erc20,
+          },
+        ]);
+
+        await waitForNextUpdate();
+
+        expect(result.current.pending).toBe(false);
+        expect(result.current.value).toEqual([
+          {
+            asset: {
+              address: ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK.toLowerCase(),
+              type: AssetType.ERC20,
+              tokenId: undefined,
+              chainId: CHAIN_ID_MOCK,
+            },
+            amount: new BigNumber('-0.17'),
+            fiatAmount: -0.425,
+          },
+        ]);
+      },
+    );
+
+    it('de-duplicates mixed-case duplicate addresses when fetching decimals', async () => {
+      mockFetchTokenContractExchangeRates.mockResolvedValue({
+        [ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK]:
+          ERC20_TO_FIAT_RATE_MIXED_CASE_MOCK,
+      });
+      const { result, waitForNextUpdate } = setupHook([
+        {
+          ...dummyBalanceChange,
+          difference: DIFFERENCE_1_MOCK,
+          isDecrease: true,
+          address: ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK,
+          standard: SimulationTokenStandard.erc20,
+        },
+        {
+          ...dummyBalanceChange,
+          difference: DIFFERENCE_2_MOCK,
+          isDecrease: false,
+          address: ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK.toLowerCase() as Hex,
+          standard: SimulationTokenStandard.erc20,
+        },
+      ]);
+
+      await waitForNextUpdate();
+
+      expect(mockGetTokenDetails).toHaveBeenCalledTimes(1);
+      expect(mockGetTokenDetails).toHaveBeenCalledWith(
+        ERC20_TOKEN_ADDRESS_MIXED_CASE_MOCK.toLowerCase(),
+        undefined,
+        undefined,
+        NETWORK_CLIENT_ID_MOCK,
+      );
+      const changes = result.current.value;
+      expect(changes).toHaveLength(2);
+      expect(changes[0].amount.toString()).toBe('-0.17');
+      expect(changes[0].fiatAmount).toBe(-0.425);
+      expect(changes[1].amount.toString()).toBe('0.02');
+      expect(changes[1].fiatAmount).toBe(0.05);
+    });
+
+    it('returns FIAT_UNAVAILABLE when fetching token fiat rates fails', async () => {
+      mockFetchTokenContractExchangeRates.mockRejectedValue(
+        new Error('Token prices service unavailable'),
+      );
+      const { result, waitForNextUpdate } = setupHook([
+        {
+          ...dummyBalanceChange,
+          difference: DIFFERENCE_1_MOCK,
+          isDecrease: true,
+          address: ERC20_TOKEN_ADDRESS_1_MOCK,
+          standard: SimulationTokenStandard.erc20,
+        },
+      ]);
+
+      await waitForNextUpdate();
+
+      expect(result.error).toBeUndefined();
+      expect(result.current.pending).toBe(false);
+      expect(result.current.value).toHaveLength(1);
+      expect(result.current.value[0].amount.toString()).toBe('-0.017');
+      expect(result.current.value[0].fiatAmount).toBe(FIAT_UNAVAILABLE);
+    });
+
+    it('throws for an unknown token standard', async () => {
+      const { result, waitForNextUpdate } = setupHook([
+        {
+          ...dummyBalanceChange,
+          difference: DIFFERENCE_1_MOCK,
+          isDecrease: true,
+          address: NFT_TOKEN_ADDRESS_MOCK,
+          standard: 'erc9999' as SimulationTokenStandard,
+        },
+      ]);
+
+      await waitForNextUpdate();
+
+      expect(result.error).toEqual(
+        new Error('Unknown token standard: erc9999'),
+      );
     });
   });
 
