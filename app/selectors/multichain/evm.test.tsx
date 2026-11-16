@@ -9,7 +9,12 @@ import {
   selectEvmTokens,
   selectEvmTokensWithZeroBalanceFilter,
   makeSelectAssetByAddressAndChainId,
+  selectEvmTokenFiatBalances,
+  selectEvmTokenMarketData,
+  selectNativeTokensAcrossChains,
+  selectNativeTokensAcrossChainsForAddress,
 } from './evm';
+import { TokenI } from '../../components/UI/Tokens/types';
 import { SolScope } from '@metamask/keyring-api';
 import { GetByQuery } from '@testing-library/react-native/build/queries/make-queries';
 import {
@@ -759,6 +764,304 @@ describe('Multichain Selectors', () => {
       expect(nativePol).toBeDefined();
       expect(nativePol?.chainId).toBe(POLYGON_CHAIN_ID);
       expect(nativePol?.name).toBe('POL');
+    });
+  });
+
+  describe('fiat and market data selectors', () => {
+    const ACCOUNT_ADDRESS = '0x2990079bcdEe240329a520d2444386FC119da21a';
+    const USDC_ADDRESS = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+    const TWO_ETH_WEI = '0x1bc16d674ec80000';
+    const ONE_ETH_WEI = '0xde0b6b3a7640000';
+    const TEN_POL_WEI = '0x8ac7230489e80000';
+    const THREE_USDC = '0x2dc6c0';
+
+    const buildFiatState = (
+      accountsByChainId: Record<
+        string,
+        Record<string, { balance: string; stakedBalance?: string }>
+      > = {
+        '0x1': {
+          [ACCOUNT_ADDRESS]: {
+            balance: TWO_ETH_WEI,
+            stakedBalance: ONE_ETH_WEI,
+          },
+        },
+        '0x89': {
+          [ACCOUNT_ADDRESS]: { balance: TEN_POL_WEI, stakedBalance: '0x0' },
+        },
+      },
+    ): RootState =>
+      ({
+        ...mockState,
+        engine: {
+          backgroundState: {
+            ...mockState.engine.backgroundState,
+            NetworkController: {
+              ...mockState.engine.backgroundState.NetworkController,
+              selectedNetworkClientId: '0x1',
+            },
+            AccountTrackerController: { accountsByChainId },
+            TokensController: {
+              allTokens: {
+                '0x1': {
+                  [ACCOUNT_ADDRESS]: [
+                    {
+                      address: USDC_ADDRESS,
+                      symbol: 'USDC',
+                      name: 'USD Coin',
+                      decimals: 6,
+                    },
+                  ],
+                },
+              },
+            },
+            TokenBalancesController: {
+              tokenBalances: {
+                [ACCOUNT_ADDRESS]: { '0x1': { [USDC_ADDRESS]: THREE_USDC } },
+              },
+            },
+            TokenRatesController: {
+              marketData: {
+                '0x1': {
+                  [USDC_ADDRESS]: { price: 0.0005 },
+                  [zeroAddress()]: { price: 1 },
+                },
+              },
+            },
+            CurrencyRateController: {
+              currentCurrency: 'USD',
+              currencyRates: {
+                ETH: { conversionRate: 2000 },
+                POL: { conversionRate: 0.5 },
+              },
+            },
+            AccountsController: {
+              internalAccounts: {
+                selectedAccount: 'account-1',
+                accounts: {
+                  'account-1': { id: 'account-1', address: ACCOUNT_ADDRESS },
+                },
+              },
+            },
+            TokenListController: {
+              tokensChainsCache: {
+                '0x1': {
+                  data: {
+                    [USDC_ADDRESS.toLowerCase()]: {
+                      address: USDC_ADDRESS.toLowerCase(),
+                      symbol: 'USDC',
+                      name: 'USD Coin',
+                      decimals: 6,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState);
+
+    describe('selectNativeTokensAcrossChainsForAddress', () => {
+      it('converts native and staked balances to fiat with the chain conversion rate', () => {
+        const result = selectNativeTokensAcrossChainsForAddress(
+          buildFiatState(),
+          ACCOUNT_ADDRESS,
+        );
+
+        expect(result['0x1']).toHaveLength(2);
+        const [eth, stakedEth] = result['0x1'];
+        expect(eth).toMatchObject({
+          name: 'Ethereum',
+          balance: '2',
+          balanceFiat: '$4000',
+          isStaked: false,
+          ticker: 'ETH',
+        });
+        expect(stakedEth).toMatchObject({
+          name: 'Staked Ethereum',
+          balance: '1',
+          balanceFiat: '$2000',
+          isStaked: true,
+        });
+
+        expect(result['0x89']).toHaveLength(1);
+        expect(result['0x89'][0]).toMatchObject({
+          name: 'POL',
+          balance: '10',
+          balanceFiat: '$5',
+          isStaked: false,
+        });
+      });
+
+      it.each(['0x0', '0x00'])(
+        'does not add a staked entry when stakedBalance is %s',
+        (stakedBalance) => {
+          const state = buildFiatState({
+            '0x1': {
+              [ACCOUNT_ADDRESS]: { balance: TWO_ETH_WEI, stakedBalance },
+            },
+          });
+
+          const result = selectNativeTokensAcrossChainsForAddress(
+            state,
+            ACCOUNT_ADDRESS,
+          );
+
+          expect(result['0x1']).toHaveLength(1);
+          expect(result['0x1'][0].isStaked).toBe(false);
+        },
+      );
+
+      it('does not add a staked entry when the account is not staked', () => {
+        const state = buildFiatState({
+          '0x1': { [ACCOUNT_ADDRESS]: { balance: TWO_ETH_WEI } },
+        });
+
+        const result = selectNativeTokensAcrossChainsForAddress(
+          state,
+          ACCOUNT_ADDRESS,
+        );
+
+        expect(result['0x1']).toHaveLength(1);
+        expect(result['0x1'].some((token) => token.isStaked)).toBe(false);
+      });
+    });
+
+    describe('selectNativeTokensAcrossChains', () => {
+      it('returns native tokens for the selected account', () => {
+        const state = buildFiatState();
+        expect(selectNativeTokensAcrossChains(state)).toEqual(
+          selectNativeTokensAcrossChainsForAddress(state, ACCOUNT_ADDRESS),
+        );
+      });
+    });
+
+    describe('selectAccountTokensAcrossChains balanceFiat', () => {
+      it('exposes the computed native and staked fiat balances', () => {
+        const result = selectAccountTokensAcrossChains(buildFiatState());
+
+        expect(
+          result['0x1'].map((token) => [
+            token.symbol,
+            (token as TokenI).balanceFiat,
+          ]),
+        ).toEqual([
+          ['Ethereum', '$4000'],
+          ['Ethereum', '$2000'],
+          ['USDC', ''],
+        ]);
+      });
+    });
+
+    describe('selectEvmTokenFiatBalances', () => {
+      it('computes native, staked and ERC20 fiat values in selectEvmTokens order', () => {
+        const state = buildFiatState();
+        const tokens = selectEvmTokens(state);
+        const fiatBalances = selectEvmTokenFiatBalances(state);
+
+        expect(
+          tokens.map((token) => [token.chainId, token.symbol, token.isStaked]),
+        ).toEqual([
+          ['0x1', 'Ethereum', false],
+          ['0x1', 'Ethereum', true],
+          ['0x89', 'POL', false],
+          ['0x1', 'USDC', false],
+        ]);
+        // ETH: 2 * 2000, staked ETH: 1 * 2000, POL: 10 * 0.5,
+        // USDC: 3 tokens * 0.0005 ETH price * 2000 USD/ETH
+        expect(fiatBalances).toEqual([4000, 2000, 5, 3]);
+      });
+
+      it('falls back to a zero conversion rate when the native currency has no rate', () => {
+        const state = buildFiatState();
+        const noRatesState = {
+          ...state,
+          engine: {
+            backgroundState: {
+              ...state.engine.backgroundState,
+              CurrencyRateController: {
+                currentCurrency: 'USD',
+                currencyRates: {},
+              },
+            },
+          },
+        } as unknown as RootState;
+
+        const fiatBalances = selectEvmTokenFiatBalances(noRatesState);
+
+        expect(fiatBalances.slice(0, 3)).toEqual([0, 0, 0]);
+        expect(fiatBalances[3]).toBeUndefined();
+      });
+
+      it('throws when a token chain has no network configuration', () => {
+        expect(() =>
+          selectEvmTokenFiatBalances.resultFunc(
+            [
+              {
+                chainId: '0x999',
+                isNative: true,
+                balance: '1',
+              } as unknown as TokenI,
+            ],
+            {},
+            {},
+            ACCOUNT_ADDRESS,
+            {},
+            {},
+            'usd',
+          ),
+        ).toThrow(TypeError);
+      });
+    });
+
+    describe('selectEvmTokenMarketData', () => {
+      it('returns the zero address market data entry for a native token', () => {
+        expect(
+          selectEvmTokenMarketData(buildFiatState(), { chainId: '0x1' }),
+        ).toEqual({ price: 1 });
+      });
+
+      it('returns metadata and market data for a lowercase token address', () => {
+        expect(
+          selectEvmTokenMarketData(buildFiatState(), {
+            chainId: '0x1',
+            tokenAddress: USDC_ADDRESS.toLowerCase(),
+          }),
+        ).toEqual({
+          metadata: {
+            address: USDC_ADDRESS.toLowerCase(),
+            symbol: 'USDC',
+            name: 'USD Coin',
+            decimals: 6,
+          },
+          marketData: { price: 0.0005 },
+        });
+      });
+
+      it('returns undefined market data for a token without rates on the requested chain', () => {
+        // Metadata comes from the token list of the selected EVM chain,
+        // not params.chainId.
+        expect(
+          selectEvmTokenMarketData(buildFiatState(), {
+            chainId: '0x89',
+            tokenAddress: USDC_ADDRESS,
+          }),
+        ).toEqual({
+          metadata: expect.objectContaining({ symbol: 'USDC' }),
+          marketData: undefined,
+        });
+      });
+
+      it('throws for a non-hex token address', () => {
+        // safeToChecksumAddress throws on non-hex input, so the
+        // `return null` branch is not reached for invalid addresses.
+        expect(() =>
+          selectEvmTokenMarketData(buildFiatState(), {
+            chainId: '0x1',
+            tokenAddress: 'not-an-address',
+          }),
+        ).toThrow('This method only supports 0x-prefixed hex strings');
+      });
     });
   });
 
