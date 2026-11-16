@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextInput } from 'react-native';
 import { fireEvent } from '@testing-library/react-native';
-import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
+import { GAS_ESTIMATE_TYPES, GasFeeState } from '@metamask/gas-fee-controller';
 
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import renderWithProvider, {
@@ -62,8 +62,10 @@ const editGasFeeLegacyForLegacy = {
 const GAS_PRICE_LOW_WARNING = 'Gas price is low for current network conditions';
 const GAS_PRICE_HIGH_WARNING = 'Gas price is higher than necessary';
 
+type GasEstimateType = GasFeeState['gasEstimateType'];
+
 const mockStateWithEstimates = (
-  gasEstimateType: string,
+  gasEstimateType: GasEstimateType,
   gasFeeEstimates: Record<string, string>,
 ): DeepPartial<RootState> => ({
   engine: {
@@ -72,7 +74,7 @@ const mockStateWithEstimates = (
       GasFeeController: {
         gasEstimateType,
         gasFeeEstimates,
-      },
+      } as DeepPartial<GasFeeState>,
     },
   },
 });
@@ -114,7 +116,7 @@ describe('EditGasFeeLegacyUpdate', () => {
 
   describe('gas price warnings', () => {
     const renderAndEnterGasPrice = (
-      gasEstimateType: string,
+      gasEstimateType: GasEstimateType,
       gasFeeEstimates: Record<string, string>,
       gasPrice: string,
     ) => {
