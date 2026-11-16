@@ -39,12 +39,14 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  validateTransactionActionBalance,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
 import { TransactionType } from '@metamask/transaction-controller';
 import { Provider } from '@metamask/network-controller';
 import BigNumber from 'bignumber.js';
+import { toChecksumAddress } from 'ethereumjs-util';
 
 jest.mock('@metamask/controller-utils', () => ({
   ...jest.requireActual('@metamask/controller-utils'),
@@ -1214,7 +1216,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1222,7 +1224,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx2', mockTransactionController);
-    
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1232,7 +1234,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1240,7 +1242,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('nonexistent', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1254,159 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
+  });
+});
+
+describe('Transactions utils :: validateTransactionActionBalance', () => {
+  const FROM = '0xc4955c0d639d99699bfd7ec54d9fafee40e4d272';
+
+  // gas 100 wei * gasPrice 100 wei => 10_000 wei at rate 1, 11_000 at 1.1, 15_000 at 1.5
+  const legacyTx = (overrides: Record<string, string> = {}) => ({
+    transaction: {
+      from: FROM,
+      gas: '0x64',
+      gasPrice: '0x64',
+      value: '0x0',
+      ...overrides,
+    },
+  });
+
+  const eip1559Tx = (overrides: Record<string, string> = {}) => ({
+    transaction: {
+      from: FROM,
+      gas: '0x64',
+      gasPrice: '0x64',
+      maxFeePerGas: '0xc8',
+      maxPriorityFeePerGas: '0x1',
+      value: '0x0',
+      ...overrides,
+    },
+  });
+
+  const accountsWithBalance = (balanceWei: number) => ({
+    [toChecksumAddress(FROM)]: { balance: `0x${balanceWei.toString(16)}` },
+  });
+
+  describe('legacy transactions', () => {
+    it('returns false when the balance covers gasPrice * rate * gas + value', () => {
+      expect(
+        validateTransactionActionBalance(
+          legacyTx(),
+          1.1,
+          accountsWithBalance(11_000),
+        ),
+      ).toBe(false);
+    });
+
+    it('returns true when the balance is one wei short of the bumped cost', () => {
+      expect(
+        validateTransactionActionBalance(
+          legacyTx(),
+          1.1,
+          accountsWithBalance(10_999),
+        ),
+      ).toBe(true);
+    });
+
+    it('adds the transaction value to the required balance', () => {
+      const tx = legacyTx({ value: '0x3e8' });
+      expect(
+        validateTransactionActionBalance(tx, 1.1, accountsWithBalance(11_999)),
+      ).toBe(true);
+      expect(
+        validateTransactionActionBalance(tx, 1.1, accountsWithBalance(12_000)),
+      ).toBe(false);
+    });
+
+    it('looks up the account by checksummed from address', () => {
+      const lowercaseKeyed = { [FROM]: { balance: '0x0' } };
+      expect(
+        validateTransactionActionBalance(
+          legacyTx(),
+          1.1,
+          accountsWithBalance(0),
+        ),
+      ).toBe(true);
+      expect(
+        validateTransactionActionBalance(legacyTx(), 1.1, lowercaseKeyed),
+      ).toBe(false);
+    });
+  });
+
+  describe('EIP-1559 transactions', () => {
+    it('uses maxFeePerGas instead of gasPrice', () => {
+      // 200 * 1.1 * 100 = 22_000; a gasPrice-based check would need only 11_000
+      expect(
+        validateTransactionActionBalance(
+          eip1559Tx(),
+          1.1,
+          accountsWithBalance(15_000),
+        ),
+      ).toBe(true);
+      expect(
+        validateTransactionActionBalance(
+          eip1559Tx(),
+          1.1,
+          accountsWithBalance(22_000),
+        ),
+      ).toBe(false);
+    });
+
+    it('falls back to gasPrice when maxPriorityFeePerGas is missing', () => {
+      const { maxPriorityFeePerGas, ...transaction } = eip1559Tx().transaction;
+      expect(maxPriorityFeePerGas).toBeDefined();
+      expect(
+        validateTransactionActionBalance(
+          { transaction },
+          1.1,
+          accountsWithBalance(15_000),
+        ),
+      ).toBe(false);
+    });
+  });
+
+  describe('rate scaling', () => {
+    it.each([
+      [1.1, 10_999, true],
+      [1.1, 11_000, false],
+      [1.5, 14_999, true],
+      [1.5, 15_000, false],
+    ])(
+      'rate %s with balance %s returns %s',
+      (rate: number, balance: number, expected: boolean) => {
+        expect(
+          validateTransactionActionBalance(
+            legacyTx(),
+            rate,
+            accountsWithBalance(balance),
+          ),
+        ).toBe(expected);
+      },
+    );
+
+    it('truncates the rate to one decimal place', () => {
+      // 1.19 * 10 => BN(11), so the required balance is 11_000, not 11_900
+      expect(
+        validateTransactionActionBalance(
+          legacyTx(),
+          1.19,
+          accountsWithBalance(11_000),
+        ),
+      ).toBe(false);
+    });
+  });
+
+  describe('error handling (fails open)', () => {
+    it('returns false when the from account is missing', () => {
+      expect(validateTransactionActionBalance(legacyTx(), 1.1, {})).toBe(false);
+    });
+
+    it('returns false when the transaction object is malformed', () => {
+      expect(
+        validateTransactionActionBalance({}, 1.1, accountsWithBalance(0)),
+      ).toBe(false);
+    });
   });
 });
