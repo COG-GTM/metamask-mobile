@@ -1,6 +1,7 @@
 import { renderScreen } from '../../../util/test/renderWithProvider';
 import QrScanner from './';
 import { backgroundState } from '../../../util/test/initial-root-state';
+import { NftDetailsParams } from './NftDetails.types';
 
 const initialState = {
   engine: {
@@ -131,9 +132,57 @@ const TEST_COLLECTIBLE = {
   logo: 'https://img.reservoir.tools/images/v2/mainnet/m8Rol%2FE80oMmjzi7K7IQ0u6HzXVyHUh6MaSEPbYQy1GRP1ztTkhG1VSzAwMMXv97QfX8ZgwGwpR8nf9yb12HQqI%2BXfaLY%2BhMdAJk7UThICq3VpXqP8R9a7UJJWaudViqrlaZXcB%2B9WiV9avzgRprPEfJ1chTNYa3%2B36V9Areb6V%2BqwbskYYLZjPXCrV525seJSJnfQqrVwl64p9PV9sCkw%3D%3D?width=250',
 };
 
-let mockUseParamsValues = {
+let mockUseParamsValues: NftDetailsParams = {
   collectible: TEST_COLLECTIBLE,
+} as unknown as NftDetailsParams;
+
+// lastSale: 0.25 ETH / $760.12, floorAsk: 0.4 ETH / $1,206.43334
+const TEST_COLLECTIBLE_WITH_LAST_SALE = {
+  ...TEST_COLLECTIBLE,
+  lastSale: {
+    timestamp: 1718582323,
+    price: {
+      currency: {
+        contract: '0x0000000000000000000000000000000000000000',
+        name: 'Ether',
+        symbol: 'ETH',
+        decimals: 18,
+      },
+      amount: {
+        raw: '250000000000000000',
+        decimal: 0.25,
+        usd: 760.12,
+        native: 0.25,
+      },
+    },
+  },
 };
+
+const buildCurrencyState = (
+  currentCurrency: string,
+  currencyRates: Record<
+    string,
+    {
+      conversionRate: number | null;
+      conversionDate: number;
+      usdConversionRate: number | null;
+    }
+  >,
+) => ({
+  engine: {
+    backgroundState: {
+      ...backgroundState,
+      CurrencyRateController: {
+        ...backgroundState.CurrencyRateController,
+        currentCurrency,
+        currencyRates,
+      },
+    },
+  },
+});
+
+const renderWithState = (state: Record<string, unknown>) =>
+  renderScreen(QrScanner, { name: 'NftDetails' }, { state });
 
 jest.mock('../../../util/navigation/navUtils', () => ({
   ...jest.requireActual('../../../util/navigation/navUtils'),
@@ -144,7 +193,7 @@ describe('NftDetails', () => {
   beforeEach(() => {
     mockUseParamsValues = {
       collectible: TEST_COLLECTIBLE,
-    };
+    } as unknown as NftDetailsParams;
   });
   it('should render correctly', () => {
     const { toJSON } = renderScreen(
@@ -153,5 +202,74 @@ describe('NftDetails', () => {
       { state: initialState },
     );
     expect(toJSON()).toMatchSnapshot();
+  });
+
+  describe('price currency conversion', () => {
+    beforeEach(() => {
+      mockUseParamsValues = {
+        collectible: TEST_COLLECTIBLE_WITH_LAST_SALE,
+      } as unknown as NftDetailsParams;
+    });
+
+    it('renders the USD values when the current currency is usd', () => {
+      const { getByText, queryByText } = renderWithState(
+        buildCurrencyState('usd', {
+          ETH: {
+            conversionRate: 2500,
+            conversionDate: 0,
+            usdConversionRate: 3000,
+          },
+        }),
+      );
+
+      expect(getByText('$760.12')).toBeTruthy();
+      expect(getByText('$1,206.43')).toBeTruthy();
+      expect(queryByText('$625.00')).toBeNull();
+      expect(queryByText('$1,000.00')).toBeNull();
+    });
+
+    it('applies the native conversion rate when the current currency is eur', () => {
+      const { getByText, queryByText } = renderWithState(
+        buildCurrencyState('eur', {
+          ETH: {
+            conversionRate: 2500,
+            conversionDate: 0,
+            usdConversionRate: 3000,
+          },
+        }),
+      );
+
+      // 0.25 ETH * 2500 and 0.4 ETH * 2500
+      expect(getByText('€625.00')).toBeTruthy();
+      expect(getByText('€1,000.00')).toBeTruthy();
+      expect(queryByText('$760.12')).toBeNull();
+      expect(queryByText('$1,206.43')).toBeNull();
+    });
+
+    it('falls back to the USD values when the conversion rate is missing', () => {
+      const { getByText, queryByText } = renderWithState(
+        buildCurrencyState('eur', {}),
+      );
+
+      expect(getByText('$760.12')).toBeTruthy();
+      expect(getByText('$1,206.43')).toBeTruthy();
+      expect(queryByText(/€/)).toBeNull();
+    });
+
+    it('falls back to the USD values when the conversion rate is zero', () => {
+      const { getByText, queryByText } = renderWithState(
+        buildCurrencyState('eur', {
+          ETH: {
+            conversionRate: 0,
+            conversionDate: 0,
+            usdConversionRate: null,
+          },
+        }),
+      );
+
+      expect(getByText('$760.12')).toBeTruthy();
+      expect(getByText('$1,206.43')).toBeTruthy();
+      expect(queryByText(/€/)).toBeNull();
+    });
   });
 });
