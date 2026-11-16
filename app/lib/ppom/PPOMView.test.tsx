@@ -225,7 +225,7 @@ describe('PPOMView', () => {
       const newTrigger = getTrigger(mockInvoke, 'PPOM.new');
       expect(newTrigger).toHaveBeenCalledWith({
         id: expect.any(Number),
-        args: [[['file', expect.any(String)]]],
+        args: [[['file', 'AQID']]],
       });
 
       const request = { method: 'eth_sendTransaction' };
