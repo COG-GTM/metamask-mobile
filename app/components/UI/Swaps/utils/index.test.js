@@ -1,7 +1,10 @@
+import { renderHook } from '@testing-library/react-hooks';
+import BigNumber from 'bignumber.js';
 import {
   getFetchParams,
   shouldShowMaxBalanceLink,
   isSwapsAllowed,
+  useRatio,
 } from './index';
 import { swapsUtils } from '@metamask/swaps-controller';
 import { SolScope } from '@metamask/keyring-api';
@@ -243,5 +246,143 @@ describe('isSwapsAllowed', () => {
       });
       expect(isSwapsAllowed(SWAPS_TESTNET_CHAIN_ID)).toBe(true);
     });
+  });
+});
+
+describe('useRatio', () => {
+  const ONE_ETH_WEI = '1000000000000000000';
+  const TWO_THOUSAND_USDC = '2000000000';
+
+  const renderUseRatio = (...args) =>
+    renderHook((props) => useRatio(...props), { initialProps: args });
+
+  it('returns a BigNumber', () => {
+    const { result } = renderUseRatio('1', 18, '1', 18);
+    expect(BigNumber.isBigNumber(result.current)).toBe(true);
+  });
+
+  it('returns the plain amount ratio when decimals are equal', () => {
+    const { result } = renderUseRatio(
+      '3000000000000000000',
+      18,
+      '2000000000000000000',
+      18,
+    );
+    expect(result.current.toString()).toBe('1.5');
+  });
+
+  it('returns the plain amount ratio for equal non-18 decimals', () => {
+    const { result } = renderUseRatio('5000000', 6, '2000000', 6);
+    expect(result.current.toString()).toBe('2.5');
+  });
+
+  it('scales USDC (6) per ETH (18) by 10^(18 - 6)', () => {
+    const { result } = renderUseRatio(TWO_THOUSAND_USDC, 6, ONE_ETH_WEI, 18);
+    expect(result.current.toString()).toBe('2000');
+  });
+
+  it('scales ETH (18) per USDC (6) by 10^(6 - 18)', () => {
+    const { result } = renderUseRatio(ONE_ETH_WEI, 18, TWO_THOUSAND_USDC, 6);
+    expect(result.current.toString()).toBe('0.0005');
+  });
+
+  it('returns reciprocal rates for the two directions', () => {
+    const { result: usdcPerEth } = renderUseRatio(
+      TWO_THOUSAND_USDC,
+      6,
+      ONE_ETH_WEI,
+      18,
+    );
+    const { result: ethPerUsdc } = renderUseRatio(
+      ONE_ETH_WEI,
+      18,
+      TWO_THOUSAND_USDC,
+      6,
+    );
+    expect(usdcPerEth.current.multipliedBy(ethPerUsdc.current).toString()).toBe(
+      '1',
+    );
+  });
+
+  it('is off by 10^24 if the decimals are swapped', () => {
+    const { result: correct } = renderUseRatio(
+      TWO_THOUSAND_USDC,
+      6,
+      ONE_ETH_WEI,
+      18,
+    );
+    const { result: swapped } = renderUseRatio(
+      TWO_THOUSAND_USDC,
+      18,
+      ONE_ETH_WEI,
+      6,
+    );
+    expect(correct.current.toString()).toBe('2000');
+    expect(swapped.current.toString()).toBe('2e-21');
+    expect(correct.current.dividedBy(swapped.current).toString()).toBe('1e+24');
+  });
+
+  it('scales WBTC (8) per ETH (18) by 10^(18 - 8)', () => {
+    const { result } = renderUseRatio('5000000', 8, ONE_ETH_WEI, 18);
+    expect(result.current.toString()).toBe('0.05');
+  });
+
+  it('accepts BigNumber and numeric amounts', () => {
+    const { result } = renderUseRatio(
+      new BigNumber(TWO_THOUSAND_USDC),
+      6,
+      1e18,
+      18,
+    );
+    expect(result.current.toString()).toBe('2000');
+  });
+
+  it('returns Infinity when the denominator amount is zero', () => {
+    const { result } = renderUseRatio(TWO_THOUSAND_USDC, 6, '0', 18);
+    expect(result.current.isFinite()).toBe(false);
+    expect(result.current.isEqualTo(Infinity)).toBe(true);
+  });
+
+  it('returns NaN when both amounts are zero', () => {
+    const { result } = renderUseRatio('0', 6, '0', 18);
+    expect(result.current.isNaN()).toBe(true);
+  });
+
+  it('returns zero when the numerator amount is zero', () => {
+    const { result } = renderUseRatio('0', 6, ONE_ETH_WEI, 18);
+    expect(result.current.isZero()).toBe(true);
+  });
+
+  it('returns NaN when an amount is undefined', () => {
+    const { result } = renderUseRatio(undefined, 6, ONE_ETH_WEI, 18);
+    expect(result.current.isNaN()).toBe(true);
+  });
+
+  it('memoizes the result while inputs are unchanged', () => {
+    const { result, rerender } = renderUseRatio(
+      TWO_THOUSAND_USDC,
+      6,
+      ONE_ETH_WEI,
+      18,
+    );
+    const first = result.current;
+    rerender([TWO_THOUSAND_USDC, 6, ONE_ETH_WEI, 18]);
+    expect(result.current).toBe(first);
+  });
+
+  it('recomputes when the amounts or decimals change', () => {
+    const { result, rerender } = renderUseRatio(
+      TWO_THOUSAND_USDC,
+      6,
+      ONE_ETH_WEI,
+      18,
+    );
+    expect(result.current.toString()).toBe('2000');
+
+    rerender(['4000000000', 6, ONE_ETH_WEI, 18]);
+    expect(result.current.toString()).toBe('4000');
+
+    rerender([ONE_ETH_WEI, 18, TWO_THOUSAND_USDC, 6]);
+    expect(result.current.toString()).toBe('0.0005');
   });
 });
