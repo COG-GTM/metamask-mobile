@@ -13,6 +13,7 @@ import { strings } from '../../../../../../../locales/i18n';
 import { backgroundState } from '../../../../../../util/test/initial-root-state';
 import { useMetrics } from '../../../../../../components/hooks/useMetrics';
 import initialBackgroundState from '../../../../../../util/test/initial-background-state.json';
+import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 
 jest.mock('../../../../../../components/hooks/useMetrics');
 jest.mock('../../../../../../core/Engine', () => ({
@@ -71,9 +72,21 @@ jest.mock('../../../../../../util/address', () => ({
 }));
 
 const mockTrackEvent = jest.fn();
-const mockCreateEventBuilder = jest.fn().mockReturnValue({
-  addProperties: jest.fn().mockReturnThis(),
-  build: jest.fn().mockReturnThis(),
+interface MockEventBuilder {
+  addProperties: jest.Mock<MockEventBuilder, [Record<string, unknown>]>;
+  build: jest.Mock<{ name: string; properties: Record<string, unknown> }>;
+}
+
+const mockCreateEventBuilder = jest.fn((event: { category: string }) => {
+  let properties = {};
+  const builder: MockEventBuilder = {
+    addProperties: jest.fn((props: Record<string, unknown>) => {
+      properties = { ...properties, ...props };
+      return builder;
+    }),
+    build: jest.fn(() => ({ name: event.category, properties })),
+  };
+  return builder;
 });
 
 (useMetrics as jest.Mock).mockReturnValue({
@@ -242,62 +255,54 @@ describe('PersonalSign', () => {
     });
   });
 
-  // FIXME: This test suite is failing because the event test is going far beyond its scope
-  //   this should be refactored to test only the event tracking on the TypedSign component
-  //   and not the whole event tracking system (including events from app/util/confirmation/signatureUtils.js)
-  // eslint-disable-next-line jest/no-disabled-tests
-  describe.skip('trackEvent', () => {
-    it('tracks event for rejected requests', async () => {
+  describe('trackEvent', () => {
+    const expectedProperties = {
+      account_type: 'Metamask',
+      dapp_host_name: 'localhost:8545',
+      chain_id: '1',
+      signature_type: 'personal_sign',
+      security_alert_response: 'Benign',
+      security_alert_reason: '',
+      security_alert_source: undefined,
+      ppom_eth_chainId_count: 1,
+    };
+
+    beforeEach(() => {
+      mockTrackEvent.mockClear();
+      mockCreateEventBuilder.mockClear();
+    });
+
+    it('tracks SIGNATURE_REJECTED with analytics params on reject', async () => {
       const wrapper = createWrapper().dive();
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (wrapper.find(SignatureRequest).props() as any).onReject();
 
-      const rejectedMocks = (mockTrackEvent as jest.Mock).mock.calls.filter(
-        (call) => call[0].category === 'Signature Rejected',
+      expect(mockCreateEventBuilder).toHaveBeenCalledTimes(1);
+      expect(mockCreateEventBuilder).toHaveBeenCalledWith(
+        MetaMetricsEvents.SIGNATURE_REJECTED,
       );
-
-      const mockCallsLength = rejectedMocks.length;
-
-      const lastMockCall = rejectedMocks[mockCallsLength - 1];
-
-      expect(lastMockCall[0]).toEqual({ category: 'Signature Rejected' });
-      expect(lastMockCall[1]).toEqual({
-        account_type: 'Metamask',
-        dapp_host_name: 'localhost:8545',
-        chain_id: '1',
-        signature_type: 'personal_sign',
-        security_alert_response: 'Benign',
-        security_alert_reason: '',
-        security_alert_source: undefined,
-        ppom_eth_chainId_count: 1,
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+      expect(mockTrackEvent).toHaveBeenCalledWith({
+        name: 'Signature Rejected',
+        properties: expectedProperties,
       });
     });
 
-    it('tracks event for approved requests', async () => {
+    it('tracks SIGNATURE_APPROVED with analytics params on confirm', async () => {
       const wrapper = createWrapper().dive();
       // TODO: Replace "any" with type
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (wrapper.find(SignatureRequest).props() as any).onConfirm();
 
-      const signedMocks = (mockTrackEvent as jest.Mock).mock.calls.filter(
-        (call) => call[0].category === 'Signature Approved',
+      expect(mockCreateEventBuilder).toHaveBeenCalledTimes(1);
+      expect(mockCreateEventBuilder).toHaveBeenCalledWith(
+        MetaMetricsEvents.SIGNATURE_APPROVED,
       );
-
-      const mockCallsLength = signedMocks.length;
-
-      const lastMockCall = signedMocks[mockCallsLength - 1];
-
-      expect(lastMockCall[0]).toEqual({ category: 'Signature Approved' });
-      expect(lastMockCall[1]).toEqual({
-        account_type: 'Metamask',
-        dapp_host_name: 'localhost:8545',
-        chain_id: '1',
-        signature_type: 'personal_sign',
-        security_alert_response: 'Benign',
-        security_alert_reason: '',
-        security_alert_source: undefined,
-        ppom_eth_chainId_count: 1,
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+      expect(mockTrackEvent).toHaveBeenCalledWith({
+        name: 'Signature Approved',
+        properties: expectedProperties,
       });
     });
   });
