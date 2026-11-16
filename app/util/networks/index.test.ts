@@ -12,6 +12,9 @@ import NetworkList, {
   isPrivateConnection,
   findBlockExplorerForNonEvmAccount,
   isLineaMainnetChainId,
+  getDecimalChainId,
+  isMainnetByChainId,
+  isLineaMainnetByChainId,
   getTestNetImageByChainId,
   TESTNET_CHAIN_IDS,
   WHILELIST_NETWORK_NAME,
@@ -742,6 +745,80 @@ describe('network-utils', () => {
 
     it('returns false for linea testnet chain id', () => {
       expect(isLineaMainnetChainId('0x13882')).toBe(false);
+    });
+  });
+
+  describe('getDecimalChainId', () => {
+    it.each([
+      ['0x1', '1'],
+      ['0xe708', '59144'],
+      ['0xaa36a7', '11155111'],
+      ['0x89', '137'],
+    ])('converts hex chain id %s to decimal string %s', (chainId, expected) => {
+      expect(getDecimalChainId(chainId)).toBe(expected);
+    });
+
+    it.each([
+      ['eip155:1'],
+      ['eip155:137'],
+      [SolScope.Mainnet],
+      [BtcScope.Mainnet],
+      ['1'],
+      ['59144'],
+      [''],
+    ])('returns non-hex string %p unchanged', (chainId) => {
+      expect(getDecimalChainId(chainId)).toBe(chainId);
+    });
+
+    it.each([[undefined], [null], [1], [0], [59144]])(
+      'returns non-string or falsy input %p unchanged',
+      (chainId) => {
+        expect(getDecimalChainId(chainId)).toBe(chainId);
+      },
+    );
+
+    it('never returns NaN for non-EVM scopes', () => {
+      expect(getDecimalChainId(SolScope.Mainnet)).not.toBe('NaN');
+      expect(getDecimalChainId(BtcScope.Mainnet)).not.toBe('NaN');
+    });
+  });
+
+  describe('isMainnetByChainId', () => {
+    it.each([['0x1'], [1], ['1']])('returns true for %p', (chainId) => {
+      expect(isMainnetByChainId(chainId)).toBe(true);
+    });
+
+    it.each([
+      ['0xe708'],
+      ['0xaa36a7'],
+      ['eip155:1'],
+      [SolScope.Mainnet],
+      [BtcScope.Mainnet],
+      [undefined],
+      [null],
+      ['0x01a'],
+    ])('returns false for %p', (chainId) => {
+      expect(isMainnetByChainId(chainId)).toBe(false);
+    });
+  });
+
+  describe('isLineaMainnetByChainId', () => {
+    it.each([['0xe708'], [59144], ['59144']])(
+      'returns true for %p',
+      (chainId) => {
+        expect(isLineaMainnetByChainId(chainId)).toBe(true);
+      },
+    );
+
+    it.each([
+      ['0x1'],
+      ['0xe705'],
+      ['0x13882'],
+      ['eip155:59144'],
+      [SolScope.Mainnet],
+      [undefined],
+    ])('returns false for %p', (chainId) => {
+      expect(isLineaMainnetByChainId(chainId)).toBe(false);
     });
   });
 
