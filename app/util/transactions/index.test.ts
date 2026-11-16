@@ -39,6 +39,8 @@ import {
   TOKEN_METHOD_APPROVE,
   getTransactionReviewActionKey,
   getTransactionById,
+  isSmartContractAddress,
+  isCollectibleAddress,
 } from '.';
 import Engine from '../../core/Engine';
 import { strings } from '../../../locales/i18n';
@@ -1214,7 +1216,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1222,7 +1224,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx2', mockTransactionController);
-    
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1232,7 +1234,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1240,7 +1242,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('nonexistent', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1254,216 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
+  });
+});
+
+describe('Transactions utils :: isSmartContractAddress', () => {
+  const MAINNET_CHAIN_ID = '0x1';
+  const SEPOLIA_CHAIN_ID = '0xaa36a7';
+  const CONTRACT_BYTECODE = '0x6080604052348015600f57600080fd5b50';
+  const lowercaseAddress = MOCK_ADDRESS3;
+  const checksumAddress = '0xb794F5eA0ba39494cE839613fffBA74279579268';
+
+  const originalContext = ENGINE_MOCK.context;
+  const chainLookupProvider = { name: 'chain-lookup' } as unknown as Provider;
+  const explicitProvider = { name: 'explicit' } as unknown as Provider;
+  let findNetworkClientIdByChainId: jest.Mock;
+  let getNetworkClientById: jest.Mock;
+  let tokensChainsCache: Record<string, { data: Record<string, unknown> }>;
+
+  const queryMock = controllerUtilsModule.query as jest.Mock;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    tokensChainsCache = {};
+    findNetworkClientIdByChainId = jest.fn(() => 'chainLookupClientId');
+    getNetworkClientById = jest.fn((id: string) => ({
+      provider:
+        id === 'explicitClientId' ? explicitProvider : chainLookupProvider,
+    }));
+    ENGINE_MOCK.context = {
+      ...originalContext,
+      NetworkController: {
+        findNetworkClientIdByChainId,
+        getNetworkClientById,
+      },
+      TokenListController: { state: { tokensChainsCache } },
+    };
+  });
+
+  afterAll(() => {
+    ENGINE_MOCK.context = originalContext;
+  });
+
+  it.each([undefined, null, ''])(
+    'returns false without any lookup when address is %p',
+    async (address) => {
+      queryMock.mockResolvedValue(CONTRACT_BYTECODE);
+
+      expect(
+        await isSmartContractAddress(address as string, MAINNET_CHAIN_ID),
+      ).toBe(false);
+      expect(queryMock).not.toHaveBeenCalled();
+      expect(findNetworkClientIdByChainId).not.toHaveBeenCalled();
+    },
+  );
+
+  it('returns true for a mainnet token-list cache hit without calling getCode', async () => {
+    tokensChainsCache[MAINNET_CHAIN_ID] = {
+      data: { [checksumAddress]: { symbol: 'TKN' } },
+    };
+
+    expect(
+      await isSmartContractAddress(lowercaseAddress, MAINNET_CHAIN_ID),
+    ).toBe(true);
+    expect(queryMock).not.toHaveBeenCalled();
+    expect(findNetworkClientIdByChainId).not.toHaveBeenCalled();
+    expect(getNetworkClientById).not.toHaveBeenCalled();
+  });
+
+  it('looks up the cache by checksum address, so a lowercase key is a miss', async () => {
+    tokensChainsCache[MAINNET_CHAIN_ID] = {
+      data: { [lowercaseAddress]: { symbol: 'TKN' } },
+    };
+    queryMock.mockResolvedValue('0x');
+
+    expect(
+      await isSmartContractAddress(lowercaseAddress, MAINNET_CHAIN_ID),
+    ).toBe(false);
+    expect(queryMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores the token-list cache on non-mainnet chains', async () => {
+    tokensChainsCache[SEPOLIA_CHAIN_ID] = {
+      data: { [checksumAddress]: { symbol: 'TKN' } },
+    };
+    queryMock.mockResolvedValue('0x');
+
+    expect(
+      await isSmartContractAddress(lowercaseAddress, SEPOLIA_CHAIN_ID),
+    ).toBe(false);
+    expect(queryMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('resolves the network client from the chainId when none is given', async () => {
+    queryMock.mockResolvedValue(CONTRACT_BYTECODE);
+
+    expect(
+      await isSmartContractAddress(lowercaseAddress, SEPOLIA_CHAIN_ID),
+    ).toBe(true);
+    expect(findNetworkClientIdByChainId).toHaveBeenCalledWith(SEPOLIA_CHAIN_ID);
+    expect(getNetworkClientById).toHaveBeenCalledWith('chainLookupClientId');
+    expect(queryMock).toHaveBeenCalledWith(
+      expect.objectContaining({ currentProvider: chainLookupProvider }),
+      'getCode',
+      [checksumAddress],
+    );
+  });
+
+  it('uses an explicit networkClientId over the chainId lookup', async () => {
+    queryMock.mockResolvedValue(CONTRACT_BYTECODE);
+
+    expect(
+      await isSmartContractAddress(
+        lowercaseAddress,
+        SEPOLIA_CHAIN_ID,
+        'explicitClientId',
+      ),
+    ).toBe(true);
+    expect(findNetworkClientIdByChainId).not.toHaveBeenCalled();
+    expect(getNetworkClientById).toHaveBeenCalledWith('explicitClientId');
+    expect(queryMock).toHaveBeenCalledWith(
+      expect.objectContaining({ currentProvider: explicitProvider }),
+      'getCode',
+      [checksumAddress],
+    );
+  });
+
+  it.each([
+    ['0x', false],
+    ['0x0', false],
+    [undefined, false],
+    [CONTRACT_BYTECODE, true],
+  ])('returns %p code as smart contract = %p', async (code, expected) => {
+    queryMock.mockResolvedValue(code);
+
+    expect(
+      await isSmartContractAddress(lowercaseAddress, SEPOLIA_CHAIN_ID),
+    ).toBe(expected);
+  });
+
+  it('propagates getCode RPC errors', async () => {
+    queryMock.mockRejectedValue(new Error('RPC down'));
+
+    await expect(
+      isSmartContractAddress(lowercaseAddress, SEPOLIA_CHAIN_ID),
+    ).rejects.toThrow('RPC down');
+  });
+});
+
+describe('Transactions utils :: isCollectibleAddress', () => {
+  const originalContext = ENGINE_MOCK.context;
+  let getERC721OwnerOf: jest.Mock;
+
+  beforeEach(() => {
+    getERC721OwnerOf = jest.fn();
+    ENGINE_MOCK.context = {
+      ...originalContext,
+      AssetsContractController: { getERC721OwnerOf },
+    };
+  });
+
+  afterAll(() => {
+    ENGINE_MOCK.context = originalContext;
+  });
+
+  it('returns true for an ERC721 owner and caches the result per address', async () => {
+    const address = '0x00000000000000000000000000000000000c0001';
+    getERC721OwnerOf.mockResolvedValue(MOCK_ADDRESS3);
+
+    expect(await isCollectibleAddress(address, '1')).toBe(true);
+    expect(getERC721OwnerOf).toHaveBeenCalledWith(address, '1');
+
+    expect(await isCollectibleAddress(address, '2')).toBe(true);
+    expect(getERC721OwnerOf).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['0x', '0x00000000000000000000000000000000000c0002'],
+    ['', '0x00000000000000000000000000000000000c0003'],
+    [undefined, '0x00000000000000000000000000000000000c0004'],
+  ])('returns false when ownerOf is %p', async (ownerOf, address) => {
+    getERC721OwnerOf.mockResolvedValue(ownerOf);
+
+    expect(await isCollectibleAddress(address, '1')).toBeFalsy();
+  });
+
+  it('does not serve a cached falsy result and queries ownerOf again', async () => {
+    const address = '0x00000000000000000000000000000000000c0005';
+    getERC721OwnerOf.mockResolvedValueOnce('0x');
+
+    expect(await isCollectibleAddress(address, '1')).toBe(false);
+
+    getERC721OwnerOf.mockResolvedValueOnce(MOCK_ADDRESS3);
+    expect(await isCollectibleAddress(address, '1')).toBe(true);
+    expect(getERC721OwnerOf).toHaveBeenCalledTimes(2);
+
+    expect(await isCollectibleAddress(address, '1')).toBe(true);
+    expect(getERC721OwnerOf).toHaveBeenCalledTimes(2);
+  });
+
+  it('propagates ownerOf errors without caching', async () => {
+    const address = '0x00000000000000000000000000000000000c0006';
+    getERC721OwnerOf.mockRejectedValueOnce(new Error('not ERC721'));
+
+    await expect(isCollectibleAddress(address, '1')).rejects.toThrow(
+      'not ERC721',
+    );
+
+    getERC721OwnerOf.mockResolvedValueOnce(MOCK_ADDRESS3);
+    expect(await isCollectibleAddress(address, '1')).toBe(true);
+    expect(getERC721OwnerOf).toHaveBeenCalledTimes(2);
   });
 });
