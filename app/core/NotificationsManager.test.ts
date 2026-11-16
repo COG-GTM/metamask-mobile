@@ -325,7 +325,7 @@ describe('NotificationManager', () => {
     const mockControllerMessenger = {
       subscribe: jest.fn(),
       unsubscribe: jest.fn(),
-      subscribeOnceIf: jest.fn(),
+      subscribeOnceIf: jest.fn((eventType: string) => `${eventType}:handle`),
       tryUnsubscribe: jest.fn(),
     };
 
@@ -341,6 +341,21 @@ describe('NotificationManager', () => {
       }
       const [, handler, predicate] = call;
       return { handler, predicate };
+    };
+
+    const TX_EVENTS = [
+      'TransactionController:transactionConfirmed',
+      'TransactionController:transactionFailed',
+      'TransactionController:speedupTransactionAdded',
+    ];
+
+    const expectTransactionListenersRemoved = () => {
+      TX_EVENTS.forEach((eventType) => {
+        expect(mockControllerMessenger.tryUnsubscribe).toHaveBeenCalledWith(
+          eventType,
+          `${eventType}:handle`,
+        );
+      });
     };
 
     const watchTransaction = (overrides = {}) =>
@@ -455,10 +470,7 @@ describe('NotificationManager', () => {
       ).toHaveBeenCalledWith({ chainId: CHAIN_ID });
       expect(mockTokenDetectionController.detectTokens).not.toHaveBeenCalled();
       expect(promptReviewSpy).toHaveBeenCalledTimes(1);
-      expect(mockControllerMessenger.tryUnsubscribe).toHaveBeenCalledWith(
-        'TransactionController:transactionConfirmed',
-        notificationManager._transactionConfirmedListener,
-      );
+      expectTransactionListenersRemoved();
       expect(notificationManager._transactionsWatchTable).toStrictEqual({});
     });
 
@@ -515,10 +527,7 @@ describe('NotificationManager', () => {
           transaction: { id: TX_ID },
           duration: 5000,
         });
-        expect(mockControllerMessenger.tryUnsubscribe).toHaveBeenCalledWith(
-          'TransactionController:transactionFailed',
-          notificationManager._transactionFailedListener,
-        );
+        expectTransactionListenersRemoved();
         expect(notificationManager._transactionsWatchTable).toStrictEqual({});
       },
     );
