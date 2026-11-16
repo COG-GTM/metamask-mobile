@@ -713,7 +713,7 @@ describe('swaps reducer', () => {
         ]);
       });
 
-      it('stops at 5 tokens once all held tokens are found early in the list', () => {
+      it('returns held tokens then fillers up to 5 when held tokens lead the list', () => {
         const state = createTokenListState({
           chainId: POLYGON,
           swapsTokens: sevenTokens,
