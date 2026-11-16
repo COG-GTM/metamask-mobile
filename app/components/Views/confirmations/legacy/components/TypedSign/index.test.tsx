@@ -13,6 +13,10 @@ import { backgroundState } from '../../../../../../util/test/initial-root-state'
 import renderWithProvider from '../../../../../../util/test/renderWithProvider';
 import { fireEvent, waitFor } from '@testing-library/react-native';
 import { MetaMetrics } from '../../../../../../core/Analytics';
+import {
+  handleSignatureAction,
+  typedSign,
+} from '../../../../../../util/confirmation/signatureUtils';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../../../../util/test/accountsControllerTestUtils';
 import { SigningBottomSheetSelectorsIDs } from '../../../../../../../e2e/selectors/Browser/SigningBottomSheet.selectors';
 
@@ -26,7 +30,9 @@ const mockMetrics = {
 
 jest.mock('../../../../../../core/Engine', () => {
   const { MOCK_ACCOUNTS_CONTROLLER_STATE: mockAccountsControllerState } =
-    jest.requireActual('../../../../../../util/test/accountsControllerTestUtils');
+    jest.requireActual(
+      '../../../../../../util/test/accountsControllerTestUtils',
+    );
   return {
     acceptPendingApproval: jest.fn(),
     rejectPendingApproval: jest.fn(),
@@ -61,6 +67,16 @@ jest.mock('../../../../../../core/Engine', () => {
 });
 
 jest.mock('../../../../../../core/NotificationManager');
+
+jest.mock('../../../../../../util/confirmation/signatureUtils', () => {
+  const actual = jest.requireActual(
+    '../../../../../../util/confirmation/signatureUtils',
+  );
+  return {
+    ...actual,
+    handleSignatureAction: jest.fn(actual.handleSignatureAction),
+  };
+});
 
 jest.mock('../../../../../../util/address', () => ({
   ...jest.requireActual('../../../../../../util/address'),
@@ -343,94 +359,55 @@ describe('TypedSign', () => {
     });
   });
 
-  // FIXME: This test suite is failing because the event test is going far beyond its scope
-  //   this should be refactored to test only the event tracking on the TypedSign component
-  //   and not the whole event tracking system (including events from app/util/confirmation/signatureUtils.js)
-  // eslint-disable-next-line jest/no-disabled-tests
-  describe.skip('trackEvent', () => {
-    it('tracks event for rejected requests', async () => {
+  describe('handleSignatureAction', () => {
+    const handleSignatureActionMock = jest.mocked(handleSignatureAction);
+
+    beforeEach(() => {
+      handleSignatureActionMock.mockClear();
+      mockConfirm.mockClear();
       mockReject.mockClear();
-
-      const container = renderWithProvider(
-        <TypedSign
-          currentPageInformation={{
-            title: 'title',
-            url: 'http://localhost:8545',
-          }}
-          messageParams={{ ...messageParamsMock }}
-          onConfirm={mockConfirm}
-          onReject={mockReject}
-        />,
-        { state: initialState },
-      );
-
-      const rejectButton = await container.findByTestId(
-        SigningBottomSheetSelectorsIDs.CANCEL_BUTTON,
-      );
-      fireEvent.press(rejectButton);
-
-      expect(mockReject).toHaveBeenCalledTimes(1);
-
-      const rejectedMocks = mockMetrics.trackEvent.mock.calls.filter(
-        (call) => call[0].category === 'Signature Rejected',
-      );
-
-      const mockCallsLength = rejectedMocks.length;
-
-      const lastMockCall = rejectedMocks[mockCallsLength - 1];
-
-      expect(lastMockCall[0]).toEqual({ category: 'Signature Rejected' });
-      expect(lastMockCall[1]).toEqual({
-        account_type: 'Metamask',
-        dapp_host_name: 'N/A',
-        chain_id: '1',
-        signature_type: undefined,
-        version: 'N/A',
-        security_alert_response: 'Benign',
-        security_alert_source: undefined,
-        security_alert_reason: '',
-        ppom_eth_chainId_count: 1,
-      });
     });
 
-    it('tracks event for approved requests', async () => {
-      const container = renderWithProvider(
-        <TypedSign
-          currentPageInformation={{
-            title: 'title',
-            url: 'http://localhost:8545',
-          }}
-          messageParams={{ ...messageParamsMock }}
-          onConfirm={mockConfirm}
-          onReject={mockReject}
-        />,
-        { state: initialState },
-      );
+    it.each([
+      [false, 'rejects', SigningBottomSheetSelectorsIDs.CANCEL_BUTTON],
+      [true, 'signs', SigningBottomSheetSelectorsIDs.SIGN_BUTTON],
+    ])(
+      'is called with confirmation=%s when user %s',
+      async (confirmation, _action, buttonTestId) => {
+        const messageParams = {
+          ...messageParamsMock,
+          data: [messageParamsMock.data],
+          version: 'V1',
+        };
+        const container = renderWithProvider(
+          <TypedSign
+            currentPageInformation={{
+              title: 'title',
+              url: 'http://localhost:8545',
+            }}
+            messageParams={messageParams}
+            onConfirm={mockConfirm}
+            onReject={mockReject}
+          />,
+          { state: initialState },
+        );
 
-      const signButton = await container.findByTestId(
-        SigningBottomSheetSelectorsIDs.SIGN_BUTTON,
-      );
-      fireEvent.press(signButton);
-      const signedMocks = mockMetrics.trackEvent.mock.calls.filter(
-        (call) => call[0].category === 'Signature Approved',
-      );
+        fireEvent.press(await container.findByTestId(buttonTestId));
 
-      const mockCallsLength = signedMocks.length;
-
-      const lastMockCall = signedMocks[mockCallsLength - 1];
-
-      expect(lastMockCall[0]).toEqual({ category: 'Signature Approved' });
-      expect(lastMockCall[1]).toEqual({
-        account_type: 'Metamask',
-        dapp_host_name: 'N/A',
-        chain_id: '1',
-        version: 'N/A',
-        signature_type: undefined,
-        security_alert_response: 'Benign',
-        security_alert_source: undefined,
-        security_alert_reason: '',
-        ppom_eth_chainId_count: 1,
-      });
-    });
+        await waitFor(() => {
+          expect(handleSignatureActionMock).toHaveBeenCalledTimes(1);
+        });
+        expect(handleSignatureActionMock).toHaveBeenCalledWith(
+          confirmation ? mockConfirm : mockReject,
+          messageParams,
+          typedSign.V1,
+          initialState.signatureRequest.securityAlertResponse,
+          confirmation,
+        );
+        expect(confirmation ? mockConfirm : mockReject).toHaveBeenCalledTimes(
+          1,
+        );
+      },
+    );
   });
 });
