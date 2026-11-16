@@ -6,6 +6,7 @@ import { merge, cloneDeep } from 'lodash';
 import { isHardwareAccount } from '../../../../util/address';
 import { renderHookWithProvider } from '../../../../util/test/renderWithProvider';
 import {
+  generateContractInteractionState,
   personalSignatureConfirmationState,
   stakingDepositConfirmationState,
   transferConfirmationState,
@@ -19,6 +20,28 @@ const disabledFeatureFlags = {
   contract_interaction: false,
   transfer: false,
 };
+
+const enabledFeatureFlags = {
+  signatures: true,
+  staking_confirmations: true,
+  contract_interaction: true,
+  transfer: true,
+};
+
+function withTransactionType<
+  T extends {
+    engine: {
+      backgroundState: {
+        TransactionController: { transactions: { type?: TransactionType }[] };
+      };
+    };
+  },
+>(state: T, type: TransactionType): T {
+  const clonedState = cloneDeep(state);
+  clonedState.engine.backgroundState.TransactionController.transactions[0].type =
+    type;
+  return clonedState;
+}
 
 jest.mock('../../../../util/address', () => ({
   ...jest.requireActual('../../../../util/address'),
@@ -223,7 +246,152 @@ describe('useConfirmationRedesignEnabled', () => {
       });
     });
 
+    describe('contract interaction confirmations', () => {
+      beforeEach(() => {
+        jest.clearAllMocks();
+        (isHardwareAccount as jest.Mock).mockReturnValue(false);
+      });
+
+      it('returns true when contract_interaction flag is enabled', async () => {
+        confirmationRedesignFlagsMock.mockReturnValue({
+          ...disabledFeatureFlags,
+          contract_interaction: true,
+        });
+
+        const { result } = renderHookWithProvider(
+          useConfirmationRedesignEnabled,
+          {
+            state: generateContractInteractionState,
+          },
+        );
+
+        expect(result.current.isRedesignedEnabled).toBe(true);
+      });
+
+      it('returns false when contract_interaction flag is disabled', async () => {
+        confirmationRedesignFlagsMock.mockReturnValue({
+          ...enabledFeatureFlags,
+          contract_interaction: false,
+        });
+
+        const { result } = renderHookWithProvider(
+          useConfirmationRedesignEnabled,
+          {
+            state: generateContractInteractionState,
+          },
+        );
+
+        expect(result.current.isRedesignedEnabled).toBe(false);
+      });
+
+      it('returns false when from address is hardware account', async () => {
+        confirmationRedesignFlagsMock.mockReturnValue(enabledFeatureFlags);
+        (isHardwareAccount as jest.Mock).mockReturnValue(true);
+
+        const { result } = renderHookWithProvider(
+          useConfirmationRedesignEnabled,
+          {
+            state: generateContractInteractionState,
+          },
+        );
+
+        expect(result.current.isRedesignedEnabled).toBe(false);
+      });
+    });
+
+    describe('unsupported transaction types', () => {
+      beforeEach(() => {
+        jest.clearAllMocks();
+        (isHardwareAccount as jest.Mock).mockReturnValue(false);
+      });
+
+      it.each([
+        TransactionType.swap,
+        TransactionType.bridge,
+        TransactionType.tokenMethodApprove,
+      ])(
+        'returns false for %s even when all flags are enabled',
+        async (type) => {
+          confirmationRedesignFlagsMock.mockReturnValue(enabledFeatureFlags);
+
+          const { result } = renderHookWithProvider(
+            useConfirmationRedesignEnabled,
+            {
+              state: withTransactionType(
+                generateContractInteractionState,
+                type,
+              ),
+            },
+          );
+
+          expect(result.current.isRedesignedEnabled).toBe(false);
+        },
+      );
+    });
+
     describe('transfer confirmations', () => {
+      beforeEach(() => {
+        jest.clearAllMocks();
+        (isHardwareAccount as jest.Mock).mockReturnValue(false);
+      });
+
+      it.each([
+        TransactionType.simpleSend,
+        TransactionType.tokenMethodTransfer,
+        TransactionType.tokenMethodTransferFrom,
+      ])('returns true for %s when transfer flag is enabled', async (type) => {
+        confirmationRedesignFlagsMock.mockReturnValue({
+          ...disabledFeatureFlags,
+          transfer: true,
+        });
+
+        const { result } = renderHookWithProvider(
+          useConfirmationRedesignEnabled,
+          {
+            state: withTransactionType(transferConfirmationState, type),
+          },
+        );
+
+        expect(result.current.isRedesignedEnabled).toBe(true);
+      });
+
+      it.each([
+        TransactionType.simpleSend,
+        TransactionType.tokenMethodTransfer,
+        TransactionType.tokenMethodTransferFrom,
+      ])(
+        'returns false for %s when transfer flag is disabled',
+        async (type) => {
+          confirmationRedesignFlagsMock.mockReturnValue({
+            ...enabledFeatureFlags,
+            transfer: false,
+          });
+
+          const { result } = renderHookWithProvider(
+            useConfirmationRedesignEnabled,
+            {
+              state: withTransactionType(transferConfirmationState, type),
+            },
+          );
+
+          expect(result.current.isRedesignedEnabled).toBe(false);
+        },
+      );
+
+      it('returns false when from address is hardware account', async () => {
+        confirmationRedesignFlagsMock.mockReturnValue(enabledFeatureFlags);
+        (isHardwareAccount as jest.Mock).mockReturnValue(true);
+
+        const { result } = renderHookWithProvider(
+          useConfirmationRedesignEnabled,
+          {
+            state: transferConfirmationState,
+          },
+        );
+
+        expect(result.current.isRedesignedEnabled).toBe(false);
+      });
+
       it('returns true when flag is enabled', async () => {
         confirmationRedesignFlagsMock.mockReturnValue({
           ...disabledFeatureFlags,
