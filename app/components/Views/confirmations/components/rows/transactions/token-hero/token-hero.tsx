@@ -100,10 +100,12 @@ const TokenHero = ({ amountWei }: { amountWei?: string }) => {
           displayTokenAmountIsRounded ? setIsModalVisible : null
         }
       />
-      <AssetFiatConversion
-        fiatDisplayValue={fiatDisplayValue}
-        styles={styles}
-      />
+      {fiatDisplayValue && (
+        <AssetFiatConversion
+          fiatDisplayValue={fiatDisplayValue}
+          styles={styles}
+        />
+      )}
       {displayTokenAmountIsRounded && (
         <TooltipModal
           open={isModalVisible}

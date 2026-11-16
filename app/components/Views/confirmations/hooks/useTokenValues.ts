@@ -12,7 +12,6 @@ import { RootState } from '../../../../reducers';
 
 // TODO: This hook will be extended to calculate token and fiat information from transaction metadata on upcoming redesigned confirmations
 export const useTokenValues = ({ amountWei }: { amountWei?: string } = {}) => {
-
   const transactionMetadata = useTransactionMetadataRequest();
 
   let ethAmountInWei;
@@ -33,9 +32,9 @@ export const useTokenValues = ({ amountWei }: { amountWei?: string } = {}) => {
   const nativeConversionRate = useSelector((state: RootState) =>
     selectConversionRateByChainId(state, transactionMetadata?.chainId as Hex),
   );
-  const nativeConversionRateInBN = new BigNumber(nativeConversionRate || 1);
-  const preciseFiatValue = ethAmountInBN.times(nativeConversionRateInBN);
-  const fiatDisplayValue = preciseFiatValue && fiatFormatter(preciseFiatValue);
+  const fiatDisplayValue = nativeConversionRate
+    ? fiatFormatter(ethAmountInBN.times(new BigNumber(nativeConversionRate)))
+    : undefined;
 
   return {
     tokenAmountValue,
