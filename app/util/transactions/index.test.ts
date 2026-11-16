@@ -23,6 +23,11 @@ import {
   TOKEN_METHOD_TRANSFER_FROM,
   calculateEIP1559Times,
   parseTransactionLegacy,
+  parseTransactionEIP1559,
+  calculateEIP1559GasFeeHexes,
+  calculateAmountsEIP1559,
+  calculateEthEIP1559,
+  calculateERC20EIP1559,
   getIsNativeTokenTransferred,
   getIsSwapApproveOrSwapTransaction,
   getIsSwapApproveTransaction,
@@ -356,6 +361,460 @@ describe('Transactions utils :: parseTransactionLegacy', () => {
     });
 
     expect(parsedTransactionLegacy).toEqual(expectedResult);
+  });
+});
+
+// The EIP-1559 helpers live in untyped JS, so TS infers overly narrow
+// signatures from their default parameters.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type UntypedFn = (...args: any[]) => any;
+const parseEIP1559 = parseTransactionEIP1559 as UntypedFn;
+const calcGasFeeHexes = calculateEIP1559GasFeeHexes as UntypedFn;
+const calcAmounts = calculateAmountsEIP1559 as UntypedFn;
+const calcEth = calculateEthEIP1559 as UntypedFn;
+const calcERC20 = calculateERC20EIP1559 as UntypedFn;
+
+const hexToDec = (hex: string) =>
+  new BN(hex.replace(/^0x/, ''), 16).toString(10);
+
+describe('Transactions utils :: parseTransactionEIP1559', () => {
+  // 10 gwei base fee, 2 gwei priority fee, 30 gwei max fee, 21000 gas limit.
+  // base + priority = 12 gwei; min fee = 12 gwei * 21000 = 252000 gwei.
+  // max fee = 30 gwei * 21000 = 630000 gwei; priority * limit = 42000 gwei.
+  const ONE_ETH_HEX = '0xde0b6b3a7640000';
+  const ONE_ETH_WEI = '1000000000000000000';
+  const TOKEN_ADDRESS = '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984';
+  // transfer(0x56ced0d8..., 10 * 10^18)
+  const ERC20_TRANSFER_DATA =
+    '0xa9059cbb00000000000000000000000056ced0d816c668d7c0bcc3fbf0ab2c6896f589a00000000000000000000000000000000000000000000000008ac7230489e80000';
+
+  const createSelectedGasFee = (overrides = {}) => ({
+    suggestedMaxPriorityFeePerGas: '2',
+    suggestedMaxFeePerGas: '30',
+    estimatedBaseFee: '10',
+    suggestedGasLimit: '21000',
+    ...overrides,
+  });
+
+  // TODO: Replace "any" with type
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const createTransactionState = (selectedAsset: any, transaction: any) => ({
+    selectedAsset,
+    transaction: {
+      value: ONE_ETH_HEX,
+      data: undefined,
+      ...transaction,
+    },
+  });
+
+  const commonParams = {
+    contractExchangeRates: {},
+    conversionRate: 2000,
+    currentCurrency: 'usd',
+    nativeCurrency: 'ETH',
+    gasFeeEstimates: {},
+  };
+
+  const ETH_ASSET = { isETH: true, symbol: 'ETH', decimals: 18 };
+
+  it('computes fee hexes, totals and renderable strings for an ETH transfer', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee(),
+      transactionState: createTransactionState(ETH_ASSET, {}),
+    });
+
+    expect(hexToDec(result.estimatedBaseFeeHex)).toBe('10000000000');
+    expect(hexToDec(result.suggestedMaxPriorityFeePerGasHex)).toBe(
+      '2000000000',
+    );
+    expect(hexToDec(result.suggestedMaxFeePerGasHex)).toBe('30000000000');
+    expect(hexToDec(result.gasLimitHex)).toBe('21000');
+
+    // The full shape exposes the min fee only through totalMinHex
+    expect(result).not.toHaveProperty('gasFeeMinHex');
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('630000000000000');
+    expect(hexToDec(result.totalMinHex)).toBe('1000252000000000000');
+    expect(hexToDec(result.totalMaxHex)).toBe('1000630000000000000');
+
+    expect(result).toEqual(
+      expect.objectContaining({
+        gasFeeMinNative: '0.000252',
+        gasFeeMinConversion: '0.5',
+        gasFeeMaxNative: '0.00063',
+        gasFeeMaxConversion: '1.26',
+        maxPriorityFeeNative: '0.000042',
+        maxPriorityFeeConversion: '0.08',
+        renderableGasFeeMinNative: '0.000252 ETH',
+        renderableGasFeeMinConversion: '$0.50',
+        renderableGasFeeMaxNative: '0.00063 ETH',
+        renderableGasFeeMaxConversion: '$1.26',
+        renderableMaxPriorityFeeNative: '0.000042 ETH',
+        renderableMaxPriorityFeeConversion: '$0.08',
+        renderableMaxFeePerGasNative: '0.00063 ETH',
+        renderableMaxFeePerGasConversion: '$1.26',
+        totalMinNative: '1.000252',
+        totalMinConversion: '2000.5',
+        totalMaxNative: '1.00063',
+        totalMaxConversion: '2001.26',
+        renderableTotalMinNative: '1.000252 ETH',
+        renderableTotalMinConversion: '$2,000.50',
+        renderableTotalMaxNative: '1.00063 ETH',
+        renderableTotalMaxConversion: '$2,001.26',
+        estimatedBaseFee: '10',
+        suggestedMaxPriorityFeePerGas: '2',
+        suggestedMaxFeePerGas: '30',
+        suggestedGasLimit: '21000',
+      }),
+    );
+  });
+
+  it('uses the estimated gas limit for the min fee only when it is present', () => {
+    const withEstimate = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee({
+        suggestedEstimatedGasLimit: '20000',
+      }),
+      transactionState: createTransactionState(ETH_ASSET, {}),
+    });
+    // value + 12 gwei * 20000
+    expect(hexToDec(withEstimate.totalMinHex)).toBe('1000240000000000000');
+    expect(withEstimate.gasFeeMinNative).toBe('0.00024');
+    // max fee still uses the suggested gas limit: 30 gwei * 21000
+    expect(hexToDec(withEstimate.gasFeeMaxHex)).toBe('630000000000000');
+    expect(hexToDec(withEstimate.gasLimitHex)).toBe('21000');
+
+    const withoutEstimate = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee(),
+      transactionState: createTransactionState(ETH_ASSET, {}),
+    });
+    // value + 12 gwei * 21000
+    expect(hexToDec(withoutEstimate.totalMinHex)).toBe('1000252000000000000');
+    expect(withoutEstimate.gasFeeMinNative).toBe('0.000252');
+  });
+
+  it('treats a missing estimated base fee as zero', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee({ estimatedBaseFee: undefined }),
+      transactionState: createTransactionState(ETH_ASSET, {}),
+    });
+    expect(result.estimatedBaseFee).toBe('0');
+    // value + 2 gwei * 21000
+    expect(hexToDec(result.totalMinHex)).toBe('1000042000000000000');
+  });
+
+  it('returns only gas fields with totalMaxHex = gasFeeMax + value when onlyGas is true', () => {
+    const result = parseEIP1559(
+      {
+        ...commonParams,
+        selectedGasFee: createSelectedGasFee(),
+        transactionState: createTransactionState(ETH_ASSET, {}),
+      },
+      { onlyGas: true },
+    );
+
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('630000000000000');
+    expect(hexToDec(result.totalMaxHex)).toBe('1000630000000000000');
+    expect(result.renderableGasFeeMaxNative).toBe('0.00063 ETH');
+    expect(result.suggestedEstimatedGasLimit).toBeUndefined();
+    expect(result).not.toHaveProperty('totalMinHex');
+    expect(result).not.toHaveProperty('totalMinNative');
+    expect(result).not.toHaveProperty('renderableTotalMaxNative');
+    expect(result).not.toHaveProperty('gasFeeMinHex');
+  });
+
+  it('defaults value to 0x0 when the transaction has no value', () => {
+    const result = parseEIP1559(
+      {
+        ...commonParams,
+        selectedGasFee: createSelectedGasFee(),
+        transactionState: createTransactionState(ETH_ASSET, {
+          value: undefined,
+        }),
+      },
+      { onlyGas: true },
+    );
+    expect(hexToDec(result.totalMaxHex)).toBe('630000000000000');
+  });
+
+  it('adds tradeValue and subtracts the decimal sourceAmount for native-asset swaps', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee(),
+      swapsParams: {
+        tradeValue: ONE_ETH_HEX,
+        isNativeAsset: true,
+        sourceAmount: ONE_ETH_WEI,
+      },
+      transactionState: createTransactionState(ETH_ASSET, { value: '0x0' }),
+    });
+
+    // tradeValue (1 ETH, hex) - sourceAmount (1 ETH, decimal) cancel out
+    expect(hexToDec(result.totalMinHex)).toBe('252000000000000');
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('630000000000000');
+    expect(hexToDec(result.totalMaxHex)).toBe('630000000000000');
+  });
+
+  it('subtracts a native sourceAmount smaller than tradeValue in base 10', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee(),
+      swapsParams: {
+        // 1.01 ETH sent, of which 1 ETH is the swapped amount (0.01 ETH fee)
+        tradeValue: '0xe043da617250000',
+        isNativeAsset: true,
+        sourceAmount: ONE_ETH_WEI,
+      },
+      transactionState: createTransactionState(ETH_ASSET, { value: '0x0' }),
+    });
+
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('10630000000000000');
+    expect(hexToDec(result.totalMinHex)).toBe('10252000000000000');
+  });
+
+  it('adds tradeValue without subtracting sourceAmount for non-native swaps', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee(),
+      swapsParams: {
+        tradeValue: ONE_ETH_HEX,
+        isNativeAsset: false,
+        sourceAmount: '5000000',
+      },
+      transactionState: createTransactionState(ETH_ASSET, { value: '0x0' }),
+    });
+
+    expect(hexToDec(result.totalMinHex)).toBe('1000252000000000000');
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('1000630000000000000');
+  });
+
+  it('includes the ERC20 token amount in the totals using the contract exchange rate', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      contractExchangeRates: { [TOKEN_ADDRESS]: { price: 0.5 } },
+      selectedGasFee: createSelectedGasFee(),
+      transactionState: createTransactionState(
+        { address: TOKEN_ADDRESS, symbol: 'UNI', decimals: 18 },
+        { value: '0x0', data: ERC20_TRANSFER_DATA },
+      ),
+    });
+
+    expect(hexToDec(result.totalMaxHex)).toBe('630000000000000');
+    expect(result.totalMaxNative).toBe('0.00063');
+    // 10 UNI * 0.5 ETH/UNI * 2000 USD/ETH = 10000 USD, plus gas
+    expect(result.renderableTotalMinNative).toBe('10 UNI + 0.000252 ETH');
+    expect(result.renderableTotalMaxNative).toBe('10 UNI + 0.00063 ETH');
+    expect(result.renderableTotalMinConversion).toBe('$10,000.50');
+    expect(result.renderableTotalMaxConversion).toBe('$10,001.26');
+  });
+
+  it('excludes the token amount from the fiat total when the exchange rate is missing', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      contractExchangeRates: {},
+      selectedGasFee: createSelectedGasFee(),
+      transactionState: createTransactionState(
+        { address: TOKEN_ADDRESS, decimals: 18 },
+        { value: '0x0', data: ERC20_TRANSFER_DATA },
+      ),
+    });
+
+    expect(result.renderableTotalMaxNative).toBe('10 ERC20 + 0.00063 ETH');
+    expect(result.renderableTotalMinConversion).toBe('$0.50');
+    expect(result.renderableTotalMaxConversion).toBe('$1.26');
+  });
+
+  it('renders the NFT (tokenId) total like a native transfer', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee(),
+      transactionState: createTransactionState(
+        { address: TOKEN_ADDRESS, symbol: 'NFT', tokenId: '1' },
+        { value: '0x0', data: ERC20_TRANSFER_DATA },
+      ),
+    });
+
+    expect(result.renderableTotalMaxNative).toBe('0.00063 ETH');
+    expect(result.renderableTotalMaxConversion).toBe('$1.26');
+  });
+
+  it('handles zero fees', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee({
+        suggestedMaxPriorityFeePerGas: '0',
+        suggestedMaxFeePerGas: '0',
+        estimatedBaseFee: '0',
+      }),
+      transactionState: createTransactionState(ETH_ASSET, { value: '0x0' }),
+    });
+
+    expect(hexToDec(result.totalMinHex)).toBe('0');
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('0');
+    expect(hexToDec(result.totalMaxHex)).toBe('0');
+    expect(result.renderableGasFeeMaxNative).toBe('0 ETH');
+    expect(result.renderableGasFeeMaxConversion).toBe('$0.00');
+    expect(result.renderableGasFeeMinNative).toBe('0 ETH');
+    expect(result.renderableMaxPriorityFeeNative).toBe('0 ETH');
+    expect(result.renderableMaxFeePerGasNative).toBe('0 ETH');
+    expect(result.renderableTotalMaxNative).toBe('0 ETH');
+  });
+
+  it('renders a non-zero fee that rounds to 0 as "< 0.000001"', () => {
+    const result = parseEIP1559({
+      ...commonParams,
+      selectedGasFee: createSelectedGasFee({
+        // 10000 wei per gas * 21000 = 2.1e-10 ETH
+        suggestedMaxPriorityFeePerGas: '0.00001',
+        suggestedMaxFeePerGas: '0.00001',
+        estimatedBaseFee: '0',
+      }),
+      transactionState: createTransactionState(ETH_ASSET, { value: '0x0' }),
+    });
+
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('210000000');
+    expect(result.gasFeeMaxNative).toBe('0');
+    expect(result.renderableGasFeeMaxNative).toBe('< 0.000001 ETH');
+    expect(result.renderableGasFeeMinNative).toBe('< 0.000001 ETH');
+  });
+});
+
+describe('Transactions utils :: calculateEIP1559GasFeeHexes', () => {
+  const params = {
+    gasLimitHex: '0x5208', // 21000
+    estimatedBaseFeeHex: '0x2540be400', // 10 gwei
+    suggestedMaxPriorityFeePerGasHex: '0x77359400', // 2 gwei
+    suggestedMaxFeePerGasHex: '0x6fc23ac00', // 30 gwei
+  };
+
+  it('computes min/max fee hexes from the gas limit when no estimate is given', () => {
+    const result = calcGasFeeHexes(params);
+
+    expect(
+      hexToDec(result.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex),
+    ).toBe('12000000000');
+    expect(hexToDec(result.maxPriorityFeePerGasTimesGasLimitHex)).toBe(
+      '42000000000000',
+    );
+    expect(hexToDec(result.gasFeeMinHex)).toBe('252000000000000');
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('630000000000000');
+  });
+
+  it('uses the estimated gas limit for the min fee only', () => {
+    const result = calcGasFeeHexes({
+      ...params,
+      estimatedGasLimitHex: '0x4e20', // 20000
+    });
+
+    expect(hexToDec(result.gasFeeMinHex)).toBe('240000000000000');
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('630000000000000');
+    expect(hexToDec(result.maxPriorityFeePerGasTimesGasLimitHex)).toBe(
+      '42000000000000',
+    );
+  });
+
+  it('returns zero for zero fees', () => {
+    const result = calcGasFeeHexes({
+      gasLimitHex: '0x5208',
+      estimatedBaseFeeHex: '0x0',
+      suggestedMaxPriorityFeePerGasHex: '0x0',
+      suggestedMaxFeePerGasHex: '0x0',
+    });
+
+    expect(hexToDec(result.gasFeeMinHex)).toBe('0');
+    expect(hexToDec(result.gasFeeMaxHex)).toBe('0');
+  });
+});
+
+describe('Transactions utils :: calculateAmountsEIP1559', () => {
+  it('adds the value to the gas fees in native, fiat and hex', () => {
+    const result = calcAmounts({
+      value: '0xde0b6b3a7640000', // 1 ETH
+      nativeCurrency: 'ETH',
+      currentCurrency: 'usd',
+      conversionRate: 2000,
+      gasFeeMinNative: '0.000252',
+      gasFeeMinConversion: '0.5',
+      gasFeeMaxNative: '0.00063',
+      gasFeeMaxConversion: '1.26',
+      gasFeeMinHex: 'e531527bc000', // 252000 gwei
+      gasFeeMaxHex: '23cfb4e356000', // 630000 gwei
+    });
+
+    expect(result.totalMinNative).toBe('1.000252');
+    expect(result.totalMaxNative).toBe('1.00063');
+    expect(result.totalMinConversion).toBe('2000.5');
+    expect(result.totalMaxConversion).toBe('2001.26');
+    expect(hexToDec(result.totalMinHex)).toBe('1000252000000000000');
+    expect(hexToDec(result.totalMaxHex)).toBe('1000630000000000000');
+  });
+
+  it('returns only the gas fees when the value is zero', () => {
+    const result = calcAmounts({
+      value: '0x0',
+      nativeCurrency: 'ETH',
+      currentCurrency: 'usd',
+      conversionRate: 2000,
+      gasFeeMinNative: '0.000252',
+      gasFeeMinConversion: '0.5',
+      gasFeeMaxNative: '0.00063',
+      gasFeeMaxConversion: '1.26',
+      gasFeeMinHex: 'e531527bc000',
+      gasFeeMaxHex: '23cfb4e356000',
+    });
+
+    expect(result.totalMaxNative).toBe('0.00063');
+    expect(result.totalMaxConversion).toBe('1.26');
+    expect(hexToDec(result.totalMaxHex)).toBe('630000000000000');
+  });
+});
+
+describe('Transactions utils :: calculateEthEIP1559', () => {
+  it('formats native and fiat totals', () => {
+    expect(
+      calcEth({
+        nativeCurrency: 'ETH',
+        currentCurrency: 'usd',
+        totalMinNative: '1.000252',
+        totalMinConversion: '2000.5',
+        totalMaxNative: '1.00063',
+        totalMaxConversion: '2001.26',
+      }),
+    ).toEqual(['1.000252 ETH', '$2,000.50', '1.00063 ETH', '$2,001.26']);
+  });
+});
+
+describe('Transactions utils :: calculateERC20EIP1559', () => {
+  const params = {
+    currentCurrency: 'usd',
+    nativeCurrency: 'ETH',
+    conversionRate: 2000,
+    tokenAmount: '10',
+    totalMinConversion: '0.5',
+    totalMaxConversion: '1.26',
+    symbol: 'UNI',
+    totalMinNative: '0.000252',
+    totalMaxNative: '0.00063',
+  };
+
+  it('adds the token fiat value to the gas fiat totals', () => {
+    expect(calcERC20({ ...params, exchangeRate: 0.5 })).toEqual([
+      '10 UNI + 0.000252 ETH',
+      '$10,000.50',
+      '10 UNI + 0.00063 ETH',
+      '$10,001.26',
+    ]);
+  });
+
+  it('only counts gas in the fiat totals when the exchange rate is missing', () => {
+    expect(calcERC20({ ...params, exchangeRate: undefined })).toEqual([
+      '10 UNI + 0.000252 ETH',
+      '$0.50',
+      '10 UNI + 0.00063 ETH',
+      '$1.26',
+    ]);
   });
 });
 
@@ -1214,7 +1673,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1222,7 +1681,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx2', mockTransactionController);
-    
+
     expect(result).toEqual(mockTransactions[1]);
   });
 
@@ -1232,7 +1691,7 @@ describe('Transactions utils :: getTransactionById', () => {
       { id: 'tx2', value: '0x2' },
       { id: 'tx3', value: '0x3' },
     ];
-    
+
     const mockTransactionController = {
       state: {
         transactions: mockTransactions,
@@ -1240,7 +1699,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('nonexistent', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 
@@ -1252,7 +1711,7 @@ describe('Transactions utils :: getTransactionById', () => {
     };
 
     const result = getTransactionById('tx1', mockTransactionController);
-    
+
     expect(result).toBeUndefined();
   });
 });

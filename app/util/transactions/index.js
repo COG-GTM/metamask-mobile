@@ -1086,7 +1086,7 @@ export const parseTransactionEIP1559 = (
     maxPriorityFeeNative,
     nativeCurrency,
     Boolean(maxPriorityFeePerGasTimesGasLimitHex) &&
-      maxPriorityFeePerGasTimesGasLimitHex !== '0x0',
+      !hexToBN(maxPriorityFeePerGasTimesGasLimitHex).isZero(),
   );
   const renderableMaxPriorityFeeConversion = formatCurrency(
     maxPriorityFeeConversion,
@@ -1110,7 +1110,7 @@ export const parseTransactionEIP1559 = (
   const renderableMaxFeePerGasNative = formatETHFee(
     maxFeePerGasNative,
     nativeCurrency,
-    Boolean(gasFeeMaxHex) && gasFeeMaxHex !== '0x0',
+    Boolean(gasFeeMaxHex) && !hexToBN(gasFeeMaxHex).isZero(),
   );
   const renderableMaxFeePerGasConversion = formatCurrency(
     maxFeePerGasConversion,
@@ -1152,7 +1152,7 @@ export const parseTransactionEIP1559 = (
   const renderableGasFeeMinNative = formatETHFee(
     gasFeeMinNative,
     nativeCurrency,
-    Boolean(gasFeeMinHex) && gasFeeMinHex !== '0x0',
+    Boolean(gasFeeMinHex) && !hexToBN(gasFeeMinHex).isZero(),
   );
   const renderableGasFeeMinConversion = formatCurrency(
     gasFeeMinConversion,
@@ -1161,7 +1161,7 @@ export const parseTransactionEIP1559 = (
   const renderableGasFeeMaxNative = formatETHFee(
     gasFeeMaxNative,
     nativeCurrency,
-    Boolean(gasFeeMaxHex) && gasFeeMaxHex !== '0x0',
+    Boolean(gasFeeMaxHex) && !hexToBN(gasFeeMaxHex).isZero(),
   );
   const renderableGasFeeMaxConversion = formatCurrency(
     gasFeeMaxConversion,
