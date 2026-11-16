@@ -18,6 +18,7 @@ import {
   toFormattedAddress,
   isHDOrFirstPartySnapAccount,
   renderAccountName,
+  validateAddressOrENS,
 } from '.';
 import {
   mockHDKeyringAddress,
@@ -32,6 +33,16 @@ import {
   MOCK_SOLANA_ACCOUNT,
 } from '../test/accountsControllerTestUtils';
 import { KeyringTypes } from '@metamask/keyring-controller';
+import type { InternalAccount } from '@metamask/keyring-internal-api';
+import type { AddressBookControllerState } from '@metamask/address-book-controller';
+import type { Hex } from '@metamask/utils';
+import Engine from '../../core/Engine';
+import {
+  doENSLookup as mockedDoENSLookup,
+  doENSReverseLookup as mockedDoENSReverseLookup,
+} from '../../util/ENSUtils';
+import { CONTACT_ALREADY_SAVED, SYMBOL_ERROR } from '../../constants/error';
+import { strings } from '../../../locales/i18n';
 
 jest.mock('../../store', () => ({
   store: {
@@ -68,6 +79,9 @@ jest.mock('../../core/Engine', () => {
         ...MOCK_ACCOUNTS_CONTROLLER_STATE_WITH_KEYRING_TYPES,
         state: MOCK_ACCOUNTS_CONTROLLER_STATE_WITH_KEYRING_TYPES,
       },
+      AssetsContractController: {
+        getERC721AssetSymbol: jest.fn(),
+      },
     },
   };
 });
@@ -81,6 +95,8 @@ jest.mock('../../selectors/networkController', () => ({
 jest.mock('../../util/ENSUtils', () => ({
   getCachedENSName: jest.fn().mockReturnValue(''),
   isDefaultAccountName: jest.fn().mockReturnValue(false),
+  doENSLookup: jest.fn(),
+  doENSReverseLookup: jest.fn(),
 }));
 
 describe('isENS', () => {
@@ -597,5 +613,371 @@ describe('isHDOrFirstPartySnapAccount', () => {
         },
       }),
     ).toBe(false);
+  });
+});
+
+describe('validateAddressOrENS', () => {
+  const MAINNET: Hex = '0x1';
+  const SEPOLIA: Hex = '0xaa36a7';
+  const checksummedAddress = '0x87187657b35F461D0Ceec338d9b8E944a193aFE2';
+  const lowerCaseAddress = checksummedAddress.toLowerCase();
+  const badChecksumAddress = '0x87187657B35f461D0Ceec338d9b8E944a193aFE2';
+  const ensName = 'test.eth';
+
+  const mockDoENSLookup = mockedDoENSLookup as jest.Mock;
+  const mockDoENSReverseLookup = mockedDoENSReverseLookup as jest.Mock;
+  const mockGetERC721AssetSymbol = Engine.context.AssetsContractController
+    .getERC721AssetSymbol as jest.Mock;
+
+  const addressBookWith = (
+    chainId: Hex,
+    address: string,
+  ): AddressBookControllerState['addressBook'] => ({
+    [chainId]: {
+      [address]: {
+        address,
+        chainId,
+        isEns: false,
+        memo: '',
+        name: 'Saved contact',
+      },
+    },
+  });
+
+  const internalAccountWith = (address: string) =>
+    ({ address } as unknown as InternalAccount);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockDoENSLookup.mockResolvedValue(undefined);
+    mockDoENSReverseLookup.mockResolvedValue(undefined);
+    mockGetERC721AssetSymbol.mockResolvedValue(undefined);
+  });
+
+  describe('with a hex address', () => {
+    it('marks an unsaved address as ready and addable to the address book', async () => {
+      const result = await validateAddressOrENS(
+        checksummedAddress,
+        {},
+        [],
+        SEPOLIA,
+      );
+
+      expect(result).toEqual({
+        addressError: undefined,
+        toEnsName: undefined,
+        addressReady: true,
+        toEnsAddress: undefined,
+        addToAddressToAddressBook: true,
+        toAddressName: checksummedAddress,
+        errorContinue: undefined,
+        confusableCollection: undefined,
+      });
+      expect(mockDoENSReverseLookup).toHaveBeenCalledWith(checksummedAddress);
+    });
+
+    it('accepts an all lower case address and reverse-looks it up checksummed', async () => {
+      const result = await validateAddressOrENS(
+        lowerCaseAddress,
+        {},
+        [],
+        SEPOLIA,
+      );
+
+      expect(result.addressReady).toBe(true);
+      expect(result.addressError).toBeUndefined();
+      expect(result.toAddressName).toBe(lowerCaseAddress);
+      expect(mockDoENSReverseLookup).toHaveBeenCalledWith(checksummedAddress);
+    });
+
+    it.each([
+      ['checksummed', checksummedAddress],
+      ['lower case', lowerCaseAddress],
+    ])(
+      'flags a %s address already in the address book for the chain',
+      async (_label, input) => {
+        const result = await validateAddressOrENS(
+          input,
+          addressBookWith(SEPOLIA, checksummedAddress),
+          [],
+          SEPOLIA,
+        );
+
+        expect(result.addressError).toBe(CONTACT_ALREADY_SAVED);
+        expect(result.addressReady).toBe(true);
+        expect(result.addToAddressToAddressBook).toBe(false);
+        expect(result.toAddressName).toBeUndefined();
+      },
+    );
+
+    it('does not flag an address saved only on a different chain', async () => {
+      const result = await validateAddressOrENS(
+        checksummedAddress,
+        addressBookWith(MAINNET, checksummedAddress),
+        [],
+        SEPOLIA,
+      );
+
+      expect(result.addressError).toBeUndefined();
+      expect(result.addToAddressToAddressBook).toBe(true);
+    });
+
+    it('flags an address that matches an internal account, ignoring case', async () => {
+      const result = await validateAddressOrENS(
+        checksummedAddress,
+        {},
+        [internalAccountWith(lowerCaseAddress)],
+        SEPOLIA,
+      );
+
+      expect(result.addressError).toBe(CONTACT_ALREADY_SAVED);
+      expect(result.addressReady).toBe(true);
+      expect(result.addToAddressToAddressBook).toBe(false);
+    });
+
+    it('uses the ENS reverse lookup name for an unsaved address', async () => {
+      mockDoENSReverseLookup.mockResolvedValue('reverse.eth');
+
+      const result = await validateAddressOrENS(
+        checksummedAddress,
+        {},
+        [],
+        SEPOLIA,
+      );
+
+      expect(result.toAddressName).toBe('reverse.eth');
+      expect(result.addToAddressToAddressBook).toBe(true);
+      expect(result.addressError).toBeUndefined();
+    });
+
+    it('uses the ENS reverse lookup name without re-adding a saved address', async () => {
+      mockDoENSReverseLookup.mockResolvedValue('reverse.eth');
+
+      const result = await validateAddressOrENS(
+        checksummedAddress,
+        addressBookWith(SEPOLIA, checksummedAddress),
+        [],
+        SEPOLIA,
+      );
+
+      expect(result.toAddressName).toBe('reverse.eth');
+      expect(result.addToAddressToAddressBook).toBe(false);
+      expect(result.addressError).toBe(CONTACT_ALREADY_SAVED);
+    });
+
+    it('rejects a mixed case address with an invalid checksum', async () => {
+      const result = await validateAddressOrENS(
+        badChecksumAddress,
+        {},
+        [],
+        MAINNET,
+      );
+
+      expect(result.addressReady).toBe(false);
+      expect(result.addToAddressToAddressBook).toBe(false);
+      expect(result.addressError).toBe(strings('transaction.invalid_address'));
+      expect(mockDoENSReverseLookup).not.toHaveBeenCalled();
+      expect(mockGetERC721AssetSymbol).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('mainnet token contract check', () => {
+    it('warns with SYMBOL_ERROR and errorContinue when the address is a token contract', async () => {
+      mockGetERC721AssetSymbol.mockResolvedValue('BAYC');
+
+      const result = await validateAddressOrENS(
+        lowerCaseAddress,
+        {},
+        [],
+        MAINNET,
+      );
+
+      expect(mockGetERC721AssetSymbol).toHaveBeenCalledWith(checksummedAddress);
+      expect(result.addressError).toBe(SYMBOL_ERROR);
+      expect(result.errorContinue).toBe(true);
+      expect(result.addressReady).toBe(true);
+    });
+
+    it('overrides CONTACT_ALREADY_SAVED with SYMBOL_ERROR for a saved token contract', async () => {
+      mockGetERC721AssetSymbol.mockResolvedValue('BAYC');
+
+      const result = await validateAddressOrENS(
+        checksummedAddress,
+        addressBookWith(MAINNET, checksummedAddress),
+        [],
+        MAINNET,
+      );
+
+      expect(result.addressError).toBe(SYMBOL_ERROR);
+      expect(result.errorContinue).toBe(true);
+    });
+
+    it('treats the address as a regular account when the symbol lookup throws', async () => {
+      mockGetERC721AssetSymbol.mockRejectedValue(new Error('not a token'));
+
+      const result = await validateAddressOrENS(
+        checksummedAddress,
+        {},
+        [],
+        MAINNET,
+      );
+
+      expect(mockGetERC721AssetSymbol).toHaveBeenCalledTimes(1);
+      expect(result.addressError).toBeUndefined();
+      expect(result.errorContinue).toBeUndefined();
+      expect(result.addressReady).toBe(true);
+      expect(result.addToAddressToAddressBook).toBe(true);
+    });
+
+    it('does not warn when no symbol is returned', async () => {
+      const result = await validateAddressOrENS(
+        checksummedAddress,
+        {},
+        [],
+        MAINNET,
+      );
+
+      expect(mockGetERC721AssetSymbol).toHaveBeenCalledTimes(1);
+      expect(result.addressError).toBeUndefined();
+      expect(result.errorContinue).toBeUndefined();
+    });
+
+    it('skips the token contract check on non-mainnet chains', async () => {
+      mockGetERC721AssetSymbol.mockResolvedValue('BAYC');
+
+      const result = await validateAddressOrENS(
+        checksummedAddress,
+        {},
+        [],
+        SEPOLIA,
+      );
+
+      expect(mockGetERC721AssetSymbol).not.toHaveBeenCalled();
+      expect(result.addressError).toBeUndefined();
+      expect(result.errorContinue).toBeUndefined();
+    });
+  });
+
+  describe('with an ENS name', () => {
+    it('resolves an unsaved ENS name and marks it addable', async () => {
+      mockDoENSLookup.mockResolvedValue(checksummedAddress);
+
+      const result = await validateAddressOrENS(ensName, {}, [], MAINNET);
+
+      expect(mockDoENSLookup).toHaveBeenCalledWith(ensName, MAINNET);
+      expect(result).toEqual({
+        addressError: undefined,
+        toEnsName: ensName,
+        addressReady: true,
+        toEnsAddress: checksummedAddress,
+        addToAddressToAddressBook: true,
+        toAddressName: ensName,
+        errorContinue: undefined,
+        confusableCollection: [],
+      });
+      expect(mockGetERC721AssetSymbol).not.toHaveBeenCalled();
+    });
+
+    it('flags an ENS name that resolves to a saved contact', async () => {
+      mockDoENSLookup.mockResolvedValue(lowerCaseAddress);
+
+      const result = await validateAddressOrENS(
+        ensName,
+        addressBookWith(MAINNET, checksummedAddress),
+        [],
+        MAINNET,
+      );
+
+      expect(result.addressError).toBe(CONTACT_ALREADY_SAVED);
+      expect(result.addToAddressToAddressBook).toBe(false);
+      expect(result.addressReady).toBe(true);
+      expect(result.toEnsAddress).toBe(lowerCaseAddress);
+      expect(result.toAddressName).toBe(ensName);
+    });
+
+    it('flags an ENS name that resolves to an internal account', async () => {
+      mockDoENSLookup.mockResolvedValue(checksummedAddress);
+
+      const result = await validateAddressOrENS(
+        ensName,
+        {},
+        [internalAccountWith(lowerCaseAddress)],
+        MAINNET,
+      );
+
+      expect(result.addressError).toBe(CONTACT_ALREADY_SAVED);
+      expect(result.addToAddressToAddressBook).toBe(false);
+    });
+
+    it('reports an unresolved ENS name as not ready', async () => {
+      const result = await validateAddressOrENS(ensName, {}, [], MAINNET);
+
+      expect(result).toEqual({
+        addressError: strings('transaction.could_not_resolve_ens'),
+        toEnsName: ensName,
+        addressReady: false,
+        toEnsAddress: undefined,
+        addToAddressToAddressBook: false,
+        toAddressName: undefined,
+        errorContinue: undefined,
+        confusableCollection: [],
+      });
+    });
+
+    it('collects confusable characters in the ENS name', async () => {
+      // Cyrillic "а" (U+0430) looks like Latin "a"
+      const confusableName = 's\u0430fe.eth';
+
+      const result = await validateAddressOrENS(
+        confusableName,
+        {},
+        [],
+        MAINNET,
+      );
+
+      expect(result.toEnsName).toBe(confusableName);
+      expect(result.confusableCollection).toEqual(['\u0430']);
+      expect(result.addressError).toBe(
+        strings('transaction.could_not_resolve_ens'),
+      );
+      expect(result.addressReady).toBe(false);
+    });
+  });
+
+  describe('with other input', () => {
+    it('reports invalid_address for a 42+ character string that is not an address', async () => {
+      const result = await validateAddressOrENS(
+        `0x${'z'.repeat(40)}`,
+        {},
+        [],
+        MAINNET,
+      );
+
+      expect(result.addressError).toBe(strings('transaction.invalid_address'));
+      expect(result.addressReady).toBe(false);
+      expect(result.addToAddressToAddressBook).toBe(false);
+      expect(mockDoENSLookup).not.toHaveBeenCalled();
+      expect(mockDoENSReverseLookup).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['a partial address', '0x8718765'],
+      ['an empty string', ''],
+    ])('returns no error for %s', async (_label, input) => {
+      const result = await validateAddressOrENS(input, {}, [], MAINNET);
+
+      expect(result).toEqual({
+        addressError: undefined,
+        toEnsName: undefined,
+        addressReady: false,
+        toEnsAddress: undefined,
+        addToAddressToAddressBook: false,
+        toAddressName: undefined,
+        errorContinue: undefined,
+        confusableCollection: undefined,
+      });
+      expect(mockDoENSLookup).not.toHaveBeenCalled();
+      expect(mockGetERC721AssetSymbol).not.toHaveBeenCalled();
+    });
   });
 });
