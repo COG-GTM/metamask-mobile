@@ -1,5 +1,11 @@
-import { getAllNetworks, isSafeChainId } from '../../util/networks';
+import { getAllNetworks } from '../../util/networks';
 import { GOERLI } from '../../../app/constants/network';
+import AppConstants from '../../core/AppConstants';
+
+const isSafeChainId = (chainId) =>
+  Number.isSafeInteger(chainId) &&
+  chainId > 0 &&
+  chainId <= AppConstants.MAX_SAFE_CHAIN_ID;
 
 export default function migrate(state) {
   const provider = state.engine.backgroundState.NetworkController.provider;
