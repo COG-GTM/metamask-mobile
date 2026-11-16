@@ -93,6 +93,38 @@ describe('Migration #39', () => {
       errorMessage: "Migration 39: Invalid TransactionController state: 'null'",
       scenario: 'transactionController is invalid',
     },
+    {
+      state: {
+        engine: {
+          backgroundState: { TransactionController: {} },
+        },
+      },
+      errorMessage:
+        "Migration 39: Missing transactions property from TransactionController: 'object'",
+      scenario: 'transactionController has no transactions property',
+    },
+    {
+      state: {
+        engine: {
+          backgroundState: { TransactionController: { transactions: null } },
+        },
+      },
+      errorMessage:
+        "Migration 39: Missing transactions property from TransactionController: 'object'",
+      scenario: 'transactions is null',
+    },
+    {
+      state: {
+        engine: {
+          backgroundState: {
+            TransactionController: { transactions: { id: '1' } },
+          },
+        },
+      },
+      errorMessage:
+        "Migration 39: Missing transactions property from TransactionController: 'object'",
+      scenario: 'transactions is an object instead of an array',
+    },
   ];
   it.each(invalidStates)(
     'should capture exception if $scenario',
@@ -157,5 +189,69 @@ describe('Migration #39', () => {
     const newState = migrate(oldState);
 
     expect(newState).toStrictEqual(expectedState);
+    expect(mockedCaptureException).not.toHaveBeenCalled();
+  });
+
+  it('leaves an empty transactions array unchanged', () => {
+    const oldState = {
+      engine: {
+        backgroundState: {
+          TransactionController: { transactions: [] },
+        },
+      },
+    };
+
+    const newState = migrate(oldState);
+
+    expect(newState).toStrictEqual({
+      engine: {
+        backgroundState: {
+          TransactionController: { transactions: [] },
+        },
+      },
+    });
+    expect(mockedCaptureException).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    {
+      scenario: 'only rawTransaction',
+      transaction: { id: '1', rawTransaction: '0x3' },
+      expected: { id: '1', rawTx: '0x3' },
+    },
+    {
+      scenario: 'only transactionHash',
+      transaction: { id: '1', transactionHash: '0x2' },
+      expected: { id: '1', hash: '0x2' },
+    },
+    {
+      scenario: 'only transaction',
+      transaction: { id: '1', transaction: { from: '0x1' } },
+      expected: { id: '1', txParams: { from: '0x1' } },
+    },
+    {
+      scenario: 'no legacy properties',
+      transaction: { id: '1', hash: '0x2', txParams: { from: '0x1' } },
+      expected: { id: '1', hash: '0x2', txParams: { from: '0x1' } },
+    },
+  ])('migrates a transaction with $scenario', ({ transaction, expected }) => {
+    const oldState = {
+      engine: {
+        backgroundState: {
+          TransactionController: { transactions: [transaction] },
+        },
+      },
+    };
+
+    const newState = migrate(oldState);
+
+    expect(newState).toStrictEqual({
+      engine: {
+        backgroundState: {
+          TransactionController: { transactions: [expected] },
+        },
+      },
+    });
+    expect(mockedCaptureException).not.toHaveBeenCalled();
   });
 });
