@@ -20,7 +20,7 @@ describe('URL Check Functions', () => {
 
     it('returns true for portfolio URLs with additional params', () => {
       const url = `${AppConstants.PORTFOLIO.URL}/bridge?foo=bar`;
-      expect(isBridgeUrl(url)).toBe(true);
+      expect(isPortfolioUrl(url)).toBe(true);
     });
 
     it('returns false for non-portfolio URLs', () => {
@@ -42,7 +42,12 @@ describe('URL Check Functions', () => {
 
     it('returns false for URLs that were false positive with previous regex implementation', () => {
       const url = 'https://portfolioxmetamask.io/bridge';
-      expect(isPortfolioUrl(url)).toBe(false);
+      expect(isBridgeUrl(url)).toBe(false);
+    });
+
+    it('returns false for portfolio URLs with a non-bridge path', () => {
+      const url = `${AppConstants.PORTFOLIO.URL}/buy`;
+      expect(isBridgeUrl(url)).toBe(false);
     });
 
     it('returns true for bridge URLs with additional params', () => {
