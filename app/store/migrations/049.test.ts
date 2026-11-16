@@ -151,7 +151,7 @@ describe('Migration #49', () => {
     await seedAsyncStorage();
     const removeError = new Error('AsyncStorage remove failed');
     mockedRemoveItem.mockImplementation(async (key: string) => {
-      if (key === 'valueC') {
+      if (key === 'valueA') {
         throw removeError;
       }
       return originalRemoveItem?.(key);
@@ -159,15 +159,15 @@ describe('Migration #49', () => {
 
     await migrate({});
 
-    expect(mmkvStorage.getString('valueC')).toEqual('myValue');
-    expect(await AsyncStorage.getItem('valueC')).toBe('myValue');
+    expect(mmkvStorage.getString('valueA')).toEqual('a');
+    expect(await AsyncStorage.getItem('valueA')).toBe('a');
     expect(mockedCaptureException).toHaveBeenCalledTimes(1);
     expect(mockedCaptureException).toHaveBeenCalledWith(
       new Error(
-        `Failed to migrate key "valueC" from AsyncStorage to MMKV! Error: ${removeError}`,
+        `Failed to migrate key "valueA" from AsyncStorage to MMKV! Error: ${removeError}`,
       ),
     );
-    for (const key of ['valueA', 'valueB']) {
+    for (const key of ['valueB', 'valueC']) {
       expect(mmkvStorage.getString(key)).toEqual(asyncStorageItems[key]);
       expect(await AsyncStorage.getItem(key)).toBeNull();
     }
