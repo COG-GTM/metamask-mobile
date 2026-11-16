@@ -1,10 +1,10 @@
 import React from 'react';
 import { ConnectedComponent } from 'react-redux';
 import { Hex } from '@metamask/utils';
-import { merge } from 'lodash';
+import { merge, mergeWith } from 'lodash';
 import { fireEvent, act, waitFor } from '@testing-library/react-native';
 
-import QuotesView from './QuotesView';
+import QuotesView, { gasLimitWithMultiplier } from './QuotesView';
 import {
   DeepPartial,
   renderScreen,
@@ -22,6 +22,27 @@ import { selectShouldUseSmartTransaction } from '../../../selectors/smartTransac
 import { useSwapsSmartTransaction } from './utils/useSwapsSmartTransaction';
 import { query } from '@metamask/controller-utils';
 import { TransactionStatus } from '@metamask/transaction-controller';
+import { isHardwareAccount } from '../../../util/address';
+
+jest.mock('../../../util/address', () => ({
+  ...jest.requireActual('../../../util/address'),
+  isHardwareAccount: jest.fn(),
+}));
+
+const mockQuotesModal = jest.fn();
+jest.mock('./components/QuotesModal', () => {
+  const { createElement } = jest.requireActual('react');
+  const ActualQuotesModal = jest.requireActual(
+    './components/QuotesModal',
+  ).default;
+  return {
+    __esModule: true,
+    default: (props: Record<string, unknown>) => {
+      mockQuotesModal(props);
+      return createElement(ActualQuotesModal, props);
+    },
+  };
+});
 
 jest.mock('../../../util/networks/global-network', () => ({
   ...jest.requireActual('../../../util/networks/global-network'),
@@ -59,7 +80,11 @@ const mockSubmitSignedTransactions = jest
   .fn()
   .mockResolvedValue({ uuid: 'mock-uuid-123' });
 const mockUpdateSmartTransaction = jest.fn();
+const mockSubscribeOnceIf = jest.fn();
 jest.mock('../../../core/Engine', () => ({
+  controllerMessenger: {
+    subscribeOnceIf: (...args: unknown[]) => mockSubscribeOnceIf(...args),
+  },
   context: {
     SwapsController: {
       stopPollingAndResetState: jest.fn(),
@@ -290,6 +315,8 @@ function render(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Component: React.ComponentType | ConnectedComponent<any, any>,
   modifiedState?: DeepPartial<RootState>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  paramsOverrides: Record<string, any> = {},
 ) {
   return renderScreen(
     Component,
@@ -313,6 +340,7 @@ function render(
       ],
       sourceTokenAddress: sourceToken,
       destinationTokenAddress: destinationToken,
+      ...paramsOverrides,
     },
   );
 }
@@ -465,6 +493,419 @@ describe('QuotesView', () => {
 
     await waitFor(() => {
       expect(spy).toHaveBeenCalled();
+    });
+  });
+});
+
+const ONE_ETH_HEX = '0xde0b6b3a7640000';
+const HALF_CENT_ETH_HEX = '0x11c37937e08000'; // 0.005 ETH
+const NATIVE_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000';
+const APPROVAL_DATA =
+  '0x095ea7b3' +
+  '000000000000000000000000881d40237659c251811cec9c364ef91dc08d300c' +
+  '00000000000000000000000000000000000000000000000000000000000003e8';
+
+const buildQuote = (
+  aggregator: string,
+  overrides: Record<string, unknown> = {},
+) => ({
+  ...quotesMock[topAggIdMock],
+  aggregator,
+  ...overrides,
+});
+
+const buildQuoteValue = (
+  aggregator: string,
+  overrides: Record<string, unknown> = {},
+) => ({
+  ...quoteValuesMock[topAggIdMock],
+  aggregator,
+  ...overrides,
+});
+
+const REPLACED_KEYS = ['quotes', 'quoteValues', 'approvalTransaction'];
+
+function buildState({
+  swaps = {},
+  ethBalance = accountBalance,
+  sourceTokenBalance = '0x5',
+}: {
+  swaps?: Record<string, unknown>;
+  ethBalance?: string;
+  sourceTokenBalance?: string;
+} = {}): DeepPartial<RootState> {
+  return mergeWith(
+    {},
+    mockInitialState,
+    {
+      engine: {
+        backgroundState: {
+          AccountTrackerController: {
+            accountsByChainId: {
+              '0x1': { [selectedAddress]: { balance: ethBalance } },
+            },
+          },
+          TokenBalancesController: {
+            tokenBalances: {
+              [normalizedSelectedAddress]: {
+                [mockChainId]: { [sourceToken]: sourceTokenBalance },
+              },
+            },
+          },
+          SwapsController: {
+            approvalTransaction: null,
+            ...swaps,
+          },
+        },
+      },
+    },
+    (_objValue: unknown, srcValue: unknown, key: string) =>
+      REPLACED_KEYS.includes(key) ? srcValue : undefined,
+  );
+}
+
+const lastQuotesModalProps = () =>
+  mockQuotesModal.mock.calls[mockQuotesModal.mock.calls.length - 1][0];
+
+describe('gasLimitWithMultiplier', () => {
+  it('multiplies the gas limit and rounds to an integer', () => {
+    expect(gasLimitWithMultiplier('0x3d7a3', 1)?.toString(10)).toBe('251811');
+    expect(gasLimitWithMultiplier('100000', 1.5)?.toString(10)).toBe('150000');
+    expect(gasLimitWithMultiplier('100001', 1.5)?.toString(10)).toBe('150002');
+  });
+
+  it('returns undefined when the gas limit or multiplier is missing', () => {
+    expect(
+      gasLimitWithMultiplier(undefined as unknown as string, 1.5),
+    ).toBeUndefined();
+    expect(
+      gasLimitWithMultiplier('100000', undefined as unknown as number),
+    ).toBeUndefined();
+    expect(gasLimitWithMultiplier('100000', 0)).toBeUndefined();
+  });
+});
+
+describe('QuotesView quote ordering, balances and hardware approvals', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.mocked(isHardwareAccount).mockReturnValue(false);
+    jest.mocked(selectShouldUseSmartTransaction).mockReturnValue(false);
+  });
+
+  describe('quote ordering', () => {
+    it('orders by destinationAmount and breaks ties by lower ethFee when there is no conversion rate', async () => {
+      const state = buildState({
+        ethBalance: ONE_ETH_HEX,
+        swaps: {
+          topAggId: 'aggHighFee',
+          quotes: {
+            aggHighFee: buildQuote('aggHighFee', {
+              destinationAmount: '10',
+              destinationTokenRate: null,
+            }),
+            aggLowFee: buildQuote('aggLowFee', {
+              destinationAmount: '10',
+              destinationTokenRate: null,
+            }),
+            aggMostTokens: buildQuote('aggMostTokens', {
+              destinationAmount: '12',
+              destinationTokenRate: null,
+            }),
+          },
+          quoteValues: {
+            aggHighFee: buildQuoteValue('aggHighFee', {
+              ethFee: '0.003',
+              overallValueOfQuote: '100',
+            }),
+            aggLowFee: buildQuoteValue('aggLowFee', {
+              ethFee: '0.001',
+              overallValueOfQuote: '-100',
+            }),
+            aggMostTokens: buildQuoteValue('aggMostTokens', {
+              ethFee: '0.01',
+              overallValueOfQuote: '-200',
+            }),
+          },
+        },
+      });
+
+      const { findByText } = render(QuotesView, state);
+
+      expect(await findByText('3 quotes')).toBeOnTheScreen();
+      const { quotes, selectedQuote, showOverallValue } =
+        lastQuotesModalProps();
+      expect(quotes.map((q: { aggregator: string }) => q.aggregator)).toEqual([
+        'aggMostTokens',
+        'aggLowFee',
+        'aggHighFee',
+      ]);
+      expect(showOverallValue).toBe(false);
+      expect(selectedQuote).toBe('aggHighFee');
+    });
+
+    it('orders by overallValueOfQuote descending when a conversion rate is available', async () => {
+      const state = buildState({
+        ethBalance: ONE_ETH_HEX,
+        swaps: {
+          topAggId: 'aggBest',
+          quotes: {
+            aggWorst: buildQuote('aggWorst', { destinationAmount: '30' }),
+            aggBest: buildQuote('aggBest', { destinationAmount: '10' }),
+            aggMiddle: buildQuote('aggMiddle', { destinationAmount: '20' }),
+          },
+          quoteValues: {
+            aggWorst: buildQuoteValue('aggWorst', {
+              overallValueOfQuote: '-0.01',
+            }),
+            aggBest: buildQuoteValue('aggBest', {
+              overallValueOfQuote: '0.02',
+            }),
+            aggMiddle: buildQuoteValue('aggMiddle', {
+              overallValueOfQuote: '0.005',
+            }),
+          },
+        },
+      });
+
+      const { findByText } = render(QuotesView, state);
+
+      expect(await findByText('3 quotes')).toBeOnTheScreen();
+      const { quotes, selectedQuote, showOverallValue } =
+        lastQuotesModalProps();
+      expect(quotes.map((q: { aggregator: string }) => q.aggregator)).toEqual([
+        'aggBest',
+        'aggMiddle',
+        'aggWorst',
+      ]);
+      expect(showOverallValue).toBe(true);
+      expect(selectedQuote).toBe('aggBest');
+    });
+  });
+
+  describe('balance sufficiency', () => {
+    it('shows the missing token amount when the source amount exceeds the token balance', async () => {
+      const state = buildState({
+        ethBalance: ONE_ETH_HEX,
+        sourceTokenBalance: '0x2',
+      });
+
+      const { findByText, queryByText } = render(QuotesView, state, {
+        tokens: [
+          { address: sourceToken, symbol: 'DAI', decimals: 0 },
+          { address: destinationToken, symbol: 'USDC', decimals: 0 },
+        ],
+      });
+
+      expect(await findByText('3 DAI')).toBeOnTheScreen();
+      expect(
+        await findByText(/more to complete this swap\./),
+      ).toBeOnTheScreen();
+      expect(queryByText(/more for gas to complete this swap\./)).toBeNull();
+    });
+
+    it('shows the missing ETH when the ETH balance is below maxEthFee', async () => {
+      // 0.007649129721886653 ETH (maxEthFee) - 0.005 ETH (balance) = 0.002649...
+      const state = buildState({ ethBalance: HALF_CENT_ETH_HEX });
+
+      const { findByText, queryByText } = render(QuotesView, state);
+
+      expect(await findByText('0.00265 ETH')).toBeOnTheScreen();
+      expect(
+        await findByText(/more for gas to complete this swap\./),
+      ).toBeOnTheScreen();
+      expect(queryByText(/more to complete this swap\./)).toBeNull();
+    });
+
+    it('includes the native source amount in the ETH requirement', async () => {
+      // balance == source amount (1 ETH), so the missing amount is exactly maxEthFee
+      const state = buildState({ ethBalance: ONE_ETH_HEX });
+
+      const { findByText } = render(QuotesView, state, {
+        sourceAmount: '1000000000000000000',
+        sourceTokenAddress: NATIVE_TOKEN_ADDRESS,
+        tokens: [
+          { address: NATIVE_TOKEN_ADDRESS, symbol: 'ETH', decimals: 18 },
+          { address: destinationToken, symbol: 'USDC', decimals: 18 },
+        ],
+      });
+
+      expect(await findByText('0.00765 ETH')).toBeOnTheScreen();
+      expect(
+        await findByText(/more for gas to complete this swap\./),
+      ).toBeOnTheScreen();
+    });
+
+    it('hides the insufficient balance banner when balances cover amount and fees', async () => {
+      const state = buildState({ ethBalance: ONE_ETH_HEX });
+
+      const { findByTestId, queryByText } = render(QuotesView, state);
+
+      expect(
+        await findByTestId(SwapsViewSelectors.SWAP_BUTTON),
+      ).toBeOnTheScreen();
+      expect(queryByText(/more for gas to complete this swap\./)).toBeNull();
+      expect(queryByText(/more to complete this swap\./)).toBeNull();
+    });
+
+    it('does not require ETH for gas on gas-included swaps', async () => {
+      const state = buildState({
+        ethBalance: HALF_CENT_ETH_HEX,
+        swaps: {
+          quotes: {
+            [topAggIdMock]: buildQuote(topAggIdMock, {
+              isGasIncludedTrade: true,
+              tradeTxFees: {
+                ...quotesMock[topAggIdMock].tradeTxFees,
+                fees: [{ tokenFees: [{ balanceNeededToken: '0x1' }] }],
+              },
+            }),
+          },
+          quoteValues: quoteValuesMock,
+        },
+      });
+
+      const { findByText, queryByText } = render(QuotesView, state);
+
+      expect(await findByText('Included', { exact: false })).toBeOnTheScreen();
+      expect(queryByText(/more for gas to complete this swap\./)).toBeNull();
+      expect(queryByText('0.00265 ETH')).toBeNull();
+    });
+  });
+
+  it('renders the slippage ratio as a percentage', async () => {
+    const state = buildState({
+      ethBalance: ONE_ETH_HEX,
+      swaps: {
+        quotes: {
+          [topAggIdMock]: buildQuote(topAggIdMock, {
+            priceSlippage: {
+              ...quotesMock[topAggIdMock].priceSlippage,
+              bucket: 'medium',
+              ratio: 1.0525,
+            },
+          }),
+        },
+        quoteValues: quoteValuesMock,
+      },
+    });
+
+    const { findByText } = render(QuotesView, state);
+
+    expect(await findByText('Price difference of ~5.25%')).toBeOnTheScreen();
+  });
+
+  describe('hardware wallet approval chaining', () => {
+    const approvalTxId = 'approval-tx-id';
+    const tradeTxId = 'trade-tx-id';
+
+    beforeEach(() => {
+      jest.mocked(query).mockReset();
+      jest
+        .mocked(Engine.context.TransactionController.addTransaction)
+        .mockReset();
+    });
+
+    const mockTransactionMeta = (id: string) => ({
+      result: Promise.resolve(`${id}-hash`),
+      transactionMeta: {
+        id,
+        networkClientId: 'mainnet',
+        time: Date.now(),
+        chainId: '0x1' as Hex,
+        status: TransactionStatus.submitted,
+        txParams: { from: selectedAddress },
+      },
+    });
+
+    const swapState = () =>
+      buildState({
+        ethBalance: ONE_ETH_HEX,
+        swaps: { approvalTransaction: { data: APPROVAL_DATA } },
+      });
+
+    const pressSwap = async () => {
+      jest.mocked(query).mockResolvedValueOnce(123).mockResolvedValueOnce({
+        timestamp: 1234,
+      });
+      const addTransactionSpy = jest
+        .spyOn(Engine.context.TransactionController, 'addTransaction')
+        .mockResolvedValueOnce(mockTransactionMeta(approvalTxId))
+        .mockResolvedValueOnce(mockTransactionMeta(tradeTxId));
+
+      const wrapper = render(QuotesView, swapState());
+      const swapButton = await wrapper.findByTestId(
+        SwapsViewSelectors.SWAP_BUTTON,
+      );
+      act(() => {
+        fireEvent.press(swapButton);
+      });
+      return addTransactionSpy;
+    };
+
+    const getSubscription = async () => {
+      await waitFor(() => expect(mockSubscribeOnceIf).toHaveBeenCalledTimes(1));
+      const [eventName, handler, filter] = mockSubscribeOnceIf.mock.calls[0];
+      return { eventName, handler, filter };
+    };
+
+    it('submits the trade only after the approval is confirmed', async () => {
+      jest.mocked(isHardwareAccount).mockReturnValue(true);
+      const addTransactionSpy = await pressSwap();
+
+      const { eventName, handler, filter } = await getSubscription();
+
+      expect(eventName).toBe('TransactionController:transactionConfirmed');
+      expect(filter({ id: approvalTxId })).toBe(true);
+      expect(filter({ id: 'some-other-tx' })).toBe(false);
+
+      expect(addTransactionSpy).toHaveBeenCalledTimes(1);
+      expect(addTransactionSpy.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ data: APPROVAL_DATA }),
+      );
+
+      await act(async () => {
+        await handler({
+          id: approvalTxId,
+          status: TransactionStatus.confirmed,
+        });
+      });
+
+      await waitFor(() => expect(addTransactionSpy).toHaveBeenCalledTimes(2));
+      expect(addTransactionSpy.mock.calls[1][0]).toEqual(
+        expect.objectContaining({
+          data: quotesMock[topAggIdMock].trade.data,
+          to: quotesMock[topAggIdMock].trade.to,
+        }),
+      );
+    });
+
+    it('does not submit the trade when the approval did not confirm', async () => {
+      jest.mocked(isHardwareAccount).mockReturnValue(true);
+      const addTransactionSpy = await pressSwap();
+
+      const { handler } = await getSubscription();
+
+      await act(async () => {
+        await handler({ id: approvalTxId, status: TransactionStatus.failed });
+      });
+
+      expect(addTransactionSpy).toHaveBeenCalledTimes(1);
+      expect(addTransactionSpy.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ data: APPROVAL_DATA }),
+      );
+    });
+
+    it('submits approval and trade back to back for software accounts', async () => {
+      const addTransactionSpy = await pressSwap();
+
+      await waitFor(() => expect(addTransactionSpy).toHaveBeenCalledTimes(2));
+      expect(mockSubscribeOnceIf).not.toHaveBeenCalled();
+      expect(addTransactionSpy.mock.calls[0][0]).toEqual(
+        expect.objectContaining({ data: APPROVAL_DATA }),
+      );
+      expect(addTransactionSpy.mock.calls[1][0]).toEqual(
+        expect.objectContaining({ data: quotesMock[topAggIdMock].trade.data }),
+      );
     });
   });
 });
