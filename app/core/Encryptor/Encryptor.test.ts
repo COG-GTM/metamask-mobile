@@ -33,7 +33,7 @@ describe('Encryptor', () => {
   });
 
   describe('decrypt', () => {
-    it('decrypts a string correctly', async () => {
+    it('returns the parsed output of the mocked crypto library', async () => {
       const password = 'testPassword';
       const mockVault = {
         cipher: 'mockedCipher',
