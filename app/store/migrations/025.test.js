@@ -1,4 +1,13 @@
+import { ETHERSCAN_SUPPORTED_CHAIN_IDS } from '@metamask/preferences-controller';
 import migrate from './025';
+
+const allChains = (value) =>
+  Object.fromEntries(
+    Object.values(ETHERSCAN_SUPPORTED_CHAIN_IDS).map((chainId) => [
+      chainId,
+      value,
+    ]),
+  );
 
 describe('Migration #25', () => {
   it('migrates state from thirdPartyMode to the new incoming transactions networks on preferences controller', () => {
@@ -66,5 +75,154 @@ describe('Migration #25', () => {
         },
       },
     });
+  });
+
+  it('creates the map with every supported chain disabled when the user opted out and no map exists', () => {
+    const oldState = {
+      privacy: { thirdPartyApiMode: false },
+      engine: { backgroundState: { PreferencesController: {} } },
+    };
+
+    const newState = migrate(oldState);
+
+    expect(newState).toStrictEqual({
+      privacy: {},
+      engine: {
+        backgroundState: {
+          PreferencesController: { showIncomingTransactions: allChains(false) },
+        },
+      },
+    });
+  });
+
+  it('creates the map with every supported chain enabled when the user opted in and no map exists', () => {
+    const oldState = {
+      privacy: { thirdPartyApiMode: true },
+      engine: { backgroundState: { PreferencesController: {} } },
+    };
+
+    const newState = migrate(oldState);
+
+    expect(newState).toStrictEqual({
+      privacy: {},
+      engine: {
+        backgroundState: {
+          PreferencesController: { showIncomingTransactions: allChains(true) },
+        },
+      },
+    });
+  });
+
+  it('overrides existing entries and preserves unrelated chains when thirdPartyApiMode is true', () => {
+    const oldState = {
+      privacy: { thirdPartyApiMode: true, otherSetting: 'kept' },
+      engine: {
+        backgroundState: {
+          PreferencesController: {
+            showIncomingTransactions: { '0x1': false, '0x539': false },
+          },
+        },
+      },
+    };
+
+    const newState = migrate(oldState);
+
+    expect(newState).toStrictEqual({
+      privacy: { otherSetting: 'kept' },
+      engine: {
+        backgroundState: {
+          PreferencesController: {
+            showIncomingTransactions: { ...allChains(true), '0x539': false },
+          },
+        },
+      },
+    });
+    expect(newState.privacy).not.toHaveProperty('thirdPartyApiMode');
+  });
+
+  it('defaults every supported chain to enabled when thirdPartyApiMode is undefined', () => {
+    const oldState = {
+      privacy: {},
+      engine: { backgroundState: { PreferencesController: {} } },
+    };
+
+    const newState = migrate(oldState);
+
+    expect(newState).toStrictEqual({
+      privacy: {},
+      engine: {
+        backgroundState: {
+          PreferencesController: { showIncomingTransactions: allChains(true) },
+        },
+      },
+    });
+  });
+
+  it('defaults every supported chain to enabled without throwing when privacy is missing', () => {
+    const oldState = {
+      engine: { backgroundState: { PreferencesController: {} } },
+    };
+
+    let newState;
+    expect(() => {
+      newState = migrate(oldState);
+    }).not.toThrow();
+
+    expect(newState).toStrictEqual({
+      engine: {
+        backgroundState: {
+          PreferencesController: { showIncomingTransactions: allChains(true) },
+        },
+      },
+    });
+  });
+
+  it('leaves state unchanged apart from removing thirdPartyApiMode when PreferencesController is missing', () => {
+    const oldState = {
+      privacy: { thirdPartyApiMode: false },
+      engine: { backgroundState: { NetworkController: { foo: 'bar' } } },
+    };
+
+    const newState = migrate(oldState);
+
+    expect(newState).toStrictEqual({
+      privacy: {},
+      engine: { backgroundState: { NetworkController: { foo: 'bar' } } },
+    });
+    expect(newState.engine.backgroundState).not.toHaveProperty(
+      'PreferencesController',
+    );
+  });
+
+  it('returns state unchanged when engine is missing', () => {
+    const oldState = { privacy: { thirdPartyApiMode: false } };
+
+    const newState = migrate(oldState);
+
+    expect(newState).toStrictEqual({ privacy: {} });
+  });
+
+  it('returns the original state without throwing when an error occurs during migration', () => {
+    const preferencesController = { showIncomingTransactions: { '0x1': true } };
+    const oldState = {
+      privacy: {
+        get thirdPartyApiMode() {
+          throw new Error('unreadable');
+        },
+      },
+      engine: {
+        backgroundState: { PreferencesController: preferencesController },
+      },
+    };
+
+    let newState;
+    expect(() => {
+      newState = migrate(oldState);
+    }).not.toThrow();
+
+    expect(newState).toBe(oldState);
+    expect(newState.engine.backgroundState.PreferencesController).toStrictEqual(
+      { showIncomingTransactions: { '0x1': true } },
+    );
   });
 });
