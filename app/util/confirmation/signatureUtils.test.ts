@@ -356,6 +356,35 @@ describe('signatureUtils', () => {
       currentPageInformation: { url: 'https://dapp.io/sign' },
     };
 
+    it('does not notify or track until the action has completed', async () => {
+      let resolveAction: () => void = () => undefined;
+      const onAction = jest.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveAction = resolve;
+          }),
+      );
+
+      const pending = handleSignatureAction(
+        onAction,
+        { ...messageParams, origin: `${WALLET_CONNECT_ORIGIN}dapp.io` },
+        typedSign.V4,
+        securityAlertResponse,
+        true,
+      );
+      await Promise.resolve();
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(mockTrackEvent).not.toHaveBeenCalled();
+      expect(mockShowSimpleNotification).not.toHaveBeenCalled();
+
+      resolveAction();
+      await pending;
+
+      expect(mockTrackEvent).toHaveBeenCalledTimes(1);
+      expect(mockShowSimpleNotification).toHaveBeenCalledTimes(1);
+    });
+
     it.each([
       [true, MetaMetricsEvents.SIGNATURE_APPROVED],
       [false, MetaMetricsEvents.SIGNATURE_REJECTED],
