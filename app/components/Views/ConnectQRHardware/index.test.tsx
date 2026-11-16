@@ -3,10 +3,13 @@ import renderWithProvider from '../../../util/test/renderWithProvider';
 import Engine from '../../../core/Engine';
 import ConnectQRHardware from './index';
 import { fireEvent } from '@testing-library/react-native';
+import ReactNativeModal from 'react-native-modal';
 import { QR_CONTINUE_BUTTON } from '../../../../wdio/screen-objects/testIDs/Components/ConnectQRHardware.testIds';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import { act } from '@testing-library/react-hooks';
 import PAGINATION_OPERATIONS from '../../../constants/pagination';
+import AnimatedQRScannerModal from '../../UI/QRHardware/AnimatedQRScanner';
+import { strings } from '../../../../locales/i18n';
 import {
   ACCOUNT_SELECTOR_NEXT_BUTTON,
   ACCOUNT_SELECTOR_PREVIOUS_BUTTON,
@@ -267,6 +270,93 @@ describe('ConnectQRHardware', () => {
 
     mockPage0Accounts.forEach((account) => {
       expect(getByText(account.shortenedAddress)).toBeDefined();
+    });
+  });
+  describe('qrKeyringStateChange subscription', () => {
+    const QR_KEYRING_STATE_CHANGE = 'KeyringController:qrKeyringStateChange';
+
+    const getSubscribedHandler = () => {
+      const call = MockEngine.controllerMessenger.subscribe.mock.calls.find(
+        ([eventType]) => eventType === QR_KEYRING_STATE_CHANGE,
+      );
+      if (!call) {
+        throw new Error(`No subscription to ${QR_KEYRING_STATE_CHANGE}`);
+      }
+      return call[1] as (state: { sync: { reading: boolean } }) => void;
+    };
+
+    const isScannerVisible = (
+      root: ReturnType<typeof renderWithProvider>,
+    ): boolean => {
+      const scanner = root.UNSAFE_getByType(AnimatedQRScannerModal);
+      // react-native-modal keeps its content mounted until the hide animation
+      // finishes, so `isVisible` is what reflects the requested state.
+      expect(
+        scanner.findByType(ReactNativeModal as unknown as React.ElementType)
+          .props.isVisible,
+      ).toBe(scanner.props.visible);
+      return scanner.props.visible;
+    };
+
+    beforeEach(() => {
+      mockKeyringController.getAccounts.mockResolvedValue([]);
+    });
+
+    it('subscribes to qrKeyringStateChange on mount and ensures a QR keyring exists', () => {
+      renderWithProvider(<ConnectQRHardware navigation={mockedNavigate} />, {
+        state: mockInitialState,
+      });
+
+      expect(mockKeyringController.getOrAddQRKeyring).toHaveBeenCalledTimes(1);
+      expect(MockEngine.controllerMessenger.subscribe).toHaveBeenCalledTimes(1);
+      expect(MockEngine.controllerMessenger.subscribe).toHaveBeenCalledWith(
+        QR_KEYRING_STATE_CHANGE,
+        expect.any(Function),
+      );
+      expect(MockEngine.controllerMessenger.unsubscribe).not.toHaveBeenCalled();
+    });
+
+    it('shows the scanner when sync.reading becomes true and hides it when it becomes false', () => {
+      const root = renderWithProvider(
+        <ConnectQRHardware navigation={mockedNavigate} />,
+        { state: mockInitialState },
+      );
+      const handler = getSubscribedHandler();
+      const scannerHint = strings('connect_qr_hardware.hint_text').trim();
+
+      expect(isScannerVisible(root)).toBe(false);
+      expect(root.queryByText(scannerHint, { exact: false })).toBeNull();
+
+      act(() => {
+        handler({ sync: { reading: true } });
+      });
+
+      expect(isScannerVisible(root)).toBe(true);
+      expect(root.getByText(scannerHint, { exact: false })).toBeDefined();
+
+      act(() => {
+        handler({ sync: { reading: false } });
+      });
+
+      expect(isScannerVisible(root)).toBe(false);
+    });
+
+    it('unsubscribes the same handler on unmount', () => {
+      const { unmount } = renderWithProvider(
+        <ConnectQRHardware navigation={mockedNavigate} />,
+        { state: mockInitialState },
+      );
+      const handler = getSubscribedHandler();
+
+      unmount();
+
+      expect(MockEngine.controllerMessenger.unsubscribe).toHaveBeenCalledTimes(
+        1,
+      );
+      expect(MockEngine.controllerMessenger.unsubscribe).toHaveBeenCalledWith(
+        QR_KEYRING_STATE_CHANGE,
+        handler,
+      );
     });
   });
 });
