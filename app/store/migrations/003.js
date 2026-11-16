@@ -1,7 +1,21 @@
-import { NetworksChainId } from '@metamask/controller-utils';
-import { isSafeChainId } from '../../util/networks';
+import AppConstants from '../../core/AppConstants';
 import { GOERLI } from '../../../app/constants/network';
 import { regex } from '../../../app/util/regex';
+
+// Frozen decimal chain IDs from @metamask/controller-utils@3 (NetworksChainId),
+// which no longer exports them. '' marks a custom RPC / localhost provider.
+const NetworksChainId = {
+  mainnet: '1',
+  goerli: '5',
+  sepolia: '11155111',
+  localhost: '',
+  rpc: '',
+};
+
+const isSafeChainId = (chainId) =>
+  Number.isSafeInteger(chainId) &&
+  chainId > 0 &&
+  chainId <= AppConstants.MAX_SAFE_CHAIN_ID;
 
 export default function migrate(state) {
   const provider = state.engine.backgroundState.NetworkController.provider;
