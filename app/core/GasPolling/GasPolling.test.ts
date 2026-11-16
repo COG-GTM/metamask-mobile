@@ -1,18 +1,33 @@
+import { GAS_ESTIMATE_TYPES } from '@metamask/gas-fee-controller';
+import BN4 from 'bnjs4';
 import Engine from '../Engine';
 import {
   startGasPolling,
   getEIP1559TransactionData,
   stopGasPolling,
+  useDataStore,
+  useGasTransaction,
 } from './GasPolling';
-import { parseTransactionEIP1559 } from '../../util/transactions';
-import { GasFeeOptions, GetEIP1559TransactionDataProps } from './types';
+import {
+  parseTransactionEIP1559,
+  parseTransactionLegacy,
+} from '../../util/transactions';
+import {
+  GasFeeOptions,
+  GetEIP1559TransactionDataProps,
+  UseGasTransactionProps,
+} from './types';
 import AppConstants from '../AppConstants';
 import { Hex } from '@metamask/utils';
+import { renderHookWithProvider } from '../../util/test/renderWithProvider';
+import { backgroundState } from '../../util/test/initial-root-state';
 jest.mock('../../util/transactions');
 const mockedParseTransactionEIP1559 =
   parseTransactionEIP1559 as jest.MockedFunction<
     typeof parseTransactionEIP1559
   >;
+const mockedParseTransactionLegacy =
+  parseTransactionLegacy as jest.MockedFunction<typeof parseTransactionLegacy>;
 
 const tokenValue = 'fba4a030-e1f5-11ec-a660-87ece4ac6cf7';
 
@@ -25,10 +40,6 @@ jest.mock('../Engine', () => ({
       stopPolling: jest.fn(),
     },
   },
-}));
-
-jest.mock('react-redux', () => ({
-  useSelector: jest.fn(() => ['', [], [], 1, 'ETH', 'wei', [], [], '', false]),
 }));
 
 const suggestedGasLimit = '0x123';
@@ -193,11 +204,336 @@ describe('GetEIP1559TransactionData', () => {
     expect(mockedParseTransactionEIP1559).toHaveBeenCalled();
     expect(result).toEqual(expected);
   });
+
+  it('returns the parse error message when parsing throws', () => {
+    mockedParseTransactionEIP1559.mockImplementationOnce(() => {
+      throw new Error('parse failure');
+    });
+
+    const result = getEIP1559TransactionData(transactionData);
+
+    expect(mockedParseTransactionEIP1559).toHaveBeenCalled();
+    expect(result).toEqual('Error parsing transaction data');
+  });
 });
 
-// describe('useDataStore', () => {
-//   it('should return the data store', () => {
-//     const result = useDataStore();
-//     expect(result.conversionRate).toEqual(1);
-//   });
-// });
+const legacyGasFeeEstimates = { low: '10', medium: '15', high: '20' };
+
+const buildState = ({
+  gasEstimateType,
+  estimates,
+  transaction = {},
+}: {
+  gasEstimateType: string;
+  estimates: Record<string, unknown>;
+  transaction?: Record<string, unknown>;
+}) => ({
+  engine: {
+    backgroundState: {
+      ...backgroundState,
+      GasFeeController: {
+        ...backgroundState.GasFeeController,
+        gasEstimateType,
+        gasFeeEstimates: estimates,
+      },
+      CurrencyRateController: {
+        currentCurrency,
+        currencyRates: {
+          ETH: {
+            conversionDate: 0,
+            conversionRate,
+            usdConversionRate: null,
+          },
+        },
+      },
+    },
+  },
+  transaction: {
+    selectedAsset: transactionState.selectedAsset,
+    transaction: {
+      ...transactionState.transaction,
+      gas: new BN4('21000'),
+      ...transaction,
+    },
+  },
+  settings: { showCustomNonce: true },
+});
+
+const renderUseGasTransaction = (
+  props: UseGasTransactionProps,
+  state: ReturnType<typeof buildState>,
+) =>
+  renderHookWithProvider(() => useGasTransaction(props), {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    state: state as any,
+  });
+
+const selectedGasFeeOf = (mockFn: jest.Mock) =>
+  (mockFn.mock.calls[0][0] as { selectedGasFee: Record<string, unknown> })
+    .selectedGasFee;
+const legacySelectedGasFee = () =>
+  selectedGasFeeOf(mockedParseTransactionLegacy as unknown as jest.Mock);
+const eip1559SelectedGasFee = () =>
+  selectedGasFeeOf(mockedParseTransactionEIP1559 as unknown as jest.Mock);
+
+describe('useDataStore', () => {
+  it('returns the data store values from redux state', () => {
+    const state = buildState({
+      gasEstimateType: GAS_ESTIMATE_TYPES.FEE_MARKET,
+      estimates: gasFeeEstimates.gasFeeEstimates,
+    });
+
+    const { result } = renderHookWithProvider(() => useDataStore(), {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      state: state as any,
+    });
+
+    expect(result.current.conversionRate).toEqual(conversionRate);
+    expect(result.current.currentCurrency).toEqual(currentCurrency);
+    expect(result.current.gasEstimateType).toEqual(
+      GAS_ESTIMATE_TYPES.FEE_MARKET,
+    );
+    expect(result.current.gasFeeEstimates).toEqual(
+      gasFeeEstimates.gasFeeEstimates,
+    );
+    expect(result.current.ticker).toEqual('ETH');
+    expect(result.current.showCustomNonce).toBe(true);
+    expect(result.current.transactionState).toEqual(state.transaction);
+    expect(result.current.selectedAsset).toEqual(
+      transactionState.selectedAsset,
+    );
+  });
+});
+
+describe('useGasTransaction', () => {
+  const parsedResult = { parsed: true };
+
+  beforeEach(() => {
+    mockedParseTransactionLegacy.mockReset();
+    mockedParseTransactionEIP1559.mockReset();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockedParseTransactionLegacy.mockReturnValue(parsedResult as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mockedParseTransactionEIP1559.mockReturnValue(parsedResult as any);
+  });
+
+  describe('legacy transactions', () => {
+    it('uses gasObjectLegacy price and legacyGasLimit for FEE_MARKET networks', () => {
+      const { result } = renderUseGasTransaction(
+        {
+          legacy: true,
+          onlyGas: true,
+          multiLayerL1FeeTotal: '0x10',
+          gasObject: {
+            suggestedGasLimit: '30000',
+            suggestedMaxFeePerGas: '1',
+            suggestedMaxPriorityFeePerGas: '1',
+          },
+          gasObjectLegacy: { suggestedGasPrice: '25', legacyGasLimit: '50000' },
+        },
+        buildState({
+          gasEstimateType: GAS_ESTIMATE_TYPES.FEE_MARKET,
+          estimates: gasFeeEstimates.gasFeeEstimates,
+        }),
+      );
+
+      expect(result.current).toBe(parsedResult);
+      expect(mockedParseTransactionEIP1559).not.toHaveBeenCalled();
+      expect(mockedParseTransactionLegacy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversionRate,
+          currentCurrency,
+          ticker: 'ETH',
+          multiLayerL1FeeTotal: '0x10',
+          selectedGasFee: {
+            suggestedGasLimit: '50000',
+            suggestedGasPrice: '25',
+          },
+        }),
+        { onlyGas: true },
+      );
+    });
+
+    it('does not fall back to low/gasPrice estimates for FEE_MARKET networks', () => {
+      renderUseGasTransaction(
+        { legacy: true },
+        buildState({
+          gasEstimateType: GAS_ESTIMATE_TYPES.FEE_MARKET,
+          estimates: { ...gasFeeEstimates.gasFeeEstimates, gasPrice: '99' },
+          transaction: { gasPrice: new BN4('20000000000') },
+        }),
+      );
+
+      expect(legacySelectedGasFee()).toEqual({
+        suggestedGasLimit: '21000',
+        suggestedGasPrice: undefined,
+      });
+    });
+
+    it('converts a BN transaction gasPrice to gwei on LEGACY networks', () => {
+      renderUseGasTransaction(
+        { legacy: true },
+        buildState({
+          gasEstimateType: GAS_ESTIMATE_TYPES.LEGACY,
+          estimates: legacyGasFeeEstimates,
+          transaction: { gasPrice: new BN4('20000000000') },
+        }),
+      );
+
+      expect(legacySelectedGasFee()).toEqual({
+        suggestedGasLimit: '21000',
+        suggestedGasPrice: '20',
+      });
+    });
+
+    it('prefers gasObjectLegacy price over a BN transaction gasPrice', () => {
+      renderUseGasTransaction(
+        { legacy: true, gasObjectLegacy: { suggestedGasPrice: '42' } },
+        buildState({
+          gasEstimateType: GAS_ESTIMATE_TYPES.LEGACY,
+          estimates: legacyGasFeeEstimates,
+          transaction: { gasPrice: new BN4('20000000000') },
+        }),
+      );
+
+      expect(legacySelectedGasFee().suggestedGasPrice).toEqual('42');
+    });
+
+    it('uses gasFeeEstimates.gasPrice when the transaction gasPrice is not a BN', () => {
+      renderUseGasTransaction(
+        { legacy: true },
+        buildState({
+          gasEstimateType: GAS_ESTIMATE_TYPES.ETH_GASPRICE,
+          estimates: { gasPrice: '12' },
+          transaction: { gasPrice: '0x4a817c800' },
+        }),
+      );
+
+      expect(legacySelectedGasFee()).toEqual({
+        suggestedGasLimit: '21000',
+        suggestedGasPrice: '12',
+      });
+    });
+
+    it('prefers gasObjectLegacy price over gasFeeEstimates.gasPrice', () => {
+      renderUseGasTransaction(
+        { legacy: true, gasObjectLegacy: { suggestedGasPrice: '7' } },
+        buildState({
+          gasEstimateType: GAS_ESTIMATE_TYPES.ETH_GASPRICE,
+          estimates: { gasPrice: '12' },
+        }),
+      );
+
+      expect(legacySelectedGasFee().suggestedGasPrice).toEqual('7');
+    });
+
+    it('gives legacyGasLimit precedence over gasObject and transaction gas', () => {
+      const gasObject = {
+        suggestedGasLimit: '30000',
+        suggestedMaxFeePerGas: '1',
+        suggestedMaxPriorityFeePerGas: '1',
+      };
+      const state = buildState({
+        gasEstimateType: GAS_ESTIMATE_TYPES.LEGACY,
+        estimates: legacyGasFeeEstimates,
+      });
+
+      renderUseGasTransaction(
+        {
+          legacy: true,
+          gasObject,
+          gasObjectLegacy: { legacyGasLimit: '50000' },
+        },
+        state,
+      );
+      expect(legacySelectedGasFee().suggestedGasLimit).toEqual('50000');
+
+      mockedParseTransactionLegacy.mockClear();
+      renderUseGasTransaction({ legacy: true, gasObject }, state);
+      expect(legacySelectedGasFee().suggestedGasLimit).toEqual('30000');
+
+      mockedParseTransactionLegacy.mockClear();
+      renderUseGasTransaction({ legacy: true }, state);
+      expect(legacySelectedGasFee().suggestedGasLimit).toEqual('21000');
+    });
+  });
+
+  describe('EIP-1559 transactions', () => {
+    it('spreads gasFeeEstimates[gasSelected] when a gas option is selected', () => {
+      const { result } = renderUseGasTransaction(
+        {
+          gasSelected: 'high',
+          onlyGas: true,
+          gasObject: {
+            suggestedGasLimit: '30000',
+            suggestedMaxFeePerGas: '9',
+            suggestedMaxPriorityFeePerGas: '8',
+          },
+        },
+        buildState({
+          gasEstimateType: GAS_ESTIMATE_TYPES.FEE_MARKET,
+          estimates: gasFeeEstimates.gasFeeEstimates,
+        }),
+      );
+
+      expect(result.current).toBe(parsedResult);
+      expect(mockedParseTransactionLegacy).not.toHaveBeenCalled();
+      expect(mockedParseTransactionEIP1559).toHaveBeenCalledWith(
+        expect.objectContaining({
+          conversionRate,
+          currentCurrency,
+          nativeCurrency: 'ETH',
+          gasFeeEstimates: gasFeeEstimates.gasFeeEstimates,
+        }),
+        { onlyGas: true },
+      );
+      expect(eip1559SelectedGasFee()).toEqual({
+        ...gasFeeEstimates.gasFeeEstimates.high,
+        suggestedGasLimit: '30000',
+        selectedOption: 'high',
+        estimatedBaseFee: '0.000000013',
+      });
+    });
+
+    it('uses gasObject fees when no gas option is selected', () => {
+      renderUseGasTransaction(
+        {
+          gasSelected: null,
+          gasObject: {
+            suggestedGasLimit: '30000',
+            suggestedMaxFeePerGas: '9',
+            suggestedMaxPriorityFeePerGas: '8',
+          },
+        },
+        buildState({
+          gasEstimateType: GAS_ESTIMATE_TYPES.FEE_MARKET,
+          estimates: gasFeeEstimates.gasFeeEstimates,
+        }),
+      );
+
+      expect(eip1559SelectedGasFee()).toEqual({
+        suggestedMaxFeePerGas: '9',
+        suggestedMaxPriorityFeePerGas: '8',
+        suggestedGasLimit: '30000',
+        selectedOption: null,
+        estimatedBaseFee: '0.000000013',
+      });
+    });
+
+    it('returns the parse error message when EIP-1559 parsing throws', () => {
+      mockedParseTransactionEIP1559.mockImplementation(() => {
+        throw new Error('parse failure');
+      });
+
+      const { result } = renderUseGasTransaction(
+        { gasSelected: 'medium' },
+        buildState({
+          gasEstimateType: GAS_ESTIMATE_TYPES.FEE_MARKET,
+          estimates: gasFeeEstimates.gasFeeEstimates,
+        }),
+      );
+
+      expect(result.current).toEqual('Error parsing transaction data');
+    });
+  });
+});
