@@ -104,7 +104,19 @@ const mockNavigation = {
   push: jest.fn(),
 };
 
-const renderChoosePassword = (previousScreen?: string) =>
+const NO_PASSWORD_STATE = {
+  ...initialState,
+  user: { passwordSet: false, seedphraseBackedUp: true },
+};
+const PASSWORD_SET_STATE = {
+  ...initialState,
+  settings: { lockTime: 30000 },
+};
+
+const renderChoosePassword = (
+  previousScreen?: string,
+  state: typeof initialState = NO_PASSWORD_STATE,
+) =>
   renderWithProvider(
     <ChoosePassword
       navigation={mockNavigation}
@@ -112,7 +124,7 @@ const renderChoosePassword = (previousScreen?: string) =>
         params: previousScreen ? { [PREVIOUS_SCREEN]: previousScreen } : {},
       }}
     />,
-    { state: initialState },
+    { state },
     false,
   );
 
@@ -483,7 +495,7 @@ describe('ChoosePassword', () => {
           getByTestId,
           queryByText,
           store: reduxStore,
-        } = renderChoosePassword();
+        } = renderChoosePassword(undefined, PASSWORD_SET_STATE);
 
         await fillFormAndSubmit(getByTestId);
 
@@ -538,7 +550,7 @@ describe('ChoosePassword', () => {
           getByTestId,
           findByText,
           store: reduxStore,
-        } = renderChoosePassword(ONBOARDING);
+        } = renderChoosePassword(ONBOARDING, PASSWORD_SET_STATE);
 
         await fillFormAndSubmit(getByTestId);
 
@@ -578,7 +590,7 @@ describe('ChoosePassword', () => {
           getByTestId,
           findByText,
           store: reduxStore,
-        } = renderChoosePassword();
+        } = renderChoosePassword(undefined, PASSWORD_SET_STATE);
 
         await fillFormAndSubmit(getByTestId);
 
