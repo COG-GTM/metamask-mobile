@@ -11,7 +11,12 @@ const hasMinimumRequiredVersion = (minRequiredVersion: string) => {
   return compareVersions.compare(currentVersion, minRequiredVersion, '>=');
 };
 
-// Returns undefined when the remote flag is not set so the local flag can act as a fallback
+/**
+ * Resolves an Earn LaunchDarkly flag, gated on `minimumVersion`.
+ *
+ * @param remoteFlag - The remote flag value from RemoteFeatureFlagController.
+ * @returns `undefined` when the remote flag is not set, so the local flag can act as a fallback.
+ */
 const earnRemoteFeatureFlag = (
   remoteFlag?: EarnLaunchDarklyFlag,
 ): boolean | undefined => {
@@ -21,7 +26,12 @@ const earnRemoteFeatureFlag = (
   );
 };
 
-// Returns undefined when the env var is not set so the remote flag can act as a fallback
+/**
+ * Parses a local `MM_*` env feature flag.
+ *
+ * @param value - The raw env var value.
+ * @returns `true` for `'true'`, `false` for any other value, or `undefined` when unset so the remote flag can act as a fallback.
+ */
 const parseLocalFlag = (value?: string): boolean | undefined =>
   value ? value === 'true' : undefined;
 
