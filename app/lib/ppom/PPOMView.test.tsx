@@ -47,6 +47,12 @@ interface IsolatedPPOMView {
   Logger: { log: jest.Mock; error: jest.Mock };
 }
 
+/**
+ * Requires a fresh copy of PPOMView (and its mocks) so the module-level
+ * `invoke` / `invokeResolve` state does not leak between tests.
+ *
+ * @returns The isolated PPOMView module plus the mocks it was wired to.
+ */
 const loadIsolatedPPOMView = (): IsolatedPPOMView => {
   let isolated: IsolatedPPOMView | undefined;
   jest.isolateModules(() => {
@@ -61,6 +67,12 @@ const loadIsolatedPPOMView = (): IsolatedPPOMView => {
   return isolated as IsolatedPPOMView;
 };
 
+/**
+ * Constructs a PPOMView from an isolated module.
+ *
+ * @param isolated - Result of {@link loadIsolatedPPOMView}.
+ * @returns The view instance and the mocked invoke it created.
+ */
 const mountPPOMView = ({ ppomViewModule, createInvoke }: IsolatedPPOMView) => {
   const instance = new ppomViewModule.PPOMView({});
   const mockInvoke: MockInvoke =
@@ -68,11 +80,26 @@ const mountPPOMView = ({ ppomViewModule, createInvoke }: IsolatedPPOMView) => {
   return { instance, mockInvoke };
 };
 
+/**
+ * Returns the mock that sends `${name}_trigger` messages to the WebView.
+ *
+ * @param mockInvoke - Mocked invoke created by the view.
+ * @param name - Async method name bound through invoke-lib's `bindAsync`.
+ * @returns The trigger mock.
+ */
 const getTrigger = (mockInvoke: MockInvoke, name: string) =>
   mockInvoke.bind(`${name}_trigger`) as jest.Mock;
 
-// Simulates the WebView side of invoke-lib's bindAsync protocol: every
-// `${name}_trigger` message is answered through `${name}_resolve`/`_reject`.
+/**
+ * Simulates the WebView side of invoke-lib's `bindAsync` protocol: every
+ * `${name}_trigger` message is answered through `${name}_resolve` / `_reject`.
+ *
+ * @param mockInvoke - Mocked invoke created by the view.
+ * @param name - Async method name bound through `bindAsync`.
+ * @param reply - Value to resolve with, or an error message to reject with.
+ * @param reply.result - Value to resolve with.
+ * @param reply.error - Error message to reject with.
+ */
 const respondFromWebView = (
   mockInvoke: MockInvoke,
   name: string,
@@ -95,6 +122,11 @@ const respondFromWebView = (
   );
 };
 
+/**
+ * Lets pending promise callbacks run.
+ *
+ * @returns A promise resolved on the next macrotask.
+ */
 const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
 
 describe('PPOMView', () => {
