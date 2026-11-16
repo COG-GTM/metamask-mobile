@@ -114,6 +114,33 @@ describe('withQRHardwareAwareness', () => {
     });
   });
 
+  it.each([
+    {
+      name: 'signing only',
+      state: { sync: { reading: false }, sign: { request: signRequest } },
+      isSigningQRObject: true,
+      isSyncingQRHardware: false,
+    },
+    {
+      name: 'syncing only',
+      state: { sync: { reading: true }, sign: {} },
+      isSigningQRObject: false,
+      isSyncingQRHardware: true,
+    },
+  ])(
+    'derives each flag from its own source ($name)',
+    ({ state, isSigningQRObject, isSyncingQRHardware }) => {
+      render(<Wrapped />);
+      act(() => getSubscribedHandler()(state as IQRState));
+
+      expect(lastRenderedProps()).toEqual({
+        isSigningQRObject,
+        isSyncingQRHardware,
+        QRState: state,
+      });
+    },
+  );
+
   it('does not resubscribe on re-render', () => {
     const { rerender } = render(<Wrapped label="first" />);
     rerender(<Wrapped label="second" />);
