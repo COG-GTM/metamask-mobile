@@ -1442,9 +1442,9 @@ export const parseTransactionLegacy = (
  * Validate transaction value for speed up or cancel transaction actions
  *
  * @param {object} transaction - Transaction object to validate
- * @param {string} rate - Rate to validate
- * @param {string} accounts - Map of accounts to information objects including balances
- * @returns {string} - Whether the balance is validated or not
+ * @param {number} rate - Gas price multiplier for the replacement transaction (e.g. SPEED_UP_RATE)
+ * @param {object} accounts - Map of accounts to information objects including balances
+ * @returns {boolean} - Whether the balance is insufficient (action should be disabled)
  */
 export function validateTransactionActionBalance(transaction, rate, accounts) {
   try {
