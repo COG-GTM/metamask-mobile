@@ -104,6 +104,7 @@ const AUTH_DATA = {
 };
 const PASSCODE_NOT_SET_ERROR = 'Error: Passcode not set.';
 const INITIAL_LOCK_TIME = 30000;
+const PASSWORD_ALREADY_SET = { passwordSet: true, seedphraseBackedUp: false };
 
 const hdKeyring = (count: number): MockKeyring => ({
   type: 'HD Key Tree',
@@ -122,7 +123,11 @@ const mockNavigation = {
   push: jest.fn(),
 };
 
-const renderChoosePassword = (previousScreen?: string) =>
+// Defaults to the opposite of the success end state so the dispatches are observable
+const renderChoosePassword = (
+  previousScreen?: string,
+  user = { passwordSet: false, seedphraseBackedUp: true },
+) =>
   renderWithProvider(
     <ChoosePassword
       navigation={mockNavigation}
@@ -132,7 +137,7 @@ const renderChoosePassword = (previousScreen?: string) =>
     />,
     {
       state: {
-        user: { passwordSet: true, seedphraseBackedUp: false },
+        user,
         settings: { lockTime: INITIAL_LOCK_TIME },
       },
     },
@@ -500,7 +505,7 @@ describe('ChoosePassword', () => {
         mockNavigation.replace.mockImplementationOnce(() => {
           throw new Error('navigation failed');
         });
-        const screen = renderChoosePassword(PROTECT);
+        const screen = renderChoosePassword(PROTECT, PASSWORD_ALREADY_SET);
         fillForm(screen, VALID_PASSWORD);
 
         await submit(screen);
@@ -534,7 +539,7 @@ describe('ChoosePassword', () => {
         (
           Authentication.componentAuthenticationType as jest.Mock
         ).mockRejectedValueOnce(new Error('Passcode not set.'));
-        const screen = renderChoosePassword(ONBOARDING);
+        const screen = renderChoosePassword(ONBOARDING, PASSWORD_ALREADY_SET);
         fillForm(screen, VALID_PASSWORD);
 
         await submit(screen);
@@ -578,7 +583,7 @@ describe('ChoosePassword', () => {
         (Authentication.newWalletAndRestore as jest.Mock)
           .mockRejectedValueOnce(new Error('Passcode not set.'))
           .mockResolvedValueOnce(undefined);
-        const screen = renderChoosePassword(PROTECT);
+        const screen = renderChoosePassword(PROTECT, PASSWORD_ALREADY_SET);
         fillForm(screen, VALID_PASSWORD);
 
         await submit(screen);
@@ -612,7 +617,7 @@ describe('ChoosePassword', () => {
         const expectedError = `Error: ${strings(
           'choose_password.disable_biometric_error',
         )}`;
-        const screen = renderChoosePassword(ONBOARDING);
+        const screen = renderChoosePassword(ONBOARDING, PASSWORD_ALREADY_SET);
         fillForm(screen, VALID_PASSWORD);
 
         await submit(screen);
@@ -645,7 +650,7 @@ describe('ChoosePassword', () => {
         (Authentication.newWalletAndRestore as jest.Mock).mockRejectedValueOnce(
           restoreError,
         );
-        const screen = renderChoosePassword(ONBOARDING);
+        const screen = renderChoosePassword(ONBOARDING, PASSWORD_ALREADY_SET);
         fillForm(screen, VALID_PASSWORD);
 
         await submit(screen);
