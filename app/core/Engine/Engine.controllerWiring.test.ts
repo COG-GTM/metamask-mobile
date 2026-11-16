@@ -372,7 +372,17 @@ describe('Engine controller wiring', () => {
       expect(result).toBe(flags);
     });
 
-    it.each([
+    it.each<
+      [
+        (
+          | 'getNonceLock'
+          | 'confirmExternalTransaction'
+          | 'getTransactions'
+          | 'updateTransaction'
+        ),
+        unknown[],
+      ]
+    >([
       ['getNonceLock', ['0xabc', 'mainnet']],
       ['confirmExternalTransaction', [{ id: '1' }, { status: 1 }, '0x1']],
       ['getTransactions', [{ searchCriteria: { from: '0xabc' } }]],
@@ -381,10 +391,7 @@ describe('Engine controller wiring', () => {
       const engine = initEngine();
       const sentinel = Symbol(method);
       const transactionControllerSpy = jest
-        .spyOn(
-          engine.context.TransactionController,
-          method as keyof typeof engine.context.TransactionController,
-        )
+        .spyOn(engine.context.TransactionController, method)
         .mockReturnValue(sentinel as never);
 
       const result = mockConstructorOptions.SmartTransactionsController[method](
