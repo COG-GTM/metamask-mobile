@@ -463,6 +463,13 @@ describe('Migration #29', () => {
     });
   }
 
+  it('keeps already migrated networkDetails when run again', async () => {
+    const firstRun = await migration(merge({}, oldState));
+    const secondRun = await migration(merge({}, firstRun));
+
+    expect(secondRun).toStrictEqual(expectedNewState);
+  });
+
   it('All states changing as expected', async () => {
     const newState = await migration(oldState);
 
