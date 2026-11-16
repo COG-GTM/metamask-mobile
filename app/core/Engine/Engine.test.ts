@@ -210,7 +210,10 @@ describe('Engine', () => {
       );
     });
 
-    it('reconfigures controllers 500ms after the selected network becomes available on a new chain, once per chain', () => {
+    // currentChainId is only updated when the delayed reconfiguration runs, so
+    // repeated events within the 500ms window each schedule a reconfiguration;
+    // this test covers events arriving after the previous one has completed.
+    it('reconfigures controllers 500ms after the selected network becomes available on a new chain, and not again for the same chain once that has run', () => {
       (getGlobalChainId as jest.Mock).mockReturnValue('0xc2221');
 
       publishNetworkStateChange(engine, NetworkStatus.Available);
