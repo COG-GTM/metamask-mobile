@@ -3,7 +3,12 @@ import { useSelector } from 'react-redux';
 import { createSelector } from 'reselect';
 import { RootState } from '../reducers';
 import { SelectedNetworkControllerState } from '@metamask/selected-network-controller';
-import { getNetworkImageSource, NetworkList } from '../util/networks';
+import { NetworkConfiguration } from '@metamask/network-controller';
+import {
+  getNetworkImageSource,
+  isPerDappSelectedNetworkEnabled,
+  NetworkList,
+} from '../util/networks';
 import { strings } from '../../locales/i18n';
 import {
   selectProviderConfig,
@@ -19,6 +24,16 @@ import { isNonEvmChainId } from '../core/Multichain/utils';
 
 const selectSelectedNetworkControllerState = (state: RootState) =>
   state?.engine?.backgroundState?.SelectedNetworkController;
+
+const findNetworkConfigurationByClientId = (
+  networkConfigurations: Record<string, NetworkConfiguration> | undefined,
+  networkClientId: string,
+) =>
+  Object.values(networkConfigurations ?? {}).find((networkConfiguration) =>
+    networkConfiguration.rpcEndpoints?.some(
+      (rpcEndpoint) => rpcEndpoint.networkClientId === networkClientId,
+    ),
+  );
 
 export const selectNetworkClientIdsByDomains = createSelector(
   selectSelectedNetworkControllerState,
@@ -54,9 +69,11 @@ const selectProviderNetworkName = createSelector(
     }
 
     if (providerConfig.type === 'rpc') {
-      return networkConfigurations[chainId]?.rpcEndpoints.find(
-        ({ networkClientId }) => networkClientId === selectedNetworkClientId,
-      )?.name;
+      return (
+        networkConfigurations[chainId]?.rpcEndpoints.find(
+          ({ networkClientId }) => networkClientId === selectedNetworkClientId,
+        )?.name || providerConfig.nickname
+      );
     }
     let name;
     if (providerConfig.nickname) {
@@ -88,7 +105,6 @@ export const makeSelectNetworkName = () =>
       selectProviderNetworkName,
       makeSelectDomainNetworkClientId(),
       selectNetworkClientId,
-      selectEvmChainId,
       (_: RootState, hostname?: string) => hostname,
     ],
     (
@@ -96,20 +112,24 @@ export const makeSelectNetworkName = () =>
       providerNetworkName,
       domainNetworkClientId,
       globalNetworkClientId,
-      chainId,
       hostname,
     ) => {
-      if (!hostname || !process.env.MM_PER_DAPP_SELECTED_NETWORK)
+      if (!hostname || !isPerDappSelectedNetworkEnabled())
         return providerNetworkName;
       const relevantNetworkClientId =
         domainNetworkClientId || globalNetworkClientId;
+      const networkConfig = findNetworkConfigurationByClientId(
+        networkConfigurations,
+        relevantNetworkClientId,
+      );
       return (
-        networkConfigurations[chainId]?.rpcEndpoints.find(
+        networkConfig?.rpcEndpoints.find(
           ({ networkClientId }: { networkClientId: string }) =>
             networkClientId === relevantNetworkClientId,
         )?.name ||
         // @ts-expect-error The utils/network file is still JS
-        NetworkList[relevantNetworkClientId]?.name
+        NetworkList[relevantNetworkClientId]?.name ||
+        networkConfig?.name
       );
     },
   );
@@ -121,7 +141,6 @@ export const makeSelectNetworkImageSource = () =>
       selectProviderNetworkImageSource,
       makeSelectDomainNetworkClientId(),
       selectNetworkClientId,
-      selectEvmChainId,
       (_: RootState, hostname?: string) => hostname,
     ],
     (
@@ -129,15 +148,17 @@ export const makeSelectNetworkImageSource = () =>
       providerNetworkImageSource,
       domainNetworkClientId,
       globalNetworkClientId,
-      chainId,
       hostname,
     ) => {
-      if (!hostname || !process.env.MM_PER_DAPP_SELECTED_NETWORK)
+      if (!hostname || !isPerDappSelectedNetworkEnabled())
         return providerNetworkImageSource;
       const relevantNetworkClientId =
         domainNetworkClientId || globalNetworkClientId;
 
-      const networkConfig = networkConfigurations[chainId];
+      const networkConfig = findNetworkConfigurationByClientId(
+        networkConfigurations,
+        relevantNetworkClientId,
+      );
       if (networkConfig) {
         return getNetworkImageSource({ chainId: networkConfig.chainId });
       }
@@ -153,29 +174,33 @@ export const makeSelectNetworkImageSource = () =>
 export const makeSelectChainId = () =>
   createSelector(
     [
+      selectEvmNetworkConfigurationsByChainId,
       selectProviderChainId,
       makeSelectDomainNetworkClientId(),
       selectNetworkClientId,
-      selectEvmChainId,
       (_: RootState, hostname?: string) => hostname,
     ],
     (
+      networkConfigurations,
       providerChainId,
       domainNetworkClientId,
       globalNetworkClientId,
-      chainId,
       hostname,
     ) => {
-      if (!hostname || !process.env.MM_PER_DAPP_SELECTED_NETWORK) {
+      if (!hostname || !isPerDappSelectedNetworkEnabled()) {
         return providerChainId;
       }
       const relevantNetworkClientId =
         domainNetworkClientId || globalNetworkClientId;
 
       return (
-        chainId ||
+        findNetworkConfigurationByClientId(
+          networkConfigurations,
+          relevantNetworkClientId,
+        )?.chainId ||
         // @ts-expect-error The utils/network file is still JS
-        NetworkList[relevantNetworkClientId]?.chainId
+        NetworkList[relevantNetworkClientId]?.chainId ||
+        providerChainId
       );
     },
   );
@@ -202,11 +227,14 @@ export const makeSelectRpcUrl = () =>
       if (isNonEvmChainId(chainId)) {
         return;
       }
-      if (!hostname || !process.env.MM_PER_DAPP_SELECTED_NETWORK)
+      if (!hostname || !isPerDappSelectedNetworkEnabled())
         return providerRpcUrl;
       const relevantNetworkClientId =
         domainNetworkClientId || globalNetworkClientId;
-      return networkConfigurations[chainId]?.rpcEndpoints.find(
+      return findNetworkConfigurationByClientId(
+        networkConfigurations,
+        relevantNetworkClientId,
+      )?.rpcEndpoints.find(
         ({ networkClientId }) => networkClientId === relevantNetworkClientId,
       )?.url;
     },
