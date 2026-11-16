@@ -12,7 +12,11 @@ import { NetworkController } from '@metamask/network-controller';
 import { selectSwapsChainFeatureFlags } from '../../../../reducers/swaps';
 import { selectShouldUseSmartTransaction } from '../../../../selectors/smartTransactionsController';
 import { getGlobalChainId } from '../../../../util/networks/global-network';
-import { submitSmartTransactionHook } from '../../../../util/smart-transactions/smart-publish-hook';
+import {
+  submitBatchSmartTransactionHook,
+  submitSmartTransactionHook,
+} from '../../../../util/smart-transactions/smart-publish-hook';
+import { getTransactionById } from '../../../../util/transactions';
 import { ExtendedControllerMessenger } from '../../../ExtendedControllerMessenger';
 import { buildControllerInitRequestMock } from '../../utils/test-utils';
 import { TransactionControllerInitMessenger } from '../../messengers/transaction-controller-messenger';
@@ -25,6 +29,7 @@ import {
   handleTransactionRejectedEventForMetrics,
   handleTransactionSubmittedEventForMetrics,
 } from './event-handlers/metrics';
+import { handleShowNotification } from './event-handlers/notification';
 import { Hex } from '@metamask/utils';
 
 jest.mock('@metamask/transaction-controller');
@@ -33,6 +38,7 @@ jest.mock('../../../../selectors/smartTransactionsController');
 jest.mock('../../../../util/networks/global-network');
 jest.mock('../../../../util/smart-transactions/smart-publish-hook');
 jest.mock('./event-handlers/metrics');
+jest.mock('./event-handlers/notification');
 jest.mock('../../../../util/transactions', () => ({
   getTransactionById: jest.fn((_id) => ({
     id: _id,
@@ -117,6 +123,11 @@ describe('Transaction Controller Init', () => {
   );
   const handleTransactionAddedEventForMetricsMock = jest.mocked(
     handleTransactionAddedEventForMetrics,
+  );
+  const handleShowNotificationMock = jest.mocked(handleShowNotification);
+  const getTransactionByIdMock = jest.mocked(getTransactionById);
+  const submitBatchSmartTransactionHookMock = jest.mocked(
+    submitBatchSmartTransactionHook,
   );
 
   /**
@@ -299,13 +310,15 @@ describe('Transaction Controller Init', () => {
       networkClientId: 'selectedNetworkClientId',
     };
 
-    const getTransactionByIdMock = jest.requireMock('../../../../util/transactions').getTransactionById;
-    getTransactionByIdMock.mockReturnValue(mockTransactionMeta);
+    getTransactionByIdMock.mockReturnValue(
+      mockTransactionMeta as TransactionMeta,
+    );
 
     selectShouldUseSmartTransactionMock.mockReturnValue(true);
 
-    const submitBatchSmartTransactionHookMock = jest.requireMock('../../../../util/smart-transactions/smart-publish-hook').submitBatchSmartTransactionHook;
-    submitBatchSmartTransactionHookMock.mockResolvedValue({ results: [{ transactionHash: '0xhash' }] });
+    submitBatchSmartTransactionHookMock.mockResolvedValue({
+      results: [{ transactionHash: '0xhash' }],
+    });
 
     const hooks = testConstructorOption('hooks');
 
@@ -333,6 +346,56 @@ describe('Transaction Controller Init', () => {
     );
   });
 
+  describe('publishBatch hook', () => {
+    const mockBatchTransactions = [
+      { id: '122', signedTx: '0x1111' as Hex },
+      { id: '123', signedTx: '0x2222' as Hex },
+    ] as unknown as PublishBatchHookTransaction[];
+
+    function callPublishBatch() {
+      const hooks = testConstructorOption('hooks');
+      return hooks?.publishBatch?.({
+        transactions: mockBatchTransactions,
+        from: '0x123',
+        networkClientId: 'selectedNetworkClientId',
+      });
+    }
+
+    it('rejects if the last transaction cannot be found', async () => {
+      getTransactionByIdMock.mockReturnValue(undefined);
+
+      await expect(callPublishBatch()).rejects.toThrow(
+        'publishBatchSmartTransactionHook: Could not find transaction with id 123',
+      );
+      expect(getTransactionByIdMock).toHaveBeenCalledWith(
+        '123',
+        expect.anything(),
+      );
+      expect(submitBatchSmartTransactionHookMock).not.toHaveBeenCalled();
+    });
+
+    it('rejects if smart transactions are not enabled for the chain', async () => {
+      getTransactionByIdMock.mockReturnValue({
+        id: '123',
+        chainId: '0x5',
+        status: 'approved',
+        time: 123,
+        txParams: { from: '0x123' },
+        networkClientId: 'selectedNetworkClientId',
+      } as TransactionMeta);
+      selectShouldUseSmartTransactionMock.mockReturnValue(false);
+
+      await expect(callPublishBatch()).rejects.toThrow(
+        'publishBatchSmartTransactionHook: Smart Transaction is required for batch submissions',
+      );
+      expect(selectShouldUseSmartTransactionMock).toHaveBeenCalledWith(
+        undefined,
+        '0x5',
+      );
+      expect(submitBatchSmartTransactionHookMock).not.toHaveBeenCalled();
+    });
+  });
+
   it('determines incoming transactions based on preferences', () => {
     const MOCK_CHAIN_ID = '0x1';
     const option = testConstructorOption(
@@ -355,6 +418,29 @@ describe('Transaction Controller Init', () => {
     expect(isEnabledFn?.()).toBe(true);
     expect(updateTransactionsProp).toBe(true);
   });
+
+  it.each([
+    ['current chain is not in preferences', { '0x5': true }, '0x1'],
+    ['current chain preference is false', { '0x1': false }, '0x1'],
+    ['preferences are empty', {}, '0x1'],
+  ])(
+    'disables incoming transactions if %s',
+    (_title, showIncomingTransactions, currentChainId) => {
+      const option = testConstructorOption(
+        'incomingTransactions',
+        {
+          state: {
+            showIncomingTransactions,
+          },
+        },
+        {
+          getGlobalChainId: () => currentChainId,
+        },
+      );
+
+      expect(option?.isEnabled?.()).toBe(false);
+    },
+  );
 
   it('determines if automatic gas fee update is enabled based on transaction type', () => {
     const option = testConstructorOption('isAutomaticGasFeeUpdateEnabled');
@@ -387,10 +473,14 @@ describe('Transaction Controller Init', () => {
 
   it('calls appropriate handlers when transaction events are triggered', () => {
     const mockSubscribe = jest.fn();
-    const subscribeCallbacks: Record<string, (...args: unknown[]) => void> = {};
+    const subscribeCallbacks: Record<string, ((...args: unknown[]) => void)[]> =
+      {};
 
     mockSubscribe.mockImplementation((eventName, callback) => {
-      subscribeCallbacks[eventName] = callback;
+      subscribeCallbacks[eventName] = [
+        ...(subscribeCallbacks[eventName] ?? []),
+        callback,
+      ];
     });
 
     const requestMock = buildInitRequestMock({
@@ -414,6 +504,12 @@ describe('Transaction Controller Init', () => {
     };
 
     const eventHandlerMap = [
+      {
+        event: 'TransactionController:transactionApproved',
+        handler: handleShowNotificationMock,
+        payload: { transactionMeta: mockTransactionMeta },
+        expectedArgs: [mockTransactionMeta],
+      },
       {
         event: 'TransactionController:transactionApproved',
         handler: handleTransactionApprovedEventForMetricsMock,
@@ -458,12 +554,12 @@ describe('Transaction Controller Init', () => {
       },
     ];
 
-    // Verify all events are subscribed
-    expect(Object.keys(subscribeCallbacks).length).toBe(eventHandlerMap.length);
+    expect(mockSubscribe).toHaveBeenCalledTimes(eventHandlerMap.length);
 
-    // Test each event handler
     eventHandlerMap.forEach(({ event, handler, payload, expectedArgs }) => {
-      subscribeCallbacks[event](payload);
+      jest.clearAllMocks();
+      subscribeCallbacks[event].forEach((callback) => callback(payload));
+      expect(handler).toHaveBeenCalledTimes(1);
       expect(handler).toHaveBeenCalledWith(...expectedArgs);
     });
   });
