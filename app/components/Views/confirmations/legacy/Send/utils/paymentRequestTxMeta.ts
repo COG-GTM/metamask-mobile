@@ -6,7 +6,7 @@ import {
 import { generateTransferData } from '../../../../../../util/transactions';
 
 const MAX_UINT256 = new BigNumber(2).pow(256).minus(1);
-const DECIMAL_NUMBER_REGEX = /^-?\d+(\.\d+)?(e[+-]?\d+)?$/i;
+const DECIMAL_NUMBER_REGEX = /^-?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i;
 
 export class InvalidPaymentRequestError extends Error {
   constructor(message: string) {

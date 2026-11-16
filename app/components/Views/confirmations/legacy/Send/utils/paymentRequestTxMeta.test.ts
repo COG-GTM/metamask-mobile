@@ -33,6 +33,13 @@ describe('parsePaymentRequestAmount', () => {
   });
 
   it.each([
+    ['.5e18', '500000000000000000'],
+    ['5.e1', '50'],
+  ])('accepts decimal notation %p', (input, expected) => {
+    expect(parsePaymentRequestAmount(input).toFixed()).toBe(expected);
+  });
+
+  it.each([
     '-1',
     '1.5',
     `1.${'0'.repeat(36)}1`,
