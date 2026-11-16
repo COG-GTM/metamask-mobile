@@ -107,15 +107,30 @@ describe('Migration #28', () => {
   });
 
   it('should only remove controller files after the root file is written', async () => {
-    await migrate({});
+    let resolveRootWrite;
+    FilesystemStorage.setItem.mockImplementation(
+      (key, value) =>
+        new Promise((resolve) => {
+          resolveRootWrite = () => {
+            storage.set(key, value);
+            resolve();
+          };
+        }),
+    );
 
-    const [setItemOrder] = FilesystemStorage.setItem.mock.invocationCallOrder;
-    const removeItemOrders =
-      FilesystemStorage.removeItem.mock.invocationCallOrder;
-    expect(removeItemOrders).toHaveLength(controllerList.length);
-    removeItemOrders.forEach((order) => {
-      expect(order).toBeGreaterThan(setItemOrder);
-    });
+    const migration = migrate({});
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(FilesystemStorage.setItem).toHaveBeenCalledTimes(1);
+    expect(FilesystemStorage.removeItem).not.toHaveBeenCalled();
+
+    resolveRootWrite();
+    await migration;
+
+    expect(FilesystemStorage.removeItem).toHaveBeenCalledTimes(
+      controllerList.length,
+    );
+    expect([...storage.keys()]).toEqual(['persist:root']);
   });
 
   it('should not remove any controller files when writing the root file fails', async () => {
@@ -166,6 +181,29 @@ describe('Migration #28', () => {
         );
         expect(storage.has(controllerKey(name))).toBe(false);
       });
+  });
+
+  it('should remove a duplicated controller file when one of its reads succeeds', async () => {
+    const accountTrackerKey = controllerKey('AccountTrackerController');
+    let accountTrackerReads = 0;
+    FilesystemStorage.getItem.mockImplementation(async (key) => {
+      if (key === accountTrackerKey && accountTrackerReads++ === 0) {
+        throw new Error('read failed');
+      }
+      return storage.has(key) ? storage.get(key) : null;
+    });
+
+    const result = await migrate({});
+
+    expect(accountTrackerReads).toBe(2);
+    expect(result).toEqual({
+      engine: { backgroundState: expectedBackgroundState() },
+    });
+    expect(captureException).toHaveBeenCalledTimes(1);
+    expect(FilesystemStorage.removeItem).toHaveBeenCalledWith(
+      accountTrackerKey,
+    );
+    expect([...storage.keys()]).toEqual(['persist:root']);
   });
 
   it('should keep a controller file that cannot be parsed', async () => {
