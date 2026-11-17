@@ -34,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat(earn): add pooled-staking and stablecoin lending remote feature flags ([#14660](https://github.com/MetaMask/metamask-mobile/pull/14660))
 - feat: feat: AccountConnect and AccountApproval use dapp scanning ([#14514](https://github.com/MetaMask/metamask-mobile/pull/14514/))
 
+### Changed
+
+- docs: refresh architecture doc and diagram for current main, update README layout ([#2371](https://github.com/COG-GTM/metamask-mobile/pull/2371))
+
 ### Fixed
 
 - fix(multi-srp): display multichain accounts in SRP list ([#14724](https://github.com/MetaMask/metamask-mobile/pull/14724))
