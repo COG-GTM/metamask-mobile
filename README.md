@@ -12,6 +12,8 @@ To learn how to develop MetaMask-compatible applications, visit our [Developer D
 
 To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs](https://github.com/MetaMask/contributor-docs).
 
+This repository is the COG-GTM fork of [MetaMask/metamask-mobile](https://github.com/MetaMask/metamask-mobile); open pull requests against this fork.
+
 ## Documentation
 
 - [Architecture](./docs/readme/architecture.md)
@@ -24,6 +26,21 @@ To learn how to contribute to the MetaMask codebase, visit our [Contributor Docs
 - [Storybook](./docs/readme/storybook.md)
 - [Miscellaneous](./docs/readme/miscellaneous.md)
 - [E2E Testing Segment Events](./docs/testing/e2e/segment-events.md)
+
+## Repository layout
+
+| Path | Contents |
+| --- | --- |
+| `app/` | The React Native app: `components/` (screens and navigation), `core/` (Engine, controllers, dApp connections, Snaps), `store/` and `reducers/` (Redux), `selectors/`, `lib/` (PPOM and Snaps WebViews), `util/` |
+| `android/`, `ios/` | Native projects |
+| `ppom/` | Blockaid PPOM WebView bundle, built by `yarn setup` |
+| `e2e/` | Detox end-to-end tests |
+| `wdio/` | Appium + WebdriverIO tests for launch times and upgrades |
+| `locales/` | Translations |
+| `scripts/` | Setup, build and release scripts |
+| `docs/` | Developer docs, including the [architecture](./docs/readme/architecture.md) diagram |
+
+See [Architecture](./docs/readme/architecture.md) for how these parts fit together.
 
 ## Getting started
 
@@ -38,7 +55,7 @@ Expo is the fastest way to start developing. With the Expo framework, developers
 #### Clone the project
 
 ```bash
-git clone git@github.com:MetaMask/metamask-mobile.git && \
+git clone https://github.com/COG-GTM/metamask-mobile.git && \
 cd metamask-mobile
 ```
 
@@ -96,7 +113,7 @@ Before running the app for native development, make sure your development enviro
 **Clone the project**
 
 ```bash
-git clone git@github.com:MetaMask/metamask-mobile.git && \
+git clone https://github.com/COG-GTM/metamask-mobile.git && \
 cd metamask-mobile
 ```
 
@@ -107,7 +124,7 @@ MetaMask uses Firebase Cloud Messaging (FCM) to enable app communications. To in
 ###### Internal Contributor instructions
 
 1. Grab the `.js.env` file from 1Password, ask around for the correct vault. This file contains the `GOOGLE_SERVICES_B64_ANDROID` and `GOOGLE_SERVICES_B64_IOS` secrets that will be used to generate the relevant configuration files for IOS/Android.
-2. [Install](./README.md#install-dependencies) and [run & start](./README.md#running-the-app) the application as documented below.
+2. [Install](./README.md#install-dependencies-1) and [run & start](./README.md#running-the-app-for-native-development) the application as documented below.
 
 ###### External Contributor instructions
 
@@ -158,7 +175,7 @@ yarn watch
 
 _Like a local server for the app_
 
-**Run on a iOS device**
+**Run on an iOS device**
 
 ```bash
 yarn start:ios
