@@ -1,0 +1,96 @@
+// MetaMask Mobile runtime architecture (main branch).
+// Edit this file, then run docs/diagrams/render.sh to regenerate architecture.png and architecture.svg.
+digraph metamask_mobile {
+  graph [rankdir=TB, fontname="DejaVu Sans", fontsize=20, nodesep=0.35, ranksep=0.55,
+         splines=true, compound=true, newrank=true, pad=0.3, bgcolor=white, labelloc=t,
+         label="MetaMask Mobile architecture (main)"];
+  node  [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=16,
+         fillcolor=white, color="#5f6b7a", margin="0.18,0.08"];
+  edge  [fontname="DejaVu Sans", fontsize=13, color="#5f6b7a"];
+
+  subgraph cluster_entry {
+    label="Entry points"; style="rounded,dashed"; color="#999999";
+    user    [label="User\n(screens, gestures)", fillcolor="#fde2e4"];
+    dapp    [label="dApp in a browser tab\n(BrowserTab WebView +\ninjected inpage provider)", fillcolor="#fde2e4"];
+    sdk     [label="MetaMask SDK dApps\n(core/SDKConnect)", fillcolor="#fde2e4"];
+    wc      [label="WalletConnect v2\n(core/WalletConnect)", fillcolor="#fde2e4"];
+    deeplink[label="Deeplinks / Branch\n(core/DeeplinkManager)", fillcolor="#fde2e4"];
+  }
+
+  subgraph cluster_ui {
+    label="UI  (app/components)"; style="rounded,filled"; fillcolor="#eef4ff"; color="#7a9cc6";
+    root  [label="Root\nRedux Provider, SnapsExecutionWebView,\nNavigationProvider, ControllersGate"];
+    nav   [label="Nav/App + Nav/Main\nonboarding & login stack,\ntabs: Wallet | Browser | Actions | Activity | Settings"];
+    views [label="Views / UI / component-library\n(+ selectors)"];
+  }
+
+  subgraph cluster_state {
+    label="State  (app/store, app/reducers)"; style="rounded,filled"; fillcolor="#eefaf0"; color="#7fb08a";
+    redux   [label="Redux store\nreducers + engine.backgroundState"];
+    sagas   [label="redux-saga\nauth / app-lock state machines,\nstartAppServices"];
+    persist [label="redux-persist + migrations\nFilesystemStorage, MMKV"];
+  }
+
+  subgraph cluster_core {
+    label="Core  (app/core)"; style="rounded,filled"; fillcolor="#fff7e6"; color="#d6a64f";
+    bridge  [label="BackgroundBridge (one per connection)\nJsonRpcEngine: origin, selected-network, filters,\nEIP-1193, permissions, Snaps methods,\nRPCMethodMiddleware, sanitization"];
+    service [label="EngineService\nstarts Engine, relays controller\nstate changes to Redux"];
+    engine  [label="Engine singleton (core/Engine)\nControllerMessenger + ComposableController", fillcolor="#ffe8b3"];
+  }
+
+  subgraph cluster_ctrl {
+    label="Controllers  (core/Engine/controllers + @metamask/*-controller packages)"; style="rounded,filled"; fillcolor="#fffbf0"; color="#d6a64f";
+    keys    [label="Accounts & keys\nKeyringController, AccountsController,\nSnapKeyring, Ledger / QR hardware"];
+    net     [label="Networks\nNetworkController, SelectedNetwork,\nMultichainNetwork"];
+    tx      [label="Transactions & signing\nTransaction, SmartTransactions, GasFee,\nSignature, Approval"];
+    assets  [label="Assets\nTokens, NFTs, balances, rates,\nmultichain assets / balances"];
+    perms   [label="Permissions\nPermissionController,\nSubjectMetadata"];
+    snaps   [label="Snaps\nSnapController, ExecutionService,\nCronjob, SnapInterface, Registry"];
+    sec     [label="Security\nPPOMController (Blockaid),\nPhishingController"];
+    more    [label="Swaps, Bridge, Earn,\nIdentity / profile sync, Notifications,\nRemote feature flags"];
+    { rank=same; keys; net; tx; assets; }
+    { rank=same; perms; snaps; sec; more; }
+    keys -> perms [style=invis]; net -> snaps [style=invis]; tx -> sec [style=invis]; assets -> more [style=invis];
+  }
+
+  subgraph cluster_native {
+    label="Hidden WebViews & device storage"; style="rounded,filled"; fillcolor="#f3eefc"; color="#9a84c4";
+    snapwv  [label="SnapsExecutionWebView\n(app/lib/snaps)"];
+    ppomwv  [label="PPOMView WebView\n(app/lib/ppom, bundle built from ppom/)"];
+    vault   [label="Encrypted vault (Encryptor)\n+ SecureKeychain (react-native-keychain)"];
+  }
+
+  subgraph cluster_ext {
+    label="External services"; style="rounded,dashed"; color="#999999";
+    rpc     [label="Ethereum / EVM RPC\n(Infura and custom RPCs)", fillcolor="#f2f2f2"];
+    apis    [label="MetaMask & partner APIs\n(tokens, prices, swaps, bridge,\nBlockaid security alerts)", fillcolor="#f2f2f2"];
+    telem   [label="Segment (MetaMetrics), Sentry,\nFirebase Cloud Messaging", fillcolor="#f2f2f2"];
+  }
+
+  user -> root;
+  root -> nav -> views;
+  views -> redux [label="dispatch / select"];
+  views -> engine [label="Engine.context\ncontroller calls"];
+  redux -> sagas [dir=both];
+  redux -> persist [label="rehydrate"];
+  sagas -> service [label="startAppServices"];
+  service -> engine [label=" Engine.init(backgroundState);\n state change events back", dir=both, arrowtail=normal];
+  service -> redux [headlabel="UPDATE_BG_STATE", labelangle=25, labeldistance=7, style=dashed];
+
+  dapp -> bridge [label="postMessage streams"];
+  sdk -> bridge;
+  wc -> bridge;
+  deeplink -> nav;
+  deeplink -> sdk [style=dashed];
+  bridge -> engine [label="RPC requests"];
+
+  engine -> net [lhead=cluster_ctrl, label="init + messenger"];
+
+  keys -> vault;
+  snaps -> snapwv [label="executes snaps"];
+  sec -> ppomwv [label="validates requests"];
+  net -> rpc;
+  tx -> rpc;
+  assets -> apis; more -> apis; sec -> apis [style=dashed];
+  views -> telem [style=dashed, label="analytics / errors"];
+}
