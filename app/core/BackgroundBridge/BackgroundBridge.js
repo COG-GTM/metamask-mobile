@@ -60,6 +60,7 @@ export class BackgroundBridge extends EventEmitter {
   constructor({
     webview,
     url,
+    permissionSubject = undefined,
     getRpcMethodMiddleware,
     isMainFrame,
     isRemoteConn,
@@ -74,7 +75,9 @@ export class BackgroundBridge extends EventEmitter {
     super();
     this.url = url;
     // TODO - When WalletConnect and MMSDK uses the Permission System, URL does not apply in all conditions anymore since hosts may not originate from web. This will need to change!
-    this.hostname = new URL(url).hostname;
+    // WalletConnect sessions pass their own permission subject so they never
+    // share the in-app browser's grant for the dapp's self-declared hostname.
+    this.hostname = permissionSubject ?? new URL(url).hostname;
     this.remoteConnHost = remoteConnHost;
     this.isMainFrame = isMainFrame;
     this.isWalletConnect = isWalletConnect;
@@ -279,7 +282,7 @@ export class BackgroundBridge extends EventEmitter {
         `notifySelectedAddressChanged: ${selectedAddress} channelId=${this.channelId} wc=${this.isWalletConnect} url=${this.url}`,
       );
       if (this.isWalletConnect) {
-        approvedAccounts = getPermittedAccounts(this.url);
+        approvedAccounts = getPermittedAccounts(this.hostname);
       } else {
         approvedAccounts = getPermittedAccounts(
           this.channelId ?? this.hostname,

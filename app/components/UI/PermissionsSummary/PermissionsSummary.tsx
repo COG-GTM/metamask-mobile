@@ -29,6 +29,10 @@ import Button, {
   ButtonVariants,
 } from '../../../component-library/components/Buttons/Button';
 import { getHost } from '../../../util/browser';
+import Banner, {
+  BannerAlertSeverity,
+  BannerVariant,
+} from '../../../component-library/components/Banners/Banner';
 import WebsiteIcon from '../WebsiteIcon';
 import useSelectedAccount from '../Tabs/TabThumbnail/useSelectedAccount';
 import styleSheet from './PermissionsSummary.styles';
@@ -72,6 +76,7 @@ const PermissionsSummary = ({
   networkAvatars = [],
   onAddNetwork = () => undefined,
   onChooseFromPermittedNetworks = () => undefined,
+  originWarning,
 }: PermissionsSummaryProps) => {
   const { colors } = useTheme();
   const { styles } = useStyles(styleSheet, { isRenderedAsBottomSheet });
@@ -444,6 +449,16 @@ const PermissionsSummary = ({
                   })}
             </TextComponent>
           </View>
+          {!!originWarning && (
+            <View style={styles.description}>
+              <Banner
+                variant={BannerVariant.Alert}
+                severity={BannerAlertSeverity.Warning}
+                description={originWarning}
+                testID={PermissionSummaryBottomSheetSelectorsIDs.ORIGIN_WARNING}
+              />
+            </View>
+          )}
           {isNonDappNetworkSwitch && (
             <TextComponent
               variant={TextVariant.BodyMD}

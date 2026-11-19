@@ -907,6 +907,38 @@ describe('getRpcMethodMiddleware', () => {
         (response as JsonRpcSuccess<PermissionConstraint[]>).result,
       ).toEqual([expectedEthAccountsPermission]);
     });
+
+    it('reads the WalletConnect permission subject, not the channelId', async () => {
+      const wcSubject = 'example.com#wc-verified-pairing-1';
+      mockGetPermittedAccounts.mockImplementation(() => [addressMock]);
+      MockEngine.context.PermissionController.getPermissions.mockClear();
+      MockEngine.context.PermissionController.getPermissions.mockImplementation(
+        () => ({}),
+      );
+
+      const middleware = getRpcMethodMiddleware({
+        ...getMinimalOptions(),
+        hostname: wcSubject,
+        channelId: '42',
+        isWalletConnect: true,
+      });
+      await callMiddleware({
+        middleware,
+        request: {
+          jsonrpc,
+          id: 1,
+          method: 'wallet_getPermissions',
+          params: [],
+        },
+      });
+
+      expect(
+        MockEngine.context.PermissionController.getPermissions,
+      ).toHaveBeenCalledWith(wcSubject);
+      expect(
+        MockEngine.context.PermissionController.getPermissions,
+      ).not.toHaveBeenCalledWith('42');
+    });
   });
 
   describe('eth_requestAccounts', () => {
