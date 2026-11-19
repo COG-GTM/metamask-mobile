@@ -575,6 +575,7 @@ describe('WalletConnect2Session', () => {
       });
 
       it.each([
+        ['custom app scheme', 'evil-scheme://x'],
         ['wallet scheme', 'metamask://'],
         ['javascript scheme', 'javascript:alert(1)'],
         ['foreign https host', 'https://phishing.example.org'],

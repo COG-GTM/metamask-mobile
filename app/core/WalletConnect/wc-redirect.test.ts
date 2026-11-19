@@ -5,8 +5,6 @@ const PEER_URL = 'https://app.example.com';
 
 describe('isSafeWCRedirectLink', () => {
   it.each([
-    'exampledapp://',
-    'exampledapp://callback?id=1',
     'https://app.example.com',
     'https://app.example.com/wc?return=1',
     'https://m.app.example.com/',
@@ -16,6 +14,9 @@ describe('isSafeWCRedirectLink', () => {
   });
 
   it.each([
+    'evil-scheme://x',
+    'exampledapp://',
+    'exampledapp://callback?id=1',
     'metamask://',
     'METAMASK://connect',
     'expo-metamask://',
@@ -60,6 +61,9 @@ describe('isSafeWCRedirectLink', () => {
     expect(isSafeWCRedirectLink('https://app.example.com', 'garbage')).toBe(
       false,
     );
+    expect(
+      isSafeWCRedirectLink('https://app.example.com', 'http://app.example.com'),
+    ).toBe(false);
   });
 
   it('allows https redirects back to a metamask.io subdomain dApp', () => {
@@ -98,10 +102,22 @@ describe('getSafeWCRedirectLink', () => {
   it('prefers a safe native link', () => {
     expect(
       getSafeWCRedirectLink(
-        { native: 'exampledapp://', universal: 'https://app.example.com' },
+        {
+          native: 'https://app.example.com/native',
+          universal: 'https://app.example.com',
+        },
         PEER_URL,
       ),
-    ).toBe('exampledapp://');
+    ).toBe('https://app.example.com/native');
+  });
+
+  it('ignores a custom-scheme native link and uses the https universal link', () => {
+    expect(
+      getSafeWCRedirectLink(
+        { native: 'exampledapp://', universal: 'https://app.example.com/back' },
+        PEER_URL,
+      ),
+    ).toBe('https://app.example.com/back');
   });
 
   it('falls back to a safe universal link when native is unsafe', () => {

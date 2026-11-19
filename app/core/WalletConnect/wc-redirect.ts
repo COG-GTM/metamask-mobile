@@ -1,13 +1,5 @@
 import { PROTOCOLS } from '../../constants/deeplinks';
 
-const WALLET_SCHEMES: string[] = [
-  PROTOCOLS.METAMASK,
-  PROTOCOLS.WC,
-  PROTOCOLS.ETHEREUM,
-  PROTOCOLS.DAPP,
-  'expo-metamask',
-];
-
 // Hosts the app claims as universal/app links (iOS entitlements, Android manifest).
 const WALLET_UNIVERSAL_LINK_HOSTS = [
   'metamask.app.link',
@@ -19,34 +11,6 @@ const WALLET_UNIVERSAL_LINK_HOSTS = [
   'metamask.io',
   'link.metamask.io',
 ];
-
-const BLOCKED_SCHEMES = [
-  'javascript',
-  'vbscript',
-  'data',
-  'blob',
-  'file',
-  'about',
-  'content',
-  'intent',
-  'http',
-  'tel',
-  'telprompt',
-  'sms',
-  'mailto',
-  'facetime',
-  'facetime-audio',
-  'itms',
-  'itms-apps',
-  'itms-appss',
-  'itms-services',
-  'app-settings',
-  'prefs',
-  'app-prefs',
-  'shortcuts',
-];
-
-const CUSTOM_SCHEME_REGEX = /^[a-z][a-z0-9+.-]*$/;
 
 /** Parses a URL, returning undefined instead of throwing when invalid. */
 const parseUrl = (value: string): URL | undefined => {
@@ -62,9 +26,9 @@ const isSameOrSubdomain = (host: string, parentHost: string) =>
   host === parentHost || host.endsWith(`.${parentHost}`);
 
 /**
- * Validates a WalletConnect peer redirect link before it is opened.
- * Custom app schemes are allowed unless they belong to the wallet or are
- * system/script schemes; https links must point at the dApp's own host.
+ * Validates a WalletConnect peer redirect link before it is opened without a
+ * prompt. Only https links back to the dApp's own host (or a subdomain) are
+ * allowed; custom app schemes, wallet links and system schemes are rejected.
  */
 export const isSafeWCRedirectLink = (
   link: string | undefined,
@@ -73,22 +37,15 @@ export const isSafeWCRedirectLink = (
   if (!link || typeof link !== 'string') return false;
 
   const url = parseUrl(link.trim());
-  if (!url) return false;
-
-  const scheme = url.protocol.replace(/:$/, '').toLowerCase();
-  if (!CUSTOM_SCHEME_REGEX.test(scheme)) return false;
-  if (WALLET_SCHEMES.includes(scheme)) return false;
-  if (BLOCKED_SCHEMES.includes(scheme)) return false;
-  if (scheme.startsWith('x-apple')) return false;
-
-  if (scheme !== PROTOCOLS.HTTPS) return true;
+  if (!url || url.protocol !== `${PROTOCOLS.HTTPS}:`) return false;
 
   const host = url.hostname.toLowerCase();
   if (!host || url.username || url.password) return false;
   if (WALLET_UNIVERSAL_LINK_HOSTS.includes(host)) return false;
 
   const peer = peerUrl ? parseUrl(peerUrl) : undefined;
-  const peerHost = peer?.hostname.toLowerCase();
+  if (peer?.protocol !== `${PROTOCOLS.HTTPS}:`) return false;
+  const peerHost = peer.hostname.toLowerCase();
   if (!peerHost) return false;
 
   return isSameOrSubdomain(host, peerHost);
