@@ -68,4 +68,4 @@ export const DERIVATION_OPTIONS_DEFAULT_OWASP2023: KeyDerivationOptions = {
  * SnapController re-encrypt them with these options.
  */
 export const DEFAULT_DERIVATION_OPTIONS: KeyDerivationOptions =
-  DERIVATION_OPTIONS_MINIMUM_OWASP2023;
+  DERIVATION_OPTIONS_DEFAULT_OWASP2023;

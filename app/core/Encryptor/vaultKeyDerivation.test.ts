@@ -67,9 +67,9 @@ const buildKeyringController = (
   });
 
 describe('vault key derivation', () => {
-  it('uses at least the OWASP 2023 minimum for new payloads', () => {
-    expect(DEFAULT_DERIVATION_OPTIONS.params.iterations).toBeGreaterThanOrEqual(
-      KeyDerivationIteration.OWASP2023Minimum,
+  it('uses the OWASP 2023 default iteration count for new payloads', () => {
+    expect(DEFAULT_DERIVATION_OPTIONS.params.iterations).toBe(
+      KeyDerivationIteration.OWASP2023Default,
     );
   });
 
@@ -77,7 +77,7 @@ describe('vault key derivation', () => {
     const encrypted = await defaultEncryptor.encrypt(PASSWORD, { secret: 1 });
 
     expect(iterationsOf(encrypted)).toBe(
-      KeyDerivationIteration.OWASP2023Minimum,
+      KeyDerivationIteration.OWASP2023Default,
     );
     expect(defaultEncryptor.isVaultUpdated(encrypted)).toBe(true);
     expect(await defaultEncryptor.decrypt(PASSWORD, encrypted)).toEqual({
@@ -110,7 +110,7 @@ describe('vault key derivation', () => {
     );
 
     expect(iterationsOf(controller.state.vault as string)).toBe(
-      KeyDerivationIteration.OWASP2023Minimum,
+      KeyDerivationIteration.OWASP2023Default,
     );
   });
 
@@ -132,7 +132,7 @@ describe('vault key derivation', () => {
     const upgradedVault = controller.state.vault as string;
     expect(upgradedVault).not.toBe(legacyVault);
     expect(iterationsOf(upgradedVault)).toBe(
-      KeyDerivationIteration.OWASP2023Minimum,
+      KeyDerivationIteration.OWASP2023Default,
     );
     expect(await controller.getAccounts()).toEqual([legacyAccount]);
 
