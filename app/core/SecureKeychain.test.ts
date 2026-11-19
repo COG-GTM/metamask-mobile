@@ -11,6 +11,7 @@ import {
 } from '../constants/storage';
 import { UserProfileProperty } from '../util/metrics/UserSettingsAnalyticsMetaData/UserProfileAnalyticsMetaData.types';
 import AUTHENTICATION_TYPE from '../constants/userProperties';
+import { DEFAULT_DERIVATION_OPTIONS } from './Encryptor';
 
 jest.mock('../../locales/i18n', () => ({
   strings: jest.fn((key) => key),
@@ -55,6 +56,23 @@ jest.mock('../core/Analytics', () => ({
     })),
   },
 }));
+
+describe('SecureKeychain - encryption', () => {
+  it('encrypts stored passwords with the default key derivation options', async () => {
+    SecureKeychain.init('test_salt');
+
+    await SecureKeychain.setGenericPassword(
+      'test_password',
+      SecureKeychain.TYPES.REMEMBER_ME,
+    );
+
+    const [, encryptedPassword] = (Keychain.setGenericPassword as jest.Mock)
+      .mock.calls[0];
+    expect(JSON.parse(encryptedPassword).keyMetadata).toEqual(
+      DEFAULT_DERIVATION_OPTIONS,
+    );
+  });
+});
 
 describe('SecureKeychain - setGenericPassword', () => {
   const mockPassword = 'test_password';
