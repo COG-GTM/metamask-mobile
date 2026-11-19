@@ -275,6 +275,37 @@ describe('checkWCPermissions wallet_switchEthereumChain approval', () => {
     );
   });
 
+  it('prompts for a scheme-less peer URL such as evil.com', async () => {
+    const origin = 'evil.com';
+    mockSubjects[origin] = setPermittedEthChainIds(
+      getDefaultCaip25CaveatValue(),
+      ['0x1'],
+    );
+    let chainsWhilePrompting: Hex[] = [];
+    ApprovalController.add.mockImplementation(async () => {
+      chainsWhilePrompting = permittedChains(origin);
+      return {};
+    });
+
+    const allowed = await checkWCPermissions({
+      origin,
+      caip2ChainId: 'eip155:137',
+      allowSwitchingToNewChain: true,
+    });
+
+    expect(allowed).toBe(true);
+    expect(ApprovalController.add).toHaveBeenCalledTimes(1);
+    expect(ApprovalController.add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        origin,
+        type: 'SWITCH_ETHEREUM_CHAIN',
+        requestData: expect.objectContaining({ chainId: '0x89' }),
+      }),
+    );
+    expect(chainsWhilePrompting).toEqual(['0x1']);
+    expect(permittedChains(origin)).toEqual(['0x1', '0x89']);
+  });
+
   it('removePermittedChain revokes a chain from a real CAIP-25 caveat', () => {
     mockSubjects[SUBJECT] = setPermittedEthChainIds(
       getDefaultCaip25CaveatValue(),
