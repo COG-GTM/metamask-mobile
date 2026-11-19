@@ -551,13 +551,37 @@ describe('WC2Manager', () => {
   });
 
   describe('WC2Manager isWalletConnect', () => {
-    it('returns true for valid WalletConnect origins', () => {
-      const result = manager.isWalletConnect('https://example.com');
+    let trackedSessions: Record<string, unknown>;
+
+    beforeEach(() => {
+      trackedSessions = (manager as unknown as {
+        sessions: Record<string, unknown>;
+      }).sessions;
+      trackedSessions['tracked-topic'] = {
+        getPermissionSubject: () => 'example.com#wc-verified-test-pairing',
+      };
+    });
+
+    afterEach(() => {
+      delete trackedSessions['tracked-topic'];
+    });
+
+    it('returns true for the permission subject of a tracked session', () => {
+      const result = manager.isWalletConnect(
+        'example.com#wc-verified-test-pairing',
+      );
       expect(result).toBe(true);
     });
 
-    it('returns false for invalid WalletConnect origins', () => {
-      const result = manager.isWalletConnect('https://invalid.com');
+    it('returns false for the peer-claimed metadata url', () => {
+      expect(manager.isWalletConnect('https://example.com')).toBe(false);
+      expect(manager.isWalletConnect('example.com')).toBe(false);
+    });
+
+    it('returns false for unknown WalletConnect subjects', () => {
+      const result = manager.isWalletConnect(
+        'example.com#wc-verified-other-pairing',
+      );
       expect(result).toBe(false);
     });
   });

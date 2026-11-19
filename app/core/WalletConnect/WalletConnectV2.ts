@@ -35,6 +35,7 @@ import {
   buildWalletConnectPermissionSubject,
   findWalletConnectPermissionSubject,
   getWalletConnectVerification,
+  isWalletConnectPermissionSubject,
 } from './wc-verify';
 const { PROJECT_ID } = AppConstants.WALLET_CONNECT;
 export const isWC2Enabled =
@@ -696,9 +697,18 @@ export class WC2Manager {
     }
   }
 
+  /**
+   * Whether `origin` is the permission subject of a tracked WalletConnect
+   * session. The peer's self-declared `metadata.url` is not trusted here.
+   *
+   * @param origin - A PermissionController subject.
+   * @returns True if a live WalletConnect session uses that subject.
+   */
   public isWalletConnect(origin: string) {
-    const sessions = this.getSessions();
-    return sessions.some((session) => session.peer.metadata.url === origin);
+    if (!isWalletConnectPermissionSubject(origin)) return false;
+    return Object.values(this.sessions).some(
+      (session) => session.getPermissionSubject() === origin,
+    );
   }
 
   public async connect({
