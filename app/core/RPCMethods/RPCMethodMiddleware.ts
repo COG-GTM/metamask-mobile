@@ -126,12 +126,16 @@ export const checkActiveAccountAndChainId = async ({
   channelId,
   hostname,
   isWalletConnect,
+  activeAccounts,
 }: {
   address?: string;
   chainId?: number;
   channelId?: string;
   hostname: string;
   isWalletConnect: boolean;
+  // Session-scoped account allowlist for callers (WalletConnect v1) whose
+  // origin has no PermissionController grant. Overrides permitted accounts.
+  activeAccounts?: string[];
 }) => {
   let isInvalidAccount = false;
   if (address) {
@@ -157,7 +161,7 @@ export const checkActiveAccountAndChainId = async ({
     );
 
     const origin = isWalletConnect ? hostname : channelId ?? hostname;
-    const accounts = getPermittedAccounts(origin);
+    const accounts = activeAccounts ?? getPermittedAccounts(origin);
 
     const normalizedAccounts = accounts.map(safeToChecksumAddress);
 
