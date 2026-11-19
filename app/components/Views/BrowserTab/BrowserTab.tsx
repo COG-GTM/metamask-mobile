@@ -103,7 +103,14 @@ import BrowserUrlBar, {
   ConnectionType,
   BrowserUrlBarRef,
 } from '../../UI/BrowserUrlBar';
-import { getMaskedUrl, isENSUrl } from './utils';
+import {
+  getBridgeTokenScript,
+  getMaskedUrl,
+  isENSUrl,
+  isMessageFromBridgeOrigin,
+  unwrapBridgeMessage,
+} from './utils';
+import { v4 as uuidv4 } from 'uuid';
 import { getURLProtocol } from '../../../util/general';
 import { PROTOCOLS } from '../../../constants/deeplinks';
 import Options from './components/Options';
@@ -188,6 +195,10 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     onDisconnect: () => void;
     onMessage: (message: Record<string, unknown>) => void;
   }>();
+  // Secret that the main frame's injected script attaches to every message (Android only)
+  const bridgeTokenRef = useRef<string>(uuidv4());
+  // Incremented on every main frame load so stale async scan results are ignored
+  const loadIdRef = useRef(0);
   const fromHomepage = useRef(false);
   const wizardScrollAdjustedRef = useRef(false);
   const searchEngine = useSelector(selectSearchEngine);
@@ -502,7 +513,12 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
 
     const getEntryScriptWeb3 = async () => {
       const entryScriptWeb3Fetched = await EntryScriptWeb3.get();
-      setEntryScriptWeb3(entryScriptWeb3Fetched + SPA_urlChangeListener);
+      const bridgeTokenScript = Device.isAndroid()
+        ? getBridgeTokenScript(bridgeTokenRef.current)
+        : '';
+      setEntryScriptWeb3(
+        bridgeTokenScript + entryScriptWeb3Fetched + SPA_urlChangeListener,
+      );
     };
 
     getEntryScriptWeb3();
@@ -861,8 +877,13 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
    * Handle message from website
    */
   const onMessage = ({ nativeEvent }: WebViewMessageEvent) => {
-    const data = nativeEvent.data;
+    let data: string | undefined = nativeEvent.data;
     try {
+      if (Device.isAndroid()) {
+        // Drop messages posted by frames that did not receive the bridge token (e.g. cross-origin iframes)
+        data = unwrapBridgeMessage(data, bridgeTokenRef.current);
+        if (data === undefined) return;
+      }
       if (data.length > MAX_MESSAGE_LENGTH) {
         console.warn(
           `message exceeded size limit and will be dropped: ${data.slice(
@@ -877,7 +898,15 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         return;
       }
       if (dataParsed.name) {
-        backgroundBridgeRef.current?.onMessage(dataParsed);
+        const bridge = backgroundBridgeRef.current;
+        // Only deliver to a bridge bound to the origin of the page that sent the message
+        if (
+          !bridge ||
+          !isMessageFromBridgeOrigin(nativeEvent.url, bridge.url)
+        ) {
+          return;
+        }
+        bridge.onMessage(dataParsed);
         return;
       }
     } catch (e: unknown) {
@@ -893,11 +922,15 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     urlBarRef.current?.focus();
   }, []);
 
+  const disconnectBackgroundBridge = useCallback(() => {
+    backgroundBridgeRef.current?.onDisconnect();
+    backgroundBridgeRef.current = undefined;
+  }, []);
+
   const initializeBackgroundBridge = useCallback(
     (urlBridge: string, isMainFrame: boolean) => {
       // First disconnect and reset bridge
-      backgroundBridgeRef.current?.onDisconnect();
-      backgroundBridgeRef.current = undefined;
+      disconnectBackgroundBridge();
 
       //@ts-expect-error - We should type bacgkround bridge js file
       const newBridge = new BackgroundBridge({
@@ -936,7 +969,14 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
       });
       backgroundBridgeRef.current = newBridge;
     },
-    [navigation, isHomepage, toggleUrlModal, tabId, injectHomePageScripts],
+    [
+      navigation,
+      isHomepage,
+      toggleUrlModal,
+      tabId,
+      injectHomePageScripts,
+      disconnectBackgroundBridge,
+    ],
   );
 
   const sendActiveAccount = useCallback(async () => {
@@ -953,6 +993,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
   const onLoadStart = useCallback(
     async ({ nativeEvent }: WebViewNavigationEvent) => {
       loadingUrlRef.current = nativeEvent.url;
+      const loadId = ++loadIdRef.current;
 
       // Use URL to produce real url. This should be the actual website that the user is viewing.
       const { origin: urlOrigin } = new URLParse(nativeEvent.url);
@@ -962,9 +1003,29 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
         started: true,
       };
 
+      // Never let a new origin talk to a bridge bound to the previous origin while the scan runs
+      if (
+        backgroundBridgeRef.current &&
+        !isMessageFromBridgeOrigin(
+          nativeEvent.url,
+          backgroundBridgeRef.current.url,
+        )
+      ) {
+        disconnectBackgroundBridge();
+      }
+
       // Cancel loading the page if we detect its a phishing page
       const isAllowed = await isAllowedOrigin(urlOrigin);
+
+      // A newer navigation started while scanning; it owns the bridge now
+      if (loadId !== loadIdRef.current) {
+        if (!isAllowed) handleNotAllowedUrl(urlOrigin);
+        return false;
+      }
+
       if (!isAllowed) {
+        disconnectBackgroundBridge();
+        webviewRef.current?.stopLoading();
         handleNotAllowedUrl(urlOrigin); // should this be activeUrl.current instead of url?
         return false;
       }
@@ -981,6 +1042,7 @@ export const BrowserTab: React.FC<BrowserTabProps> = ({
     [
       isAllowedOrigin,
       handleNotAllowedUrl,
+      disconnectBackgroundBridge,
       sendActiveAccount,
       isHomepage,
       injectHomePageScripts,

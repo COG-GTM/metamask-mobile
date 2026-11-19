@@ -1,4 +1,12 @@
-import { isValidUrl, isENSUrl, getMaskedUrl } from './utils';
+import {
+  isValidUrl,
+  isENSUrl,
+  getMaskedUrl,
+  BRIDGE_TOKEN_KEY,
+  getBridgeTokenScript,
+  isMessageFromBridgeOrigin,
+  unwrapBridgeMessage,
+} from './utils';
 import URLParse from 'url-parse';
 import AppConstants from '../../../core/AppConstants';
 import { SessionENSNames } from './types';
@@ -90,5 +98,61 @@ describe('BrowserTab utils', () => {
         expect(getMaskedUrl(input, sessionENSNames)).toBe(expected);
       });
     });
+  });
+});
+
+describe('bridge token helpers', () => {
+  const TOKEN = 'test-token';
+
+  it('wraps ReactNativeWebView so every message carries the token', () => {
+    const nativePostMessage = jest.fn();
+    const fakeWindow: { ReactNativeWebView?: { postMessage: jest.Mock } } = {
+      ReactNativeWebView: { postMessage: nativePostMessage },
+    };
+    // eslint-disable-next-line no-new-func
+    new Function('window', getBridgeTokenScript(TOKEN))(fakeWindow);
+
+    (
+      fakeWindow.ReactNativeWebView as unknown as {
+        postMessage: (data: string) => void;
+      }
+    ).postMessage('{"name":"metamask-provider"}');
+
+    expect(nativePostMessage).toHaveBeenCalledTimes(1);
+    expect(unwrapBridgeMessage(nativePostMessage.mock.calls[0][0], TOKEN)).toBe(
+      '{"name":"metamask-provider"}',
+    );
+  });
+
+  it('rejects messages without the expected token', () => {
+    expect(unwrapBridgeMessage('{"name":"metamask-provider"}', TOKEN)).toBe(
+      undefined,
+    );
+    expect(
+      unwrapBridgeMessage(
+        JSON.stringify({ [BRIDGE_TOKEN_KEY]: 'other', data: '{}' }),
+        TOKEN,
+      ),
+    ).toBe(undefined);
+    expect(unwrapBridgeMessage('not json', TOKEN)).toBe(undefined);
+  });
+
+  it('matches sender and bridge by origin', () => {
+    expect(
+      isMessageFromBridgeOrigin(
+        'https://dapp.example/path?q=1',
+        'https://dapp.example',
+      ),
+    ).toBe(true);
+    expect(
+      isMessageFromBridgeOrigin(
+        'https://evil.example/',
+        'https://dapp.example',
+      ),
+    ).toBe(false);
+    expect(isMessageFromBridgeOrigin(undefined, 'https://dapp.example')).toBe(
+      false,
+    );
+    expect(isMessageFromBridgeOrigin('about:blank', 'about:blank')).toBe(false);
   });
 });
