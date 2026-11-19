@@ -361,15 +361,15 @@ export const removePermittedChain = (hostname: string, chainId: string) => {
       `Cannot remove chain permissions for origin "${hostname}": no permission currently exists for this origin.`,
     );
   }
-  const { PermissionController } = Engine.context;
-  const caveat = PermissionController.getCaveat(
-    hostname,
-    Caip25EndowmentPermissionName,
-    Caip25CaveatType,
-  );
 
-  const permittedChainIds = getPermittedEthChainIds(caveat);
-  const newPermittedChains = permittedChainIds.filter((chain: string) => chain !== chainId);
+  const permittedChainIds = getPermittedEthChainIds(caip25Caveat.value);
+  if (!permittedChainIds.includes(chainId as Hex)) {
+    return;
+  }
+
+  const newPermittedChains = permittedChainIds.filter(
+    (chain: string) => chain !== chainId,
+  );
   updatePermittedChains(hostname, newPermittedChains, true);
 };
 
