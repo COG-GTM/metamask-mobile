@@ -6,6 +6,17 @@ import { backgroundState } from '../../util/test/initial-root-state';
 import { RootState } from '../../reducers';
 import { useGetTotalFiatBalanceCrossChains } from './useGetTotalFiatBalanceCrossChains';
 import { InternalAccount } from '@metamask/keyring-internal-api';
+import { toChecksumHexAddress } from '@metamask/controller-utils';
+
+jest.mock('@metamask/controller-utils', () => {
+  const actual = jest.requireActual('@metamask/controller-utils');
+  return {
+    ...actual,
+    toChecksumHexAddress: jest.fn(actual.toChecksumHexAddress),
+  };
+});
+
+const STAKER_ADDRESS = '0x1111111111111111111111111111111111111111';
 
 const mockInitialState: DeepPartial<RootState> = {
   settings: {},
@@ -17,6 +28,12 @@ const mockInitialState: DeepPartial<RootState> = {
           '0x1': {
             '0x2990079bcdEe240329a520d2444386FC119da21a': {
               balance: '0x514709b083007',
+            },
+            [STAKER_ADDRESS]: {
+              // 1 ETH
+              balance: '0xde0b6b3a7640000',
+              // 0.5 ETH
+              stakedBalance: '0x6f05b59d3b20000',
             },
           },
           '0xe708': {
@@ -147,5 +164,65 @@ describe('useGetTotalFiatBalanceCrossChains', () => {
       },
     );
     expect(result.current).toEqual(expectedResult);
+  });
+
+  it('checksums each account address once regardless of chain count', () => {
+    const testAccount = {
+      address: '0x2990079bcdee240329a520d2444386fc119da21a',
+    };
+    const testFormattedTokens = {
+      [testAccount.address]: [
+        { chainId: '0x1', tokensWithBalances: [] },
+        { chainId: '0xe708', tokensWithBalances: [] },
+      ],
+    };
+    const checksumMock = jest.mocked(toChecksumHexAddress);
+    checksumMock.mockClear();
+
+    const { result } = renderHookWithProvider(
+      () =>
+        useGetTotalFiatBalanceCrossChains(
+          [testAccount as InternalAccount],
+          testFormattedTokens,
+        ),
+      { state: mockInitialState },
+    );
+
+    const callsForAccount = checksumMock.mock.calls.filter(
+      ([address]) => address === testAccount.address,
+    );
+    expect(callsForAccount).toHaveLength(1);
+    expect(
+      result.current[testAccount.address].tokenFiatBalancesCrossChains.map(
+        (chain) => chain.nativeFiatValue,
+      ),
+    ).toEqual([5.14, 4.32]);
+  });
+
+  it('adds staked balance and returns 0 native fiat for chains without an entry', () => {
+    const testFormattedTokens = {
+      [STAKER_ADDRESS]: [
+        { chainId: '0x1', tokensWithBalances: [] },
+        { chainId: '0xe708', tokensWithBalances: [] },
+      ],
+    };
+
+    const { result } = renderHookWithProvider(
+      () =>
+        useGetTotalFiatBalanceCrossChains(
+          [{ address: STAKER_ADDRESS } as InternalAccount],
+          testFormattedTokens,
+        ),
+      { state: mockInitialState },
+    );
+
+    const stakerBalances = result.current[STAKER_ADDRESS];
+    expect(
+      stakerBalances.tokenFiatBalancesCrossChains.map(
+        (chain) => chain.nativeFiatValue,
+      ),
+    ).toEqual([5394.37, 0]);
+    expect(stakerBalances.totalFiatBalance).toBe(5394.37);
+    expect(stakerBalances.totalTokenFiat).toBe(0);
   });
 });
