@@ -8,7 +8,7 @@ import {
   InteractionManager,
   BackHandler,
 } from 'react-native';
-import PropTypes from 'prop-types';
+
 import { fontStyles } from '../../../styles/common';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -17,8 +17,18 @@ import Device from '../../../util/device';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
 import { ThemeContext, mockTheme } from '../../../util/theme';
 import { SuccessImportAccountIDs } from '../../../../e2e/selectors/ImportAccount/SuccessImportAccount.selectors';
+import { Theme } from '../../../util/theme/models';
+import { ParamListBase } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-const createStyles = (colors) =>
+interface ImportPrivateKeySuccessProps {
+  /**
+   * navigation object required to push and pop other views
+   */
+  navigation: StackNavigationProp<ParamListBase>;
+}
+
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     mainWrapper: {
       backgroundColor: colors.background.default,
@@ -75,14 +85,7 @@ const createStyles = (colors) =>
 /**
  * View that's displayed the first time imports account
  */
-class ImportPrivateKeySuccess extends PureComponent {
-  static propTypes = {
-    /**
-    /* navigation object required to push and pop other views
-    */
-    navigation: PropTypes.object,
-  };
-
+class ImportPrivateKeySuccess extends PureComponent<ImportPrivateKeySuccessProps> {
   componentDidMount = () => {
     InteractionManager.runAfterInteractions(() => {
       BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
@@ -98,18 +101,18 @@ class ImportPrivateKeySuccess extends PureComponent {
     });
   };
 
-  handleBackPress = () => {
+  handleBackPress = (): undefined => {
     this.props.navigation.popToTop();
   };
 
   dismiss = () => {
     const { popToTop, canGoBack, goBack } = this.props.navigation;
     popToTop();
-    canGoBack() && goBack(null);
+    canGoBack() && goBack();
   };
 
   render() {
-    const colors = this.context.colors || mockTheme.colors;
+    const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);
 
     return (

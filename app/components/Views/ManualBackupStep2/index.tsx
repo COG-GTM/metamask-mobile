@@ -7,7 +7,6 @@ import {
   View,
   SafeAreaView,
 } from 'react-native';
-import PropTypes from 'prop-types';
 import OnboardingProgress from '../../UI/OnboardingProgress';
 import ActionView from '../../UI/ActionView';
 import { ScreenshotDeterrent } from '../../UI/ScreenshotDeterrent';
@@ -23,13 +22,46 @@ import createStyles from './styles';
 import { ManualBackUpStepsSelectorsIDs } from '../../../../e2e/selectors/Onboarding/ManualBackUpSteps.selectors';
 import trackOnboarding from '../../../util/metrics/TrackOnboarding/trackOnboarding';
 import { MetricsEventBuilder } from '../../../core/Analytics/MetricsEventBuilder';
+import { Dispatch } from 'redux';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 
-const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
+interface ConfirmedWord {
+  word?: string;
+  originalPosition?: number;
+}
+
+type WordsDict = Record<string, { currentPosition?: number }>;
+
+interface ManualBackupStep2Props {
+  /**
+  /* navigation object required to push and pop other views
+  */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+   * The action to update the seedphrase backed up flag
+   * in the redux store
+   */
+  seedphraseBackedUp: () => void;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route: Pick<
+    RouteProp<{ params: { words: string[]; steps?: string[] } }, 'params'>,
+    'params'
+  >;
+}
+
+const ManualBackupStep2 = ({
+  navigation,
+  seedphraseBackedUp,
+  route,
+}: ManualBackupStep2Props) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
-  const [confirmedWords, setConfirmedWords] = useState([]);
-  const [wordsDict, setWordsDict] = useState({});
+  const [confirmedWords, setConfirmedWords] = useState<ConfirmedWord[]>([]);
+  const [wordsDict, setWordsDict] = useState<WordsDict>({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [seedPhraseReady, setSeedPhraseReady] = useState(false);
 
@@ -40,7 +72,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
       : route.params?.words;
 
   const createWordsDictionary = () => {
-    const dict = {};
+    const dict: WordsDict = {};
     words.forEach((word, i) => {
       dict[`${word},${i}`] = { currentPosition: undefined };
     });
@@ -48,7 +80,11 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   };
 
   const updateNavBar = useCallback(() => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(getOnboardingNavbarOptions(
+        route,
+        {} as Parameters<typeof getOnboardingNavbarOptions>[1],
+        colors,
+      ));
   }, [colors, navigation, route]);
 
   useEffect(() => {
@@ -73,12 +109,12 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   );
 
   const selectWord = useCallback(
-    (word, i) => {
+    (word: string, i: number) => {
       let tempCurrentIndex = currentIndex;
       const tempWordsDict = wordsDict;
       const tempConfirmedWords = confirmedWords;
       if (wordsDict[`${word},${i}`].currentPosition !== undefined) {
-        tempCurrentIndex = wordsDict[`${word},${i}`].currentPosition;
+        tempCurrentIndex = wordsDict[`${word},${i}`].currentPosition as number;
         tempWordsDict[`${word},${i}`].currentPosition = undefined;
         tempConfirmedWords[currentIndex] = {
           word: undefined,
@@ -98,11 +134,11 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     [confirmedWords, currentIndex, findNextAvailableIndex, wordsDict],
   );
 
-  const clearConfirmedWordAt = (i) => {
+  const clearConfirmedWordAt = (i: number) => {
     const { word, originalPosition } = confirmedWords[i];
     const currentIndex = i;
     if (word && (originalPosition || originalPosition === 0)) {
-      wordsDict[[word, originalPosition]].currentPosition = undefined;
+      wordsDict[[word, originalPosition] as unknown as string].currentPosition = undefined;
       confirmedWords[i] = { word: undefined, originalPosition: undefined };
     }
 
@@ -161,7 +197,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
     );
   };
 
-  const renderWordBox = (word, i) => {
+  const renderWordBox = (word: string | undefined, i: number) => {
     const styles = createStyles(colors);
 
     return (
@@ -185,7 +221,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   };
 
   const renderWordSelectableBox = useCallback(
-    (key, i) => {
+    (key: string, i: number) => {
       const [word] = key.split(',');
       const selected = wordsDict[key].currentPosition !== undefined;
       const styles = createStyles(colors);
@@ -278,23 +314,7 @@ const ManualBackupStep2 = ({ navigation, seedphraseBackedUp, route }) => {
   );
 };
 
-ManualBackupStep2.propTypes = {
-  /**
-  /* navigation object required to push and pop other views
-  */
-  navigation: PropTypes.object,
-  /**
-   * The action to update the seedphrase backed up flag
-   * in the redux store
-   */
-  seedphraseBackedUp: PropTypes.func,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-};
-
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = (dispatch: Dispatch) => ({
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
 });
 

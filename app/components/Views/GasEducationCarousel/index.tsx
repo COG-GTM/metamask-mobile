@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
   View,
   ScrollView,
@@ -28,6 +27,10 @@ import {
   getTicker,
 } from '../../../util/transactions';
 import Engine from '../../../core/Engine';
+import { Theme } from '../../../util/theme/models';
+import { RootState } from '../../../reducers';
+import { ParamListBase, RouteProp } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import TransactionTypes from '../../../core/TransactionTypes';
 import { formatCurrency, getTransactionFee } from '../../../util/confirm-tx';
 import Logger from '../../../util/Logger';
@@ -44,7 +47,7 @@ const DEVICE_WIDTH = Dimensions.get('window').width;
 
 const IMG_PADDING = Device.isIphone5() ? 220 : 200;
 
-const createStyles = (colors) =>
+const createStyles = (colors: Theme['colors']) =>
   StyleSheet.create({
     scroll: {
       flexGrow: 1,
@@ -138,6 +141,29 @@ const carousel_images = [
   gas_education_carousel_3,
 ];
 
+interface GasEducationCarouselProps {
+  /**
+   * The navigator object
+   */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+    /* conversion rate of ETH - FIAT
+    */
+  conversionRate?: number | null;
+  /**
+    /* Selected currency
+    */
+  currentCurrency: string;
+  /**
+   * Object that represents the current route info like params passed to it
+   */
+  route?: RouteProp<{ params: { navigateTo?: () => void } }, 'params'>;
+  /**
+   * Current provider ticker
+   */
+  ticker?: string;
+}
+
 /**
  * View that is displayed to first time (new) users
  */
@@ -147,9 +173,9 @@ const GasEducationCarousel = ({
   conversionRate,
   currentCurrency,
   ticker,
-}) => {
+}: GasEducationCarouselProps) => {
   const [currentTab, setCurrentTab] = useState(1);
-  const [gasFiat, setGasFiat] = useState(null);
+  const [gasFiat, setGasFiat] = useState<string | null>(null);
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const [isLoading, setIsLoading] = useState(true);
@@ -186,7 +212,7 @@ const GasEducationCarousel = ({
             estimatedBaseFeeHex,
             suggestedMaxFeePerGasHex,
             suggestedMaxPriorityFeePerGasHex,
-          });
+          } as Parameters<typeof calculateEIP1559GasFeeHexes>[0]);
           estimatedTotalGas = hexToBN(gasHexes.gasFeeMaxHex);
         } else if (gasEstimates.gasEstimateType === GAS_ESTIMATE_TYPES.LEGACY) {
           const gasPrice = hexToBN(
@@ -213,7 +239,7 @@ const GasEducationCarousel = ({
         const gasFiat = formatCurrency(maxFeePerGasConversion, currentCurrency);
         setGasFiat(gasFiat);
       } catch (e) {
-        Logger.error(e);
+        Logger.error(e as Error);
       }
       setIsLoading(false);
     };
@@ -227,7 +253,7 @@ const GasEducationCarousel = ({
 
   const renderTabBar = () => <View />;
 
-  const onChangeTab = (obj) => {
+  const onChangeTab = (obj: { i: number }) => {
     setCurrentTab(obj.i + 1);
   };
 
@@ -239,7 +265,7 @@ const GasEducationCarousel = ({
       },
     });
 
-  const renderText = (key) => {
+  const renderText = (key: number) => {
     if (key === 1) {
       return (
         <View style={styles.tab}>
@@ -327,7 +353,6 @@ const GasEducationCarousel = ({
         >
           <View style={styles.wrapper}>
             <ScrollableTabView
-              style={styles.scrollTabs}
               renderTabBar={renderTabBar}
               onChangeTab={onChangeTab}
             >
@@ -339,7 +364,7 @@ const GasEducationCarousel = ({
                     <View style={styles.carouselImageWrapper}>
                       <Image
                         source={carousel_images[index]}
-                        style={[styles.carouselImage, styles[imgStyleKey]]}
+                        style={[styles.carouselImage, styles[imgStyleKey as keyof typeof styles]]}
                         resizeMethod={'auto'}
                       />
                     </View>
@@ -387,30 +412,7 @@ const GasEducationCarousel = ({
   );
 };
 
-GasEducationCarousel.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-    /* conversion rate of ETH - FIAT
-    */
-  conversionRate: PropTypes.any,
-  /**
-    /* Selected currency
-    */
-  currentCurrency: PropTypes.string,
-  /**
-   * Object that represents the current route info like params passed to it
-   */
-  route: PropTypes.object,
-  /**
-   * Current provider ticker
-   */
-  ticker: PropTypes.string,
-};
-
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state: RootState) => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
   ticker: selectEvmTicker(state),
