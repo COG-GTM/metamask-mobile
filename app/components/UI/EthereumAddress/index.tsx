@@ -1,0 +1,86 @@
+import React, { PureComponent } from 'react';
+import { Platform, StyleProp, Text, TextStyle } from 'react-native';
+import { formatAddress } from '../../../util/address';
+import generateTestId from '../../../../wdio/utils/generateTestId';
+// eslint-disable-next-line import/no-namespace
+import * as WalletViewTestIds from '../../../../wdio/screen-objects/testIDs/Screens/WalletView.testIds';
+
+const { WALLET_ACCOUNT_ADDRESS_LABEL } = WalletViewTestIds as {
+  WALLET_ACCOUNT_ADDRESS_LABEL?: string;
+};
+
+type EthereumAddressFormat = Parameters<typeof formatAddress>[1];
+
+interface EthereumAddressProps {
+  /**
+   * Styles to be applied to the text component
+   */
+  style?: StyleProp<TextStyle>;
+  /**
+   * Address to be rendered and resolved
+   */
+  address?: string;
+  /**
+   * Type of formatting for the address
+   * can be "short", "mid" or "full"
+   */
+  type: EthereumAddressFormat;
+}
+
+interface EthereumAddressState {
+  ensName: string | null;
+  address: string;
+}
+
+/**
+ * View that renders an ethereum address
+ * or its ENS name when supports reverse lookup
+ */
+class EthereumAddress extends PureComponent<
+  EthereumAddressProps,
+  EthereumAddressState
+> {
+  static defaultProps = {
+    style: null,
+    type: 'full' as const,
+  };
+
+  ens = null;
+  constructor(props: EthereumAddressProps) {
+    super(props);
+    const { address, type } = props;
+
+    this.state = {
+      ensName: null,
+      address: formatAddress(address as string, type),
+    };
+  }
+
+  componentDidUpdate(prevProps: EthereumAddressProps) {
+    if (this.props.address && prevProps.address !== this.props.address) {
+      requestAnimationFrame(() => {
+        this.formatAndResolveIfNeeded();
+      });
+    }
+  }
+
+  formatAndResolveIfNeeded() {
+    const { address, type } = this.props;
+    const formattedAddress = formatAddress(address as string, type);
+    this.setState({ address: formattedAddress, ensName: null });
+  }
+
+  render() {
+    return (
+      <Text
+        style={this.props.style}
+        numberOfLines={1}
+        {...generateTestId(Platform, WALLET_ACCOUNT_ADDRESS_LABEL)}
+      >
+        {this.state.address}
+      </Text>
+    );
+  }
+}
+
+export default EthereumAddress;
