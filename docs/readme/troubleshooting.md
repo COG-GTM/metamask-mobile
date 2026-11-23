@@ -34,36 +34,48 @@ npm error ERESOLVE could not resolve
 
 The setup script asks `rn-nodeify` to shim `net`, and `rn-nodeify` still maps `net` to `react-native-tcp`, which is no longer a dependency of this repo (`net` now maps to `react-native-tcp-socket` in `package.json`). `rn-nodeify` then runs `npm install` for it, which fails on an unrelated peer dependency conflict. Before it fails, it also adds `react-native-tcp` to `package.json`.
 
-Until the setup script is fixed, finish the remaining setup steps by hand from the repo root:
+Until the setup script is fixed, finish the remaining setup steps by hand from the repo root. Run the commands one at a time and stop if any of them fails.
 
-```bash
-# undo the react-native-tcp entry rn-nodeify added
-git checkout package.json
+1. Undo the `react-native-tcp` entry that `rn-nodeify` added. Check `git diff package.json` first. If the only change is the `react-native-tcp` line, restore the file:
 
-# remaining "Prepare dependencies" steps, without the net shim
-node_modules/.bin/rn-nodeify --install crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,fs --hack
-yarn allow-scripts
-yarn patch-package --error-on-fail
+   ```bash
+   git checkout package.json
+   ```
 
-# Build PPOM
-(cd ppom && yarn clean && yarn && yarn lint && yarn build)
+   If you had your own unstaged edits in `package.json`, delete just the `react-native-tcp` line by hand instead, so your edits are kept.
 
-# Generate Terms of Use
-curl -o ./docs/assets/termsOfUse.html https://legal.consensys.io/plain/terms-of-use/
-mkdir -p app/util/termsOfUse
-node -e "const fs=require('fs');fs.writeFileSync('app/util/termsOfUse/termsOfUseContent.ts','export default '+JSON.stringify(fs.readFileSync('docs/assets/termsOfUse.html','utf8'))+';','utf8')"
-```
+2. Finish the remaining "Prepare dependencies" steps, in the same order as `scripts/setup.mjs`, without the `net` shim:
 
-For native development (`yarn setup`), also run the steps that `yarn setup:expo` skips:
+   ```bash
+   node_modules/.bin/rn-nodeify --install crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,fs --hack
+   # native Android only (`yarn setup`); `yarn setup:expo` skips it
+   yarn jetify
+   yarn allow-scripts
+   yarn patch-package --error-on-fail
+   ```
 
-```bash
-# Android
-yarn jetify
+3. Build PPOM, and check that it produced `app/lib/ppom/ppom.html.js` (Metro cannot bundle the app without it):
 
-# iOS (macOS only)
-gem install bundler -v 2.5.8
-yarn gem:bundle:install
-yarn pod:install
-```
+   ```bash
+   (cd ppom && yarn clean && yarn && yarn lint && yarn build)
+   ls app/lib/ppom/ppom.html.js
+   ```
+
+4. Generate the Terms of Use:
+
+   ```bash
+   curl -o ./docs/assets/termsOfUse.html https://legal.consensys.io/plain/terms-of-use/
+   mkdir -p app/util/termsOfUse
+   node -e "const fs=require('fs');fs.writeFileSync('app/util/termsOfUse/termsOfUseContent.ts','export default '+JSON.stringify(fs.readFileSync('docs/assets/termsOfUse.html','utf8'))+';','utf8')"
+   ```
+
+5. For native iOS (`yarn setup` on macOS only), also run the iOS steps that `yarn setup:expo` skips:
+
+   ```bash
+   gem install bundler -v 2.5.8
+   yarn gem:bundle:install
+   touch ios/debug.xcconfig ios/release.xcconfig
+   yarn pod:install
+   ```
 
 Then continue with `yarn watch`.
