@@ -1,6 +1,12 @@
+import React from 'react';
 import { renderScreen } from '../../../../util/test/renderWithProvider';
-import NetworksSettings from './';
+import NetworksSettingsComponent from './';
 import { backgroundState } from '../../../../util/test/initial-root-state';
+
+const NetworksSettings = NetworksSettingsComponent as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+
 
 const initialState = {
   engine: {

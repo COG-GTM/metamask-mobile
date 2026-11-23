@@ -4,6 +4,7 @@ import { useTheme } from '../../../util/theme';
 import styles from './Text.styles';
 
 interface TextProps extends React.ComponentPropsWithoutRef<typeof RNText> {
+  italic?: boolean;
   reset?: boolean;
   centered?: boolean;
   right?: boolean;
