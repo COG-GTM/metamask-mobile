@@ -75,9 +75,9 @@ interface ContactFormProps {
 interface ContactFormState {
   name: string | null;
   address: string | null;
-  addressError: string | null;
-  toEnsName: string | null;
-  toEnsAddress: string | null;
+  addressError: string | null | undefined;
+  toEnsName: string | null | undefined;
+  toEnsAddress: string | null | undefined;
   addressReady: boolean;
   mode: string;
   memo: string | null;
@@ -156,7 +156,8 @@ const createStyles = (colors: Theme['colors']) =>
       flexDirection: 'column',
     },
     textInputDisaled: {
-      borderColor: colors.transparent,
+      borderColor: (colors as Theme['colors'] & { transparent?: string })
+        .transparent,
     },
     actionButton: {
       marginVertical: 4,
@@ -403,7 +404,7 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
                 inputWidth ? { width: inputWidth } : {},
                 editable ? {} : styles.textInputDisaled,
               ]}
-              value={name}
+              value={name as string}
               onSubmitEditing={this.jumpToAddressInput}
               testID={AddContactViewSelectorsIDs.NAME_INPUT}
               keyboardAppearance={themeAppearance}
@@ -427,7 +428,7 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
                     styles.textInput,
                     inputWidth ? { width: inputWidth } : {},
                   ]}
-                  value={toEnsName || address}
+                  value={(toEnsName || address) as string}
                   ref={this.addressInput}
                   onSubmitEditing={this.jumpToMemoInput}
                   testID={AddContactViewSelectorsIDs.ADDRESS_INPUT}
@@ -474,7 +475,7 @@ class ContactForm extends PureComponent<ContactFormProps, ContactFormState> {
                     styles.textInput,
                     inputWidth ? { width: inputWidth } : {},
                   ]}
-                  value={memo}
+                  value={memo as string}
                   ref={this.memoInput}
                   testID={AddContactViewSelectorsIDs.MEMO_INPUT}
                   keyboardAppearance={themeAppearance}

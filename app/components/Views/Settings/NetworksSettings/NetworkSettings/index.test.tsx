@@ -1,7 +1,7 @@
 import React from 'react';
 import { shallow } from 'enzyme';
 import { RpcEndpointType } from '@metamask/network-controller';
-import { NetworkSettings } from './'; // Import the undecorated component
+import { NetworkSettings as NetworkSettingsComponent } from './'; // Import the undecorated component
 import configureMockStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { ThemeContext, mockTheme } from '../../../../../../app/util/theme';
@@ -182,6 +182,10 @@ const SAMPLE_NETWORKSETTINGS_PROPS = {
     ],
   },
 };
+
+const NetworkSettings = NetworkSettingsComponent as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
 
 describe('NetworkSettings', () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

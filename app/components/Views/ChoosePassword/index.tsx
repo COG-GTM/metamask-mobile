@@ -452,7 +452,7 @@ class ChoosePassword extends PureComponent<
       throw Error(strings('choose_password.disable_biometric_error'));
     }
     this.setState({
-      biometryType: newAuthData.availableBiometryType,
+      biometryType: newAuthData.availableBiometryType as string,
       biometryChoice: false,
     });
   };
@@ -597,7 +597,7 @@ class ChoosePassword extends PureComponent<
     const passwordsMatch = password !== '' && password === confirmPassword;
     const canSubmit = passwordsMatch && isSelected;
     const previousScreen = this.props.route.params?.[PREVIOUS_SCREEN];
-    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
+    const passwordStrengthWord = getPasswordStrengthWord(passwordStrength as number);
     const colors = (this.context as Theme).colors || mockTheme.colors;
     const themeAppearance = (this.context as Theme).themeAppearance || 'light';
     const styles = createStyles(colors);

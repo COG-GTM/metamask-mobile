@@ -244,7 +244,7 @@ class AdvancedSettings extends PureComponent<
       }, 100);
 
     this.props.route?.params?.scrollToBottom &&
-      this.scrollView?.current?.scrollToEnd({ animated: true });
+      this.scrollView?.current?.scrollToEnd({ animated: true } as unknown as boolean);
   };
 
   componentDidUpdate = () => {
@@ -314,7 +314,7 @@ class AdvancedSettings extends PureComponent<
     } = this.props;
     const { resetModalVisible } = this.state;
     const { styles, colors } = this.getStyles();
-    const theme = this.context || mockTheme;
+    const theme = (this.context as Theme) || mockTheme;
 
     return (
       <SafeAreaView style={baseStyles.flexGrow}>

@@ -619,7 +619,7 @@ export class NetworkSettings extends PureComponent<
     // If no navigation param, user clicked on add network
     if (networkTypeOrRpcUrl) {
       if (allNetworks.find((net) => networkTypeOrRpcUrl === net)) {
-        const networkInformation = Networks[networkTypeOrRpcUrl];
+        const networkInformation = (Networks as AnyValue)[networkTypeOrRpcUrl];
         chainId = networkInformation.chainId.toString();
 
         nickname = networkConfigurations?.[chainId]?.name;
@@ -750,14 +750,14 @@ export class NetworkSettings extends PureComponent<
 
     if (rpcUrl && chainId) {
       const chainToMatch = this.props.matchedChainNetwork?.safeChainsList?.find(
-        (network) => network.chainId === parseInt(chainId),
+        (network) => (network.chainId as unknown) === parseInt(chainId),
       );
 
       // This is a temporary hack to not include POL as a potential scam token while chainlist updates
       // TODO: This can be safely removed once safeChainsList updates from MATIC to POL
       if (parseInt(chainId) === 137) {
-        chainToMatch.nativeCurrency.symbol = 'POL';
-        chainToMatch.nativeCurrency.name = 'POL';
+        (chainToMatch as AnyValue).nativeCurrency.symbol = 'POL';
+        (chainToMatch as AnyValue).nativeCurrency.name = 'POL';
       }
 
       this.updateNetworkList(chainToMatch);
@@ -791,7 +791,7 @@ export class NetworkSettings extends PureComponent<
         'eth_chainId',
       );
     } catch (err) {
-      Logger.error(err, 'Failed to fetch the chainId from the endpoint.');
+      Logger.error(err as Error, 'Failed to fetch the chainId from the endpoint.');
       providerError = err;
     }
 
@@ -810,7 +810,7 @@ export class NetworkSettings extends PureComponent<
           }
           endpointChainId = endpointChainIdNumber.toString(10);
         } catch (err) {
-          Logger.error(err, {
+          Logger.error(err as Error, {
             endpointChainId,
             message: 'Failed to convert endpoint chain ID to decimal',
           });
@@ -857,7 +857,7 @@ export class NetworkSettings extends PureComponent<
     const checkCustomNetworks = Object.values(
       this.props.networkConfigurations,
     ).filter((item) =>
-      item.rpcEndpoints?.some((endpoint) => endpoint.url === rpcUrl),
+      item.rpcEndpoints?.some((endpoint: AnyValue) => endpoint.url === rpcUrl),
     );
 
     if (checkCustomNetworks.length > 0) {
@@ -883,9 +883,9 @@ export class NetworkSettings extends PureComponent<
 
       return checkCustomNetworks;
     }
-    const defaultNetworks = getAllNetworks().map((item) => Networks[item]);
+    const defaultNetworks = getAllNetworks().map((item) => (Networks as AnyValue)[item]);
     const checkDefaultNetworks = defaultNetworks.filter(
-      (item) => Number(item.rpcUrl) === rpcUrl,
+      (item) => (Number(item.rpcUrl) as unknown) === rpcUrl,
     );
     if (checkDefaultNetworks.length > 0) {
       return checkDefaultNetworks;
@@ -920,10 +920,10 @@ export class NetworkSettings extends PureComponent<
 
     const existingNetwork = this.props.networkConfigurations[chainId];
 
-    const indexRpc = rpcUrls.findIndex(({ url }) => url === rpcUrl);
+    const indexRpc = rpcUrls.findIndex(({ url }: { url: string }) => url === rpcUrl);
 
     const blockExplorerIndex = blockExplorerUrls.findIndex(
-      (url) => url === blockExplorerUrl,
+      (url: string) => url === blockExplorerUrl,
     );
 
     const networkConfig = {
@@ -1033,11 +1033,11 @@ export class NetworkSettings extends PureComponent<
     if (isPortfolioViewEnabled()) {
       const { PreferencesController } = Engine.context;
       if (!isAllNetworks) {
-        PreferencesController.setTokenNetworkFilter({
+        (PreferencesController as AnyValue).setTokenNetworkFilter({
           [chainId]: true,
         });
       } else {
-        PreferencesController.setTokenNetworkFilter({
+        (PreferencesController as AnyValue).setTokenNetworkFilter({
           ...tokenNetworkFilter,
           [chainId]: true,
         });
@@ -1201,7 +1201,7 @@ export class NetworkSettings extends PureComponent<
         'eth_chainId',
       );
     } catch (err) {
-      Logger.error(err, 'Failed to fetch the chainId from the endpoint.');
+      Logger.error(err as Error, 'Failed to fetch the chainId from the endpoint.');
       providerError = err;
     }
 
@@ -1477,7 +1477,7 @@ export class NetworkSettings extends PureComponent<
   onRpcUrlDelete = async (url: string) => {
     const { addMode } = this.state;
     await this.setState((prevState) => ({
-      rpcUrls: prevState.rpcUrls.filter((rpcUrl) => rpcUrl.url !== url),
+      rpcUrls: prevState.rpcUrls.filter((rpcUrl: AnyValue) => rpcUrl.url !== url),
     }));
     this.validateName();
     if (addMode) {
@@ -1491,7 +1491,7 @@ export class NetworkSettings extends PureComponent<
     const { addMode } = this.state;
     await this.setState((prevState) => ({
       blockExplorerUrls: prevState.blockExplorerUrls.filter(
-        (explorerUrl) => explorerUrl !== url,
+        (explorerUrl: string) => explorerUrl !== url,
       ),
     }));
     this.validateName();
@@ -1726,7 +1726,7 @@ export class NetworkSettings extends PureComponent<
       (this.context as Theme).themeAppearance || themeAppearanceLight;
     const styles = createStyles(colors);
 
-    const formatNetworkRpcUrl = (rpcUrl, chainId) => {
+    const formatNetworkRpcUrl = (rpcUrl: string, chainId: string) => {
       const isNetworkPrePopulated = PopularList.find(
         (val) => val.rpcUrl === rpcUrl && val.chainId === chainId,
       );
@@ -2039,6 +2039,7 @@ export class NetworkSettings extends PureComponent<
             {isNetworkUiRedesignEnabled() ? (
               <View style={styles.dropDownInput}>
                 <Cell
+                  {...({} as { avatarProps: AnyValue })}
                   key={rpcUrl}
                   testID={NetworksViewSelectorsIDs.ICON_BUTTON_RPC}
                   variant={CellVariant.SelectWithMenu}
@@ -2386,7 +2387,7 @@ export class NetworkSettings extends PureComponent<
               <ScrollView contentContainerStyle={styles.scrollViewContent}>
                 {blockExplorerUrls.length > 0 ? (
                   <View>
-                    {blockExplorerUrls.map((url) => (
+                    {blockExplorerUrls.map((url: string) => (
                       <Cell
                         key={url}
                         variant={CellVariant.SelectWithMenu}
@@ -2453,7 +2454,7 @@ export class NetworkSettings extends PureComponent<
               <ScrollView contentContainerStyle={styles.scrollViewContent}>
                 {rpcUrls.length > 0 ? (
                   <View>
-                    {rpcUrls.map(({ url, name, type }) => (
+                    {rpcUrls.map(({ url, name, type }: AnyValue) => (
                       <Cell
                         key={`${url}-${name}`}
                         variant={CellVariant.SelectWithMenu}

@@ -191,7 +191,7 @@ Contacts.contextType = ThemeContext;
 
 const mapStateToProps = (state: RootState) => ({
   addressBook: selectAddressBook(state),
-  chainId: selectChainId(state),
+  chainId: selectChainId(state) as `0x${string}`,
 });
 
 export default connect(mapStateToProps)(Contacts);

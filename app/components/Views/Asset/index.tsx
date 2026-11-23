@@ -84,14 +84,7 @@ import { IWithMetricsAwarenessProps } from '../../../components/hooks/useMetrics
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyTransaction = any;
 
-interface AssetRouteParams {
-  symbol?: string;
-  address?: string;
-  chainId?: string;
-  isETH?: boolean;
-  isNative?: boolean;
-  [key: string]: unknown;
-}
+type AssetRouteParams = AnyTransaction;
 
 interface AssetProps extends IWithMetricsAwarenessProps {
   /**
@@ -124,8 +117,8 @@ interface AssetProps extends IWithMetricsAwarenessProps {
    */
   tokens: Token[];
   swapsIsLive?: boolean;
-  swapsTokens?: Record<string, unknown>;
-  searchDiscoverySwapsTokens?: string[];
+  swapsTokens: Record<string, unknown>;
+  searchDiscoverySwapsTokens: string[];
   swapsTransactions: Record<string, AnyTransaction>;
   /**
    * Object that represents the current route info like params passed to it
@@ -366,7 +359,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
       (chainId === tx.chainId || (!tx.chainId && networkId === tx.networkID)) &&
       tx.status !== 'unapproved'
     ) {
-      if (TOKEN_CATEGORY_HASH[type]) {
+      if ((TOKEN_CATEGORY_HASH as Record<string, boolean>)[type]) {
         return false;
       }
       if (isTransfer) {
@@ -402,7 +395,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
         );
       if (
         swapsTransactions[tx.id] &&
-        (to?.toLowerCase() === swapsUtils.getSwapsContractAddress(chainId) ||
+        (to?.toLowerCase() === swapsUtils.getSwapsContractAddress(chainId as `0x${string}`) ||
           to?.toLowerCase() === this.navAddress)
       ) {
         const { destinationToken, sourceToken } = swapsTransactions[tx.id];
@@ -434,11 +427,13 @@ class Asset extends PureComponent<AssetProps, AssetState> {
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
       const filteredTransactions = sortedTransactions.filter((tx) => {
-        const filterResult = this.filter(tx);
+        const filterResult = (this.filter as (tx: AnyTransaction) => unknown)(
+          tx,
+        );
         if (filterResult) {
           tx.insertImportTime = addAccountTimeFlagFilter(
             tx,
-            addedAccountTime,
+            addedAccountTime as unknown as object,
             accountAddedTimeInsertPointFound,
           );
           if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
@@ -566,7 +561,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
 
     const displayBridgeButton = isPortfolioViewEnabled()
       ? isBridgeAllowed(asset.chainId)
-      : isBridgeAllowed(chainId);
+      : isBridgeAllowed(chainId as `0x${string}`);
 
     const displayBuyButton = asset.isETH
       ? this.props.isNetworkBuyNativeTokenSupported

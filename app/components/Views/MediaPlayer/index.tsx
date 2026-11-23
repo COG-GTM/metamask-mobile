@@ -24,6 +24,13 @@ import { Theme } from '../../../util/theme/models';
 
 type VideoProps = ComponentProps<typeof Video>;
 
+const TapGestureHandlerWithChildren =
+  TapGestureHandler as unknown as React.ComponentType<
+    React.ComponentProps<typeof TapGestureHandler> & {
+      children: React.ReactNode;
+    }
+  >;
+
 interface MediaPlayerProps {
   /**
    * Media URI
@@ -150,7 +157,7 @@ function MediaPlayer({
           onLoad={onLoad}
           onError={onError}
           onClose={onClose}
-          source={source}
+          source={source as ComponentProps<typeof Video>['source']}
           textTracks={textTracks}
           selectedTextTrack={selectedTextTrack}
         />
@@ -162,7 +169,7 @@ function MediaPlayer({
             style={style}
             muted={isMuted}
             paused={!isPlaying}
-            source={source}
+            source={source as ComponentProps<typeof Video>['source']}
             controls={false}
             fullscreen={false}
             textTracks={textTracks}
@@ -173,7 +180,7 @@ function MediaPlayer({
           {/**
            * Use custom controls for iOS since iOS 17.2+ begins crashing. https://github.com/react-native-video/react-native-video/issues/3329
            */}
-          <TapGestureHandler onEnded={onPressVideoControls}>
+          <TapGestureHandlerWithChildren onEnded={onPressVideoControls}>
             <Animated.View style={videoControlsStyle}>
               <View style={styles.playButtonCircle}>
                 <Ionicons
@@ -184,7 +191,7 @@ function MediaPlayer({
                 />
               </View>
             </Animated.View>
-          </TapGestureHandler>
+          </TapGestureHandlerWithChildren>
           {isPlaying ? (
             <TouchableOpacity
               activeOpacity={1}

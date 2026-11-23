@@ -300,7 +300,10 @@ class NetworksSettings extends PureComponent<
               <View style={styles.network}>
                 {isCustomRPC ? (
                   <AvatarNetwork
-                    variant={AvatarVariant.Network}
+                    {...({ variant: AvatarVariant.Network } as Record<
+                      string,
+                      unknown
+                    >)}
                     name={name}
                     imageSource={image}
                     style={styles.networkIcon}
@@ -315,7 +318,7 @@ class NetworksSettings extends PureComponent<
                     />
                   ) : (
                     <View
-                      style={[styles.networkIcon, { backgroundColor: color }]}
+                      style={[styles.networkIcon, { backgroundColor: color as string }]}
                     >
                       <Text style={styles.text}>{name[0]}</Text>
                     </View>
@@ -398,7 +401,7 @@ class NetworksSettings extends PureComponent<
         }
         return filtered;
       },
-      {},
+      {} as Record<string, AnyValue>,
     );
 
     const colors = (this.context as Theme).colors || mockTheme.colors;
@@ -478,7 +481,7 @@ class NetworksSettings extends PureComponent<
   renderSolanaMainnet() {
     // TODO: [SOLANA] - Please revisit this since it's supported on a constant array in mobile and should come from multichain network controller
     const { name: solanaMainnetName } = Object.values(
-      this.props.nonEvmNetworkConfigurations,
+      this.props.nonEvmNetworkConfigurations as Record<string, AnyValue>,
     ).find((network) => network.chainId === SolScope.Mainnet);
     const colors = (this.context as Theme).colors || mockTheme.colors;
     const styles = createStyles(colors);

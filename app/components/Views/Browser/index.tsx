@@ -29,7 +29,7 @@ import { getPermittedAccounts } from '../../../core/Permissions';
 import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
-import BrowserTab from '../BrowserTab/BrowserTab';
+import BrowserTabComponent from '../BrowserTab/BrowserTab';
 import URL from 'url-parse';
 import { useMetrics } from '../../hooks/useMetrics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -52,6 +52,10 @@ import { Dispatch } from 'redux';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { RootState } from '../../../reducers';
 import { ToastOptions } from '../../../component-library/components/Toast/Toast.types';
+
+const BrowserTab = BrowserTabComponent as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
 
 interface BrowserTabType {
   id: number;
@@ -519,7 +523,7 @@ const mapStateToProps = (state: RootState) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   createNewTab: (url: string, linkType?: string) =>
-    dispatch(createNewTab(url, linkType)),
+    dispatch(createNewTab(url, linkType as string)),
   closeAllTabs: () => dispatch(closeAllTabs()),
   closeTab: (id: number) => dispatch(closeTab(id)),
   setActiveTab: (id: number) => dispatch(setActiveTab(id)),

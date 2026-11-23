@@ -6,6 +6,7 @@ import {
   Alert,
   View,
   TextInput,
+  DimensionValue,
   SafeAreaView,
   StyleSheet,
   ScrollView,
@@ -78,7 +79,7 @@ interface ResetPasswordProps {
   /**
    * A string representing the selected address => account
    */
-  selectedAddress: string;
+  selectedAddress?: string;
   /**
    * Object that represents the current route info like params passed to it
    */
@@ -457,7 +458,7 @@ class ResetPassword extends PureComponent<
     await recreateVaultWithNewPassword(
       originalPassword,
       newPassword,
-      this.props.selectedAddress,
+      this.props.selectedAddress as string,
     );
   };
 
@@ -497,7 +498,7 @@ class ResetPassword extends PureComponent<
       // Just try
       await this.tryExportSeedPhrase(password);
       this.setState({
-        password: null,
+        password: null as unknown as string,
         originalPassword: password,
         ready: true,
         view: RESET_PASSWORD,
@@ -734,7 +735,7 @@ class ResetPassword extends PureComponent<
                     testID={
                       ChoosePasswordSelectorsIDs.CONFIRM_PASSWORD_INPUT_ID
                     }
-                    zasdfasfasf
+                    {...({ zasdfasfasf: true } as Record<string, unknown>)}
                     onSubmitEditing={this.onPressCreate}
                     returnKeyType={'done'}
                     autoCapitalize="none"

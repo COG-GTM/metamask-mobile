@@ -22,7 +22,7 @@ import {
   JsonMap,
 } from '../../../core/Analytics/MetaMetrics.types';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { OutlinedTextField } from 'react-native-material-textfield';
+import { OutlinedTextField as OutlinedTextFieldComponent } from 'react-native-material-textfield';
 import Clipboard from '@react-native-clipboard/clipboard';
 import AppConstants from '../../../core/AppConstants';
 import Device from '../../../util/device';
@@ -83,6 +83,11 @@ const IOS_REJECTED_BIOMETRICS_ERROR =
  * using a secret recovery phrase (SRP)
  * The SRP was formally called the seed phrase
  */
+const OutlinedTextField =
+  OutlinedTextFieldComponent as unknown as React.ComponentType<
+    Record<string, unknown>
+  >;
+
 interface ImportFromSecretRecoveryPhraseProps {
   /**
    * The navigator object
@@ -296,7 +301,7 @@ const ImportFromSecretRecoveryPhrase = ({
         });
       } catch (error) {
         // Should we force people to enable passcode / biometrics?
-        if (error.toString() === PASSCODE_NOT_SET_ERROR) {
+        if ((error as Error).toString() === PASSCODE_NOT_SET_ERROR) {
           Alert.alert(
             'Security Alert',
             'In order to proceed, you need to turn Passcode on or any biometrics authentication method supported in your device (FaceID, TouchID or Fingerprint)',
@@ -304,12 +309,15 @@ const ImportFromSecretRecoveryPhrase = ({
           setLoading(false);
         } else {
           setLoading(false);
-          setError(error.message);
-          Logger.log('Error with seed phrase import', error.message);
+          setError((error as Error).message);
+          Logger.log(
+            'Error with seed phrase import',
+            (error as Error).message,
+          );
         }
         track(MetaMetricsEvents.WALLET_SETUP_FAILURE, {
           wallet_setup_type: 'import',
-          error_type: error.toString(),
+          error_type: (error as Error).toString(),
         });
       }
     }
