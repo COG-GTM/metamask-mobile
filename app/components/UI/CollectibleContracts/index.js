@@ -24,7 +24,7 @@ import {
 } from '../../../reducers/collectibles';
 import { removeFavoriteCollectible } from '../../../actions/collectibles';
 import AppConstants from '../../../core/AppConstants';
-import { toLowerCaseEquals } from '../../../util/general';
+import { tlc } from '../../../util/general';
 import { compareTokenIds } from '../../../util/tokens';
 import CollectibleDetectionModal from '../CollectibleDetectionModal';
 import { useTheme } from '../../../util/theme';
@@ -147,6 +147,27 @@ const createStyles = (colors) =>
     },
   });
 
+const EMPTY_COLLECTIBLES = [];
+
+const groupCollectiblesByAddress = (collectibles, getKey) => {
+  const grouped = new Map();
+  collectibles.forEach((collectible) => {
+    const key = getKey(collectible.address);
+    const group = grouped.get(key);
+    if (group) {
+      group.push(collectible);
+    } else {
+      grouped.set(key, [collectible]);
+    }
+  });
+  return grouped;
+};
+
+const collectibleContractKeyExtractor = (item, index) => {
+  if (!item?.address) return index.toString();
+  return item.chainId ? `${item.chainId}-${item.address}` : item.address;
+};
+
 const debouncedNavigation = debounce((navigation, collectible) => {
   navigation.navigate('NftDetails', { collectible });
 }, 200);
@@ -187,8 +208,22 @@ const CollectibleContracts = ({
     [allCollectibles, chainId, isAllNetworks],
   );
 
-  const collectibles = filteredCollectibles.filter(
-    (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+  const collectibles = useMemo(
+    () =>
+      filteredCollectibles.filter(
+        (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+      ),
+    [filteredCollectibles],
+  );
+
+  const collectiblesByLowerCaseAddress = useMemo(
+    () => groupCollectiblesByAddress(collectibles, tlc),
+    [collectibles],
+  );
+
+  const collectiblesByAddress = useMemo(
+    () => groupCollectiblesByAddress(collectibles, (address) => address),
+    [collectibles],
   );
 
   const { colors } = useTheme();
@@ -338,9 +373,10 @@ const CollectibleContracts = ({
 
   const renderCollectibleContract = useCallback(
     (item, index) => {
-      const contractCollectibles = collectibles?.filter((collectible) =>
-        toLowerCaseEquals(collectible.address, item.address),
-      );
+      const contractCollectibles =
+        (item.address &&
+          collectiblesByLowerCaseAddress.get(tlc(item.address))) ||
+        EMPTY_COLLECTIBLES;
       return (
         <CollectibleContractElement
           onPress={onItemPress}
@@ -351,16 +387,19 @@ const CollectibleContracts = ({
         />
       );
     },
-    [collectibles, onItemPress],
+    [collectiblesByLowerCaseAddress, onItemPress],
+  );
+
+  const renderCollectibleContractItem = useCallback(
+    ({ item, index }) => renderCollectibleContract(item, index),
+    [renderCollectibleContract],
   );
 
   const renderFavoriteCollectibles = useCallback(() => {
     const filteredCollectibles = favoriteCollectibles.map((collectible) =>
-      collectibles.find(
-        ({ tokenId, address }) =>
-          compareTokenIds(collectible.tokenId, tokenId) &&
-          collectible.address === address,
-      ),
+      collectiblesByAddress
+        .get(collectible.address)
+        ?.find(({ tokenId }) => compareTokenIds(collectible.tokenId, tokenId)),
     );
     return (
       Boolean(filteredCollectibles.length) && (
@@ -373,7 +412,7 @@ const CollectibleContracts = ({
         />
       )
     );
-  }, [favoriteCollectibles, collectibles, onItemPress]);
+  }, [favoriteCollectibles, collectiblesByAddress, onItemPress]);
 
   const getNftDetectionAnalyticsParams = useCallback((nft) => {
     try {
@@ -475,8 +514,8 @@ const CollectibleContracts = ({
           </>
         }
         data={filteredCollectibleContracts}
-        renderItem={({ item, index }) => renderCollectibleContract(item, index)}
-        keyExtractor={(_, index) => index.toString()}
+        renderItem={renderCollectibleContractItem}
+        keyExtractor={collectibleContractKeyExtractor}
         testID={RefreshTestId}
         refreshControl={
           <RefreshControl
@@ -497,7 +536,7 @@ const CollectibleContracts = ({
       colors.icon.default,
       refreshing,
       onRefresh,
-      renderCollectibleContract,
+      renderCollectibleContractItem,
       renderFooter,
       renderEmpty,
       isCollectionDetectionBannerVisible,
