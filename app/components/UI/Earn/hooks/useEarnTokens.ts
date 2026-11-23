@@ -5,7 +5,6 @@ import { TokenI } from '../../Tokens/types';
 import { getSupportedEarnTokens, filterEligibleTokens } from '../utils';
 import { selectAccountTokensAcrossChains } from '../../../../selectors/multichain';
 import { isPortfolioViewEnabled } from '../../../../util/networks';
-import { RootState } from '../../BasicFunctionality/BasicFunctionalityModal/BasicFunctionalityModal.test';
 import { useEarnTokenDetails } from './useEarnTokenDetails';
 import {
   selectPooledStakingEnabledFlag,
@@ -14,9 +13,7 @@ import {
 
 // Filters user's tokens to only return the supported and enabled earn tokens.
 const useEarnTokens = () => {
-  const tokens = useSelector((state: RootState) =>
-    selectAccountTokensAcrossChains(state),
-  );
+  const tokens = useSelector(selectAccountTokensAcrossChains);
 
   const { getTokenWithBalanceAndApr } = useEarnTokenDetails();
 

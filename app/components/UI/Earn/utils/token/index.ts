@@ -73,3 +73,12 @@ export const isSupportedLendingTokenByChainId = (
   chainId: string,
 ) =>
   SUPPORTED_LENDING_TOKENS.has(tokenSymbol) && SUPPORTED_CHAIN_IDS.has(chainId);
+
+/**
+ * Key used to check whether a wallet asset is one of the user's earn tokens.
+ * Matches on chain id and symbol, the same fields the token list compares.
+ */
+export const getEarnTokenKey = ({
+  chainId,
+  symbol,
+}: Pick<TokenI, 'chainId' | 'symbol'>) => `${chainId}:${symbol}`;
