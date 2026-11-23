@@ -2,7 +2,39 @@ import { createSelector } from 'reselect';
 import { NotificationTypes } from '../../util/notifications';
 const { TRANSACTION, SIMPLE } = NotificationTypes;
 
-export const initialState = {
+export interface NotificationTransaction {
+  id: string;
+  [key: string]: unknown;
+}
+
+export interface Notification {
+  id?: string;
+  isVisible?: boolean;
+  autodismiss?: number;
+  transaction?: NotificationTransaction;
+  status?: string;
+  type?: (typeof NotificationTypes)[keyof typeof NotificationTypes];
+  title?: string;
+  description?: string;
+  [key: string]: unknown;
+}
+
+export interface NotificationState {
+  notifications: Notification[];
+}
+
+export interface NotificationAction {
+  type: string;
+  id?: string;
+  autodismiss?: number;
+  transaction?: NotificationTransaction;
+  status?: string;
+  title?: string;
+  description?: string;
+  notification?: Notification;
+}
+
+export const initialState: NotificationState = {
   notifications: [],
 };
 
@@ -21,21 +53,22 @@ export const ACTIONS = {
   UPDATE_NOTIFICATION_STATUS: 'UPDATE_NOTIFICATION_STATUS',
 };
 
-const enqueue = (notifications, notification) => [
+const enqueue = (notifications: Notification[], notification: Notification) => [
   ...notifications,
   notification,
 ];
-const dequeue = (notifications) => notifications.slice(1);
+const dequeue = (notifications: Notification[]) => notifications.slice(1);
 
 export const currentNotificationSelector = createSelector(
-  (
-    /** @type {import('..').RootState} */
-    state,
-  ) => state?.notifications,
-  (notifications) => notifications[0] || {},
+  (state: NotificationState) => state?.notifications,
+  (notifications): Notification => notifications[0] || {},
 );
 
-const notificationReducer = (state = initialState, action) => {
+const notificationReducer = (
+  // eslint-disable-next-line @typescript-eslint/default-param-last
+  state: NotificationState = initialState,
+  action: NotificationAction,
+): NotificationState => {
   const { notifications } = state;
   switch (action.type) {
     // make current notification isVisible props false
@@ -66,6 +99,7 @@ const notificationReducer = (state = initialState, action) => {
       };
     }
     case ACTIONS.MODIFY_OR_SHOW_TRANSACTION_NOTIFICATION: {
+      const transaction = action.transaction as NotificationTransaction;
       const index = notifications.findIndex(({ id }) => id === action.id);
       if (index >= 0) {
         return {
@@ -75,10 +109,10 @@ const notificationReducer = (state = initialState, action) => {
             {
               ...notifications[index],
               ...{
-                id: action.transaction.id,
+                id: transaction.id,
                 isVisible: true,
                 autodismiss: action.autodismiss,
-                transaction: action.transaction,
+                transaction,
                 status: action.status,
                 type: TRANSACTION,
               },
@@ -90,10 +124,10 @@ const notificationReducer = (state = initialState, action) => {
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction.id,
+          id: transaction.id,
           isVisible: true,
           autodismiss: action.autodismiss,
-          transaction: action.transaction,
+          transaction,
           status: action.status,
           type: TRANSACTION,
         }),
@@ -144,7 +178,7 @@ const notificationReducer = (state = initialState, action) => {
         ...state,
         notifications: [
           ...notifications.slice(0, index),
-          action.notification,
+          action.notification as Notification,
           ...notifications.slice(index + 1),
         ],
       };
@@ -176,13 +210,14 @@ const notificationReducer = (state = initialState, action) => {
       };
     }
     case ACTIONS.SHOW_TRANSACTION_NOTIFICATION: {
+      const transaction = action.transaction as NotificationTransaction;
       return {
         ...state,
         notifications: enqueue(notifications, {
-          id: action.transaction.id,
+          id: transaction.id,
           isVisible: true,
           autodismiss: action.autodismiss || 5000,
-          transaction: action.transaction,
+          transaction,
           status: action.status,
           type: TRANSACTION,
         }),

@@ -1,4 +1,4 @@
-import browserReducer from './index';
+import browserReducer, { BrowserState } from './index';
 import AppConstants from '../../core/AppConstants';
 
 describe('browserReducer STORE_FAVICON_URL', () => {
@@ -25,7 +25,10 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       activeTab: null,
     };
 
-    const newState = browserReducer(initialState, action);
+    const newState = browserReducer(
+      initialState as unknown as BrowserState,
+      action,
+    );
 
     expect(newState).toEqual(expectedState);
   });
@@ -62,7 +65,10 @@ describe('browserReducer STORE_FAVICON_URL', () => {
       activeTab: null,
     };
 
-    const newState = browserReducer(initialState, action);
+    const newState = browserReducer(
+      initialState as unknown as BrowserState,
+      action,
+    );
 
     expect(newState).toEqual(expectedState);
   });
