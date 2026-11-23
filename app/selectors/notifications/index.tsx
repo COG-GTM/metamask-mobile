@@ -79,30 +79,40 @@ export const getNotificationsList = createDeepEqualSelector(
     notificationServicesControllerState.metamaskNotificationsList,
 );
 
+const selectMetamaskNotificationsList = (state: RootState) =>
+  selectNotificationServicesControllerState(state).metamaskNotificationsList;
+
+const selectMetamaskNotificationsCounts = createSelector(
+  selectMetamaskNotificationsList,
+  (notifications: INotification[] | undefined) => {
+    let unread = 0;
+    let read = 0;
+    let onChainUnread = 0;
+    for (const notification of notifications ?? []) {
+      if (notification.isRead) {
+        read += 1;
+      } else {
+        unread += 1;
+        if (notification.type !== TRIGGER_TYPES.FEATURES_ANNOUNCEMENT) {
+          onChainUnread += 1;
+        }
+      }
+    }
+    return { unread, read, onChainUnread };
+  },
+);
+
 export const getMetamaskNotificationsUnreadCount = createSelector(
-  selectNotificationServicesControllerState,
-  (notificationServicesControllerState: NotificationServicesState) =>
-    (
-      notificationServicesControllerState.metamaskNotificationsList ?? []
-    ).filter((notification: INotification) => !notification.isRead).length,
+  selectMetamaskNotificationsCounts,
+  (counts) => counts.unread,
 );
 export const getMetamaskNotificationsReadCount = createSelector(
-  selectNotificationServicesControllerState,
-  (notificationServicesControllerState: NotificationServicesState) =>
-    (
-      notificationServicesControllerState.metamaskNotificationsList ?? []
-    ).filter((notification: INotification) => notification.isRead).length,
+  selectMetamaskNotificationsCounts,
+  (counts) => counts.read,
 );
 export const getOnChainMetamaskNotificationsUnreadCount = createSelector(
-  selectNotificationServicesControllerState,
-  (notificationServicesControllerState: NotificationServicesState) =>
-    (
-      notificationServicesControllerState.metamaskNotificationsList ?? []
-    ).filter(
-      (notification: INotification) =>
-        !notification.isRead &&
-        notification.type !== TRIGGER_TYPES.FEATURES_ANNOUNCEMENT,
-    ).length,
+  selectMetamaskNotificationsCounts,
+  (counts) => counts.onChainUnread,
 );
 export const getValidNotificationAccounts = createSelector(
   [selectNotificationServicesControllerState],
