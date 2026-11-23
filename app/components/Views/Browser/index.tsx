@@ -48,12 +48,12 @@ import Routes from '../../../constants/navigation/Routes';
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { isSolanaAccount } from '../../../core/Multichain/utils';
 import { useFocusEffect } from '@react-navigation/native';
+import { InternalAccount } from '@metamask/keyring-internal-api';
 ///: END:ONLY_INCLUDE_IF
 // eslint-disable-next-line no-duplicate-imports, import/no-duplicates
 import type { ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Dispatch } from 'redux';
-import { InternalAccount } from '@metamask/keyring-internal-api';
 import { RootState } from '../../../reducers';
 import { ToastOptions } from '../../../component-library/components/Toast/Toast.types';
 
