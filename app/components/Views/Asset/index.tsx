@@ -311,7 +311,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
     this.navSymbol = (this.props.route.params?.symbol ?? '').toLowerCase();
     this.navAddress = (this.props.route.params?.address ?? '').toLowerCase();
 
-    if (this.navSymbol.toUpperCase() !== 'ETH' && this.navAddress !== '') {
+    if ((this.navSymbol as string).toUpperCase() !== 'ETH' && this.navAddress !== '') {
       this.filter = this.noEthFilter;
     } else {
       this.filter = this.ethFilter;
@@ -434,7 +434,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
           tx.insertImportTime = addAccountTimeFlagFilter(
             tx,
             addedAccountTime as unknown as object,
-            accountAddedTimeInsertPointFound,
+            accountAddedTimeInsertPointFound as unknown as object,
           );
           if (tx.insertImportTime) accountAddedTimeInsertPointFound = true;
           switch (tx.status) {

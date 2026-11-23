@@ -582,7 +582,7 @@ export default function VideoPlayer({
     () =>
       renderControl(
         <AntIcon color={styles.actionButtons.color} size={16} name={'close'} />,
-        onClose,
+        onClose as () => void,
         {},
       ),
     [onClose, renderControl, styles],

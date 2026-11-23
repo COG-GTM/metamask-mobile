@@ -103,10 +103,6 @@ const mockNavigation = {
   goBack: jest.fn(),
 };
 
-const Browser = BrowserComponent as unknown as React.ComponentType<
-  Record<string, unknown>
->;
-
 describe('Browser', () => {
   it('should render correctly', () => {
     const { toJSON } = renderWithProvider(
