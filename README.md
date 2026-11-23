@@ -38,7 +38,7 @@ Expo is the fastest way to start developing. With the Expo framework, developers
 #### Clone the project
 
 ```bash
-git clone git@github.com:MetaMask/metamask-mobile.git && \
+git clone https://github.com/COG-GTM/metamask-mobile.git && \
 cd metamask-mobile
 ```
 
@@ -47,6 +47,8 @@ cd metamask-mobile
 ```bash
 yarn setup:expo
 ```
+
+> **Known issue:** `yarn setup:expo` currently stops at **Nodeify npm packages** with `npm error ERESOLVE could not resolve` while installing `react-native-tcp@^3.2.1`. Follow [Setup fails at "Nodeify npm packages"](./docs/readme/troubleshooting.md#setup-fails-at-nodeify-npm-packages) to finish setup, then continue below.
 
 #### Run the bundler
 
@@ -96,7 +98,7 @@ Before running the app for native development, make sure your development enviro
 **Clone the project**
 
 ```bash
-git clone git@github.com:MetaMask/metamask-mobile.git && \
+git clone https://github.com/COG-GTM/metamask-mobile.git && \
 cd metamask-mobile
 ```
 
@@ -147,6 +149,8 @@ yarn setup
 ```
 
 _Not the usual install command, this will run scripts and a lengthy postinstall flow_
+
+> **Known issue:** `yarn setup` stops at the same **Nodeify npm packages** step as `yarn setup:expo`. See [Setup fails at "Nodeify npm packages"](./docs/readme/troubleshooting.md#setup-fails-at-nodeify-npm-packages), including the extra native steps.
 
 #### Running the app for native development
 
