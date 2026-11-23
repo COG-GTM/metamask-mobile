@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fix: bump qs to 6.16.2 to patch arrayLimit bypass in bracket notation (CVE-2025-15284) ([#2401](https://github.com/COG-GTM/metamask-mobile/pull/2401))
 - fix(bridge): show "Auto" slippage for Solana swaps
 
 ### Added
