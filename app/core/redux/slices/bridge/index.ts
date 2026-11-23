@@ -291,25 +291,66 @@ export const selectDestAddress = createSelector(
   (bridgeState) => bridgeState.destAddress,
 );
 
-const selectControllerFields = (state: RootState) => ({
-  ...state.engine.backgroundState.BridgeController,
-  gasFeeEstimates: selectGasFeeControllerEstimates(state) as GasFeeEstimates,
-  ...state.engine.backgroundState.MultichainAssetsRatesController,
-  ...state.engine.backgroundState.TokenRatesController,
-  ...state.engine.backgroundState.CurrencyRateController,
-  participateInMetaMetrics: MetaMetrics.getInstance().isEnabled(),
-  remoteFeatureFlags: {
-    bridgeConfig: selectRemoteFeatureFlags(state).bridgeConfig,
-  },
-});
+/**
+ * Selects the `bridgeConfig` remote feature flag.
+ *
+ * @param state - The Redux root state.
+ * @returns The bridge feature flag config, or undefined if not set.
+ */
+const selectBridgeConfig = (state: RootState) =>
+  selectRemoteFeatureFlags(state).bridgeConfig;
+
+/**
+ * Reads the MetaMetrics opt-in. It is not part of Redux state, so it is
+ * returned as a primitive input to keep `selectControllerFields` memoization stable.
+ *
+ * @returns Whether the user participates in MetaMetrics.
+ */
+const selectParticipateInMetaMetrics = () =>
+  MetaMetrics.getInstance().isEnabled();
+
+const selectControllerFields = createSelector(
+  (state: RootState) => state.engine.backgroundState.BridgeController,
+  selectGasFeeControllerEstimates,
+  (state: RootState) =>
+    state.engine.backgroundState.MultichainAssetsRatesController,
+  (state: RootState) => state.engine.backgroundState.TokenRatesController,
+  (state: RootState) => state.engine.backgroundState.CurrencyRateController,
+  selectParticipateInMetaMetrics,
+  selectBridgeConfig,
+  (
+    bridgeControllerState,
+    gasFeeEstimates,
+    multichainAssetsRatesControllerState,
+    tokenRatesControllerState,
+    currencyRateControllerState,
+    participateInMetaMetrics,
+    bridgeConfig,
+  ) => ({
+    ...bridgeControllerState,
+    gasFeeEstimates: gasFeeEstimates as GasFeeEstimates,
+    ...multichainAssetsRatesControllerState,
+    ...tokenRatesControllerState,
+    ...currencyRateControllerState,
+    participateInMetaMetrics,
+    remoteFeatureFlags: {
+      bridgeConfig,
+    },
+  }),
+);
+
+const BRIDGE_QUOTES_SORT_OPTIONS = {
+  sortOrder: SortOrder.COST_ASC, // TODO for v1 we don't allow user to select alternative quotes, hardcode for now
+  selectedQuote: null, // TODO for v1 we don't allow user to select alternative quotes, pass in null for now
+};
 
 export const selectBridgeQuotes = createSelector(
   selectControllerFields,
   (requiredControllerFields) =>
-    selectBridgeQuotesBase(requiredControllerFields, {
-      sortOrder: SortOrder.COST_ASC, // TODO for v1 we don't allow user to select alternative quotes, hardcode for now
-      selectedQuote: null, // TODO for v1 we don't allow user to select alternative quotes, pass in null for now
-    }),
+    selectBridgeQuotesBase(
+      requiredControllerFields,
+      BRIDGE_QUOTES_SORT_OPTIONS,
+    ),
 );
 
 export const selectIsEvmToSolana = createSelector(
