@@ -410,19 +410,17 @@ export const selectMultichainNetworkAggregatedBalanceForAllAccounts =
       assetsRates,
       nonEvmNetworkChainId,
     ): MultichainNetworkAggregatedBalanceForAllAccounts => {
-      return internalAccounts.reduce(
-        (acc, account) => ({
-          ...acc,
-          [account.id]: getMultichainNetworkAggregatedBalance(
-            account,
-            multichainBalances,
-            assets,
-            assetsRates,
-            nonEvmNetworkChainId,
-          ),
-        }),
-        {},
-      );
+      const balances: MultichainNetworkAggregatedBalanceForAllAccounts = {};
+      for (const account of internalAccounts) {
+        balances[account.id] = getMultichainNetworkAggregatedBalance(
+          account,
+          multichainBalances,
+          assets,
+          assetsRates,
+          nonEvmNetworkChainId,
+        );
+      }
+      return balances;
     },
   );
 

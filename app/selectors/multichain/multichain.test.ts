@@ -11,6 +11,7 @@ import {
   MULTICHAIN_NETWORK_TO_ASSET_TYPES,
   selectMultichainTransactions,
   selectSelectedAccountMultichainNetworkAggregatedBalance,
+  selectMultichainNetworkAggregatedBalanceForAllAccounts,
   selectSolanaAccountTransactions,
   selectMultichainHistoricalPrices,
   makeSelectNonEvmAssetById,
@@ -693,6 +694,74 @@ describe('MultichainNonEvm Selectors', () => {
       expect(result.tokenBalances).toEqual({
         [btcNativeAssetId]: { amount: '0.5', unit: 'BTC' },
       });
+    });
+  });
+
+  describe('selectMultichainNetworkAggregatedBalanceForAllAccounts', () => {
+    const solNativeAssetId = MultichainNativeAssets.Solana;
+
+    const withSolanaAccounts = (accountIds: string[]): RootState => {
+      const mockState = getNonEvmState(MOCK_SOLANA_ACCOUNT);
+      const accounts = Object.fromEntries(
+        accountIds.map((id) => [id, { ...MOCK_SOLANA_ACCOUNT, id }]),
+      );
+      mockState.engine.backgroundState.AccountsController.internalAccounts = {
+        selectedAccount: accountIds[0],
+        accounts,
+      };
+      mockState.engine.backgroundState.MultichainBalancesController.balances =
+        Object.fromEntries(
+          accountIds.map((id, i) => [
+            id,
+            { [solNativeAssetId]: { amount: String(i + 1), unit: 'SOL' } },
+          ]),
+        );
+      mockState.engine.backgroundState.MultichainAssetsController.accountsAssets =
+        Object.fromEntries(accountIds.map((id) => [id, [solNativeAssetId]]));
+      mockState.engine.backgroundState.MultichainAssetsRatesController.conversionRates =
+        { [solNativeAssetId]: { rate: '100', conversionTime: 0 } };
+      return mockState;
+    };
+
+    it('returns the aggregated balance of every account keyed by account id', () => {
+      const accountIds = ['sol-account-1', 'sol-account-2', 'sol-account-3'];
+      const mockState = withSolanaAccounts(accountIds);
+
+      const result =
+        selectMultichainNetworkAggregatedBalanceForAllAccounts(mockState);
+
+      expect(Object.keys(result)).toEqual(accountIds);
+      accountIds.forEach((id, i) => {
+        const amount = String(i + 1);
+        expect(result[id]).toEqual({
+          totalNativeTokenBalance: { amount, unit: 'SOL' },
+          totalBalanceFiat: (i + 1) * 100,
+          tokenBalances: { [solNativeAssetId]: { amount, unit: 'SOL' } },
+          fiatBalances: { [solNativeAssetId]: String((i + 1) * 100) },
+        });
+      });
+    });
+
+    it('returns an empty object when there are no accounts', () => {
+      const mockState = withSolanaAccounts([]);
+
+      expect(
+        selectMultichainNetworkAggregatedBalanceForAllAccounts(mockState),
+      ).toEqual({});
+    });
+
+    it('returns an entry for every account when there are many accounts', () => {
+      const accountIds = Array.from(
+        { length: 2000 },
+        (_, i) => `sol-account-${i}`,
+      );
+      const mockState = withSolanaAccounts(accountIds);
+
+      const result =
+        selectMultichainNetworkAggregatedBalanceForAllAccounts(mockState);
+
+      expect(Object.keys(result)).toEqual(accountIds);
+      expect(result[accountIds[1999]].totalBalanceFiat).toEqual(200000);
     });
   });
 
