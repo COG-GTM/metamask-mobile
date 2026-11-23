@@ -23,6 +23,19 @@ declare module 'readable-stream' {
 
 declare module 'zxcvbn';
 declare module '@metamask/react-native-button';
+
+declare module 'ethjs-ens';
+
+declare module 'unicode-confusables';
+
+declare module '@metamask/ethjs-unit';
+
+declare module 'number-to-bn';
+
+declare module 'ethereumjs-abi';
+
+declare module 'humanize-duration';
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
