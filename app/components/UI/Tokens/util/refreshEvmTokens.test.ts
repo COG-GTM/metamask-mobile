@@ -74,7 +74,7 @@ describe('refreshEvmTokens', () => {
 
     expect(
       Engine.context.TokenRatesController.updateExchangeRatesByChainId,
-    ).toHaveBeenCalledTimes(2);
+    ).toHaveBeenCalledTimes(1);
     expect(
       Engine.context.TokenRatesController.updateExchangeRatesByChainId,
     ).toHaveBeenCalledWith([
@@ -82,10 +82,6 @@ describe('refreshEvmTokens', () => {
         chainId: '0x1',
         nativeCurrency: 'ETH',
       },
-    ]);
-    expect(
-      Engine.context.TokenRatesController.updateExchangeRatesByChainId,
-    ).toHaveBeenCalledWith([
       {
         chainId: '0x89',
         nativeCurrency: 'POL',
