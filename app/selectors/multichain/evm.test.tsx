@@ -9,6 +9,9 @@ import {
   selectEvmTokens,
   selectEvmTokensWithZeroBalanceFilter,
   makeSelectAssetByAddressAndChainId,
+  selectAccountTokensAcrossChainsForAddress,
+  selectNativeTokensAcrossChainsForAddress,
+  selectedAccountNativeTokenCachedBalanceByChainIdForAddress,
 } from './evm';
 import { SolScope } from '@metamask/keyring-api';
 import { GetByQuery } from '@testing-library/react-native/build/queries/make-queries';
@@ -219,6 +222,122 @@ describe('Multichain Selectors', () => {
       const polygonTokens = result['0x89'];
       expect(polygonTokens.length).toBeGreaterThan(0);
       expect(polygonTokens.some((token) => token.symbol === 'POL')).toBe(true);
+    });
+  });
+
+  describe('*ForAddress selectors with alternating addresses', () => {
+    const otherAddress = '0xAddress2';
+    const twoAccountState = {
+      ...mockState,
+      engine: {
+        backgroundState: {
+          ...mockState.engine.backgroundState,
+          AccountTrackerController: {
+            accountsByChainId: {
+              '0x1': {
+                '0xAddress1': { balance: '0x1', stakedBalance: '0x2' },
+                [otherAddress]: { balance: '0x5', stakedBalance: '0x0' },
+              },
+            },
+          },
+          TokensController: {
+            allTokens: {
+              '0x1': {
+                '0xAddress1': [
+                  { address: '0xToken1', symbol: 'TK1', decimals: 18 },
+                ],
+                [otherAddress]: [
+                  { address: '0xToken2', symbol: 'TK2', decimals: 18 },
+                ],
+              },
+            },
+          },
+        },
+      },
+    } as unknown as RootState;
+
+    const selectors = {
+      selectedAccountNativeTokenCachedBalanceByChainIdForAddress,
+      selectNativeTokensAcrossChainsForAddress,
+      selectAccountTokensAcrossChainsForAddress,
+    };
+
+    // Each new root object mimics a dispatch that does not touch these inputs.
+    const dispatch = () => ({ ...twoAccountState });
+
+    beforeEach(() => {
+      Object.values(selectors).forEach((selector) =>
+        selector.resetRecomputations(),
+      );
+    });
+
+    it.each(Object.entries(selectors))(
+      '%s keeps one cached result per address',
+      (_, selector) => {
+        const first = selector(dispatch(), '0xAddress1');
+        const second = selector(dispatch(), otherAddress);
+        expect(selector.recomputations()).toBe(2);
+
+        for (let i = 0; i < 5; i++) {
+          expect(selector(dispatch(), '0xAddress1')).toBe(first);
+          expect(selector(dispatch(), otherAddress)).toBe(second);
+        }
+        expect(selector.recomputations()).toBe(2);
+        expect(first).not.toEqual(second);
+      },
+    );
+
+    it('returns the correct tokens for each address', () => {
+      const tokensA = selectAccountTokensAcrossChainsForAddress(
+        dispatch(),
+        '0xAddress1',
+      );
+      const tokensB = selectAccountTokensAcrossChainsForAddress(
+        dispatch(),
+        otherAddress,
+      );
+      expect(tokensA['0x1'].map((token) => token.symbol)).toEqual([
+        'Ethereum',
+        'Ethereum',
+        'TK1',
+      ]);
+      expect(tokensB['0x1'].map((token) => token.symbol)).toEqual([
+        'Ethereum',
+        'TK2',
+      ]);
+    });
+
+    it('recomputes when an input changes', () => {
+      const before = selectAccountTokensAcrossChainsForAddress(
+        dispatch(),
+        otherAddress,
+      );
+      const changedState = {
+        ...twoAccountState,
+        engine: {
+          backgroundState: {
+            ...twoAccountState.engine.backgroundState,
+            TokensController: {
+              allTokens: {
+                '0x1': {
+                  [otherAddress]: [
+                    { address: '0xToken3', symbol: 'TK3', decimals: 18 },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+      const after = selectAccountTokensAcrossChainsForAddress(
+        changedState,
+        otherAddress,
+      );
+      expect(after).not.toBe(before);
+      expect(after['0x1'].map((token) => token.symbol)).toEqual([
+        'Ethereum',
+        'TK3',
+      ]);
     });
   });
 
