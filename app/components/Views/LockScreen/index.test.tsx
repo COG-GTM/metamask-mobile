@@ -1,3 +1,4 @@
+import { ComponentType } from 'react';
 import {
   DeepPartial,
   renderScreen,
@@ -24,7 +25,7 @@ const mockInitialState: DeepPartial<RootState> = {
 describe('LockScreen', () => {
   it('should render correctly', () => {
     const { toJSON } = renderScreen(
-      LockScreen,
+      LockScreen as unknown as ComponentType,
       { name: Routes.LOCK_SCREEN },
       { state: mockInitialState },
       { bioStateMachineId: '' },

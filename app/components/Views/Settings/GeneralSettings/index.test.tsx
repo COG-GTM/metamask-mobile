@@ -47,6 +47,10 @@ const mockMetrics = {
   createEventBuilder: MetricsEventBuilder.createEventBuilder,
 };
 
+const typedMockMetrics = mockMetrics as unknown as Parameters<
+  typeof updateUserTraitsWithCurrentCurrency
+>[1];
+
 describe('updateUserTraitsWithCurrentCurrency', () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -55,7 +59,7 @@ describe('updateUserTraitsWithCurrentCurrency', () => {
   it('adds selected currency trait', () => {
     const mockCurrency = 'USD';
 
-    updateUserTraitsWithCurrentCurrency(mockCurrency, mockMetrics);
+    updateUserTraitsWithCurrentCurrency(mockCurrency, typedMockMetrics);
 
     expect(mockMetrics.addTraitsToUser).toHaveBeenCalledWith({
       [UserProfileProperty.CURRENT_CURRENCY]: mockCurrency,
@@ -65,7 +69,7 @@ describe('updateUserTraitsWithCurrentCurrency', () => {
   it('tracks currency changed event', () => {
     const mockCurrency = 'USD';
 
-    updateUserTraitsWithCurrentCurrency(mockCurrency, mockMetrics);
+    updateUserTraitsWithCurrentCurrency(mockCurrency, typedMockMetrics);
 
     // Check if trackEvent was called with the correct event and properties
     expect(mockMetrics.trackEvent).toHaveBeenCalledWith(
@@ -82,7 +86,7 @@ describe('updateUserTraitsWithCurrentCurrency', () => {
     const mockCurrency = 'USD';
 
     expect(() => {
-      updateUserTraitsWithCurrentCurrency(mockCurrency, mockMetrics);
+      updateUserTraitsWithCurrentCurrency(mockCurrency, typedMockMetrics);
     }).not.toThrow();
   });
 });
@@ -95,7 +99,7 @@ describe('updateUserTraitsWithCurrencyType', () => {
   it('adds the primary currency preference', () => {
     const primaryCurrency = 'fiat';
 
-    updateUserTraitsWithCurrencyType(primaryCurrency, mockMetrics);
+    updateUserTraitsWithCurrencyType(primaryCurrency, typedMockMetrics);
 
     expect(mockMetrics.addTraitsToUser).toHaveBeenCalledWith({
       [UserProfileProperty.PRIMARY_CURRENCY]: primaryCurrency,
@@ -105,7 +109,7 @@ describe('updateUserTraitsWithCurrencyType', () => {
   it('tracks the primary currency toggle event', () => {
     const primaryCurrency = 'crypto';
 
-    updateUserTraitsWithCurrencyType(primaryCurrency, mockMetrics);
+    updateUserTraitsWithCurrencyType(primaryCurrency, typedMockMetrics);
 
     // Check if trackEvent was called with the correct event and properties
     expect(mockMetrics.trackEvent).toHaveBeenCalledWith(
@@ -124,7 +128,7 @@ describe('updateUserTraitsWithCurrencyType', () => {
     const primaryCurrency = 'fiat';
 
     expect(() => {
-      updateUserTraitsWithCurrencyType(primaryCurrency, mockMetrics);
+      updateUserTraitsWithCurrencyType(primaryCurrency, typedMockMetrics);
     }).not.toThrow();
   });
 });

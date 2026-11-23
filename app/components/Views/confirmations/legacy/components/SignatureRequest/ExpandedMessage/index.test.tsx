@@ -11,6 +11,7 @@ describe('ExpandedMessage', () => {
       <ExpandedMessage
         currentPageInformation={{ title: 'title', url: 'url' }}
         renderMessage={renderMessageMock}
+        // @ts-expect-error pre-existing: prop name does not match ExpandedMessage props
         toggleExpandedMessageMock={toggleExpandedMessageMock}
       />,
     );

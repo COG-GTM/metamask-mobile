@@ -3,7 +3,7 @@
 // 2. if tabs.length <= 4, create a new tab
 
 import React from 'react';
-import { Browser } from './index';
+import { Browser as BrowserComponent } from './index';
 import Routes from '../../../constants/navigation/Routes';
 import renderWithProvider from '../../../util/test/renderWithProvider';
 import { backgroundState } from '../../../util/test/initial-root-state';
@@ -86,6 +86,10 @@ jest.mock('../../../util/phishingDetection', () => ({
 }));
 
 const Stack = createStackNavigator();
+const Browser = BrowserComponent as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
+
 const mockStore = configureMockStore();
 
 const routeMock = {

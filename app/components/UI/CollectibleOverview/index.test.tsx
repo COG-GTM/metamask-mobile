@@ -23,6 +23,7 @@ describe('CollectibleOverview', () => {
         <CollectibleOverview
           collectible={{
             name: 'Leopard',
+            // @ts-expect-error - fixture uses a numeric tokenId; snapshot depends on it
             tokenId: 6904,
             address: '0x06012c8cf97BEaD5deAe237070F9587f8E7A266d',
             externalLink: 'https://nft.example.com',

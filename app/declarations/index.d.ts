@@ -4,6 +4,8 @@ declare module '*.mp4';
 
 declare module '@metamask/react-native-payments/lib/js/__mocks__';
 
+declare module 'react-native-confetti';
+
 declare module 'react-native-fade-in-image';
 
 declare module 'react-native-fast-crypto';
@@ -13,6 +15,29 @@ declare module 'react-native-minimizer';
 declare module 'react-native-tcp-socket';
 
 declare module 'xhr2';
+
+declare module '@metamask/ethjs-query';
+
+declare module 'readable-stream' {
+  // eslint-disable-next-line import/no-nodejs-modules
+  export { Duplex } from 'stream';
+}
+
+declare module 'zxcvbn';
+declare module '@metamask/react-native-button';
+
+declare module 'ethjs-ens';
+
+declare module 'unicode-confusables';
+
+declare module '@metamask/ethjs-unit';
+
+declare module 'number-to-bn';
+
+declare module 'ethereumjs-abi';
+
+declare module 'humanize-duration';
+
 declare module 'react-native-scrollable-tab-view/DefaultTabBar' {
   // TODO: Replace "any" with type
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -409,4 +434,12 @@ declare module '@sentry/react-native' {
     hint?: ExclusiveEventHintOrCaptureContext,
   ) => string;
   export { captureException };
+}
+
+declare module 'react-native/Libraries/Image/resolveAssetSource' {
+  export default function resolveAssetSource(
+    source?: import('react-native').ImageSourcePropType,
+  ): import('react-native').ImageResolvedAssetSource & {
+    __packager_asset?: boolean;
+  };
 }
