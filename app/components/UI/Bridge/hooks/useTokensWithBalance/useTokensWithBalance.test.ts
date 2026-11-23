@@ -3,7 +3,13 @@ import { useTokensWithBalance } from '.';
 import { constants } from 'ethers';
 import { waitFor } from '@testing-library/react-native';
 import { Hex } from '@metamask/utils';
-import { initialState } from '../../_mocks_/initialState';
+import { useSelector } from 'react-redux';
+import {
+  evmAccountId,
+  initialState,
+} from '../../_mocks_/initialState';
+import { RootState } from '../../../../../reducers';
+import { selectMultichainTokenListForAccountId } from '../../../../../selectors/multichain';
 import { SolScope } from '@metamask/keyring-api';
 
 // Mock dependencies
@@ -177,5 +183,28 @@ describe('useTokensWithBalance', () => {
       const token3 = result.current.find((t) => t.address === token3Address);
       expect(token3?.balanceFiat).toBe('$0');
     });
+  });
+
+  it('keeps non-EVM tokens memoized while another component selects tokens for a different account', () => {
+    const chainIds = [mockChainId, optimismChainId, solanaChainId];
+    // Mirrors the Wallet Tokens list mounted beneath the bridge token selector,
+    // which uses the shared selector with the selected (EVM) account id.
+    const { result, rerender } = renderHookWithProvider(
+      () => {
+        useSelector((state: RootState) =>
+          selectMultichainTokenListForAccountId(state, evmAccountId),
+        );
+        return useTokensWithBalance({ chainIds });
+      },
+      { state: initialState },
+    );
+
+    const firstResult = result.current;
+    expect(firstResult.some((t) => t.chainId === solanaChainId)).toBe(true);
+
+    rerender({});
+    rerender({});
+
+    expect(result.current).toBe(firstResult);
   });
 });

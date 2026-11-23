@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - fix(bridge): show "Auto" slippage for Solana swaps
+- fix(bridge): give the bridge token list its own multichain token selector so it no longer evicts the Wallet token list cache
 
 ### Added
 
