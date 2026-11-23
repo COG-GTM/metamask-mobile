@@ -48,8 +48,8 @@ Until the setup script is fixed, finish the remaining setup steps by hand from t
 
    ```bash
    node_modules/.bin/rn-nodeify --install crypto,buffer,react-native-randombytes,vm,stream,http,https,os,url,fs --hack
-   # native Android only (`yarn setup`); `yarn setup:expo` skips it
-   yarn jetify
+   # native Android (`yarn setup`) only: uncomment the next line. `yarn setup:expo` skips it.
+   # yarn jetify
    yarn allow-scripts
    yarn patch-package --error-on-fail
    ```
@@ -64,12 +64,12 @@ Until the setup script is fixed, finish the remaining setup steps by hand from t
 4. Generate the Terms of Use:
 
    ```bash
-   curl -o ./docs/assets/termsOfUse.html https://legal.consensys.io/plain/terms-of-use/
+   curl --fail -o ./docs/assets/termsOfUse.html https://legal.consensys.io/plain/terms-of-use/
    mkdir -p app/util/termsOfUse
    node -e "const fs=require('fs');fs.writeFileSync('app/util/termsOfUse/termsOfUseContent.ts','export default '+JSON.stringify(fs.readFileSync('docs/assets/termsOfUse.html','utf8'))+';','utf8')"
    ```
 
-5. For native iOS (`yarn setup` on macOS only), also run the iOS steps that `yarn setup:expo` skips:
+5. If your setup command builds iOS (`yarn setup` on macOS, or `yarn setup --build-ios` as in the [Docker setup](../../scripts/docker/README.md)), also run the iOS steps that `yarn setup:expo` skips:
 
    ```bash
    gem install bundler -v 2.5.8
