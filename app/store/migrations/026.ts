@@ -1,30 +1,47 @@
 import { captureException } from '@sentry/react-native';
 import { isObject } from '@metamask/utils';
 
+interface PhishingControllerState {
+  listState?: unknown;
+  hotlistLastFetched?: number;
+  stalelistLastFetched?: number;
+}
+
+interface MigrationState {
+  engine: {
+    backgroundState: {
+      KeyringController?: unknown;
+      PhishingController?: PhishingControllerState;
+    };
+  };
+}
+
 /**
  * This migration is to free space of unused data in the user devices
  * regarding the phishing list property listState, that is no longer used
  *
  **/
-export default function migrate(state) {
-  const keyringControllerState = state.engine.backgroundState.KeyringController;
+export default function migrate(state: unknown) {
+  const migratedState = state as MigrationState;
+  const keyringControllerState =
+    migratedState.engine.backgroundState.KeyringController;
   if (!isObject(keyringControllerState)) {
+    // We are not returning state not to stop the flow of Vault recovery
     captureException(
-      // @ts-expect-error We are not returning state not to stop the flow of Vault recovery
       new Error(
         `Migration 26: Invalid vault in KeyringController: '${typeof keyringControllerState}'`,
       ),
     );
   }
   const phishingControllerState =
-    state.engine.backgroundState.PhishingController;
+    migratedState.engine.backgroundState.PhishingController;
   if (phishingControllerState?.listState) {
-    delete state.engine.backgroundState.PhishingController.listState;
+    delete phishingControllerState.listState;
   } else {
     captureException(
       new Error(
         `Migration 26: Invalid PhishingControllerState controller state: '${JSON.stringify(
-          state.engine.backgroundState.PhishingController,
+          migratedState.engine.backgroundState.PhishingController,
         )}'`,
       ),
     );
@@ -35,17 +52,17 @@ export default function migrate(state) {
     phishingControllerState?.stalelistLastFetched
   ) {
     // This will make the list be fetched again when the user updates the app
-    state.engine.backgroundState.PhishingController.hotlistLastFetched = 0;
-    state.engine.backgroundState.PhishingController.stalelistLastFetched = 0;
+    phishingControllerState.hotlistLastFetched = 0;
+    phishingControllerState.stalelistLastFetched = 0;
   } else {
     captureException(
       new Error(
         `Migration 26: Invalid PhishingControllerState hotlist and stale list fetched: '${JSON.stringify(
-          state.engine.backgroundState.PhishingController,
+          migratedState.engine.backgroundState.PhishingController,
         )}'`,
       ),
     );
   }
 
-  return state;
+  return migratedState;
 }

@@ -71,7 +71,7 @@ describe('Migration #27', () => {
     const newState = migration(oldState);
 
     expect(
-      newState.engine.backgroundState.TransactionController.submitHistory,
+      newState.engine.backgroundState.TransactionController?.submitHistory,
     ).toStrictEqual([
       {
         chainId: '5',
@@ -139,7 +139,7 @@ describe('Migration #27', () => {
     const newState = migration(oldState);
 
     expect(
-      newState.engine.backgroundState.TransactionController.submitHistory,
+      newState.engine.backgroundState.TransactionController?.submitHistory,
     ).toStrictEqual([
       {
         chainId: '5',
@@ -229,7 +229,7 @@ describe('Migration #27', () => {
     const newState = migration(oldState);
 
     expect(
-      newState.engine.backgroundState.TransactionController.submitHistory,
+      newState.engine.backgroundState.TransactionController?.submitHistory,
     ).toStrictEqual([
       {
         chainId: '5',

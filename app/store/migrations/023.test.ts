@@ -140,7 +140,7 @@ describe('Migration #23', () => {
 
       expect(newState).toStrictEqual(state);
       expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
-      expect(mockedCaptureException.mock.calls[0][0].message).toBe(
+      expect((mockedCaptureException.mock.calls[0][0] as Error).message).toBe(
         errorMessage,
       );
     });
