@@ -1,7 +1,10 @@
 import React from 'react';
 import { TransactionType } from '@metamask/transaction-controller';
 import { swapsUtils } from '@metamask/swaps-controller/';
-import renderWithProvider from '../../../util/test/renderWithProvider';
+import renderWithProvider, {
+  DeepPartial,
+} from '../../../util/test/renderWithProvider';
+import { RootState } from '../../../reducers';
 import { backgroundState } from '../../../util/test/initial-root-state';
 import Asset from './';
 import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsControllerTestUtils';
@@ -123,7 +126,7 @@ describe('Asset', () => {
         }}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as unknown as DeepPartial<RootState>,
       },
     );
     expect(toJSON()).toMatchSnapshot();
@@ -145,7 +148,7 @@ describe('Asset', () => {
         transactions={[]}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as unknown as DeepPartial<RootState>,
       },
     );
 
@@ -166,7 +169,7 @@ describe('Asset', () => {
         }}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as unknown as DeepPartial<RootState>,
       },
     );
 
@@ -188,7 +191,7 @@ describe('Asset', () => {
         }}
       />,
       {
-        state: mockInitialState,
+        state: mockInitialState as unknown as DeepPartial<RootState>,
       },
     );
 

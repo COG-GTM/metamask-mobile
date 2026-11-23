@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   Linking,
   TextStyle,
+  DimensionValue,
 } from 'react-native';
 import { connect } from 'react-redux';
 import { typography } from '@metamask/design-tokens';
@@ -88,10 +89,7 @@ import Cell, {
 import BottomSheetHeader from '../../../../../component-library/components/BottomSheets/BottomSheetHeader';
 import ButtonLink from '../../../../../component-library/components/Buttons/Button/variants/ButtonLink';
 import ButtonPrimary from '../../../../../component-library/components/Buttons/Button/variants/ButtonPrimary';
-import {
-  NetworkConfiguration,
-  RpcEndpointType,
-} from '@metamask/network-controller';
+import { RpcEndpointType } from '@metamask/network-controller';
 import { Theme } from '../../../../../util/theme/models';
 import { RootState } from '../../../../../reducers';
 import { Dispatch } from 'redux';
@@ -122,7 +120,7 @@ interface NetworkSettingsProps extends IWithMetricsAwarenessProps {
   /**
    * Network configurations
    */
-  networkConfigurations: Record<string, NetworkConfiguration>;
+  networkConfigurations: Record<string, AnyValue>;
   /**
    * Object that represents the navigator
    */
@@ -171,31 +169,32 @@ interface NetworkSettingsProps extends IWithMetricsAwarenessProps {
 }
 
 interface NetworkSettingsState {
-  rpcUrl?: string;
-  rpcName?: string;
-  rpcUrlFrom?: string;
-  rpcUrlForm?: string;
+  rpcUrl?: AnyValue;
+  rpcName?: AnyValue;
+  rpcUrlFrom?: AnyValue;
+  rpcUrlForm?: AnyValue;
   rpcNameForm: string;
-  rpcUrls: AnyValue[];
-  blockExplorerUrls: string[];
-  selectedRpcEndpointIndex: number;
-  blockExplorerUrl?: string;
-  blockExplorerUrlForm?: string;
-  nickname?: string;
-  chainId?: string;
-  ticker?: string;
+  rpcUrls: AnyValue;
+  blockExplorerUrls: AnyValue;
+  selectedRpcEndpointIndex: AnyValue;
+  blockExplorerUrl?: AnyValue;
+  blockExplorerUrlForm?: AnyValue;
+  nickname?: AnyValue;
+  chainId?: AnyValue;
+  ticker?: AnyValue;
   editable?: boolean;
   addMode: boolean;
   warningRpcUrl?: string;
   warningChainId?: string;
   warningSymbol?: string;
   warningName?: string;
+  validateChainId?: AnyValue;
   validatedRpcURL: boolean;
   validatedChainId: boolean;
   validatedSymbol: boolean;
   initialState?: string;
   enableAction: boolean;
-  inputWidth: { width: string | number };
+  inputWidth: { width: DimensionValue };
   showPopularNetworkModal: boolean;
   popularNetwork: AnyValue;
   showWarningModal: boolean;
