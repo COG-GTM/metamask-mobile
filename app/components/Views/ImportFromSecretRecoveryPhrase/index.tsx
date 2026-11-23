@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
 import {
   ActivityIndicator,
   Alert,
@@ -7,6 +6,7 @@ import {
   Text,
   View,
   TextInput,
+  DimensionValue,
   SafeAreaView,
   Platform,
 } from 'react-native';
@@ -14,6 +14,13 @@ import { connect } from 'react-redux';
 import StorageWrapper from '../../../store/storage-wrapper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import zxcvbn from 'zxcvbn';
+import { Dispatch } from 'redux';
+import { ParamListBase } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import {
+  IMetaMetricsEvent,
+  JsonMap,
+} from '../../../core/Analytics/MetaMetrics.types';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { OutlinedTextField } from 'react-native-material-textfield';
 import Clipboard from '@react-native-clipboard/clipboard';
@@ -76,6 +83,33 @@ const IOS_REJECTED_BIOMETRICS_ERROR =
  * using a secret recovery phrase (SRP)
  * The SRP was formally called the seed phrase
  */
+interface ImportFromSecretRecoveryPhraseProps {
+  /**
+   * The navigator object
+   */
+  navigation: StackNavigationProp<ParamListBase>;
+  /**
+   * The action to update the password set flag
+   * in the redux store
+   */
+  passwordSet: () => void;
+  /**
+   * The action to set the locktime
+   * in the redux store
+   */
+  setLockTime: (time: number) => void;
+  /**
+   * The action to update the seedphrase backed up flag
+   * in the redux store
+   */
+  seedphraseBackedUp: () => void;
+  /**
+   * Action to set onboarding wizard step
+   */
+  setOnboardingWizardStep: (step: number) => void;
+  route: { params?: Record<string, unknown> };
+}
+
 const ImportFromSecretRecoveryPhrase = ({
   navigation,
   passwordSet,
@@ -83,35 +117,41 @@ const ImportFromSecretRecoveryPhrase = ({
   seedphraseBackedUp,
   setOnboardingWizardStep,
   route,
-}) => {
+}: ImportFromSecretRecoveryPhraseProps) => {
   const { colors, themeAppearance } = useTheme();
   const styles = createStyles(colors);
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordStrength, setPasswordStrength] = useState();
+  const [passwordStrength, setPasswordStrength] = useState<number>();
   const [seed, setSeed] = useState('');
-  const [biometryType, setBiometryType] = useState(null);
+  const [biometryType, setBiometryType] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [biometryChoice, setBiometryChoice] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [seedphraseInputFocused, setSeedphraseInputFocused] = useState(false);
-  const [inputWidth, setInputWidth] = useState({ width: '99%' });
+  const [inputWidth, setInputWidth] = useState<{ width: DimensionValue }>({
+    width: '99%',
+  });
   const [hideSeedPhraseInput, setHideSeedPhraseInput] = useState(true);
 
-  const passwordInput = React.createRef();
-  const confirmPasswordInput = React.createRef();
+  const passwordInput = React.createRef<TextInput>();
+  const confirmPasswordInput = React.createRef<TextInput>();
 
-  const track = (event, properties) => {
+  const track = (event: IMetaMetricsEvent, properties?: JsonMap) => {
     const eventBuilder = MetricsEventBuilder.createEventBuilder(event);
-    eventBuilder.addProperties(properties);
+    eventBuilder.addProperties(properties as JsonMap);
     trackOnboarding(eventBuilder.build());
   };
 
   const updateNavBar = () => {
-    navigation.setOptions(getOnboardingNavbarOptions(route, {}, colors));
+    navigation.setOptions(getOnboardingNavbarOptions(
+        route,
+        {} as Parameters<typeof getOnboardingNavbarOptions>[1],
+        colors,
+      ));
   };
 
   useEffect(() => {
@@ -154,7 +194,7 @@ const ImportFromSecretRecoveryPhrase = ({
     termsOfUse();
   }, [termsOfUse]);
 
-  const updateBiometryChoice = async (biometryChoice) => {
+  const updateBiometryChoice = async (biometryChoice: boolean) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     setBiometryChoice(biometryChoice);
   };
@@ -163,7 +203,7 @@ const ImportFromSecretRecoveryPhrase = ({
    * This function handles the case when the user rejects the OS prompt for allowing use of biometrics.
    * If this occurs we will create the wallet automatically with password as the login method
    */
-  const handleRejectedOsBiometricPrompt = async (parsedSeed) => {
+  const handleRejectedOsBiometricPrompt = async (parsedSeed: string) => {
     const newAuthData = await Authentication.componentAuthenticationType(
       false,
       false,
@@ -176,9 +216,11 @@ const ImportFromSecretRecoveryPhrase = ({
         true,
       );
     } catch (err) {
-      this.setState({ loading: false, error: err.toString() });
+      (
+        this as unknown as { setState: (state: object) => void }
+      ).setState({ loading: false, error: (err as Error).toString() });
     }
-    setBiometryType(newAuthData.availableBiometryType);
+    setBiometryType(newAuthData.availableBiometryType as string);
     updateBiometryChoice(false);
   };
 
@@ -190,7 +232,7 @@ const ImportFromSecretRecoveryPhrase = ({
 
     if (loading) return;
     track(MetaMetricsEvents.WALLET_IMPORT_ATTEMPTED);
-    let error = null;
+    let error: string | null = null;
     if (!passwordRequirementsMet(password)) {
       error = strings('import_from_seed.password_length_error');
     } else if (password !== confirmPassword) {
@@ -226,7 +268,10 @@ const ImportFromSecretRecoveryPhrase = ({
           );
         } catch (err) {
           // retry faceID if the user cancels the
-          if (Device.isIos && err.toString() === IOS_REJECTED_BIOMETRICS_ERROR)
+          if (
+            (Device.isIos as unknown) &&
+            (err as Error).toString() === IOS_REJECTED_BIOMETRICS_ERROR
+          )
             await handleRejectedOsBiometricPrompt(parsedSeed);
         }
         // Get onboarding wizard state
@@ -270,7 +315,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
-  const clearSecretRecoveryPhrase = async (seed) => {
+  const clearSecretRecoveryPhrase = async (seed: string) => {
     // get clipboard contents
     const clipboardContents = await Clipboard.getString();
     const parsedClipboardContents = parseSeedPhrase(clipboardContents);
@@ -281,15 +326,20 @@ const ImportFromSecretRecoveryPhrase = ({
       // only clear clipboard if the seed phrase entered matches what's in the clipboard
       parseSeedPhrase(seed) === parsedClipboardContents
     ) {
-      await Clipboard.clearString();
+      await (
+        Clipboard as unknown as { clearString: () => Promise<void> }
+      ).clearString();
     }
   };
 
-  const onSeedWordsChange = useCallback(async (seed) => {
+  const onSeedWordsChange = useCallback(async (seed: string) => {
     setSeed(seed);
     // Only clear on android since iOS will notify users when we getString()
     if (Device.isAndroid()) {
-      const androidOSVersion = parseInt(Platform.constants.Release, 10);
+      const androidOSVersion = parseInt(
+        (Platform.constants as unknown as { Release: string }).Release,
+        10,
+      );
       // This conditional is necessary to avoid an error in Android 8.1.0 or lower
       if (androidOSVersion >= MINIMUM_SUPPORTED_CLIPBOARD_VERSION) {
         await clearSecretRecoveryPhrase(seed);
@@ -297,14 +347,14 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   }, []);
 
-  const onPasswordChange = (value) => {
+  const onPasswordChange = (value: string) => {
     const passInfo = zxcvbn(value);
 
     setPassword(value);
     setPasswordStrength(passInfo.score);
   };
 
-  const onPasswordConfirmChange = (value) => {
+  const onPasswordConfirmChange = (value: string) => {
     setConfirmPassword(value);
   };
 
@@ -319,7 +369,7 @@ const ImportFromSecretRecoveryPhrase = ({
   };
 
   const renderSwitch = () => {
-    const handleUpdateRememberMe = (rememberMe) => {
+    const handleUpdateRememberMe = (rememberMe: boolean) => {
       setRememberMe(rememberMe);
     };
     return (
@@ -361,13 +411,13 @@ const ImportFromSecretRecoveryPhrase = ({
         }
         setHideSeedPhraseInput(shouldHideSRP);
       },
-      onScanError: (error) => {
+      onScanError: (_error: unknown) => {
         setHideSeedPhraseInput(shouldHideSRP);
       },
     });
   }, [hideSeedPhraseInput, navigation]);
 
-  const passwordStrengthWord = getPasswordStrengthWord(passwordStrength);
+  const passwordStrengthWord = getPasswordStrengthWord(passwordStrength as number);
 
   const hiddenSRPInput = useCallback(
     () => (
@@ -607,36 +657,10 @@ const ImportFromSecretRecoveryPhrase = ({
   );
 };
 
-ImportFromSecretRecoveryPhrase.propTypes = {
-  /**
-   * The navigator object
-   */
-  navigation: PropTypes.object,
-  /**
-   * The action to update the password set flag
-   * in the redux store
-   */
-  passwordSet: PropTypes.func,
-  /**
-   * The action to set the locktime
-   * in the redux store
-   */
-  setLockTime: PropTypes.func,
-  /**
-   * The action to update the seedphrase backed up flag
-   * in the redux store
-   */
-  seedphraseBackedUp: PropTypes.func,
-  /**
-   * Action to set onboarding wizard step
-   */
-  setOnboardingWizardStep: PropTypes.func,
-  route: PropTypes.object,
-};
-
-const mapDispatchToProps = (dispatch) => ({
-  setLockTime: (time) => dispatch(setLockTime(time)),
-  setOnboardingWizardStep: (step) => dispatch(setOnboardingWizardStep(step)),
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  setLockTime: (time: number) => dispatch(setLockTime(time)),
+  setOnboardingWizardStep: (step: number) =>
+    dispatch(setOnboardingWizardStep(step)),
   passwordSet: () => dispatch(passwordSet()),
   seedphraseBackedUp: () => dispatch(seedphraseBackedUp()),
 });
