@@ -247,6 +247,7 @@ interface GasAnalyticsParams {
   dapp_url: string;
   active_currency: { value: string; anonymous: boolean };
   gas_estimate_type: string;
+  [key: string]: unknown;
 }
 
 export const getGasAnalyticsParams = (

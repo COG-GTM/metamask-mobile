@@ -253,7 +253,6 @@ function TransactionNotification(props: TransactionNotificationProps) {
     // eslint-disable-next-line @typescript-eslint/no-shadow
     const transactionActionDisabled = validateTransactionActionBalance(
       tx,
-      // @ts-expect-error - JS util is typed via JSDoc; numeric rate preserved from JS
       SPEED_UP_RATE,
       accounts,
     );
@@ -272,7 +271,6 @@ function TransactionNotification(props: TransactionNotificationProps) {
     // eslint-disable-next-line @typescript-eslint/no-shadow
     const transactionActionDisabled = validateTransactionActionBalance(
       tx,
-      // @ts-expect-error - JS util is typed via JSDoc; numeric rate preserved from JS
       CANCEL_RATE,
       accounts,
     );

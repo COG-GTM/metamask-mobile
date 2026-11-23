@@ -7,7 +7,10 @@ import {
   ScrollView,
 } from 'react-native';
 import Eth from '@metamask/ethjs-query';
-import ActionView, { ConfirmButtonState } from '../../../../../UI/ActionView';
+import ActionView, {
+  ConfirmButtonState,
+  ConfirmButtonStateType,
+} from '../../../../../UI/ActionView';
 import { getApproveNavbar } from '../../../../../UI/Navbar';
 import { connect } from 'react-redux';
 import { getHost } from '../../../../../../util/browser';
@@ -533,12 +536,10 @@ class ApproveTransactionReview extends PureComponent<
           tokenName = name;
           tokenBalance = renderFromTokenMinimalUnit(
             erc20TokenBalance as unknown as string,
-            // @ts-expect-error TODO: legacy JS types
             decimals as string,
           );
           unroundedAccountBalance = fromTokenMinimalUnit(
             erc20TokenBalance || 0,
-            // @ts-expect-error TODO: legacy JS types
             decimals,
           );
         }
@@ -908,7 +909,7 @@ class ApproveTransactionReview extends PureComponent<
 
   getConfirmButtonState() {
     const { securityAlertResponse } = this.props;
-    let confirmButtonState = ConfirmButtonState.Normal;
+    let confirmButtonState: ConfirmButtonStateType = ConfirmButtonState.Normal;
 
     if (securityAlertResponse) {
       if (securityAlertResponse.result_type === ResultType.Malicious) {

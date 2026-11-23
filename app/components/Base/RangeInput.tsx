@@ -124,11 +124,11 @@ interface RangeInputProps {
   /**
    * The label to show inside the input
    */
-  inputInsideLabel?: string;
+  inputInsideLabel?: string | null;
   /**
    * The error to show bellow the input. Also when the error exists the input text will turn red
    */
-  error?: string;
+  error?: string | null;
   /**
    * A BigNumber minimum value the input is allowed to have when clicking on the minus button
    */

@@ -9,6 +9,7 @@ import ExpandedMessage from '../SignatureRequest/ExpandedMessage';
 import Device from '../../../../../../util/device';
 import { MetaMetricsEvents } from '../../../../../../core/Analytics';
 import { MetricsEventBuilder } from '../../../../../../core/Analytics/MetricsEventBuilder';
+import type { JsonMap } from '../../../../../../core/Analytics/MetaMetrics.types';
 import { KEYSTONE_TX_CANCELED } from '../../../../../../constants/error';
 import { ThemeContext, mockTheme } from '../../../../../../util/theme';
 import { escapeSpecialUnicode } from '../../../../../../util/string';
@@ -138,7 +139,9 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
       MetricsEventBuilder.createEventBuilder(
         MetaMetricsEvents.SIGNATURE_REQUESTED,
       )
-        .addProperties(getAnalyticsParams(messageParams, 'typed_sign'))
+        .addProperties(
+          getAnalyticsParams(messageParams, 'typed_sign') as JsonMap,
+        )
         .build(),
     );
     addSignatureErrorListener(metamaskId, this.onSignatureError);
@@ -158,6 +161,7 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
         MetricsEventBuilder.createEventBuilder(
           MetaMetricsEvents.QR_HARDWARE_TRANSACTION_CANCELED,
         )
+          // @ts-expect-error - pre-existing: called without messageParams, so getAnalyticsParams throws and the event is dropped
           .addProperties(getAnalyticsParams())
           .build(),
       );

@@ -100,6 +100,7 @@ class CollectibleContractOverview extends PureComponent<CollectibleContractOverv
     const collectible = collectibles.find((collectible: { address: string }) =>
       toLowerCaseEquals(collectible.address, collectibleContract.address),
     );
+    // @ts-expect-error - pre-existing: find() may return undefined when no owned collectible matches the contract
     this.props.newAssetTransaction(collectible);
     this.props.navigation?.navigate('SendFlowView');
   };

@@ -93,7 +93,8 @@ interface OwnProps {
    */
   currentPageInformation: {
     origin?: string;
-    url: string;
+    url?: string;
+    title?: string;
     currentEnsName?: string;
     icon?: string | { uri: string };
     spenderAddress?: string;
@@ -168,7 +169,7 @@ const TransactionHeader = (props: TransactionHeaderProps) => {
           ? origin.split(WALLET_CONNECT_ORIGIN)[1]
           : originIsMMSDKRemoteConn
           ? origin.split(AppConstants.MM_SDK.SDK_REMOTE_ORIGIN)[1]
-          : url,
+          : (url as string),
       ).protocol === 'https:'
         ? 'lock'
         : 'warning';
@@ -193,7 +194,7 @@ const TransactionHeader = (props: TransactionHeaderProps) => {
         </View>
       );
     }
-    let iconTitle = getHost(currentEnsName || url);
+    let iconTitle = getHost(currentEnsName || (url as string));
     if (originIsWalletConnect) {
       url = origin.split(WALLET_CONNECT_ORIGIN)[1];
       iconTitle = getHost(url);

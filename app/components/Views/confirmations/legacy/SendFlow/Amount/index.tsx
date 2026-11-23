@@ -639,8 +639,7 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       const suggestedMaxFeePerGasHex = decGWEIToHexWEI(
         mediumGasFeeEstimates.suggestedMaxFeePerGas,
       );
-      const gasLimitHex = BNToHex(gas);
-      // @ts-expect-error TODO: legacy JS types
+      const gasLimitHex = BNToHex(gas as unknown as Parameters<typeof BNToHex>[0]);
       const gasHexes = calculateEIP1559GasFeeHexes({
         gasLimitHex,
         estimatedBaseFeeHex,
@@ -654,11 +653,9 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       const gasPrice = hexToBN(
         decGWEIToHexWEI(gasFeeEstimates[AppConstants.GAS_OPTIONS.MEDIUM]),
       );
-      // @ts-expect-error TODO: legacy JS types
       this.setState({ estimatedTotalGas: gas.mul(gasPrice) });
     } else {
       const gasPrice = hexToBN(decGWEIToHexWEI(gasFeeEstimates.gasPrice));
-      // @ts-expect-error TODO: legacy JS types
       this.setState({ estimatedTotalGas: gas.mul(gasPrice) });
     }
 
@@ -739,7 +736,6 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       value = inputValueConversion;
       if (maxFiatInput) {
         value = `${renderFromWei(
-          // @ts-expect-error TODO: legacy JS types
           fiatNumberToWei(
             handleWeiNumber(maxFiatInput),
             this.props.conversionRate,
@@ -874,7 +870,9 @@ class Amount extends PureComponent<AmountProps, AmountState> {
       const tokenAmount = toTokenMinimalUnit(value, selectedAsset.decimals);
       transaction.data = generateTransferData('transfer', {
         toAddress: transactionTo,
-        amount: BNToHex(tokenAmount),
+        amount: BNToHex(
+          tokenAmount as unknown as Parameters<typeof BNToHex>[0],
+        ),
       });
       transaction.to = selectedAsset.address;
       transaction.value = '0x0';
@@ -1062,7 +1060,6 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         )}`;
       } else {
         inputValueConversion = `${renderFromWei(
-          // @ts-expect-error TODO: legacy JS types
           fiatNumberToWei(processedInputValue, conversionRate),
         )}`;
         renderableInputValueConversion = `${inputValueConversion} ${processedTicker}`;
@@ -1086,7 +1083,6 @@ class Amount extends PureComponent<AmountProps, AmountState> {
         )}`;
       } else {
         inputValueConversion = `${renderFromTokenMinimalUnit(
-          // @ts-expect-error TODO: legacy JS types
           fiatNumberToTokenMinimalUnit(
             processedInputValue,
             conversionRate,

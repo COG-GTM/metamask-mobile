@@ -20,8 +20,10 @@ import {
   isNftFetchingProgressSelector,
   multichainCollectibleContractsSelector,
   multichainCollectiblesSelector,
+  type FavoriteCollectible,
 } from '../../../reducers/collectibles';
 import { removeFavoriteCollectible } from '../../../actions/collectibles';
+import type { Hex } from '@metamask/utils';
 import AppConstants from '../../../core/AppConstants';
 import { toLowerCaseEquals } from '../../../util/general';
 import { compareTokenIds } from '../../../util/tokens';
@@ -32,7 +34,7 @@ import { RootState } from '../../../reducers';
 import { Dispatch } from 'redux';
 import { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Nft } from '@metamask/assets-controllers';
+import { Nft, type NftContract } from '@metamask/assets-controllers';
 import { JsonMap } from '../../../core/Analytics/MetaMetrics.types';
 import { MAINNET } from '../../../constants/network';
 import {
@@ -157,7 +159,7 @@ interface CollectibleContractsItem {
   address: string;
   tokenId: string | number;
   isCurrentlyOwned?: boolean;
-  chainId?: string;
+  chainId?: string | number;
   [key: string]: unknown;
 }
 
@@ -208,7 +210,7 @@ const CollectibleContracts = ({
     () =>
       isAllNetworks
         ? Object.values(collectibleContracts).flat()
-        : collectibleContracts[chainId] || [],
+        : collectibleContracts[chainId as Hex] || [],
     [collectibleContracts, chainId, isAllNetworks],
   );
 
@@ -216,7 +218,7 @@ const CollectibleContracts = ({
     () =>
       isAllNetworks
         ? Object.values(allCollectibles).flat()
-        : allCollectibles[chainId] || [],
+        : allCollectibles[chainId as Hex] || [],
     [allCollectibles, chainId, isAllNetworks],
   );
 
@@ -379,7 +381,7 @@ const CollectibleContracts = ({
   );
 
   const renderCollectibleContract = useCallback(
-    (item: CollectibleContractsItem, index: number) => {
+    (item: NftContract, index: number) => {
       const contractCollectibles = collectibles?.filter(
         (collectible: CollectibleContractsItem) =>
           toLowerCaseEquals(collectible.address, item.address),
@@ -400,7 +402,7 @@ const CollectibleContracts = ({
   const renderFavoriteCollectibles = useCallback(() => {
     // eslint-disable-next-line @typescript-eslint/no-shadow
     const filteredCollectibles = favoriteCollectibles.map(
-      (collectible: CollectibleContractsItem) =>
+      (collectible: FavoriteCollectible) =>
         collectibles.find(
           ({ tokenId, address }: CollectibleContractsItem) =>
             compareTokenIds(collectible.tokenId, tokenId as string) &&
@@ -413,6 +415,7 @@ const CollectibleContracts = ({
           onPress={onItemPress}
           asset={{ name: 'Favorites', favorites: true }}
           key={'Favorites'}
+          // @ts-expect-error - pre-existing: find() yields undefined for favorites no longer in the collectibles list
           contractCollectibles={filteredCollectibles}
           collectiblesVisible
         />

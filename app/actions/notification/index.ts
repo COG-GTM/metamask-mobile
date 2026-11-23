@@ -6,21 +6,21 @@ import { ACTIONS } from '../../reducers/notification';
 type NotificationId = string | number;
 
 export interface NotificationTransaction {
-  id: NotificationId;
+  id?: NotificationId;
   [key: string]: unknown;
 }
 
 export interface TransactionNotificationParams {
   autodismiss?: number | boolean;
-  transaction: NotificationTransaction;
-  status: string;
+  transaction?: NotificationTransaction;
+  status?: string;
 }
 
 export interface SimpleNotificationParams {
   autodismiss?: number | boolean;
-  title: string;
-  description: string;
-  status: string;
+  title?: string;
+  description?: string;
+  status?: string;
 }
 
 export interface Notification {

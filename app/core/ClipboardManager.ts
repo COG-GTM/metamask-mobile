@@ -11,7 +11,7 @@ const EXPIRE_TIME_MS = 60000;
 
 interface ClipboardManagerType {
   getString(): Promise<string>;
-  setString(string: string | null): Promise<void>;
+  setString(string: string | null | undefined): Promise<void>;
   expireTime: ReturnType<typeof setTimeout> | null;
   setStringExpire(string: string): Promise<void>;
 }
@@ -20,7 +20,7 @@ const ClipboardManager: ClipboardManagerType = {
   async getString() {
     return await Clipboard.getString();
   },
-  async setString(string: string | null) {
+  async setString(string: string | null | undefined) {
     await Clipboard.setString(string as string);
   },
   expireTime: null,

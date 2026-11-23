@@ -66,7 +66,7 @@ const createStyles = (colors: Colors) =>
 interface CollectibleItem {
   address: string;
   tokenId: string;
-  name?: string;
+  name?: string | null;
   [key: string]: unknown;
 }
 

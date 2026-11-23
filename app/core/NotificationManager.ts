@@ -26,6 +26,7 @@ interface NotificationTransaction {
   nonce?: string;
   amount?: string;
   assetType?: string;
+  [key: string]: unknown;
 }
 
 export interface NotificationData {

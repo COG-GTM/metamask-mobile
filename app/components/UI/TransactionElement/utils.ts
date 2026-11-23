@@ -55,7 +55,6 @@ function calculateTotalGas(transaction: any) {
     multiLayerL1FeeTotal,
   } = transaction;
   if (isEIP1559Transaction(transaction)) {
-    // @ts-expect-error - estimatedGasLimitHex is optional in the JS implementation
     const eip1559GasHex = calculateEIP1559GasFeeHexes({
       gasLimitHex: gasUsed || gas,
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
@@ -92,7 +91,6 @@ function renderGwei(transaction: any) {
   } = transaction;
 
   if (isEIP1559Transaction(transaction)) {
-    // @ts-expect-error - estimatedGasLimitHex is optional in the JS implementation
     const eip1559GasHex = calculateEIP1559GasFeeHexes({
       gasLimitHex: gas,
       estimatedBaseFeeHex: estimatedBaseFee || '0x0',
@@ -101,7 +99,6 @@ function renderGwei(transaction: any) {
     });
 
     return renderToGwei(
-      // @ts-expect-error - BigNumber value accepted at runtime; preserved from JS
       eip1559GasHex.estimatedBaseFee_PLUS_suggestedMaxPriorityFeePerGasHex,
     );
   }

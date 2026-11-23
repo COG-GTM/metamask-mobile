@@ -128,7 +128,6 @@ function Notification({
 }
 
 const mapStateToProps = (state: RootState) => {
-  // @ts-expect-error - JS selector typed via JSDoc
   const currentNotification = currentNotificationSelector(state.notification);
   return {
     currentNotification,

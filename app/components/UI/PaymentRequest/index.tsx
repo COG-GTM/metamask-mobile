@@ -641,7 +641,6 @@ class PaymentRequest extends PureComponent<
       );
       secondaryAmount =
         renderFromTokenMinimalUnit(
-          // @ts-expect-error - JS util is typed via JSDoc; preserved from JS
           secondaryMinimalUnit,
           selectedAsset.decimals,
         ) +
@@ -653,7 +652,6 @@ class PaymentRequest extends PureComponent<
       );
     } else {
       secondaryAmount =
-        // @ts-expect-error - JS util is typed via JSDoc; preserved from JS
         renderFromWei(fiatNumberToWei(undefAmount, conversionRate)) +
         ' ' +
         strings('unit.eth');

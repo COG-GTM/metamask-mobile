@@ -653,6 +653,7 @@ class DrawerView extends PureComponent<DrawerViewProps, DrawerViewState> {
         networkConfigurations,
       );
       const url = `${blockExplorer}/address/${this.selectedChecksummedAddress}`;
+      // @ts-expect-error - pre-existing: blockExplorer is undefined for RPCs without an explorer, so new URL() throws
       const title = new URL(blockExplorer).hostname;
       this.goToBrowserUrl(url, title);
     } else {

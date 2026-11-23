@@ -538,7 +538,9 @@ function QuotesModal({
 const mapStateToProps = (state: RootState): StateProps => ({
   conversionRate: selectConversionRate(state),
   currentCurrency: selectCurrentCurrency(state),
-  quoteValues: selectSwapsQuoteValues(state),
+  quoteValues: selectSwapsQuoteValues(
+    state,
+  ) as unknown as StateProps['quoteValues'],
 });
 
 export default connect(mapStateToProps)(QuotesModal);

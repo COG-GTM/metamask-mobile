@@ -517,7 +517,6 @@ class TransactionElement extends PureComponent<
                   transactionStatus={this.props.tx.status}
                 />
               ) : (
-                // @ts-expect-error - StatusText is untyped JS; context is optional at runtime
                 <StatusText
                   testID={`transaction-status-${i}`}
                   status={status}
@@ -743,13 +742,10 @@ class TransactionElement extends PureComponent<
             backdropOpacity={1}
           >
             <DetailsModal>
-              {/* @ts-expect-error - DetailsModal is untyped JS; style is optional at runtime */}
               <DetailsModal.Header>
-                {/* @ts-expect-error - DetailsModal is untyped JS; style is optional at runtime */}
                 <DetailsModal.Title onPress={this.onCloseDetailsModal}>
                   {transactionElement?.actionKey}
                 </DetailsModal.Title>
-                {/* @ts-expect-error - DetailsModal is untyped JS; style is optional at runtime */}
                 <DetailsModal.CloseIcon onPress={this.onCloseDetailsModal} />
               </DetailsModal.Header>
               <TransactionDetails
@@ -772,13 +768,10 @@ class TransactionElement extends PureComponent<
           backdropOpacity={1}
         >
           <DetailsModal>
-            {/* @ts-expect-error - DetailsModal is untyped JS; style is optional at runtime */}
             <DetailsModal.Header>
-              {/* @ts-expect-error - DetailsModal is untyped JS; style is optional at runtime */}
               <DetailsModal.Title onPress={this.onCloseImportWalletModal}>
                 {strings('transactions.import_wallet_label')}
               </DetailsModal.Title>
-              {/* @ts-expect-error - DetailsModal is untyped JS; style is optional at runtime */}
               <DetailsModal.CloseIcon onPress={this.onCloseImportWalletModal} />
             </DetailsModal.Header>
             <View style={styles.summaryWrapper}>

@@ -17,6 +17,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 interface CollectibleViewParams {
   address: string;
+  tokenId: string;
   contractName?: string;
   [key: string]: unknown;
 }

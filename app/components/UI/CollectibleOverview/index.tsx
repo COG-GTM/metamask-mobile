@@ -159,7 +159,7 @@ interface CollectibleOverviewCreator {
 
 interface CollectibleOverviewCollectible {
   address: string;
-  tokenId: string | number;
+  tokenId: string;
   name?: string | null;
   description?: string | null;
   standard?: string | null;
@@ -194,7 +194,7 @@ interface CollectibleOverviewOwnProps {
    * Object that represents the collectible to be displayed
    */
   collectible: CollectibleOverviewCollectible;
-  navigation?: NavigationProp<ParamListBase>;
+  navigation?: Pick<NavigationProp<ParamListBase>, 'navigate'>;
   /**
    * Represents if the collectible is tradable (can be sent)
    */

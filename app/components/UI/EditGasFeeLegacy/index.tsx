@@ -120,7 +120,7 @@ const createStyles = (colors: Colors) =>
 type GasFeeEstimates = Record<string, any>;
 
 interface EditGasFeeLegacyProps {
-  selected?: string;
+  selected?: string | null;
   gasFee: GasFeeEstimates;
   gasOptions?: GasFeeEstimates;
   onChange?: (gas: GasFeeEstimates, selectedOption?: string | null) => void;
@@ -135,7 +135,10 @@ interface EditGasFeeLegacyProps {
   warning?: React.ReactNode;
   ignoreOptions?: string[];
   extendOptions?: Record<string, object>;
-  recommended?: { name: string; render: React.ReactNode };
+  recommended?: {
+    name: string;
+    render: React.ReactNode | (() => React.ReactNode);
+  };
   warningMinimumEstimateOption?: string;
   onUpdatingValuesStart?: () => void;
   onUpdatingValuesEnd?: () => void;

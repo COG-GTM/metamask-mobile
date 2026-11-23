@@ -511,7 +511,9 @@ function SwapsAmountView({
             sourceToken.address,
             selectedAddress as string,
           );
-          setContractBalanceAsUnits(balance);
+          setContractBalanceAsUnits(
+          balance as unknown as ReturnType<typeof safeNumberToBN>,
+        );
           setContractBalance(
             renderFromTokenMinimalUnit(
               balance as unknown as Parameters<
@@ -1099,8 +1101,10 @@ function SwapsAmountView({
 }
 
 const mapStateToProps = (state: RootState) => ({
-  swapsTokens: swapsTokensSelector(state),
-  swapsControllerTokens: swapsControllerTokensSelector(state),
+  swapsTokens: swapsTokensSelector(state) as StateProps['swapsTokens'],
+  swapsControllerTokens: swapsControllerTokensSelector(
+    state,
+  ) as unknown as StateProps['swapsControllerTokens'],
   accountsByChainId: selectAccountsByChainId(state),
   balances: selectContractBalances(state),
   selectedAddress: selectSelectedInternalAccountFormattedAddress(state),
@@ -1110,8 +1114,12 @@ const mapStateToProps = (state: RootState) => ({
   networkConfigurations: selectEvmNetworkConfigurationsByChainId(state),
   chainId: selectEvmChainId(state),
   selectedNetworkClientId: selectSelectedNetworkClientId(state),
-  tokensWithBalance: swapsTokensWithBalanceSelector(state),
-  tokensTopAssets: swapsTopAssetsSelector(state),
+  tokensWithBalance: swapsTokensWithBalanceSelector(
+    state,
+  ) as unknown as StateProps['tokensWithBalance'],
+  tokensTopAssets: swapsTopAssetsSelector(
+    state,
+  ) as unknown as StateProps['tokensTopAssets'],
   shouldUseSmartTransaction: selectShouldUseSmartTransaction(
     state,
     selectEvmChainId(state),

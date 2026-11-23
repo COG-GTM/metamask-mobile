@@ -288,7 +288,6 @@ describe('TransactionReview', () => {
   it('should have enabled confirm button if from account has balance', async () => {
     jest
       .spyOn(TransactionUtils, 'getTransactionReviewActionKey')
-      // @ts-expect-error TODO: legacy JS types
       .mockReturnValue(Promise.resolve(undefined));
     const { queryByRole } = renderWithProvider(
       <TransactionReview

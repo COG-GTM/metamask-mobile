@@ -482,7 +482,6 @@ class Send extends PureComponent<SendProps, SendState> {
     }
 
     if (!newTxMeta.value) {
-      // @ts-expect-error TODO: legacy JS types
       newTxMeta.value = toBN(0);
     }
 

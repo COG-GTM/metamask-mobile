@@ -176,7 +176,7 @@ const ActivityView = () => {
           title,
           colors,
           navigation,
-          selectedAddress,
+          selectedAddress as string,
           openAccountSelector,
         ),
       );

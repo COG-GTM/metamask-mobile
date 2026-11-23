@@ -92,7 +92,7 @@ const splitIntoSubArrays = <T,>(array: T[], count: number) => {
 interface CollectibleContractElementItem {
   address: string;
   tokenId: string;
-  name?: string;
+  name?: string | null;
   [key: string]: unknown;
 }
 
@@ -182,7 +182,7 @@ function CollectibleContractElement({
     removeFavoriteCollectible(
       selectedAddress,
       chainId,
-      longPressedCollectible.current,
+      longPressedCollectible.current as CollectibleContractElementItem,
     );
     NftController.removeAndIgnoreNft(
       (longPressedCollectible.current as CollectibleContractElementItem)
@@ -348,7 +348,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   removeFavoriteCollectible: (
     selectedAddress: string | undefined,
     chainId: string,
-    collectible: CollectibleContractElementItem | null,
+    collectible: CollectibleContractElementItem,
   ) =>
     dispatch(removeFavoriteCollectible(selectedAddress, chainId, collectible)),
 });

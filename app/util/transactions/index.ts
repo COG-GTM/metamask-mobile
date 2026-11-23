@@ -294,6 +294,14 @@ const BASE = 4 * 16;
  * @param {String} data - Data to decode
  * @returns {Array} - Object containing the decoded transfer data
  */
+export function decodeTransferData(
+  type: 'transfer' | 'transferFrom',
+  data: AnyValue,
+): string[];
+export function decodeTransferData(
+  type: AnyValue,
+  data: AnyValue,
+): string[] | undefined;
 export function decodeTransferData(type: AnyValue, data: AnyValue) {
   switch (type) {
     case 'transfer': {

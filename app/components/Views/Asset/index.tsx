@@ -60,6 +60,8 @@ import { updateIncomingTransactions } from '../../../util/transaction-controller
 import { withMetricsAwareness } from '../../../components/hooks/useMetrics';
 import { store } from '../../../store';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
+import type { Hex } from '@metamask/utils';
+import type { FeatureFlags } from '@metamask/swaps-controller/dist/types';
 import {
   selectSwapsTransactions,
   selectTransactions,
@@ -137,7 +139,7 @@ interface AssetProps extends IWithMetricsAwarenessProps {
   /**
    * Function to set the swaps liveness
    */
-  setLiveness: (chainId: string, featureFlags: unknown) => void;
+  setLiveness: (chainId: string, featureFlags?: FeatureFlags | null) => void;
 }
 
 interface AssetState {
@@ -283,7 +285,7 @@ class Asset extends PureComponent<AssetProps, AssetState> {
   checkLiveness = async (chainId: string) => {
     try {
       const featureFlags = await swapsUtils.fetchSwapsFeatureFlags(
-        getFeatureFlagChainId(chainId),
+        getFeatureFlagChainId(chainId as Hex),
         AppConstants.SWAPS.CLIENT_ID,
       );
       this.props.setLiveness(chainId, featureFlags);
@@ -643,7 +645,7 @@ const mapStateToProps = (
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  setLiveness: (chainId: string, featureFlags: unknown) =>
+  setLiveness: (chainId: string, featureFlags?: FeatureFlags | null) =>
     dispatch(setSwapsLiveness(chainId, featureFlags)),
 });
 

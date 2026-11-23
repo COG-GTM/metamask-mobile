@@ -21,6 +21,9 @@ export const ConfirmButtonState = {
   Normal: 'normal',
 } as const;
 
+export type ConfirmButtonStateType =
+  (typeof ConfirmButtonState)[keyof typeof ConfirmButtonState];
+
 const getStyles = (colors: Colors) =>
   StyleSheet.create({
     actionContainer: {
@@ -116,7 +119,7 @@ interface ActionViewProps {
   /**
    * Optional Confirm button state - this can be Error/Warning/Normal.
    */
-  confirmButtonState?: string;
+  confirmButtonState?: ConfirmButtonStateType;
   /**
    * Optional TestID for the parent scroll View
    */

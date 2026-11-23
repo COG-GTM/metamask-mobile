@@ -430,7 +430,6 @@ class TransactionEditor extends PureComponent<
     const { ticker } = this.props;
 
     const parsedTransactionEIP1559 = parseTransactionEIP1559(
-      // @ts-expect-error TODO: legacy JS types
       {
         ...this.props,
         nativeCurrency: ticker,
@@ -458,7 +457,6 @@ class TransactionEditor extends PureComponent<
     const parsedTransactionLegacy = parseTransactionLegacy(
       {
         ...this.props,
-        // @ts-expect-error TODO: legacy JS types
         nativeCurrency: ticker,
         selectedGasFee: gasFee,
       },
@@ -1016,7 +1014,6 @@ class TransactionEditor extends PureComponent<
             <EditGasFeeLegacy
               animateOnChange={animateOnChange}
               view={'Transaction'}
-              // @ts-expect-error TODO: legacy JS types
               analyticsParams={getGasAnalyticsParams(
                 transaction,
                 '',
@@ -1075,7 +1072,6 @@ class TransactionEditor extends PureComponent<
               }
               warning={this.renderWarning()}
               error={EIP1559GasDataTemp.error}
-              // @ts-expect-error TODO: legacy JS types
               over={over}
               onUpdatingValuesStart={this.onUpdatingValuesStart}
               onUpdatingValuesEnd={this.onUpdatingValuesEnd}

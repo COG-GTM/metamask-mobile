@@ -561,7 +561,6 @@ class Transactions extends PureComponent<TransactionsProps, TransactionsState> {
     } else {
       const speedUpConfirmDisabled = validateTransactionActionBalance(
         tx,
-        // @ts-expect-error - JS util is typed via JSDoc; numeric rate preserved from JS
         SPEED_UP_RATE,
         this.props.accounts,
       );
@@ -588,7 +587,6 @@ class Transactions extends PureComponent<TransactionsProps, TransactionsState> {
     } else {
       const cancelConfirmDisabled = validateTransactionActionBalance(
         tx,
-        // @ts-expect-error - JS util is typed via JSDoc; numeric rate preserved from JS
         CANCEL_RATE,
         this.props.accounts,
       );
@@ -854,7 +852,8 @@ class Transactions extends PureComponent<TransactionsProps, TransactionsState> {
           <KeyboardAwareScrollView
             contentContainerStyle={styles.keyboardAwareWrapper}
           >
-            <UpdateEIP1559Tx
+            {/* @ts-expect-error - pre-existing: chainId is required by UpdateEIP1559Tx but never passed here */}
+        <UpdateEIP1559Tx
               gas={this.existingTx.txParams.gas}
               onSave={
                 isCancel ? this.cancelTransaction : this.speedUpTransaction
@@ -1051,7 +1050,6 @@ class Transactions extends PureComponent<TransactionsProps, TransactionsState> {
       gasFeeEstimates.gasPrice ??
       '0';
 
-    // @ts-expect-error - BigNumber result accepted at runtime; preserved from JS
     return addHexPrefix(decGWEIToHexWEI(estimateGweiDecimal));
   }
 }
