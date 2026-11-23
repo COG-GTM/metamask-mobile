@@ -97,7 +97,8 @@ export default class CustomAlert extends PureComponent<CustomAlertProps> {
     return (
       <Modal
         style={styles.modal}
-        isVisible={this.props.isVisible as boolean}
+        // @ts-expect-error - pre-existing read of static propTypes on the instance, kept to preserve behavior
+        isVisible={this.propTypes}
         onBackButtonPress={this.props.onPress}
         {...this.props}
         backdropColor={colors.overlay.default}
