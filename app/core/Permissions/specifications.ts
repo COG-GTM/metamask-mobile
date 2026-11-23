@@ -4,8 +4,19 @@ import {
   endowmentCaveatSpecifications as snapsEndowmentCaveatSpecifications,
 } from '@metamask/snaps-rpc-methods';
 ///: END:ONLY_INCLUDE_IF
-import {  RestrictedMethods } from './constants';
-import { caip25CaveatBuilder, Caip25CaveatType, caip25EndowmentBuilder, createCaip25Caveat } from '@metamask/chain-agnostic-permission';
+import { RestrictedMethods } from './constants';
+import {
+  caip25CaveatBuilder,
+  Caip25CaveatType,
+  caip25EndowmentBuilder,
+  createCaip25Caveat,
+} from '@metamask/chain-agnostic-permission';
+import { Hex } from '@metamask/utils';
+
+export interface CaveatSpecificationsOptions {
+  listAccounts: () => { type: string; address: string }[];
+  findNetworkClientIdByChainId: (chainId: Hex) => string;
+}
 
 /**
  * This file contains the specifications of the permissions and caveats
@@ -44,19 +55,20 @@ export const CaveatFactories = Object.freeze({
  * Gets the specifications for all caveats that will be recognized by the
  * PermissionController.
  *
- * @param {{
- * listAccounts: () => import('@metamask/keyring-api').InternalAccount[],
- * findNetworkClientIdByChainId: (chainId: `0x${string}`) => string,
- * }} options - Options bag.
+ * @param options - Options bag.
+ * @param options.listAccounts - Returns all internal accounts.
+ * @param options.findNetworkClientIdByChainId - Returns the network client ID for a chain ID.
  */
 export const getCaveatSpecifications = ({
   listAccounts,
   findNetworkClientIdByChainId,
-}) => ({
+}: CaveatSpecificationsOptions) => ({
+  // Only the EVM hooks have historically been passed here; the non-EVM hooks
+  // declared by the builder's options type are intentionally not provided.
   [Caip25CaveatType]: caip25CaveatBuilder({
     listAccounts,
     findNetworkClientIdByChainId,
-  }),
+  } as Parameters<typeof caip25CaveatBuilder>[0]),
   ///: BEGIN:ONLY_INCLUDE_IF(preinstalled-snaps,external-snaps)
   ...snapsCaveatsSpecifications,
   ...snapsEndowmentCaveatSpecifications,
