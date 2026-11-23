@@ -74,7 +74,7 @@ describe('Migration #26', () => {
     const newState = migrate(oldState);
     expect(newState).toStrictEqual(oldState);
     expect(mockedCaptureException).toHaveBeenCalledWith(expect.any(Error));
-    expect(mockedCaptureException.mock.calls[0][0].message).toBe(
+    expect((mockedCaptureException.mock.calls[0][0] as Error).message).toBe(
       `Migration 26: Invalid PhishingControllerState controller state: '${JSON.stringify(
         oldState.engine.backgroundState.PhishingController,
       )}'`,
