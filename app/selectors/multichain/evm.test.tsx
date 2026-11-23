@@ -220,6 +220,57 @@ describe('Multichain Selectors', () => {
       expect(polygonTokens.length).toBeGreaterThan(0);
       expect(polygonTokens.some((token) => token.symbol === 'POL')).toBe(true);
     });
+
+    it('does not recompute when unrelated state changes', () => {
+      const first = selectAccountTokensAcrossChains(mockState);
+      const recomputations = selectAccountTokensAcrossChains.recomputations();
+
+      const unrelatedUpdate = {
+        ...mockState,
+        settings: { ...mockState.settings, unrelated: true },
+        engine: {
+          ...mockState.engine,
+          backgroundState: { ...mockState.engine.backgroundState },
+        },
+      } as unknown as RootState;
+
+      expect(selectAccountTokensAcrossChains(unrelatedUpdate)).toBe(first);
+      expect(selectAccountTokensAcrossChains.recomputations()).toBe(
+        recomputations,
+      );
+    });
+
+    it('recomputes when the tokens change', () => {
+      const first = selectAccountTokensAcrossChains(mockState);
+      const { allTokens } = mockState.engine.backgroundState.TokensController;
+      const address = Object.keys(allTokens['0x1'])[0];
+      const updated = {
+        ...mockState,
+        engine: {
+          ...mockState.engine,
+          backgroundState: {
+            ...mockState.engine.backgroundState,
+            TokensController: {
+              ...mockState.engine.backgroundState.TokensController,
+              allTokens: {
+                ...allTokens,
+                '0x1': {
+                  ...allTokens['0x1'],
+                  [address]: [
+                    ...allTokens['0x1'][address],
+                    { address: '0xnew', symbol: 'NEW', decimals: 18 },
+                  ],
+                },
+              },
+            },
+          },
+        },
+      } as unknown as RootState;
+
+      const result = selectAccountTokensAcrossChains(updated);
+      expect(result).not.toBe(first);
+      expect(result['0x1'].some((token) => token.symbol === 'NEW')).toBe(true);
+    });
   });
 
   describe('selectNativeEvmAsset', () => {
