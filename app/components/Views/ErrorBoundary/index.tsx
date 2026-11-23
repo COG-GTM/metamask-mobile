@@ -505,13 +505,13 @@ class ErrorBoundary extends Component<
     return this.state.backupSeedphrase
       ? this.renderWithSafeArea(
           <RevealPrivateCredential
-            credentialName={'seed_phrase'}
-            cancel={this.cancelExportSeedphrase}
             {...({
               navigation: this.props.navigation,
             } as unknown as React.ComponentProps<
               typeof RevealPrivateCredential
             >)}
+            credentialName={'seed_phrase'}
+            cancel={this.cancelExportSeedphrase}
           />,
         )
       : this.state.error
@@ -531,4 +531,6 @@ class ErrorBoundary extends Component<
 
 ErrorBoundary.contextType = ThemeContext;
 
-export default withMetricsAwareness(ErrorBoundary);
+export default withMetricsAwareness(
+  ErrorBoundary as unknown as React.ComponentType<IWithMetricsAwarenessProps>,
+);

@@ -154,7 +154,7 @@ const ManualBackupStep2 = ({
       (confirmedWord) => confirmedWord.word,
     );
 
-    return compareMnemonics(validWords, proposedWords);
+    return compareMnemonics(validWords, proposedWords as string[]);
   }, [confirmedWords, route.params?.words]);
 
   const goNext = () => {
@@ -263,7 +263,7 @@ const ManualBackupStep2 = ({
       <View style={styles.onBoardingWrapper}>
         <OnboardingProgress
           currentStep={currentStep}
-          steps={route.params?.steps}
+          steps={route.params?.steps as string[]}
         />
       </View>
       <ActionView

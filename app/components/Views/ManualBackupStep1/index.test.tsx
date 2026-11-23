@@ -2,8 +2,12 @@ import React from 'react';
 import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureMockStore from 'redux-mock-store';
-import ManualBackupStep1 from './';
+import ManualBackupStep1Component from './';
 import { AppThemeKey } from '../../../util/theme/models';
+
+const ManualBackupStep1 = ManualBackupStep1Component as unknown as React.ComponentType<
+  Record<string, unknown>
+>;
 
 const mockStore = configureMockStore();
 const initialState = {

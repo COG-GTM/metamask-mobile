@@ -1,12 +1,12 @@
 import React, {
+  ComponentProps,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react';
-import Video from 'react-native-video';
-import PropTypes from 'prop-types';
+import Video, { VideoRef } from 'react-native-video';
 import {
   PanResponder,
   StyleSheet,
@@ -18,14 +18,34 @@ import {
   Text,
   TouchableNativeFeedback,
   TouchableHighlight,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import FA5Icon from 'react-native-vector-icons/FontAwesome5';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import { baseStyles, colors as importedColors } from '../../../styles/common';
 import { useTheme } from '../../../util/theme';
-import { ViewPropTypes } from 'deprecated-react-native-prop-types';
+import { Theme } from '../../../util/theme/models';
 
-const createStyles = (theme) =>
+type VideoProps = ComponentProps<typeof Video>;
+
+interface VideoPlayerProps {
+  controlsAnimationTiming?: number;
+  controlsToggleTiming?: number;
+  // source can be a uri object for remote files
+  // or a number returned by import for bundled files
+  source?: VideoProps['source'];
+  displayTopControls?: boolean;
+  displayBottomControls?: boolean;
+  onClose?: () => void;
+  onLoad?: VideoProps['onLoad'];
+  onError?: VideoProps['onError'];
+  selectedTextTrack?: VideoProps['selectedTextTrack'];
+  textTracks?: VideoProps['textTracks'];
+  style?: StyleProp<ViewStyle>;
+}
+
+const createStyles = (theme: Theme) =>
   StyleSheet.create({
     playerContainer: {
       flex: 0,
@@ -166,7 +186,7 @@ export default function VideoPlayer({
   selectedTextTrack,
   onLoad: propsOnLoad,
   style,
-}) {
+}: VideoPlayerProps) {
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState(true);
   const [seekerFillWidth, setSeekerFillWidth] = useState(0);
@@ -628,22 +648,6 @@ export default function VideoPlayer({
     </TouchableNativeFeedback>
   );
 }
-
-VideoPlayer.propTypes = {
-  controlsAnimationTiming: PropTypes.number,
-  controlsToggleTiming: PropTypes.number,
-  // source can be a uri object for remote files
-  // or a number returned by import for bundled files
-  source: PropTypes.oneOfType([PropTypes.object, PropTypes.number]),
-  displayTopControls: PropTypes.bool,
-  displayBottomControls: PropTypes.bool,
-  onClose: PropTypes.func,
-  onLoad: PropTypes.func,
-  onError: PropTypes.func,
-  selectedTextTrack: PropTypes.object,
-  textTracks: PropTypes.arrayOf(PropTypes.object),
-  style: ViewPropTypes.style,
-};
 
 VideoPlayer.defaultProps = {
   doubleTapTime: 100,

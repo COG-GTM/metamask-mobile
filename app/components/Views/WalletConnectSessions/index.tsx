@@ -247,7 +247,9 @@ export default class WalletConnectSessions extends PureComponent<
       <TouchableOpacity
         // eslint-disable-next-line react/jsx-no-bind
         onLongPress={() => this.onLongPress(session)}
-        key={`session_${session.id}_${index}`}
+        key={`session_${
+          (session as SessionTypes.Struct & { id?: string }).id
+        }_${index}`}
         style={styles.row}
       >
         <WebsiteIcon
