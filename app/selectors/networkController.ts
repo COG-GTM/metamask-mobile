@@ -1,4 +1,5 @@
 import { Hex } from '@metamask/utils';
+import { isEqual } from 'lodash';
 import { createSelector } from 'reselect';
 import { InfuraNetworkType } from '@metamask/controller-utils';
 import {
@@ -99,17 +100,22 @@ export const selectNetworkControllerState = (state: RootState) =>
 export const selectSelectedNetworkClientId = createSelector(
   selectNetworkControllerState,
   (networkControllerState: NetworkState) =>
-    networkControllerState.selectedNetworkClientId,
+    networkControllerState?.selectedNetworkClientId,
 );
 
-export const selectProviderConfig = createDeepEqualSelector(
+export const selectEvmNetworkConfigurationsByChainId = createSelector(
   selectNetworkControllerState,
-  (networkControllerState: NetworkState): ProviderConfig => {
-    const selectedNetworkClientId =
-      networkControllerState?.selectedNetworkClientId;
-    const networkConfigurationsByChainId =
-      networkControllerState?.networkConfigurationsByChainId ?? {};
+  (networkControllerState: NetworkState) =>
+    networkControllerState?.networkConfigurationsByChainId,
+);
 
+// Only depends on the selected client id and the network configurations, so
+// metadata-only updates (e.g. `networksMetadata` status) don't recompute it.
+// `resultEqualityCheck` keeps the previous reference when the output is equal.
+export const selectProviderConfig = createSelector(
+  selectSelectedNetworkClientId,
+  selectEvmNetworkConfigurationsByChainId,
+  (selectedNetworkClientId, networkConfigurationsByChainId): ProviderConfig => {
     if (!networkConfigurationsByChainId || !selectedNetworkClientId) {
       return getDefaultProviderConfig();
     }
@@ -127,6 +133,7 @@ export const selectProviderConfig = createDeepEqualSelector(
     // Return default provider config (mainnet) if no matching network is found
     return getDefaultProviderConfig();
   },
+  { memoizeOptions: { resultEqualityCheck: isEqual } },
 );
 
 export const selectEvmTicker = createDeepEqualSelector(
@@ -174,12 +181,6 @@ export const selectNetworkStatus = createSelector(
     networkControllerState?.networksMetadata[
       networkControllerState.selectedNetworkClientId
     ].status,
-);
-
-export const selectEvmNetworkConfigurationsByChainId = createSelector(
-  selectNetworkControllerState,
-  (networkControllerState: NetworkState) =>
-    networkControllerState?.networkConfigurationsByChainId,
 );
 
 export const selectNetworkConfigurations = createDeepEqualSelector(
