@@ -74,7 +74,10 @@ Until the setup script is fixed, finish the remaining setup steps by hand from t
    ```bash
    gem install bundler -v 2.5.8
    yarn gem:bundle:install
-   touch ios/debug.xcconfig ios/release.xcconfig
+   # create or empty the xcconfig files, as setup does
+   : > ios/debug.xcconfig
+   : > ios/release.xcconfig
+   # skip if you ran setup with --no-install-pods
    yarn pod:install
    ```
 
