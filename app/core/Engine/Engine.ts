@@ -1503,22 +1503,38 @@ export class Engine {
   }
 
   handleVaultBackup() {
+    let lastBackedUpVault: string | undefined;
+
+    const backupVaultIfChanged = (vault: string | undefined) => {
+      if (!vault || vault === lastBackedUpVault) {
+        return;
+      }
+      lastBackedUpVault = vault;
+
+      backupVault({ ...this.context.KeyringController.state, vault })
+        .then(() => {
+          Logger.log('Engine', 'Vault back up successful');
+        })
+        .catch((error) => {
+          if (lastBackedUpVault === vault) {
+            lastBackedUpVault = undefined;
+          }
+          Logger.error(error, 'Engine Vault backup failed');
+        });
+    };
+
+    // Only back up when the encrypted vault changes, not on lock/unlock or
+    // keyring metadata updates that leave the vault untouched.
     this.controllerMessenger.subscribe(
       AppConstants.KEYRING_STATE_CHANGE_EVENT,
-      (state: KeyringControllerState) => {
-        if (!state.vault) {
-          return;
-        }
+      backupVaultIfChanged,
+      (state: KeyringControllerState) => state.vault,
+    );
 
-        // Back up vault if it exists
-        backupVault(state)
-          .then(() => {
-            Logger.log('Engine', 'Vault back up successful');
-          })
-          .catch((error) => {
-            Logger.error(error, 'Engine Vault backup failed');
-          });
-      },
+    // The selector caches the vault present at init, so back it up once per
+    // session on unlock (and retry there if a previous backup failed).
+    this.controllerMessenger.subscribe('KeyringController:unlock', () =>
+      backupVaultIfChanged(this.context.KeyringController.state.vault),
     );
   }
 
