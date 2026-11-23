@@ -513,6 +513,7 @@ class NetworksSettings extends PureComponent<
   ///: END:ONLY_INCLUDE_IF
   handleSearchTextChange = (text: string) => {
     this.setState({ searchString: text });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const defaultNetwork = getAllNetworks().map((networkType, i) => {
       const { color, name, chainId } = (Networks as AnyValue)[networkType];
       return {

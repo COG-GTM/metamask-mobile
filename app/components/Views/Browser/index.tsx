@@ -30,6 +30,7 @@ import Logger from '../../../util/Logger';
 import getAccountNameWithENS from '../../../util/accounts';
 import Tabs from '../../UI/Tabs';
 import BrowserTabComponent from '../BrowserTab/BrowserTab';
+// eslint-disable-next-line @typescript-eslint/no-shadow
 import URL from 'url-parse';
 import { useMetrics } from '../../hooks/useMetrics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -117,10 +118,13 @@ export const Browser = (props: BrowserProps) => {
   const {
     route,
     navigation,
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     createNewTab,
     closeAllTabs: triggerCloseAllTabs,
     closeTab: triggerCloseTab,
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     setActiveTab,
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     updateTab,
     activeTab: activeTabId,
     tabs,
@@ -134,6 +138,7 @@ export const Browser = (props: BrowserProps) => {
   const linkType = props.route?.params?.linkType;
   const prevSiteHostname = useRef(browserUrl);
   const { evmAccounts: accounts, ensByAccountAddress } = useAccounts();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_tabIdleTimes, setTabIdleTimes] = useState<Record<number, number>>({});
   const accountAvatarType = useSelector((state: RootState) =>
     state.settings.useBlockieIcon
@@ -164,6 +169,7 @@ export const Browser = (props: BrowserProps) => {
       if (isSolanaAccount(currentSelectedAccount as InternalAccount)) {
         toastRef?.current?.showToast({
           variant: ToastVariants.Network,
+          // eslint-disable-next-line @typescript-eslint/no-require-imports
           networkImageSource: require('../../../images/solana-logo.png'),
           labelOptions: [
             {
@@ -185,6 +191,7 @@ export const Browser = (props: BrowserProps) => {
   ///: END:ONLY_INCLUDE_IF
 
   const newTab = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     (url?: string, linkType?: string) => {
       // if tabs.length > MAX_BROWSER_TABS, show the max browser tabs modal
       if (tabs.length >= MAX_BROWSER_TABS) {
@@ -411,6 +418,7 @@ export const Browser = (props: BrowserProps) => {
     });
   }, [tabs, activeTabId, route.params, navigation, takeScreenshot]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const closeAllTabs = () => {
     if (tabs.length) {
       triggerCloseAllTabs();
@@ -421,6 +429,7 @@ export const Browser = (props: BrowserProps) => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const closeTab = (tab: BrowserTabType) => {
     // If the tab was selected we have to select
     // the next one, and if there's no next one,
@@ -429,6 +438,7 @@ export const Browser = (props: BrowserProps) => {
       if (tabs.length > 1) {
         tabs.forEach((t, i) => {
           if (t.id === tab.id) {
+            // eslint-disable-next-line @typescript-eslint/no-shadow
             let newTab = tabs[i - 1];
             if (tabs[i + 1]) {
               newTab = tabs[i + 1];
@@ -461,6 +471,7 @@ export const Browser = (props: BrowserProps) => {
   };
 
   const renderTabList = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const showTabs = route.params?.showTabs;
     if (showTabs) {
       return (

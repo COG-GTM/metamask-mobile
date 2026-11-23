@@ -7,7 +7,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Image,
-} from 'react-native';
+ DimensionValue } from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Text, {
@@ -67,7 +67,6 @@ import { Dispatch } from 'redux';
 import { ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AccountImportStrategy } from '@metamask/keyring-controller';
-import { DimensionValue } from 'react-native';
 import { IMetaMetricsEvent, JsonMap } from '../../../core/Analytics/MetaMetrics.types';
 
 interface ChoosePasswordProps {
@@ -474,6 +473,7 @@ class ChoosePassword extends PureComponent<
       const simpleKeyrings = KeyringController.state.keyrings.filter(
         (keyring) => keyring.type === 'Simple Key Pair',
       );
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < simpleKeyrings.length; i++) {
         const simpleKeyring = simpleKeyrings[i];
         const simpleKeyringAccounts = await Promise.all(
@@ -511,6 +511,7 @@ class ChoosePassword extends PureComponent<
 
     try {
       // Import imported accounts again
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let i = 0; i < importedAccounts.length; i++) {
         await KeyringController.importAccountWithStrategy(AccountImportStrategy.privateKey, [
           importedAccounts[i],
@@ -608,6 +609,7 @@ class ChoosePassword extends PureComponent<
           <View style={styles.loadingWrapper}>
             <View style={styles.foxWrapper}>
               <Image
+                // eslint-disable-next-line @typescript-eslint/no-require-imports
                 source={require('../../../images/branding/fox.png')}
                 style={styles.image}
                 resizeMethod={'auto'}

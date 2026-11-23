@@ -90,6 +90,7 @@ const ManualBackupStep1 = ({
       ));
   }, [colors, navigation, route]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const tryExportSeedPhrase = async (password: string) => {
     const { KeyringController } = Engine.context;
     const uint8ArrayMnemonic = await KeyringController.exportSeedPhrase(
@@ -128,6 +129,7 @@ const ManualBackupStep1 = ({
     updateNavBar();
   }, [updateNavBar]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const onPasswordChange = (password: string) => {
     setPassword(password);
   };
@@ -148,6 +150,7 @@ const ManualBackupStep1 = ({
     );
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const tryUnlockWithPassword = async (password: string) => {
     setReady(false);
     try {

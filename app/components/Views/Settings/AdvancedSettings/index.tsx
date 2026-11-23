@@ -307,8 +307,11 @@ class AdvancedSettings extends PureComponent<
       showHexData,
       showCustomNonce,
       showFiatOnTestnets,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setShowHexData,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setShowCustomNonce,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       setShowFiatOnTestnets,
       smartTransactionsOptInStatus,
     } = this.props;
@@ -472,6 +475,7 @@ class AdvancedSettings extends PureComponent<
                   <Switch
                     testID={AdvancedViewSelectorsIDs.SHOW_FIAT_ON_TESTNETS}
                     value={showFiatOnTestnets}
+                    // eslint-disable-next-line @typescript-eslint/no-shadow
                     onValueChange={(showFiatOnTestnets) => {
                       if (showFiatOnTestnets) {
                         this.props.navigation.navigate(

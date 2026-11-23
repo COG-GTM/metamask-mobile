@@ -66,7 +66,7 @@ interface ErrorBoundaryState {
   sentryId?: string;
   backupSeedphrase?: boolean;
 }
-// eslint-disable-next-line import/no-commonjs
+// eslint-disable-next-line import/no-commonjs, @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
 const WarningIcon = require('./warning-icon.png');
 
 const createStyles = (colors: Theme['colors']) =>

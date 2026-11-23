@@ -33,9 +33,8 @@ import { selectSelectedInternalAccount } from '../../../selectors/accountsContro
 import { selectSortedTransactions } from '../../../selectors/transactionController';
 import { toChecksumHexAddress } from '@metamask/controller-utils';
 import { selectTokenNetworkFilter } from '../../../selectors/preferencesController';
-import { CHAIN_IDS } from '@metamask/transaction-controller';
+import { CHAIN_IDS , TransactionMeta } from '@metamask/transaction-controller';
 import { PopularList } from '../../../util/networks/customNetworks';
-import { TransactionMeta } from '@metamask/transaction-controller';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { Token } from '@metamask/assets-controllers';
 import { Dispatch } from 'redux';
@@ -125,7 +124,9 @@ const TransactionsView = ({
       let accountAddedTimeInsertPointFound = false;
       const addedAccountTime = selectedInternalAccount?.metadata.importTime;
 
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const submittedTxs: TransactionWithImportTime[] = [];
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const confirmedTxs: TransactionWithImportTime[] = [];
       const submittedNonces: (string | undefined)[] = [];
 
@@ -134,6 +135,7 @@ const TransactionsView = ({
           self.findIndex((_tx) => _tx.id === tx.id) === index,
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       const allTransactions = allTransactionsSorted.filter((tx) => {
         const filter = filterByAddressAndNetwork(
           tx,
@@ -202,6 +204,7 @@ const TransactionsView = ({
       // If the account added insert point is not found, add it to the last transaction
       if (
         !accountAddedTimeInsertPointFound &&
+        // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
         allTransactionsFiltered &&
         allTransactionsFiltered.length
       ) {

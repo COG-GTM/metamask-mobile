@@ -117,9 +117,13 @@ interface ImportFromSecretRecoveryPhraseProps {
 
 const ImportFromSecretRecoveryPhrase = ({
   navigation,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   passwordSet,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   setLockTime,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   seedphraseBackedUp,
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   setOnboardingWizardStep,
   route,
 }: ImportFromSecretRecoveryPhraseProps) => {
@@ -199,6 +203,7 @@ const ImportFromSecretRecoveryPhrase = ({
     termsOfUse();
   }, [termsOfUse]);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const updateBiometryChoice = async (biometryChoice: boolean) => {
     await updateAuthTypeStorageFlags(biometryChoice);
     setBiometryChoice(biometryChoice);
@@ -237,6 +242,7 @@ const ImportFromSecretRecoveryPhrase = ({
 
     if (loading) return;
     track(MetaMetricsEvents.WALLET_IMPORT_ATTEMPTED);
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     let error: string | null = null;
     if (!passwordRequirementsMet(password)) {
       error = strings('import_from_seed.password_length_error');
@@ -299,6 +305,7 @@ const ImportFromSecretRecoveryPhrase = ({
           index: 1,
           routes: [{ name: Routes.ONBOARDING.SUCCESS_FLOW }],
         });
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       } catch (error) {
         // Should we force people to enable passcode / biometrics?
         if ((error as Error).toString() === PASSCODE_NOT_SET_ERROR) {
@@ -323,6 +330,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const clearSecretRecoveryPhrase = async (seed: string) => {
     // get clipboard contents
     const clipboardContents = await Clipboard.getString();
@@ -340,6 +348,7 @@ const ImportFromSecretRecoveryPhrase = ({
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const onSeedWordsChange = useCallback(async (seed: string) => {
     setSeed(seed);
     // Only clear on android since iOS will notify users when we getString()
@@ -377,6 +386,7 @@ const ImportFromSecretRecoveryPhrase = ({
   };
 
   const renderSwitch = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     const handleUpdateRememberMe = (rememberMe: boolean) => {
       setRememberMe(rememberMe);
     };
@@ -408,6 +418,7 @@ const ImportFromSecretRecoveryPhrase = ({
     navigation.navigate(Routes.QR_TAB_SWITCHER, {
       initialScreen: QRTabSwitcherScreens.Scanner,
       disableTabber: true,
+      // eslint-disable-next-line @typescript-eslint/no-shadow
       onScanSuccess: ({ seed = undefined }) => {
         if (seed) {
           setSeed(seed);

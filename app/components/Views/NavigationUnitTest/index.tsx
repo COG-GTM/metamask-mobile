@@ -62,6 +62,7 @@ const TestStack = ({ secondRoute }: NavigationUnitTestProps) => (
 
 const NavigationUnitTest = ({
   firstRoute,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   secondRoute,
 }: NavigationUnitTestProps) => (
   <NavigationContainer>

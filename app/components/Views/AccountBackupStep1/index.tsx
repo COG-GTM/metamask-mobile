@@ -37,9 +37,8 @@ import { Theme } from '../../../util/theme/models';
 import { IMetaMetricsEvent } from '../../../core/Analytics/MetaMetrics.types';
 import { Dispatch } from 'redux';
 import { JsonMap } from '@segment/analytics-react-native';
-import { StackNavigationOptions } from '@react-navigation/stack';
+import { StackNavigationOptions , StackNavigationProp } from '@react-navigation/stack';
 import { ParamListBase, RouteProp } from '@react-navigation/native';
-import { StackNavigationProp } from '@react-navigation/stack';
 
 interface AccountBackupStep1Props {
   /**
