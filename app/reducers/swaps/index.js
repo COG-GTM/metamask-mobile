@@ -303,11 +303,12 @@ export const swapsTokensWithBalanceSelector = createSelector(
       .filter(([, balance]) => balance !== 0)
       .sort(([, balanceA], [, balanceB]) => (lte(balanceB, balanceA) ? -1 : 1))
       .map(([address]) => address.toLowerCase());
+    const addressesWithBalance = new Set(tokensAddressesWithBalance);
     const tokensWithBalance = [];
     const originalTokens = [];
 
     for (let i = 0; i < baseTokens.length; i++) {
-      if (tokensAddressesWithBalance.includes(baseTokens[i].address)) {
+      if (addressesWithBalance.has(baseTokens[i].address)) {
         tokensWithBalance.push(baseTokens[i]);
       } else {
         originalTokens.push(baseTokens[i]);
