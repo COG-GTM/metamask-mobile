@@ -1,4 +1,5 @@
 import { AnyAction } from 'redux';
+import { AppState } from 'react-native';
 import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer, Persistor } from 'redux-persist';
 import createSagaMiddleware from 'redux-saga';
@@ -6,11 +7,12 @@ import { rootSaga } from './sagas';
 import rootReducer, { RootState } from '../reducers';
 import ReadOnlyNetworkStore from '../util/test/network-store';
 import { isE2E } from '../util/test/utils';
+import Logger from '../util/Logger';
 import { trace, endTrace, TraceName, TraceOperation } from '../util/trace';
 
 import thunk from 'redux-thunk';
 
-import persistConfig from './persistConfig';
+import persistConfig, { flushPersistedState } from './persistConfig';
 import getUIStartupSpan from '../core/Performance/UIStartup';
 import ReduxService, { ReduxStore } from '../core/redux';
 import { onPersistedDataLoaded } from '../actions/user';
@@ -74,6 +76,15 @@ const createStoreAndPersistor = async () => {
   };
 
   persistor = persistStore(store, null, onPersistComplete);
+
+  // Persist pending throttled state before the OS can suspend or kill the app
+  AppState.addEventListener('change', (nextAppState) => {
+    if (nextAppState === 'background') {
+      flushPersistedState(persistor).catch((error) =>
+        Logger.error(error, { message: 'Error flushing persisted state' }),
+      );
+    }
+  });
 };
 
 (async () => {

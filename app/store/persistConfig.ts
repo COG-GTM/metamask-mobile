@@ -1,4 +1,4 @@
-import { createMigrate, createTransform } from 'redux-persist';
+import { createMigrate, createTransform, Persistor } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import FilesystemStorage from 'redux-persist-filesystem-storage';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
@@ -139,8 +139,19 @@ const persistConfig = {
   stateReconciler: autoMergeLevel2, // see "Merge Process" section for details.
   migrate: createMigrate(migrations, { debug: false }),
   timeout: TIMEOUT,
+  // Coalesce transform + serialization of changed keys to once per window
+  throttle: STORAGE_DEBOUNCE_DELAY,
   writeFailHandler: (error: Error) =>
     Logger.error(error, { message: 'Error persisting data' }), // Log error if saving state fails
+};
+
+/**
+ * Immediately serializes any queued state and writes it to storage,
+ * bypassing the persist throttle and storage write debounce.
+ */
+export const flushPersistedState = async (persistor: Persistor) => {
+  await persistor.flush();
+  await debouncedSetItem.flush();
 };
 
 export default persistConfig;
