@@ -187,8 +187,22 @@ const CollectibleContracts = ({
     [allCollectibles, chainId, isAllNetworks],
   );
 
-  const collectibles = filteredCollectibles.filter(
-    (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+  const collectibles = useMemo(
+    () =>
+      filteredCollectibles.filter(
+        (singleCollectible) => singleCollectible.isCurrentlyOwned === true,
+      ),
+    [filteredCollectibles],
+  );
+
+  const ownedCollectibleKeys = useMemo(
+    () =>
+      new Set(
+        collectibles.map(
+          (collectible) => `${collectible.address}:${collectible.tokenId}`,
+        ),
+      ),
+    [collectibles],
   );
 
   const { colors } = useTheme();
@@ -222,16 +236,11 @@ const CollectibleContracts = ({
    *  @returns Boolean indicating if the collectible is ignored or not.
    */
   const isCollectibleIgnored = useCallback(
-    (collectible) => {
-      const found = collectibles.find(
-        (elm) =>
-          elm.address === collectible.address &&
-          elm.tokenId === collectible.tokenId,
-      );
-      if (found) return false;
-      return true;
-    },
-    [collectibles],
+    (collectible) =>
+      !ownedCollectibleKeys.has(
+        `${collectible.address}:${collectible.tokenId}`,
+      ),
+    [ownedCollectibleKeys],
   );
 
   /**
