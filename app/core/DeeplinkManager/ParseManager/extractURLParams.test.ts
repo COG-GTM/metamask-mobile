@@ -156,4 +156,22 @@ describe('extractURLParams', () => {
 
     expect(params).toEqual(expectedParams);
   });
+
+  it('caps bracket-notation arrays in deeplink query params at the qs arrayLimit', () => {
+    const actualQs = jest.requireActual<typeof qs>('qs');
+    const query = Array.from(
+      { length: 25 },
+      (_, i) => `channelId[]=${i}`,
+    ).join('&');
+    const url = `${PROTOCOLS.DAPP}/https://example.com?${query}`;
+
+    mockUrlParser.mockImplementation(
+      () => ({ query: `?${query}` } as unknown as UrlParser<string>),
+    );
+    mockQs.parse.mockImplementation(actualQs.parse);
+
+    const { params } = extractURLParams(url);
+
+    expect(Array.isArray(params.channelId)).toBe(false);
+  });
 });
