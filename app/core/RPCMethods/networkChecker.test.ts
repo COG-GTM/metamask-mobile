@@ -1,6 +1,7 @@
 import checkSafeNetwork from './networkChecker.util';
 import { BannerAlertSeverity } from '../../component-library/components/Banners/Banner';
 import axios from 'axios';
+import { resetSafeChainsListCache } from '../../util/networks/safeChainsList';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -8,6 +9,7 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 describe('checkSafeNetwork', () => {
   afterEach(() => {
     mockedAxios.get.mockRestore();
+    resetSafeChainsListCache();
   });
 
   it('should return an error if the chainId is not recognized', async () => {
