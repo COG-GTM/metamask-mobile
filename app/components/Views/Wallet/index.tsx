@@ -456,13 +456,13 @@ const Wallet = ({
       requestAnimationFrame(async () => {
         const { AccountTrackerController } = Engine.context;
 
-        Object.values(evmNetworkConfigurations).forEach(
-          ({ defaultRpcEndpointIndex, rpcEndpoints }) => {
-            AccountTrackerController.refresh([
-              rpcEndpoints[defaultRpcEndpointIndex].networkClientId,
-            ]);
-          },
+        const networkClientIds = Object.values(evmNetworkConfigurations).map(
+          ({ defaultRpcEndpointIndex, rpcEndpoints }) =>
+            rpcEndpoints[defaultRpcEndpointIndex].networkClientId,
         );
+        // A single call lets the controller fetch all networks concurrently
+        // under one mutex acquisition instead of serializing per network.
+        AccountTrackerController.refresh(networkClientIds);
       });
     },
     /* eslint-disable-next-line */

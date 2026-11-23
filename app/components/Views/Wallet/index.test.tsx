@@ -9,6 +9,8 @@ import { MOCK_ACCOUNTS_CONTROLLER_STATE } from '../../../util/test/accountsContr
 import { WalletViewSelectorsIDs } from '../../../../e2e/selectors/wallet/WalletView.selectors';
 import Engine from '../../../core/Engine';
 import { useSelector } from 'react-redux';
+import { selectEvmNetworkConfigurationsByChainId } from '../../../selectors/networkController';
+import { RootState } from '../../../reducers';
 
 const MOCK_ADDRESS = '0xc4955c0d639d99699bfd7ec54d9fafee40e4d272';
 
@@ -255,6 +257,39 @@ describe('Wallet', () => {
     render(Wallet);
 
     expect(mockedAddTokens.addTokens).toHaveBeenCalledTimes(1);
+  });
+
+  it('refreshes native balances for all EVM networks in a single AccountTrackerController.refresh call', () => {
+    const rafSpy = jest
+      .spyOn(global, 'requestAnimationFrame')
+      .mockImplementation((cb: FrameRequestCallback) => {
+        cb(0);
+        return 0;
+      });
+    const expectedNetworkClientIds = Object.values(
+      selectEvmNetworkConfigurationsByChainId(
+        mockInitialState as unknown as RootState,
+      ),
+    ).map(
+      ({ defaultRpcEndpointIndex, rpcEndpoints }) =>
+        rpcEndpoints[defaultRpcEndpointIndex].networkClientId,
+    );
+    expect(expectedNetworkClientIds.length).toBeGreaterThan(1);
+
+    //@ts-expect-error we are ignoring the navigation params on purpose because we do not want to mock setOptions to test the navbar
+    render(Wallet);
+
+    const { refresh } = jest.mocked(Engine.context.AccountTrackerController);
+    // The effect may re-run on re-render; each run must issue one batched call
+    // instead of one call per network.
+    expect(refresh).toHaveBeenCalled();
+    expect(refresh.mock.calls.length).toBeLessThan(
+      expectedNetworkClientIds.length,
+    );
+    refresh.mock.calls.forEach(([networkClientIds]) => {
+      expect(networkClientIds).toEqual(expectedNetworkClientIds);
+    });
+    rafSpy.mockRestore();
   });
 
   it('should render correctly when Solana support is enabled', () => {
