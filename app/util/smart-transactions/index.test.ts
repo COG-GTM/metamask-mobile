@@ -385,7 +385,76 @@ describe('Smart Transactions utils', () => {
       } as unknown as SmartTransactionsController;
       controllerMessenger = {
         subscribe: jest.fn(),
+        unsubscribe: jest.fn(),
       } as unknown as BaseControllerMessenger;
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('unsubscribes and clears the timeout when smartTransactionConfirmationDone arrives', async () => {
+      jest.useFakeTimers();
+      const transactionMeta = { hash: '0x123' } as TransactionMeta;
+      const smartTransaction = {
+        statusMetadata: { timedOut: false, proxied: true },
+      };
+      (
+        smartTransactionsController.getSmartTransactionByMinedTxHash as jest.Mock
+      ).mockReturnValue(undefined);
+
+      const resultPromise = getSmartTransactionMetricsProperties(
+        smartTransactionsController,
+        transactionMeta,
+        true,
+        controllerMessenger,
+      );
+      const [[event, handler]] = (controllerMessenger.subscribe as jest.Mock)
+        .mock.calls;
+      expect(event).toBe(
+        'SmartTransactionsController:smartTransactionConfirmationDone',
+      );
+      expect(jest.getTimerCount()).toBe(1);
+
+      handler(smartTransaction);
+
+      expect(controllerMessenger.unsubscribe).toHaveBeenCalledTimes(1);
+      expect(controllerMessenger.unsubscribe).toHaveBeenCalledWith(
+        event,
+        handler,
+      );
+      expect(jest.getTimerCount()).toBe(0);
+      await expect(resultPromise).resolves.toEqual({
+        smart_transaction_timed_out: false,
+        smart_transaction_proxied: true,
+      });
+    });
+
+    it('unsubscribes when smartTransactionConfirmationDone does not arrive before the timeout', async () => {
+      jest.useFakeTimers();
+      const transactionMeta = { hash: '0x123' } as TransactionMeta;
+      (
+        smartTransactionsController.getSmartTransactionByMinedTxHash as jest.Mock
+      ).mockReturnValue(undefined);
+
+      const resultPromise = getSmartTransactionMetricsProperties(
+        smartTransactionsController,
+        transactionMeta,
+        true,
+        controllerMessenger,
+      );
+      const [[event, handler]] = (controllerMessenger.subscribe as jest.Mock)
+        .mock.calls;
+      expect(controllerMessenger.unsubscribe).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(10_000);
+
+      expect(controllerMessenger.unsubscribe).toHaveBeenCalledTimes(1);
+      expect(controllerMessenger.unsubscribe).toHaveBeenCalledWith(
+        event,
+        handler,
+      );
+      await expect(resultPromise).resolves.toEqual({});
     });
 
     it('returns empty object if transactionMeta is undefined', async () => {

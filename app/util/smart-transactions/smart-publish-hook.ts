@@ -32,6 +32,10 @@ export type AllowedActions = never;
 
 export type AllowedEvents = SmartTransactionsControllerSmartTransactionEvent;
 
+type SmartTransactionHandler = (
+  smartTransaction: SmartTransaction,
+) => Promise<void>;
+
 export interface SubmitSmartTransactionRequest {
   transactionMeta: TransactionMeta;
   signedTransactionInHex?: Hex;
@@ -101,6 +105,7 @@ class SmartTransactionHook {
   #shouldUpdateApprovalRequest: boolean;
   #mobileReturnTxHashAsap: boolean;
   #transactions: PublishBatchHookTransaction[];
+  #smartTransactionHandlers = new Set<SmartTransactionHandler>();
 
   constructor(request: SubmitSmartTransactionRequest) {
     const {
@@ -510,23 +515,22 @@ class SmartTransactionHook {
   };
 
   #addListenerToUpdateStatusPage = async ({ uuid }: { uuid: string }) => {
-    this.#controllerMessenger.subscribe(
-      'SmartTransactionsController:smartTransaction',
-      async (smartTransaction: SmartTransaction) => {
-        if (uuid === smartTransaction.uuid) {
-          const { status } = smartTransaction;
-          if (!status || status === SmartTransactionStatuses.PENDING) {
-            return;
-          }
-          if (this.#shouldUpdateApprovalRequest && !this.#approvalEnded) {
-            await this.#updateApprovalRequest({
-              smartTransaction,
-            });
-          }
-          this.#cleanup();
+    const handler = async (smartTransaction: SmartTransaction) => {
+      if (uuid === smartTransaction.uuid) {
+        const { status } = smartTransaction;
+        if (!status || status === SmartTransactionStatuses.PENDING) {
+          return;
         }
-      },
-    );
+        this.#unsubscribeSmartTransaction(handler);
+        if (this.#shouldUpdateApprovalRequest && !this.#approvalEnded) {
+          await this.#updateApprovalRequest({
+            smartTransaction,
+          });
+        }
+        this.#cleanup();
+      }
+    };
+    this.#subscribeSmartTransaction(handler);
   };
 
   #waitForTransactionHash = ({
@@ -535,32 +539,52 @@ class SmartTransactionHook {
     uuid: string;
   }): Promise<string | null> =>
     new Promise((resolve) => {
-      this.#controllerMessenger.subscribe(
-        'SmartTransactionsController:smartTransaction',
-        async (smartTransaction: SmartTransaction) => {
-          if (uuid === smartTransaction.uuid) {
-            const { status, statusMetadata } = smartTransaction;
-            Logger.log(LOG_PREFIX, 'Smart Transaction: ', smartTransaction);
-            if (!status || status === SmartTransactionStatuses.PENDING) {
-              return;
-            }
-            if (statusMetadata?.minedHash) {
-              Logger.log(
-                LOG_PREFIX,
-                'Smart Transaction - Received tx hash: ',
-                statusMetadata?.minedHash,
-              );
-              resolve(statusMetadata.minedHash);
-            } else {
-              // cancelled status will have statusMetadata?.minedHash === ''
-              resolve(null);
-            }
+      const handler = async (smartTransaction: SmartTransaction) => {
+        if (uuid === smartTransaction.uuid) {
+          const { status, statusMetadata } = smartTransaction;
+          Logger.log(LOG_PREFIX, 'Smart Transaction: ', smartTransaction);
+          if (!status || status === SmartTransactionStatuses.PENDING) {
+            return;
           }
-        },
-      );
+          this.#unsubscribeSmartTransaction(handler);
+          if (statusMetadata?.minedHash) {
+            Logger.log(
+              LOG_PREFIX,
+              'Smart Transaction - Received tx hash: ',
+              statusMetadata?.minedHash,
+            );
+            resolve(statusMetadata.minedHash);
+          } else {
+            // cancelled status will have statusMetadata?.minedHash === ''
+            resolve(null);
+          }
+        }
+      };
+      this.#subscribeSmartTransaction(handler);
     });
 
+  #subscribeSmartTransaction = (handler: SmartTransactionHandler) => {
+    this.#smartTransactionHandlers.add(handler);
+    this.#controllerMessenger.subscribe(
+      'SmartTransactionsController:smartTransaction',
+      handler,
+    );
+  };
+
+  #unsubscribeSmartTransaction = (handler: SmartTransactionHandler) => {
+    if (!this.#smartTransactionHandlers.delete(handler)) {
+      return;
+    }
+    this.#controllerMessenger.unsubscribe(
+      'SmartTransactionsController:smartTransaction',
+      handler,
+    );
+  };
+
   #cleanup = () => {
+    this.#smartTransactionHandlers.forEach((handler) =>
+      this.#unsubscribeSmartTransaction(handler),
+    );
     if (this.#approvalEnded) {
       return;
     }

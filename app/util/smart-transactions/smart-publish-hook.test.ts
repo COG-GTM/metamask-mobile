@@ -226,6 +226,201 @@ function withRequest<ReturnValue>(
 
 jest.setTimeout(10 * 1000);
 
+const SMART_TRANSACTION_EVENT = 'SmartTransactionsController:smartTransaction';
+
+const trackSmartTransactionSubscriptions = (
+  messenger: SubmitSmartTransactionRequestMocked['controllerMessenger'],
+) => {
+  const active = new Set<unknown>();
+  const subscribeSpy = jest.spyOn(messenger, 'subscribe');
+  const unsubscribeSpy = jest.spyOn(messenger, 'unsubscribe');
+  return {
+    subscribeSpy,
+    unsubscribeSpy,
+    activeCount: () => {
+      active.clear();
+      subscribeSpy.mock.calls.forEach(([event, handler]) => {
+        if (event === SMART_TRANSACTION_EVENT) active.add(handler);
+      });
+      unsubscribeSpy.mock.calls.forEach(([event, handler]) => {
+        if (event === SMART_TRANSACTION_EVENT) active.delete(handler);
+      });
+      return active.size;
+    },
+  };
+};
+
+const publishSmartTransaction = (
+  messenger: SubmitSmartTransactionRequestMocked['controllerMessenger'],
+  smartTransaction: Partial<SmartTransaction>,
+) =>
+  messenger.publish(
+    SMART_TRANSACTION_EVENT,
+    smartTransaction as SmartTransaction,
+  );
+
+const publishPendingThenStatus = (
+  messenger: SubmitSmartTransactionRequestMocked['controllerMessenger'],
+  status: string,
+  minedHash: string,
+) =>
+  setImmediate(() => {
+    publishSmartTransaction(messenger, {
+      status: 'pending',
+      statusMetadata: { minedHash: '' } as SmartTransaction['statusMetadata'],
+      uuid: stxUuid,
+    });
+    publishSmartTransaction(messenger, {
+      status,
+      statusMetadata: { minedHash } as SmartTransaction['statusMetadata'],
+      uuid: stxUuid,
+    });
+  });
+
+describe('smart transaction listener lifecycle', () => {
+  it('removes both smartTransaction listeners once a smart transaction succeeds', async () => {
+    await withRequest(async ({ request, controllerMessenger }) => {
+      const tracker = trackSmartTransactionSubscriptions(controllerMessenger);
+      publishPendingThenStatus(controllerMessenger, 'success', transactionHash);
+
+      const result = await submitSmartTransactionHook(request);
+
+      expect(result).toEqual({ transactionHash });
+      expect(tracker.subscribeSpy).toHaveBeenCalledTimes(2);
+      expect(tracker.activeCount()).toBe(0);
+      expect(
+        request.approvalController.updateRequestState,
+      ).toHaveBeenCalledTimes(1);
+
+      publishSmartTransaction(controllerMessenger, {
+        status: 'success',
+        statusMetadata: {
+          minedHash: transactionHash,
+        } as SmartTransaction['statusMetadata'],
+        uuid: stxUuid,
+      });
+      expect(
+        request.approvalController.updateRequestState,
+      ).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('removes smartTransaction listeners when the smart transaction is cancelled', async () => {
+    await withRequest(async ({ request, controllerMessenger }) => {
+      const tracker = trackSmartTransactionSubscriptions(controllerMessenger);
+      publishPendingThenStatus(controllerMessenger, 'cancelled', '');
+
+      await expect(submitSmartTransactionHook(request)).rejects.toThrow(
+        'Smart Transaction does not have a transaction hash, there was a problem',
+      );
+      expect(tracker.subscribeSpy).toHaveBeenCalledTimes(2);
+      expect(tracker.activeCount()).toBe(0);
+    });
+  });
+
+  it('keeps listeners attached while the smart transaction is pending', async () => {
+    await withRequest(async ({ request, controllerMessenger }) => {
+      const tracker = trackSmartTransactionSubscriptions(controllerMessenger);
+      const resultPromise = submitSmartTransactionHook(request);
+      await new Promise((resolve) => setImmediate(resolve));
+
+      publishSmartTransaction(controllerMessenger, {
+        status: 'pending',
+        uuid: stxUuid,
+      });
+      publishSmartTransaction(controllerMessenger, {
+        status: 'success',
+        statusMetadata: {
+          minedHash: transactionHash,
+        } as SmartTransaction['statusMetadata'],
+        uuid: 'other-uuid',
+      });
+      expect(tracker.activeCount()).toBe(2);
+
+      publishSmartTransaction(controllerMessenger, {
+        status: 'success',
+        statusMetadata: {
+          minedHash: transactionHash,
+        } as SmartTransaction['statusMetadata'],
+        uuid: stxUuid,
+      });
+      await expect(resultPromise).resolves.toEqual({ transactionHash });
+      expect(tracker.activeCount()).toBe(0);
+    });
+  });
+
+  it('does not accumulate listeners across consecutive smart transactions', async () => {
+    await withRequest(async ({ request, controllerMessenger }) => {
+      const tracker = trackSmartTransactionSubscriptions(controllerMessenger);
+      for (let i = 0; i < 5; i++) {
+        publishPendingThenStatus(
+          controllerMessenger,
+          'success',
+          transactionHash,
+        );
+        await submitSmartTransactionHook({
+          ...request,
+          transactionMeta: { ...request.transactionMeta, id: `${i}` },
+        });
+        expect(tracker.activeCount()).toBe(0);
+      }
+      expect(tracker.subscribeSpy).toHaveBeenCalledTimes(10);
+      expect(tracker.unsubscribeSpy).toHaveBeenCalledTimes(10);
+    });
+  });
+
+  it('removes the hash listener when mobileReturnTxHashAsap is on but no txHash is returned', async () => {
+    await withRequest(
+      async ({ request, controllerMessenger, submitSignedTransactionsSpy }) => {
+        request.featureFlags.smartTransactions.mobileReturnTxHashAsap = true;
+        submitSignedTransactionsSpy.mockResolvedValue({ uuid: stxUuid });
+        const tracker = trackSmartTransactionSubscriptions(controllerMessenger);
+        publishPendingThenStatus(
+          controllerMessenger,
+          'success',
+          transactionHash,
+        );
+
+        const result = await submitSmartTransactionHook(request);
+
+        expect(result).toEqual({ transactionHash });
+        expect(tracker.subscribeSpy).toHaveBeenCalledTimes(1);
+        expect(tracker.activeCount()).toBe(0);
+      },
+    );
+  });
+
+  it('removes both smartTransaction listeners after a batch completes', async () => {
+    const mockSignedTx = createSignedTransaction();
+    await withRequest(
+      {
+        transactions: [
+          { signedTx: mockSignedTx, id: '1', params: {} },
+          { signedTx: mockSignedTx, id: '2', params: {} },
+        ],
+      },
+      async ({ request, controllerMessenger, submitSignedTransactionsSpy }) => {
+        submitSignedTransactionsSpy.mockResolvedValue({
+          uuid: stxUuid,
+          txHash: transactionHash,
+          txHashes: [transactionHash, transactionHash],
+        });
+        const tracker = trackSmartTransactionSubscriptions(controllerMessenger);
+        publishPendingThenStatus(
+          controllerMessenger,
+          'success',
+          transactionHash,
+        );
+
+        await submitBatchSmartTransactionHook(request);
+
+        expect(tracker.subscribeSpy).toHaveBeenCalledTimes(2);
+        expect(tracker.activeCount()).toBe(0);
+      },
+    );
+  });
+});
+
 describe('submitSmartTransactionHook', () => {
   it('does not submit a transaction that is not a smart transaction', async () => {
     withRequest(async ({ request }) => {

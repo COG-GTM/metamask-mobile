@@ -90,13 +90,17 @@ const waitForSmartTransactionConfirmationDone = (
   controllerMessenger: BaseControllerMessenger,
 ): Promise<SmartTransaction | undefined> =>
   new Promise((resolve) => {
-    controllerMessenger.subscribe(
-      'SmartTransactionsController:smartTransactionConfirmationDone',
-      async (smartTransaction: SmartTransaction) => {
-        resolve(smartTransaction);
-      },
-    );
-    setTimeout(() => {
+    const eventType =
+      'SmartTransactionsController:smartTransactionConfirmationDone';
+    const timer: { id?: ReturnType<typeof setTimeout> } = {};
+    const handler = (smartTransaction: SmartTransaction) => {
+      clearTimeout(timer.id);
+      controllerMessenger.unsubscribe(eventType, handler);
+      resolve(smartTransaction);
+    };
+    controllerMessenger.subscribe(eventType, handler);
+    timer.id = setTimeout(() => {
+      controllerMessenger.unsubscribe(eventType, handler);
       resolve(undefined); // In a rare case we don't get the "smartTransactionConfirmationDone" event within 10 seconds, we resolve with undefined to continue.
     }, TIMEOUT_FOR_SMART_TRANSACTION_CONFIRMATION_DONE_EVENT);
   });
