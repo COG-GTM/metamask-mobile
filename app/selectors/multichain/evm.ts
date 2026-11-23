@@ -45,6 +45,15 @@ import { deriveBalanceFromAssetMarketDetails } from '../../components/UI/Tokens/
 import { RootState } from '../../reducers';
 import { selectTokenList } from '../tokenListController';
 import { safeToChecksumAddress, toFormattedAddress } from '../../util/address';
+import { isEqual } from 'lodash';
+
+/**
+ * Cache size for the selectors below that take an `address` argument. They are
+ * shared by callers that pass different addresses (e.g. the selected account in
+ * the wallet and the last selected EVM account in Bridge), so a cache size of 1
+ * would recompute on every call when those addresses differ.
+ */
+const ADDRESS_SELECTOR_CACHE_SIZE = 10;
 
 interface NativeTokenBalance {
   balance: string;
@@ -90,6 +99,7 @@ export const selectedAccountNativeTokenCachedBalanceByChainIdForAddress =
 
       return result;
     },
+    { memoizeOptions: { maxSize: ADDRESS_SELECTOR_CACHE_SIZE } },
   );
 
 /**
@@ -223,6 +233,7 @@ export const selectNativeTokensAcrossChainsForAddress = createSelector(
 
     return tokensByChain;
   },
+  { memoizeOptions: { maxSize: ADDRESS_SELECTOR_CACHE_SIZE } },
 );
 
 /**
@@ -236,12 +247,14 @@ export const selectNativeTokensAcrossChains = createSelector(
 
 export const selectAccountTokensAcrossChainsForAddress =
   createDeepEqualSelector(
+    // `address` first so cache entries for other addresses are rejected before
+    // the deep-equal comparison of the larger inputs.
+    (_: RootState, address: string | undefined) => address,
     selectAllTokens,
     selectEvmNetworkConfigurationsByChainId,
     (state: RootState, address: string | undefined) =>
       selectNativeTokensAcrossChainsForAddress(state, address),
-    (_: RootState, address: string | undefined) => address,
-    (allTokens, networkConfigurations, nativeTokens, address) => {
+    (address, allTokens, networkConfigurations, nativeTokens) => {
       const tokensByChain: {
         [chainId: string]: (
           | TokenI
@@ -281,6 +294,12 @@ export const selectAccountTokensAcrossChainsForAddress =
       }
 
       return tokensByChain;
+    },
+    {
+      memoizeOptions: {
+        equalityCheck: isEqual,
+        maxSize: ADDRESS_SELECTOR_CACHE_SIZE,
+      },
     },
   );
 
