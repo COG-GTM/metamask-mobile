@@ -14,6 +14,8 @@ import {
   selectSolanaAccountTransactions,
   selectMultichainHistoricalPrices,
   makeSelectNonEvmAssetById,
+  makeSelectMultichainTokenListForAccountId,
+  selectMultichainTokenListForAccountId,
 } from './multichain';
 import { InternalAccount } from '@metamask/keyring-internal-api';
 import { CHAIN_IDS } from '@metamask/transaction-controller';
@@ -892,6 +894,84 @@ describe('MultichainNonEvm Selectors', () => {
 
       expect(result).toBeDefined();
       expect(result).toHaveProperty('balanceFiat', '0');
+    });
+  });
+
+  describe('makeSelectMultichainTokenListForAccountId', () => {
+    const solNativeAssetId = `${SolScope.Mainnet}/slip44:501` as CaipAssetType;
+    const otherAccountId = 'other-account-id';
+
+    const buildState = (): RootState => {
+      const state = getNonEvmState(MOCK_SOLANA_ACCOUNT);
+      const { backgroundState } = state.engine;
+      backgroundState.MultichainBalancesController.balances = {
+        [MOCK_SOLANA_ACCOUNT.id]: {
+          [solNativeAssetId]: { amount: '10', unit: 'SOL' },
+        },
+      };
+      backgroundState.MultichainAssetsController.accountsAssets = {
+        [MOCK_SOLANA_ACCOUNT.id]: [solNativeAssetId],
+      };
+      backgroundState.MultichainAssetsController.assetsMetadata = {};
+      backgroundState.MultichainAssetsRatesController.conversionRates = {
+        [solNativeAssetId]: { rate: '100', conversionTime: 0 },
+      };
+      backgroundState.MultichainNetworkController.selectedMultichainNetworkChainId =
+        SolScope.Mainnet;
+      return state;
+    };
+
+    // Simulates an unrelated store update: new root reference, same inputs.
+    const dispatchUnrelated = (state: RootState): RootState => ({ ...state });
+
+    it('returns the same tokens as the shared selector', () => {
+      const state = buildState();
+      const select = makeSelectMultichainTokenListForAccountId();
+
+      const tokens = select(state, MOCK_SOLANA_ACCOUNT.id);
+
+      expect(tokens).toEqual(
+        selectMultichainTokenListForAccountId(state, MOCK_SOLANA_ACCOUNT.id),
+      );
+      expect(tokens).toEqual([
+        expect.objectContaining({
+          address: solNativeAssetId,
+          balance: '10',
+          balanceFiat: '1000',
+          isNative: true,
+        }),
+      ]);
+    });
+
+    it('recomputes on every update when one instance alternates account ids', () => {
+      const select = makeSelectMultichainTokenListForAccountId();
+      let state = buildState();
+
+      for (let i = 0; i < 3; i++) {
+        state = dispatchUnrelated(state);
+        select(state, otherAccountId);
+        select(state, MOCK_SOLANA_ACCOUNT.id);
+      }
+
+      expect(select.recomputations()).toBe(6);
+    });
+
+    it('keeps a separate cache per instance so different account ids do not evict each other', () => {
+      const selectForSelected = makeSelectMultichainTokenListForAccountId();
+      const selectForSolana = makeSelectMultichainTokenListForAccountId();
+      let state = buildState();
+
+      const firstSolanaResult = selectForSolana(state, MOCK_SOLANA_ACCOUNT.id);
+      for (let i = 0; i < 3; i++) {
+        state = dispatchUnrelated(state);
+        selectForSelected(state, otherAccountId);
+        expect(selectForSolana(state, MOCK_SOLANA_ACCOUNT.id)).toBe(
+          firstSolanaResult,
+        );
+      }
+
+      expect(selectForSelected.recomputations()).toBe(1);
+      expect(selectForSolana.recomputations()).toBe(1);
     });
   });
 });

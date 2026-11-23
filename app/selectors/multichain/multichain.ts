@@ -224,77 +224,89 @@ export function selectMultichainHistoricalPrices(state: RootState) {
     .historicalPrices;
 }
 
-export const selectMultichainTokenListForAccountId = createDeepEqualSelector(
-  selectMultichainBalances,
-  selectMultichainAssets,
-  selectMultichainAssetsMetadata,
-  selectMultichainAssetsRates,
-  selectSelectedNonEvmNetworkChainId,
-  (_: RootState, accountId: string | undefined) => accountId,
-  (
-    multichainBalances,
-    assets,
-    assetsMetadata,
-    assetsRates,
-    nonEvmNetworkChainId,
-    accountId,
-  ) => {
-    if (!accountId) {
-      return [];
-    }
-
-    const assetIds = assets?.[accountId] || [];
-    const balances = multichainBalances?.[accountId];
-
-    const tokens = [];
-
-    for (const assetId of assetIds) {
-      const { chainId, assetNamespace } = parseCaipAssetType(assetId);
-
-      if (chainId !== nonEvmNetworkChainId) {
-        continue;
+/**
+ * Creates an independent instance of the token list selector. Reselect keeps a
+ * single cache entry per selector, so callers passing a different account id
+ * than other mounted callers should use their own instance to avoid evicting
+ * each other's cached result on every store update.
+ *
+ * @returns A memoized selector `(state, accountId) => TokenI-like[]`.
+ */
+export const makeSelectMultichainTokenListForAccountId = () =>
+  createDeepEqualSelector(
+    selectMultichainBalances,
+    selectMultichainAssets,
+    selectMultichainAssetsMetadata,
+    selectMultichainAssetsRates,
+    selectSelectedNonEvmNetworkChainId,
+    (_: RootState, accountId: string | undefined) => accountId,
+    (
+      multichainBalances,
+      assets,
+      assetsMetadata,
+      assetsRates,
+      nonEvmNetworkChainId,
+      accountId,
+    ) => {
+      if (!accountId) {
+        return [];
       }
 
-      const isNative = assetNamespace === 'slip44';
-      const balance = balances?.[assetId] || { amount: undefined, unit: '' };
-      const rate = assetsRates?.[assetId]?.rate || '0';
-      const balanceInFiat = balance.amount
-        ? new BigNumber(balance.amount).times(rate)
-        : undefined;
+      const assetIds = assets?.[accountId] || [];
+      const balances = multichainBalances?.[accountId];
 
-      const assetMetadataFallback = {
-        name: balance.unit || '',
-        symbol: balance.unit || '',
-        fungible: true,
-        units: [{ name: assetId, symbol: balance.unit || '', decimals: 0 }],
-      };
+      const tokens = [];
 
-      const metadata = assetsMetadata[assetId] || assetMetadataFallback;
-      const decimals = metadata.units[0]?.decimals || 0;
+      for (const assetId of assetIds) {
+        const { chainId, assetNamespace } = parseCaipAssetType(assetId);
 
-      tokens.push({
-        name: metadata?.name ?? '',
-        address: assetId,
-        symbol: metadata?.symbol ?? '',
-        image: metadata?.iconUrl,
-        logo: metadata?.iconUrl,
-        decimals,
-        chainId,
-        isNative,
-        balance: balance.amount,
-        secondary: balanceInFiat ? balanceInFiat.toString() : undefined,
-        string: '',
-        balanceFiat: balanceInFiat ? balanceInFiat.toString() : undefined,
-        isStakeable: false,
-        aggregators: [],
-        isETH: false,
-        ticker: metadata.symbol,
-      });
-    }
+        if (chainId !== nonEvmNetworkChainId) {
+          continue;
+        }
 
-    return tokens;
-  },
-);
+        const isNative = assetNamespace === 'slip44';
+        const balance = balances?.[assetId] || { amount: undefined, unit: '' };
+        const rate = assetsRates?.[assetId]?.rate || '0';
+        const balanceInFiat = balance.amount
+          ? new BigNumber(balance.amount).times(rate)
+          : undefined;
+
+        const assetMetadataFallback = {
+          name: balance.unit || '',
+          symbol: balance.unit || '',
+          fungible: true,
+          units: [{ name: assetId, symbol: balance.unit || '', decimals: 0 }],
+        };
+
+        const metadata = assetsMetadata[assetId] || assetMetadataFallback;
+        const decimals = metadata.units[0]?.decimals || 0;
+
+        tokens.push({
+          name: metadata?.name ?? '',
+          address: assetId,
+          symbol: metadata?.symbol ?? '',
+          image: metadata?.iconUrl,
+          logo: metadata?.iconUrl,
+          decimals,
+          chainId,
+          isNative,
+          balance: balance.amount,
+          secondary: balanceInFiat ? balanceInFiat.toString() : undefined,
+          string: '',
+          balanceFiat: balanceInFiat ? balanceInFiat.toString() : undefined,
+          isStakeable: false,
+          aggregators: [],
+          isETH: false,
+          ticker: metadata.symbol,
+        });
+      }
+
+      return tokens;
+    },
+  );
+
+export const selectMultichainTokenListForAccountId =
+  makeSelectMultichainTokenListForAccountId();
 export interface MultichainNetworkAggregatedBalance {
   totalNativeTokenBalance: Balance | undefined;
   totalBalanceFiat: number | undefined;

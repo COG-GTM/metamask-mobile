@@ -21,7 +21,7 @@ import {
 } from '../../../Tokens/util';
 import { selectTokenSortConfig } from '../../../../../selectors/preferencesController';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-import { selectMultichainTokenListForAccountId } from '../../../../../selectors/multichain';
+import { makeSelectMultichainTokenListForAccountId } from '../../../../../selectors/multichain';
 ///: END:ONLY_INCLUDE_IF
 import { selectAccountTokensAcrossChainsForAddress } from '../../../../../selectors/multichain/evm';
 import { BridgeToken } from '../../types';
@@ -124,7 +124,9 @@ export const useTokensWithBalance: ({
 
   const lastSelectedEvmAccount = useSelector(selectLastSelectedEvmAccount);
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-  const lastSelectedSolanaAccount = useSelector(selectLastSelectedSolanaAccount);
+  const lastSelectedSolanaAccount = useSelector(
+    selectLastSelectedSolanaAccount,
+  );
   ///: END:ONLY_INCLUDE_IF
 
   // Fiat conversion rates
@@ -144,8 +146,14 @@ export const useTokensWithBalance: ({
   ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
   // Already contains balance and fiat values for native SOL and SPL tokens
   // Balance and fiat values are not truncated
+  // Own selector instance: the shared one is called with the selected (often
+  // EVM) account id elsewhere, which would evict this cache on every update.
+  const selectNonEvmTokens = useMemo(
+    makeSelectMultichainTokenListForAccountId,
+    [],
+  );
   const nonEvmTokens = useSelector((state: RootState) =>
-    selectMultichainTokenListForAccountId(state, lastSelectedSolanaAccount?.id),
+    selectNonEvmTokens(state, lastSelectedSolanaAccount?.id),
   );
   ///: END:ONLY_INCLUDE_IF
 
@@ -161,9 +169,9 @@ export const useTokensWithBalance: ({
       .filter((token) => !token.isStaked);
 
     ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
-    const allNonEvmAccountTokens = (
-      Object.values(nonEvmTokens).flat()
-    ).filter((token) => chainIds.includes(token.chainId));
+    const allNonEvmAccountTokens = Object.values(nonEvmTokens)
+      .flat()
+      .filter((token) => chainIds.includes(token.chainId));
     ///: END:ONLY_INCLUDE_IF
 
     const balances = calculateBalances({
