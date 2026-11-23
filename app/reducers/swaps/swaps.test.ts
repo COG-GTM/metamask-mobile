@@ -8,14 +8,17 @@ import reducer, {
   swapsSmartTxFlagEnabled,
   swapsTokensObjectSelector,
   selectSwapsChainFeatureFlags,
+  SwapsAction,
+  SwapsState,
 } from './index';
+import type { RootState } from '..';
 import { NetworkClientType } from '@metamask/network-controller';
 // eslint-disable-next-line import/no-namespace
 import * as tokensControllerSelectors from '../../selectors/tokensController';
 
 jest.mock('../../selectors/tokensController');
 
-const emptyAction = { type: null };
+const emptyAction = { type: null } as unknown as SwapsAction;
 
 const DEFAULT_FEATURE_FLAGS = {
   ethereum: {
@@ -178,7 +181,7 @@ describe('swaps reducer', () => {
 
   describe('swapsSmartTxFlagEnabled', () => {
     it('should return true if smart transactions are enabled', () => {
-      const rootState = {
+      const rootState: { engine: unknown; swaps: Partial<SwapsState> } = {
         engine: {
           backgroundState: {
             NetworkController: {
@@ -238,12 +241,14 @@ describe('swaps reducer', () => {
         },
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(
+        rootState as unknown as RootState,
+      );
       expect(enabled).toEqual(true);
     });
 
     it('should return false if smart transactions flags are disabled', () => {
-      const rootState = {
+      const rootState: { engine: unknown; swaps: Partial<SwapsState> } = {
         engine: {
           backgroundState: {
             NetworkController: {
@@ -293,12 +298,14 @@ describe('swaps reducer', () => {
         },
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(
+        rootState as unknown as RootState,
+      );
       expect(enabled).toEqual(false);
     });
 
     it('should return false if smart transactions flags are undefined', () => {
-      const rootState = {
+      const rootState: { engine: unknown; swaps: Partial<SwapsState> } = {
         engine: {
           backgroundState: {
             NetworkController: {
@@ -322,7 +329,9 @@ describe('swaps reducer', () => {
         swaps: initialState,
       };
 
-      const enabled = swapsSmartTxFlagEnabled(rootState);
+      const enabled = swapsSmartTxFlagEnabled(
+        rootState as unknown as RootState,
+      );
       expect(enabled).toEqual(false);
     });
   });
@@ -332,33 +341,37 @@ describe('swaps reducer', () => {
       selectedChainId = '0x1',
       globalFeatureFlags = {},
       chainFeatureFlags = {},
-    } = {}) => ({
-      engine: {
-        backgroundState: {
-          NetworkController: {
-            selectedNetworkClientId: 'mainnet',
-            networkConfigurations: {
-              mainnet: {
-                id: 'mainnet',
-                chainId: selectedChainId,
+    } = {}) =>
+      ({
+        engine: {
+          backgroundState: {
+            NetworkController: {
+              selectedNetworkClientId: 'mainnet',
+              networkConfigurations: {
+                mainnet: {
+                  id: 'mainnet',
+                  chainId: selectedChainId,
+                },
               },
+              getNetworkClientById: () => ({
+                configuration: {
+                  chainId: selectedChainId,
+                },
+              }),
             },
-            getNetworkClientById: () => ({
-              configuration: {
-                chainId: selectedChainId,
-              },
-            }),
           },
         },
-      },
-      swaps: {
-        featureFlags: globalFeatureFlags,
-        ...Object.entries(chainFeatureFlags).reduce(
-          (acc, [chainId, flags]) => ({ ...acc, [chainId]: { featureFlags: flags } }),
-          {}
-        ),
-      },
-    });
+        swaps: {
+          featureFlags: globalFeatureFlags,
+          ...Object.entries(chainFeatureFlags).reduce(
+            (acc, [chainId, flags]) => ({
+              ...acc,
+              [chainId]: { featureFlags: flags },
+            }),
+            {},
+          ),
+        },
+      } as unknown as RootState);
 
     it('should return chain feature flags with merged smartTransactions from global flags', () => {
       const globalFlags = {
@@ -368,7 +381,7 @@ describe('swaps reducer', () => {
           globalSetting: true,
         },
       };
-      
+
       const chainFlags = {
         '0x1': {
           fallbackToV1: false,
@@ -378,12 +391,12 @@ describe('swaps reducer', () => {
           },
         },
       };
-      
+
       const rootState = createTestState({
         globalFeatureFlags: globalFlags,
         chainFeatureFlags: chainFlags,
       });
-      
+
       const result = selectSwapsChainFeatureFlags(rootState);
       expect(result).toEqual({
         fallbackToV1: false,
@@ -435,7 +448,7 @@ describe('swaps reducer', () => {
           },
         },
         chainFeatureFlags: {
-          '0x1': {},  // Empty feature flags
+          '0x1': {}, // Empty feature flags
         },
       });
 
@@ -449,7 +462,7 @@ describe('swaps reducer', () => {
 
     it('should throw when no chain entry exists', () => {
       const rootState = createTestState({
-        selectedChainId: '0x89',  // Chain ID not in swaps state
+        selectedChainId: '0x89', // Chain ID not in swaps state
         globalFeatureFlags: {
           smartTransactions: {
             globalSetting: true,
@@ -502,7 +515,9 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({
+      expect(
+        swapsTokensObjectSelector(state as unknown as RootState),
+      ).toStrictEqual({
         '0x0000000000000000000000000000000000000000': undefined,
         '0x0000000000000000000000000000000000000001': undefined,
         '0x0000000000000000000000000000000000000010': undefined,
@@ -521,7 +536,9 @@ describe('swaps reducer', () => {
           },
         },
       };
-      expect(swapsTokensObjectSelector(state)).toStrictEqual({});
+      expect(
+        swapsTokensObjectSelector(state as unknown as RootState),
+      ).toStrictEqual({});
     });
   });
 
@@ -541,4 +558,3 @@ describe('swaps reducer', () => {
     expect(liveState.hasOnboarded).toBe(true);
   });
 });
-

@@ -14,6 +14,7 @@ import {
 } from '../../../../../../selectors/smartTransactionsController';
 import { selectEvmChainId } from '../../../../../../selectors/networkController';
 import Engine from '../../../../../../core/Engine';
+import { RootState } from '../../../../../../reducers';
 import Logger from '../../../../../../util/Logger';
 import {
   selectSmartTransactionsMigrationApplied,
@@ -28,7 +29,7 @@ const SmartTransactionsMigrationBanner = ({
   const isBannerDismissed = useSelector(selectSmartTransactionsBannerDismissed);
   const chainId = useSelector(selectEvmChainId);
 
-  const shouldUseSmartTransaction = useSelector((state) =>
+  const shouldUseSmartTransaction = useSelector((state: RootState) =>
     selectShouldUseSmartTransaction(state, chainId)
   );
 
