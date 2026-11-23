@@ -176,6 +176,29 @@ describe('doENSReverseLookup', () => {
     expect(MockENS).not.toHaveBeenCalled();
   });
 
+  it('shares one request between concurrent lookups of the same address', async () => {
+    const results = await Promise.all([
+      doENSReverseLookup(mockAddress, mainnetChainId),
+      doENSReverseLookup(mockAddress, mainnetChainId),
+      doENSReverseLookup(mockAddress, mainnetChainId),
+    ]);
+
+    expect(results).toEqual([ensName, ensName, ensName]);
+    expect(mockReverse).toHaveBeenCalledTimes(1);
+    expect(mockLookup).toHaveBeenCalledTimes(1);
+  });
+
+  it('retries after a failed lookup that was not cached', async () => {
+    mockReverse.mockRejectedValueOnce(new Error('network error'));
+    expect(
+      await doENSReverseLookup(mockAddress, mainnetChainId),
+    ).toBeUndefined();
+    expect(ENSCache.cache).toEqual({});
+
+    expect(await doENSReverseLookup(mockAddress, mainnetChainId)).toBe(ensName);
+    expect(mockReverse).toHaveBeenCalledTimes(2);
+  });
+
   it('reuses the ENS instance while the provider is unchanged', async () => {
     const otherAddress = '0x0000000000000000000000000000000000000003';
     mockLookup.mockImplementation(async () => mockAddress);

@@ -87,19 +87,9 @@ function getENSInstance(provider, networkId) {
   return ens;
 }
 
-export async function doENSReverseLookup(address, chainId) {
-  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
-  if (!networkHasEnsSupport) {
-    return undefined;
-  }
+const pendingReverseLookups = {};
 
-  const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
-  const cacheKey = networkId + address;
-  const { name: cachedName, timestamp } = ENSCache.cache[cacheKey] || {};
-  if (timestamp && Date.now() - timestamp < CACHE_REFRESH_THRESHOLD) {
-    return cachedName;
-  }
-
+async function fetchENSReverseName(address, networkId, cacheKey) {
   const { provider } =
     Engine.context.NetworkController.getProviderAndBlockTracker();
   const ens = getENSInstance(provider, networkId);
@@ -118,6 +108,32 @@ export async function doENSReverseLookup(address, chainId) {
       ENSCache.cache[cacheKey] = { timestamp: Date.now() };
     }
   }
+}
+
+export async function doENSReverseLookup(address, chainId) {
+  const networkHasEnsSupport = ENS_SUPPORTED_CHAIN_IDS.includes(chainId);
+  if (!networkHasEnsSupport) {
+    return undefined;
+  }
+
+  const networkId = CHAIN_ID_TO_NETWORK_ID[chainId];
+  const cacheKey = networkId + address;
+  const { name: cachedName, timestamp } = ENSCache.cache[cacheKey] || {};
+  if (timestamp && Date.now() - timestamp < CACHE_REFRESH_THRESHOLD) {
+    return cachedName;
+  }
+
+  // Concurrent callers for the same address share one pair of RPC calls.
+  if (!pendingReverseLookups[cacheKey]) {
+    pendingReverseLookups[cacheKey] = fetchENSReverseName(
+      address,
+      networkId,
+      cacheKey,
+    ).finally(() => {
+      delete pendingReverseLookups[cacheKey];
+    });
+  }
+  return pendingReverseLookups[cacheKey];
 }
 
 export async function doENSLookup(ensName, chainId) {
