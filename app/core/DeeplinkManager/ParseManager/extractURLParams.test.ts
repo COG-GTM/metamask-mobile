@@ -169,9 +169,12 @@ describe('extractURLParams', () => {
       () => ({ query: `?${query}` } as unknown as UrlParser<string>),
     );
     mockQs.parse.mockImplementation(actualQs.parse);
+    const alertSpy = jest.spyOn(Alert, 'alert');
 
     const { params } = extractURLParams(url);
 
     expect(Array.isArray(params.channelId)).toBe(false);
+    expect(Object.keys(params.channelId)).toHaveLength(25);
+    expect(alertSpy).not.toHaveBeenCalled();
   });
 });
