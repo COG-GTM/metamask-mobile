@@ -47,7 +47,10 @@ import Routes from '../../../constants/navigation/Routes';
 ///: BEGIN:ONLY_INCLUDE_IF(keyring-snaps)
 import { selectSelectedInternalAccount } from '../../../selectors/accountsController';
 import { isSolanaAccount } from '../../../core/Multichain/utils';
-import { useFocusEffect, ParamListBase } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
+///: END:ONLY_INCLUDE_IF
+// eslint-disable-next-line no-duplicate-imports, import/no-duplicates
+import type { ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Dispatch } from 'redux';
 import { InternalAccount } from '@metamask/keyring-internal-api';
@@ -106,7 +109,6 @@ interface BrowserProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   route: { params?: Record<string, any> };
 }
-///: END:ONLY_INCLUDE_IF
 
 const MAX_BROWSER_TABS = 5;
 
