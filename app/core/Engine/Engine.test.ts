@@ -143,6 +143,98 @@ describe('Engine', () => {
     expect(backupVault).not.toHaveBeenCalled();
   });
 
+  describe('vault backup', () => {
+    const keyringState = (
+      overrides: Partial<KeyringControllerState> = {},
+    ): KeyringControllerState => ({
+      vault: undefined,
+      isUnlocked: false,
+      keyrings: [],
+      keyringsMetadata: [],
+      ...overrides,
+    });
+
+    const flushPromises = () =>
+      new Promise(jest.requireActual('timers').setImmediate);
+
+    beforeEach(async () => {
+      await Engine.destroyEngine();
+      (backupVault as jest.Mock).mockResolvedValue({ success: true });
+    });
+
+    afterEach(async () => {
+      await Engine.destroyEngine();
+    });
+
+    it('does not back up again when the vault is unchanged', () => {
+      const engine = Engine.init({});
+      const publish = (state: KeyringControllerState) =>
+        engine.controllerMessenger.publish(
+          'KeyringController:stateChange',
+          state,
+          [],
+        );
+
+      publish(keyringState({ vault: 'vault-1' }));
+      publish(keyringState({ vault: 'vault-1', isUnlocked: true }));
+      publish(keyringState({ vault: 'vault-1', isUnlocked: false }));
+      publish(
+        keyringState({
+          vault: 'vault-1',
+          isUnlocked: true,
+          keyringsMetadata: [{ id: 'id', name: '' }],
+        }),
+      );
+
+      expect(backupVault).toHaveBeenCalledTimes(1);
+      expect(backupVault).toHaveBeenCalledWith(
+        expect.objectContaining({ vault: 'vault-1' }),
+      );
+    });
+
+    it('backs up every time the vault changes', () => {
+      const engine = Engine.init({});
+      ['vault-1', 'vault-2', 'vault-3'].forEach((vault) =>
+        engine.controllerMessenger.publish(
+          'KeyringController:stateChange',
+          keyringState({ vault }),
+          [],
+        ),
+      );
+
+      expect(
+        (backupVault as jest.Mock).mock.calls.map(([s]) => s.vault),
+      ).toEqual(['vault-1', 'vault-2', 'vault-3']);
+    });
+
+    it('backs up the vault present at init once, on the first unlock', () => {
+      const engine = Engine.init({}, keyringState({ vault: 'persisted' }));
+      expect(backupVault).not.toHaveBeenCalled();
+
+      engine.controllerMessenger.publish('KeyringController:unlock');
+      engine.controllerMessenger.publish('KeyringController:lock');
+      engine.controllerMessenger.publish('KeyringController:unlock');
+
+      expect(backupVault).toHaveBeenCalledTimes(1);
+      expect(backupVault).toHaveBeenCalledWith(
+        expect.objectContaining({ vault: 'persisted' }),
+      );
+    });
+
+    it('retries on the next unlock after a failed backup', async () => {
+      (backupVault as jest.Mock).mockRejectedValueOnce(new Error('keychain'));
+      const engine = Engine.init({}, keyringState({ vault: 'persisted' }));
+
+      engine.controllerMessenger.publish('KeyringController:unlock');
+      await flushPromises();
+      engine.controllerMessenger.publish('KeyringController:unlock');
+      await flushPromises();
+      engine.controllerMessenger.publish('KeyringController:unlock');
+
+      expect(backupVault).toHaveBeenCalledTimes(2);
+    });
+  });
+
   it('calling Engine.destroy deletes the old instance', async () => {
     const engine = Engine.init({});
     await engine.destroyEngineInstance();
