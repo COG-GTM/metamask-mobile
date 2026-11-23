@@ -143,7 +143,7 @@ const TransactionsView = ({
           chainId,
           tokenNetworkFilter as unknown as Parameters<
             typeof filterByAddressAndNetwork
-          >[4],
+          >[5],
         );
 
         if (!filter) return false;
