@@ -17,7 +17,9 @@ type CurrencyRateControllerMessenger = RestrictedMessenger<
 >;
 
 /**
- * Sets up subscription to sync CurrencyRateController changes with RatesController
+ * Sets up subscription to sync CurrencyRateController changes with RatesController.
+ * Only syncs when `currentCurrency` differs from the RatesController fiat
+ * currency, since `setFiatCurrency` always writes state and fetches rates.
  * @param controllerMessenger - The main controller messenger
  * @param ratesController - The RatesController instance to sync with
  */
@@ -27,16 +29,17 @@ export const setupCurrencyRateSync = (
 ): void => {
   controllerMessenger.subscribe(
     'CurrencyRateController:stateChange',
-    (state: CurrencyRateState) => {
-      if (state.currentCurrency) {
-        ratesController
-          .setFiatCurrency(state.currentCurrency)
-          .catch((error) => {
-            Logger.error(
-              error as Error,
-              'RatesController: Failed to sync fiat currency with CurrencyRateController',
-            );
-          });
+    ({ currentCurrency }: CurrencyRateState) => {
+      if (
+        currentCurrency &&
+        currentCurrency !== ratesController.state.fiatCurrency
+      ) {
+        ratesController.setFiatCurrency(currentCurrency).catch((error) => {
+          Logger.error(
+            error as Error,
+            'RatesController: Failed to sync fiat currency with CurrencyRateController',
+          );
+        });
       }
     },
   );
