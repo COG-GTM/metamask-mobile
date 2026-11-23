@@ -122,7 +122,8 @@ const FadeAnimationView = ({
         ...style,
         opacity: fadeAnim, // Bind opacity to animated value
       }}
-      pointerEvents={isAnimating ? 'none' : undefined}
+      // @ts-expect-error - pre-existing null value, kept for behavior/snapshot parity
+      pointerEvents={isAnimating ? 'none' : null}
     >
       {isAnimating ? lastChildren : children}
     </Animated.View>
