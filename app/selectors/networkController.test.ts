@@ -170,3 +170,136 @@ describe('networkSelectors', () => {
     expect(selectNetworkConfigurationByChainId(mockState, '0x9999')).toBeNull();
   });
 });
+
+describe('selectProviderConfig memoization', () => {
+  const polygonConfig = {
+    chainId: '0x89',
+    nativeCurrency: 'MATIC',
+    name: 'Polygon',
+    rpcEndpoints: [
+      {
+        networkClientId: 'polygon-client',
+        type: 'custom',
+        url: 'https://polygon-rpc.com',
+      },
+    ],
+    blockExplorerUrls: ['https://polygonscan.com'],
+  };
+  const mainnetConfig = {
+    chainId: '0x1',
+    nativeCurrency: 'ETH',
+    name: 'Ethereum Mainnet',
+    rpcEndpoints: [
+      {
+        networkClientId: 'mainnet',
+        type: 'infura',
+        url: 'https://mainnet.infura.io/v3/{infuraProjectId}',
+      },
+    ],
+    blockExplorerUrls: ['https://etherscan.io'],
+  };
+
+  const buildState = (networkController: Record<string, unknown>) =>
+    ({
+      engine: {
+        backgroundState: {
+          NetworkController: networkController,
+        },
+      },
+    } as unknown as RootState);
+
+  const baseController = {
+    selectedNetworkClientId: 'polygon-client',
+    networkConfigurationsByChainId: {
+      '0x1': mainnetConfig,
+      '0x89': polygonConfig,
+    },
+    networksMetadata: {
+      'polygon-client': { status: 'unknown', EIPS: {} },
+    },
+  };
+
+  beforeEach(() => {
+    selectProviderConfig.clearCache();
+    selectProviderConfig.memoizedResultFunc.clearCache();
+    selectProviderConfig.resetRecomputations();
+  });
+
+  it('returns the same reference without recomputing when only networksMetadata changes', () => {
+    const first = selectProviderConfig(buildState(baseController));
+
+    const second = selectProviderConfig(
+      buildState({
+        ...baseController,
+        networksMetadata: {
+          'polygon-client': { status: 'available', EIPS: { 1559: true } },
+        },
+      }),
+    );
+
+    expect(second).toBe(first);
+    expect(selectProviderConfig.recomputations()).toBe(1);
+  });
+
+  it('keeps the same reference when an unrelated network configuration changes', () => {
+    const first = selectProviderConfig(buildState(baseController));
+
+    const second = selectProviderConfig(
+      buildState({
+        ...baseController,
+        networkConfigurationsByChainId: {
+          '0x1': { ...mainnetConfig, name: 'Renamed Mainnet' },
+          '0x89': polygonConfig,
+        },
+      }),
+    );
+
+    expect(second).toBe(first);
+  });
+
+  it('returns a new provider config when the selected network client changes', () => {
+    const first = selectProviderConfig(buildState(baseController));
+
+    const second = selectProviderConfig(
+      buildState({ ...baseController, selectedNetworkClientId: 'mainnet' }),
+    );
+
+    expect(second).not.toBe(first);
+    expect(second).toEqual({
+      chainId: '0x1',
+      ticker: 'ETH',
+      rpcPrefs: { blockExplorerUrl: 'https://etherscan.io' },
+      type: 'mainnet',
+    });
+  });
+
+  it('returns a new provider config when the selected network configuration changes', () => {
+    const first = selectProviderConfig(buildState(baseController));
+
+    const second = selectProviderConfig(
+      buildState({
+        ...baseController,
+        networkConfigurationsByChainId: {
+          '0x1': mainnetConfig,
+          '0x89': { ...polygonConfig, name: 'Polygon PoS' },
+        },
+      }),
+    );
+
+    expect(second).not.toBe(first);
+    expect(second.nickname).toBe('Polygon PoS');
+  });
+
+  it('returns the default provider config when NetworkController state is missing', () => {
+    expect(
+      selectProviderConfig({
+        engine: { backgroundState: {} },
+      } as unknown as RootState),
+    ).toEqual({
+      chainId: '0x1',
+      ticker: 'ETH',
+      rpcPrefs: {},
+      type: 'infura',
+    });
+  });
+});
