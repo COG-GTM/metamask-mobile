@@ -17,19 +17,7 @@ import { ChainId } from '@metamask/controller-utils';
 const selectTokensControllerState = (state: RootState) =>
   state?.engine?.backgroundState?.TokensController;
 
-export const selectTokens = createDeepEqualSelector(
-  selectTokensControllerState,
-  selectEvmChainId,
-  selectSelectedInternalAccountAddress,
-  (
-    tokensControllerState: TokensControllerState,
-    chainId: Hex,
-    selectedAddress: string | undefined,
-  ) =>
-    tokensControllerState?.allTokens[chainId]?.[selectedAddress as Hex] || [],
-);
-
-export const selectTokensByChainIdAndAddress = createDeepEqualSelector(
+const selectTokensForSelectedChainAndAddress = createSelector(
   selectTokensControllerState,
   selectEvmChainId,
   selectSelectedInternalAccountAddress,
@@ -38,6 +26,16 @@ export const selectTokensByChainIdAndAddress = createDeepEqualSelector(
     chainId: Hex,
     selectedAddress: string | undefined,
   ) => tokensControllerState?.allTokens[chainId]?.[selectedAddress as Hex],
+);
+
+export const selectTokens = createDeepEqualSelector(
+  selectTokensForSelectedChainAndAddress,
+  (tokens: Token[] | undefined) => tokens || [],
+);
+
+export const selectTokensByChainIdAndAddress = createDeepEqualSelector(
+  selectTokensForSelectedChainAndAddress,
+  (tokens: Token[] | undefined) => tokens,
 );
 
 export const selectTokensByAddress = createSelector(
@@ -82,10 +80,15 @@ export const selectDetectedTokens = createSelector(
     ],
 );
 
-export const selectAllTokens = createDeepEqualSelector(
+const selectAllTokensRaw = createSelector(
   selectTokensControllerState,
   (tokensControllerState: TokensControllerState) =>
     tokensControllerState?.allTokens,
+);
+
+export const selectAllTokens = createDeepEqualSelector(
+  selectAllTokensRaw,
+  (allTokens: TokensControllerState['allTokens']) => allTokens,
 );
 
 export const getChainIdsToPoll = createDeepEqualSelector(
