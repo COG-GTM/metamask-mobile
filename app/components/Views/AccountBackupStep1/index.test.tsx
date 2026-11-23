@@ -13,7 +13,7 @@ describe('AccountBackupStep1', () => {
 
   it('should render correctly', () => {
     const wrapper = renderScreen(
-      AccountBackupStep1 as ComponentType,
+      AccountBackupStep1 as unknown as ComponentType,
       { name: 'AccountBackupStep1' },
       {
         state: {
