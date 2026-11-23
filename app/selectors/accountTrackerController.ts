@@ -1,23 +1,20 @@
 import { createSelector } from 'reselect';
-import { AccountTrackerControllerState } from '@metamask/assets-controllers';
 import { RootState } from '../reducers';
 import { createDeepEqualSelector } from './util';
 import { selectEvmChainId } from './networkController';
 import { selectSelectedInternalAccountFormattedAddress } from './accountsController';
 
-const selectAccountTrackerControllerState = (state: RootState) =>
-  state.engine.backgroundState.AccountTrackerController;
+const selectAccountsByChainIdRaw = (state: RootState) =>
+  state.engine.backgroundState.AccountTrackerController.accountsByChainId;
 
 export const selectAccountsByChainId = createDeepEqualSelector(
-  selectAccountTrackerControllerState,
-  (accountTrackerControllerState: AccountTrackerControllerState) =>
-    accountTrackerControllerState.accountsByChainId,
+  selectAccountsByChainIdRaw,
+  (accountsByChainId) => accountsByChainId,
 );
 
-export const selectAccounts = createDeepEqualSelector(
+export const selectAccounts = createSelector(
   selectAccountsByChainId,
   selectEvmChainId,
-  selectSelectedInternalAccountFormattedAddress,
   (accountsByChainId, chainId) => accountsByChainId?.[chainId] || {},
 );
 
@@ -26,7 +23,7 @@ export const selectAccountsLength = createSelector(
   (accounts) => Object.keys(accounts).length,
 );
 
-export const selectAccountBalanceByChainId = createDeepEqualSelector(
+export const selectAccountBalanceByChainId = createSelector(
   selectAccountsByChainId,
   selectEvmChainId,
   selectSelectedInternalAccountFormattedAddress,
