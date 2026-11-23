@@ -1,4 +1,7 @@
-import { TRIGGER_TYPES } from '@metamask/notification-services-controller/notification-services';
+import {
+  INotification,
+  TRIGGER_TYPES,
+} from '@metamask/notification-services-controller/notification-services';
 import {
   selectIsMetamaskNotificationsEnabled,
   selectIsMetaMaskPushNotificationsEnabled,
@@ -142,5 +145,92 @@ describe('Notification Selectors', () => {
     const result1 = getValidNotificationAccounts(state);
     const result2 = getValidNotificationAccounts(state);
     expect(result1 === result2).toBe(true);
+  });
+  describe('notification count selectors', () => {
+    const buildState = (
+      controllerOverrides: Record<string, unknown>,
+    ): RootState =>
+      ({
+        engine: {
+          backgroundState: {
+            NotificationServicesController: {
+              ...MOCK_NOTIFICATION_SERVICES_CONTROLLER,
+              ...controllerOverrides,
+            },
+            NotificationServicesPushController:
+              MOCK_NOTIFICATION_SERVICES_PUSH_CONTROLLER,
+          },
+        },
+      } as unknown as RootState);
+
+    const notification = (
+      id: string,
+      isRead: boolean,
+      type: TRIGGER_TYPES,
+    ): INotification => ({ id, isRead, type } as unknown as INotification);
+
+    const list = [
+      notification('1', false, TRIGGER_TYPES.ERC20_SENT),
+      notification('2', true, TRIGGER_TYPES.ERC20_RECEIVED),
+      notification('3', false, TRIGGER_TYPES.FEATURES_ANNOUNCEMENT),
+      notification('4', true, TRIGGER_TYPES.FEATURES_ANNOUNCEMENT),
+      notification('5', false, TRIGGER_TYPES.ETH_SENT),
+    ];
+
+    it('computes read, unread and on-chain unread counts from the list', () => {
+      const state = buildState({ metamaskNotificationsList: list });
+      expect(getMetamaskNotificationsUnreadCount(state)).toBe(3);
+      expect(getMetamaskNotificationsReadCount(state)).toBe(2);
+      expect(getOnChainMetamaskNotificationsUnreadCount(state)).toBe(2);
+    });
+
+    it('returns zero counts when the list is missing or empty', () => {
+      for (const metamaskNotificationsList of [undefined, []]) {
+        const state = buildState({ metamaskNotificationsList });
+        expect(getMetamaskNotificationsUnreadCount(state)).toBe(0);
+        expect(getMetamaskNotificationsReadCount(state)).toBe(0);
+        expect(getOnChainMetamaskNotificationsUnreadCount(state)).toBe(0);
+      }
+    });
+
+    it('does not re-count when only controller status flags change', () => {
+      const selectors = [
+        getMetamaskNotificationsUnreadCount,
+        getMetamaskNotificationsReadCount,
+        getOnChainMetamaskNotificationsUnreadCount,
+      ];
+      const first = buildState({ metamaskNotificationsList: list });
+      selectors.forEach((selector) => selector(first));
+      const recomputations = selectors.map((s) => s.recomputations());
+      const filterSpy = jest.spyOn(list, 'filter');
+
+      const flagToggles = [
+        { isFetchingMetamaskNotifications: true },
+        { isUpdatingMetamaskNotificationsAccount: true },
+        { isCheckingAccountsPresence: true },
+      ];
+      for (const flags of flagToggles) {
+        const next = buildState({ metamaskNotificationsList: list, ...flags });
+        expect(getMetamaskNotificationsUnreadCount(next)).toBe(3);
+        expect(getMetamaskNotificationsReadCount(next)).toBe(2);
+        expect(getOnChainMetamaskNotificationsUnreadCount(next)).toBe(2);
+      }
+
+      expect(selectors.map((s) => s.recomputations())).toEqual(recomputations);
+      expect(filterSpy).not.toHaveBeenCalled();
+      filterSpy.mockRestore();
+    });
+
+    it('re-counts when the notifications list changes', () => {
+      const before = getMetamaskNotificationsUnreadCount.recomputations();
+      const updated = list.map((n) => ({ ...n, isRead: true }));
+      const state = buildState({ metamaskNotificationsList: updated });
+      expect(getMetamaskNotificationsUnreadCount(state)).toBe(0);
+      expect(getMetamaskNotificationsReadCount(state)).toBe(5);
+      expect(getOnChainMetamaskNotificationsUnreadCount(state)).toBe(0);
+      expect(getMetamaskNotificationsUnreadCount.recomputations()).toBe(
+        before + 1,
+      );
+    });
   });
 });
