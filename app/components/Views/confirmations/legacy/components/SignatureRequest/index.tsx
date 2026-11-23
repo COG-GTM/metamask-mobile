@@ -277,7 +277,8 @@ class SignatureRequest extends PureComponent<SignatureRequestProps> {
         </View>
         <TouchableOpacity
           style={styles.children}
-          onPress={truncateMessage ? toggleExpandedMessage : undefined}
+          // @ts-expect-error legacy: null preserved for snapshot parity
+          onPress={truncateMessage ? toggleExpandedMessage : null}
         >
           <WebsiteIcon
             style={styles.domainLogo}

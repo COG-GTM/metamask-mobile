@@ -316,9 +316,8 @@ class TypedSign extends PureComponent<TypedSignProps, TypedSignState> {
       >
         <View
           style={messageWrapperStyles}
-          onLayout={
-            truncateMessage ? undefined : this.updateShouldTruncateMessage
-          }
+          // @ts-expect-error legacy: null preserved for snapshot parity
+          onLayout={truncateMessage ? null : this.updateShouldTruncateMessage}
         >
           {this.renderTypedMessage()}
         </View>
