@@ -1,12 +1,10 @@
-'use strict';
-
 // eslint-disable-next-line import/no-nodejs-modules
 import { EventEmitter } from 'events';
 const hub = new EventEmitter();
 
 class DrawerStatusTracker {
   open = false;
-  setStatus(status) {
+  setStatus(status: string) {
     if (status === 'open') {
       this.open = true;
     } else {
@@ -17,16 +15,16 @@ class DrawerStatusTracker {
   }
 }
 
-let instance = null;
+let instance: DrawerStatusTracker | null = null;
 
 const SharedDrawerStatusTracker = {
   init: () => {
     instance = new DrawerStatusTracker();
   },
-  setStatus: (status) => {
-    instance.setStatus(status);
+  setStatus: (status: string) => {
+    (instance as DrawerStatusTracker).setStatus(status);
   },
-  getStatus: () => (instance.open ? 'open' : 'closed'),
+  getStatus: () => ((instance as DrawerStatusTracker).open ? 'open' : 'closed'),
   hub,
 };
 
